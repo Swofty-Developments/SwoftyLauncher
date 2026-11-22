@@ -11,8 +11,13 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstdlib>
 #include <cstring>
 #include <string>
+
+namespace safetyhook {
+extern thread_local unsigned trap_stall_ms;
+}
 
 namespace render::d3d12 {
 
@@ -248,8 +253,12 @@ struct Platform {
 
     void unhook_factories()
     {
+        char v[16] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_TEST_TRAP_STALL_MS", v, sizeof v);
+        safetyhook::trap_stall_ms = n && n < sizeof v ? unsigned(std::strtoul(v, nullptr, 10)) : 0;
         for (int i = FACTORY; i < EXPORTS; i++)
             d3d12::unhook(exports[i]);
+        safetyhook::trap_stall_ms = 0;
     }
 };
 
