@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14197b940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *Make(void *out, void *src, void *p3)",
   "evidence": "decomp:re/decomp/14197b940.c;xref:0x14197b861,0x14197fa83,0x141f3f2d0",
-  "notes": "Returns a 12-byte struct of three packed keys (init 0x3fff0000) filled from the game mode (+0x88 ->+0x260, vt+0x1c8 list), Ne_Make_RandomIdBlock and Career_Collect_PlayerTeamDriverContracts."
+  "notes": "Out = 3 x u32 0x3fff0000. Game mode [param_2+0x88]+0x260 (class chain check vs 0x146129ca0/ca8); list via mode+0x1030 vcall +0x1c8; id from 0x1441207d0 or global [[0x14604c2c8]+0x140]+0x198 ->+0x1c0 vcall +0x38; finds matching list entry (0x1431146d0); component 0x14605c1d8; 0x142458560 contracts: first two driver keys (+0x50) not in set +0x850.. -> out[0], out[1]; out[2] = entry+0x58. (lane owner review requested)"
  },
  "signature": {
   "id": "career.make_progress_history_entry_with_random_id",

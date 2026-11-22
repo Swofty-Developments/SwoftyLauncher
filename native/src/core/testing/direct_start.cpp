@@ -1431,6 +1431,9 @@ void direct_start_setup()
         driver.arm(t);
         note_phase();
     }
+    // The virtual pad stays plugged in, idle, for the rest of the run: the game binds the player to it at the title,
+    // and letting go of the claim raises the game's 'device_unplugged' message, which holds the front end until the
+    // player presses a button on another device. A real pad in slot 0 still passes through.
     runtime::title::want(true);
     armed = true;
     link_live = true;
@@ -1573,10 +1576,6 @@ void direct_start_tick()
         if (r == ds::Setup::done && driver.target.name == "session")
             hud::room_cover::step("Weekend ready", 0.5f, 0.56f);
     }
-    // A session keeps the virtual pad plugged in, idle: the game bound the player to it at the title, and letting
-    // go of the claim would stop the session on CONTROLLER DISCONNECTED.
-    if (!driver.engage_title() && runtime::title::wanted() && !runtime::test_run() && driver.target.name != "session")
-        runtime::title::want(false);
     note_phase();
 }
 

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1411090c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1411090c0.c;pat:log-message-cxx;xref:0x14110ad91,0x14110cd16",
-  "notes": "pdata 0x1cac bytes; SPONSORS logs no condition / goal completed / condition passed / team and driver awarded. Callers 0x14110ad91, 0x14110cd16."
+  "evidence": "decomp:re/decomp/1411090c0.c;pat:log-message-cxx;xref:0x14110ad91,0x14110cd16,0x1411090b2,0x14110c542",
+  "notes": "dl=trigger type (stubs 0x1411090b0 dl=4, 0x14110c540 dl=1). Per team [+0x298 stride 0x88] gathers drivers (+0x278+0x2e0), per active sponsor (+0x18, stride 0x160, +0x158) goals from 0x1411183a0 with goal+0x110==dl: cond +0x78 vcall +0x38; driver ids at +0x128, team at +0x148; award via 0x1410f7660, posts 0x1439876c0, 0x14110c290, loyalty 0x141106870. SPONSORS logs. (lane owner review requested)"
  },
  "signature": {
   "id": "game.sponsor_goal_check_sponsor_goal",

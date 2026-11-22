@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d05010",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d05010.c;xref:0x141cf9c56,0x141cfe139,0x141cfe14c,0x141cfe15f,0x141cfe1d7,0x141cfe1eb,0x141cfe212,0x141cfe296,0x141cfe30d,0x141cfe38d,0x141cffe48,0x141d04ee4,0x141d08516,0x141d0869e,0x141d0973b,0x141d09751,0x141d09878,0x141d0988c,0x141d098b3,0x141d098f7,0x141d09924,0x141d0993a",
-  "notes": "Builds photo mode option lists (keys selected_option, options, value) for the UI; callers incl. Game_PhotoMode_OnScenarioLoaded (0x141cfe139..0x141cfe38d). Hypothesis."
+  "notes": "Not a list builder: djb2 hash of path param_2 finds node under base [param_1+0x370] in data tree 0x146ca54f8; iterates child 'options' (0x14560fa7d), reads each 'value' (0x145612ae4) as int; first equal to param_3 is set as the base's 'selected_option' (0x14571ab81) via 0x14083c270, then break. Refs released via 0x1442b3d70. (lane owner review requested) Better name: Game_PhotoMode_SelectOptionByValue (bound record keeps its name)."
  },
  "signature": {
   "id": "game.photo_mode_build_option_list",

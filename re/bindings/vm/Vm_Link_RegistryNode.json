@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144179360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void(void *registry,void *out_handle,void *node)",
-  "evidence": "xref:0x1438488f0,0x1436d1500;pat:bind-after-Vm_Resolve_RegistryNode",
-  "notes": "links a resolved registry node into a holder/handle; 918 ref sites; paired with Vm_Resolve_RegistryNode"
+  "evidence": "decomp:re/decomp/144179360.c;pat:bind-after-Vm_Resolve_RegistryNode;xref:0x140788166,0x1407a4e69,0x1407a562b,0x1407ad0db,0x1407d3798,0x1407d87c8,0x14099d9f6,0x140ba5e85",
+  "notes": "(self,handle*,NeStr *out) -> bool: node live (not empty 0x146ca0e90, vt+0x20); string type 0x146ca5508 -> copies the value NeStr into *out (refcount); other types -> value vt+0x28(buf,0x80) formats text, Ne_Make_StrFromCStr(out,buf,old encoding bits); 0 on failure. Not a linker: renamed. 0x141aeefb0 uses it to read a card field as text. (lane owner review requested) Better name: Vm_Get_NodeValueAsString (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.link_registry_node",

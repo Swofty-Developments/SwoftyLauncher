@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14460fcd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14460fcd0.c;pat:log-message-method;xref:0x14460f8ea,0x14461630d",
-  "notes": "Large TOD_STITCHING body (pdata 0x608f bytes) with 'instancesDestIter 0x%x', 'beginPlayBackTime=%f, endPlayBackTime=%f', 'LIN i=%d, t=%f', 'INTERP PRE ...' logs. Callers 0x14460f8ea, 0x14461630d."
+  "notes": "ret if p3>7/p4>1. p3&3=1..4 comps (key stride 2..5 floats), p3>=4 int lerp. Over p5 keys p1: if p10!=0 emit lerp key at p10 (t=clamp((b-t0)/max(dt,1e-4)),|v|<1e-8->0), keep keys in [p10,p11] else 'DISCARD t=%f', if p11!=1.0 emit POST key; emit 144621c90/1f80/22390/228b0, *p7+=8..0x14, *p6++. Log 'TOD_STITCHING' 1406d4c80: 'instancesDestIter 0x%x','beginPlayBackTime=%f, endPlayBackTime=%f' (lane owner review requested) Better name: Game_TodStitch_ClipKeyTrackToPlaybackWindow (bound record keeps its name)."
  },
  "signature": {
   "id": "game.tod_stitching_instances_dest_iter",

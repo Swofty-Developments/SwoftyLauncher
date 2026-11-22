@@ -213,26 +213,6 @@ impl Shell {
         self.open_page(Page::Multiplayer, cx);
     }
 
-    /// A room from the Time Trial page's rooms card, looked at on the Multiplayer page.
-    pub(super) fn room_open_from_card(&mut self, code: String, cx: &mut Context<Self>) {
-        self.open_page(Page::Multiplayer, cx);
-        self.room_open(code, cx);
-    }
-
-    /// The create form, opened on the Multiplayer page from the rooms card.
-    pub(super) fn room_create_from_card(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.open_page(Page::Multiplayer, cx);
-        if !self.rooms.form {
-            self.room_open_form(window, cx);
-        }
-    }
-
-    /// A private room's code typed on the rooms card, joined on the Multiplayer page.
-    pub(super) fn room_join_code_from_card(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.open_page(Page::Multiplayer, cx);
-        self.room_join_code(window, cx);
-    }
-
     pub(super) fn room_copy_code(&mut self, code: String, cx: &mut Context<Self>) {
         cx.write_to_clipboard(ClipboardItem::new_string(code));
         self.rooms.copied = Some(Instant::now());

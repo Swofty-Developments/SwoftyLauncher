@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14167c320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "int64_t Vm_Build_AcclaimBadgeRow(void *vm, void *a, void *b, int64_t *node, void *c)",
-  "evidence": "decomp:re/decomp/14167c320.c;xref:0x1419aa466;xref:0x141a12bae;xref:0x141a6bdee",
-  "notes": "myteam-g2: Creates/refreshes a corporate/sponsor row node: Vm_Resolve_RegistryNode, Ui_Build_ShowAcclaim, Vm_Holder_SetCStr and Ne_Property_SetUIDBRefIfChanged on its bindings. UI only (contract hub, corporate setup cards, sponsor livery)."
+  "evidence": "decomp:re/decomp/14167c320.c;xref:0x1419aa466,0x141a12bae,0x141a6bdee,0x141ef6a4f,0x141ef6c8f,0x142261639,0x14226bd65,0x14226c109",
+  "notes": "Row ctor (row,a2,parent,NeStr *path,a5): 0x14423ec70(row,parent,path+9); Vm_MyTeamSetupCard_BindBaseNodes(row+0x20,node,'invoice_data'); row+0x120=a2; Ui_Build_ShowAcclaim(row+0x130,handle); defaults +0xe90..+0xf10 (+0xf00=a5); 0x14167c850(row+0x120); Vm_Holder_SetCStr(row+0x40,'lng_team_mate_contract_cost'); '#overrides.customisation.team_invoice_icons.teammate_icon_small' -> node ref [row+0xe8]. Renamed. (lane owner review requested) Better name: Vm_Build_InvoiceRow (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.build_acclaim_badge_row",

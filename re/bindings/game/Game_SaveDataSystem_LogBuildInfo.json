@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143656980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143656980.c;pat:log-channel-SaveDataSystem;xref:0x145855f98",
-  "notes": "named from its log messages (channel SaveDataSystem): 'Save data build info: CL=\"%d\" branch=\"%s\" p4Date=\"%s\" saveDateUTC=\"%s\" platform=\"%s\" buildConfig=\"%s\" gameInfoName=\"%s\" smokeTestInfo=\"%s\"'"
+  "notes": "p1 build-info object, p2 key/value container read via 0x143931730: defaults CL +0x238=-1 and '<unknown/...>' strings (+0x250/+0x2a8/+0x300/+0x358/+0x3b0/+0x408); keys __p4_changelist__, __p4_branch_name__, __p4_date_time__, __platform__, __build_config__, __game_info_name__, __smoke_test_info__, utc_date_time (formatted %04d/%02d/..); missing key 0x57 / wrong type 0x58 to ring 0x146107830; then optional SaveDataSystem log. (lane owner review requested) Better name: Game_SaveDataSystem_ReadBuildInfo (bound record keeps its name)."
  },
  "signature": {
   "id": "game.save_data_system_log_build_info",

@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b021e0.c;xref:0x14463e3ba",
+  "evidence": "decomp:re/decomp/143b021e0.c;xref:0x14463e3ba,0x14463fc8a,0x14464057c,0x144640c2d,0x144706656",
   "notes": "Emits one contact/spark particle into the per-frame ring (index tables +0x8050c4, ring selector +0x87b650, 0x400 slots of 0x70 bytes in 0x1c000 blocks) when global enable 0x145f96f8c is set. Callers Car_CollisionVfx_SpawnContactEffect, Render_Particles_UpdateVehicleEffects."
  },
  "signature": {

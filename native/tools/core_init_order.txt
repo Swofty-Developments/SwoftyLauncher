@@ -24,6 +24,7 @@ init
   src/core/hud/room_cover.cpp
   src/core/weather/setup.cpp
   src/core/guards/ai/ai_line_set_guard.cpp
+  src/core/diagnostics/session_loader.cpp
   src/core/diagnostics/session_job_probe.cpp
   src/core/guards/session/session_enter.cpp
   src/core/guards/frontend/tile_list_select_guard.cpp
@@ -333,6 +334,7 @@ exit
   src/core/guards/frontend/tile_list_select_guard.cpp
   src/core/guards/session/session_enter.cpp
   src/core/diagnostics/session_job_probe.cpp
+  src/core/diagnostics/session_loader.cpp
   src/core/guards/ai/ai_line_set_guard.cpp
   src/core/hud/room_cover.cpp
   src/core/live/live_state.cpp

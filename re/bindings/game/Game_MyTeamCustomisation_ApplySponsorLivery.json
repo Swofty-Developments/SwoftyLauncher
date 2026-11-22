@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142260f10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/142260f10.c;xref:0x145776f18",
-  "notes": "vt cell 0x145776f18. 19 KB body; strings c_focus_livery/driver/details/colours/badge/appearance, nationality, name_code, car_number, invoice_data, engine, display_name. Sponsor-livery claim not traced."
+  "notes": "vt cell 0x145776f18. Fills My Team hub model: player_driver/teammate_driver (display_name, audio_name, name_code, car_number, nationality), car_livery+textures, title_sponsor (lng_sponsor_%s), engine_supplier, team_invoice_items (total_due sum of currency_value_raw), *_enabled flags; sets focus c_focus_driver..advance via [this+0x1ce0]; Ne_Post_BusMessage 0x1439876c0. No sponsor-livery apply. (lane owner review requested) Better name: Game_MyTeamCustomisation_RefreshHubData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.my_team_customisation_apply_sponsor_livery",

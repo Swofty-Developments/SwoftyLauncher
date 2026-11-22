@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141af4f90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void FUN(void *view, void *ctx)",
-  "evidence": "decomp:re/decomp/141af4f90.c;xref:0x141ae7780;xref:0x141af05bf",
-  "notes": "myteam-g1: UI binding code; can_be_upgraded, upgrade_anim_on, upgrade_texture_large/visible, upgrade_value(_visible). Static, string-key driven."
+  "evidence": "decomp:re/decomp/141af4f90.c;xref:0x141ae7780,0x141af05bf",
+  "notes": "Renamed (holder ctor, returns param_1): base 0x141706a50, then bools equipped +0x1c0, equipped_in_current_loadout +0x1e0, equipped_in_other_loadout +0x200, upgrade_anim_on +0x220, can_be_upgraded +0x240, upgrade_value_visible +0x260, int upgrade_value +0x2a0, refs icon/upgrade/tech_level textures, bullet_point_icon, rarity_splash_texture up to +0x3a0. (lane owner review requested) Better name: Ui_F1World_UpgradeCardVm_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.f1_world_set_card_can_be_upgraded",

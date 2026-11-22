@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142586a60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142586a60.c;pat:log-channel-GAME;xref:0x14255a941,0x1425868a0,0x14258d1ed,0x142592913,0x142592f8e,0x142594dbc,0x1426f081d,0x1426f2bcd",
-  "notes": "named from its log messages (channel GAME): '%s: Set percentage of laps completed from %.2f to %.2f.'"
+  "notes": "Dispatcher on session shared_ptr param_3 (type byte +2: 0xc, 6, 4, 0xb, else via 0x142589210); returns shared_ptr in param_2. Inlined game::championship::Session::setPercentageOfLapsCompleted (0x14566b49e): logs '%s: Set percentage of laps completed from %.2f to %.2f.' (0x14566b4ec, GAME) and writes float to obj+0x94. Mutual recursion with 0x1425863a0; registers 0x142592cc0/0x1425927e0 as callbacks. Posts bus msgs 0x145795410/0x145795420/0x14579a6b0 via 0x1439876c0; 0x14272e7a0(this[0x51], id +0x4ae4). (lane owner review requested) Better name: Game_Session_UpdateChampionshipSessionData (bound record keeps its name)."
  },
  "signature": {
   "id": "game.session_set_laps_completed_percentage",

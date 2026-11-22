@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419b0900",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1419b0900.c;pat:log-channel--;xref:0x1457222d8",
-  "notes": "Team HQ driver contracts timeline card VM: dc_* card textures, lng_contracts_timeline_* strings, first/second driver pose."
+  "notes": "Vtable slot. Resets card array +0x1050 (stride 0xe80), binds background/card_title/card_description/driver_ref; kind byte +0x1064 from msg (default 0x23). Sets DRIVERNAME/TEAMNAME; switch 0x1c-0x21 picks overrides.team_hq.card_textures.dc_* + lng_contracts_timeline_* text; then first/second_driver_pose anim via 0x142e30a60 -> +0x1060. (lane owner review requested) Better name: Game_TeamHq_ContractTimelineCard_Setup (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_team_hq_config_3",

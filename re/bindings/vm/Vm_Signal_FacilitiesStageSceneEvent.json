@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141b68bd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "uint64_t Vm_Signal_FacilitiesStageSceneEvent(void *scene, void *ev, uint8_t flag)",
-  "evidence": "decomp:re/decomp/141b68bd0.c;xref:0x141a0f2d1;xref:0x141a11401;xref:0x141a266fa",
-  "notes": "myteam-g2: Static-init guarded helper that sets an event (Ne_Event_Set) in the facilities stage scene. Called from Career_Despawn_UpgradeList_B, Load_FacilitiesStageScene_2 and team HQ navigation."
+  "evidence": "decomp:re/decomp/141b68bd0.c;xref:0x141a0f2d1,0x141a11401,0x141a266fa,0x141a342cd,0x141a5f27f,0x141a79a86,0x141abe9bf,0x141acd9a8",
+  "notes": "(queue,msg,wake): queue closed (+0x68==0) -> error 0x58; else under CS [+0xd8] allocs 0x30 bytes (alloc +0x70 vt+0x18; fail -> 0xc), message vt 0x145735ca0 copying msg+8,+0x10,+0x18 (u32),+0x20 (refcounted NeStr),+0x28 (byte); appends to list +0x58/+0x60, +0x6b|=wake, Ne_Event_Set(+0xc8) on first wake. Not static-init guarded (that is error-report TLS code): renamed. (lane owner review requested) Better name: Vm_MsgQueue_Post_Msg30 (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.signal_facilities_stage_scene_event",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401c7850",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401c7850.c;pat:log-message-method;xref:0x140390d65,0x1403c321c,0x147a83b1f,0x147a8779b,0x147a96dcf,0x147a9ea10,0x147a9fcf5,0x147aa304b,0x147d476cc,0x147df777c,0x147e1e1de",
-  "notes": "prepareActorFromArchetype: logs ACTOR model/material/AnimationSet lines, Bip01 bone list (Groin, Head, Armpit ...), ACTOR_FAIL 'failed to valid neon::NeModelProxyResource from inProxyResourceID %s'. Most callers are .data1 sites."
+  "notes": "Constructor: writes vtable 0x1455e5ad0, InitializeCriticalSection, flag bits at +0x40 from desc bytes +0xc4..+0xcf, returns this. Logs 'SkinnedActor::SkinnedActor %p' (ACTOR_SET_BINDING/ACTOR_VERBOSE), resolves model/material resources (ACTOR_FAIL/WARN prepareActorFromArchetype), builds 34 Bip01 bone index tables (+0x510/+0x518), adds AnimationSets, sets frustum-cull/movement joints (ACTOR_ERROR on failure). (lane owner review requested) Better name: Game_SkinnedActor_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.actor_prepare_actor_from_archetype",

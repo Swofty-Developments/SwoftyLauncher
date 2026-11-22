@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434e0560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434e0560.c;pat:log-channel-INPUT;xref:0x145845210",
-  "notes": "named from its log messages (channel INPUT): 'GamePlayerManager::handleControllerReconnectionResult - device NONE  %s to %s | GameInputModule::addNextUnfilteredAxisCallback'"
+  "notes": "Vtable cell 0x145845210 (neighbours 0x145845200/208/218.. are code ptrs). (this,belongs,dev,devId): dev==0 -> 0x1434deea0 with 'device NONE %s to %s' (INPUT). Lead dev ([dev+0x20]+0x198==dev): !belongs -> InterruptQueue job 3 + addNextUnfilteredAxisCallback 0x1434df850 on this+0x538; belongs -> this+0x560=devId[1], job 4. Second player (+0x1a0): callback this+0x220, scheme match in +0x38 list, 0x142a79e70, dev vfunc +8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_manager_handle_controller_reconnect",

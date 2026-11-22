@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "uint32_t Car_Read_VehicleAttribute(CarPerfVehicle *vehicle, uint32_t driverStatId, void *effectDef, int zero)",
-  "evidence": "decomp:re/decomp/1435173e0.c;xref:0x143517492",
-  "notes": "reader invoked by Car_Apply_UpgradeToVehicle; result stored into effectDef+0xa4; reads the vehicle performance attribute array. decomp body at re/decomp (regen at 0x14351df60 for full)"
+  "evidence": "decomp:re/decomp/14351df60.c;xref:0x141241dbb,0x141241e65,0x141241eb6,0x141242776,0x1418177db,0x1418179bb,0x141c51167,0x141c5119a,0x142387673,0x14351748d,0x143517b3e,0x14351c887,0x143531dc4",
+  "notes": "(ctx, team, part, flags): Career_Query_EnabledUpgrades(team), filters entries (team match or state != 2), keeps those with +0x7c == -1, then Career_Get_TeamModifiers([ctx+0x18], team) and returns Career_Calc_UpgradeCost(list, part, mods, flags|2). Callers are R&D UI/career functions; no vehicle attribute read. Better name: Car_RnD_CalcTeamUpgradeCost (bound record keeps its name)."
  },
  "signature": {
   "id": "car.read_vehicle_attribute",

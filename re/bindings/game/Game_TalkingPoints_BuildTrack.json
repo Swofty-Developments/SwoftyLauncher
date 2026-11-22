@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140ac15d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140ac15d0.c;pat:log-channel-TalkingPoints;xref:0x140acdca1",
-  "notes": "0x4ada-byte body: TalkingPoints broadcast generator ('Generating Sequence', 'Broadcast Generator sorted talking points', filler removal, _practice/_qualifying/_outro suffixes) and cutscene script hints; registers speech/VO callbacks 0x140ac60b0/0x140ac67e0."
+  "notes": "State machine byte +0x7b8 (0..4, ends 5), log 'TalkingPoints'. 0 'Generating Sequence'; 1 sorts TP/filler candidates (+0x7a0+0x10/+0x30), pattern key 'talking_points.patterns.*' + _practice/_qualifying/_race/_outro, F/G/S/T chars -> segments (+0x7a0+0x50, n +0x1250); 2 VO callbacks 0x140ac60b0/66e0/67e0 + VO simulate; 3 'Loading Sequence...'; 4 fit/remove fillers, [TRACK] times, hand off to +0x798+0x12a8. (lane owner review requested) Better name: Game_TalkingPoints_GenerateSequence_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.talking_points_build_track",

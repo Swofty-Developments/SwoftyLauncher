@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143f82d40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143f82d40.c;pat:log-channel-AUDIO_BINK;xref:0x145a41a18",
-  "notes": "NeVideoDecoderBink open (vtable cell 0x145a41a18): logs onOpen, opens .bk2/.bik, createRenderingResources (Y/cR/cB/A planes, eaid://video/Plane*), resolve context, content category (2025_cinematic, 2025_recap, tutorials, track_map, ui_wipes), loads subtitles (AUDIO_BINK log), creates external_bink_sfx/music/speech/motion emitters. Better name: Game_VideoDecoderBink_OnOpen (bound record keeps its name)."
+  "notes": "NeVideoDecoderBink vtable cell 0x145a41a18. Logs 'onOpen %s'; picks .bik/.bk2 -> BinkOpen (+0x118), BinkPause, frame buffers (+0x120, 0xc ENOMEM / 0x16 EINVAL); Y/cR/cB/A surfaces (eaid://video/Plane*), 'VideoResolve'; category 2025_cinematic/2025_recap/tutorials/track_map/ui_wipes/zenith FNV-1a at +0x4c8; BinkLoadSubtitles (AUDIO_BINK) -> +0x53d; external_bink_sfx/music/speech/motion at +0x28..+0x40. (lane owner review requested) Better name: Game_VideoDecoderBink_OnOpen (bound record keeps its name)."
  },
  "signature": {
   "id": "game.bink_load_subtitles",

@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14465d3a0.c;xref:0x14465cb33,0x14465cc5f",
-  "notes": "(tyreDef, tyreIdx): resolves model node 'car%dtyre%d' (car idx +0xe8) with Game_Get_ModelNodeId and creates the deformation body (Car_Deformation_CreateBody) for that wheel, caching per-tyre data. Caller: Car_TyreDeformation_SetTyre."
+  "notes": "(tyreDef,tyre): resolves model node 'car%dtyre%d' (car idx +0xe8) and creates the deformation body for that wheel; calls 0x14410b540 and Car_TyreDeformation_BuildModelKey (0x14465e2bf, 0x14465e35d). Both callers in Car_TyreDeformation_SetTyre 0x14465c950."
  },
  "signature": {
   "id": "car.tyre_deformation_create_tyre_body",

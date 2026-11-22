@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1442626c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1442626c0.c;xref:0x1436da7cd,0x1436ffd0e,0x1436d29b2,0x142d58b9f;decomp:re/decomp/1442626c0.c;xref:0x1436da7cd",
-  "notes": "thunk to .data1 0x153774710. (sync point) -> true when both bool VM nodes at sync+0x80 and sync+0xa0 are live (not null, not k_Vm_EmptyNodeHandle, node vt+0x20 true, value type == the bool type 0x146129dc0) and true. StateIntro's title waits on it for its sync point state+0xcd0 (sync_points.boot). ts2b. ts-v1 agreed (V1487); signature for the test agent; ui-re can raise to L2"
+  "evidence": "decomp:re/decomp/1442626c0.c;xref:0x142d58b9f,0x14328d01d,0x1436ccb68,0x1436d29b2,0x1436d2c8a,0x1436d3081,0x1436da7cd,0x1436ffd0e",
+  "notes": "thunk -> .data1 0x153774710 (body read): true only if bool node [sync+0x80] and then [sync+0xa0] are each non-null, not empty 0x146ca0e90, vt+0x20 true, type 0x146129dc0 and value true; else false. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.sync_point_is_complete",

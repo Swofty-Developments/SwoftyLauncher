@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14336b390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14336b390.c;pat:log-channel-F1OS-TASKSYSTEM;xref:0x14583c348",
-  "notes": "Virtual (vtable cell 0x14583c348, next to 0x14336be50). If param_2+0x21 set: state +0x1b8 = 2, 'Network.ForceMPMode' check, 'setting finished on %s : %s'. If the failed child is this[0x35] and its error text matches one of two globals: 'Refreshing the session token received %s from the server. Trying to log in instead.' / '... Logging out'. Better name: Game_OnlineServerLogInTask_OnChildTaskError (bound record keeps its name)."
+  "notes": "Read in full. Virtual (cell 0x14583c348). Child-task result handler: done flag param_2+0x21 -> state +0x1b8=2, 'Network.ForceMPMode' check, logs 'setting finished on %s : %s'. Failed child == this[0x35] with error matching 0x145f95838/0x145f95840 -> 'Trying to log in instead', 0x1432bb360 + 0x1432c0ea0; HTTP 200 + 0x145f95888/0x145f95848 -> 'Logging out', 0x143884c00, may push eInterruptErrorOnlineServices. Else state reset from 0x1460c3e98. Better name: Game_OnlineServerTask_OnChildTaskDone (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.f1os_tasksystem_refreshing_session_token_received",

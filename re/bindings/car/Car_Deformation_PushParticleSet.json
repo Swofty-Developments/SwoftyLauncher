@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1441097c0.c;xref:0x14410951b,0x14410af32,0x14410c1d2",
-  "notes": "vector push_back of a 0x120-byte particle set (vtable 0x145a5adb8) copied from param (node arrays, allocator +0x10). Callers: Car_Deformation_AcquireParticles. (3 xref site(s), fb.py callers.)"
+  "notes": "vector push_back of a 0x120-byte particle set (vtable 0x145a5adb8) copied from param (node arrays, allocator +0x10). Callers: Car_Deformation_AcquireParticles."
  },
  "signature": {
   "id": "car.deformation_push_particle_set",

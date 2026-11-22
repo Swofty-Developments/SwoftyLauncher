@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437f2110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1437f2110.c;pat:log-channel-UI_latency;xref:0x145876258",
-  "notes": "Large UI car marker body (pdata 0x1a6c bytes; vtable cell 0x145876258): formats '[%u]', reads is_human and overrides.minimap.car_marker_outlines, logs UI_latency 'UI Car Marker Context Changed:%hs'."
+  "notes": "Minimap car marker update (cell 0x145876258; this=subobject, base this-0x48). On car index change (+8 vs +0x20) logs UI_latency Context Changed; resolves car +0x10; posts NeUISetPositionMessage, rotation (0x23), NeUISetLayerMessage (idx*3+10); +0xf8 = 'is_human' match; state +0x7c picks car_marker_icons[player_marker|team_marker] and player_outline/outline, posts NeUIOverrideSettingsUpdate for car_marker_outlines. (lane owner review requested) Better name: Game_UiMinimapCarMarker_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_latency_frame_ui_car_marker_context_changed",

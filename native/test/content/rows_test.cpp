@@ -739,6 +739,8 @@ int main(int argc, char **argv)
     if (argc > 1)
         virtual_list_tests(argv[1]);
     if (argc > 1)
+        setup_mode_cap_tests(argv[1]);
+    if (argc > 1)
         late_write_tests(argv[1]);
     if (argc > 1)
         ahead_tests(argv[1]);

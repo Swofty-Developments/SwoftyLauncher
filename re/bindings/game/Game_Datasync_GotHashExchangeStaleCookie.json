@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143100c40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143100c40.c;pat:log-channel-DATASYNC;xref:0x14fe71e99",
-  "notes": "Handler registered by lea at 0x14fe71e99 in 0x14fe71e00."
+  "notes": "Bus handler registered for msg id 0x71 via [[ctx+0x20]+0x3d0]->vt+8 in 0x14fe71e00 (beside ids 0x70/0x72/0x73). Finds sync job by cookie (msg+0x14); stale cookie -> logs and sends finished msg 0x73; state!=2 -> 'Ignoring hash exchange'; msg+0x10 set = hash request -> sends own hashes (msg 0x71); else peer hash update -> compare containers, log diffs, resend (<4) or kick/leave/ignore peer. Old name = one log branch. (lane owner review requested) Better name: Game_Datasync_OnHashExchangeMsg (bound record keeps its name)."
  },
  "signature": {
   "id": "game.datasync_got_hash_exchange_stale_cookie",

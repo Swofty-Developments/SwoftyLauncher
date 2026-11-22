@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f71790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "pat:log-message-cxx;doc:re/research/fuel_mix_five.md#sites;decomp:re/decomp/142f71790.c;xref:0x1457fb5e8",
-  "notes": "Only ref: vtable cell (code neighbours); pdata 0x142f71790-0x142f73e60 is large, so the LAPTIMES log 'Partial lap set from VirtualSessionEntrant::setNumPartialLapsAccordingToProgress()' may come from an inlined callee. | engine-re fuel-mix-5 2026-11-20 (static): maps fuel_mode for the virtual lap model: switch 0 -> 0, 1 -> table 0x145803e30 [0,0,1,1,3,3] by ERS mode, 2 and 3 -> 1, default -> 3; and 0x142f72b1e indexes the burn table by fuel_mode*0x10 without a bound. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
+  "notes": "vtable cell 0x1457fb5e8 (code neighbours). Body (pdata 0x142f71790-0x142f73e60) is the VirtualSession per-tick update(this,double* dt): loops entrants [+0x120,+0x128) stride 0xba0 (active +0xb2c); limit mode +0x138 (1: time +0x140 vs +0x148, 0: laps +0x13c vs +0x9c48) sets done +0x155; fuel_mode switch from (+0x548)+0x128 (1 -> table 0x145803e30 [0,0,1,1,3,3] by (+0x5a8)+0x1a68, 2/3->1, def 3); 0x142f72b1e indexes +0x28 by fuel_mode*0x10 unbounded. setNumPartialLapsAccordingToProgress is inlined (PROGRESS log 0x1457fafec); speed-trap log 0x1457faf3a. (lane owner review requested) Better name: Game_VirtualSession_UpdateEntrants (bound record keeps its name)."
  },
  "signature": {
   "id": "game.virtual_session_entrant_set_num_partial_laps_according_to_progress",

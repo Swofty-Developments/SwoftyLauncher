@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144289cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144289cc0.c;pat:log-channel-UI_VISUAL_NAVIGATION;xref:0x14428a941,0x14428aa33,0x14428aa72,0x14428aac0,0x14428aafb,0x153969b81",
-  "notes": "Log channel UI_VISUAL_NAVIGATION with 'We've hit our previously focused node...', 'NEW NODE FOCUSED' and 'Failed to find a node to focus' in the body: a grid focus search. Callers 0x14428a941, 0x14428aa33, 0x14428aa72, 0x14428aac0, 0x14428aafb, 0x153969b81."
+  "notes": "Full read. (nav,screen,dir float[2],flag): gets nodes via 0x14428ac40, steps grid pos this+0x70/+0x74 by dir (wrap +0x78/+0x7c if +0x80/+0x81), cell +0x10/+0x14, origin +0x20/+0x24, rect +0xa0, max 0x32 steps; hit: set pos, id +0x90, node vt+0x98(1), event 0x519 type 5, log 'NEW NODE FOCUSED'/'previously focused node'; miss: type 6 + 'Failed to find a node to focus'. Returns bool. (lane owner review requested) Better name: Game_UIVisualNavigation_FocusNodeInDirection (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_visual_navigation_ve_hit_our_previously_focused_node_let",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443f0aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-channel--;decomp:re/decomp/1443f0aa0.c;xref:0x148f994ac,0x154a40f6a,0x145a8a848",
-  "notes": "Vt cell 0x145a8a848; calls 0x148f994ac, 0x154a40f6a. Allocates a 0x58-byte object (+0x60, 300-entry array, crit sec), stores this in globals 0x146ca66b8/0x146ca6238/0x146ca6320/0x146ca6bb8/0x146ca6190, inserts handlers via 0x143fa5890 and precomputes djb2 hashes of audio.event.01..10 into 0x146ca61e0 and 0x146ca6140. Not a DB config read. Better name: Game_Audio_RegisterEmitterPropertyHandlers (bound record keeps its name)."
+  "evidence": "pat:log-channel--;decomp:re/decomp/1443f0aa0.c;xref:0x145a8a848,0x148f994ac,0x154a40f6a",
+  "notes": "Not a config read. Allocs 0x58 obj (vt 0x145a89e80, crit sec, 300-entry 0x960 array) -> +0x60; stores this/+0x10/+0x28/+0x60 into handler globals 0x146ca66b8/6238/6320/6bb8/6190/62a8/6d08/6c10/6b58/6b00/6cb8 and inserts each key into [+0x28]+0x50 hash via 0x143fa5890/0x143fa52b0; djb2 (0x1505,*33) of \"audio.event.%02I64u\" 1..10 -> 0x146ca61e0 and 0x146ca6140, \"audio.param.01\",\"audio.resetp.01\", event 01-05 -> 0x146ca6270..; formats \"... (lane owner review requested) Better name: Game_Audio_RegisterPropertyHandlers (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_audio_config_4",

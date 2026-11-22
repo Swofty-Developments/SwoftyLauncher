@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446fe8a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446fe8a0.c",
-  "notes": "Force feedback plugin input: per-wheel slip ratio (channel FFB_PLUGIN)."
+  "evidence": "decomp:re/decomp/1446fe8a0.c;xref:0x145c01148",
+  "notes": "FFB input (vtable cell 0x145c01148): like slip angle input but speed >= 2.5 and slip ratio w+0x3b4/w+0x3cc (avg or max, flag +0x78); curve 0x1446fe7c0 or 0x1446fe830 chosen by sign per axle; clamp -1..1 * scale +0x50; upper lanes masked by gear [car+0x538]+0x680 and car+0x224 bit3. Log FFB_PLUGIN 'slip ratio input %f'. (lane owner review requested)"
  },
  "signature": {
   "id": "car.ffb_slip_ratio_input",

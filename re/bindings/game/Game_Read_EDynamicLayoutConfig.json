@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14449f5f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14449f5f0.c;pat:log-channel--;xref:0x145a92490",
-  "notes": "Vt cell 0x145a92490. Strings target/position/components/nameId/xref/layouts/eDynamicLayout.*."
+  "notes": "Allocates 0x20 asset (vt 0x145a95900, name \"<unknown-because-not-initialised/resource>\"), reads \"id\" then array \"layouts\"; per layout reads \"id\" + \"components\"; per component reads eDynamicLayout.dynamicKey, nameId, eDynamicLayout.dynamicTemplate, target, position, xref, eDynamicLayout.dynamicGroup, eDynamicLayout.dynamicFilter (split on \",\"), builds 0x60-byte entries (0x1444f87d0), registers via 0x144165510/0x1441658d0; on parse error destroys asset, returns 0. (lane owner review requested) Better name: Game_DynamicLayoutAsset_Load (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_e_dynamic_layout_config",

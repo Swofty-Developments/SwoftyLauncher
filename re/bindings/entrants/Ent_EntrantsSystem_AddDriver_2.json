@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14246f280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Driver added with stat id %s | Couldn't find array to add driver with type %s | Failed to add driver with stat id %s'"
+  "evidence": "decomp:re/decomp/14246f280.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x14245f445,0x142571b30,0x14257b755,0x14276dea2,0x142937810,0x142937e72,0x142938b6d,0x142939a00,0x14313128c,0x143134fae,0x1431bfc81",
+  "notes": "AddDriver for type 2 eNetworkReplicated: array this+0x288; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Same body as Ent_EntrantsSystem_AddDriver (0x14246ec30) except array and type. (lane owner review requested) Better name: Ent_EntrantsSystem_AddDriver_NetReplicated (bound record keeps its name)."
  },
  "signature": {
   "id": "entrants.entrants_system_add_driver_2",

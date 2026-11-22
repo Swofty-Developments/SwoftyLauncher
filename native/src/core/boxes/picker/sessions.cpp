@@ -2,6 +2,7 @@
 
 #include "core/runtime/runtime.hpp"
 
+#include "core/apply/content/appliers.hpp"
 #include "core/apply/moments.hpp"
 #include "core/apply/scheduler.hpp"
 #include "core/boxes/box_grid.hpp"
@@ -229,7 +230,8 @@ std::string grand_prix_load(uintptr_t ctx, std::string &what)
             chosen = cars[size_t(pick.index)].name;
             if (lines.grand_prix.note())
                 swofty::log("[era] Grand Prix load: %s", pick.line.c_str());
-            std::string grid = continue_grid.raise(reinterpret_cast<uint8_t *>(entrant_setup), cars[size_t(pick.index)].cars);
+            std::string grid = continue_grid.raise(reinterpret_cast<uint8_t *>(entrant_setup), cars[size_t(pick.index)].cars,
+                                                   swofty_core::apply::content::seats_for_box(chosen));
             if (!grid.empty())
                 swofty::log("[era] Grand Prix load: %s", grid.c_str());
         }

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140fdd630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140fdd630.c;pat:log-channel-CAREER_ONLINE_MANAGER;xref:0x140fdd59f",
-  "notes": "Own pretty string 'CareerOnlineManagerComponent::updateCurrentCareerEntrantsWithSubstitutes(CareerConfig &, const CareerMembers *)'; logs 'reconciling with new list of members', 'is a new member who will substitute', 'substitutionOfAPlayer'. Calls 0x14096e580 (0x140fe0b25). Better name: Game_CareerOnlineManagerComponent_UpdateEntrantsWithSubstitutes (bound record keeps its name)."
+  "notes": "Pretty fn 0x1456b4073 updateCurrentCareerEntrantsWithSubstitutes; member lists stride 0xc0 (role +0x30, cmp 0x14535d850); logs new member / substitute / TRUE-FALSE eval; events addingNewPlayer, substitutionOfAPlayer via 0x1406d5c20; bus post 0x1439876c0; calls 0x14096e580, 0x140fedd40. Better name: Game_CareerOnlineManagerComponent_UpdateEntrantsWithSubstitutes (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.career_online_manager_reconciling_new_list_members",
