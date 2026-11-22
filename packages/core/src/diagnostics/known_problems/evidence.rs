@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::io::Read;
 use std::path::Path;
 
+use crate::addons::other_game::Packed;
 use crate::install::LOADER_DIR;
 use crate::manifest::{AddonManifest, Category};
 use crate::profile::conflicts::Pair;
@@ -48,6 +49,8 @@ pub struct Evidence {
     pub game_version: Option<String>,
     /// The game exe's size and PE link timestamp, the pair that identifies a build.
     pub game_build: Option<(u64, u32)>,
+    /// The enabled addons that put F1 25's packed game data, by id, in load order; only a crash reads them.
+    pub packed: Vec<(String, Packed)>,
 }
 
 impl Evidence {
@@ -157,15 +160,37 @@ impl Evidence {
             .collect();
         self
     }
+
+    /// The enabled addons that put F1 25's packed game data ([`crate::addons::other_game::scan`]).
+    pub fn with_packed(mut self, store: &Store, addons: &BTreeMap<String, AddonManifest>) -> Self {
+        self.packed = self
+            .enabled
+            .iter()
+            .filter(|id| !self.builtin.contains(*id))
+            .filter_map(|id| {
+                let packed = crate::addons::other_game::scan(&store.addons_dir().join(id), addons.get(id)?)?;
+                Some((id.clone(), packed))
+            })
+            .collect();
+        self
+    }
 }
 
 pub(super) fn evidence(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Evidence {
-    let addons = store.addons().unwrap_or_default();
+    evidence_with(session, game, store, &store.addons().unwrap_or_default())
+}
+
+pub(super) fn evidence_with(
+    session: &SessionRecord,
+    game: Option<&Path>,
+    store: &Store,
+    addons: &BTreeMap<String, AddonManifest>,
+) -> Evidence {
     let names = addons
         .iter()
         .map(|(id, m)| (id.clone(), m.name.clone()))
         .collect();
-    Evidence::read(session, game, names, Some(&store.root)).with_profile(store, &addons)
+    Evidence::read(session, game, names, Some(&store.root)).with_profile(store, addons)
 }
 
 pub(crate) fn read_perf(dir: &Path) -> Option<String> {

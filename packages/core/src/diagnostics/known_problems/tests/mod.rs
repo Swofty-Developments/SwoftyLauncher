@@ -11,6 +11,7 @@ mod memory;
 mod saves;
 mod slow_init;
 mod stall;
+mod startup;
 mod stuck;
 mod system;
 mod tyres;

@@ -20,6 +20,7 @@ mod package_ids;
 mod saves;
 mod slow_init;
 mod stall;
+mod startup;
 mod system;
 mod tyres;
 pub mod weekend;
@@ -49,8 +50,8 @@ use career::{
 };
 use crash_record::{Fatal, fatal, loaded_modules, wine};
 pub use evidence::Evidence;
-use evidence::evidence;
 pub(crate) use evidence::read_perf;
+use evidence::{evidence, evidence_with};
 pub use game_version::{LATEST_GAME_VERSION, older_game, outdated_exe, outdated_game};
 use graphics::graphics_mods;
 use hang::{hang, hang_watchdog};
@@ -89,7 +90,8 @@ impl Diagnosis {
 
 /// The cause of the crash `session` ended with, when a rule recognises it.
 pub fn crash(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
-    diagnose(&evidence(session, game, store))
+    let addons = store.addons().unwrap_or_default();
+    diagnose(&evidence_with(session, game, store, &addons).with_packed(store, &addons))
 }
 
 /// Why `session`, which ended without a crash, never got going, when a rule
@@ -175,6 +177,7 @@ const RULES: &[Rule] = &[
     |c| (c.evidence.code == Some(APP_CONTROL)).then(app_control),
     |c| quit_fault(c.evidence).then(|| stuck_weekend(c.evidence).unwrap_or_else(quit_fault_diagnosis)),
     hooks::crash_in_hook,
+    startup::packed_game_data,
     |c| aggressive_ai_crash(c.evidence, &c.fatal).then(|| aggressive_ai(c.evidence)),
     |c| skip_cutscenes_crash(c.evidence, &c.fatal).then(|| skip_cutscenes(c.evidence)),
     hooks::stray_jump,
