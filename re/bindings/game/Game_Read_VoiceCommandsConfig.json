@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f748e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f748e0.c;pat:log-channel--;xref:0x142f79668,0x142f7d5f0,0x142f7db96,0x14facd01d",
-  "notes": "Voice commands HUD VM: voice_commands.* show/list/recognised/feedback, strategy list, pit window strings."
+  "notes": "Old name wrong (no config read). One-shot (flag this+0x40) creation of UI data model 'voice_commands' bindings stored at this+...: show 0x50, command_list 0x70, active_command_list 0x90, command_recognised 0xc8, command_unrecognised 0xe8, speech_recognition_enabled 0x108, voice_commands_header_text 0x128, feedback_time 0x148, is_strategy_list 0x168, show_next_page 0x188, active_command_list_size 0x1b0, current_command 0x1d8, change_strategy_reason 0x1f8, pit_window_open/close 0x218/0x238, pit_string 0x258, hide_new_back_anim_1/2 0x8/0x28. (lane owner review requested) Better name: Game_VoiceCommands_InitDataModel (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_voice_commands_config",

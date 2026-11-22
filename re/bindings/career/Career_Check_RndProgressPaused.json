@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143531220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "bool Career_Check_RndProgressPaused(void *rnd, uint32_t part_key, char flag)",
-  "evidence": "decomp:re/decomp/143531220.c;xref:0x14123acc9,0x14123ae55,0x1412862bc,0x1418157d0,0x141818907",
-  "notes": "Mode (+8) 2, or mode 1 with key 0x3fff: hashes team key +0xc into the per-owner map at (this+0x18)+0xb8 and sums kind-9 modifiers for dept param_3 from that entry (+0x18..+0x20); else uses Career_Get_TeamModifiers 0x1434fb4b0. Returns sum > 0. Callers: Career_Update_RnDProgressPausedText 0x141814320, Ui_Rnd_SetProgressStateIcon 0x141818860."
+  "evidence": "decomp:re/decomp/143531220.c;xref:0x14123acc9,0x14123ae55,0x1412862bc,0x1418157d0,0x141818907,0x143531127,0x14353163c,0x143531a50,0x143531bf1",
+  "notes": "(this, key, dept): mode +8 == 2, or mode 1 with key>>16 == 0x3fff: hash lookup of team key +0xc in map (this+0x18)+0xb8..+0xd8, list entry+0x18..+0x20; else list from Career_Get_TeamModifiers 0x1434fb4b0(this+0x18). Sums float +4 of 8-byte modifiers with kind 9, byte1 == dept, byte3 != 0; returns sum > 0. Callers 0x14123a860, 0x141285890, Career_Update_RnDProgressPausedText 0x141814320, Ui_Rnd_SetProgressStateIcon 0x141818860, 0x143530f00, 0x1435314d0, 0x1435317c0, 0x143531a90. (lane owner review requested)"
  },
  "signature": {
   "id": "career.check_rnd_progress_paused",

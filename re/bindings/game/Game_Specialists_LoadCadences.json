@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1412eb290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1412eb290.c;pat:log-message-method;xref:0x1412ed5f4",
-  "notes": "pdata 0x2071 bytes; SPECIALISTS logs \"loadCadences - Current cadence is %s to %d\" and \"Cadence being set for driver %s to %d\". Called at 0x1412ed5f4 (in 0x1412ed310)."
+  "notes": "Per specialist rec (+0x358..+0x360, 0x128): cadence +0xa0 if set, else MT19937 (seed this+0x280) mod entries-1 (+0x2e0, 0x28 each); copies entry, resizes byte vectors to list len from (+0x278)+0x1030 vt+0x88, calls 0x1412db360. If 0x1412dcbd0, resolves two driver ids (0x3fff=none) and copies one driver's cadence to the other (dir by +0x418), SPECIALISTS logs 'loadCadences - ...'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.specialists_load_cadences",

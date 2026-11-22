@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1416d2790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1416d2790.c;doc:re/research/sponsors.md#catalogue;xref:0x1416d21a6,0x141feee97",
-  "notes": "Referenced at 0x1416d21a6 (vmovups, in 0x1416d1960) and called from Game_DecalCatalogue_PlaceOrSwap."
+  "evidence": "decomp:re/decomp/1416d2790.c;doc:re/research/sponsors.md#catalogue;xref:0x141feee97",
+  "notes": "in pdata bounds. Resets/creates VM list 'decal_types' (0x1442a1810 at this+0x50) and node ref 'selected_decal_type' (Vm_Set_NodeRef 0x14083c270) under param_2 node; reads 'ui_menu_data.customisation.context'; iterates decal type map, per entry node 'type_%d' with Vm_Set_String 'texture', Vm_Set_Bool 'show_texture'/'locked', Vm_Set_Int 'loyalty_required'; appends 0xC0-byte records to vector this+0x98..0xA8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_editor_build_decal_type_carousel",

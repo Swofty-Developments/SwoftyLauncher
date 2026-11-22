@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c11160",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "bool Car_Setup_SetSliderStep(void *binding, int idx, int step)",
-  "evidence": "decomp:re/decomp/140c11160.c;xref:0x140c11271;doc:re/db/subsystems/car.md",
-  "notes": "Step-int setter on the active slot, calls Car_Setup_ApplyTuning at 0x140c11271 (agent setup, sp-verify)"
+  "evidence": "decomp:re/decomp/140c11160.c;doc:re/db/subsystems/car.md;xref:0x140b77fad,0x140c27de0,0x140c2a411,0x14975a596,0x149a1f2b6,0x149a1f338",
+  "notes": "(setup, i, step): returns false if lock bit i (+8); target = active slot +0x118 if slot+0x1c0 else +0x70; clamps step 0..max (0x14605a6c8[i]->+8), stores if changed; timestamps +0x48/+0x50, dirty +0x39; Car_Setup_ApplyTuning(setup, mask [+0x18] or 0x4000000 with preset slot by +0x34). (lane owner review requested)"
  },
  "signature": {
   "id": "car.setup_set_slider_step",

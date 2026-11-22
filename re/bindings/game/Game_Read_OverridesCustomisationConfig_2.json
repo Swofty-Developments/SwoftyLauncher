@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142015a30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142015a30.c;pat:log-channel--;xref:0x142013d15,0x142013d3e,0x142013d67,0x142013d90,0x142013db9,0x142013de2,0x142013e7b,0x142013ea7,0x142013ed3,0x142013eff,0x142013f2b,0x142013f57",
-  "notes": "Customisation PiP menu: suit/helmet/gloves/emotes/poses/victory_vo icons and casual item categories (sunglasses, caps, footwear, tops, trousers)."
+  "notes": "Fills menu-entry struct param_2 for customisation category param_3 (+0x34) via jump table: 0 helmet,2 gloves,3 suit,8 emotes,9 poses,0x10 victory_vo,0x11-0x15 casual eyewear..bottoms; sets +8 overrides.customisation.* icon, +0x10 lng_ label, +0x18 t_ texture, +0x28 short name, +0x20 state name. *param_2 = item flag from lists at +0xd008/map +0xd010, ORed into +0xd040/+0xd041. Default+param_5: advance_career_setup entry. No config read. (lane owner review requested) Better name: Game_Customisation_BuildPipMenuEntry (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_customisation_config_2",

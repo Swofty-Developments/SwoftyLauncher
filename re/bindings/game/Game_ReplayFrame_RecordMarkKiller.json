@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144724ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144724ae0.c;pat:log-message-cxx;xref:0x144720ddc,0x1447219fe,0x144723480",
-  "notes": "recordMarkKiller (log SKIDMARKS 'ReplayFrame::recordMarkKiller (%p)'); 6 KB decomp. Callers Render_Skidmarks_Update."
+  "notes": "Replay frame +0x4228: killer record at +0x45f40 (stride 0x14, cap 0x40, log 'ReplayFrame::recordMarkKiller') + quad killers via 0x14471d320 (cap 0x81f). Unlinks mark from lists +0x41a8/+0x41b0, links into +0x41b8, queues cmd 0x23 at +0x190 (stride 0x20, n +0x4190); at n>=0x3c flushes queue under lock +0x41c8 (cmd types 0-6, 'failed to process update mark'). (lane owner review requested) Better name: Game_Skidmarks_KillMark (bound record keeps its name)."
  },
  "signature": {
   "id": "game.replay_frame_record_mark_killer",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431248f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1431248f0.c;pat:log-message-cxx",
-  "notes": "handleAttributeSetUpdateRequest (own pretty-function string in the body)."
+  "evidence": "decomp:re/decomp/1431248f0.c;pat:log-message-cxx;xref:0x14febcf02",
+  "notes": "Body read in full. Host check [(+8)+0xd8] vt+0x10 == param_3 (mismatch logs 'connectionId (%u) does not match the host's (%u)'); looks up the attribute set by key param_2+0x10 in the hash map [+0x30]+0xa0..+0xd4, snapshots [+0x30]+0x10 via 0x143124fb0, copies the value array and sends an update (vtable 0x145824520) via 0x14402e500(+0x20,1,..), logs 'Sent an update message to the server.'. Only ref: lea 0x14febcf02 (registration in 0x14febce50). (lane owner review requested)"
  },
  "signature": {
   "id": "game.attribute_set_replication_manager_handle_attribute_set_update_requ",

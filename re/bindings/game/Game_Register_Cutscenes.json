@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140213e10.c;xref:0x1402136bd",
-  "notes": "Decomp failed (timeout); 0x1240a-byte body with 115 static guards registering game::CutsceneManager names (podium, grid, garage, results, marshals, ferris_wheel, helicopter, career hub)."
+  "notes": "pdata 0x140213e10-0x14022621a; decomp failed (timeout, stub only). Only static ref: call 0x1402136bd in 0x140213170."
  },
  "signature": {
   "id": "game.register_cutscenes",

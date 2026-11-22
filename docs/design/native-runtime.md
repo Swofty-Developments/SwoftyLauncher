@@ -412,8 +412,9 @@ The career operations (`SwoftyCareerOps`, standard library 1.6) are in `career/o
 | `labels.cpp`, `tables.hpp` | the database's driver, look and team labels |
 | `apply_teams.cpp`, `car_numbers.cpp` | `apply_teams` and `set_car_number` |
 | `*_plan.hpp`, `driver_rows.hpp`, `fuel_logic.hpp` | the pure planners the host tests run (`run_career_ops_test.sh`) |
+| `report_queue.hpp` | `report_season` calls from off the flow thread, queued and run at the next flow tick (the snapshots host test) |
 
-An operation runs on the flow thread (`flow_tid`) or before the first frame, and resolves its bindings once through `bind`.
+An operation runs on the flow thread (`flow_tid`) or before the first frame, and resolves its bindings once through `bind`. A `report_season` from another thread is queued and runs in the career operations' frame callback at the next flow tick.
 
 ## Garage namespaces
 

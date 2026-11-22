@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14124ad20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14124ad20.c;pat:log-channel--;xref:0x1456cd0f0",
-  "notes": "Rivals config GDB reader (rivalry_data types, weightings, thresholds); calls 0x141262be0 for ui_data rows."
+  "notes": "Vtable slot (neighbours 0x14124a7e0/0x140b0b0c0 code). Reads 3 hashed values from DAT_146cc4278 into +0xa70/a74/a78 and a string into +0xa98. Walks param_2 allowed_rivalries; per entry .RivalryType.rivalry_data type FNV hash -> 1/2/3 and blocks Teammate(+0x800), DriverRating(+0x298), Completion(+0x6b8), Constructor(+0x918): cooldown, num_rivalries, trigger delay, ui_data.lng_string/player_colour, IntensityData rows (+0x141262be0), weightings. (lane owner review requested) Better name: Game_Read_RivalsConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ui_data_config",

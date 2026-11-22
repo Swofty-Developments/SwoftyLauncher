@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e0b390.c;xref:0x141c00d74,0x142e0b374",
-  "notes": "4976-byte copy of a scene spawn parameter set (RobinHoodMap_U64 lookups, HashedName_FromString). Callers 0x141c00d74 and Game_SceneSpawnParams_CopyConstruct (0x142e0b374). Hypothesis. vq0-verify partial/disagree"
+  "notes": "Not a copy: picks variant byte (this+0xe66/+0xe67 or +0xce8), remaps it via param_2 pair list, indexes singleton table +0x4e0 (16-byte entries) -> this+0x5c30. Fills inline descriptor arrays (cap 0x100) at this+0x5c58..0x6630 via 0x142e0a050/0x142e09d40 from entry+0x18..0x58 and two XOR-decoded config keys; Ne_HashedName_FromString -> this+0x6738; +0x6748 set -> +0x5c38=1.0f."
  },
  "signature": {
   "id": "game.scene_spawn_params_copy_142e0b390",

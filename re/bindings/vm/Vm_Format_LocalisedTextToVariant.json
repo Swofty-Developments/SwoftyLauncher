@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "vm",
   "proto": "uint64_t Format(void **fmt, void *key, void *args, void *out_variant)",
-  "evidence": "decomp:re/decomp/1407b1190.c;xref:0x1407a70b4;xref:0x1414b1294;xref:0x1414fd61d",
-  "notes": "myteam-g2: Builds a localised string from key + args (Game_VmValue_AssignVariant, interned string) and stores it into a VM variant; helper for icon/text bindings (facility, workforce cap, renown)."
+  "evidence": "decomp:re/decomp/1407b1190.c;xref:0x1407a70b4,0x1414b1294,0x1414fd61d,0x1414ff16f,0x1414ff419,0x1414ff541,0x1417090c0,0x1418591b1",
+  "notes": "Builds a local variant from a3 (Game_VmValue_AssignVariant 0x140972140); with translator a4: a4 vt+0x18(a4,(*a1)+9,&tmp,0,0) then Ne_InternedString_Manage(variant,&tmp,a2,0), else Ne_InternedString_Manage(variant,a1,a2,0); releases tmp and the variant."
  },
  "signature": {
   "id": "vm.format_localised_text_to_variant",

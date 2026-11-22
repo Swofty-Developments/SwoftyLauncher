@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437d4130",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1437d4130.c;pat:log-channel--;xref:0x145875b10",
-  "notes": "Huge static-init style body (49 thread-safe static guards, UI route type names) plus GameVersionNumber.* and HudCustomisation keys; ui_menu_data.game_version_str formatted with %u.%u.%u."
+  "notes": "Init of game UI system: allocator 'GAME_UI' -> +0x80 (else err 0xe); reads UI.UseKeyboardOnlyIconFont -> +0x836; '-benchmark' cmdline flag; registers behaviours UITabAnimationsBehaviour/UITabControllerAnimationsBehaviour/UITutorialElementBehaviour/UIFrontendSceneAttributeBehaviour and UIRoute* types (FullScreenFade, FrontendSceneSwitch, StartLoopingWipe, PlayerCard, OpenDriverHQRenderTarget...); 'exit_game' handler FUN_1437e68c0; GameVersionNumber.major/minor/revision -> '%u.%u(.%u)' into ui_menu_data.game_version_str; creates HudCustomisationSystem (0x728) -> +0x838; returns 0 or 0xc. (lane owner review requested) Better name: Game_UiSystem_Initialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_game_version_number_config",

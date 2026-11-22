@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14476b150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14476b150.c;xref:0x14464d4d7,0x14476b0c8",
-  "notes": "FNV-1a-64 of a name, robin_hood probe in map (+0x20 mult, +0x30 info, +0x40 mask), insert when missing (Car_HullShapeMap_EmplaceNode). Callers: Car_Collision_BuildHullShapes. (2 xref site(s), fb.py callers.)"
+  "notes": "(map, out, node): FNV-1a-64 of the C string *node, * map+0x20, ^>>33; robin_hood probe with info bytes +0x30, mask +0x40, shift +0x50/+0x54, slots +0x28, compare 0x14535d850; inserts with shifting, grows via 0x14476b910 or first alloc (vcall +0x10); result codes 1 found, 2/3 inserted, 0 after 256 tries. (lane owner review requested)"
  },
  "signature": {
   "id": "car.hull_shape_map_find_or_insert_by_name",

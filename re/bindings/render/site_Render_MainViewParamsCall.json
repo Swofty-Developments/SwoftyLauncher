@@ -6,10 +6,10 @@
  "row": {
   "addr": "0x1401583d0",
   "type": "code",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "evidence": "decomp:own capstone disasm 0x140157d90-0x140158a63;xref:0x1401583d0,0x1401583d5,0x143be0360;doc:re/research/weather_strategy_bindings.md#sites",
-  "notes": "The main 3D view's call to Render_SceneView_BuildViewParams (rcx = view params block). Realistic Rain matches a hook's return address (site+5) to keep only the main camera. Proposed L2 (render inbox)."
+  "evidence": "decomp:own capstone disasm 0x140157d90-0x140158a63;xref:0x1401583d0,0x1401583d5,0x143be0360;doc:re/research/weather_strategy_bindings.md#sites;decomp:own capstone disasm 0x140157d90-0x140158a63 and 0x143be0360-0x143be17e6 (re/tools/disx.py);xref:0x140158168,0x1401508d8",
+  "notes": "The main 3D view's call to Render_SceneView_BuildViewParams (rcx = view params block). Realistic Rain matches a hook's return address (site+5) to keep only the main camera. | 2026-11-21 raised to L2 (gh:vogtmarcel07-cloud, body read): 0x140157d90 (pdata ..0x140158a63, only caller 0x1401508d8 in 0x14014d230) loops r15 over the viewports ([[rcx+0x88]+0x40] vector, 0x110-byte entries, count at 0x140157e13..0x140157e24) and per viewport ends in this one E8 call: rcx = [rsi+(r15+6)*8+0x168] (the viewport's scene-view params, 0x1401583c1/0x1401583c5 or 0x140158150/0x140158154) and rdx = either the camera desc built on the stack (rbx = rsp+0xa0, 0x140157e52) or the stored camera [rsi+r15*8+0x168]+0x10 (0x14015815c..0x140158164, then jmp 0x140158168 to the call). Both paths reach 0x1401583d0 at its first byte; no branch lands inside 0x1401583d1..0x1401583d4. After the call 0x1401583d5 tests [rsi+r15*4+0xaf4] and loops back to 0x140157e81. So a launcher site hook here sees exactly the main scene views' Render_SceneView_BuildViewParams results (params+0x80 and +0xc0 hold the two 4x4 matrices it writes), which is what the race-start / cool-down board overlay patches the rel32 for today."
  },
  "signature": {
   "id": "render.main_view_params_call",
@@ -37,5 +37,44 @@
   "used_by": []
  },
  "verify": [],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1401583d0",
+    "target": "0x1401583d0"
+   },
+   "sigcheck": "passed",
+   "digest": "0956198cbfadb527da46b2b64d5c2bc3a002bacf5b2759c8bf83bed5e2458f45"
+  },
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1401583d0",
+    "target": "0x1401583d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "000986b1f241911cd1a087b292ab2afec91087f3cc72381023907dc13298da90"
+  }
+ ]
 }

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446ccbc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446ccbc0.c;xref:0x1446ce251,0x144755132,0x144755141",
-  "notes": "Reads the SMS steering assist parameters from GDB: 1_angle.* (inputPower, useDynamicMaxSteerCalc, counterSteerFraction, ...), 2_alignment.* (yawCS*), 3_rate.* (applyRateMin/Max, centreRate, counterSteerRate_RadPerSec). Callers: Car_Input_SmsSteer, 0x1447546c0. Addon: steering assist tuning keys. (4 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/1446ccbc0.c;xref:0x1446ce251,0x144755132,0x144755141,0x14475515d",
+  "notes": "(rowName, out): Gdb_Find_RowByLabel on table 'assists.sms_steer' (stack string), then Gdb_Get_FieldInt for 1_angle.* into out[0..0x14], 3_rate.* into out[0x16..0x1e], 2_alignment.* into out[0x1f..0x30] (bytes for useDynamicMaxSteerCalc/useMaxPeakSlip/useTrackAndWetnessGripInEst). (lane owner review requested)"
  },
  "signature": {
   "id": "car.input_read_sms_steer_params",

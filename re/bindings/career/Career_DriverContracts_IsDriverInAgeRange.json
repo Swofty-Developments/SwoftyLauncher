@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "career",
   "proto": "bool Check(void *comp, uint8_t *team_key, uint16_t slot, char flag)",
-  "evidence": "decomp:re/decomp/140d82400.c;xref:0x140c581a1,0x140d79692,0x140d796a9,0x140d95c53",
-  "notes": "Team entry comp[0x97..0x98] (0x30, key +8): +0xc != -1 returned when param_3==0xffff. Else walks comp[0x54..0x55] drivers: u16 +0x18 must lie in a calendar-day window (0x14111c9a0 / 0x1410f5a80 vs now), hash map comp[0xd2..] gives a u16 for vt+0x2b8; returns vt+0x268() when within param_3 / today, else 0."
+  "evidence": "decomp:re/decomp/140d82400.c;xref:0x140c581a1,0x140d79692,0x140d796a9,0x140d95c53,0x140d95c70,0x140dca147,0x140dd1efe",
+  "notes": "Body read fully: key (byte+u16) in list comp[0x97..0x98] (0x30 entries, key +8): returns +0xc != -1 when param_3==0xffff. Else walks comp[0x54..0x55] (0x10 entries): u16 date +0x18 must lie in [min(0x14111c9a0,now), min(0x1410f5a80,now)] (minutes/1440 = days, [comp[0x9d]+0x2d8]+0x290); hash map comp[0xd2..0xd8] gives u16 for vt+0x2b8; result <= param_3 (and <= today unless param_4) -> returns vt+0x268()."
  },
  "signature": {
   "id": "career.driver_contracts_is_driver_in_age_range",

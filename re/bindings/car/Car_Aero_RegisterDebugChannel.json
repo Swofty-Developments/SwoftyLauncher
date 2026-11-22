@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446c9f00.c;xref:0x1446c9a9f",
-  "notes": "Registers one aero debug/tweak channel: copies the C-string name (<=0x20 chars into a local buffer) and sets up the channel with 3 qwords + 2 floats + byte flag. 21 callers, all in Game_Aero_RegisterDebugChannels (344 lines due to unrolled strcpy)."
+  "evidence": "decomp:re/decomp/1446c9f00.c;xref:0x1446c9a9f,0x1446c9ad5,0x1446c9b0b,0x1446c9b41,0x1446c9b77,0x1446c9bad,0x1446c9be3,0x1446c9c19,0x1446c9c4f,0x1446c9c85,0x1446c9cc2,0x1446c9cf8,0x1446c9d2e,0x1446c9d64,0x1446c9d9a,0x1446c9dd0,0x1446c9e0d,0x1446c9e43,0x1446c9e80,0x1446c9eb6,0x1446c9eec",
+  "notes": "Registers one aero debug/tweak channel: copies the C-string name (<=0x20 chars into a local buffer) and sets up the channel with 3 qwords + 2 floats + byte flag. all in Game_Aero_RegisterDebugChannels (344 lines due to unrolled strcpy)."
  },
  "signature": {
   "id": "car.aero_register_debug_channel",

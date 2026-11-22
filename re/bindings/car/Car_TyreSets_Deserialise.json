@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e8deb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-TYRES/V",
-  "notes": "named from its log messages (channel TYRES/V): '- | %s: tyre allocation choice: %d, compoound list size: %d | %s: after reading m_tyreSetToStartRaceOn, ok: %d, read position: %d'"
+  "evidence": "decomp:re/decomp/142e8deb0.c;pat:log-channel-TYRES/V;xref:0x140bd196d,0x140bd218b,0x140bd2292,0x1432d47f1",
+  "notes": "(alloc,stream): version marker (stream+0x29: 0x143925660 range 0x12 must be 3), allocation choice 0..3 -> alloc+4; for each group i < alloc+0xd8: Car_TyreSets_DeserialiseSets(alloc+0x10+i*0x28); then Car_TyreSet_DeserialiseCompound(alloc+0xe0) = m_tyreSetToStartRaceOn. Logs TYRES/V choice/compound index/after-reading lines. Callers in 0x140bd16a0, 0x140bd1e50, 0x1432d4530. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_sets_deserialise",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140388cf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140388cf0.c;pat:log-message-cxx;xref:0x140388cc6,0x14038f534,0x14038f541,0x14038f54e,0x14038f55b,0x14038f568,0x14038f575,0x14038f582,0x14038f58f,0x14038f59c,0x14038f5a9,0x14038f5b6,0x14038f5c3,0x14038f5d0,0x14038f5dd,0x14038f5ea,0x14038f5f7,0x14038f604,0x14038f611,0x14038f61e,0x14038f62b,0x14038f638,0x14038f645,0x14038f652,0x14038f65f,0x14038f66c,0x14038f679,0x14038f686,0x14038f693,0x14038f6a0,0x14038f6ad,0x14038f6ba,0x14038f6d0",
-  "notes": "spawnGarageCrew (strings incl. GarageCrewModule::activate). Callers 0x140388c10 and a run of calls from 0x14038f360."
+  "notes": "Logs GARAGE 'GarageCrewModule::spawnGarageCrew %d' (param_2=garage id); returns if id>0x1f or [[this+0x60]+0x838+id*8]==0. Collects entrants with garage id==param_2, logs 'activate garage id %d mirrored %s'; per entrant allocs 800-byte GarageCrewInstance (vt 0x145622cc0) at this+0x68+idx*8, spawns garagecrew/lowq_garagecrew, garagecrew_vehicle(Locater), garagecrew_ui_equipment, garagegantry, transforms. (lane owner review requested)"
  },
  "signature": {
   "id": "game.garage_crew_module_spawn_garage_crew",

@@ -1673,6 +1673,230 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "game.update_weather_timeline_scalar",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 81 D0 02 00 00",
+   "match": "0x14479c3f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14479c3f0",
+   "kind": "func_start",
+   "names": [
+    "Game_Update_WeatherTimelineScalar"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/wet-track"
+   ]
+  },
+  {
+   "id": "render.model_component_apply_render_props",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 48 83 B9 80 00 00 00 00 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 91 B0 00 00 00",
+   "match": "0x14446ea70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14446ea70",
+   "kind": "func_start",
+   "names": [
+    "Render_ModelComponent_ApplyRenderProps"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/wet-track"
+   ]
+  },
+  {
+   "id": "render.model_component_on_transform",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 30 48 8B 71 68 48 85 F6",
+   "match": "0x144470870",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144470870",
+   "kind": "func_start",
+   "names": [
+    "Render_ModelComponent_OnTransform"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "addons/wet-track"
+   ]
+  },
+  {
+   "id": "game.pit_lane_vehicle_wants_to_leave_garage_thunk",
+   "section": ".xtls",
+   "pattern": "E9 ?? ?? ?? ?? E9 ?? ?? ?? ?? D3 AD A8 FF E9 07",
+   "match": "0x1434d1350",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434d1350",
+   "kind": "func_start",
+   "names": [
+    "Game_PitLane_VehicleWantsToLeaveGarage_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.scene_find_by_name",
+   "section": ".xtls",
+   "pattern": "56 57 55 53 48 83 EC 28 44 89 C7 48 85 D2",
+   "match": "0x1401a4810",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1401a4810",
+   "kind": "func_start",
+   "names": [
+    "Game_Scene_FindByName"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.cutscene_placements",
+   "section": ".xtls",
+   "pattern": "C5 F8 29 74 24 70 48 8B 05 ?? ?? ?? ?? 48 85 C0",
+   "match": "0x140241366",
+   "anchor": "0x9",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x6",
+    "len": 7
+   },
+   "target": "0x14607c1d8",
+   "kind": "data",
+   "names": [
+    "g_Game_CutscenePlacements"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.race_ruleset_set_total_laps",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 20 89 91 58 03 00 00 48 8B B9 68 03 00 00 48 85 FF 74 68 48 3B 3D ?? ?? ?? ?? 74 5F F6 47 26 01 75 59 48 89 CE 48 8B 07 48 89 F9 FF 50 20 84 C0 74 49 48 8B 4F 58 48 8B 01 FF 50 08 48 8B 10 48 89 C1 FF 52 10 89 C3 48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 10 39 C3 75 1F 48 81 C6 58 03 00 00 48 89 F9 48 89 F2 45 31 C0 45 31 C9 48 83 C4 20 5B 5F 5E E9 ?? ?? ?? ?? 90 48 83 C4 20 5B 5F 5E C3 CC CC CC CC CC CC E9",
+   "match": "0x142d38c30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d38c30",
+   "kind": "func_start",
+   "names": [
+    "Sess_RaceRuleset_SetTotalLaps"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.red_flag_strategy_calc_update",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 8B 05 ?? ?? ?? ?? 89 81 90 0C 00 00 48 8B 81 B0 0C 00 00",
+   "match": "0x142dfd530",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142dfd530",
+   "kind": "func_start",
+   "names": [
+    "Sess_RedFlagStrategyCalc_Update"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.strategy_red_flag_recompute_all",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 78 48 8B 81 D0 00 00 00",
+   "match": "0x1436abf80",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1436abf80",
+   "kind": "func_start",
+   "names": [
+    "Sess_Strategy_RedFlagRecomputeAll"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-21",
+     "by": "vogtmarcel07-cloud",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }

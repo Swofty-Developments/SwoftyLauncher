@@ -4,6 +4,7 @@
 #include "core/apply/content/drs.hpp"
 #include "core/apply/content/points.hpp"
 #include "core/apply/content/garage_lower.hpp"
+#include "core/apply/content/sponsors_lower.hpp"
 #include "core/apply/content/liveries.hpp"
 #include "core/apply/content/lower.hpp"
 #include "core/apply/content/rows.hpp"
@@ -27,12 +28,12 @@
 
 namespace swofty_core::apply::content {
 
-inline constexpr const char *ROW_REGISTRIES[] = {"engine_sound",  "vehicle.package", "vehicle",         "livery",
-                                                 "team.identity", "team.pit_times",  "team.garage",     "helmet",
-                                                 "suit",          "gloves",          "driver.head",     "driver.look",
-                                                 "driver.person", "driver.identity", "driver.stats",    "wearable.season_set",
-                                                 "rules.drs",     "session.points",  "content.package", "career.rnd.tree",
-                                                 "career.market"};
+inline constexpr const char *ROW_REGISTRIES[] = {
+    "engine_sound",    "vehicle.package",     "vehicle",        "livery",         "team.identity",
+    "team.pit_times",  "team.garage",         "track.sponsors", "helmet",         "suit",
+    "gloves",          "driver.head",         "driver.look",    "driver.person",  "driver.identity",
+    "driver.stats",    "wearable.season_set", "rules.drs",      "session.points", "content.package",
+    "career.rnd.tree", "career.market"};
 
 inline Lookup store_lookup(registry::Store &st, std::map<std::string, Value> &keep)
 {
@@ -744,6 +745,8 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 lower_pit_times(id, *rec, lookup, read, refs, plan);
             else if (r == "team.garage")
                 lower_garage(id, *rec, lookup, read, plan);
+            else if (r == "track.sponsors")
+                lower_sponsors(id, *rec, lookup, read, plan);
             else if (r == "rules.drs")
                 lower_drs_rule(id, *rec, plan);
             else if (r == "session.points")

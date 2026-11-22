@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142767670.c;pat:log-message-method;xref:0x14258fc0a",
-  "notes": "Log '%s: change the session to closed, so it won't be found in matchmaking' with 'leaveMultiplayerSession' only at 0x1427693ce near the end of an 8 KB body that also formats safety-rating strings ('eGood', 'eExcellent', 'lng_invalid'). Only caller 0x14258eca0 at 0x14258fc0a."
+  "notes": "Session entries [+0x220/+0x228, stride 0xa0, idx +0x238] type +8 picks a summary object in [param_2+0xc0]+0x10/+0x28/+0x40: practice-programme grades (table 0x1457a73b8, eGood/eExcellent), car times (0x1400fa590), track name (0x1432d3e60). Posts bus msg 0x145836cb0 via 0x1439876c0. Online: tail-jmp 0x1430605c0 (Game_Network_Leave) or logs leaveMultiplayerSession and tail-jmps 0x14306e0d0 (setSessionPrivacy). Better name: Game_Session_PostResultsAndLeaveMultiplayer (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_leave_multiplayer_session",

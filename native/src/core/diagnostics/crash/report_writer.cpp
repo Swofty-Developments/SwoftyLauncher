@@ -83,6 +83,8 @@ void run_steps()
 void write_report()
 {
     Request &r = report_writer.req;
+    if (r.handed)
+        settle_handed(r);
     InterlockedExchange(&report_writer.writing, 1);
     cl("[crash] writing a crash report: %s", r.reason);
     modules.snapshot();

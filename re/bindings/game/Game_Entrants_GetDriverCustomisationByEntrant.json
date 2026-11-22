@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14024c460",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14024c460.c;xref:0x14024c69a,0x140361806",
-  "notes": "(this, entrant index): same participant lookup as 0x140248f90 (car id byte +0x82), key type byte +0x58 (< 3) / u16 +0x5a (fallback type 0, entrant idx); returns entry+8 of table [[0x14604c2c8]+0x290]+0x2c8+type*0x10 (stride 0x10) or 0. Callers 0x14024c670, 0x140361670."
+  "notes": "(this, entrant idx): car id = *[[0x14601f5c8+0xb0]+0x108][idx]; participant from manager vt+0xa0 list (stride 0x88, +0x82 == car id); type byte +0x58 (<3) and u16 +0x5a pick entry+8 of [[0x14604c2c8]+0x290]+0x2c8+type*0x10 (vector stride 0x10); fallback type 0 index idx; else 0. Callers Game_CutScene_SpawnCarForSlot 0x14024c670, Game_Pod2019First_RequestPodiumThumbnails 0x140361670. (lane owner review requested)"
  },
  "signature": {
   "id": "game.entrants_get_driver_customisation_by_entrant",

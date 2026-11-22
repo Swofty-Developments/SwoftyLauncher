@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a7d830",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a7d830.c;pat:log-channel-INVENTORY;xref:0x1425b0a57,0x1425b0aa7,0x1425b0af7,0x14279bdac,0x14279bdff",
-  "notes": "INVENTORY 'Added inventory [%s]' (log string)."
+  "notes": "Allocates 0x68 inventory + shared ctrl (vtable 0x1457c45b0), id = ++this+0xd0; out param_2 = {id, empty name}. Node from freelist this+0x28 inserted into robin-hood NeHashMap this+0x20.. keyed by id (grow 0x142b3d9a0, 256 tries then fatal); duplicate frees node. Logs INVENTORY 'Added inventory [%s]' ('%d - %s'). Returns param_2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.inventory_add_inventory",

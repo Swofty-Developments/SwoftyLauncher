@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14476a690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14476a690.c;xref:0x144629410,0x14473d39f",
-  "notes": "Destroys elements (stride 0x38) of vector +0x28..+0x30 and frees it, then clears further vectors. Used by Car_Chassis_Build. (2 xref site(s), fb.py callers.) lb24-verify partial/disagree"
+  "notes": "(alloc*, obj) deleter: virtual destructor on each 0x38 element of obj+0x28..+0x30, frees it (allocator obj+0x20); for each 0x1f8 element of obj+8..+0x10 frees inner vectors +0x80/+0xa0 and the callable at +0x58 (inline buffer +0x20); frees that vector (allocator obj+0); tail-calls alloc vcall +0x38(obj). (lane owner review requested)"
  },
  "signature": {
   "id": "car.chassis_clear_component_list",
