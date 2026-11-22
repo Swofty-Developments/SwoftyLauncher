@@ -247,10 +247,10 @@ void ViewState::camera(safetyhook::Context &ctx)
     if (secondary)
         return;
     if (value < 0 || value > 7)
-        value = 0;
+        value = -1;
     int was = camera_value.exchange(value, std::memory_order_relaxed);
     if (was != value)
-        swofty::log("[view] camera setting %s (%d)%s", CAMERA_NAMES[value], value,
+        swofty::log("[view] camera setting %s (%d)%s", value < 0 ? "unknown" : CAMERA_NAMES[value], value,
                     trust_camera ? "" : "; static only, not used for kind");
     recompute();
 }
