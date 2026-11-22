@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "k_Team_BadgeSourceNames",
+ "table": "globals",
+ "author": "nyannoying1337",
+ "row": {
+  "addr": "0x145612e60",
+  "type": "const char *",
+  "level": "L2",
+  "subsystem": "teams",
+  "evidence": "decomp:own disasm 0x1401ac179-0x1401ac1ae;xref:0x1401ac18c",
+  "notes": "const char *[3] {ePreLoaded, eUserDefined, eNetworkReplicated}: badge source names; the render badge key is Ne_StrBuf_Printf(%s %u, names[source byte], id) with the format string right before the table"
+ },
+ "signature": {
+  "id": "teams.badge_source_names",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 4C 8B 04 C1 48 8D 15 ?? ?? ?? ?? 48 8D 8C 24 E0 04 00 00 41 89 F1 E8 ?? ?? ?? ?? 4C 8B 84 24 F0 04 00 00",
+  "match": "0x1401ac18c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145612e60",
+  "kind": "data",
+  "names": [
+   "k_Team_BadgeSourceNames"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "nyannoying1337",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "nyannoying1337",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1401ac18c",
+    "target": "0x145612e60"
+   },
+   "sigcheck": "passed",
+   "digest": "1f827a0906b082d1cf8f120903fb77e5d5dd0bb0b8d68d97dbc239dee8c429d3"
+  },
+  {
+   "by": "nyannoying1337",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1401ac18c",
+    "target": "0x145614e60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3590694d3c57ec362633fe832d3555e17e2a435062a8e7a531a8877312e791ba"
+  }
+ ]
+}

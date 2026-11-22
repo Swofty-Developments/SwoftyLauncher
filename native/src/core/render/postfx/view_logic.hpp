@@ -5,11 +5,26 @@
 
 namespace render::postfx {
 
-enum View : uint32_t { UNKNOWN = 0, COCKPIT, TCAM, TCAM_OFFSET, CHASE_NEAR, CHASE_FAR, OTHER, TRACKSIDE, REVERSE_POD, VIEWS };
+enum View : uint32_t {
+    UNKNOWN = 0,
+    COCKPIT,
+    TCAM,
+    TCAM_OFFSET,
+    CHASE_NEAR,
+    CHASE_FAR,
+    OTHER,
+    TRACKSIDE,
+    REVERSE_POD,
+    NOSE,
+    NOSE_ALT,
+    WING,
+    VIEWS
+};
 enum Flag : uint32_t { PAUSED = 1, REPLAY = 2, PHOTO = 4, MENU = 8, CUTSCENE = 16, SPECTATING = 32 };
 
-inline constexpr std::string_view VIEW_NAMES[VIEWS] = {"unknown",   "cockpit", "tcam",      "tcam_offset", "chase_near",
-                                                       "chase_far", "other",   "trackside", "reverse_pod"};
+inline constexpr std::string_view VIEW_NAMES[VIEWS] = {"unknown",     "cockpit",   "tcam",     "tcam_offset",
+                                                       "chase_near",  "chase_far", "other",    "trackside",
+                                                       "reverse_pod", "nose",      "nose_alt", "wing"};
 inline constexpr std::string_view FLAG_NAMES[] = {"paused", "replay", "photo", "menu", "cutscene", "spectating"};
 
 inline uint32_t view_bit(std::string_view name)

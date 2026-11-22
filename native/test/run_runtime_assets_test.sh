@@ -4,6 +4,7 @@ SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
+. "$(dirname "$SELF")/lib/game_run.sh"
 . ./game_lock.sh
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-runtime-assets}
@@ -258,7 +259,7 @@ for mode in none replace gated late early earlywait secondcopy files; do
     [[ $mode == none || $mode == files ]] || assets_json $mode
     [[ $mode == files ]] && files_setup
     started=$SECONDS rc=0
-    timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || rc=$?
+    game_run "$OUT/game/F1_25.exe" $mode || rc=$?
     if ((rc)); then
         echo "FAIL: $mode: the game exited with $rc after $((SECONDS - started)) s$( ((rc == 124)) && echo ', killed by the 120 s timeout')"
         cp "$LOG" "$OUT/failed-$mode.log" 2>/dev/null || true

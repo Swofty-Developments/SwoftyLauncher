@@ -175,7 +175,10 @@ impl Shell {
             Ok("saves") => shell.open_page(Page::Careers, cx),
             Ok("shaders") => shell.open_page(Page::Shaders, cx),
             Ok("addons") => shell.open_page(Page::Addons, cx),
-            Ok("online") => shell.open_page(Page::Online, cx),
+            Ok("online") => {
+                let page = shell.tab_home(crate::shell::tabs::Tab::Online);
+                shell.open_page(page, cx);
+            }
             Ok("multiplayer") => shell.open_page(Page::Multiplayer, cx),
             Ok("time-trial" | "timetrial") => shell.open_page(Page::Online, cx),
             Ok("browser") => shell.open_page(Page::Browser, cx),

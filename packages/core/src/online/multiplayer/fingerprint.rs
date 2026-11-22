@@ -174,6 +174,15 @@ impl Fingerprint {
         });
         sha256_bytes(&serde_json::to_vec(&sorted(doc)).expect("serialisable"))
     }
+
+    /// The fingerprint with each addon's stat ids as `ids`, the core's `ids.json`, holds them: what
+    /// [`fingerprint`] makes after the core wrote new ids, without hashing the addon files again.
+    pub fn with_registry_ids(mut self, ids: &Value) -> Self {
+        for a in &mut self.addons {
+            a.stat_ids = stat_ids_of(ids, &a.id);
+        }
+        Self::new(self.game_build, self.addons, self.options, self.dlc)
+    }
 }
 
 fn sorted(v: Value) -> Value {
@@ -208,12 +217,17 @@ pub fn stat_ids_of(doc: &Value, addon: &str) -> BTreeMap<String, i64> {
     out
 }
 
-/// The fingerprint of `profile` as its build would load it, on the game `game_build`.
-pub fn fingerprint(store: &Store, profile: &Profile, game_build: &Identity) -> Result<Fingerprint> {
-    let registry_ids = crate::stdlib::reports::found(&store.root, None, crate::stdlib::reports::IDS)
+/// The core's stat-id store, `ids.json` in the data folder `data`, or `Null` when there is none to read.
+pub fn registry_ids(data: &Path) -> Value {
+    crate::stdlib::reports::found(data, None, crate::stdlib::reports::IDS)
         .and_then(|p| std::fs::read(p).ok())
         .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
-        .unwrap_or(Value::Null);
+        .unwrap_or(Value::Null)
+}
+
+/// The fingerprint of `profile` as its build would load it, on the game `game_build`.
+pub fn fingerprint(store: &Store, profile: &Profile, game_build: &Identity) -> Result<Fingerprint> {
+    let registry_ids = registry_ids(&store.root);
     let installed = store.addons()?;
     let load = crate::profile::resolver::resolve(profile, &installed)?.order;
     let mut hashes = Hashes::open(store.root.join(HASHES_FILE));
@@ -1003,6 +1017,30 @@ mod tests {
             BTreeMap::from([(PACKAGE.to_owned(), 116), (SCENARIO.to_owned(), 26)])
         );
         assert!(stat_ids_of(&Value::Null, "t.a").is_empty());
+    }
+
+    #[test]
+    fn ids_the_core_writes_after_a_fingerprint_are_taken_in_as_a_fresh_one_would() {
+        let store = store("later-ids");
+        put(&store, data("t.a"), &[("db/ops.json", "1")]);
+        put(&store, data("t.b"), &[("db/ops.json", "2")]);
+        let p = profile(&["t.a", "t.b"]);
+        let file = crate::stdlib::reports::path(&store.root, crate::stdlib::reports::IDS);
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        let write = |ids: Value| {
+            std::fs::write(&file, json!({ "ids": { "content.package": ids } }).to_string()).unwrap()
+        };
+        write(json!({ "t.a/season": { "id": 116 } }));
+        let before = fingerprint(&store, &p, &game()).unwrap();
+        assert_eq!(
+            before.clone().with_registry_ids(&registry_ids(&store.root)),
+            before
+        );
+        write(json!({ "t.a/season": { "id": 116 }, "t.b/season": { "id": 117 } }));
+        let fresh = fingerprint(&store, &p, &game()).unwrap();
+        assert_ne!(fresh.digest, before.digest);
+        assert_eq!(before.with_registry_ids(&registry_ids(&store.root)), fresh);
+        std::fs::remove_dir_all(&store.root).ok();
     }
 
     #[test]

@@ -10,6 +10,7 @@ use std::time::{Duration, Instant};
 use serde_json::Value;
 
 use super::bridge::Pump;
+use super::fingerprint::Session;
 use super::game_replay;
 use super::queue::{Event, Folder, Limits, Queue, Report, Stamp, unix_now};
 use super::ticks;
@@ -211,7 +212,7 @@ pub struct Watcher {
     data: PathBuf,
     game: PathBuf,
     config: Config,
-    fingerprint: Arc<dyn Fn() -> Option<Value> + Send + Sync>,
+    fingerprint: Session,
     integrity: Value,
     say: Arc<dyn Fn(&str) + Send + Sync>,
 }
@@ -222,7 +223,7 @@ impl Watcher {
     /// With Time Trial boards off or nobody signed in, the laps are still collected into the outbox and
     /// nothing leaves the machine. With `retry_nonce` the session nonce the start could not get is asked
     /// for again on a thread of its own, for `game_build`. Each lap is kept with `integrity`, what the session did about the
-    /// integrity module, for its upload meta.
+    /// integrity module, and the addon set `fingerprint` holds for the session, for its upload meta.
     #[allow(clippy::too_many_arguments)]
     pub fn start(
         data: &Path,
@@ -231,7 +232,7 @@ impl Watcher {
         retry_nonce: bool,
         game_build: Option<String>,
         integrity: Value,
-        fingerprint: impl Fn() -> Option<Value> + Send + Sync + 'static,
+        fingerprint: Session,
         say: impl Fn(&str) + Send + Sync + 'static,
     ) -> Self {
         let say: Arc<dyn Fn(&str) + Send + Sync> = Arc::new(say);
@@ -255,7 +256,7 @@ impl Watcher {
             data: data.to_owned(),
             game: game.to_owned(),
             config: config.clone(),
-            fingerprint: Arc::new(fingerprint),
+            fingerprint,
             integrity,
             say,
         };
@@ -264,7 +265,7 @@ impl Watcher {
         w.thread = std::thread::Builder::new()
             .name("tt-laps".into())
             .spawn(move || {
-                let mut cached: Option<Option<Value>> = None;
+                let mut first = FirstLap::default();
                 while !stop.load(Ordering::Relaxed) {
                     let laps = has_laps(&data, &game);
                     if laps && (waiting_for_replay(&data, &game) || waiting_for_marks(&data, &game)) {
@@ -272,12 +273,19 @@ impl Watcher {
                         continue;
                     }
                     if laps || has_outbox(&data) {
-                        let print = cached.get_or_insert_with(|| fingerprint()).clone();
+                        let asked = Instant::now();
+                        let print = fingerprint.get();
+                        if laps {
+                            first.seen(newest_lap(&data, &game), asked.elapsed());
+                        }
                         let stamp = Stamp {
                             fingerprint: print.unwrap_or(Value::Null),
                             integrity: integrity.clone(),
                         };
-                        pass(&data, &game, &config, Some(&stamp), None, &*say);
+                        let report = pass(&data, &game, &config, Some(&stamp), None, &*say);
+                        if let Some(line) = first.uploaded(&report) {
+                            say(&line);
+                        }
                         if laps {
                             replays(&data, &game, &config, &|| stop.load(Ordering::Relaxed), &*say);
                         }
@@ -332,7 +340,7 @@ impl Watcher {
             t.join().ok();
         }
         let stamp = has_laps(&self.data, &self.game).then(|| Stamp {
-            fingerprint: (self.fingerprint)().unwrap_or(Value::Null),
+            fingerprint: self.fingerprint.get().unwrap_or(Value::Null),
             integrity: self.integrity.clone(),
         });
         pass(
@@ -343,6 +351,34 @@ impl Watcher {
             Some(Instant::now() + FINAL_SWEEP),
             &*self.say,
         );
+    }
+}
+
+/// When the session's first lap was written and how long its pass waited for the fingerprint, until the run log
+/// says how long after it was written it reached the server.
+#[derive(Default)]
+struct FirstLap {
+    written: Option<std::time::SystemTime>,
+    waited: Duration,
+    told: bool,
+}
+
+impl FirstLap {
+    fn seen(&mut self, written: Option<std::time::SystemTime>, waited: Duration) {
+        if self.written.is_none() {
+            self.written = written;
+            self.waited = waited;
+        }
+    }
+
+    fn uploaded(&mut self, report: &Report) -> Option<String> {
+        let written = self.written.filter(|_| !self.told && report.uploaded > 0)?;
+        self.told = true;
+        Some(format!(
+            "first lap of the session uploaded {:.1} s after it was written, {:.1} s of it waiting for the addon set fingerprint",
+            written.elapsed().unwrap_or_default().as_secs_f64(),
+            self.waited.as_secs_f64()
+        ))
     }
 }
 
@@ -402,7 +438,7 @@ fn pass(
     stamp: Option<&Stamp>,
     deadline: Option<Instant>,
     say: &dyn Fn(&str),
-) {
+) -> Report {
     let api = token(data, config).map(|t| match deadline {
         Some(d) => Api::new(&t).within(d.saturating_duration_since(Instant::now())),
         None => Api::new(&t),
@@ -420,7 +456,7 @@ fn pass(
                 toast(data, &queue, &e, say);
             }
         },
-    );
+    )
 }
 
 #[cfg(test)]
@@ -818,6 +854,108 @@ mod tests {
         );
         assert_eq!((r.uploaded, r.waiting), (0, 2));
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    struct Counted(Arc<std::sync::atomic::AtomicUsize>);
+
+    fn counted_print() -> crate::online::multiplayer::fingerprint::Fingerprint {
+        crate::online::multiplayer::fingerprint::Fingerprint::new(
+            crate::game_folder::baseline::Identity {
+                build_id: "1".into(),
+                exe_sha256: "e".repeat(64),
+            },
+            Vec::new(),
+            Default::default(),
+            None,
+        )
+    }
+
+    impl super::super::fingerprint::Setup for Counted {
+        fn inputs(&self) -> super::super::fingerprint::Inputs {
+            super::super::fingerprint::Inputs::default()
+        }
+
+        fn fingerprint(&self) -> Option<crate::online::multiplayer::fingerprint::Fingerprint> {
+            self.0.fetch_add(1, Ordering::SeqCst);
+            Some(counted_print())
+        }
+
+        fn registry_ids(&self) -> Value {
+            Value::Null
+        }
+    }
+
+    fn written_long_ago(path: &Path, bytes: &[u8]) {
+        std::fs::write(path, bytes).unwrap();
+        let file = std::fs::File::options().write(true).open(path).unwrap();
+        file.set_modified(std::time::SystemTime::now() - Duration::from_secs(60))
+            .unwrap();
+    }
+
+    #[test]
+    fn the_session_laps_carry_the_fingerprint_its_start_worked_out_and_the_finish_does_not_redo_it() {
+        let (root, data, game) = temp("session-print");
+        let [laps, _] = laps_dirs(&data, &game);
+        std::fs::create_dir_all(&laps).unwrap();
+        let made = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let session = Session::start(Counted(made.clone()), |_| {});
+        let end = Instant::now() + Duration::from_secs(20);
+        while made.load(Ordering::SeqCst) == 0 {
+            assert!(
+                Instant::now() < end,
+                "the session start never worked the fingerprint out"
+            );
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        written_long_ago(&laps.join("20261122T000001-1.swlap"), &lap_with_nonce(91000, "n"));
+        let w = Watcher::start(
+            &data,
+            &game,
+            &Config::default(),
+            false,
+            None,
+            Value::Null,
+            session,
+            |_| {},
+        );
+        let queue = Queue::new(&data);
+        while queue.list(Folder::Outbox).is_empty() {
+            assert!(Instant::now() < end, "the watcher never collected the lap");
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        written_long_ago(&laps.join("20261122T000002-1.swlap"), &lap_with_nonce(92000, "n"));
+        w.finish();
+        let outbox = queue.list(Folder::Outbox);
+        assert_eq!(outbox.len(), 2);
+        let wire = crate::online::timetrial::fingerprint::wire(&counted_print());
+        for e in &outbox {
+            assert_eq!(e.waiting.as_ref().map(|w| &w.fingerprint), Some(&wire));
+        }
+        assert_eq!(made.load(Ordering::SeqCst), 1);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn the_run_log_says_once_how_long_the_first_lap_took_to_reach_the_server() {
+        let mut first = FirstLap::default();
+        let written = std::time::SystemTime::now() - Duration::from_secs(12);
+        first.seen(Some(written), Duration::from_millis(2500));
+        first.seen(Some(std::time::SystemTime::now()), Duration::ZERO);
+        assert_eq!(first.uploaded(&Report::default()), None);
+        let sent = Report {
+            uploaded: 1,
+            ..Report::default()
+        };
+        let line = first.uploaded(&sent).unwrap();
+        assert!(
+            line.starts_with("first lap of the session uploaded 12."),
+            "{line}"
+        );
+        assert!(
+            line.ends_with(", 2.5 s of it waiting for the addon set fingerprint"),
+            "{line}"
+        );
+        assert_eq!(first.uploaded(&sent), None);
     }
 
     #[test]

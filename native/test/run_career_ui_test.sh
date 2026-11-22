@@ -4,6 +4,7 @@ SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
+. "$(dirname "$SELF")/lib/game_run.sh"
 . ./game_lock.sh
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-career-ui}
@@ -47,7 +48,7 @@ cp "$OUT/t_career_ui.dll" "$OUT/game/swofty/addons/"
 cp "$OUT/t_old_wraps.dll" "$OUT/old/swofty/addons/"
 export WINEPREFIX="$OUT/prefix" WINEDLLOVERRIDES="version=n,b;mscoree,mshtml=;winemenubuilder.exe,winedbg.exe=d" WINEDEBUG=-all
 status=0
-timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" || status=1
+game_run "$OUT/game/F1_25.exe" || { echo "FAIL: the game exited with $?"; status=1; }
 LOG=$OUT/game/swofty/loader.log
 check() {
     if grep -qE "$2" "$LOG"; then echo "ok  : $1"; else echo "FAIL: $1"; status=1; fi
@@ -71,14 +72,14 @@ check "the wizard hooks asked for at load install after the ON_LOAD handlers" '\
 count "the career tile route is one core mixin set" 1 "core mixin set 'swofty_core\.dll \(career tile route\)': 1 mixin"
 count "no mixin conflicts" 0 '\[core\] conflict'
 echo "==== an addon that wraps the same functions and registers nothing, at the window stage after an early stage"
-T_EARLY=1 T_ONLY=t_old_wraps.dll SWOFTY_EARLY_STAGE=1 timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/old/F1_25.exe" || status=1
+T_EARLY=1 T_ONLY=t_old_wraps.dll SWOFTY_EARLY_STAGE=1 game_run "$OUT/old/F1_25.exe" || { echo "FAIL: old: the game exited with $?"; status=1; }
 LOG=$OUT/old/swofty/loader.log
 check "old: the core loaded at the early stage and the addon at the window stage" 'stage: window \(.*\), addons were loaded at the early stage'
 count "old: its four wraps install" 4 '\[core\] wrap (FeTile_Route_CareerItem|Game_SpeechSystem_PostLine|Game_DriverSelectHeader_SetTabState|Game_CareerWizard_StartsInF1) at 0x[0-9a-f]+ \(base\+0x[0-9a-f]+\) installed: t_old_wraps\.dll\(0\)[[:space:]]*$'
 count "old: the core offers no character, wizard or tile route hooks" 0 "core mixin set 'swofty_core\.dll \((character|wizard|career tile route)"
 count "old: no mixin conflicts" 0 '\[core\] conflict'
 echo "==== an addon whose site overlaps a core hook it asked for at init"
-T_ONLY=t_yield.dll timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/yield/F1_25.exe" || status=1
+T_ONLY=t_yield.dll game_run "$OUT/yield/F1_25.exe" || { echo "FAIL: yield: the game exited with $?"; status=1; }
 LOG=$OUT/yield/swofty/loader.log
 check "yield: the registration at init is ok" '\[t_yield\] start_in_f1 at init -> 0'
 check "yield: the core's start in F1 wrap and the addon's site conflict" '\[core\] conflict: wrap Game_CareerWizard_StartsInF1 at 0x[0-9a-f]+ overlaps site site_Test_StartsInF1Entry'

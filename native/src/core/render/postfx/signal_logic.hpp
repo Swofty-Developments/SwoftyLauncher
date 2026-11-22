@@ -51,7 +51,8 @@ enum Sig : int {
 };
 
 inline constexpr SignalInfo SIGNALS[SIGNAL_COUNT] = {
-    {"view.camera", SK_NAME, "cockpit tcam tcam_offset chase_near chase_far other trackside reverse_pod", "", false},
+    {"view.camera", SK_NAME, "cockpit tcam tcam_offset chase_near chase_far other trackside reverse_pod nose nose_alt wing", "",
+     false},
     {"view.replay", SK_BOOL, "", "", true},
     {"view.paused", SK_BOOL, "", "", true},
     {"view.photo", SK_BOOL, "", "", true},
@@ -106,6 +107,12 @@ inline std::string_view signal_value_name(int signal, size_t i)
             return {};
         at = end + 1;
     }
+}
+
+// The view.camera value of a view kind (UNKNOWN is 0, so kind 1 is value 0); -1 for unknown or a kind past the list.
+inline int view_camera_value(uint32_t kind)
+{
+    return kind >= 1 && !signal_value_name(S_VIEW_CAMERA, kind - 1).empty() ? int(kind - 1) : -1;
 }
 
 // The game's surface id (UDP m_surfaceType) as a value of car.surface: tarmac 0, kerb 1, rumble 2, grass 3,

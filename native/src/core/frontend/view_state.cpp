@@ -56,8 +56,8 @@ const runtime::Sig S_VIEWPORT_OWNER{
     3,
     7};
 
-const char *const CAMERA_NAMES[8] = {"unknown", "nose_cam",      "nose_cam_alt", "cockpit_cam",
-                                     "tv_pod",  "tv_pod_offset", "near_chase",   "far_chase"};
+const char *const CAMERA_NAMES[8] = {"wing",   "nose_cam",      "nose_cam_alt", "cockpit_cam",
+                                     "tv_pod", "tv_pod_offset", "near_chase",   "far_chase"};
 
 constexpr uint64_t pack(uint32_t kind, uint32_t flags, bool valid, uint32_t serial)
 {
@@ -135,9 +135,12 @@ uint32_t camera_kind(int value)
         return frontend::view::CHASE_NEAR;
     case 7:
         return frontend::view::CHASE_FAR;
+    case 0:
+        return frontend::view::WING;
     case 1:
+        return frontend::view::NOSE;
     case 2:
-        return frontend::view::OTHER;
+        return frontend::view::NOSE_ALT;
     default:
         return frontend::view::UNKNOWN;
     }
@@ -160,8 +163,8 @@ std::string flag_text(uint32_t flags)
 
 const char *kind_text(uint32_t kind)
 {
-    static constexpr const char *NAMES[] = {"unknown",   "cockpit", "tcam",      "tcam_offset", "chase_near",
-                                            "chase_far", "other",   "trackside", "reverse_pod"};
+    static constexpr const char *NAMES[] = {"unknown", "cockpit",   "tcam",        "tcam_offset", "chase_near", "chase_far",
+                                            "other",   "trackside", "reverse_pod", "nose",        "nose_alt",   "wing"};
     return kind < std::size(NAMES) ? NAMES[kind] : "unknown";
 }
 
@@ -244,10 +247,10 @@ void ViewState::camera(safetyhook::Context &ctx)
     if (secondary)
         return;
     if (value < 0 || value > 7)
-        value = 0;
+        value = -1;
     int was = camera_value.exchange(value, std::memory_order_relaxed);
     if (was != value)
-        swofty::log("[view] camera setting %s (%d)%s", CAMERA_NAMES[value], value,
+        swofty::log("[view] camera setting %s (%d)%s", value < 0 ? "unknown" : CAMERA_NAMES[value], value,
                     trust_camera ? "" : "; static only, not used for kind");
     recompute();
 }

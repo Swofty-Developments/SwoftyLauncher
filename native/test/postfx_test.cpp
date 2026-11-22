@@ -563,6 +563,19 @@ int main()
     CHECK(!ineligible(rear, REVERSE_POD, REPLAY, true));
     CHECK(ineligible(rear, TRACKSIDE, REPLAY, true));
 
+    When nose{view_bit("nose"), 0};
+    When nose_alt{view_bit("nose_alt"), 0};
+    CHECK(!ineligible(nose, NOSE, 0, true));
+    CHECK(ineligible(nose, NOSE_ALT, 0, true));
+    CHECK(!ineligible(nose_alt, NOSE_ALT, REPLAY, true));
+    CHECK(ineligible(nose_alt, NOSE, REPLAY, true));
+
+    When wing{view_bit("wing"), 0};
+    CHECK(!ineligible(wing, WING, 0, true));
+    CHECK(!ineligible(wing, WING, REPLAY, true));
+    CHECK(ineligible(wing, NOSE, REPLAY, true));
+    CHECK(ineligible(wing, OTHER, REPLAY, true));
+
     CHECK(view_bit("nope") == 0 && flag_bit("nope") == 0 && view_bit("unknown") == 0);
     CHECK(flag_text(0) == "-" && flag_text(PAUSED | MENU) == "paused+menu");
     CHECK(view_text(TCAM) == "tcam" && view_text(99) == "?");

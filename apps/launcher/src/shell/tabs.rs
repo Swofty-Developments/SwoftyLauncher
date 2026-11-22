@@ -54,6 +54,14 @@ impl Tab {
             Self::Store => Page::Store,
         }
     }
+
+    /// The page a click on the tab opens: Multiplayer for the Online tab with access to the rooms, else home().
+    pub fn home_with(self, access: bool) -> Page {
+        match self {
+            Self::Online if access => Page::Multiplayer,
+            tab => tab.home(),
+        }
+    }
 }
 
 pub const ACTIONS: usize = 3;
@@ -103,13 +111,14 @@ pub enum OnlineTab {
     TimeTrial,
 }
 
-/// The pages under the Online tab: Time Trial first, as in 1.10, then Multiplayer with access and Moderation for
-/// a Time Trial admin.
+/// The pages under the Online tab: Multiplayer first with access, then Time Trial, and Moderation for a Time
+/// Trial admin.
 pub fn online_pages(access: bool, admin: bool) -> Vec<Page> {
-    let mut pages = vec![Page::Online];
+    let mut pages = Vec::new();
     if access {
         pages.push(Page::Multiplayer);
     }
+    pages.push(Page::Online);
     if admin {
         pages.push(Page::Moderation);
     }
@@ -223,16 +232,23 @@ mod tests {
     }
 
     #[test]
-    fn online_opens_time_trial_with_access_or_without() {
-        assert!(Tab::Online.home() == Page::Online);
+    fn online_opens_multiplayer_with_access_and_time_trial_without() {
+        assert!(Tab::Online.home_with(true) == Page::Multiplayer);
+        assert!(Tab::Online.home_with(false) == Page::Online);
+        for tab in Tab::ALL {
+            assert_eq!(tab.home_with(true).tab(), Some(tab));
+            if tab != Tab::Online {
+                assert!(tab.home_with(true) == tab.home());
+            }
+        }
     }
 
     #[test]
-    fn time_trial_stays_the_first_online_page_and_multiplayer_follows_it_with_access() {
+    fn multiplayer_is_the_first_online_page_with_access() {
         assert!(online_pages(false, false) == vec![Page::Online]);
         assert!(online_pages(false, true) == vec![Page::Online, Page::Moderation]);
-        assert!(online_pages(true, false) == vec![Page::Online, Page::Multiplayer]);
-        assert!(online_pages(true, true) == vec![Page::Online, Page::Multiplayer, Page::Moderation]);
+        assert!(online_pages(true, false) == vec![Page::Multiplayer, Page::Online]);
+        assert!(online_pages(true, true) == vec![Page::Multiplayer, Page::Online, Page::Moderation]);
     }
 
     #[test]

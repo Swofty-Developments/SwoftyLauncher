@@ -6,6 +6,7 @@ SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
+. "$(dirname "$SELF")/lib/game_run.sh"
 . ./game_lock.sh
 OUT=${1:-$PWD/../build/wine-session-env}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
@@ -32,7 +33,7 @@ kept() { if [[ -e $2 ]]; then pass "$1"; else fail "$1"; fi; }
 run() {
     rm -f "$SEEN"
     [[ -w $GAME/swofty ]] && rm -f "$LOG" "${LOG%.log}.prev.log"
-    (cd "$GAME" && timeout 60 "${PIN[@]}" xvfb-run -a wine "$GAME/F1_25.exe" SWOFTY_T_A SWOFTY_T_B SWOFTY_T_C SWOFTY_LAUNCHER_SAVES SWOFTY_T_D) ||
+    (cd "$GAME" && game_run -t 60 "$GAME/F1_25.exe" SWOFTY_T_A SWOFTY_T_B SWOFTY_T_C SWOFTY_LAUNCHER_SAVES SWOFTY_T_D) ||
         fail "the fake game did not exit cleanly"
 }
 # write WRITTEN EXPIRES [SCHEMA [ASCII]]: the file, with its window as seconds from now.

@@ -9,6 +9,7 @@ SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
+. "$(dirname "$SELF")/lib/game_run.sh"
 . ./game_lock.sh
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=$(realpath -m "${1:-$PWD/../build/save-sandbox-test}")
@@ -66,8 +67,8 @@ play() {
     if [[ -n ${SETTINGS:-} ]]; then printf '%s' "$SETTINGS" >"$OUT/game/swofty/settings.json"; else rm -f "$OUT/game/swofty/settings.json"; fi
     rm -f "$OUT/game/swofty/launcher-saves.json"
     local code=0
-    env "$@" T_STEAM_DIR='Z:'"${OUT//\//\\}"'\steam\'"$name" SWOFTY_EARLY_STAGE=1 \
-        timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" >"$OUT/$name.out" 2>&1 || code=$?
+    (for v in "$@"; do export "$v"; done; T_STEAM_DIR='Z:'"${OUT//\//\\}"'\steam\'"$name" SWOFTY_EARLY_STAGE=1 \
+        game_run "$OUT/game/F1_25.exe") >"$OUT/$name.out" 2>&1 || code=$?
     grep -E '^(ok  |FAIL|ALL|SOME)' "$OUT/$name.out" | sed 's/^/      game: /'
     if [[ $code == "$want" ]]; then
         echo "ok  : $name: the game exited with $want"
@@ -142,7 +143,7 @@ EOF
 code=0
 cp "$OUT/bindings.nomount.json" "$OUT/game/swofty/addons/core/bindings.json"
 SWOFTY_TEST_RUN="$R" SWOFTY_TEST_TOKEN=$TOKEN SWOFTY_EARLY_STAGE=1 T_STEAM_DIR='Z:'"${OUT//\//\\}"'\steam\nobinding' \
-    timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" >"$OUT/nobinding.out" 2>&1 || code=$?
+    game_run "$OUT/game/F1_25.exe" >"$OUT/nobinding.out" 2>&1 || code=$?
 [[ $code == 91 ]] && echo "ok  : nobinding: the game exited with 91" || { echo "FAIL: nobinding: exit $code"; status=1; }
 check "a missing binding fails closed" 'TEST SANDBOX FAILED: Ne_SaveSystem2Win_Mount does not resolve on this build'
 python3 -c "import json,sys; s=json.load(open(sys.argv[1])); sys.exit(s['state']!='failed')" "$R/sandbox.json" &&

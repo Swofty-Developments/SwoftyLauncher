@@ -4,6 +4,7 @@ SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
+. "$(dirname "$SELF")/lib/game_run.sh"
 . ./game_lock.sh
 OUT=${1:-$PWD/../build/wine-log-fallback}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
@@ -24,7 +25,7 @@ check() {
 absent() {
     if [[ -e $2 ]]; then echo "FAIL: $1"; status=1; else echo "ok  : $1"; fi
 }
-run() { timeout 60 "${PIN[@]}" env "$@" xvfb-run -a wine "$GAME/F1_25.exe" || { echo "FAIL: the fake game did not exit cleanly"; status=1; }; }
+run() { (for v in "$@"; do export "$v"; done; game_run -t 60 "$GAME/F1_25.exe") || { echo "FAIL: the fake game did not exit cleanly (exit $?)"; status=1; }; }
 
 echo "==== the game folder takes the log"
 run

@@ -4,6 +4,7 @@ SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 NEEDS="zig wine xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
+. "$(dirname "$SELF")/lib/game_run.sh"
 . ./game_lock.sh
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-net-trace}
@@ -41,7 +42,7 @@ exact() {
 }
 run() {
     rm -f "$LOG" "$OUT/game/ports.txt"
-    (cd "$OUT/game" && timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe") || status=1
+    (cd "$OUT/game" && game_run "$OUT/game/F1_25.exe") || { echo "FAIL: the game exited with $?"; status=1; }
 }
 for mode in off 1 inline cap; do
     echo "==== SWOFTY_NET_TRACE=$mode"
