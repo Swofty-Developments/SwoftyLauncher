@@ -205,7 +205,7 @@ core/render/d3d12/hooking.cpp: if (!runtime::loader::install(h, reinterpret_cast
 core/render/d3d12/hooking.hpp: bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *what); => none
 core/render/d3d12/list_state.cpp: ok = install(*w.h, (w.slot == PSO1_SLOT ? vt4 : vt)[w.slot], w.detour, "ID3D12GraphicsCommandList state"); => outside d3d12
 core/render/d3d12/rtas_guard.cpp: ok = install(hook, target, reinterpret_cast<void *>(&build_rtas_hook), => outside d3d12
-core/render/d3d12/srv_clamp.cpp: bool ok = vt && VirtualProtect(&vt[SRV_SLOT], sizeof(void *), PAGE_READWRITE, &old); => outside d3d12
+core/render/d3d12/srv_clamp.cpp: bool ok = install(hooks.create_srv, target, detour, "ID3D12Device::CreateShaderResourceView"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: if (!install(*w.h, target, w.detour, w.what)) { => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.present, sc_vt[8], reinterpret_cast<void *>(&present_hook), "IDXGISwapChain::Present"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.present1, sc_vt[22], reinterpret_cast<void *>(&present1_hook), "IDXGISwapChain1::Present1"); => outside d3d12
