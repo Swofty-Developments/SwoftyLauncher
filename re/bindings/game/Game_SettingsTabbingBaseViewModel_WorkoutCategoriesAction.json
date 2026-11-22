@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141dd66c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141dd66c0.c;str:s_SettingsTabbingBaseViewModel_WorkoutCategoriesAction;xref:0x141da5dbe,0x141dd3eba",
-  "notes": "cxx=game::SettingsTabbingBaseViewModel::workoutCategoriesAction; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "notes": "Full read; logged pretty-function (OPTIONS-UI) is its own. Global 0x14606aa34 (0/1/2) picks new/old lists among this+0xa18/+0xa38/+0xa58; per DataPtr in param_2 (stride 0x10, optional name filter param_3 vs +0x70) sets open action +0xe8 / close action +0x108 to 'stay'/'new'/'delete'/'snap' by category id or block char, logging open/close action category|block. Ends with 0x140973e20 on this+0x9b0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.settings_tabbing_base_view_model_workout_categories_action",

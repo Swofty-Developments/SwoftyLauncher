@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c15e10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140c15e10.c;xref:0x140c1b49c,0x140c1b4bb,0x140c1b4d7,0x140c1b4f3,0x140c1b50f,0x140c1b711,0x140c1b856,0x140c1b888,0x140c1b8a4,0x140c1b8c0,0x140c1b8dc,0x140c1b8f8,0x140c1c0bc,0x140c1c72b,0x140c1ed67,0x140c1ef01,0x149a3b4e0",
-  "notes": "Preset list builder of the car setup VM (calls from 0x140c1b1a0, 0x140c1bf00, 0x140c1c360, 0x140c1e690, 0x140c1edd0, 0x149a3b3e0)."
+  "notes": "Renamed: fills ONE preset slot (idx dl 0..5; Initialise 0x140c1b1a0 calls it with dl=0,1,2,3,4...). Child VM node named from table 0x14568ed08 (maximum_downforce, medium_downforce, balanced, medium_speed, maximum_speed, custom); fields short_name..is_current_set_preset bound at this+idx*0x120+0x68; lng_cs_preset_N_title/_description, icon '#overrides.tablet.cs_preset_icons.%s_...'; idx 5 custom (loctag number_id); then num_presets on root +8. (lane owner review requested) Better name: Game_CarSetupVm_PopulatePresetSlot (bound record keeps its name)."
  },
  "signature": {
   "id": "game.car_setup_vm_populate_presets",

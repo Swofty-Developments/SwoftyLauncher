@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14246fde0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Driver customisation replaced with stat id %s | Couldn't find array to replace driver customisation with stat id %s | Failed to add driver customisation with stat id %s'"
+  "evidence": "decomp:re/decomp/14246fde0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x1414011a7,0x14142db8d,0x14144a4c2,0x14144a54a,0x14144a600,0x14144a687,0x14144b15e,0x14144b266,0x14144b325,0x14144b3b9,0x14166e129,0x1418a43b7,0x1418a4580,0x1418a4827,0x1418a49e3,0x1418a4bd0,0x1418a4e77,0x1418a567b,0x1418a6d5b,0x1418a7f1b,0x1418a90cb,0x1418aa1eb,0x142024ea4,0x142030a2d,0x14203114f,0x14203913a,0x1420397bf,0x142040635,0x14204a65d,0x14204f274,0x14204f99f,0x142053ec6,0x142266df6,0x142572d53,0x142ea8a0b,0x14313bba8,0x14313c4e0,0x14ba66fec,0x14ba78552,0x14ba842a2,0x14bab7a28,0x14bac1494,0x14c6645f3",
+  "notes": "(entrants, key, record): kind 0 refused -> 5; list [entrants+0x298+kind*0x10] missing -> 1; equal-record check via 0x14246d940; removes with 0x14246fbf0 (same as RemoveDriverCustomisation) and adds via 0x140cddb50; fail -> 3, else 0/2. Logs on ENTRANTS_SYSTEM. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_replace_driver_customisation",

@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "site_Car_StepVehicle_LateSuspensionCall",
+ "table": "globals",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1446dcf44",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446dcf44",
+  "notes": "call Car_Suspension_Integrate (0x1446e1920) in Car_Physics_StepVehicle (0x1446dceb0), handling-version branch: cmp [[sim+0x18]+0x9f40],7 at 0x1446dcf20; >= 7 runs 0x1446dafa0, Car_Suspension_SolveWheels (0x1446dee60, xmm1 = [sim+0xa48]), then this call, then jmp 0x1446dcf6b; < 7 calls the integrator first at 0x1446dcf4e. rcx = sim (CarDynamics). The return address is 0x1446dcf49, so a wrap on Car_Suspension_Integrate can tell this late call (after the wheel solve) from the early one and from Car_Dynamics_StepSubstep (0x1446e42f0, 0x1446e42fa). Used by vmknolle dukati-lean (physics roll)."
+ },
+ "signature": {
+  "id": "car.step_vehicle_late_suspension_call",
+  "section": ".xtls",
+  "pattern": "48 89 F1 E8 ?? ?? ?? ?? EB 20 48 89 F1",
+  "match": "0x1446dcf41",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446dcf44",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Car_StepVehicle_LateSuspensionCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/dukati-lean"
+  ]
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1446dcf41",
+    "target": "0x1446dcf44"
+   },
+   "sigcheck": "passed",
+   "digest": "443c538a5170795070ff930eec82ada985e809a55b4474de3b8aed8e5b001c36"
+  }
+ ]
+}

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436db620",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1436db620.c;str:s_StateLaunch_DefineSubTasks;xref:0x14585c100",
-  "notes": "StateLaunch::defineSubTasks (vt cell 0x14585c100): logs flow-state changes (online waits for document close, offline closes UI flow); calls 0x1436dc120 and 0x1436dc850."
+  "notes": "game::StateLaunch::defineSubTasks (str 0x14585c546; vt cell 0x14585c100). If [+0xc08]==0: clears task list [+0xd8], scans [+0xc88], may queue 'RunF1WRequestSubTask' (+0xcdd=1, 0x144426920). Then [[+0xc90]+0x3c0]+0x1a8; 0x1436dc120 KickInappropriatePlayers -> 0x1436dc850 FinaliseNetworkDocuments; m_flowState +0xce0 = 0 (online, wait for document close) or 2 (offline, close UI flow), NETWORK logs. (lane owner review requested)"
  },
  "signature": {
   "id": "game.state_launch_define_sub_tasks",

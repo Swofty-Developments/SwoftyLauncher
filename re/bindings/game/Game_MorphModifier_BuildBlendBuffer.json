@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143a356e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143a356e0.c;xref:0x143a35e8a",
-  "notes": "Per-morph builder called from Game_MorphModifier_BuildTargets (0x143a35e8a) when the target set has more than one entry."
+  "notes": "Called by 0x143a35d90 per source when target count (param_2+8, stride 0x10) != 1. Source channels via vcalls +0x28/+0x38/+0x30; per target t builds 0x38 obj (vtable 0x1458a16d8) of u16 per channel = target channel index + group offset (-1 none), cache 0x14618ce40 (0x28000 per t); stored at param_4+8[param_5+t*param_6]. Not a blend buffer. (lane owner review requested) Better name: Game_MorphModifier_BuildChannelMapMultiTarget (bound record keeps its name)."
  },
  "signature": {
   "id": "game.morph_modifier_build_blend_buffer",

@@ -868,6 +868,57 @@ static void grid_limit_tests()
     expect(resume.get() == 21 && line.find("20 -> 21") != std::string::npos, "a new raise first puts the earlier one back");
     load.restore();
     expect(resume.get() == 20, "the Continue path's put-back restores max_entrants to 20");
+
+    expect(era::grid_raise_cap(0) == 22 && era::grid_raise_cap(20) == 22 && era::grid_raise_cap(22) == 22 &&
+               era::grid_raise_cap(23) == 23 && era::grid_raise_cap(24) == 24 && era::grid_raise_cap(26) == 24,
+           "a package past 22 seats raises the cap to its seats, at most the 24 of My Team's stock grid");
+
+    GridSetup after_2013(22);
+    era::GridLimit sw2010;
+    line = sw2010.raise(after_2013.mem, 24, 24);
+    expect(after_2013.get() == 24 && line.find("22 -> 24 for a list of 24 cars") != std::string::npos &&
+               line.find("clamped") == std::string::npos,
+           "a 24-seat package box raises the 22 a 22-seat package left at boot to 24 (" + line + ")");
+    sw2010.restore();
+    expect(after_2013.get() == 22, "its put-back restores the boot's 22");
+
+    GridSetup boot_24(24);
+    era::GridLimit sw2011;
+    expect(sw2011.raise(boot_24.mem, 24, 24).empty() && boot_24.get() == 24,
+           "a 24-seat package box leaves a boot limit of 24 alone");
+    GridSetup boot_20(20);
+    line = sw2011.raise(boot_20.mem, 24, 24);
+    expect(boot_20.get() == 24 && line.find("20 -> 24") != std::string::npos, "from 20 too");
+    sw2011.restore();
+
+    GridSetup raw(22);
+    era::GridLimit raw_list;
+    expect(raw_list.raise(raw.mem, 24).empty() && raw.get() == 22,
+           "a 24-car list with no content.package stays at the stock 22 cars");
+    GridSetup raw_20(20);
+    line = raw_list.raise(raw_20.mem, 24, 0);
+    expect(raw_20.get() == 22 && line.find("clamped to 22 cars, the stock grid") != std::string::npos,
+           "and is clamped to 22 from 20 (" + line + ")");
+    raw_list.restore();
+
+    GridSetup sw2013(20);
+    era::GridLimit eleven;
+    line = eleven.raise(sw2013.mem, 22, 22);
+    expect(sw2013.get() == 22 && line.find("clamped") == std::string::npos, "a 22-seat package box races its 22 cars");
+    eleven.restore();
+    GridSetup grown(20);
+    line = eleven.raise(grown.mem, 24, 22);
+    expect(grown.get() == 22 && line.find("clamped to 22 cars") != std::string::npos,
+           "a list grown past its 22-seat package keeps the stock 22");
+    eleven.restore();
+
+    GridSetup wide(20);
+    era::GridLimit big;
+    line = big.raise(wide.mem, 26, 26);
+    expect(wide.get() == 24 && line.find("clamped to 24 cars, the stock My Team grid") != std::string::npos,
+           "a 26-seat package box is clamped to the 24 cars of My Team's stock grid (" + line + ")");
+    big.restore();
+    expect(wide.get() == 20, "its put-back restores 20");
 }
 
 static void front_end_leak_tests()

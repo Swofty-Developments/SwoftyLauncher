@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c0e650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141c0e650.c;pat:log-message-cxx;xref:0x14573be38",
-  "notes": "HudCustomisationViewModel::onScreenActivated (log string); vtable cell 0x14573be38."
+  "notes": "Log 'HudCustomisationViewModel::onScreenActivated - Calling setHudScreenActive(true)'. Binds view-model props (tool tips, selected element/filter/layout index, editing_*, is_full_map, options_popup, opacity/scale sliders, mini_map/full_track_map, map_rotation_toggle), posts 'EnteredHudCustomisationScreen', sets [+0x290]+0x699=1, +0xab0=1. Vtable cell 0x14573be38. (lane owner review requested)"
  },
  "signature": {
   "id": "game.hud_customisation_view_model_on_screen_activated",

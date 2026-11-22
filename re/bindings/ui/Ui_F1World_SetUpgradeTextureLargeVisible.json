@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "ui",
   "proto": "void FUN(void *view, void *ctx)",
-  "evidence": "decomp:re/decomp/141ac34b0.c;xref:0x141ac7513;xref:0x141ac752f",
-  "notes": "myteam-g1: UI binding code; upgrade_texture_large/visible for the F1 World loadout card (1408 lines). Static, string-key driven."
+  "evidence": "decomp:re/decomp/141ac34b0.c;xref:0x141ac7513,0x141ac752f",
+  "notes": "Renamed: VM holder ctor (returns param_1) for an F1 World item card: rarity(_enum/_colour), item_type, name, description, amount_formatted, crafting_slider_*, icon, resource_icon, powerful_gear, upgrade_texture_*, bullet_point_icon, mods, requirements(_met), tech_level_min/max, entry_%d. Better name: Ui_F1World_ItemCardVm_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.f1_world_set_upgrade_texture_large_visible",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140181720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140181720.c;pat:log-message-cxx;xref:0x14018b453,0x14018cbb2",
-  "notes": "SkinnedActor::destroy (log ACTOR_SET_BINDING); pdata 0x1d8f bytes. Callers 0x14018b453 (in 0x14018a550), 0x14018cbb2 (in 0x14018cb90)."
+  "notes": "Not the destroy itself: spinlock +0x5c4, drains pending vectors +0x710..+0x8b0 into live lists +0x5d0..+0x6b0 (activate/deactivate vcall +0x108, remove + vcall +8/+0x10, +0x730 vcall +0xe8 -> destroy queue +0x5f0), then destroys queued actors and children (+0xaa) with log 'SkinnedActor::destroy %p' (ACTOR_SET_BINDING), cb [0x39], vcall +0x1a0, 1000 us QPC budget. Callers 0x14018a550 DestroyScene, 0x14018cb90. (lane owner review requested) Better name: Game_SceneManager_FlushActorQueues (bound record keeps its name)."
  },
  "signature": {
   "id": "game.skinned_actor_destroy",

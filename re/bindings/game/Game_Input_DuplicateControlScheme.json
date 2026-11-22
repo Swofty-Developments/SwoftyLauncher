@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a5f900",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a5f900.c;pat:log-message-method;xref:0x1457bb700",
-  "notes": "INPUT 'duplicateControlScheme name:%s' (log string)."
+  "notes": "Body read in full. Source scheme via vt+0x20 (null -> error 2); allocates a 0x168 control scheme (vtable 0x1457bb690, default name '<unknown/control-scheme>'), unique id (+0x1e8 counter <<8|2, skips ids in use), copies the name (0x142a5de60) and per-device maps (0x142a5f740 x4, 0x142a5f570), appends to lists +0x168 and +0x1a8, logs INPUT 'duplicateControlScheme name:%s', 0x142a5e0c0 per device, 0x142a5b910, runs callbacks +0x1f8. Only ref vt cell 0x1457bb700. (lane owner review requested)"
  },
  "signature": {
   "id": "game.input_duplicate_control_scheme",

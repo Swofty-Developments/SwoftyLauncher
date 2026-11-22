@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431235d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1431235d0.c;pat:log-message-cxx",
-  "notes": "network::AttributeSetReplicationManager::handleAttributeSetRemove: looks up set key msg+0x10 in map [mgr+0x30]+0xa8; refuses if it belongs to the lead player; else removes it (0x140b44530 on +0x80) and posts msg vtable 0x14566bd20 on the bus."
+  "evidence": "decomp:re/decomp/1431235d0.c;pat:log-message-cxx;xref:0x14febce7b",
+  "notes": "Read in full. Address taken by lea 0x14febce7b in 0x14febce50 (handler registration). Logs 'Received a removal message ... key %u'; key msg+0x10 looked up in robin-hood map [mgr+0x30]+0xa0..+0xd4; entry live: key == local lead player id -> 'belongs to the lead player...'; else 0x140b44530([mgr+0x30]+0x80,key), posts msg vtable 0x14566bd20 {key} via Ne_Post_BusMessage, logs 'Removed attribute set'. Missing -> 'does not have an attribute set'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.attribute_set_replication_manager_handle_attribute_set_remove",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ac9260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142ac9260.c;str:s_OptionsSystem_OnGameModeChanged;xref:0x142ac7ae3,0x142ac7b10",
-  "notes": "lea 0x142ac7ae3, 0x142ac7b10. Pretty function OptionsSystem::onGameModeChanged(NeMessage&); clears replicated restrictions; calls 0x142ad42e0."
+  "notes": "OPTIONS onGameModeChanged (lea in 0x142ac7aa0): resets +0x480 set and +0x670 map, 0x142ad42e0(this,0); mode from msg+0x10 +0xf08 -> this+0x460, masks 0x1429121a0; 0x142ad4800/4990/4be0. No session: logs 'Clearing replicated restrictions', clears +0x580 (0x38 recs). Re-checks old mode +0x468 options (0x142abc3d0); state 0..4 -> 0x142aca2a0; returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.options_system_on_game_mode_changed",

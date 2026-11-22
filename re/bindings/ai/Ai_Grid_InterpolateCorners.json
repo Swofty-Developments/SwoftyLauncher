@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140692760",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ai",
   "proto": "-",
   "evidence": "decomp:re/decomp/140692760.c;xref:0x1405f964e",
-  "notes": "(grid, a, b, fn, range): iterates cells of a 2D bucket grid (dims +0xb0/+0xb8, cells +0x10) over the index range and calls fn(cell, a, b). Caller: Ai_Read_GeneralSettings_3. cv0-verify: bilinear blend of up to four corner cells, not a for-each"
+  "notes": "(grid, a, b, fn, q): bilinear interpolation, not a for-each: evaluates fn(cell, a, b) on up to four corner cells of grid+0x10 (dims +0xb0/+0xb8; indices q+0x10/+0x18/+0x20/+0x28/+0x30), skipping duplicate corners, then lerps by q[1] with axis table grid+0x68 (q+0x20/+0x28) and by q[0] with grid+0x38 (q+0x10/+0x18). (lane owner review requested)"
  },
  "signature": {
   "id": "ai.grid_for_each_in_cell_range",

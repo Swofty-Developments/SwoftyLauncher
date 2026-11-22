@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a27410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *view)",
   "evidence": "decomp:re/decomp/141a27410.c;xref:0x145727618",
-  "notes": "Career setup wizard view (vtable cell 0x145727618): Ui_CareerSetup_BuildScreenBindings, posts a bus message (Ne_Post_BusMessage), builds 'modes' tiles (career_wizard_small_tile_button) with title, subtitle, cash, acclaim, facility_level. Better name: Career_Wizard_BuildModeTiles (bound record keeps its name)."
+  "notes": "Vtable cell 0x145727618. Ui_CareerSetup_BuildScreenBindings, Ne_Post_BusMessage(0x145732800), resets 'modes' list +0x380/+0x3a0; per mode entry of component 0x14605b008 (+0x498..+0x4a0, 0xa8 each) binds title +0x40, subtitle +0x68, cash (+0x4 plus type-1 resource), acclaim, facility_level +0x8; appends 200-byte tile +0x3c8 (djb2 of id +0x90, byte +0xd), calls 0x141a22240; ends 0x143879900, 0x143875010. (lane owner review requested) Better name: Career_Wizard_BuildModeTiles (bound record keeps its name)."
  },
  "signature": {
   "id": "career.update_acclaim_and_facility_level",

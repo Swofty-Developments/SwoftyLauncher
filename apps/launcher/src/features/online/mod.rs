@@ -10,10 +10,7 @@ mod profile;
 mod ranking;
 mod season;
 mod tracks;
-mod trial;
 mod widgets;
-
-pub(crate) use frame::{RankFit, open_link, preview_card};
 
 use crate::shell::Shell;
 use crate::shell::host::{Host, Hosted, reports_nothing};
@@ -58,8 +55,6 @@ pub(crate) enum Target {
     Season(String, String),
     Board(Box<TrackCard>, String),
     Profile(Driver),
-    /// A track that opens in place onto the top of its board.
-    Track(BoardKey),
 }
 
 pub(crate) struct Online {
@@ -71,8 +66,6 @@ pub(crate) struct Online {
     seasons: HashMap<String, Load<SeasonPage>>,
     profiles: HashMap<String, Load<Profile>>,
     board: Option<(BoardKey, Load<BoardPage>)>,
-    peek: Peek<Load<BoardPage>>,
-    hub_season: Option<String>,
     category: Category,
     board_category: Option<Category>,
     more: bool,
@@ -86,7 +79,6 @@ pub(crate) struct Online {
     my_times: HashMap<BoardKey, u64>,
     feeds: HashMap<String, Feed>,
     handles: HashMap<String, UniformListScrollHandle>,
-    chips: ScrollHandle,
     me: Option<Me>,
     setup_open: Option<String>,
     setup_compare: bool,
@@ -110,8 +102,6 @@ impl Online {
             seasons: HashMap::new(),
             profiles: HashMap::new(),
             board: None,
-            peek: Peek::default(),
-            hub_season: None,
             category: Category::load(data),
             board_category: None,
             more: false,
@@ -125,7 +115,6 @@ impl Online {
             my_times: HashMap::new(),
             feeds: HashMap::new(),
             handles: HashMap::new(),
-            chips: ScrollHandle::new(),
             me: None,
             setup_open: None,
             setup_compare: false,
@@ -190,7 +179,6 @@ impl Online {
         o.seasons.clear();
         o.profiles.clear();
         o.feeds.clear();
-        let open = o.peek.reset();
         o.api.set_token(needs.token.map(str::to_owned));
         let me_api = o.api.clone();
         cx.spawn(async move |this, cx| {
@@ -260,20 +248,14 @@ impl Online {
                         let name = card.name.clone();
                         Self::go(host, Target::Board(Box::new(card), name), cx);
                     }
-                    Self::open_start_track(host, cx);
                     return;
                 }
                 host.split().0.overview = Load::from(overview);
-                Self::open_start_track(host, cx);
                 cx.notify();
             })
             .ok();
         })
         .detach();
-        if let Some(key) = open {
-            Self::load_peek(host, key, cx);
-        }
-        let o = host.split().0;
         match o.trail.current().clone() {
             Screen::Landing => {}
             Screen::Season(id) => Self::load_season(host, &id, cx),
@@ -479,84 +461,6 @@ impl Online {
         cx.notify();
     }
 
-    pub(crate) fn toggle_track<H: Host<Self>>(host: &mut H, key: BoardKey, cx: &mut Context<H>) {
-        if host.split().0.peek.toggle(key.clone()) {
-            Self::load_peek(host, key, cx);
-        }
-        cx.notify();
-    }
-
-    fn load_peek<H: Host<Self>>(host: &mut H, key: BoardKey, cx: &mut Context<H>) {
-        let o = host.split().0;
-        o.peek.put(key.clone(), Load::Loading);
-        let (api, cat, epoch) = (o.api.clone(), o.category, o.epoch);
-        cx.spawn(async move |this, cx| {
-            let k = key.clone();
-            let page = cx
-                .background_executor()
-                .spawn(async move { api.board(&k, &cat, 0) })
-                .await;
-            this.update(cx, |host, cx| {
-                if host.split().0.epoch != epoch {
-                    return;
-                }
-                if let Ok(p) = &page {
-                    Self::prefetch(
-                        host,
-                        art_urls(p.rows.iter().take(PEEK_ROWS).map(|r| &r.driver)),
-                        cx,
-                    );
-                }
-                host.split().0.peek.put(key, Load::from(page));
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-    }
-
-    /// Opens the track `SWOFTY_ONLINE_TRACK` names, of the season the page lists, in a debug build.
-    fn open_start_track<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
-        let value = match std::env::var("SWOFTY_ONLINE_TRACK") {
-            Ok(value) if cfg!(debug_assertions) => value,
-            _ => return,
-        };
-        let o = host.split().0;
-        let Load::Ready(overview) = &o.overview else {
-            return;
-        };
-        let season = if std::env::var_os("SWOFTY_ONLINE_START").is_some() {
-            overview.seasons.first()
-        } else {
-            hub_season(&overview.seasons, o.hub_season.as_deref(), o.recents.list())
-        };
-        if let Some(key) = season.and_then(|s| start_track(&value, &s.id))
-            && !o.peek.is_open(&key)
-        {
-            Self::toggle_track(host, key, cx);
-        }
-    }
-
-    /// `key` open in place on the Time Trial page's root, with its `season` listed.
-    pub(crate) fn show_track<H: Host<Self>>(
-        host: &mut H,
-        season: String,
-        key: BoardKey,
-        cx: &mut Context<H>,
-    ) {
-        Self::jump(host, 1, cx);
-        Self::pick_season(host, season, cx);
-        if !host.split().0.peek.is_open(&key) {
-            Self::toggle_track(host, key, cx);
-        }
-    }
-
-    pub(crate) fn pick_season<H: Host<Self>>(host: &mut H, id: String, cx: &mut Context<H>) {
-        Self::load_season(host, &id, cx);
-        host.split().0.hub_season = Some(id);
-        cx.notify();
-    }
-
     pub(crate) fn load_profile<H: Host<Self>>(host: &mut H, id: &str, cx: &mut Context<H>) {
         let o = host.split().0;
         if matches!(o.profiles.get(id), Some(Load::Ready(_) | Load::Loading)) {
@@ -596,11 +500,8 @@ impl Online {
 
     pub(crate) fn go<H: Host<Self>>(host: &mut H, target: Target, cx: &mut Context<H>) {
         let o = host.split().0;
-        if !matches!(target, Target::Track(_)) {
-            o.cursor = None;
-        }
+        o.cursor = None;
         match target {
-            Target::Track(key) => return Self::toggle_track(host, key, cx),
             Target::Season(id, name) => {
                 o.recents.visit(&id, &name);
                 o.recents.save(&o.data);
@@ -633,6 +534,20 @@ impl Online {
         o.trail.push(Screen::Season(id.clone()), name);
         Self::load_season(host, &id, cx);
         cx.notify();
+    }
+
+    /// `card`'s board on the Time Trial page, under its season `id` named `name`, as the page's own trail reaches
+    /// it.
+    pub(crate) fn open_track<H: Host<Self>>(
+        host: &mut H,
+        id: String,
+        name: String,
+        card: TrackCard,
+        cx: &mut Context<H>,
+    ) {
+        Self::open_recent(host, id, name, cx);
+        let label = card.name.clone();
+        Self::go(host, Target::Board(Box::new(card), label), cx);
     }
 
     pub(crate) fn back<H: Host<Self>>(host: &mut H, cx: &mut Context<H>) {
@@ -787,7 +702,7 @@ impl Online {
 }
 
 impl Shell {
-    /// What either Online page needs before it draws: the boards read once, the art watch and the track search.
+    /// What the Time Trial and Multiplayer pages need before they draw: the boards read once, the art watch and the track search.
     pub(crate) fn online_prepare(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         Online::enter(self, cx);
         self.online
@@ -801,22 +716,6 @@ impl Shell {
         }
     }
 
-    /// How Time Trial looks for this player: as in 1.10 without access to the rooms, linked with them with it.
-    pub(crate) fn trial_look(&self) -> TrialLook {
-        TrialLook::of(self.nav_mp())
-    }
-
-    /// The Time Trial tab's name with the player's place in the global ranking.
-    pub(crate) fn trial_tab_label(&self) -> String {
-        let rank = self
-            .account
-            .display_name()
-            .and(self.online.me.as_ref())
-            .and_then(|m| m.entry.as_ref())
-            .map(|e| e.rank);
-        crate::shell::tabs::trial_label(rank)
-    }
-
     pub(crate) fn online_page(
         &mut self,
         p: crate::ui::theme::Palette,
@@ -828,8 +727,7 @@ impl Shell {
         let crumbs = self.crumb_bar(OnlineTab::TimeTrial, None, p, cx);
         let banner = self.sign_in_banner(p, cx);
         let body = match self.online.trail.current().clone() {
-            Screen::Landing if self.trial_look().lists_seasons() => self.online_landing(p, cx),
-            Screen::Landing => self.trial_tab(p, cx),
+            Screen::Landing => self.online_landing(p, cx),
             Screen::Season(id) => self.online_season(&id, p, cx),
             Screen::Board(_) => self.online_board(p, cx),
             Screen::Profile(id) => self.online_profile(&id, p, cx),

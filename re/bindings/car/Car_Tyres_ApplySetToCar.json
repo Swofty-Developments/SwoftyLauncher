@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e94d20.c;xref:0x1403b7655,0x1403b773c",
-  "notes": "Applies a tyre set/compound (param_2 set index, param_3 car slot, param_5 compound ids) to a car model: clears dirty flag +0x9913, updates compound model visibility (Game_CompoundModelSet_SetTyreVisibility / SetWingVisibilityOnCar) and tyre state. Callers: Car_Tyres_ApplyStateToCarPair."
+  "notes": "Applies a tyre set/compound (param_2 set index, param_3 car slot, param_5/param_6 compound ids) to a car model: clears dirty flag +0x9913, re-applies compound slots (0x142e87870 x4, 0x142e87ab0, 0x142e87540), part-node caches, slot records +0x9920/+0x9938. Callers in 0x1403b7510 (KB: Car_Tyres_ApplyStateToCarPair)."
  },
  "signature": {
   "id": "car.tyres_apply_set_to_car",

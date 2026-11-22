@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144725390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144725390.c;pat:log-channel-SKIDMARKS_REPLAY;xref:0x1447277ef,0x144727802",
-  "notes": "Large replay routine (pdata 0x21df bytes) with SKIDMARKS_REPLAY logs rewindFadeMaker/QuadMaker/MarkMaker/MarkKiller/QuadKiller, replayMarkKiller/FadeMaker; calls Game_SkidmarksReplay_ApplyCommand and Game_SkidmarksReplay_UnpackRecord. Called from 0x1447275f0."
+  "notes": "Logs SKIDMARKS_REPLAY 'rewind frame %d' for ctx+0x2c, finds frame in index at ctx+0x46528, memcpy (0x1453784c0) header+sections (0x88 quads/marks, fades, 0x78 marks, 0x14 killers, 2-bit op stream +0x46454) from +0x49528. Under lock: ctx+0x28==0 plays ops forward (replay*Maker/Killer logs), else backward (rewind*). Queues cmds 0x13/99/0x23/0x30; if this+0x48 logs 'flush frame', calls 0x144723850. (lane owner review requested) Better name: Game_SkidmarksReplay_ApplyFrame (bound record keeps its name)."
  },
  "signature": {
   "id": "game.skidmarks_replay_rewind",

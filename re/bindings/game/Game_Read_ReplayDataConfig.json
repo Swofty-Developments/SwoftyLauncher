@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c02c90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142c02c90.c;pat:log-channel--;xref:0x14e46fc34",
-  "notes": "Replay controls VM bindings: replay_data.controls.* (pause, rewind, cameras, flashback, photo mode), progress0To1, can_flashback, icons."
+  "notes": "Ctor, not a config read: 32 VM node handles (stride 0x20, vtables 0x14565f6e0/0x14565f670/0x145670ca8) bound via 0x140971220 (string, default 'off'), 0x14084cde0 (bool), 0x140b3bf10 (float 1.0): 'replay_data.controls.pause/rewind/.../flashback/photo_mode', 'replay_data.progress0To1', 'can_flashback', 'time_step', icons '#overrides.osd.replay.pause'; zeroes +0x400..+0x48f. (lane owner review requested) Better name: Game_ReplayDataVm_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_replay_data_config",

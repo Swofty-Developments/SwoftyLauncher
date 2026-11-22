@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142cec430",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142cec430.c;pat:log-channel-NETWORK/T;xref:0x1457d8a10",
-  "notes": "Virtual (vtable cell 0x1457d8a10). Marker 'GAME' / 'Create Session', picks the flow file by mode ('game/flow_race.xml', 'flow_practice', 'flow_timetrial', 'flow_benchmark', 'flow_story_mode_*', 'flow_dev'), reads 'session.number_of_laps'; 'Found netresult ID %d, %s' (NETWORK/T) is one late log. Better name: Game_GameSession_Create (bound record keeps its name)."
+  "notes": "Logs GAME 'Create Session'; mode byte *(this+0x220)->0x1a8: picks flow via 0x142ce4db0 (game/flow_dev, flow_race, flow_story_mode_race/practice, flow_practice, flow_timetrial, flow_benchmark), allocs mode object ->this+0xf0 (case 1..0xf, 'session.number_of_laps'), sets 'in_race', builds per-car entries (0x142c79940) ->this+0x108; late NETWORK/T 'Found netresult ID %d, %s'. (lane owner review requested) Better name: Game_GameSession_Create (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_found_netresult_id",

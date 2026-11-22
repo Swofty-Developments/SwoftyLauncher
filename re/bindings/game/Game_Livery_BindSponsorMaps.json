@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143e85d50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void *out, void *a, void *b, int c",
   "evidence": "decomp:re/decomp/143e85d50.c;xref:0x143db23be",
-  "notes": "Large material binder (only caller 0x143db23be). Strings cover generic material slots (me_logoMap, me_albedoMap, me_customisationDecalsAlbedoMap, me_diffuseTex, me_normalTex, me_smoothTarmacMap, me_baseMapWSM...) and screen SRVs (g_jumbotronSRV, g_mirrorLeftSRV, g_carMonitorSRV, g_steeringScreenSRV): scope looks wider than sponsor maps."
+  "notes": "Ctor (vtable 0x1459bdd90), built in place at caller obj+0x2c0. Registers ~100 hashed material param ids (me_diffuseMap, me_albedoMap, me_uvScaleOffset...); hashes 4 shader eaids (object_car_monitor, vehicle_lcd_screen, f1_car_mirror_left/right) into map +0x7f0; creates NeRtShaderTable '%s.hitShaderTable' binding g_carMonitorSRV/g_steeringScreenSRV/g_mirrorLeft/RightSRV; ShaderTableMaterials buffer (stride 0xe0), Null textures. (lane owner review requested) Better name: Game_RtHitShaderTable_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.livery_bind_sponsor_maps",

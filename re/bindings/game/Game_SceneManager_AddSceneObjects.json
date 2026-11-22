@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401df1e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401df1e0.c;pat:log-message-cxx;xref:0x1401e0a4a,0x1401f0d15",
-  "notes": "cxx=SceneManager::addSceneObjects; log channel WARN: 'SceneManager::addSceneObjects failed to find MACRO for %s'"
+  "notes": "Full body read. Walks child XML nodes of *param_2 by tag: \"macro\" -> finds attr \"id\" in this+0x168..0x170, recurses (0x1401e0a4a, self) else WARN \"SceneManager::addSceneObjects failed to find MACRO for %s\" (0x1455e4a91); mesh objects (vt 0x1455e47f0, part/mesh children via 0x1401dc2b0) -> param_4+0x50; \"camera\" (0x1401e44a0) -> +0x10; \"light\" (0x1401e61e0) -> +0x30; \"worldactorproxy\" -> +0x70; \"timeofdayactor\" (SunHeight/SunRotation/Weather) -> +0x90; others +0xb0/+0xd0. Ids via 0x143a3d780. (lane owner review requested)"
  },
  "signature": {
   "id": "game.scene_manager_add_scene_objects",

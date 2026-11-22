@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14405f260",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14405f260.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x14fe393e9",
-  "notes": "Constructor-like: clears a NeNetConnectivityMap<64>, creates the 'NeNetReliableAsyncSocket' worker (NULL or DTLS provider, cipher 'ECDHE-RSA-AES256-GCM-SHA384', encrypt/decrypt callbacks) and a 'NeNetTransport' worker with Steam P2P callbacks. Better name: Game_NetworkTransport_ConstructSocketAndTransport (bound record keeps its name)."
+  "notes": "Ctor (vt 0x145a50640 -> 0x145a4fc40): clears NeNetConnectivityMap<64>; NeNetReliableAsyncSocket at +0x120 (NULL or DTLS provider by param_2+0x58, ECDHE-RSA-AES256-GCM-SHA384), NeNetTransport at +0x118, Steam P2P callbacks 0x4b2/0x4b3 at +0x150; calls 0x14406b210(this,0). Better name Game_NetworkTransport_ConstructSocketAndTransport (bound name kept). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_transport_ne_net_reliable_async_socket",

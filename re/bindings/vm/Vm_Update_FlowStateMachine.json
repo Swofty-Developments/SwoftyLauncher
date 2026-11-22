@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "xref:0x144424e27;doc:research/ui-native.md#9",
-  "notes": "flow state-machine update; logs 'State [%s] onUpdate returned LinkRoute [name,hash]' (0x144424e27); recursive frame in the swofty_mod_0 crash stack (StateOnlineFrontend -> StateLaunch -> StateExit after a missing-screen route)"
+  "evidence": "decomp:re/decomp/144423ce0.c;doc:research/ui-native.md#9;xref:0x142ceae66,0x1444218b9",
+  "notes": "Strings: '[machine=%s] State [%s] onUpdate returned LinkRoute [name=%s,hash=%d]', 'State Change [%s] -> [%s]', substate m_nextState, sub task activate/deactivate (FLOW channel); callee FeFlow_Set_StateStatus. Callers 0x142ceae66, 0x1444218b9; recursive self calls 0x144424683, 0x144425169. Input xref 0x144424e27 is inside the body (log site)."
  },
  "signature": {
   "id": "vm.flow_update",

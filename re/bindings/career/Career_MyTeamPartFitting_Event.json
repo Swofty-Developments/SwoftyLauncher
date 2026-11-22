@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c610e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void f(void *ctx)",
   "evidence": "decomp:re/decomp/141c610e0.c;xref:0x141c5fc32",
-  "notes": "Queues the masked tutorial 'my_team_part_fitting' (inlined Game_MaskedTutorial_AddToQueue: tutorial_grouping, ignore_watched, ONBOARDING log); early return of +0x338. Better name: Career_MyTeamPartFitting_QueueTutorial (bound record keeps its name)."
+  "notes": "0x95-byte body (decomp polluted by tail target 0x142e689c0): VM node [this+0x338]+0x150 must be valid, bool type (0x146129dc0) and true; then tail-jmp 0x142e689c0 (Game_MaskedTutorial_AddToQueue) with (this+0x2d8, 'my_team_part_fitting' 0x14573f50d, 0, 0); else returns. Better name: Career_MyTeamPartFitting_QueueTutorial (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "career.my_team_part_fitting_event",

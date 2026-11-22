@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140212740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140212740.c;pat:log-message-cxx;xref:0x1455e8140",
-  "notes": "Vtable cell 0x1455e8140 (CutsceneModule vtable)."
+  "notes": "Vtable cell 0x1455e8140. Logs CUTSCENE_MODULE 'CutsceneModule::shutdown'; flushes and frees object +0xd0 (into [[+0x18]+0x68]+0x120 +0x58 under lock); destroys manager +0xc0 (TRACE logs, releases script refs, critical section, handle, vectors) and frees it via the [+0x28]+0x40 allocator; frees +0xc8. Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.cutscene_module_shutdown",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436da4d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "fe_flow",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1436da4d0.c;xref:0x14585c038;decomp:re/decomp/1436da4d0.c;xref:0x14585c038",
-  "notes": "StateIntro (title, flow djb2 0xa4d3a4b2) onStateUpdate, slot 9 of vt_Sess_Intro 0x14585bff0. Stays (g_Game_FlowLinkStay) until the title sync point state+0xcd0 reports ready: 0x1442626c0(state+0xcd0) is true when both VM bool nodes at +0xcd0+0x80 and +0xcd0+0xa0 are true (set by the UI on the any-button press). Then once (+0xef3) it sends request 0x14388bbe0([state+0xca8], ..., kind 0x2e, callback FeFlow_StateIntro_OnEngaged); when +0xef4 is set it logs/records press_start_to_front_end (press_start_to_skip_fe with [[state+0xc90]+0x778]+0xa0) and returns the link at 0x146cb2288. Interrupt kind 0xe returns link 0x146cb2294. ts3b. ts-v1 read it independently (V1486, agree) and wrote the signature; the lane owner ui-re can raise it to L2 on that verify"
+  "evidence": "decomp:re/decomp/1436da4d0.c;xref:0x14585c038",
+  "notes": "Slot 9 (cell 0x14585c038). Interrupts: type 0xe -> 0x144426ce0 + link 0x146cb2294; type 1 stores route 'enter_boot' (0x1438574e0) in 0x146101e60.. then pops; type 10 handled via +0xef1/+0xef2. If [[state+0xc88]+0x140]+0x198 and sync 0x1442626c0(state+0xcd0): once (+0xef3) sends request kind 0x2e (u32 [[state+0xcb0]+0x1b8]) on channel 1 with OnEngaged; when +0xef4 set logs press_start_* and returns 0x146cb2288. (lane owner review requested)"
  },
  "signature": {
   "id": "fe_flow.state_intro_on_update",

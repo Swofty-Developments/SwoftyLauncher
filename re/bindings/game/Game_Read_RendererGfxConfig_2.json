@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bc2ff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bc2ff0.c;pat:log-channel--;xref:0x1458be978",
-  "notes": "Post-fx GPU setup (histogram, DOF, motion blur, bloom, lens flares) reading Renderer.Gfx.MotionBlur.* settings."
+  "notes": "Takes up to 10 shader resources from vector (+0x28)+8, allocs 0xf0 holder; builds histogram (clear_histogram), DOF autofocus (autoFocusDistanceReadbackBuffer), motion blur (Renderer.Gfx.MotionBlur.* via 0x143a43b90/0x143a44090, apply_*taps), bloom (bloomSCurveTex, bloom_gauss_cs_*), lens flares (LensFlaresVB, 0x143bc9370) and two 0x320 objs (0x143bc5fb0); ref-counted wrapper stored at +0x30/+0x38. (lane owner review requested) Better name: Game_PostFx_CreateEffectPasses (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_renderer_gfx_config_2",

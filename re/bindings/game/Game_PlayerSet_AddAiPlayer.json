@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431088e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1431088e0.c;pat:log-channel-PLAYERSET;xref:0x1430ee561,0x143109b9a",
-  "notes": "named from its log messages (channel PLAYERSET): 'Adding AI player(%s)... | [PlayerSetEntry(%s, %s)] : isLocal = %s. | [PlayerSetEntry(%s, %s)] : playerIx = %d. | [PlayerSetEntry(%s, %s)] : userIx = %d. | [PlayerSetEntry(%s, %s)] : isPlaying = %s. | '"
+  "notes": "If this+8<2,+0xdc: entrants ((+0x28)->+0x4f8 ->+0x2e0..+0x2e8, stride 0x88) not in PlayerSet (+0x30)->+0x58: 'Adding AI player' + 0x14316ad80; then isLocal +0x64=1, playerIx +0x60=-1, userIx +0x62=0, isPlaying +0x65=1, isWatching +0x67=0, isDroppingIn +0x68=0, ReportPlayerSetEntryChanged, listeners +0x78. 2nd pass: entries not in entrants -> 0x1431684a0(e,1), vcalls +0x148/+0x150, callback +0x88. (lane owner review requested) Better name: Game_PlayerSet_SyncAiEntrants (bound record keeps its name)."
  },
  "signature": {
   "id": "game.player_set_add_ai_player",

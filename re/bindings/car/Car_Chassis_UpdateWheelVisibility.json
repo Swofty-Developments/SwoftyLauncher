@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/144631a50.c;xref:0x14462fa85,0x144632319,0x144632522",
-  "notes": "When +0xf78 set: picks a mode (3/7) from camera/LOD values (+0x58 +0x5c8 +0x34..+0x4c) and the wheel node state, updates wheel render flags. Hypothesis. Callers: Car_Parse_Chassis, Car_Physics_ApplyGroundedPose. (3 xref site(s), fb.py callers.)"
+  "notes": "When +0xf78: mask 3 or 7 from [car+0x5c8] +0x34/+0x38/+0x48/+0x4c, plus bits 3..6 from bytes +0x9e4..+0x9e7 unless the wheel node flag +0x38 is set; per-side mask cleared by car+0x9f10 bits 0/1, zero if +0xb40, override +0xf70/+0xf74; rows +0xf80..+0xfbc times node matrix [[+0x38]+0x80]; calls 0x143c86b70(+0xf78, m, 1.0, 1.0, 0, 0, 1000.0, 0x7fffffff, masks)."
  },
  "signature": {
   "id": "car.chassis_update_wheel_visibility",

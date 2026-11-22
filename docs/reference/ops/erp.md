@@ -108,7 +108,7 @@ An operation on a resource that is missing from an archive another addon puts is
 }
 ```
 
-`put-resource` copies a resource from an archive in the addon into `erp`, replacing a resource of the same name or adding it.
+`put-resource` copies a resource from an archive in the addon into `erp`, replacing a resource of the same name or adding it. A `.ui` resource without a templates fragment (`syst`) keeps the templates fragment of the copy it replaces, and the build log says so.
 
 ### overlay
 

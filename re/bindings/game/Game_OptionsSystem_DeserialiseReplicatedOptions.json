@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142ad6480.c;str:s_OptionsSystem_DeserialiseReplicatedOptions",
-  "notes": "No decoded static caller (only rel32 noise 0x140bb59e8 / 0x140bb5a25, not checked for vtable cells beyond the abs scan). Pretty function OptionsSystem::deserialiseReplicatedOptions(NeBitBuffer&); logs 'Clearing replicated restrictions' / 'Replicated restrictions updated'."
+  "notes": "Own string OptionsSystem::deserialiseReplicatedOptions(NeBitBuffer&). Clears restriction list +0x580..+0x588 (0x38 entries, unlinked from owner +0x108 list, 0x142ab5ea0); reads u16 count, per entry u32 djb2 option-name hash + u32 value; matched option -> 'replication restriction' prio 100 (type 2 clamp min/max, type 1 bitmask) via 0x142ad6360/0x142abf160. Returns 1 ok; 0x142ad54b0(this,0x20)."
  },
  "signature": {
   "id": "game.options_system_deserialise_replicated_options",

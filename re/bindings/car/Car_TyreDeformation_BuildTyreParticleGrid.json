@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14410b540.c;xref:0x14465e1c7",
-  "notes": "Builds the deformable tyre body: radius^2 (param_3), ring/segment counts, per-particle arrays (0x120-byte records), calls 0x144111290 / 0x144110ca0, records error contexts. Sole caller Car_TyreDeformation_CreateTyreBody. Hypothesis."
+  "notes": "Builds the deformable tyre body: radius^2 (param_3), ring/segment counts, per-particle arrays (0x120-byte records), calls 0x144111290 / 0x144110ca0. Caller 0x14465e1c7 in Car_TyreDeformation_CreateTyreBody. Hypothesis."
  },
  "signature": {
   "id": "car.tyre_deformation_build_tyre_particle_grid",

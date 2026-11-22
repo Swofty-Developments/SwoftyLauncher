@@ -113,6 +113,7 @@ src/core/loading/game_settings.cpp: static loader::FunctionSet loading_core_set{
 src/core/services/lap_host.cpp: static loader::FunctionSet lap_host_core_set{loader::CoreSetId::lap_host, lap_host_mixins, lap_host_commit};
 src/core/testing/save_sandbox.cpp: static loader::FunctionSet save_sandbox_core_set{loader::CoreSetId::save_sandbox, save_sandbox_mixins, save_sandbox_commit};
 src/core/weather/setup.cpp: runtime::loader::FunctionSet weather_core_set{runtime::loader::CoreSetId::weather_chain, weather_mixins, weather_commit};
+src/core/audio/speech.cpp: runtime::loader::FunctionSet speech_core_set{runtime::loader::CoreSetId::speech, speech_mixins, speech_commit};
 
 # Default-constructed objects of the unit's own types, whose members are hooks, containers, mutexes, atomics and
 # constants of their own; their constructors read no other unit's object.
