@@ -236,6 +236,8 @@ void load_stall_screen(const char *name);
 void load_stall_signal(uint32_t trigger, uint64_t detail_ms);
 void load_stall_game_line(const char *line);
 void load_stall_setup();
+// The session loader entry probes behind the load-stall report's session loader section (session_loader.cpp).
+void session_loader_setup();
 void tyre_models_tick();
 void tyre_models_drop();
 void garage_placement_reset();

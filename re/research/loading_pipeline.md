@@ -388,6 +388,36 @@ offered beyond measurement runs.
   0x14ebd43b0, getter call at 0x14ebd449e. The winner sequence plays `outro_finishline_seq` after the race (40 s cap): it
   is after the finish, not on a loading path. No retail value.
 
+### 1.9 The session loader's completion wait (the load-stall report's session loader section)
+
+`StateUnloadSession` leaves Updating only once its loader callback has set its +0xcac (V2149). The session loader calls
+that callback through its completion delegate {+0x220 function, +0x228 argument}, which `StateUnloadSession` onStateEnter
+sets before it calls `Sess_Loader_UnloadSession` on a loaded loader. The loader's tick 0x142d4a320 (called every frame by
+`Game_GameModule_Update`) switches on loader +0x8 (`dec eax; cmp eax, 6; ja` then a 7-entry table): 1
+`Sess_Loader_Update`, 3 the sub-task wait (+0x1c == 1 and every +0x200..+0x208 sub-task done, then the delegate and
++0x8 = 4), 5 `Sess_Module_OnSessionUnloaded`, 6 `Sess_Loader_UpdateFrontendLoad`, 7 `Game_StreamingAssetLoadTask_Update`
+(`mov rcx, rsi; jmp`, so that function's rcx is the loader), 0, 2, 4 and anything above 7 nothing.
+`Game_StreamingAssetLoadTask_Update` starts the asset load at +0x10 == 0 (and sets 1); at +0x10 == 2 it asks the id
+system at +0xc0 (0x142e39bb0) for each u32 id in +0x188..+0x190 and returns at the first that is not 2; once all are 2
+it calls the delegate, clears it and sets +0x8 = 2; at any other +0x10 it returns at once.
+
+0x142e39bb0 is a protector thunk to a robin-hood node map find: hash = id * [+0x70], hash ^= hash >> 33; info = [+0xa0] +
+((hash & 0x1f) >> [+0xa4]); index = (hash >> 5) & [+0x90]; info bytes [+0x80], slots [+0x78] (a slot points at a node
+whose u32 +0x0 is the id), two slots per step with the `info > byte` exit after each pair; a found node's u32 +0xc is the
+lower-bound key into the MSVC std::map at [[+0x20]+0xc8] (+0x0 left, +0x8 parent, +0x10 right, +0x19 is-nil, u32 key
++0x20), and the answer is that row's u32 +0x28, or 0 when the id or the row is missing.
+
+`re/tools/sigport.py --witness` (2026-11-22) finds every one of these offsets at the same instruction on Steam 1.0.145
+(`/mnt/gaming/f1-builds/1.0.145.2472-build26566308`), EA App 1.0.145 and EA App KB build (the decrypted dumps in
+`/mnt/gaming/EAApp/ai-fix/dumps`): 0x2d4b6a0 116/116 and 0x2d4a320 96/96 equal in place on all three, with +0x8, +0x10,
++0x1c, +0xc0, +0x158, +0x188, +0x190, +0x200, +0x208, +0x220 and +0x228 used the same number of times; the lookup body
+(86/93 instructions aligned on Steam, 88/93 on both EA App builds) differs only by protector filler (a junk store or
+load into a dead register, `inc rax` against the KB's `add rax, [g] + 0xb7dbeb0a` with [g] = 0x482414f7, and on Steam
+`and ebx, [g] - 0x49c8212d` with [g] = 0x49c8214c, both the KB's constants) and witnesses +0x20, +0x70, +0x78, +0x80,
++0x90, +0xa0, +0xa4, +0xc8, +0x19, +0xc and +0x28.
+`native/src/core/diagnostics/session_loader_logic.hpp` follows these steps for the load-stall report; the probes that give
+it the loader sit on the first instruction of `Game_StreamingAssetLoadTask_Update` and `Sess_Loader_UnloadSession`.
+
 ## 2. Ranked candidates
 
 Ranked by likely seconds saved per load, then by safety. "Saved" is an upper bound from the static read and the logs.

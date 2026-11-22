@@ -139,6 +139,7 @@ UNITS = [
     Unit('sequencer_records', 'Events sequencer record guard unit test'),
     Unit('session_enter', 'Session enter guard unit test'),
     Unit('session_job_probe', 'Session job list scan probe unit test'),
+    Unit('session_loader', 'Load-stall report session loader section unit test'),
     Unit('setup_vm', 'Setup screen car guard unit test'),
     Unit('srv_clamp', 'Shader resource view clamp unit test'),
     Unit('rtas_guard', 'Ray tracing build guard unit test'),
