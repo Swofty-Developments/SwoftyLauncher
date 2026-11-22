@@ -97,15 +97,42 @@ impl Shell {
     }
 }
 
+const RESCUE_BELOW: f32 = 0.6;
+const RESCUE_GAP: f32 = 12.;
+const RESCUE_HEIGHT: f32 = 40.;
+
+pub(crate) fn needs_rescue(percent: Option<u16>, scale: f32, window_width: f32) -> bool {
+    percent.is_some_and(|percent| {
+        scale < RESCUE_BELOW || (percent > 100 && window_width / scale < crate::ui::scale::MIN_WINDOW_WIDTH)
+    })
+}
+
+pub(crate) fn rescue_bottom(scale: f32, window_height: f32) -> f32 {
+    (crate::shell::play_bar::HEIGHT * scale + RESCUE_GAP)
+        .min(window_height - RESCUE_HEIGHT - RESCUE_GAP)
+        .max(RESCUE_GAP)
+}
+
+pub(crate) fn resets_scale(keystroke: &Keystroke, secondary: Modifiers) -> bool {
+    keystroke.key == "0" && keystroke.modifiers == secondary
+}
+
 impl Shell {
-    pub(crate) fn scale_rescue(&self, p: Palette, cx: &mut Context<Self>) -> Option<Stateful<Div>> {
-        (self.scaling.percent.is_some() && crate::ui::scale::current() < 0.6).then(|| {
+    pub(crate) fn scale_rescue(
+        &self,
+        p: Palette,
+        window: &Window,
+        cx: &mut Context<Self>,
+    ) -> Option<Stateful<Div>> {
+        let scale = crate::ui::scale::current();
+        let viewport = window.viewport_size();
+        needs_rescue(self.scaling.percent, scale, f32::from(viewport.width)).then(|| {
             let f = crate::ui::scale::fixed;
             div()
                 .id("ui-scale-rescue")
                 .absolute()
-                .right(f(12.))
-                .bottom(f(12.))
+                .right(f(RESCUE_GAP))
+                .bottom(f(rescue_bottom(scale, f32::from(viewport.height))))
                 .px(f(14.))
                 .py(f(8.))
                 .rounded(f(6.))
@@ -116,5 +143,90 @@ impl Shell {
                 .child(tr("Reset interface scale"))
                 .on_click(cx.listener(|this, _, window, cx| this.set_ui_scale(None, window, cx)))
         })
+    }
+
+    pub(crate) fn reset_scale_key(
+        &mut self,
+        ev: &KeyDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> bool {
+        if !resets_scale(&ev.keystroke, Modifiers::secondary_key(cx)) {
+            return false;
+        }
+        if self.scaling.percent.is_some() {
+            self.set_ui_scale(None, window, cx);
+        }
+        true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{RESCUE_GAP, RESCUE_HEIGHT, needs_rescue, rescue_bottom, resets_scale};
+    use crate::ui::scale::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH, TV_SCALE};
+    use gpui_kit::{Keystroke, Modifiers};
+    use swofty_core::session::UiMode;
+
+    #[test]
+    fn auto_never_shows_the_rescue() {
+        for scale in [0.01, 0.5, 1., TV_SCALE, 4.] {
+            assert!(!needs_rescue(None, scale, 800.));
+        }
+    }
+
+    #[test]
+    fn zoomed_out_below_sixty_percent_shows_the_rescue() {
+        assert!(needs_rescue(Some(1), 0.01, 1920.));
+        assert!(needs_rescue(Some(59), 0.59, 1920.));
+        assert!(!needs_rescue(Some(60), 0.6, 1920.));
+        assert!(!needs_rescue(Some(90), 0.9, MIN_WINDOW_WIDTH));
+    }
+
+    #[test]
+    fn zoomed_in_shows_the_rescue_once_the_window_is_narrower_than_the_smallest_window() {
+        assert!(needs_rescue(Some(400), 4., 1920.));
+        assert!(needs_rescue(Some(400), 4., 3840.));
+        assert!(needs_rescue(Some(188), 1.88, 1920.));
+        assert!(!needs_rescue(Some(187), 1.87, 1920.));
+        assert!(!needs_rescue(Some(150), 1.5, 1920.));
+        assert!(!needs_rescue(Some(200), 2., 2560.));
+        assert!(needs_rescue(Some(101), 1.01, MIN_WINDOW_WIDTH));
+    }
+
+    #[test]
+    fn tv_mode_counts_its_own_scale() {
+        let tv = |percent: u16| crate::ui::scale::scale_with(UiMode::Tv, Some(percent));
+        assert!(!needs_rescue(Some(100), tv(100), 1280.));
+        assert!(!needs_rescue(Some(90), tv(90), 1280.));
+        assert!(needs_rescue(Some(110), tv(110), 1280.));
+        assert!(!needs_rescue(Some(140), tv(140), 2560.));
+        assert!(needs_rescue(Some(400), tv(400), 3840.));
+    }
+
+    #[test]
+    fn the_rescue_sits_above_the_play_bar_and_stays_in_the_window() {
+        let play_bar = crate::shell::play_bar::HEIGHT;
+        for scale in [0.01, 0.5, 1., TV_SCALE, 2., 4., TV_SCALE * 4.] {
+            let bottom = rescue_bottom(scale, MIN_WINDOW_HEIGHT);
+            assert!(bottom >= play_bar * scale, "{scale}");
+            assert!(bottom + RESCUE_HEIGHT <= MIN_WINDOW_HEIGHT, "{scale}");
+        }
+        assert_eq!(rescue_bottom(1., 900.), play_bar + RESCUE_GAP);
+        assert_eq!(rescue_bottom(4., 200.), 200. - RESCUE_HEIGHT - RESCUE_GAP);
+        assert_eq!(rescue_bottom(4., 10.), RESCUE_GAP);
+    }
+
+    #[test]
+    fn ctrl_zero_resets_the_scale() {
+        let key = |text: &'static str| Keystroke::parse(text).unwrap();
+        let ctrl = Modifiers::control();
+        assert!(resets_scale(&key("ctrl-0"), ctrl));
+        assert!(!resets_scale(&key("0"), ctrl));
+        assert!(!resets_scale(&key("ctrl-shift-0"), ctrl));
+        assert!(!resets_scale(&key("ctrl-alt-0"), ctrl));
+        assert!(!resets_scale(&key("ctrl-1"), ctrl));
+        assert!(resets_scale(&key("cmd-0"), Modifiers::command()));
+        assert!(!resets_scale(&key("cmd-0"), ctrl));
     }
 }
