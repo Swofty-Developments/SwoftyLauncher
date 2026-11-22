@@ -37,7 +37,7 @@ fn every_c_type_keeps_its_size_alignment_and_field_offsets() {
     layout!(SwoftyCareer, 80, 8, [available: 0, state: 8, flow: 16, flow_status: 24, entity: 32, component: 40, component_by_desc: 48, post: 56, block: 64, unblock: 72]);
     layout!(SwoftyCareerStart, 80, 4, [mode: 0, kind: 4, blocked: 8, reserved: 12, route: 16]);
     layout!(SwoftyPopup, 16, 8, [available: 0, show: 8]);
-    layout!(SwoftyLang, 40, 8, [available: 0, override_set: 8, override_clear: 16, override_clear_all: 24, refresh: 32]);
+    layout!(SwoftyLang, 56, 8, [available: 0, override_set: 8, override_clear: 16, override_clear_all: 24, refresh: 32, text: 40, language: 48]);
     layout!(SwoftyCareerContentDesc, 80, 8, [size: 0, model: 4, id: 8, title: 16, description: 24, data_group: 32, suffix: 40, mode: 48, entitlement: 56, car_group: 64, badge: 68, careers: 72]);
     layout!(SwoftyCareerContentInfo, 352, 8, [index: 0, state: 4, mode_stat_id: 8, data_group_index: 16, tiles: 24, presses: 28, id: 32, data_group: 96, why: 160]);
     layout!(SwoftyCareerContent, 40, 8, [available: 0, add: 8, info: 16, data_group: 24, pressed: 32]);
