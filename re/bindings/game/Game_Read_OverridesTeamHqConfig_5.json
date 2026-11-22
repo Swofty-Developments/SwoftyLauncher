@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141cc3540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141cc3540.c;pat:log-channel--;xref:0x141cc2de1,0x141cc2e18",
-  "notes": "Sponsor contract counter-offer tiles counter_offer_%I64u: success rate, seasonal goal, signing bonus, weekend income, risk_status_overlay icons."
+  "notes": "Formats 'counter_offer_%I64u' with n=(vec end-begin)>>4 at this+0x280+0x2c0/0x2c8, allocs 0x288 widget (template 'contract_counter_offer_tile'), binds success_rate_display/_name, seasonal_goal_description/_reward, signing_bonus_amount, weekend_income. Success rate float (param_3 entry type 9, clamped) x100 picks risk_state_01..05 overlay; NUM/POS formatted values set; pushes {alloc,widget} into vector. Old name misleading. (lane owner review requested) Better name: Game_TeamHq_AddSponsorCounterOfferTile (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_team_hq_config_5",

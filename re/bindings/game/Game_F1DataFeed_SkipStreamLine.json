@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c29190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142c29190.c;pat:log-channel-F1-DATA-FEED-REAL-WORLD;xref:0x142c290f7",
-  "notes": "Body brackets its own logs '***** F1DataFeedSystem::requestLoadReplay - STARTING TO LOAD' / 'FINISHED LOADING'; loads %s\\replays files, entrants, weather/time-of-day settings, parses UDP/real-world lines (the skipStreamDataLine log is an inlined part), pit entries and EM lap timestamps. Old name SkipStreamLine was a fragment. Better name: Game_F1DataFeedSystem_RequestLoadReplay (bound record keeps its name)."
+  "notes": "Logs 'F1DataFeedSystem::requestLoadReplay - STARTING TO LOAD'/'FINISHED LOADING %I64d microseconds' (QPC). Builds '%s\\replays' paths, FUN_142c22cb0 load; entrants loop ('stat_id', 'ENTRANTS - writable entrants'); sets time_of_day/weather #settings; mode +0x1bd0: 0=UDP file (+0x178, 'Adding entry'), 1=real-world (+0x180, PDM_AccX/SDR_Gear/F1DATA, 20 cars stationary, pit in/out, EM lap timestamps). In pdata bounds. (lane owner review requested) Better name: Game_F1DataFeedSystem_RequestLoadReplay (bound record keeps its name)."
  },
  "signature": {
   "id": "game.f1_data_feed_skip_stream_line",

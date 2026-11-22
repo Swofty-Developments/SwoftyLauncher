@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407a80d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1407a80d0.c;pat:log-channel-TELEMETRY;xref:0x145645e40",
-  "notes": "Virtual (vtable cell 0x145645e40). Strings: 'ElasticSearchReporterModule::report_BenchmarkResults(minMaxDataValid=%d)', 'Flushing', benchmark JSON keys (benchmark, hardware_settings, directx_version, cpu_name, track, weather, cars), 'GameModeBenchmark::onSessionExit'."
+  "notes": "Virtual (cell 0x145645e40, neighbours code ptrs; pdata 0x1407a80d0-0x1407acb96). GameModeBenchmark::onSessionExit: BENCHMARK log on entry/exit (m_inProgress=false), +0x10f0++, frame times +0x1118[+0x10f8] -> mean/stddev (2.575829 filter), sorted idx +0x81118; JSON results (hw/track/fps/percentiles/stutters) + CSV frame times to file; inlined report_BenchmarkResults(+0x110c, total_time>=1) builds 0x1c8 event -> FUN_14077bb90; UI bm_resume/frontend. (lane owner review requested) Better name: Game_Benchmark_OnSessionExit_ReportResults (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_elastic_search_reporter_module_report_benchmark_results",

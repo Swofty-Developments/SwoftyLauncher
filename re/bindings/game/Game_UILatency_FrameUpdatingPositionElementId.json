@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144303760",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144303760.c;pat:log-channel-UI_latency;xref:0x1442f8428,0x14431cb68,0x153ba5ae8,0x153beb9d4",
-  "notes": "Logs UI_latency 'Updating position on elementId:%u ElementName:%hs'. Callers 0x1442f8428, 0x14431cb68, 0x153ba5ae8, 0x153beb9d4."
+  "evidence": "decomp:re/decomp/144303760.c;pat:log-channel-UI_latency;xref:0x1442f8428,0x1442f8460,0x14431cb68,0x153ba5ae8,0x153beb9d4",
+  "notes": "Runs if p1+0x199 bit 0x40 and attach *(p1+0x1c8) with obj attach+0x70: parent matrix (p1+0x1a0)+0xc0 inverted x obj matrix; position (AABB centre via obj vfn +0x88 or translation, + offset attach+0x20) -> p1+0x120 when changed, dirty via 0x144302260; rotation -> quat p1+0x140; scale -> 0x1443006c0. UI_latency log optional. 0x1442f8460 = jmp thunk. (lane owner review requested) Better name: Game_UIElement_UpdateAttachedObjectTransform (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_latency_frame_updating_position_element_id",

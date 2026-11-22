@@ -12470,6 +12470,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Read_PitCrewTrainingConfig: Binding = Binding {
+        id: "Game_Read_PitCrewTrainingConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Read_QualifyingConfig: Binding = Binding {
         id: "Game_Read_QualifyingConfig",
         kind: "func",

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "site_Hud_GaragePitStates",
+ "table": "globals",
+ "author": "msyeett",
+ "row": {
+  "addr": "0x142d66129",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "hud",
+  "evidence": "decomp:own disasm 0x142d6869e-0x142d686e6;xref:0x142d686be;imm:0x1e1fe",
+  "notes": "mov ecx,0x1e1fe; bt ecx,eax with eax = the car's pit state (<= 0x10): the pit states the race HUD shows in. Bit 1 (in garage) is off, so the HUD hides in the garage; byte +2 0xe1 -> 0xe3 keeps it"
+ },
+ "signature": {
+  "id": "hud.garage_pit_states",
+  "section": ".xtls",
+  "pattern": "77 0E B9 FE E1 01 00 0F A3 C1 0F 83",
+  "match": "0x142d66127",
+  "anchor": "0x2",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d66129",
+  "kind": "mid",
+  "expect": "B9 FE E1 01 00",
+  "names": [
+   "site_Hud_GaragePitStates"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-22",
+    "by": "msyeett",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d686b7",
+  "made_on_target": "0x142d686b9",
+  "twin": "made on steam-26566308; the target 0x142d686b9 is KB 0x142d66129: Sess_InGame_UnsubscribeMessages (0x2d67430) and Sess_State_OnPauseRequested (0x2d68f50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "msyeett",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d686b7",
+    "target": "0x142d686b9"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b3a40f98b63d2c7b96ad12e2ffba8ce02c20c27b41fbcf0f2091ce663d858f73"
+  }
+ ]
+}

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14404cae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14404cae0.c;pat:log-channel-HTTP/V;xref:0x145a4d638",
-  "notes": "HTTP/V '[%u] Valid Session Handle: Create session for URI %s (wide %ls)' (log string); vtable cell 0x145a4d638."
+  "notes": "Read in full. Vtable cell 0x145a4d638. Logs '[%u] beginRequest'; WinHttpOpen -> +0x140; WinHttpConnect(host [+0x21a0], port 80/443 or override +0x21e0) -> +0x148; WinHttpOpenRequest(verb table 0x145a58d48[+0x1c], path [+0x21c8], secure flag if +0x80==0) -> +0x150; status callback 0x14404d610 (Game_Http_CallbackStatusId), context +0x21e8, security options, vfunc +0x28 builds headers, WinHttpSendRequest; error logs 'Error When Creating Request'. Old name was a log fragment. (lane owner review requested) Better name: Game_HttpRequest_BeginRequest (bound record keeps its name)."
  },
  "signature": {
   "id": "game.http_valid_session_handle_create_session_uri",

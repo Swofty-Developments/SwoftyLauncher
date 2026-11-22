@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141249ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141249ce0.c;pat:log-channel-RIVALS;xref:0x14124fc13,0x141251e42,0x141251fd7",
-  "notes": "Log RIVALS 'Starting new rivalry with %s'; 2.3 KB body. Callers 0x14124fad0, 0x141250d40."
+  "notes": "Full body read. Scans param_2 rivalry list [+0x18,+0x20) for type byte (+0x10)==param_4, returns if one exists; vtbl+0x38 check on participant id; looks up both drivers in roster (param_1+0x278)+0x1030 vtbl+0x1c8. Logs RIVALS 0x1456cd6e2 'Starting new rivalry with %s' 0x1456cfd9c; allocs 0x50-byte rivalry obj vtbl 0x1456cd890, appends via 0x1412bf650 to param_2+0x10; posts bus msgs 0x1456cfde0 and 0x1456cfdf0 via 0x1439876c0; sets score at param_2+0x50+type*4 from +0x6c0/+0x2a0/+0x920. Callers 0x14124fad0, 0x141250d40. (lane owner review requested)"
  },
  "signature": {
   "id": "game.rivalry_start",

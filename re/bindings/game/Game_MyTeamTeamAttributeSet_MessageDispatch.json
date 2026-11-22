@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140f8b360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void *f(void *self, void *out, void *msg, int kind)",
   "evidence": "decomp:re/decomp/140f8b360.c;xref:0x140cab6d6,0x140cb58a7,0x140d6c5a7,0x140d6c6ee,0x140f8ac63,0x140f986cc,0x140f98a4c,0x1410121ed,0x141012416,0x141012636,0x141012856,0x141012a76,0x141019cbe,0x14111a5a1,0x1412ce9db,0x1412ceb69,0x141f075b4,0x1422e83d3,0x142322566,0x142322748,0x1423f1e6f,0x1423f9238",
-  "notes": "(owner,out,defs,int): 9.5 KB factory using owner allocator +0x210, iterates definitions param_3+8..+0x10, references 'MessageMyTeamTeamAttributeSetAdded' / '...Removed'."
+  "notes": "(owner,out,defs,int): matches defs (param_3+8..+0x10, stride 0x28, name +0x10) against owner+0x298..+0x2a0 by name (0x14535d850); per match type-tests vs 15 class descs, builds handler (base vt 0x1456b0f70, int at +0x18), adds via 0x140fc6400 to out container (0x30, alloc owner+0x210). Two kinds subscribe Ne_Subscribe_BusMessage 'MessageMyTeamTeamAttributeSetAdded'/'Removed'. Not a dispatcher. (lane owner review requested) Better name: Game_MyTeam_CreateTeamAttributeHandlers (bound record keeps its name)."
  },
  "signature": {
   "id": "game.my_team_team_attribute_set_message_dispatch",
