@@ -259,6 +259,14 @@ impl Shell {
                     cx.notify();
                 }))
         });
+        let manage = self.store_page.subscription().is_some().then(|| {
+            Button::new("store-manage-subscription")
+                .outline()
+                .small()
+                .icon(IconName::CreditCard)
+                .label(tr("Manage subscription"))
+                .on_click(cx.listener(|this, _, _, cx| StorePage::portal(this, None, cx)))
+        });
         let note = self
             .store_page
             .notice
@@ -293,6 +301,7 @@ impl Shell {
                     .child(claim)
                     .children(status.map(|s| s.mt(px(10.))))
                     .children(edit.map(|e| div().mt(px(8.)).child(e)))
+                    .children(manage.map(|m| div().mt(px(8.)).child(m)))
                     .children(note.map(|n| n.mt(px(10.)))),
             )
             .child(donate.mt(px(22.)))
@@ -394,10 +403,17 @@ impl Shell {
             .child(self.subscribe_button(kind, cx).mt(px(22.)))
     }
 
+    /// Subscribe, or for a subscriber Manage on their own tier and Switch on the other, which open Stripe's portal.
     fn subscribe_button(&self, kind: Kind, cx: &mut Context<Self>) -> Stateful<Div> {
         let plus = kind == Kind::SupporterPlus;
         let busy = self.store_page.busy;
         let signed_in = self.account.session.is_some();
+        let subscribed = self.store_page.subscription().map(|s| s.tier == kind.key());
+        let label = match subscribed {
+            Some(true) => tr("Manage"),
+            Some(false) => tr("Switch"),
+            None => tr("Subscribe"),
+        };
         action(if plus {
             "store-subscribe-plus"
         } else {
@@ -412,14 +428,16 @@ impl Shell {
         })
         .when(busy, |d| d.opacity(0.6))
         .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
-        .child(tr("Subscribe"))
+        .child(label)
         .child(
             Icon::new(IconName::ArrowRight)
                 .size(px(15.))
                 .text_color(hue(WHITE)),
         )
         .on_click(cx.listener(move |this, _, _, cx| {
-            if signed_in {
+            if let Some(own) = subscribed {
+                StorePage::portal(this, (!own).then_some(kind), cx);
+            } else if signed_in {
                 StorePage::checkout(this, kind, None, cx);
             } else {
                 this.store_page.notice = Some((false, tr("Sign in with Discord to subscribe.").to_owned()));

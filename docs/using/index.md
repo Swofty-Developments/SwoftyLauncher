@@ -40,6 +40,7 @@ Once the launcher has found F1 25, you do everything from one window. This secti
 | [In-game addon settings](/using/swofty-mod) | The **ADDON SETTINGS** screen in the game's home menu |
 | [Steam and EA app copies](/using/game-copies) | Switching between copies of F1 25, adding a folder, and the EA app on Linux |
 | [Playing in VR](/using/vr) | **Play in VR**, SteamVR and `swofty run --vr` |
+| [Donate](/using/donate) | Supporter and Supporter+, one-time donations, your listing and managing your subscription |
 | [Restoring the game](/using/profiles-and-restoring) | When the game folder rolls back on its own, and `swofty restore` for the rest |
 | [Updating](/using/updating) | Updating the launcher, Simplified for Swofty, addons and mods |
 | [Sending your logs](/using/send-logs) | **Send Logs to Developers**, what it sends and `swofty logs send` |

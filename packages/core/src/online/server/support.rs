@@ -32,12 +32,24 @@ pub struct Me {
     /// who see ads and signed in with the email scope have one.
     #[serde(default)]
     pub ad_uid: Option<String>,
+    /// The user's Stripe subscription. Servers from before it leave it out.
+    #[serde(default)]
+    pub subscription: Option<Subscription>,
 }
 
 impl Me {
     pub fn sees_ads(&self) -> bool {
         !(self.active || self.ad_free)
     }
+}
+
+/// A subscription as the server last saw it.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct Subscription {
+    pub tier: String,
+    /// Cancelled for the end of the paid period.
+    #[serde(default)]
+    pub ending: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -116,7 +128,7 @@ pub enum Kind {
 }
 
 impl Kind {
-    fn key(self) -> &'static str {
+    pub fn key(self) -> &'static str {
         match self {
             Self::Supporter => "supporter",
             Self::SupporterPlus => "supporter_plus",
@@ -209,6 +221,20 @@ impl Api {
             .and_then(Value::as_str)
             .map(str::to_owned)
             .ok_or_else(|| ApiError::network("the server sent no checkout link"))
+    }
+
+    /// The Stripe customer portal for the user's subscription. With `switch_to` set to the other tier, it opens on
+    /// the switch to that tier.
+    pub fn support_portal(&self, switch_to: Option<Kind>) -> Result<String, ApiError> {
+        let mut body = json!({});
+        if let Some(kind) = switch_to.filter(|k| *k != Kind::OneTime) {
+            body["tier"] = kind.key().into();
+        }
+        self.post_value("/v1/support/portal", &body)?
+            .get("url")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+            .ok_or_else(|| ApiError::network("the server sent no portal link"))
     }
 
     pub fn support_claim(&self, stripe_email: &str, payment_id: &str) -> Result<Claimed, ApiError> {
@@ -316,6 +342,63 @@ mod tests {
                 .status,
             500
         );
+        t.join().unwrap();
+    }
+
+    #[test]
+    fn the_subscription_reads_with_or_without_it() {
+        let me: Me =
+            serde_json::from_str(r#"{"active":true,"subscription":{"tier":"supporter_plus","ending":true}}"#)
+                .unwrap();
+        assert_eq!(
+            me.subscription,
+            Some(Subscription {
+                tier: "supporter_plus".to_owned(),
+                ending: true
+            })
+        );
+        let me: Me = serde_json::from_str(r#"{"active":true,"subscription":null}"#).unwrap();
+        assert_eq!(me.subscription, None);
+        let me: Me = serde_json::from_str(r#"{"active":false}"#).unwrap();
+        assert_eq!(me.subscription, None);
+    }
+
+    #[test]
+    fn the_portal_link_comes_from_the_server_with_the_tier_to_switch_to() {
+        let (url, t) = crate::online::server::api::tests::serve(
+            "200 OK",
+            r#"{"url":"https://billing.stripe.com/p/session/x"}"#,
+        );
+        let got = Api::with_server(&url, "tok").support_portal(Some(Kind::SupporterPlus));
+        assert_eq!(got.as_deref(), Ok("https://billing.stripe.com/p/session/x"));
+        let request = String::from_utf8_lossy(&t.join().unwrap()).into_owned();
+        assert!(request.starts_with("POST /v1/support/portal "));
+        assert!(request.ends_with(r#"{"tier":"supporter_plus"}"#));
+
+        let (url, t) = crate::online::server::api::tests::serve(
+            "200 OK",
+            r#"{"url":"https://billing.stripe.com/p/session/y"}"#,
+        );
+        assert!(
+            Api::with_server(&url, "tok")
+                .support_portal(Some(Kind::OneTime))
+                .is_ok()
+        );
+        assert!(String::from_utf8_lossy(&t.join().unwrap()).ends_with("{}"));
+
+        let (url, t) = crate::online::server::api::tests::serve(
+            "404 Not Found",
+            r#"{"error":"no_subscription","message":"You have no subscription to manage."}"#,
+        );
+        let e = Api::with_server(&url, "tok").support_portal(None).unwrap_err();
+        assert_eq!(
+            (e.status, e.message.as_str()),
+            (404, "You have no subscription to manage.")
+        );
+        t.join().unwrap();
+
+        let (url, t) = crate::online::server::api::tests::serve("200 OK", "{}");
+        assert!(Api::with_server(&url, "tok").support_portal(None).is_err());
         t.join().unwrap();
     }
 

@@ -3,7 +3,7 @@ use gpui_kit::*;
 use swofty_core::online::server::api::{Api, ApiError};
 use swofty_core::online::server::sign_in::Session;
 use swofty_core::online::server::support::{
-    BIO_MAX, Claimed, Kind, Me, Preview, Supporter, dollars_to_cents,
+    BIO_MAX, Claimed, Kind, Me, Preview, Subscription as Plan, Supporter, dollars_to_cents,
 };
 use swofty_i18n::tr;
 
@@ -31,6 +31,8 @@ pub(crate) struct StorePage {
     pub claimed: Option<Claimed>,
     pub claim_open: bool,
     pub listing_open: bool,
+    /// A Stripe page was opened, so the page loads again the next time it opens.
+    pub stale: bool,
 }
 
 impl Default for StorePage {
@@ -47,6 +49,7 @@ impl Default for StorePage {
             claimed: None,
             claim_open: false,
             listing_open: false,
+            stale: false,
         }
     }
 }
@@ -212,7 +215,7 @@ impl StorePage {
                 .spawn(async move { api.support_checkout(kind, cents) })
                 .await;
             this.update(cx, |host, cx| {
-                if let Some(url) = host.split().0.take_checkout(url) {
+                if let Some(url) = host.split().0.take_link(url) {
                     cx.open_url(&url);
                 }
                 cx.notify();
@@ -220,6 +223,38 @@ impl StorePage {
             .ok();
         })
         .detach();
+    }
+
+    /// Opens Stripe's page for managing the user's subscription, or for switching it to `switch_to`.
+    pub(super) fn portal<H: Host<Self>>(host: &mut H, switch_to: Option<Kind>, cx: &mut Context<H>) {
+        let (page, needs) = host.split();
+        if !page.begin(needs.signed_in()) {
+            return;
+        }
+        let api = needs.api();
+        cx.notify();
+        cx.spawn(async move |this, cx| {
+            let url = cx
+                .background_executor()
+                .spawn(async move { api.support_portal(switch_to) })
+                .await;
+            this.update(cx, |host, cx| {
+                if let Some(url) = host.split().0.take_link(url) {
+                    cx.open_url(&url);
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    /// The signed-in user's subscription, once their status is loaded.
+    pub(super) fn subscription(&self) -> Option<&Plan> {
+        match &self.me {
+            Load::Ready(me) => me.subscription.as_ref(),
+            _ => None,
+        }
     }
 
     pub(super) fn claim<H: Host<Self>>(host: &mut H, email: String, payment: String, cx: &mut Context<H>) {
@@ -272,7 +307,8 @@ impl StorePage {
     }
 
     fn needs_load(&self, signed_in: bool) -> bool {
-        matches!(self.supporters, Load::Idle | Load::Failed(_))
+        self.stale
+            || matches!(self.supporters, Load::Idle | Load::Failed(_))
             || (signed_in && matches!(self.me, Load::Idle | Load::Failed(_)))
     }
 
@@ -287,6 +323,7 @@ impl StorePage {
     }
 
     fn reloading(&mut self, signed_in: bool) {
+        self.stale = false;
         self.supporters = Load::Loading;
         self.me = if signed_in { Load::Loading } else { Load::Idle };
     }
@@ -329,10 +366,12 @@ impl StorePage {
         true
     }
 
-    /// Takes the checkout link to open, or says why there is none.
-    fn take_checkout(&mut self, url: Result<String, ApiError>) -> Option<String> {
+    /// Takes the Stripe link to open, or says why there is none.
+    fn take_link(&mut self, url: Result<String, ApiError>) -> Option<String> {
         self.busy = false;
-        url.map_err(|e| self.notice = Some((false, e.message))).ok()
+        let url = url.map_err(|e| self.notice = Some((false, e.message))).ok();
+        self.stale |= url.is_some();
+        url
     }
 
     /// Takes a claim's result. True when the page has to load again to show it.
@@ -556,11 +595,39 @@ mod tests {
         assert!(!page.take_saved(Err(error("too long"))));
         assert_eq!(page.notice, Some((false, "too long".to_owned())));
         page.busy = true;
-        assert_eq!(page.take_checkout(Err(error("stripe down"))), None);
-        assert!(!page.busy);
+        assert_eq!(page.take_link(Err(error("stripe down"))), None);
+        assert!(!page.busy && !page.stale);
         assert_eq!(
-            page.take_checkout(Ok("https://pay".to_owned())),
+            page.take_link(Ok("https://pay".to_owned())),
             Some("https://pay".to_owned())
         );
+    }
+
+    #[test]
+    fn opening_a_stripe_page_loads_the_page_again_the_next_time_it_opens() {
+        let mut page = StorePage::default();
+        page.reloading(true);
+        assert!(!page.needs_load(true));
+        assert!(page.take_link(Ok("https://billing".to_owned())).is_some());
+        assert!(page.needs_load(true) && page.needs_load(false));
+        page.reloading(true);
+        assert!(!page.stale && !page.needs_load(true));
+    }
+
+    #[test]
+    fn the_subscription_shows_once_the_status_is_loaded() {
+        let mut page = StorePage::default();
+        assert_eq!(page.subscription(), None);
+        page.me = Load::Ready(
+            serde_json::from_value(serde_json::json!({
+                "active": true,
+                "tier": "supporter",
+                "subscription": { "tier": "supporter", "ending": false },
+            }))
+            .unwrap(),
+        );
+        assert_eq!(page.subscription().map(|s| s.tier.as_str()), Some("supporter"));
+        page.me = Load::Ready(serde_json::from_value(serde_json::json!({ "active": true })).unwrap());
+        assert_eq!(page.subscription(), None);
     }
 }

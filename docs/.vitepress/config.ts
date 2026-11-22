@@ -42,6 +42,8 @@ const moved: Record<string, string> = {
   "/reference/mods/livery": "/reference/data/livery",
   "/reference/mods/packaging": "/reference/addons/publishing",
   "/reference/mods/publishing": "/reference/addons/publishing",
+  "/support/index": "/using/donate",
+  "/support/thanks": "/using/donate",
 };
 
 export default defineConfigWithTheme<DocsThemeConfig>({
@@ -148,6 +150,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "DB Editor", link: "/using/db-editor" },
               { text: "Tools", link: "/using/tools" },
               { text: "Settings", link: "/using/settings" },
+              { text: "Donate", link: "/using/donate" },
               { text: "Restoring the game", link: "/using/profiles-and-restoring" },
               { text: "Updating", link: "/using/updating" },
               { text: "Sending your logs", link: "/using/send-logs" },
