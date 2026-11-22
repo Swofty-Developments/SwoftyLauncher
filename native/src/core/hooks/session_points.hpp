@@ -48,7 +48,10 @@ constexpr uintptr_t REC_THROTTLE = 0x0c, REC_STEERING = 0x14, REC_BRAKE = 0x18;
 constexpr uintptr_t DIR_ACTIVE = 0xd1, DIR_BLOCKED = 0xd2, DIR_CURRENT_DRIVER = 0xd6, DIR_CURRENT_CAMERA = 0xd8,
                     DIR_REQUESTED_DRIVER = 0xdc, DIR_REQUESTED_CAMERA = 0xe0;
 constexpr size_t AI_UPDATE_SLOT = 1;
-constexpr uint32_t NO_CAR = 0xffffffffu;
+constexpr uint32_t NO_CAR = 0xffffffffu, NO_CAR_LIMIT = 64;
+constexpr uintptr_t RULES_RESULTS = 0x1c68, RESULTS_BEGIN = 0x148, RESULTS_END = 0x150, ENTRY_VEHICLE = 0x0,
+                    ENTRY_PENALTY = 0x38, ENTRY_PENALTY_KEY = 0x40;
+constexpr double MAX_PENALTY = 3600.0;
 
 struct Spec {
     const char *point;
@@ -72,6 +75,7 @@ struct Env {
     std::function<bool()> flow_thread;
     std::function<std::string()> ai_site;
     std::function<void(const std::string &)> log;
+    std::function<void()> session_start;
     int core_flag = 6;
 };
 
@@ -576,7 +580,71 @@ template <class Tag> struct Set {
         uint32_t r = rules_init->original<uint32_t>(self, systems, components);
         rules_vtable = rd<uintptr_t>(reinterpret_cast<uintptr_t>(self));
         rules = reinterpret_cast<uintptr_t>(self);
+        if (env.session_start)
+            env.session_start();
         return r;
+    }
+
+    // The car's race result entry (re/db/structs/SessionSystem.h, SessionVehicleEntry.h): the rule manager links the
+    // SessionSystem at +0x1c68; its entries are one pointer per vehicle id, each entry starting with its vehicle id.
+    static int result_entry(uint32_t car, uintptr_t &entry)
+    {
+        if (car >= NO_CAR_LIMIT)
+            return SWOFTY_ASSET_INVALID;
+        if (!rules_live())
+            return SWOFTY_ASSET_LATE;
+        uintptr_t results = rd<uintptr_t>(rules.load() + RULES_RESULTS);
+        uintptr_t begin = rd<uintptr_t>(results + RESULTS_BEGIN), end = rd<uintptr_t>(results + RESULTS_END);
+        if (!results || !begin || end < begin || (end - begin) % 8 || car >= (end - begin) / 8)
+            return SWOFTY_ASSET_LATE;
+        entry = rd<uintptr_t>(begin + uintptr_t(car) * 8);
+        if (!entry || (entry & 7) || rd<uint8_t>(entry + ENTRY_VEHICLE, 0xff) != car)
+            return SWOFTY_ASSET_LATE;
+        return SWOFTY_ASSET_OK;
+    }
+
+    static int op_time_penalty(uint32_t car, double *seconds)
+    {
+        if (!seconds)
+            return SWOFTY_ASSET_INVALID;
+        uintptr_t e = 0;
+        int r = result_entry(car, e);
+        if (r != SWOFTY_ASSET_OK)
+            return r;
+        uint64_t bits[2] = {};
+        if (!env.read || !env.read(e + ENTRY_PENALTY, bits, sizeof bits))
+            return SWOFTY_ASSET_LATE;
+        uint64_t v = bits[0] ^ bits[1];
+        double d;
+        std::memcpy(&d, &v, sizeof d);
+        if (!std::isfinite(d) || d < 0.0 || d > MAX_PENALTY)
+            return SWOFTY_ASSET_LATE;
+        *seconds = d;
+        return SWOFTY_ASSET_OK;
+    }
+
+    static int op_set_time_penalty(uint32_t car, double seconds)
+    {
+        if (!std::isfinite(seconds) || seconds < 0.0 || seconds > MAX_PENALTY)
+            return SWOFTY_ASSET_INVALID;
+        uintptr_t e = 0;
+        int r = result_entry(car, e);
+        if (r != SWOFTY_ASSET_OK)
+            return r;
+        uint64_t key = 0, old = 0;
+        if (!env.read || !env.read(e + ENTRY_PENALTY_KEY, &key, sizeof key) || !env.read(e + ENTRY_PENALTY, &old, sizeof old))
+            return SWOFTY_ASSET_LATE;
+        uint64_t bits;
+        std::memcpy(&bits, &seconds, sizeof bits);
+        if (!wr<uint64_t>(e + ENTRY_PENALTY, bits ^ key))
+            return SWOFTY_ASSET_LATE;
+        uint64_t was = old ^ key;
+        double before;
+        std::memcpy(&before, &was, sizeof before);
+        char line[160];
+        std::snprintf(line, sizeof line, "[sessions] time penalty of car %u: %.3f s, was %.3f s", car, seconds, before);
+        note(line);
+        return SWOFTY_ASSET_OK;
     }
 
     // Called once a frame on the flow thread: queued changes apply when no rebuild or switch is running.

@@ -25,7 +25,7 @@ pub fn value_path(k: usize) -> String {
     format!("#ui_menu_data.swofty.m{k}")
 }
 
-fn template_mut<'p>(list: &'p mut [Node], name: &str) -> Result<&'p mut Node> {
+pub(super) fn template_mut<'p>(list: &'p mut [Node], name: &str) -> Result<&'p mut Node> {
     list.iter_mut()
         .find(|t| t.is_node() && t.name() == name)
         .ok_or_else(|| err(format!("the HUD templates have no {name}")))

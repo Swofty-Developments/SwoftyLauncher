@@ -1,0 +1,112 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitStopObserver_StopGoAnswerPlain",
+ "table": "globals",
+ "author": "swofty",
+ "row": {
+  "addr": "0x1403bc575",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x1403bc543-0x1403bc597;xref:0x1403bc570",
+  "notes": "In Game_PitStopActionObserver_SetTransitionSequence's constant-name branch: the instruction after the call to Sess_Penalty_IsServedAtNextStop (0x1403bc570, car from [r13+8] +0x350/+0x358); al = the answer, r13 = the observer. al true sets the 10SP flag (r14b) when g_stopGoDuration is 10 and the 5SP flag (bpl) for any other value (0x1403bc57a..0x1403bc597); the flags pick the 10SP/5SP variant of every crew sequence name built after it (StartJob, JobComplete, FrontWing, with their UP variants)."
+ },
+ "signature": {
+  "id": "game.pit_stop_observer_stop_go_answer_plain",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? BD 00 00 00 00 84 C0",
+  "match": "0x1403bc570",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403bc575",
+  "kind": "mid",
+  "expect": "BD 00 00 00 00",
+  "names": [
+   "site_Game_PitStopObserver_StopGoAnswerPlain"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/pit_hold.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "global",
+   "item": "site_Game_PitStopObserver_StopGoAnswerPlain",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403bc300-0x1403bdc00;xref:0x1403bc570",
+   "notes": "gh:serve-verify Confirmed in the [r13+0x18] == 0 branch: call 0x142f29600 at 0x1403bc570, rcx = [[inst+0x3c0]+0x80], dl = [inst+0x358] ? byte [inst+0x350] : 0xff, inst = [r13+8] (reached only when the car is not 0xff, 0x1403bc4a1); r13 never rewritten. Site mov ebp,0 is 5 bytes, no branch into it. al true: duration == 10.0 sets r14b (10SP), any other duration sets bpl (5SP). Difference: those flags pick the 10SP or 5SP variants of all the crew sequence names built later (StartJob, JobComplete, FrontWing, with UP variants), not only StartJobDoStandardStop."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bc570",
+    "target": "0x1403bc575"
+   },
+   "sigcheck": "passed",
+   "digest": "c37aecf12a81486496d47d9d002f043bb3147c39e556d1424c3ea9cef15651c0"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bc5b0",
+    "target": "0x1403bc5b5"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f316ecd134125faff3d32d2aaad95f9bb83e37dad17ed4f2c2ca4f7f6a3ec611"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bc570",
+    "target": "0x1403bc575"
+   },
+   "sigcheck": "passed",
+   "digest": "c37aecf12a81486496d47d9d002f043bb3147c39e556d1424c3ea9cef15651c0"
+  }
+ ]
+}

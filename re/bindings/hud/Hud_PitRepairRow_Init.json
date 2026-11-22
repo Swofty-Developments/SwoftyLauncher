@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "name": "Hud_PitRepairRow_Init",
+ "table": "functions",
+ "author": "swofty",
+ "row": {
+  "addr": "0x14178c880",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_PitRepairRow_Init(void *row, void *list_handle, uint8_t vehicle, const char *name)",
+  "evidence": "decomp:re/decomp/14178c880.c;xref:0x14153fad6",
+  "notes": "Init of the pit page's front wing repair row (vtable 0x1456f65a0, 0x118 bytes, PitSettingsVm+0x468), from PitSettingsVm_Init 0x14153f760 (call 0x14153fad6): Hud_MfdRow_BaseInit(row, list_handle, vehicle, name) makes the row's VM node under settings_list, then +0xd0 = vehicle, display_name lng_repair_wing_damage, the data list (djb2 0x7c95915f) with RepairAuto/RepairAny/RepairNone = 0/1/2 through Hud_MfdRow_AddOption, current_repair, and visible = enabled = car damage on and [[row+0xc0]+0x1a8]+4 != 0x12."
+ },
+ "signature": {
+  "id": "hud.pit_repair_row_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 44 89 C3 48 89 CE E8 ?? ?? ?? ?? 88 9E D0 00 00 00",
+  "match": "0x14178c880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14178c880",
+  "kind": "func_start",
+  "names": [
+   "Hud_PitRepairRow_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/pit_rows.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "func",
+   "item": "Hud_PitRepairRow_Init",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14178c880-0x14178cf04;xref:0x14153fad6",
+   "notes": "gh:serve-verify Confirmed: one caller, PitSettingsVm_Init 0x14153fad6, with rcx = vm+0x468, rdx = the list handle, r8b = byte vm+0x270, r9 = repair; rcx/rdx/r8/r9 go straight to Hud_MfdRow_BaseInit, then +0xd0 = vehicle, display_name lng_repair_wing_damage, child djb2(data) = 0x7c95915f, options RepairAuto/lng_auto 0, RepairAny/lng_yes 1, RepairNone/lng_no 2, current_repair from [[row+0xb8]+0x68+veh*0x10]+0xc (veh not range-checked here). Difference: visible (+0x50) and enabled (+0x30) = damage level != 0 and [[row+0xc0]+0x1a8]+4 != 0x12. Vtable 0x1456f65a0 at +0x468 is the one PitSettingsVm_Destroy restores; 0x118 = 0x580 - 0x468."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178c880",
+    "target": "0x14178c880"
+   },
+   "sigcheck": "passed",
+   "digest": "2d27d3fe0dff92d30e14b631f44ac9b43e93388be708484a0d855ab55ae52c86"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178e000",
+    "target": "0x14178e000"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "241daa23562c63cbaa47c415ad78d6b17645be0253334f180a744a0893ebe757"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178c880",
+    "target": "0x14178c880"
+   },
+   "sigcheck": "passed",
+   "digest": "2d27d3fe0dff92d30e14b631f44ac9b43e93388be708484a0d855ab55ae52c86"
+  }
+ ]
+}

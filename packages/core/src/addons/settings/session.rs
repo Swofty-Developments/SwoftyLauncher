@@ -165,12 +165,21 @@ pub struct SessionAddon {
     pub hub_tab: Option<HubTab>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mfd: Option<SessionMfd>,
+    /// The addon's rows on the race MFD's pit page, in manifest order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub pit_rows: Vec<SessionPitRow>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SessionMfd {
     pub title: String,
     pub rows: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SessionPitRow {
+    pub id: String,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -320,6 +329,15 @@ impl SessionSettings {
                     title: f.title.clone().unwrap_or_else(|| m.name.clone()),
                     rows: f.rows.clone(),
                 }),
+                pit_rows: m
+                    .hud
+                    .iter()
+                    .flat_map(|h| h.pit_rows.iter().flatten())
+                    .map(|r| SessionPitRow {
+                        id: r.id.clone(),
+                        label: r.label.clone(),
+                    })
+                    .collect(),
             })
             .collect();
         let out = Self {

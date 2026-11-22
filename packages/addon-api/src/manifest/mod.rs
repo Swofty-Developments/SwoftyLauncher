@@ -19,7 +19,9 @@ use serde::{Deserialize, Serialize};
 use crate::{Error, Result};
 
 pub use compat::{AddonNeed, Compat, Conflict, Platform, Requirement};
-pub use hud::{Hud, HudMfd, MFD_ROWS_MAX, MFD_TEXT_MAX};
+pub use hud::{
+    Hud, HudMfd, HudPitRow, MFD_ROWS_MAX, MFD_TEXT_MAX, PIT_ROW_ID_MAX, PIT_ROW_LABEL_MAX, PIT_ROWS_MAX,
+};
 pub use kind::{Category, ExperimentalFeature, Kind, Multiplayer, Origin};
 pub use launcher::{
     CAREER_SETUP_BACK, CAREER_SETUP_NEXT, CAREER_SETUP_ROUTE_LEN, CareerSetup, HUB_TAB_OPTIONS, HubTab,

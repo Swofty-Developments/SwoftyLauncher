@@ -1,0 +1,112 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PitStopUpdateJob_ScaledDt",
+ "table": "globals",
+ "author": "swofty",
+ "row": {
+  "addr": "0x1403c0ae5",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1403c06a0.c;decomp:own disasm 0x1403c0add-0x1403c0aec;xref:0x1403c0add",
+  "notes": "In Sess_PitStopUpdateJob_Update, right after vmulss xmm6,xmm6,[rsi+0x3bc]: rsi = the PitStopInstance, xmm6 = the frame step times the crew rate (+0x3bc). xmm6 always feeds the PitStopLogic update, and inst+0x3b8 and the crew sequence advance when [rsi+0x65] != 0, so changing it changes how fast that crew's clip plays this frame."
+ },
+ "signature": {
+  "id": "session.pit_stop_update_job_scaled_dt",
+  "section": ".xtls",
+  "pattern": "48 8B 8E 30 03 00 00 48 85 C9 74 1F",
+  "match": "0x1403c0ae5",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c0ae5",
+  "kind": "mid",
+  "expect": "48 8B 8E 30 03 00 00",
+  "names": [
+   "site_Sess_PitStopUpdateJob_ScaledDt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/pit_hold.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "global",
+   "item": "site_Sess_PitStopUpdateJob_ScaledDt",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403c06a0-0x1403c0e00;xref:0x1403c0957,0x1403c0988,0x1403c0a18",
+   "notes": "gh:serve-verify Confirmed: rsi = [job+8] (0x1403c0856), xmm6 = [job+0x10] (0x1403c0879); all three branches to 0x1403c0add come after both, and the site follows vmulss xmm6,xmm6,[rsi+0x3bc]. After it xmm6 is xmm2 to [rsi+0x330] vt+0x18, and when [rsi+0x65] != 0 it is added to +0x3b8, scaled by [0x146046628] for the +0x398..+0x3b0 sequence advance and passed to 0x1403b41a0. Difference: when [rsi+0x65] == 0 the +0x3b8 and sequence steps are skipped (0x1403c0c98). Site 7 bytes, no branch into it. Same on 1.0.145 at 0x1403c0b25."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403c0ae5",
+    "target": "0x1403c0ae5"
+   },
+   "sigcheck": "passed",
+   "digest": "e9b227cb35cac24a9dc8dbc67957ac6dc80daf6569be5d7fa58aa857b12dd276"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403c0b25",
+    "target": "0x1403c0b25"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7c1783440691a251c62de5ea8de6630380a999e8e5f72fa13a207f22ae663776"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403c0ae5",
+    "target": "0x1403c0ae5"
+   },
+   "sigcheck": "passed",
+   "digest": "e9b227cb35cac24a9dc8dbc67957ac6dc80daf6569be5d7fa58aa857b12dd276"
+  }
+ ]
+}

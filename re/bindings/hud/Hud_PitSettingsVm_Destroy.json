@@ -1,0 +1,111 @@
+{
+ "schema": 1,
+ "name": "Hud_PitSettingsVm_Destroy",
+ "table": "functions",
+ "author": "swofty",
+ "row": {
+  "addr": "0x141630e30",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_PitSettingsVm_Destroy(void *vm)",
+  "evidence": "decomp:re/decomp/141630e30.c;xref:0x1415f09cb,0x1415f0a85",
+  "notes": "Destructor of the pit page view model (vtable 0x1456ee150), from its deleting destructors: destroys the rows (downforce +0x2e8, repair +0x468, tyres +0x580, pit window +0x7e8, a fifth row +0x9a0) and releases the VM's node handles."
+ },
+ "signature": {
+  "id": "hud.pit_settings_vm_destroy",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 81 60 02 00 00 48 8D B9 F0 0A 00 00",
+  "match": "0x141630e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141630e30",
+  "kind": "func_start",
+  "names": [
+   "Hud_PitSettingsVm_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/pit_rows.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "func",
+   "item": "Hud_PitSettingsVm_Destroy",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141630e30-0x141632263;xref:0x1415f09cb,0x1415f0a85",
+   "notes": "gh:serve-verify Confirmed: sets vtables 0x1456ee150 (+0) and 0x1456ee1f0 (+0x260) and destroys the rows inline: +0x9a0, pit window +0x7e8 (0x1456f65d0), tyres +0x580 (0x1456f65b0), repair +0x468 (0x1456f65a0), downforce +0x2e8 (0x1456f6590), releasing the node handles through 0x1442b3d70; no free. Callers are the scalar deleting destructor 0x1415f09c0 and its -0x260 thunk 0x1415f0a70. Difference: the +0x9a0 row is destroyed too."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141630e30",
+    "target": "0x141630e30"
+   },
+   "sigcheck": "passed",
+   "digest": "caa1983baadc3c71ad0da6f682829ac5f58569f4e79d24fd82182cb24951c339"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141632420",
+    "target": "0x141632420"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2c188f30fc673d328011398e398b18b5d0fd60f1ea4acab0f12e1a2f105ef37b"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141630e30",
+    "target": "0x141630e30"
+   },
+   "sigcheck": "passed",
+   "digest": "caa1983baadc3c71ad0da6f682829ac5f58569f4e79d24fd82182cb24951c339"
+  }
+ ]
+}

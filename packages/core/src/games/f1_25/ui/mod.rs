@@ -15,6 +15,7 @@ pub mod mfd;
 pub mod node;
 pub mod pages;
 pub mod patch;
+pub mod pit_page;
 pub mod rows;
 
 use std::collections::BTreeMap;
@@ -39,7 +40,7 @@ mod toggles;
 use addon_screens::{
     Routing, Targets, career_setups, options_pages, resume_screen, screen_problems, ui_state,
 };
-pub use addons_page::{MfdRow, mfd_page_rows, mfd_rows};
+pub use addons_page::{MfdRow, PitRow, mfd_page_rows, mfd_rows, pit_rows};
 use archive_writes::{
     check_resume_routes, check_setup_routes, register, route_problems, write_databases, write_flags,
     write_flow_persistent, write_frontend, write_leaderboard, write_mfd_templates, write_persistent,
@@ -110,6 +111,18 @@ pub type Writer<'a> = dyn Fn(&str, &str) -> Option<String> + 'a;
 
 type Patch<'a> = Box<dyn FnOnce(&[u8]) -> Result<Vec<u8>> + 'a>;
 
+/// The launcher's edits of the race HUD templates: the ADDONS MFD page, then the pit page rows.
+pub fn mfd_templates(data: &[u8], page: &[mfd::Row], pit: &[PitRow]) -> Result<Vec<u8>> {
+    let data = match page.is_empty() {
+        true => data.to_vec(),
+        false => mfd::templates(data, page)?,
+    };
+    match pit.is_empty() {
+        true => Ok(data),
+        false => pit_page::templates(&data, pit),
+    }
+}
+
 fn screen_flow(input: &dyn Fn(&str) -> PathBuf, flows_ui: &[u8], erp: &str, screen: &str) -> Result<String> {
     let path = input(&ui_file(&format!("{erp}.erp")));
     let file = ErpFile::open(&path)?;
@@ -148,6 +161,7 @@ pub fn build(
     let mut problems = screen_problems(&built)?;
     let targets = Targets::of(&flow, &setups, resume.as_ref());
     let mfd_rows = mfd_rows(settings);
+    let pit_rows = pit_rows(settings);
     let state = ui_state(&flow, &mfd_rows)?;
     let popup = Popup::for_version(env!("CARGO_PKG_VERSION"));
     let show_panel = panel_shown(settings);
@@ -196,8 +210,8 @@ pub fn build(
     build.lines.extend(frontend.lines);
     build.warnings.extend(frontend.warnings);
     write_flags(out, &mut build, persistent, frontend.rows_built)?;
-    if !mfd_rows.is_empty() {
-        write_mfd_templates(input, out, &mfd_rows, &mut build, archives)?;
+    if !mfd_rows.is_empty() || !pit_rows.is_empty() {
+        write_mfd_templates(input, out, &mfd_rows, &pit_rows, &mut build, archives)?;
     }
     let eras = picker_rows(
         season_picker_split(settings),

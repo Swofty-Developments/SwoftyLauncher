@@ -8,6 +8,7 @@
 #include <string>
 
 #include "core/hooks/hooks.hpp"
+#include "core/hooks/pit_hold.hpp"
 #include "core/hooks/session_points.hpp"
 #include "core/runtime/loader/core_rank.hpp"
 
@@ -50,6 +51,10 @@ const SwoftySessionOps g_ops = {
     Points::op_spectator_set_camera,
     Points::op_spectator_current,
     Points::op_disqualify,
+    Points::op_time_penalty,
+    Points::op_set_time_penalty,
+    pit_hold::arm,
+    pit_hold::read,
 };
 
 session_points::Env make_env()
@@ -73,6 +78,7 @@ session_points::Env make_env()
         return site == "apply" ? site : std::string("vtable");
     };
     e.log = [](const std::string &s) { swofty::log("%s", s.c_str()); };
+    e.session_start = pit_hold::reset;
     long long flag = runtime::config()["session_control_flag"].num(6);
     e.core_flag = flag >= 0 && flag <= 17 ? int(flag) : 6;
     return e;

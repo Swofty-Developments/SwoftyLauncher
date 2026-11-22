@@ -4749,6 +4749,15 @@ pub type Gdb_HashMap_Rehash_t = unsafe extern "C" fn(map: *mut GdbValueMap, num_
 pub type Gdb_Load_GameDatabase_t =
     unsafe extern "C" fn(db: *mut GdbDatabase, cfg: *mut c_void) -> *mut GdbDatabase;
 pub type Gdb_Lookup_Key_t = unsafe extern "C" fn(path: *const c_char) -> *mut *mut c_void;
+pub type Hud_MfdRow_AddOption_t =
+    unsafe extern "C" fn(list_handle: *mut c_void, id: *const c_char, lng: *const c_char, value: u32);
+pub type Hud_MfdRow_BaseInit_t =
+    unsafe extern "C" fn(row: *mut c_void, list_handle: *mut c_void, vehicle: u8, name: *const c_char);
+pub type Hud_PitRepairRow_Init_t =
+    unsafe extern "C" fn(row: *mut c_void, list_handle: *mut c_void, vehicle: u8, name: *const c_char);
+pub type Hud_PitRepairRow_Sync_t = unsafe extern "C" fn(row: *mut c_void);
+pub type Hud_PitRepairRow_UpdateEnabled_t = unsafe extern "C" fn(row: *mut c_void, force: bool);
+pub type Hud_PitSettingsVm_Destroy_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Ne_AnimClipPlayer_Sample_Thunk_t = unsafe extern "C" fn(player: *mut c_void, time: f32);
 pub type Ne_AnimPacketB1_Sample_t =
     unsafe extern "C" fn(packet: *mut c_void, binding: *mut c_void, time: f32, out: *mut c_void);
@@ -13762,6 +13771,36 @@ pub mod bindings {
     };
     pub const Hud_HideReasons_Add: Binding = Binding {
         id: "Hud_HideReasons_Add",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_MfdRow_AddOption: Binding = Binding {
+        id: "Hud_MfdRow_AddOption",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_MfdRow_BaseInit: Binding = Binding {
+        id: "Hud_MfdRow_BaseInit",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_PitRepairRow_Init: Binding = Binding {
+        id: "Hud_PitRepairRow_Init",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_PitRepairRow_Sync: Binding = Binding {
+        id: "Hud_PitRepairRow_Sync",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_PitRepairRow_UpdateEnabled: Binding = Binding {
+        id: "Hud_PitRepairRow_UpdateEnabled",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Hud_PitSettingsVm_Destroy: Binding = Binding {
+        id: "Hud_PitSettingsVm_Destroy",
         kind: "func",
         status: Status::Experimental,
     };
@@ -22925,6 +22964,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_PitLane_BoxHoldSeconds: Binding = Binding {
+        id: "site_Game_PitLane_BoxHoldSeconds",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
         id: "site_Game_PitLane_BoxPoseFalse",
         kind: "site",
@@ -22932,6 +22976,21 @@ pub mod bindings {
     };
     pub const site_Game_PitLane_BoxSlotRead: Binding = Binding {
         id: "site_Game_PitLane_BoxSlotRead",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitStopLogic_ClipStartEvent: Binding = Binding {
+        id: "site_Game_PitStopLogic_ClipStartEvent",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitStopObserver_StopGoAnswerPlain: Binding = Binding {
+        id: "site_Game_PitStopObserver_StopGoAnswerPlain",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_PitStopObserver_StopGoAnswerPrefixed: Binding = Binding {
+        id: "site_Game_PitStopObserver_StopGoAnswerPrefixed",
         kind: "site",
         status: Status::Experimental,
     };
@@ -23352,6 +23411,11 @@ pub mod bindings {
     };
     pub const site_Sess_PitRankOwnSlot: Binding = Binding {
         id: "site_Sess_PitRankOwnSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_PitStopUpdateJob_ScaledDt: Binding = Binding {
+        id: "site_Sess_PitStopUpdateJob_ScaledDt",
         kind: "site",
         status: Status::Experimental,
     };

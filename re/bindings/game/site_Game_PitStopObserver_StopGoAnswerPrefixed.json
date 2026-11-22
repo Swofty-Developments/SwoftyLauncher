@@ -1,0 +1,112 @@
+{
+ "schema": 1,
+ "name": "site_Game_PitStopObserver_StopGoAnswerPrefixed",
+ "table": "globals",
+ "author": "swofty",
+ "row": {
+  "addr": "0x1403bd9a2",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x1403bd977-0x1403bd9bc;xref:0x1403bd99d",
+  "notes": "In Game_PitStopActionObserver_SetTransitionSequence's prefixed name builder: the instruction after the call to Sess_Penalty_IsServedAtNextStop (0x1403bd99d, car = [inst+0x358] ? byte [inst+0x350] : 0xff, inst = [r13+8]); al = the answer, r13 = the observer. al true and g_stopGoDuration exactly 10 or 5 add the 10SP or 5SP suffix to the crew sequence name (0x1403bd9aa..0x1403bd9bc). Setting al here picks the stop-go crew clip for that car only. The instruction at the site is RIP-relative (vmovss xmm0,[rip+disp] to 0x145f9677c, 8 bytes); the hook relocates it."
+ },
+ "signature": {
+  "id": "game.pit_stop_observer_stop_go_answer_prefixed",
+  "section": ".xtls",
+  "pattern": "0A 90 50 03 00 00 4C 89 F1 E8 ?? ?? ?? ?? C5 FA 10 05",
+  "match": "0x1403bd994",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403bd9a2",
+  "kind": "mid",
+  "expect": "C5 FA 10 05",
+  "names": [
+   "site_Game_PitStopObserver_StopGoAnswerPrefixed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-22",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/pit_hold.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "serve-verify",
+   "kind": "global",
+   "item": "site_Game_PitStopObserver_StopGoAnswerPrefixed",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403bc300-0x1403bdc00;xref:0x1403bd99d,0x1403bd6ec,0x1403bd80c",
+   "notes": "gh:serve-verify Confirmed: call 0x142f29600 at 0x1403bd99d with rcx = r14 = [rsp+0x148] = [[inst+0x3c0]+0x80] (reloaded on every path in: 0x1403bd6e4, 0x1403bd7e9, 0x1403bd7f6), edx = [inst+0x358] ? byte [inst+0x350] : 0xff, inst = [r13+8]; r13 = rcx from 0x1403bc327 and never rewritten. al is read at 0x1403bd9ba and 0x1403bd9d5 with no write between; dl = al and duration == 10.0 picks 10SP, cl = al and duration == 5.0 picks 5SP. The site instruction is RIP-relative (vmovss xmm0,[rip+disp] to 0x145f9677c, 8 bytes), so the mid hook must relocate it; no branch lands inside it. Same on 1.0.145 at 0x1403bd9e2."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bd994",
+    "target": "0x1403bd9a2"
+   },
+   "sigcheck": "passed",
+   "digest": "2cc7ced1bcc2a2bdaa073a489689b8587bf7c06927766710d618eb874152dd13"
+  },
+  {
+   "by": "swofty",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bd9d4",
+    "target": "0x1403bd9e2"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f5f582fbc2eb11fbdddc4ad82acb4cb61114b016416f9acbfb71b3fc964f8702"
+  },
+  {
+   "by": "serve-verify",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403bd994",
+    "target": "0x1403bd9a2"
+   },
+   "sigcheck": "passed",
+   "digest": "2cc7ced1bcc2a2bdaa073a489689b8587bf7c06927766710d618eb874152dd13"
+  }
+ ]
+}

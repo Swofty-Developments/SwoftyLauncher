@@ -2,7 +2,9 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use crate::manifest::compat::Platform;
-use crate::manifest::hud::{HudMfd, MFD_ROWS_MAX, MFD_TEXT_MAX};
+use crate::manifest::hud::{
+    HudMfd, HudPitRow, MFD_ROWS_MAX, MFD_TEXT_MAX, PIT_ROW_ID_MAX, PIT_ROW_LABEL_MAX, PIT_ROWS_MAX,
+};
 use crate::manifest::kind::ExperimentalFeature;
 use crate::manifest::options::{Binds, OptionType};
 use crate::manifest::postfx::{
@@ -27,6 +29,34 @@ pub fn https_url(url: &str) -> Option<&str> {
     url.strip_prefix("https://")
         .filter(|rest| !rest.is_empty())
         .map(|_| url)
+}
+
+fn validate_pit_rows(rows: &[HudPitRow]) -> std::result::Result<(), String> {
+    if rows.is_empty() || rows.len() > PIT_ROWS_MAX {
+        return Err(format!("list 1 to {PIT_ROWS_MAX} rows"));
+    }
+    let mut seen = BTreeMap::new();
+    for (i, r) in rows.iter().enumerate() {
+        if r.id.is_empty()
+            || r.id.len() > PIT_ROW_ID_MAX
+            || !r
+                .id
+                .bytes()
+                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_')
+        {
+            return Err(format!(
+                "[{i}].id {:?} must be 1 to {PIT_ROW_ID_MAX} of a-z, 0-9 and _",
+                r.id
+            ));
+        }
+        if seen.insert(r.id.as_str(), ()).is_some() {
+            return Err(format!("[{i}].id {} is listed twice", r.id));
+        }
+        if r.label.trim().is_empty() || r.label.chars().count() > PIT_ROW_LABEL_MAX {
+            return Err(format!("[{i}].label must be 1 to {PIT_ROW_LABEL_MAX} characters"));
+        }
+    }
+    Ok(())
 }
 
 impl AddonManifest {
@@ -161,6 +191,9 @@ impl AddonManifest {
         }
         if let Some(m) = self.hud.as_ref().and_then(|h| h.mfd.as_ref()) {
             self.validate_mfd(m).or_else(|e| fail(format!("hud.mfd: {e}")))?;
+        }
+        if let Some(rows) = self.hud.as_ref().and_then(|h| h.pit_rows.as_ref()) {
+            validate_pit_rows(rows).or_else(|e| fail(format!("hud.pit_rows: {e}")))?;
         }
         if let Some(l) = &self.launcher {
             if l.program.is_empty() {

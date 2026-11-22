@@ -919,6 +919,7 @@ inline constexpr site<"site_Sess_PitRankEpilogue"> site_Sess_PitRankEpilogue{}; 
 inline constexpr site<"site_Sess_PitRankListNext"> site_Sess_PitRankListNext{}; // L2 experimental
 inline constexpr site<"site_Sess_PitRankListSlot"> site_Sess_PitRankListSlot{}; // L2 experimental
 inline constexpr site<"site_Sess_PitRankOwnSlot"> site_Sess_PitRankOwnSlot{}; // L2 experimental
+inline constexpr site<"site_Sess_PitStopUpdateJob_ScaledDt"> site_Sess_PitStopUpdateJob_ScaledDt{}; // L2 experimental
 inline constexpr site<"site_Sess_PuPanel_SlotHolder"> site_Sess_PuPanel_SlotHolder{}; // L2 experimental
 inline constexpr site<"site_Sess_SessionEnter_VehicleLookup"> site_Sess_SessionEnter_VehicleLookup{}; // L2 experimental
 inline constexpr site<"site_Sess_TimeTrialLeaderboard_BoundTabChild"> site_Sess_TimeTrialLeaderboard_BoundTabChild{}; // L2 experimental

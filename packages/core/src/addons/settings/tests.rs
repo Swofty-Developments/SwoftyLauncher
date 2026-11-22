@@ -571,3 +571,49 @@ fn the_session_file_shows_an_option_off_and_hidden_while_an_addon_it_needs_is_of
     let on = option(&SessionSettings::build(&p, &installed, None).unwrap());
     assert_eq!((on.current, on.hidden), (1, false));
 }
+
+#[test]
+fn the_session_file_copies_each_addons_pit_rows_enabled_or_not() {
+    let pit = AddonManifest::parse(
+        r#"{
+          "schema_version": 1, "id": "a.pit", "name": "Pit", "version": "1.0.0", "author": "a",
+          "compat": { "game": "f1_25" },
+          "hud": { "pit_rows": [{ "id": "serve_penalty", "label": "SERVE PENALTY" }, { "id": "b", "label": "B" }] }
+        }"#,
+    )
+    .unwrap();
+    let mut installed = installed();
+    installed.insert("a.pit".into(), pit);
+    let s = SessionSettings::build(&Profile::new("x"), &installed, None).unwrap();
+    let a = s.addons.iter().find(|a| a.id == "a.pit").unwrap();
+    assert!(!a.enabled);
+    assert_eq!(
+        a.pit_rows,
+        [
+            SessionPitRow {
+                id: "serve_penalty".into(),
+                label: "SERVE PENALTY".into()
+            },
+            SessionPitRow {
+                id: "b".into(),
+                label: "B".into()
+            }
+        ]
+    );
+    let json = serde_json::to_value(&s).unwrap();
+    let addons = json["addons"].as_array().unwrap();
+    let ours = addons.iter().find(|a| a["id"] == "a.pit").unwrap();
+    assert_eq!(
+        ours["pit_rows"],
+        serde_json::json!([{ "id": "serve_penalty", "label": "SERVE PENALTY" }, { "id": "b", "label": "B" }])
+    );
+    assert!(
+        addons
+            .iter()
+            .find(|a| a["id"] == "a.grid")
+            .unwrap()
+            .get("pit_rows")
+            .is_none()
+    );
+    assert_eq!(serde_json::from_value::<SessionSettings>(json).unwrap(), s);
+}

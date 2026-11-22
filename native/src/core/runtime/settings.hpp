@@ -11,6 +11,12 @@
 void settings_attach(SwoftyApi *a, const std::wstring &dir);
 size_t settings_mfd_rows();
 bool settings_mfd_step(size_t row, int dir);
+// The MFD pit page rows (hud.pit_rows of the enabled addons, in settings order, at most PIT_ROWS_MAX): row k is the
+// launcher's UI clone swofty_pit_<k>. settings_pit_row answers k for the addon's row id, or -1.
+constexpr size_t PIT_ROWS_MAX = 2;
+size_t settings_pit_rows();
+int settings_pit_row(const std::string &addon, const std::string &id);
+std::string settings_pit_row_name(size_t k);
 // The id of the addon whose code holds `from` (empty when none), and in `dll` that module's name.
 std::string settings_addon(const void *from, std::string &dll);
 int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);

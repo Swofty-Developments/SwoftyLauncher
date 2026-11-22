@@ -1055,8 +1055,35 @@ typedef struct SwoftyCareerSaves {
    car on the session's rules object, which the core captures when the game initialises its rule manager; the
    car goes to the AI with the DISQUALIFIED reason. SWOFTY_ASSET_LATE before the session has a rule manager or
    while the car has no controller set, SWOFTY_ASSET_UNAVAILABLE when the binding does not resolve; queued to the
-   next frame like set_control. Version 1 is the members before it and keeps its layout. */
-#define SWOFTY_SESSION_OPS_VERSION 2
+   next frame like set_control. Version 1 is the members before it and keeps its layout.
+   Version 3 (standard library 1.12) adds the time penalty and the box hold, which work from any thread:
+   time_penalty reads the seconds of time penalty the car's race result carries (the game adds them to its race time
+   for the classification, the results and the UDP penalties field); set_time_penalty replaces them (0 or more, at
+   most 3600). Only the machine that runs the car's race writes the result that counts: offline the player's own game,
+   online the car's own game. SWOFTY_ASSET_LATE before the session has a rule manager or a result for the car.
+   set_pit_hold arms the car's next pit stop with seconds (at most 600, 0 disarms) the car stays in the box on top of
+   the crew's work and any stop-go; the core fixes the number when the car enters the pit lane, and the crew waits
+   through it before it works (the game's stop-go wait timed to the seconds, or a crew that stands still when that
+   clip is missing). pit_hold reads it back into a SwoftyPitHold whose size the caller sets: armed is the next stop,
+   holding the stop in the box now, served the extra seconds of the last stop that held the car to the end and serves
+   the count of such stops this session (a stop that ends another way serves nothing and keeps the car armed); crew is
+   how the crew waited at that stop (SWOFTY_PIT_CREW_*). SWOFTY_ASSET_UNAVAILABLE when the hold did not install on the
+   running build. */
+#define SWOFTY_SESSION_OPS_VERSION 3
+
+#define SWOFTY_PIT_CREW_NONE 0
+#define SWOFTY_PIT_CREW_STRETCH 1
+#define SWOFTY_PIT_CREW_FREEZE 2
+
+typedef struct SwoftyPitHold {
+    uint32_t version, size;
+    float armed;
+    float holding;
+    float served;
+    uint32_t serves;
+    uint32_t crew;
+    uint32_t reserved[5];
+} SwoftyPitHold;
 
 typedef struct SwoftySessionOps {
     uint32_t version;
@@ -1068,7 +1095,32 @@ typedef struct SwoftySessionOps {
     int (*spectator_set_camera)(int32_t camera);
     int (*spectator_current)(int32_t *car, int32_t *camera);
     int (*disqualify)(uint32_t car);
+    int (*time_penalty)(uint32_t car, double *seconds);
+    int (*set_time_penalty)(uint32_t car, double seconds);
+    int (*set_pit_hold)(uint32_t car, float seconds);
+    int (*pit_hold)(uint32_t car, SwoftyPitHold *out);
 } SwoftySessionOps;
+
+/* Pit menu rows (standard library 1.12), from the core export SwoftyCorePitRows; not a SwoftyApi member. An addon
+   declares up to two rows in its manifest (hud.pit_rows, each an id and a label); the launcher adds each one to the
+   race MFD's pit page (pit_settings_panel) after the front wing repair row as a NO / YES toggle, and the core drives
+   it with the game's own repair row code. find takes the row id the calling addon declared and gives a handle, or
+   SWOFTY_ASSET_UNAVAILABLE when the profile's build has no such row (the addon is off, a third row, or the launcher is
+   older). value reads the row: 0 NO, 1 YES. set_value moves it; set_locked greys the row out and holds it on NO while
+   locked is non-zero (the game also locks it, like the repair row, from pit entry until the car is in the box).
+   vehicle gives the car whose pit page holds the row (the player's car, also while the AI drives it in the pit lane),
+   SWOFTY_ASSET_LATE while no pit page is built. Every call is safe from any thread; the page shows a change the next
+   time it updates. */
+#define SWOFTY_PIT_ROWS_VERSION 1
+
+typedef struct SwoftyPitRowOps {
+    uint32_t version;
+    int (*find)(const char *row, uint32_t *handle);
+    int (*value)(uint32_t handle, uint32_t *value);
+    int (*set_value)(uint32_t handle, uint32_t value);
+    int (*set_locked)(uint32_t handle, int locked);
+    int (*vehicle)(uint32_t handle, uint32_t *car);
+} SwoftyPitRowOps;
 
 /* Content ownership (standard library 1.8, experimental), from the core export SwoftyCoreContentOps; not a
    SwoftyApi member. owned reads whether the player owns the content behind an entitlement name such as
@@ -1861,6 +1913,7 @@ typedef const SwoftyCareerSaves *(*SwoftyCoreCareerSavesFn)(void);
 typedef const SwoftySessionOps *(*SwoftyCoreSessionOpsFn)(void);
 typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
 typedef const SwoftyContentOps *(*SwoftyCoreContentOpsFn)(void);
+typedef const SwoftyPitRowOps *(*SwoftyCorePitRowsFn)(void);
 typedef const SwoftyLive *(*SwoftyCoreLiveFn)(void);
 typedef const SwoftyMem *(*SwoftyCoreMemFn)(void);
 typedef const SwoftyGameAssets *(*SwoftyCoreGameAssetsFn)(void);

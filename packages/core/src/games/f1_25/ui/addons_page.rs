@@ -1,6 +1,6 @@
 //! The rows of the ADDONS page of the in-car MFD: a heading per addon, then its rows.
 
-use super::mfd;
+use super::{mfd, pit_page};
 use crate::addons::settings::SessionSettings;
 
 pub struct MfdRow {
@@ -33,6 +33,31 @@ pub fn mfd_rows(settings: &SessionSettings) -> Vec<MfdRow> {
     }
     out.truncate(swofty_addon::manifest::MFD_ROWS_MAX);
     out
+}
+
+pub struct PitRow {
+    pub addon: String,
+    pub id: String,
+    pub label: String,
+    pub name: String,
+}
+
+/// The pit page rows of the enabled addons, in session order, each named `swofty_pit_<k>`.
+pub fn pit_rows(settings: &SessionSettings) -> Vec<PitRow> {
+    settings
+        .addons
+        .iter()
+        .filter(|a| a.enabled)
+        .flat_map(|a| a.pit_rows.iter().map(move |r| (a, r)))
+        .take(swofty_addon::manifest::PIT_ROWS_MAX)
+        .enumerate()
+        .map(|(k, (a, r))| PitRow {
+            addon: a.id.clone(),
+            id: r.id.clone(),
+            label: r.label.clone(),
+            name: pit_page::row_name(k),
+        })
+        .collect()
 }
 
 /// The rows of the ADDONS MFD page: a heading per addon, then its rows.

@@ -174,12 +174,12 @@ impl Pipeline<'_, '_> {
         let base = |rel: &str| bases.path(rel);
         let resolve = |rel: &str| run.original(rel);
         let name = |origin: &str| run.origin_name(origin);
-        let mfd_rows = match inputs.menus {
-            true => crate::ui::mfd_rows(session),
-            false => Vec::new(),
+        let (mfd_rows, pit_rows) = match inputs.menus {
+            true => (crate::ui::mfd_rows(session), crate::ui::pit_rows(session)),
+            false => (Vec::new(), Vec::new()),
         };
         let page = crate::ui::mfd_page_rows(&mfd_rows);
-        let mfd_edit = |data: &[u8]| crate::ui::mfd::templates(data, &page);
+        let mfd_edit = |data: &[u8]| crate::ui::mfd_templates(data, &page, &pit_rows);
         let put_names: Vec<String> = bases.puts.keys().cloned().collect();
         let composed = crate::hud::integrate::compose_in_build(
             &crate::hud::integrate::Context {
@@ -193,7 +193,7 @@ impl Pipeline<'_, '_> {
             },
             erp_ops,
             hud_inputs,
-            (!page.is_empty()).then_some(&mfd_edit as crate::hud::TemplateBase),
+            (!page.is_empty() || !pit_rows.is_empty()).then_some(&mfd_edit as crate::hud::TemplateBase),
         )?;
         let owner = hud_inputs[0].addon.clone();
         composed
