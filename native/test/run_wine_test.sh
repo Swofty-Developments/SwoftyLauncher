@@ -1306,21 +1306,23 @@ doc['build']['size'] += 1
 json.dump(doc, open(sys.argv[1], 'w'), indent=1)
 EOF2
 local hangs=0 other=0 i t rc what
-for i in $(seq 120); do
+for i in $(seq 16); do
     t=$SECONDS rc=0
     if ((i % 2)); then
         what=stages
         rm -rf "$SG/swofty/cache"
-        SWOFTY_EARLY_STAGE=1 game_run -t 30 "$SG/F1_25.exe" stages >/dev/null || rc=$?
+        SWOFTY_TEST_TRAP_STALL_MS=300 SWOFTY_EARLY_STAGE=1 game_run -t 30 "$SG/F1_25.exe" stages >/dev/null || rc=$?
+        LOG=$SG/swofty/loader.log
     else
         what=filled
-        SWOFTY_EARLY_STAGE=1 game_run -t 30 "$OUT/filled/F1_25.exe" >/dev/null || rc=$?
+        SWOFTY_TEST_TRAP_STALL_MS=300 SWOFTY_EARLY_STAGE=1 game_run -t 30 "$OUT/filled/F1_25.exe" >/dev/null || rc=$?
+        LOG=$OUT/filled/swofty/loader.log
     fi
-    echo "stress $i $what rc=$rc $((SECONDS - t))s"
+    echo "stress $i $what rc=$rc $((SECONDS - t))s; $(grep -E 'arm runs (on a|in the)|game exits while|test: the exit waited' "$LOG" | cut -c25-200 | tr '\n' '|')"
     ((rc == 124 || rc == 137)) && hangs=$((hangs + 1))
     ((rc != 0 && rc != 124 && rc != 137)) && other=$((other + 1))
 done
-echo "stress summary: $hangs hang(s), $other other nonzero exit(s) of 120 runs"
+echo "stress summary: $hangs hang(s), $other other nonzero exit(s) of 16 runs"
 }
 case_stages() {
 echo "==== stages"
