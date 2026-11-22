@@ -1,5 +1,4 @@
-//! The Time Trial page's root as in 1.10, for a player without access to the rooms: every season, each opening its
-//! own page, beside the global ranking.
+//! The Time Trial page's root, as in 1.10: every season, each opening its own page, beside the global ranking.
 
 use super::model::*;
 use super::ranking::RIGHT_W;

@@ -1,7 +1,4 @@
-//! A board's track as a row: on the season page and the Time Trial page, it opens in place onto the top of its
-//! board, or on the board's own page as in 1.10.
-
-mod peek;
+//! A board's track as a row on the season page, opening the board's own page.
 
 use super::model::*;
 use super::{Online, Target};
@@ -15,25 +12,11 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trn};
 
-/// From this width a track's row that opens in place shows how many drivers and laps its board has.
-const WITH_STATS: f32 = 760.;
-
-/// What a track's row opens: its board in place under it when `in_place`, else the board's own page.
-pub(super) fn track_item(in_place: bool, t: &TrackCard) -> Target {
-    match in_place {
-        true => Target::Track(t.key.clone()),
-        false => Target::Board(Box::new(t.clone()), t.name.clone()),
-    }
-}
-
 impl Shell {
-    /// `tracks` as a panel's rows, `width` wide. With `in_place` a row opens onto the top of its board under it,
-    /// else it opens the board's own page. Each row is a keyboard item.
+    /// `tracks` as a panel's rows, each opening its board's own page and each a keyboard item.
     pub(super) fn track_rows(
         &mut self,
         tracks: &[TrackCard],
-        width: f32,
-        in_place: bool,
         items: &mut Vec<Target>,
         p: Palette,
         cx: &mut Context<Self>,
@@ -41,79 +24,44 @@ impl Shell {
         let bylines = self.online_bylines(&tracks.iter().collect::<Vec<_>>());
         let mut rows = Vec::new();
         for (t, byline) in tracks.iter().zip(bylines) {
-            let idx = self.target_item(items, track_item(in_place, t));
-            let open = in_place && self.online.peek.is_open(&t.key);
-            rows.push(self.listed_track_row(t, byline, idx, in_place, open, width, p, cx));
-            if open {
-                rows.push(self.peek_panel(t, width, p, cx));
-            }
+            let target = Target::Board(Box::new(t.clone()), t.name.clone());
+            let idx = self.target_item(items, target.clone());
+            rows.push(self.listed_track_row(t, byline, idx, target, p, cx));
         }
         rows
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn listed_track_row(
         &self,
         t: &TrackCard,
         byline: Option<String>,
         idx: usize,
-        in_place: bool,
-        open: bool,
-        width: f32,
+        target: Target,
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let mine = self.online.my_times.get(&t.key).copied();
-        let ringed = self.online.ringed(idx);
-        let row = self
-            .track_row(t, byline, mine, !in_place || width >= WITH_STATS, p)
+        self.track_row(t, byline, mine, p)
             .id(SharedString::from(format!(
                 "track-{}-{}-{}",
                 t.key.content, t.key.track, t.key.weather
             )))
             .border_b_1()
             .border_color(p.border_variant)
-            .cursor_pointer();
-        if !in_place {
-            let target = track_item(false, t);
-            return row
-                .when(ringed, |d| d.bg(p.selected))
-                .hover(move |s| s.bg(p.hover))
-                .child(
-                    Icon::new(IconName::ChevronRight)
-                        .size(px(14.))
-                        .text_color(p.text_placeholder),
-                )
-                .on_click(cx.listener(move |this, _, _, cx| Online::go(this, target.clone(), cx)))
-                .into_any_element();
-        }
-        let key = t.key.clone();
-        row.when(open, |d| d.bg(p.selected))
-            .when(ringed, |d| d.border_1().border_color(p.accent))
+            .cursor_pointer()
+            .when(self.online.ringed(idx), |d| d.bg(p.selected))
             .hover(move |s| s.bg(p.hover))
             .child(
-                Icon::new(if open {
-                    IconName::ChevronUp
-                } else {
-                    IconName::ChevronDown
-                })
-                .size(px(14.))
-                .text_color(if open { p.text } else { p.text_placeholder }),
+                Icon::new(IconName::ChevronRight)
+                    .size(px(14.))
+                    .text_color(p.text_placeholder),
             )
-            .on_click(cx.listener(move |this, _, _, cx| Online::toggle_track(this, key.clone(), cx)))
+            .on_click(cx.listener(move |this, _, _, cx| Online::go(this, target.clone(), cx)))
             .into_any_element()
     }
 
-    /// A track's row: its layout, name, record and holder, how busy its board is when `stats`, and this player's
-    /// time.
-    fn track_row(
-        &self,
-        t: &TrackCard,
-        byline: Option<String>,
-        mine: Option<u64>,
-        stats: bool,
-        p: Palette,
-    ) -> Div {
+    /// A track's row: its layout, name, record and holder, how busy its board is, and this player's time.
+    fn track_row(&self, t: &TrackCard, byline: Option<String>, mine: Option<u64>, p: Palette) -> Div {
         h_flex()
             .h(px(42.))
             .px(px(14.))
@@ -184,20 +132,18 @@ impl Shell {
                         )
                     }),
             )
-            .when(stats, |d| {
-                d.child(
-                    div()
-                        .w(px(150.))
-                        .flex_shrink_0()
-                        .text_size(px(12.))
-                        .text_color(p.text_muted)
-                        .child(format!(
-                            "{} - {}",
-                            trn(t.drivers as usize, "{count} driver", "{count} drivers"),
-                            trn(t.laps as usize, "{count} lap", "{count} laps")
-                        )),
-                )
-            })
+            .child(
+                div()
+                    .w(px(150.))
+                    .flex_shrink_0()
+                    .text_size(px(12.))
+                    .text_color(p.text_muted)
+                    .child(format!(
+                        "{} - {}",
+                        trn(t.drivers as usize, "{count} driver", "{count} drivers"),
+                        trn(t.laps as usize, "{count} lap", "{count} laps")
+                    )),
+            )
             .child(
                 div()
                     .w(px(84.))
