@@ -615,6 +615,73 @@ void test_scheduler()
     check(st.context().mode == "driver_career" &&
               logged("[apply] facts: mode driver_career, session practice (practice_1), track game/imola"),
           "a career practice keeps the career's mode");
+    s.session_end("StateUnloadSession");
+
+    // A Progressive career weekend played through the in-session menu (a launcher 1.10.24 report): StateLoadSession
+    // loads practice 1 and the game then starts practice 3, qualifying and the race on the loaded track without another
+    // StateLoadSession. Each start reads the weekend again and names its own session.
+    calls.clear();
+    logs.clear();
+    std::size_t published = facts.size();
+    check(s.session_enter(ap::SessionFacts{"driver_career", "practice", "practice_1", "game/texas"}, true) &&
+              joined(calls) == "t.session.session practice" && s.session_name() == "practice_1",
+          "StateLoadSession loads the weekend's first session and runs the session appliers: " + joined(calls));
+    calls.clear();
+    check(!s.session_enter(ap::SessionFacts{"driver_career", "practice", "practice_1", "game/texas"}, false) && calls.empty() &&
+              s.session_name() == "practice_1",
+          "the game's session enter of the session StateLoadSession loaded runs no applier again: " + joined(calls));
+    published = facts.size();
+    check(!s.session_enter(ap::SessionFacts{"driver_career", "practice", "practice_3", "game/texas"}, false) && calls.empty() &&
+              s.session_name() == "practice_3" && st.context().session_type == "practice" &&
+              logged("[apply] facts: mode driver_career, session practice (practice_3), track game/texas"),
+          "the weekend's next session takes its own name, not practice_1, and runs no applier: " + s.session_name());
+    check(facts.size() == published + 1 && facts.back().session_type == "practice", "the session start publishes the facts once");
+    check(!s.session_started(ap::SessionFacts{"driver_career", "practice", "practice_3", "game/texas"}) &&
+              facts.size() == published + 1,
+          "the same session read again changes nothing");
+    s.session_enter(ap::SessionFacts{"driver_career", "qualifying", "qualifying_one_shot", ""}, false);
+    check(st.context().session_type == "qualifying" && s.session_name() == "qualifying_one_shot" &&
+              st.context().track == "game/texas",
+          "qualifying takes its name; a read without a track keeps the loaded track");
+    s.session_enter(ap::SessionFacts{"driver_career", "race", "race", "game/texas"}, false);
+    check(st.context().session_type == "race" && s.session_name() == "race" && facts.back().session_type == "race" &&
+              logged("[apply] facts: mode driver_career, session race, track game/texas"),
+          "the race of the loaded weekend is a race");
+    check(calls.empty(), "no later start of the loaded weekend runs an applier: " + joined(calls));
+    s.session_started(ap::SessionFacts{"driver_career", "race", "race", "game/texas"});
+    check(s.session_name() == "race", "StateSession updating with the same read keeps the race");
+    s.session_enter(ap::SessionFacts{"driver_career", "", "", "game/texas"}, false);
+    check(st.context().session_type.empty() && s.session_name().empty() && st.context().track == "game/texas" &&
+              facts.back().session_type.empty(),
+          "a read that names no session leaves it unknown, never the last session's name");
+    s.session_started(ap::SessionFacts{"driver_career", "race", "race", "game/brazil"});
+    check(st.context().session_type.empty() && s.session_name().empty() && st.context().track == "game/texas" &&
+              logged("[apply] session start: the weekend names track game/brazil, not the loaded game/texas; the "
+                     "session is left unknown"),
+          "a read that names another track is not the loaded session's: the session stays unknown on the loaded track");
+    calls.clear();
+    s.session_end("StateUnloadSession");
+    check(joined(calls) == "t.session.session_end" && s.session_name().empty() && st.context().track.empty(),
+          "the track unload ends the weekend's session: " + joined(calls));
+    check(!s.session_started(ap::SessionFacts{"driver_career", "race", "race", "game/texas"}) &&
+              st.context().session_type.empty() && s.session_name().empty(),
+          "no session loaded: a session start read changes nothing");
+    calls.clear();
+    check(s.session_enter(ap::SessionFacts{"driver_career", "practice", "practice_1", "game/brazil"}, true) &&
+              joined(calls) == "t.session.session practice" && s.session_name() == "practice_1" &&
+              st.context().track == "game/brazil",
+          "the next weekend's StateLoadSession loads it again: " + joined(calls));
+    s.session_end("StateUnloadSession");
+    calls.clear();
+    check(s.session_enter(ap::SessionFacts{"grand_prix", "race", "race", "game/monza"}, false) &&
+              s.session_enter(ap::SessionFacts{"grand_prix", "race", "race", "game/monza"}, false) &&
+              joined(calls) == "t.session.session race | t.session.session_end | t.session.session race",
+          "a session entered without StateLoadSession loads at every session enter, as before: " + joined(calls));
+    s.session_end("StateUnloadSession");
+    s.session_load(ap::SessionFacts{"driver_career", "practice", "practice_2", ""});
+    s.session_started(ap::SessionFacts{"driver_career", "practice", "practice_2", "game/melbourne"});
+    check(st.context().track == "game/melbourne" && s.session_name() == "practice_2",
+          "a session loaded before the track read takes the track a later read names");
     calls.clear();
     s.career_unloaded();
     check(joined(calls) == "t.session.session_end | t.content.deactivate", "a career unload ends the session and puts back");
@@ -712,6 +779,20 @@ void test_facts()
     is(18, false, "time_trial", "time_trial");
     is(0, false, "", "");
     is(19, false, "", "");
+    check(f::current_session(15, false, false).type == "race" &&
+              f::current_session(9, false, false).session == "qualifying_one_shot",
+          "a current session that has not run is named");
+    check(f::current_session(15, false, true).type.empty() && f::current_session(15, false, true).session.empty() &&
+              f::current_session(1, false, true).session.empty(),
+          "a complete current session names no session: the game has not moved on to the one that starts");
+    using Start = f::SessionStart;
+    check(f::session_start(true, false, false) == Start::load && f::session_start(true, true, true) == Start::load,
+          "StateLoadSession loads the session");
+    check(f::session_start(false, true, true) == Start::facts,
+          "a later start of a session StateLoadSession loaded only takes the weekend's session");
+    check(f::session_start(false, false, true) == Start::load && f::session_start(false, true, false) == Start::load &&
+              f::session_start(false, false, false) == Start::load,
+          "a start with no session loaded through StateLoadSession loads it");
     check(f::sprint_weekend({1, 10, 11, 12, 15, 5, 6, 7, 16}) && !f::sprint_weekend({1, 2, 3, 5, 6, 7, 15}),
           "a weekend with a sprint shootout is a sprint weekend");
 

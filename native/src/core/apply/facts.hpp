@@ -120,6 +120,21 @@ inline Session session_of(uint32_t id, bool sprint)
     return s;
 }
 
+// The session a championship weekend's current session index names. The game moves the index off a session only once
+// that session is complete, and leaves it on the last one when the weekend ends, so a complete current session is one
+// that already ran: the session that loads or starts is not known from the weekend.
+inline Session current_session(uint32_t id, bool sprint, bool complete) { return complete ? Session{} : session_of(id, sprint); }
+
+// What a session start does. A start through StateLoadSession, or one with no session loaded through it, loads the
+// session and runs its appliers. The game starts every later session of a loaded weekend (and a restart) without
+// another StateLoadSession: those take the weekend's current session as the session's facts and run no applier.
+enum class SessionStart { load, facts };
+
+inline SessionStart session_start(bool from_flow, bool in_session, bool loaded_from_flow)
+{
+    return !from_flow && in_session && loaded_from_flow ? SessionStart::facts : SessionStart::load;
+}
+
 struct TrackRecord {
     std::string id;
     int64_t stat_id = -1;
