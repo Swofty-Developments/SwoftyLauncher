@@ -1,3 +1,4 @@
+#include "core/frontend/view_state.hpp"
 #include "core/render/postfx_logic.hpp"
 
 #include <cmath>
@@ -90,6 +91,10 @@ static void own_cases()
         CHECK(signal_value_name(S_VIEW_CAMERA, 7) == "reverse_pod" && signal_value_name(S_VIEW_CAMERA, 8) == "nose");
         CHECK(signal_value_name(S_VIEW_CAMERA, 9) == "nose_alt" && signal_value_name(S_VIEW_CAMERA, 10) == "wing");
         CHECK(signal_value_name(S_VIEW_CAMERA, 11).empty());
+        CHECK(view_camera_value(frontend::view::UNKNOWN) == -1 && view_camera_value(frontend::view::COCKPIT) == 0);
+        CHECK(view_camera_value(frontend::view::TRACKSIDE) == 6 && view_camera_value(frontend::view::REVERSE_POD) == 7);
+        CHECK(view_camera_value(frontend::view::NOSE) == 8 && view_camera_value(frontend::view::WING) == 10);
+        CHECK(view_camera_value(frontend::view::WING + 1) == -1);
         CHECK(SIGNALS[S_CAR_SPEED].in_game && !SIGNALS[S_CAR_IMPACT].in_game && SIGNALS[S_SESSION_LAP].in_game);
     }
     {

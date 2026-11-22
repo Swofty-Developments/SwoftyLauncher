@@ -172,8 +172,8 @@ void RuleDriver::frame(const frontend::view::State &v, ULONGLONG now, const Acti
     double ms = clock.QuadPart ? double(t.QuadPart - clock.QuadPart) * 1000.0 / double(freq.QuadPart) : 0.0;
     clock = t;
     Signals sig;
-    if (v.valid && v.kind >= 1 && v.kind <= 6)
-        sig.set(S_VIEW_CAMERA, v.kind - 1);
+    if (const int camera = view_camera_value(v.kind); v.valid && camera >= 0)
+        sig.set(S_VIEW_CAMERA, camera);
     sig.set(S_VIEW_REPLAY, (v.flags & frontend::view::REPLAY) != 0);
     sig.set(S_VIEW_PAUSED, (v.flags & frontend::view::PAUSED) != 0);
     sig.set(S_VIEW_PHOTO, (v.flags & frontend::view::PHOTO) != 0);

@@ -109,6 +109,12 @@ inline std::string_view signal_value_name(int signal, size_t i)
     }
 }
 
+// The view.camera value of a view kind (UNKNOWN is 0, so kind 1 is value 0); -1 for unknown or a kind past the list.
+inline int view_camera_value(uint32_t kind)
+{
+    return kind >= 1 && !signal_value_name(S_VIEW_CAMERA, kind - 1).empty() ? int(kind - 1) : -1;
+}
+
 // The game's surface id (UDP m_surfaceType) as a value of car.surface: tarmac 0, kerb 1, rumble 2, grass 3,
 // gravel 4, sand 5; -1 for no value (12 = no contact, or an id past the table).
 inline int surface_value(int game_id)
