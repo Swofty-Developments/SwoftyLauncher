@@ -1083,6 +1083,13 @@ GridBox grid_for_box(const std::string &entrant_list)
     return {pick.rule, pick.line};
 }
 
+size_t seats_for_box(const std::string &entrant_list)
+{
+    Packages p;
+    collect_packages(p);
+    return package_seats(entrant_list, p.list);
+}
+
 bool any_grid_rule()
 {
     Packages p;
