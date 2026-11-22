@@ -275,11 +275,11 @@ inline constexpr const char *OWN_FROM_LAYER = "f1_26";
 inline constexpr const char *OWN_FROM_LAYER_12 = "myteam_26";
 inline constexpr const char *OWN_FROM_BRANDING = "f1_26";
 inline constexpr const char *TRACKS_FOLDER = "2025_asset_groups/environment_package/tracks/";
-inline constexpr std::size_t NAME_MAX = 24;
+inline constexpr std::size_t WORLD_NAME_MAX = 24;
 
 inline bool name_ok(std::string_view s)
 {
-    if (s.empty() || s.size() > NAME_MAX)
+    if (s.empty() || s.size() > WORLD_NAME_MAX)
         return false;
     for (char c : s)
         if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'))

@@ -368,7 +368,7 @@ static void test_named_lowering()
     Value row2 = Value::object({{"_metadata_", "f5_1950_tt"}});
     content::lower_named_world("vmknolle.season-1950/f5_1950_tt", rec, "swofty_f1", 10, "f1_2025", row2, shared.reader(), stat,
                                again, &tracks);
-    check(again.ops.empty() && row2["season"].as_string() == "swofty_world_e1950s",
+    check(again.ops.size() == 0 && row2["season"].as_string() == "swofty_world_e1950s",
           "a second box of the same season adds no rows and takes the season");
 
     content::Plan full;
@@ -376,7 +376,7 @@ static void test_named_lowering()
     content::StatIds none = [](const std::string &, const std::string &, int64_t) -> int64_t { return -1; };
     content::lower_named_world("vmknolle.season-1950/f5_1950", rec, "swofty_f1", 10, "f1_2025", row3, d.reader(), none, full,
                                &tracks);
-    check(full.ops.empty() && !row3["season"].is_string() && !full.lines.empty() &&
+    check(full.ops.size() == 0 && !row3["season"].is_string() && !full.lines.empty() &&
               full.lines.back().find("no free season id (0 to 31)") != std::string::npos,
           "no free season id: no rows, with a line naming world.season");
 }
