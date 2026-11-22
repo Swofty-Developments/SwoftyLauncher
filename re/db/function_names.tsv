@@ -11922,7 +11922,7 @@ addr	name
 0x144208c80	Vm_ListBase_Init
 0x14420a770	Ne_Ref_GetListElementOrEmpty
 0x14420b270	Career_Ui_FindChildIndex
-0x14420cd60	Game_ChampionshipRounds_Clear
+0x14420cd60	Vm_Node_Clear
 0x144217490	Game_UILatency_FrameSignalUIList
 0x144217d70	Ui_Unk_144217d70
 0x144217ff0	Vm_List_SwapItemsAndNotify

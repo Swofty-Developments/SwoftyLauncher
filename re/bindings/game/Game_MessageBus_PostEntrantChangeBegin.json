@@ -8,36 +8,37 @@
   "level": "L2",
   "subsystem": "game",
   "proto": "void Game_MessageBus_PostEntrantChangeBegin(void *bus, void *message)",
-  "evidence": "decomp:own disasm 0x1424e4790 (thunk into protected code) and its callers;xref:0x1407a014f,0x1407b836b",
-  "notes": "posts the message whose vtable is vt_Game_EntrantChangeBeginMsg; callers post it before changing the player's entrant and set byte +0x2f8 of the mode entity around it; a jmp into protected code"
+  "evidence": "decomp:own disasm 0x1424e4790 (jmp) and the caller Ent_Fill_EntrantsFromList 0x142461e30-0x142461f0d;xref:0x142461e87",
+  "notes": "(bus, message): posts the EntrantsDocumentOpened message (vtable vt_Game_EntrantsDocumentOpenedMsg); Ent_Fill_EntrantsFromList posts it on [g_Game_MessageBus]+8 before filling the entrants and then sets mode entity+0x2f8 = 1; a jmp into protected code, so the signature resolves that call"
  },
  "signature": {
   "id": "game.message_bus_post_entrant_change_begin",
   "section": ".xtls",
-  "pattern": "E9 ?? ?? ?? ?? 05 4A E8 6A B3 0F 84",
-  "match": "0x1424e2b90",
-  "anchor": "0x0",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 48 8B 48 08 48 8D 54 24 30 E8 ?? ?? ?? ?? C6 86 F8 02 00 00 01",
+  "match": "0x142460272",
+  "anchor": "0x16",
   "resolve": {
-   "kind": "addr"
+   "kind": "rel32",
+   "insn": "0x15"
   },
   "target": "0x1424e2b90",
-  "kind": "func_start",
+  "kind": "call",
   "names": [
    "Game_MessageBus_PostEntrantChangeBegin"
   ],
   "verified": [
    {
     "build": "46009bd31f49d93a",
-    "date": "2026-11-21",
+    "date": "2026-11-22",
     "by": "Moorzii",
     "how": "static"
    }
   ],
   "used_by": [],
   "made_on": "46009bd31f49d93a",
-  "made_on_match": "0x1424e4790",
+  "made_on_match": "0x142461e72",
   "made_on_target": "0x1424e4790",
-  "twin": "made on steam-26566308; the target 0x1424e4790 is KB 0x1424e2b90: Sess_Parse_EntrantTemplateRef (0x24dffe0) and Sess_SortEntrantsByGarageOrder (0x24e9250) on either side both sit 0x1c00 above their KB addresses"
+  "twin": "made on steam-26566308; the target 0x1424e4790 is KB 0x1424e2b90: Sess_Parse_EntrantTemplateRef (0x24dffe0) and Sess_SortEntrantsByGarageOrder (0x24e9250) on either side both sit 0x1c00 above their KB addresses; the match 0x142461e72 (Ent_Fill_EntrantsFromList +0x42, the call at 0x142461e87) is KB 0x142460272, the call V100075 names at 0x142460287"
  },
  "verify": [
   {
@@ -51,25 +52,5 @@
    "notes": "V100075 Blind re-derivation on d873a1c8. The claim holds: 0x1424e2b90 is a 5-byte jmp to 0x14cc4ea20, (bus, message): when bus+0x68 is set, under the lock at +0x98 it allocates 0x10 bytes from the allocator at +0x70, copies message+8, sets the vtable 0x14578d4e8, queues it at +0x58/+0x60 and signals +0x88; Ent_Fill_EntrantsFromList posts it at 0x142460287 and then sets mode entity+0x2f8. On 26566308 the body 0x14c91b2f0 sets 0x14578f618. The signature does not hold on this build: its pattern ends in protector filler after the jmp (05 4A E8 6A B3 0F 84), here AD E9 E1 64 58 01 3C, so it matches 0 times in .xtls. Fix: a call-kind signature like Game_MessageBus_PostEntrantChangeEnd's."
   }
  ],
- "proofs": [
-  {
-   "by": "Moorzii",
-   "date": "2026-11-21",
-   "tool": "binding.py verify",
-   "exe": {
-    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
-    "size": 391613312,
-    "pe_timestamp": 1794312636
-   },
-   "result": {
-    "result": "resolved",
-    "method": "scan",
-    "matches": 1,
-    "match": "0x1424e4790",
-    "target": "0x1424e4790"
-   },
-   "sigcheck": "skipped (not the KB build)",
-   "digest": "100938d64faf66af5cf7d4b9ed5870312bf4a190905d710e553138dd6bffb3fd"
-  }
- ]
+ "proofs": []
 }

@@ -1,0 +1,46 @@
+{
+ "schema": 1,
+ "name": "vt_Game_EntrantsDocumentOpenedMsg",
+ "table": "globals",
+ "author": "Moorzii",
+ "row": {
+  "addr": "0x14578d4e8",
+  "type": "vtable[2]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x142461e30-0x142461f0d (Ent_Fill_EntrantsFromList) and the slots 0x1424d0cb0-0x1424d0e30;xref:0x142461e72",
+  "notes": "vtable of the EntrantsDocumentOpened message (2 slots; slot 1 returns the name 'EntrantsDocumentOpened' at 0x14578f628): Ent_Fill_EntrantsFromList builds the message on the stack with this vtable at [rsp+0x30] and posts it with Game_MessageBus_PostEntrantChangeBegin"
+ },
+ "signature": {
+  "id": "game.entrants_document_opened_msg",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 48 8B 48 08 48 8D 54 24 30 E8 ?? ?? ?? ?? C6 86 F8 02 00 00 01",
+  "match": "0x142460272",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14578d4e8",
+  "kind": "data",
+  "names": [
+   "vt_Game_EntrantsDocumentOpenedMsg"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-22",
+    "by": "Moorzii",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142461e72",
+  "made_on_target": "0x14578f618",
+  "twin": "made on steam-26566308; the target 0x14578f618 is KB 0x14578d4e8 (V100077 and V100075 name it on d873a1c8; vt_Game_F1WorldActivityContainerVm and k_Career_RnDCardColourTable sit 0x2130 above their KB addresses too); the match 0x142461e72 (the lea in Ent_Fill_EntrantsFromList) is KB 0x142460272: Ent_Fill_EntrantsFromList itself sits 0x1c00 above its KB address 0x142460230"
+ },
+ "verify": [],
+ "proofs": []
+}

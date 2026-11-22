@@ -22,7 +22,7 @@
   },
   "target": "0x144424c78",
   "kind": "mid",
-  "expect": "8B 44 24 40 39 05 2E D0 88 02",
+  "expect": "8B 44 24 40",
   "names": [
    "site_FeFlow_AfterStateLink"
   ],

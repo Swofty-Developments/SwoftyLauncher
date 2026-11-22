@@ -7,9 +7,9 @@
   "addr": "0x142460230",
   "level": "L2",
   "subsystem": "entrants",
-  "proto": "void Ent_Fill_EntrantsFromList(void *entrants_system, void *mode_entity, void *params, int flags)",
+  "proto": "void Ent_Fill_EntrantsFromList(void *entrants_system, void *mode_entity, void *params, void *entrant_list)",
   "evidence": "decomp:own disasm 0x142461e30-0x142462042;xref:0x141127c86,0x1424606ce",
-  "notes": "fills the entrants system from the mode entity's entrant list; params is a 0x190 block with +0x180 = 1 at the Grand Prix call"
+  "notes": "fills the entrants system from an entrant list: posts EntrantsDocumentOpened (Game_MessageBus_PostEntrantChangeBegin), sets mode_entity+0x2f8 = 1 and +0x2e8 = +0x2e0, selects the entrants from entrant_list+8 (entrant_list null means mode_entity+0xe18, the list Game_GameModeEntity_SetSetupMode stores; params+0x180 > 0 takes the params path instead), posts EntrantsDocumentClosed (Game_MessageBus_PostEntrantChangeEnd, message+0x10 = mode_entity+0x2d8) and clears +0x2f8; params is a 0x190 block with +0x180 = 1 at the Grand Prix call"
  },
  "signature": {
   "id": "entrants.fill_entrants_from_list",
