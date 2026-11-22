@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140356a20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140356a20.c;pat:log-message-cxx;xref:0x1403632ef,0x140375a80,0x140375e2f,0x1403762be",
-  "notes": "Earlier round A2 (static): copies the track name (overrideTrackName, else TrackName cut at the first digit) into this+0x930; 'monaco' sets +0x8f8 and looks up 'Env- Barriers$mon_armco_parcferme_a' into +0x8f0; 'monza' sets +0x8f9; both flags go to Game_PodiumBaseCutSceneScript_SpawnTVScreens. Callers: Pod2019FirstScript_SetStateLoading and the three variant setStateLoading functions."
+  "notes": "Own string Podium2019CutSceneScript::chooseCutScenesToPlay. Bool Game.Context.overrideTrackName set -> Game.Context.TrackName to +0x930, else world name cut at first digit. 'monaco' sets +0x8f8, barrier 'Env- Barriers$mon_armco_parcferme_a' -> +0x8f0; 'monza' +0x8f9. +0x8fb adds 'podium2022_tunnel_walk'. Reads Game.Context.overrideEmote. QPC-seeded LCG picks into +0x8b0,+0x8d0..+0x8e8; +0x5e1=1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.podium2019_cut_scene_script_choose_cut_scenes_to_play",

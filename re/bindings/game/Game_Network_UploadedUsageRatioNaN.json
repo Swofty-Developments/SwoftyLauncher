@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431a03d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1431a03d0.c;pat:log-channel-NETWORK;xref:0x145823160",
-  "notes": "Slot 2 (+0x10) of vtable 0x145823150 (MessageContentDomainChanged text precedes). Parses keys usageRatio, backgroundTraffic, bandwidth (0x1453783c0 compares), checks usageRatio for NaN / out of range (logged). Better name: Game_Network_ParseBandwidthUsage (bound record keeps its name)."
+  "notes": "Slot 2 of vtable 0x145823150 ('MessageContentDomainChanged' precedes). JSON: object member 'bandwidth', double 'usageRatio': NaN -> '? Uploaded usageRatio is NaN', <=0.1 or >=10 -> out-of-range log, else stored to float 0x145f94780; uint 'backgroundTraffic' -> 0x145f94778. Better name: Game_Network_ParseBandwidthUsage (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_uploaded_usage_ratio_na_n",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141515ba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141515ba0.c;pat:log-channel--;xref:0x141515901",
-  "notes": "(this, positive): reads VM int user_attributes.incident_points.Value, gets threshold list f1_world.safety_rating.positive/negative_change_thresholds (FNV-1a table 0x146cc4278), finds the first threshold > points; if index < 3 sets a VM node from table 0x1456f93d0/0x1456f93e8 into this+0x2c0 (0x140977b20); returns this+0x2b8. Caller 0x141515901 (0x141515520). Not a DB config read. Better name: Game_SafetyRatingVm_UpdateRatingTier (bound record keeps its name)."
+  "notes": "(this, positive): VM int 'user_attributes.incident_points.Value' (0x1456ec389) via 0x1442b1b60 on context this+0x280; threshold list f1_world.safety_rating.positive/negative_change_thresholds (0x1456ec3af/0x1456ec3e1) by FNV-1a in table 0x146cc4278; index = first threshold > points; if < 3 binds VM node from table 0x1456f93d0/0x1456f93e8 into this+0x2c0 (0x140977b20); returns this+0x2b8. Better name: Game_SafetyRatingVm_UpdateRatingTier (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_f1_world_safety_rating_config",

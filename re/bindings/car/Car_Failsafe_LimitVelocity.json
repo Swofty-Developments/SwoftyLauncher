@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144677780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_FAILSAFES",
-  "notes": "Log channel VEHICLE_FAILSAFES: 'Angular velocity component %d of vehicle %d limited. Old: %f New: %f' | 'Linear velocity y component of vehicle %d limited. Old: %f New: %f' | 'Linear velocity up component of vehicle %d limited. Old: %f New: %f'"
+  "evidence": "decomp:re/decomp/144677780.c;pat:log-channel-VEHICLE_FAILSAFES;xref:0x14467773c",
+  "notes": "(failsafe, dt): copies phys body matrix [[+0x340]+0x18]+0x190..+0x1c8 to +0x290/+0x190; if +0x140&0x10: delta of body+0x210 vs +0x180 capped (0x145bf9dc0/0x145bf9dbc), lanes clamped +-10 (log 'Angular velocity component') -> Ne_PhysBody_SetLinearVelocity; y/up of body+0x220 capped 5 -> Ne_PhysBody_SetAngularVelocity; re-orthonormalises +0x190..+0x1b0; tail-calls 0x14467ba10. KB setter names vs log text look swapped. (lane owner review requested)"
  },
  "signature": {
   "id": "car.failsafe_limit_velocity",

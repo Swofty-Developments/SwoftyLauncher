@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c10810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141c10810.c;pat:log-channel-HUD_CUSTOMISATION;xref:0x14573be20",
-  "notes": "HUD_CUSTOMISATION 'Leaving the hud customisation screen, discarding changes | calling saveHudConfigSet' (log strings); vtable cell 0x14573be20."
+  "notes": "Vt cell 0x14573be20. Event switch on hash *(u32*)*param_2: 0xbc8ddf10 leave discarding changes (+0x5e8 -> +0x640); 0x28166c05 leave + saveHudConfigSet (graphics_card resolution width/height -> +0x688/+0x68c, FUN_14388dfc0/14388e6f0); 0xd5ff4a13 show_options; 0x15f81268 #hud.invalid_elements. Tail jmps 0x141c11530/0x144535f80/0x144536090 (merged in decomp, disasm-checked). (lane owner review requested) Better name: Game_HudCustomisation_OnEvent (bound record keeps its name)."
  },
  "signature": {
   "id": "game.hud_customisation_leave_screen",

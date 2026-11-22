@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14415c150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14415c150.c;pat:log-channel-NeUgc;xref:0x14449e0f8",
-  "notes": "Called from 0x14449e0f8. 7.7 KB state switch (jump tables) over eState_* (DownloadItem, GetItemInstallInfo, Start/StopPlaytimeTracking, SubmitItemUpdate incl. LegalAgreement overlay); tail-jumps 0x14415e160 / 0x14415f630. openLegalAgreementInSteamOverlay is one inlined case, not the function. Better name: Game_NeUgc_UpdateStateMachine (bound record keeps its name)."
+  "notes": "State u32 +8, names table 0x145a60710 (eState_Idle..eState_StopPlaytimeTracking_Finished), jump table 0x145a607c0, log NeUgc setState. Idle pops 0x400 request (+0x18/+0x20 -> +0x30): DownloadItem/QueryItem(CreateItem)/Start/StopPlaytimeTracking via ISteamUGC vcalls; state 8 = workshoplegalagreement overlay. Tail-jump targets 0x14415e080/0x14415dfa0/0x144156d60 merged in decomp, outside pdata. (lane owner review requested) Better name: Game_NeUgc_UpdateStateMachine (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ne_ugc_open_legal_agreement_in_steam_overlay",

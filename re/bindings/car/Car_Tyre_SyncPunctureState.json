@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e88840",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e88840.c;xref:0x142dfec08,0x142e92fa8",
-  "notes": "(tyreState, vehicle) For the tyre model of vehicle [+0x580]+0x70: compares the wanted punctured flag (tyreState+0x14 + idx*0xc) with the live state (+0x20 bits 1/2) and calls Car_Puncture_Add or Car_Puncture_Remove (target [[+0x10]+0xd8]+0x3f70); repeated for each wheel. Callers Sess_RedFlagStrategyCalc_Update, Game_Tyres_Deserialise, Car_Tyre_SetWearFactor."
+  "evidence": "decomp:re/decomp/142e88840.c;xref:0x142dfec08,0x142e92fa8,0x142ea2a13,0x142f73b8d,0x14f402a79",
+  "notes": "(set,veh): per wheel [veh+0x580]+0x70/+0x78/+0x80/+0x88: index i from wheel+0x2b4/+0x2b8, reset 0x1446b6d10(wheel+8,wheel,0x1002), wheel+0x88 = set+0xc+i*0xc, wheel+0x94 = set+0x10+i*0xc; punctured bool set+0x14+i*0xc vs bit1 of wheel+0x20 -> 0x14464e3a0 remove or 0x14464e200 add, then Car_Tyre_UpdateDeflation. set = 0x6c tyre-set record (Car_TyreSets_ReadSetEntry layout). (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_sync_puncture_state",

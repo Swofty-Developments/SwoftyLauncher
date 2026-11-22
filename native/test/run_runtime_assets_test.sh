@@ -241,6 +241,7 @@ EOF
 files_cleanup() {
     rm -rf "$OUT/game/audio" "$OUT/game/game_package/gamedatabases" "$OUT/game/swofty/registry"
 }
+failed=()
 for mode in none replace gated late early earlywait secondcopy files; do
     echo "==== $mode"
     rm -rf "$OUT/game/swofty/assets.json" "$OUT/game/swofty/settings.json" "$OUT/game/swofty/addons/"t_*.dll "$OUT/game/swofty/addons/"t.*
@@ -256,7 +257,14 @@ for mode in none replace gated late early earlywait secondcopy files; do
     fi
     [[ $mode == none || $mode == files ]] || assets_json $mode
     [[ $mode == files ]] && files_setup
-    timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || status=1
+    started=$SECONDS rc=0
+    timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || rc=$?
+    if ((rc)); then
+        echo "FAIL: $mode: the game exited with $rc after $((SECONDS - started)) s$( ((rc == 124)) && echo ', killed by the 120 s timeout')"
+        cp "$LOG" "$OUT/failed-$mode.log" 2>/dev/null || true
+        failed+=("$mode")
+        status=1
+    fi
     echo "---- $LOG ($mode)"
     grep -v '  section ' "$LOG" | grep -vE '\] scan \.xtls|\[core\] bind ' || true
     case $mode in
@@ -421,5 +429,9 @@ for mode in none replace gated late early earlywait secondcopy files; do
         check "lang: valid table file accepted" "\[assets\] lang: table for 'eng': 1 string\(s\) from lang/good\.lngt"
         check "lang: table added and searched first" "\[assets\] lang: added 2 string\(s\) from assets\.json strings for 'eng' at priority 0 \(Loc_Add_LangTable returned 0\); lookup \"lng_press_start\" -> \"SWOFTY STRINGS OK\" \(the mod table is searched first\)"
     fi
+done
+for mode in "${failed[@]}"; do
+    echo "---- the last lines of $LOG in the $mode run, which failed"
+    tail -n 12 "$OUT/failed-$mode.log" 2>/dev/null || echo "(no log)"
 done
 exit $status

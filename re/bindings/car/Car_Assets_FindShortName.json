@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14465b020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_ASSETS",
-  "notes": "named from its log messages (channel VEHICLE_ASSETS): 'Shortname \"%s\" NOT found.'"
+  "evidence": "decomp:re/decomp/14465b020.c;pat:log-channel-VEHICLE_ASSETS;xref:0x1446572da,0x144685bd4,0x144686163,0x1446af224,0x1446af238,0x144744c10,0x1553d2750,0x15547714b",
+  "notes": "(root*, key, out16): finds child key (vcall +0x20) and its 'value' child string; if shorter than 16 chars copies it into out and returns 0, else 5; key missing -> 5 and log 'Shortname \"%s\" NOT found.' (VEHICLE_ASSETS). (lane owner review requested)"
  },
  "signature": {
   "id": "car.assets_find_short_name",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14142e7f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14142e7f0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x1456e3c18",
-  "notes": "Vtable cell 0x1456e3c18."
+  "notes": "Vtable cell 0x1456e3c18, (this,double* dt). Load state +0x418 (handle +0x470); fade +0x214 += dt -> alpha byte, FUN_14142c6f0; when +0x330/+0x350 empty and +0x2f8/+0x318 ready: log CUSTOMISATION_DECALS 'Asset group triggerAssetGroupSwap()' + [+0x2c8] vtbl+0x48; steps +0x2d8 entries ('Vehicle %d; Advanced generation state'), drops deactivated services, prunes +0x3d8. Swap is one step -> renamed. (lane owner review requested) Better name: Game_DecalCustomisationSystem_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.decal_customisation_swap_asset_group",

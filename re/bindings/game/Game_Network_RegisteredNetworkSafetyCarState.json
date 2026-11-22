@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430cf560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1430cf560.c;pat:log-channel-NETWORK;xref:0x1430cfbc5,0x1430e079e",
-  "notes": "Callers 0x1430cfbb0 and 0x1430e0560. Loops the registered safety cars, logs '[SAFETY_CAR] registered network safety car(%d) state(%s).' and the transition text, inserts via 0x143207b00/0x1432080a0. Better name: Game_Network_UpdateNetworkSafetyCars (bound record keeps its name)."
+  "notes": "Body read fully. When [this+8] < 2: for each safety car in [[this+0x28]+0x48..+0x50], key = [[sc+0x18]+0x58]+0xe8 (0xff if none); if not in the map this+0x40..+0x74, inserts {key, vt 0x145823d90, state bytes sc+0x3c..+0x3e, [this+0x28]+0x108} via 0x143207b00 (0x1432080a0 on failure) and logs NETWORK '[SAFETY_CAR] registered network safety car(%d) state(%s).'. Better name: Game_Network_RegisterNewSafetyCars (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_registered_network_safety_car_state",

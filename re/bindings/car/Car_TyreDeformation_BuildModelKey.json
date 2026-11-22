@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14465e480",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14465e480.c;xref:0x14465cc0b,0x14465e2bf,0x14465e35d",
-  "notes": "Builds 'x0_tyre_' + name (table 0x145c056b0, idx < 4) + '%d_splits_' style key for the tyre deformation model lookup. Callers: Car_TyreDeformation_SetTyre/CreateTyreBody. (3 xref site(s), fb.py callers.)"
+  "notes": "(out,tyre<4,a,b): 'x0_tyre_' + name table 0x145c056b0[tyre], hashed 0x143a3d780 and normalised through the hash->string table [0x14618ce08]; appends '_skinning_' + sprintf('%d_splits_',a,b) + 'inv_dist'; *out = hash of the result. Callers 0x14465cc0b (Car_TyreDeformation_SetTyre), 0x14465e2bf/0x14465e35d (Car_TyreDeformation_CreateTyreBody). (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_deformation_build_model_key",

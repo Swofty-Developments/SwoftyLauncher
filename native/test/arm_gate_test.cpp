@@ -197,7 +197,8 @@ void test_gate_waits()
 
     std::this_thread::sleep_for(10ms);
     expect(gate.running(), "the gate is running while the worker runs");
-    ag::Pass game_factory = ag::Pass::open, game_device = ag::Pass::open;
+    ag::Pass game_factory = ag::Pass::open, game_device = ag::Pass::open, core = ag::Pass::open;
+    std::thread profiler([&] { core = factory.call("core", ag::Exempt::core); });
     std::thread game([&] {
         game_calling.store(true);
         game_factory = factory.call("game");
@@ -205,23 +206,25 @@ void test_gate_waits()
     });
     auto from = std::chrono::steady_clock::now();
     ag::Pass driver = factory.call("driver", ag::Exempt::system);
-    ag::Pass core = factory.call("core", ag::Exempt::core);
     ag::Pass locked = device.call("loader lock holder", ag::Exempt::loader_lock);
     double quick = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - from).count();
-    expect(driver == ag::Pass::system && core == ag::Pass::core && locked == ag::Pass::loader_lock && quick < 50,
-           "the runtimes and driver, the core and a loader lock holder pass straight through while the worker runs");
+    expect(driver == ag::Pass::system && locked == ag::Pass::loader_lock && quick < 50,
+           "the runtimes and driver and a loader lock holder pass straight through while the worker runs");
     game.join();
+    profiler.join();
     platform.worker.join();
 
     expect(game_factory == ag::Pass::waited && game_device == ag::Pass::open,
            "the game's CreateDXGIFactory made before the worker is done waits for it; its device call then finds it open");
+    expect(core == ag::Pass::waited && trace.at("core CreateDXGIFactory2") > trace.at("probe device released"),
+           "the core's own factory on another thread (the profiler's adapter walk) waits for the worker too");
     expect(trace.at("probe device made, the worker passed") >= 0 && trace.at("probe factory made, the worker passed") >= 0,
            "the worker's own calls pass straight through");
     int released = trace.at("probe device released"), hooks = trace.at("hooks in");
     int game_fac = trace.at("game CreateDXGIFactory2"), game_dev = trace.at("game D3D12CreateDevice");
     expect(hooks >= 0 && released > hooks && game_fac > released && game_dev > game_fac,
            "the game's factory and device come after every hook is in and the probe device is released");
-    expect(trace.at("driver CreateDXGIFactory2") < released && trace.at("core CreateDXGIFactory2") < released,
+    expect(trace.at("driver CreateDXGIFactory2") < released && trace.at("loader lock holder D3D12CreateDevice") < released,
            "the exempt calls went before the worker was done");
     expect(!gate.running() && platform.factories_unhooked == 1 && platform.unhooked == 0,
            "once the worker is done the gate is open and only the factory hooks came out");

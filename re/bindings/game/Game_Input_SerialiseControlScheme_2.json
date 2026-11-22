@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a6bdd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a6bdd0.c;pat:log-channel-INPUT;xref:0x141da9e65",
-  "notes": "INPUT 'serialised control scheme rawId=%08x name=\"%s\" is %I64u bytes' (log string)."
+  "notes": "Gets scheme via [+0x18]vt+0x20, alloc 0x8000 buf (+0x38), writes magic 0x4d413146 'F1AM', u32 0, u64 0, then FUN_142a61bb0 serialise + FUN_1439340c0; logs 'INPUT' \"serialised control scheme rawId=%08x name=\"%s\" is %I64u bytes\"; fills 0x3b0 UGC desc: name, \"Control Scheme\", \"steam_workshop/control_scheme_preview.png\", calls FUN_14415b820 with callback 0x142a6cc50; error codes 1/2/0xc/0xe. (lane owner review requested) Better name: Game_Input_UploadControlSchemeToWorkshop (bound record keeps its name)."
  },
  "signature": {
   "id": "game.input_serialise_control_scheme_2",

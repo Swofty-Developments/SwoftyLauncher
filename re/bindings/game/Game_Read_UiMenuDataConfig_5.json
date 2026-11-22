@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142da0360",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142da0360.c;pat:log-channel--;xref:0x1457e38a8",
-  "notes": "Sibling of 0x142d9dfe0 (photo mode request handling) for instant_replay / exit-are-you-sure flow; only diffed, not read in full."
+  "notes": "Vtable cell 0x1457e38a8. Writes next state to *param_2 (0x19306425 leave, else 0x146cb2280). Uses datastore ui_menu_data.photo_mode_available/_enabled and .start_photo_mode (this[0x1b7]+0x140=4); mode this[0x1db]==1 + flag 0x40 -> 'instant_replay'; else popup 'full_race_replay_exit_are_you_sure' (0x1442d9bf0, cb 0x142da11e0); exit -> 0x144426ce0. (lane owner review requested) Better name: Game_ReplayFlowState_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_ui_menu_data_config_5",

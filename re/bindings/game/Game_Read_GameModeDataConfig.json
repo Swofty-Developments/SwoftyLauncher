@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414a0270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1414a0270.c;pat:log-channel--;xref:0x1456e8498",
-  "notes": "Strings: GHOSTLAP-TRACE '%s() initialise', game_mode_data.game_modes.time_trial VM fields (pbTimeInMS, rivalTimeInMS, leaderboard positions, ghostsAreSynced): looks like the time trial game-mode VM initialise, not a config reader."
+  "notes": "Log 'GHOSTLAP-TRACE' '%s()' 'initialise'; param_1+0x158 obj gets 5 components by type key via 0x14030ffd0; binds VM 'game_mode_data.game_modes.time_trial' pbTimeInMS, rivalTimeInMS, ttHasNewPB, ghostsAreSynced, leaderboard pos, 'lng_connection_failed'; subscribes 0x14147c2d0/0x14147e740; UI fns 'viewGhostProfileByDriverId'->0x141483fc0, 'clearRivalSelection'->0x1414842f0; Sess_Bind_SessionCarsVm. (lane owner review requested) Better name: Game_TimeTrialMode_Initialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_game_mode_data_config",

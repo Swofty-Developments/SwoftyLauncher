@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434c4510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "bool Game_PitLane_IsReleaseBlockedBy(void *mgr, uint8_t other, uint8_t car)",
   "evidence": "decomp:re/decomp/1434c4510.c;doc:re/db/subsystems/game.md;xref:0x1434b8f2b,0x1434b98e4",
-  "notes": "Unsafe-release gate, called per other car in the release loop (agent pitstop, H)"
+  "notes": "bool(this, otherCar u8, ownCar u8). Switch on other car pit state (table +0xae8, +0x68+idx*0x10, +4): cases 2/3/7/8/10-14 compare pit box slots (+0xe0>>1, 99->12), lane direction +0xc2a, 13 m gap, time-to-reach estimates (/11.1). Both callers in 0x1434b83e0 loop over all cars except own; true clears the release flag / skips, else logs PITLANE 'MessageTriggerGarageCrewEvent::ERequest_SendCarToTrack_LaneClear %d'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.pit_lane_is_release_blocked_by",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143156510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143156510.c;xref:0x14581cd68",
-  "notes": "Large handler on a lobby/event config object (+0x80, type byte +2 == 3 or 0x0e): seeds an MT19937 to pick a random track, resetTrackSet / Career_Add_TrackSetToSeason, pushes season params (doc+0x2f0, [doc+0x3c8]+0x564/+0x568) via vcall [doc+0x458]+0x20, adds teams (Ent_EntrantsSystem_AddTeam_2). Addon: how featured/matched event settings become the lobby season. d8-verify: random pick via 0x143929b90; no inline MT19937 constants (MT19937 unverified)"
+  "notes": "Vtable slot 0x14581cd68 (slot 0x1431581a0 logs 'F1 World Event data - missing track'). ev=[this+0x80]+0xf0 (weak ref +0xf8). If ev+0x18 track unset: seed 624-word RNG from QPC, pick ev+0x28 list[rand%n] via 0x143929b90 -> ev+0x18; 0x1430a9310([doc+0x418],ev); log 'MOX/Season: resetTrackSet(%d, %s)' then 0x143099650(..,1,0) else '- but the document is not open.' Type 0x0e: AddTeam_2 0x142475600 per entry (stride 0xa8) into [doc+0x518]+0x30. (lane owner review requested)"
  },
  "signature": {
   "id": "game.season_lobby_apply_matched_event_config",

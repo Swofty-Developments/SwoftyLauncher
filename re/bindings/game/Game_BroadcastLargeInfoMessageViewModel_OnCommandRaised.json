@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419d7170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1419d7170.c;pat:log-message-cxx;xref:0x145724620",
-  "notes": "BroadcastLargeInfoMessageViewModel::onCommandRaised (vtable cell 0x145724620): rows by display type (lng_event_target_*), calls 0x1419d86f0; unsupported type logged."
+  "notes": "Vtable cell 0x145724620. Acts only on command id 0x2b1430b0, else TRACE 'onCommandRaised: Unsupported display type %s'. Writes +0x2c0 title (#track_data.track_list.%s.track_title, or session text when mode==4), +0x2e0 'lng_objective: ' + lng_event_target_driver/_win/_position, +0x300 lng_event_expired or text from 0x141716260, then 0x1419d86f0(+0x380) rows lng_driver and lng_lb_team. (lane owner review requested)"
  },
  "signature": {
   "id": "game.broadcast_large_info_message_view_model_on_command_raised",

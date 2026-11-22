@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143064410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143064410.c;pat:log-message-method;xref:0x143059846,0x1430598fd,0x14fd40642",
-  "notes": "Logs sendNetMessageData(target, ptr, bits, flag) and a hex dump \"[MP_NetMessage] SEND(to=..)\"; copies the message bits into a packet and sends it via Game_NetworkData_SendToConnection."
+  "evidence": "decomp:re/decomp/143064410.c;pat:log-message-method;xref:0x143059846,0x1430598fd,0x14fd40642,0x14fd40669",
+  "notes": "(this, u8 target, data, bits, bool bcast): logs NETWORK-DATA/R 'sendNetMessageData'. Transport [this+8]+0xd8 (vt+0x10 host, +0x18 local). Header {0x13 bcast or 3, target} or 3 bytes {0x23,..,target} sent via host when route check vt+0x20 fails; then ceil(bits/8) data bytes, pad bits in header; total < 0x48f -> Game_NetworkData_SendToConnection 0x14406ed50; logs '[MP_NetMessage] SEND(to=%d%s%s%s, %d bits)' hex dump. Callers 0x143058640, 0x14fd40560. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_data_send_net_message_data",

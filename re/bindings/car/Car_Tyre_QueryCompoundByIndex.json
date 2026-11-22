@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e80c80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e80c80.c;xref:0x1414dca2a,0x1414dcac8,0x14369ded9",
-  "notes": "(tyres, compound<5) fills a query struct from tables 0x1457f38f0/0x1457f3904/0x1457f3918/0x1457f392c and calls 0x142e80ce0. Used by strategy code and 0x1414dbb20. (5 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/142e80c80.c;xref:0x1414dca2a,0x1414dcac8,0x14369ded9,0x1436a081a,0x1436a0f9e",
+  "notes": "(tyres,idx): for idx<5 fills a stack query {idx, tables 0x1457f38f0/0x1457f3904/0x1457f3918/0x1457f392c [idx]}; calls 0x142e80ce0(tyres,&q) for any idx. Callers in 0x1414dbb20, 0x14369cd10, 0x14369f920. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_query_compound_by_index",

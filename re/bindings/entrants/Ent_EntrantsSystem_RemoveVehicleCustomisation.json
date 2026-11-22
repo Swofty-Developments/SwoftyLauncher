@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424773f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Vehicle customisation removed with stat id %s | Couldn't find array to remove vehicle customisation with stat id %s | Couldn't find vehicle customisation to remove with stat id %s'"
+  "evidence": "decomp:re/decomp/1424773f0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe5ecd,0x141a20c64,0x14200cf6e,0x142055821,0x14226785e,0x142573025,0x14314083f",
+  "notes": "(entrants, u32 key): kind 0 (ePreLoaded) refused -> 5; list [entrants+0x388+kind*0x10] missing -> 1; remover 0x142477710(list, key>>16) false -> 2, true -> 0; each case logs on ENTRANTS_SYSTEM (kind names ePreLoaded/eUserDefined/eNetworkReplicated from table 0x145612e60). (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_remove_vehicle_customisation",

@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE_COLLISION",
+  "evidence": "decomp:re/decomp/14467c280.c;pat:log-channel-VEHICLE_COLLISION;xref:0x14462fed2,0x1446301cb,0x14464da48,0x14464ef4f,0x14467bdc7,0x1553476e2",
   "notes": "Log channel VEHICLE_COLLISION: 'Car to Car %p %p, time %f'"
  },
  "signature": {

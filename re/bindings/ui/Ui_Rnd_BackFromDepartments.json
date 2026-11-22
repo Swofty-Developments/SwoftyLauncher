@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c441b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void FUN(void *view, void *ctx)",
   "evidence": "decomp:re/decomp/141c441b0.c;xref:0x14568ce10",
-  "notes": "myteam-g1: UI binding code; back_from_rnd_departments. Static, string-key driven."
+  "notes": "Vtable slot (cell 0x14568ce10). Switch on command hash: goto_quick_practice, back_from_rnd_departments, open_settings fire events (0x144320fe0); 0xcc3dd6bb / 0x3cc065a8 (arg hash 0x5b810a5c) set focusability of all items (0x14431f470) then fire enable_navigation / disable_navigation; 0x0dbb7ded routes specialist_goal_container; 0x119fdf33 posts msg 0x145751858. (lane owner review requested) Better name: Ui_HubScreen_HandleCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.rnd_back_from_departments",

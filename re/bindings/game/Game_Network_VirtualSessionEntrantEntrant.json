@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142f6b170.c;pat:log-channel-NETWORK/VX;xref:0x142f662cb,0x142f6669f,0x142f66b7e",
-  "notes": "Called from 0x142f65cf0 (sites listed are three of them). Logs VIRTUAL-SESSION 'Entrant ... completing a virtual lap from progress', setUnmodifiedProgressLap, computes the time delta (MOX/OSQ logs, variance 0x142f6a010 at 0x142f6bafa), logs the final time, the virtual speed-trap record and 'completed a virtual lap with time', then 0x142f2e520 and Game_VirtualSession_BroadcastNewLap (0x142f6c797). Better name: Game_VirtualSessionEntrant_CompleteVirtualLap (bound record keeps its name)."
+  "evidence": "decomp:re/decomp/142f6b170.c;pat:log-channel-NETWORK/VX;xref:0x142f662cb,0x142f6669f,0x142f66b7e,0x142f671c4,0x142f6738c,0x142f6770c",
+  "notes": "Logs VIRTUAL-SESSION 'VirtualSessionEntrant: ... completing a virtual lap from progress', PROGRESS setUnmodifiedProgressLap; sets +0x40=+0x48^lap; per sector MOX/OSQ time deltas via 0x142f6c8e0, 0x1436938a0, 0x142f6a010, stores +0xb54; per sector 0x14098c7a0; speed trap via 0x1438a9d10/0x1438a8550 ('virtualised a speed trap'); 'completed a virtual lap with time'; 0x142f2e520; tail 0x142f69b80. Better name: Game_VirtualSessionEntrant_CompleteVirtualLap (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_virtual_session_entrant_entrant",

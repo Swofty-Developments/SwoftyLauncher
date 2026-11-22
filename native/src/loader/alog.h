@@ -10,7 +10,9 @@
    drains it itself under the drain lock and retries (a slot claimed by a preempted producer holds the
    drain back until it commits), so no line is dropped and each thread's lines keep their order.
    alog_flush() writes everything queued before it returns (crash lines call it), and
-   alog_flush_at_exit() drains without waiting on a writer thread the process already killed. */
+   alog_flush_at_exit() drains without waiting on a writer thread the process already killed.
+   alog_run() has the writer run a job on its own stack before a drain (the crash lines of a thread
+   with too little stack left to format them). */
 
 #define ALOG_SLOTS 1024u
 #define ALOG_TEXT 2048u
@@ -41,6 +43,8 @@ typedef struct {
     volatile LONG live;
     volatile LONG helped;
     volatile LONG bypassed;
+    void (*volatile job)(void);
+    HANDLE job_done;
     char batch[ALOG_BATCH];
     unsigned int batch_len;
 } Alog;
@@ -100,9 +104,16 @@ static DWORD WINAPI alog_writer(LPVOID p)
     while (!__atomic_load_n(&a->stop, __ATOMIC_ACQUIRE)) {
         WaitForSingleObject(a->wake, ALOG_PERIOD_MS);
         __atomic_store_n(&a->woken, 0, __ATOMIC_RELEASE);
+        void (*job)(void) = __atomic_load_n(&a->job, __ATOMIC_ACQUIRE);
+        if (job)
+            job();
         EnterCriticalSection(&a->drain_lock);
         alog_drain_locked(a);
         LeaveCriticalSection(&a->drain_lock);
+        if (job) {
+            __atomic_store_n(&a->job, NULL, __ATOMIC_RELEASE);
+            SetEvent(a->job_done);
+        }
     }
     return 0;
 }
@@ -122,10 +133,15 @@ static int alog_start(HANDLE file)
     a->file = file;
     InitializeCriticalSectionAndSpinCount(&a->drain_lock, 4000);
     a->wake = CreateEventW(NULL, FALSE, FALSE, NULL);
+    a->job = NULL;
+    a->job_done = CreateEventW(NULL, FALSE, FALSE, NULL);
     a->thread = a->wake ? CreateThread(NULL, 64 * 1024, alog_writer, a, 0, &a->thread_id) : NULL;
     if (!a->thread) {
         if (a->wake)
             CloseHandle(a->wake);
+        if (a->job_done)
+            CloseHandle(a->job_done);
+        a->job_done = NULL;
         DeleteCriticalSection(&a->drain_lock);
         VirtualFree(a->slots, 0, MEM_RELEASE);
         a->slots = NULL;
@@ -207,6 +223,20 @@ static void alog_flush(void)
     LeaveCriticalSection(&a->drain_lock);
 }
 
+/* Runs job on the writer thread and waits at most wait_ms for it and the drain after it. 0 without a live writer, on
+   the writer itself, or while another job is pending. */
+static int alog_run(void (*job)(void), DWORD wait_ms)
+{
+    Alog *a = &alog_state;
+    void (*none)(void) = NULL;
+    if (!__atomic_load_n(&a->live, __ATOMIC_ACQUIRE) || !a->job_done || GetCurrentThreadId() == a->thread_id ||
+        !__atomic_compare_exchange_n(&a->job, &none, job, 0, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+        return 0;
+    SetEvent(a->wake);
+    WaitForSingleObject(a->job_done, wait_ms);
+    return 1;
+}
+
 static void alog_flush_at_exit(void)
 {
     Alog *a = &alog_state;
@@ -234,6 +264,9 @@ static inline void alog_stop(void)
     LeaveCriticalSection(&a->drain_lock);
     CloseHandle(a->thread);
     CloseHandle(a->wake);
+    if (a->job_done)
+        CloseHandle(a->job_done);
+    a->job_done = NULL;
     DeleteCriticalSection(&a->drain_lock);
     VirtualFree(a->slots, 0, MEM_RELEASE);
     a->slots = NULL;

@@ -356,6 +356,23 @@ public:
 
     void put_text(const std::string &path, int tag, std::string text) { write(make(path, tag, std::move(text))); }
 
+    // The names of a comma list field, as list-append and list-remove read it.
+    static std::vector<std::string> items(std::string_view text)
+    {
+        std::vector<std::string> out;
+        std::size_t at = 0;
+        while (at <= text.size()) {
+            std::size_t end = text.find(',', at);
+            if (end == std::string_view::npos)
+                end = text.size();
+            std::string item = trim(text.substr(at, end - at));
+            if (!item.empty())
+                out.push_back(std::move(item));
+            at = end + 1;
+        }
+        return out;
+    }
+
 private:
     struct Undo {
         uint64_t key;
@@ -592,22 +609,6 @@ private:
         }
         w.push_back(make(path, old->tag, std::string(op["value"].as_string())));
         return {};
-    }
-
-    static std::vector<std::string> items(std::string_view text)
-    {
-        std::vector<std::string> out;
-        std::size_t at = 0;
-        while (at <= text.size()) {
-            std::size_t end = text.find(',', at);
-            if (end == std::string_view::npos)
-                end = text.size();
-            std::string item = trim(text.substr(at, end - at));
-            if (!item.empty())
-                out.push_back(std::move(item));
-            at = end + 1;
-        }
-        return out;
     }
 
     std::string list(const Value &op, bool append, std::vector<Write> &w) const

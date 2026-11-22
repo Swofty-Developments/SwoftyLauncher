@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14476afc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14476afc0.c;xref:0x14464c863,0x14464d206",
-  "notes": "(map, outIt, key*, src): allocates a node from the free list (+8, 0x14476b7a0 grows it) and copies key plus a 0xa8-byte hull shape record (two inline 0x20-char strings, transforms) from src, then links it (0x14476b150/0x14476b790). Caller: Car_Collision_BuildHullShapes."
+  "notes": "(map, outIt, key*, src): node from free list +8 (0x14476b7a0 when empty), node[0]=*key, inline string object (cap 0x20) and src+0x18..+0xa0 copied; Car_HullShapeMap_FindOrInsertByName: 0 -> 0x14476b790 + int3 (full), 1 -> node back to free list (exists), 2/3 -> slot +0x28[idx]=node; returns iterator {slot, info, inserted}. (lane owner review requested)"
  },
  "signature": {
   "id": "car.hull_shape_map_emplace_node",
