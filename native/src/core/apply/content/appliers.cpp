@@ -379,6 +379,11 @@ void report_left_out(const Expansion &x)
                     n("team.identity"), n("vehicle"), n("content.package"));
         moments::left_out(addon, n("team.identity"), n("vehicle"), n("content.package"));
     }
+    for (auto &[addon, lines] : x.status)
+        for (auto &line : lines) {
+            swofty::log("[registry] left out: %s: %s", addon.c_str(), line.c_str());
+            moments::status(addon, line);
+        }
 }
 
 void run_boot(Store &st)
