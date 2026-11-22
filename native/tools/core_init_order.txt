@@ -169,6 +169,7 @@ inline
   src/core/hooks/core_events.cpp  swofty::sessions::points
   src/core/hooks/core_events.cpp  swofty::content::packages
   src/core/hooks/core_events.cpp  swofty::content::era_boxes
+  src/core/hooks/core_events.cpp  swofty::content::box_assets
   src/core/hooks/core_events.cpp  swofty::wearables::helmets
   src/core/hooks/core_events.cpp  swofty::wearables::suits
   src/core/hooks/core_events.cpp  swofty::wearables::gloves

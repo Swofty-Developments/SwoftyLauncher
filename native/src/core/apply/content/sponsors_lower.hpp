@@ -1,10 +1,10 @@
 #pragma once
 
-#include "core/apply/content/garage_lower.hpp"
+#include "core/apply/content/box_assets_lower.hpp"
 
-// Lowers a track.sponsors record: a box's own trackside sponsor boards. The textures go the garage art's way
-// (garage_build.hpp, apply_garages): one archive per record, reached through a game path of its own and listed first
-// in the asset groups of every car the box's package names, so a session of any other box never loads it.
+// Lowers a track.sponsors record: a box's own trackside sponsor boards. A thin alias of content.box_assets with kind
+// sponsors (box_assets_lower.hpp): one archive per record, reached through a game path of its own and listed first in
+// the asset groups of every car the box's package names, so a session of any other box never loads it.
 
 namespace swofty_core::apply::content {
 
@@ -27,51 +27,21 @@ inline std::string sponsors_game_path(const std::string &id)
 
 inline void lower_sponsors(const std::string &id, const Value &rec, const Lookup &lookup, const Read &read, Plan &plan)
 {
-    plan.owner = addon_of(id);
-    auto refuse = [&](const std::string &why) {
-        plan.lines.push_back("track.sponsors " + id + ": " + why + "; nothing applied");
+    BoxSpec s;
+    s.tag = "track.sponsors";
+    s.kind = "sponsors";
+    if (!rec["package"].is_string() || !rec["textures"].is_string() || rec["textures"].as_string().empty()) {
+        plan.owner = addon_of(id);
+        plan.lines.push_back("track.sponsors " + id + ": it needs a package and a textures folder; nothing applied");
         plan.refused++;
-    };
-    if (!rec["package"].is_string() || !rec["textures"].is_string() || rec["textures"].as_string().empty())
-        return refuse("it needs a package and a textures folder");
-    std::string package(rec["package"].as_string());
-    const Value *pkg = lookup("content.package", package);
-    if (!pkg)
-        return refuse("package " + package + " is not a record");
-    GarageArt g;
-    g.registry = "track.sponsors";
-    g.id = id;
-    g.addon = addon_of(id);
-    g.package = package;
-    g.folder = std::string(rec["textures"].as_string());
-    if (g.folder.back() != '/')
-        g.folder += '/';
-    g.root = rec["root"].is_string() ? std::string(rec["root"].as_string()) : std::string(SPONSORS_ROOT);
-    g.srgb = !rec["srgb"].is_bool() || rec["srgb"].as_bool();
-    g.game_path = sponsors_game_path(id);
-    const Value &teams = (*pkg)["teams"];
-    for (std::size_t t = 0; t < teams.size(); t++)
-        if (teams[t]["vehicle"].is_string()) {
-            std::string vid(teams[t]["vehicle"].as_string());
-            if (std::find(g.vehicles.begin(), g.vehicles.end(), vid) == g.vehicles.end())
-                g.vehicles.push_back(vid);
-        }
-    if (g.vehicles.empty())
-        return refuse("package " + package + " names no car");
-    for (auto &vid : g.vehicles) {
-        CarPaths car = car_paths(record_label(lookup, "vehicle", vid), read);
-        if (!car.ok()) {
-            plan.lines.push_back("track.sponsors " + id + " on " + vid + ": no asset group: " + car.why);
-            continue;
-        }
-        if (std::find(g.groups.begin(), g.groups.end(), car.group) == g.groups.end())
-            g.groups.push_back(car.group);
+        return;
     }
-    if (g.groups.empty())
-        return refuse("none of the cars of " + package + " has an asset group");
-    plan.lines.push_back("track.sponsors " + id + ": boards of " + package + " for " + std::to_string(g.groups.size()) +
-                         " car group(s) of " + std::to_string(g.vehicles.size()) + " car(s)");
-    plan.garages.push_back(std::move(g));
+    s.package = std::string(rec["package"].as_string());
+    s.folder = std::string(rec["textures"].as_string());
+    s.root = rec["root"].is_string() ? std::string(rec["root"].as_string()) : std::string(SPONSORS_ROOT);
+    s.srgb = !rec["srgb"].is_bool() || rec["srgb"].as_bool();
+    s.game_path = sponsors_game_path(id);
+    lower_box(id, std::move(s), lookup, read, plan);
 }
 
 }

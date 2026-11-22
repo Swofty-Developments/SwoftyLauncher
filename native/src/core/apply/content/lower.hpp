@@ -62,9 +62,10 @@ struct Folder {
 
 struct GarageArt {
     std::string id, addon, package, team, folder, root, game_path;
-    std::string registry = "team.garage"; // or track.sponsors: the box's trackside boards, on every car of the box
+    std::string registry = "team.garage"; // or track.sponsors / content.box_assets (box_assets_lower.hpp)
+    std::string kind, archive;            // content.box_assets: what it dresses; a ready archive of the addon instead of a folder
     bool srgb = true;
-    std::vector<std::string> vehicles, groups;
+    std::vector<std::string> vehicles, groups, prefixes; // prefixes: the eaid names the archive may hold (empty: any)
 };
 
 struct Owned {

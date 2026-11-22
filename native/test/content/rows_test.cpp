@@ -711,6 +711,7 @@ int main(int argc, char **argv)
     livery_tests();
     garage_tests();
     sponsors_tests();
+    box_assets_tests();
     package_team_row_tests();
     points_tests();
     if (argc > 1)

@@ -64,6 +64,10 @@ const SCHEMAS: &[(&str, &str)] = &[
         include_str!("../../../../../sdk/std/registries/career.wizard/1.0.json"),
     ),
     (
+        "content.box_assets",
+        include_str!("../../../../../sdk/std/registries/content.box_assets/1.0.json"),
+    ),
+    (
         "content.package",
         include_str!("../../../../../sdk/std/registries/content.package/1.6.json"),
     ),
@@ -418,6 +422,10 @@ mod tests {
               "driver.head": { "senna": { "archive": "heads/senna/", "rig_from": "game/male_ls222" } },
               "team.garage": { "renault_2020": { "package": "swofty.classic-seasons-2020/f1_2020", "entry": "lotus", "textures": "garage/renault_2020" } },
               "track.sponsors": { "boards_1950": { "package": "mod.s/f1_1950", "textures": "sponsors/f1_1950" } },
+              "content.box_assets": {
+                "marshals_1950": { "package": "mod.s/f1_1950", "kind": "marshals", "textures": "box_assets/marshals_1950" },
+                "crowd_1950": { "package": "mod.s/f1_1950", "archive": "box_assets/crowd_1950.erp", "resources": ["eaid://x/"] }
+              },
               "someone.own": { "x": { "file": "not/a/schema/path.bin" } },
               "career.season": { "y": { "name": "sounds/v10_screamer.bdl" } }
             }"#,
@@ -427,6 +435,8 @@ mod tests {
         assert_eq!(
             named,
             [
+                "box_assets/crowd_1950.erp",
+                "box_assets/marshals_1950",
                 "cars/ferrari.erp",
                 "cars/ferrari/",
                 "garage/renault_2020",

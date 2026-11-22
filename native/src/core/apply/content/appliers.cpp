@@ -639,23 +639,92 @@ void apply_logos(Expansion &x, Report &report)
                            std::to_string(made.built) + " slice(s) built, " + std::to_string(made.refused) + " refused");
 }
 
-// team.garage and track.sponsors: each record's textures packed into one archive and listed in its cars' groups.
+// The per-box archive routes: team.garage, track.sponsors and content.box_assets. Each has its own env fence, cache
+// folder and file prefix, so one registry's cleanup never removes another's archives.
+struct BoxRoute {
+    const char *registry, *env, *cache_addon, *prefix, *fence;
+};
+
+constexpr BoxRoute BOX_ROUTES[] = {
+    {"team.garage", "SWOFTY_GARAGE_ART", "swofty.garage", "garage_", GARAGE_FENCE_LINE},
+    {"track.sponsors", "SWOFTY_BOX_SPONSORS", "swofty.sponsors", "sponsors_", SPONSORS_FENCE_LINE},
+    {"content.box_assets", "SWOFTY_BOX_ASSETS", "swofty.box_assets", "box_", BOX_ASSETS_FENCE_LINE},
+};
+
+const BoxRoute *box_route(std::string_view reg)
+{
+    for (auto &r : BOX_ROUTES)
+        if (reg == r.registry)
+            return &r;
+    return nullptr;
+}
+
+// A ready archive of a content.box_assets record: its index is read and checked against the record's prefixes. The
+// caller then redirects its game path to the addon's own file (no cache copy). False when the record is refused.
+bool box_archive_checked(const GarageArt &g, const std::string &tag, Report &report)
+{
+    std::wstring path = runtime::under_swofty("addons/" + g.addon + "/" + g.archive);
+    HANDLE h = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+    LARGE_INTEGER size{};
+    if (h == INVALID_HANDLE_VALUE || !GetFileSizeEx(h, &size)) {
+        if (h != INVALID_HANDLE_VALUE)
+            CloseHandle(h);
+        report.refused++;
+        report.lines.push_back(tag + " " + g.id + ": " + g.archive + " is not in swofty/addons/" + g.addon + "/");
+        return false;
+    }
+    erpfile::Source src;
+    src.size = uint64_t(size.QuadPart);
+    src.read = [h](uint64_t off, size_t n, char *out) {
+        LARGE_INTEGER at;
+        at.QuadPart = LONGLONG(off);
+        DWORD got = 0;
+        return SetFilePointerEx(h, at, nullptr, FILE_BEGIN) && ReadFile(h, out, DWORD(n), &got, nullptr) && got == n;
+    };
+    erpfile::Archive a;
+    std::string why;
+    bool opened = erpfile::open(src, a, why);
+    CloseHandle(h);
+    if (!opened) {
+        report.refused++;
+        report.lines.push_back(tag + " " + g.id + ": " + g.archive + ": " + why);
+        return false;
+    }
+    std::vector<BoxArchiveEntry> entries;
+    for (auto &e : a.entries)
+        entries.push_back({e.name, std::string(e.mid.data(), strnlen(e.mid.data(), std::min<size_t>(16, e.mid.size()))),
+                           e.frags.size()});
+    BoxArchiveCheck c = check_box_archive(entries, g.prefixes);
+    if (c.outside) {
+        report.refused++;
+        report.lines.push_back(tag + " " + g.id + ": " + g.archive + " holds " + std::to_string(c.outside) +
+                               " resource(s) outside its resources prefixes (first " + c.first_outside + ")");
+        return false;
+    }
+    report.lines.push_back(tag + " " + g.id + ": " + g.archive + " holds " + std::to_string(c.resources) + " resource(s), " +
+                           std::to_string(c.streamed) + " texture surface(s) with a streaming descriptor (3 fragments)");
+    return true;
+}
+
+// Each record's textures packed into one archive (or its ready archive) and listed first in its cars' groups.
 void apply_garages(Expansion &x, Report &report, std::string_view reg = "team.garage")
 {
-    bool sponsors = reg == "track.sponsors";
+    const BoxRoute *route = box_route(reg);
+    if (!route)
+        return;
     bool any = false;
     for (auto &g : x.garages)
         any = any || g.registry == reg;
     if (!any)
         return;
-    const char *CACHE_ADDON = sponsors ? "swofty.sponsors" : "swofty.garage";
-    const std::string prefix = sponsors ? "sponsors_" : "garage_";
+    const char *CACHE_ADDON = route->cache_addon;
+    const std::string prefix = route->prefix;
     const std::string tag(reg);
     char art[8] = {};
-    DWORD art_len = GetEnvironmentVariableA(sponsors ? "SWOFTY_BOX_SPONSORS" : "SWOFTY_GARAGE_ART", art, sizeof art);
-    bool art_on = art_len && art_len < sizeof art && (sponsors ? box_sponsors_enabled(art) : garage_art_enabled(art));
+    DWORD art_len = GetEnvironmentVariableA(route->env, art, sizeof art);
+    bool art_on = art_len && art_len < sizeof art && garage_art_enabled(art);
     if (!art_on)
-        report.lines.push_back(sponsors ? SPONSORS_FENCE_LINE : GARAGE_FENCE_LINE);
+        report.lines.push_back(route->fence);
     char desc[8] = {};
     DWORD desc_len = GetEnvironmentVariableA("SWOFTY_GARAGE_DESC", desc, sizeof desc);
     bool descriptor = !(desc_len && desc_len < sizeof desc && desc[0] == '0');
@@ -668,6 +737,30 @@ void apply_garages(Expansion &x, Report &report, std::string_view reg = "team.ga
             break;
         if (g.registry != reg)
             continue;
+        if (!g.archive.empty()) {
+            if (!box_archive_checked(g, tag, report))
+                continue;
+            files::Outcome o = files::redirect(g.game_path, g.addon, g.archive, tag, g.id, "boot");
+            if (o.refused()) {
+                report.refused++;
+                report.lines.push_back(o.line);
+                continue;
+            }
+            std::size_t attached = 0;
+            for (auto &group : g.groups) {
+                int rc = runtime::group_extend(group, g.game_path);
+                report.lines.push_back(
+                    tag + " " + g.id + ": " + group +
+                    (rc == SWOFTY_ASSET_OK ? " lists " + g.game_path : " not extended (the manifest is already parsed)"));
+                attached += rc == SWOFTY_ASSET_OK;
+            }
+            if (!attached)
+                report.refused++;
+            report.lines.push_back(tag + " " + g.id + ": " + g.game_path + " -> swofty/addons/" + g.addon + "/" + g.archive +
+                                   ", " + std::to_string(attached) + " of " + std::to_string(g.groups.size()) +
+                                   " group(s) extended");
+            continue;
+        }
         std::filesystem::path root(runtime::under_swofty("addons/" + g.addon + "/" + g.folder));
         std::vector<garage::Input> inputs;
         std::error_code ec;
@@ -683,6 +776,16 @@ void apply_garages(Expansion &x, Report &report, std::string_view reg = "team.ga
             report.refused++;
             report.lines.push_back(tag + " " + g.id + ": " + g.folder + " holds no .dds or .png file in swofty/addons/" +
                                    g.addon + "/");
+            continue;
+        }
+        std::string outside;
+        for (auto &in : inputs)
+            if (outside.empty() &&
+                !box_name_allowed(g.root + in.rel.substr(0, in.rel.size() - garage::extension_of(in.rel).size()), g.prefixes))
+                outside = in.rel;
+        if (!outside.empty()) {
+            report.refused++;
+            report.lines.push_back(tag + " " + g.id + ": " + outside + " would name a resource outside its resources prefixes");
             continue;
         }
         uint64_t key = 0xcbf29ce484222325ull;
@@ -881,7 +984,7 @@ public:
         apply_texts(x, registry_, report);
         if (std::string_view(registry_) == "team.identity")
             apply_logos(x, report);
-        if (std::string_view(registry_) == "team.garage" || std::string_view(registry_) == "track.sponsors")
+        if (box_route(registry_))
             apply_garages(x, report, registry_);
         if (std::string_view(registry_) == "rules.drs")
             publish_drs(st, x);

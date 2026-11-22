@@ -78,8 +78,31 @@ struct EraBox {
 };
 SWOFTY_RECORD(EraBox, package, title, image, order, time_trial, only)
 
+enum class BoxAssetKind { garage, sponsors, marshals, crowd, principal, other };
+SWOFTY_ENUM(BoxAssetKind, garage, sponsors, marshals, crowd, principal, other)
+
+// Stock-named resources only one box's sessions load: a folder of .dds and .png files the core packs (the
+// teams::Garage way), or a ready .erp of the addon. The archive is listed first in the asset groups of the box's
+// cars (every car, or one team entry's), so a session of any other box never loads it. The game keeps the first
+// copy of a name it loads, so it only shows where the cars load before the stock archive (docs: box-assets).
+struct BoxAssets {
+    static constexpr Version version{1, 0};
+    Ref<Package> package;
+    BoxAssetKind kind = BoxAssetKind::other;
+    std::string entry;                  // the key of one team entry of the package; empty: every car of the box
+    Path textures;                      // a folder of .dds and .png files, at their resource names below root
+    std::string root;                   // empty: the kind's stock root (garage, sponsors) or eaid:// itself
+    bool srgb = true;                   // a .png is encoded as sRGB BC7
+    Path archive;                       // or a ready .erp archive of the addon
+    std::vector<std::string> resources; // the eaid:// name prefixes it may hold (required with archive)
+    json::Value extra;
+};
+SWOFTY_RECORD(BoxAssets, package, kind, entry, textures, root, srgb, archive, resources)
+SWOFTY_RECORD_REGISTRY(BoxAssets, "content.box_assets")
+
 inline Registry<Package> packages{"content.package", {.applies = Applies::content}};
 inline Registry<EraBox> era_boxes{"era.box", {.applies = Applies::read}};
+inline Registry<BoxAssets> box_assets{"content.box_assets", {.applies = Applies::boot}};
 
 }
 

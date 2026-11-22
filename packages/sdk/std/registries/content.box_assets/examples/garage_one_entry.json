@@ -1,0 +1,11 @@
+{
+  "content.box_assets": {
+    "alfa_garage_1950": {
+      "package": "vmknolle.season-1950/f5_1950",
+      "kind": "garage",
+      "entry": "alfa_romeo",
+      "textures": "garage/alfa_1950",
+      "srgb": true
+    }
+  }
+}
