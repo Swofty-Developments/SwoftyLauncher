@@ -76,6 +76,16 @@ SWOFTY_ON_LOAD
                 host->version, host->size >= sizeof(SwoftyLapHost) ? "ok" : "short", swofty_root.empty() ? "empty" : "set",
                 files_root.empty() ? "empty" : "set", host->build(), host->attach(&client));
     host->notice("");
+    if (host->version >= 4 && host->size >= SWOFTY_LAP_HOST_V3_SIZE + sizeof(void *)) {
+        SwoftyLapInput in{};
+        in.size = sizeof in;
+        int ok = host->input(&in);
+        SwoftyLapInput shorter{};
+        shorter.size = sizeof shorter - 1;
+        swofty::log("[t_laphost] input: answered %d, version %u, size %s, read %s, %u device(s); a short table answered %d", ok,
+                    in.version, in.size == sizeof in ? "ok" : "wrong", in.age_s < 0 ? "not yet" : "already", in.count,
+                    host->input(&shorter));
+    }
 }
 
 SWOFTY_ADDON()
