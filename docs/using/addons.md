@@ -95,7 +95,7 @@ F1 2012 Season         F1 2012 has more teams than this track has garages (with 
 - When addons load below something they need, a bar at the top of the page says how many, with one large **Fix load order** button. It reorders the profile with the smallest change that puts every addon below what it needs, and keeps the rest of your order. If a folder would pull an addon back above what it needs, the addon leaves that folder and a message names it. The page checks the new order afterwards and checks conflicts again, so you see the result.
 - If addons need each other above themselves, the bar is red, names them and has a **Turn off X** button.
 - **Needs X, which is off** and **Needs X, which isn't installed** stop Play. **Turn X on** and **Install X** fix them. A version outside the required range says which version is installed and opens the Addon Browser.
-- **Can't be on with X** is a declared conflict. **Turn X off** fixes it.
+- **Can't be on with X** is a declared conflict. **Turn X off** fixes it. Play stops on it before anything is built, and the play bar names both addons: **Y conflicts with X. Turn one of them off on the Addons page**.
 - **Changes rows that X adds** comes from the profile's last build: the addon's database changes waited for rows X adds. **Fix load order** puts it below X.
 - Addons in Built In, such as Simplified for Swofty, don't move and never show an order problem. **Fix load order** leaves them in place, and the addons below them win where they overlap. The build still loads them after every addon they require or load after.
 - **Your career K needs X, which is off** shows on X's row when a saved career lists X among the addons it needs. It also shows when X is not installed or outside the range the career needs.
