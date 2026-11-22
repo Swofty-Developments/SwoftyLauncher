@@ -44,7 +44,7 @@ When a game session ends in a crash, the launcher opens a full-window **F1 25 cr
 | Your graphics driver stopped responding | `DXGI_ERROR_DEVICE_REMOVED` (`0x887a0005`) in the crash. When Swofty's in-game overlay drew just before, the screen names the addons it drew for. It also names full car packs on at once that replace each other's cars, and frame generation when it is on |
 | F1 25 ran out of graphics memory | `E_OUTOFMEMORY` (`0x8007000e`) in the crash |
 | A program that hooks into games | The crash in RivaTuner Statistics Server, Windhawk, Medal, Discord's overlay, OBS Studio's game capture, the NVIDIA app's overlay, the Steam overlay, Special K, or Windows' force feedback driver for a wheel (`pid.dll`). With no unhandled exception and no crash report, the last exception the mod loader saw counts when the game's exit code matches it |
-| Graphics mods in the game folder | ReShade, OptiScaler, Special K or an ASI loader in the game folder, and a crash in graphics code or before the game's window opened |
+| Graphics mods in the game folder | ReShade, OptiScaler, Special K or an ASI loader in the game folder, and a crash in graphics code, or a crash before the game's window opened once the game made a DXGI factory or a D3D12 device, or on the thread where Swofty's core made its own. A crash before either doesn't name them |
 | A crash in the graphics driver | The crash in an NVIDIA, AMD or Intel driver DLL |
 | A crash in frame generation | The crash in DLSS Frame Generation or XeSS frame generation |
 

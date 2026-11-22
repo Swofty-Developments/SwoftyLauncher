@@ -1,6 +1,6 @@
 use crate::diagnostics::overlay_guard::{Removal, SessionOverlay};
 
-use super::crash_record::crash_holds;
+use super::crash_record::{crash_holds, crash_line, stamp, thread};
 use super::evidence::Evidence;
 use super::memory::{KEEP_YEARS, needs_all_years};
 use super::wording::{VERIFY, list, name};
@@ -330,10 +330,45 @@ pub(super) fn out_of_graphics_memory(c: &Crash) -> Option<Diagnosis> {
     })
 }
 
+/// The loader's lines once the game made a DXGI factory or a D3D12 device, or a swapchain: what a graphics mod in
+/// the game folder hooks.
+const GRAPHICS_STARTED: &[&str] = &[
+    "[d3d12] the first D3D12CreateDevice ",
+    "[d3d12] the first CreateDXGIFactory",
+    "[d3d12] D3D12CreateDevice ",
+    "[d3d12] CreateDXGIFactory",
+    "[overlay] drawing on swapchain ",
+];
+
+/// Whether a DXGI factory, a D3D12 device or a swapchain was made before the crash: by the game on any thread, or
+/// by the core's own D3D12 arm on the thread that crashed, as its arm runs beside the game's start.
+pub(super) fn graphics_started(c: &Crash) -> bool {
+    let e = c.evidence;
+    let crash = crash_line(e, &c.fatal);
+    let (crashed, on) = (crash.and_then(stamp), crash.and_then(thread));
+    e.loader
+        .lines()
+        .filter(|l| made_graphics(l, on))
+        .any(|l| match (crashed, stamp(l)) {
+            (Some(crashed), Some(at)) => at <= crashed,
+            _ => true,
+        })
+}
+
+fn made_graphics(line: &str, crashed_on: Option<u32>) -> bool {
+    let probe = line.contains("probe device made");
+    let made = probe
+        || GRAPHICS_STARTED.iter().any(|m| line.contains(m))
+        || (line.contains("[d3d12] swapchain ") && line.contains(" created through "));
+    let core = probe || line.contains("the core's own");
+    made && (!core || (crashed_on.is_some() && thread(line) == crashed_on))
+}
+
 pub(super) fn graphics_mod_crash(c: &Crash) -> Option<Diagnosis> {
     let mods = &c.mods;
     let started = crate::diagnostics::launch::LoaderSeen::scan(&c.evidence.loader).window;
-    if mods.is_empty() || (started && !c.fatal.near().any(graphics)) {
+    let in_graphics = c.fatal.near().any(graphics);
+    if mods.is_empty() || (!in_graphics && (started || !graphics_started(c))) {
         return None;
     }
     let when = if started {

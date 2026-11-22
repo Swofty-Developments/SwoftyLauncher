@@ -179,6 +179,78 @@ fn graphics_mods_play_no_part_in_a_game_code_crash_after_the_window() {
     );
 }
 
+/// A report's session on EA 1.0.145: F1 25 aborted in its startup sequence 0.9 s after the core loaded,
+/// before its window and before it made a graphics device; the core's own probe device came after.
+pub(super) const BOOT_ABORT: &str = "\
+2026-11-23 00:16:08.009 [29700] trigger: KERNEL32!CreateMutexW from 0000000140178df7 (.arch) name 'Codemasters F1 25' on thread 29700, 2547 ms after attach; loading addons now (early stage)
+2026-11-23 00:16:08.015 [29700] trigger armed: game IAT slot USER32!RegisterClassExW at 0000000145e4fb60 (was 00007ffd0b9dc670), in the import table the exe filled at load
+2026-11-23 00:16:08.888 [29700] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 29700, 0 s after load, at F1_25.exe+0x39078c4 .arch fn base+0x39078c0+0x4
+2026-11-23 00:16:08.888 [29700] [crash]   writing 0x1
+2026-11-23 00:16:08.889 [29700] [crash]   stack:
+2026-11-23 00:16:08.889 [29700] [crash]   #0  F1_25.exe+0x39078c4 .arch fn base+0x39078c0+0x4
+2026-11-23 00:16:08.889 [29700] [crash]   #1  F1_25.exe+0x43b71d4 .arch fn base+0x43b7050+0x184
+2026-11-23 00:16:08.889 [29700] [crash]   #2  F1_25.exe+0x43d8023 .arch fn base+0x43d8000+0x23
+2026-11-23 00:16:08.889 [29700] [crash]   #3  F1_25.exe+0x179883 .arch fn base+0x178870+0x1013
+2026-11-23 00:16:08.890 [29700] [crash]   #4  F1_25.exe+0x15c2521c .xtls fn base+0x15c25110+0x10c
+2026-11-23 00:16:08.890 [29700] [crash]   #5  Activation64.dll+0x11a97
+2026-11-23 00:16:08.891 [38404] [crash] writing a crash report: the game aborted itself (Ne_FatalAbort writes 0xDEADDEAD to address 1) at F1_25.exe+0x39078c4 .arch fn base+0x39078c0+0x4
+2026-11-23 00:16:09.360 [29700] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x39078c4 .arch fn base+0x39078c0+0x4 reached the top-level filter; passing it to the game's filter
+2026-11-23 00:16:11.256 [32300] [perf] step 2461.0 ms: d3d12 probe device made
+2026-11-23 00:16:11.545 [32164] [d3d12] CreateDXGIFactory1 from the core's own code (thread 32164) while the D3D12 arm runs: waited for the arm, 2753 ms
+";
+
+/// The game folder of that report, with ReShade in it.
+pub(super) const RESHADE_FOLDER: &[&str] = &[
+    "F1_25.exe",
+    "game.dat",
+    "dxgi.dll",
+    "ReShade.ini",
+    "reshade-shaders",
+];
+
+#[test]
+fn reshade_plays_no_part_in_an_abort_before_the_game_made_its_graphics() {
+    assert_eq!(diagnose(&ev(BOOT_ABORT, RESHADE_FOLDER)), None);
+    let device_first = BOOT_ABORT.replacen(
+        "2026-11-23 00:16:08.888",
+        "2026-11-23 00:16:08.500 [29700] [d3d12] the first D3D12CreateDevice from outside the D3D12 arm, from sl.interposer.dll (thread 29700): the arm had finished, 0.0 ms waited, 203.6 ms in the call (0x00000000)\n2026-11-23 00:16:08.888",
+        1,
+    );
+    let d = diagnose(&ev(&device_first, RESHADE_FOLDER)).unwrap();
+    assert_eq!(d.id, "graphics_mods");
+    assert_eq!(d.title, "ReShade in your game folder crashed F1 25");
+    let device_after = format!(
+        "{BOOT_ABORT}2026-11-23 00:16:12.000 [29700] [d3d12] the first CreateDXGIFactory from outside the D3D12 arm, from sl.common.dll (thread 29700): waited for the arm, 314.6 ms waited, 1.5 ms in the call (0x00000000)\n"
+    );
+    assert_eq!(diagnose(&ev(&device_after, RESHADE_FOLDER)), None);
+    let core_beside = BOOT_ABORT.replacen(
+        "2026-11-23 00:16:08.888",
+        "2026-11-23 00:16:08.300 [27628] [d3d12] CreateDXGIFactory1 from swofty_core.dll (thread 27628) while the D3D12 arm runs: passed: the core's own call\n2026-11-23 00:16:08.888",
+        1,
+    );
+    assert_eq!(diagnose(&ev(&core_beside, RESHADE_FOLDER)), None);
+    let core_crashed = BOOT_ABORT.replacen(
+        "2026-11-23 00:16:08.888",
+        "2026-11-23 00:16:08.300 [29700] [perf] step 1756.3 ms: d3d12 probe device made\n2026-11-23 00:16:08.888",
+        1,
+    );
+    assert_eq!(
+        diagnose(&ev(&core_crashed, RESHADE_FOLDER)).map(|d| d.id),
+        Some("graphics_mods")
+    );
+    let arm_announced = BOOT_ABORT.replacen(
+        "2026-11-23 00:16:08.888",
+        "2026-11-23 00:16:08.787 [29700] [d3d12] the D3D12 arm runs on a worker; the game's D3D12CreateDevice and CreateDXGIFactory calls wait for it (SWOFTY_ARM_SYNC=1 runs it in the stage)\n2026-11-23 00:16:08.888",
+        1,
+    );
+    assert_eq!(diagnose(&ev(&arm_announced, RESHADE_FOLDER)), None);
+    let in_reshade = BOOT_ABORT.replace("F1_25.exe+0x39078c4", "dxgi.dll+0x39078c4");
+    assert_eq!(
+        diagnose(&ev(&in_reshade, RESHADE_FOLDER)).map(|d| d.id),
+        Some("graphics_mods")
+    );
+}
+
 const REPLAY_LOADER: &str = "\
 2026-11-12 17:57:27.502 [ 5736] stage: window (USER32!RegisterClassExW from 00000001439f00a0 (.xtls)), addons were loaded at the early stage
 2026-11-12 18:23:14.352 [12208] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 12208, 1558 s after load, at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c

@@ -226,13 +226,23 @@ pub(super) fn raw_crash_lines(loader: &str) -> Vec<&str> {
 /// When the game's fatal exception happened, from its first-chance line or
 /// else the line where it reached the top-level filter.
 pub(super) fn crash_time(e: &Evidence, f: &Fatal) -> Option<f64> {
+    crash_line(e, f).and_then(stamp)
+}
+
+/// The loader line of the game's fatal exception ([`crash_time`]).
+pub(super) fn crash_line<'a>(e: &'a Evidence, f: &Fatal) -> Option<&'a str> {
     f.at.and_then(|at| raw_crash_lines(&e.loader).get(at).copied())
         .or_else(|| {
             e.loader
                 .lines()
                 .find(|l| l.contains("[crash] unhandled ") && l.contains("reached the top-level filter"))
         })
-        .and_then(stamp)
+}
+
+/// The thread that wrote a loader line, from the `[  384]` after its time.
+pub(super) fn thread(line: &str) -> Option<u32> {
+    let rest = line.get(23..)?.trim_start().strip_prefix('[')?;
+    rest.split_once(']')?.0.trim().parse().ok()
 }
 
 /// The game function a stack frame names, as `Sess_Loader_SetupTrackAssets`
