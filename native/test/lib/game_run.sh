@@ -23,6 +23,7 @@ GAME_RUN_SERVER=$(swofty_wineserver) || GAME_RUN_SERVER=
 exec {GAME_RUN_ERR}>&2
 
 game_settle() {
+    [[ ${GAME_RUN_SETTLE:-1} == 1 ]] || return 0
     [ -n "$GAME_RUN_SERVER" ] && [ -n "${WINEPREFIX:-}" ] || return 0
     timeout 30 "$GAME_RUN_SERVER" -k >/dev/null 2>&1 || :
     timeout 30 "$GAME_RUN_SERVER" -w >/dev/null 2>&1 || :
@@ -69,6 +70,15 @@ game_run_report() {
             echo "    thread ${task##*/} '$(cat "$task/comm" 2>/dev/null)' state ${stat%% *} in $(cat "$task/wchan" 2>/dev/null || echo '?')"
         done
     done
+    local gpid
+    for gpid in $(pgrep -f "^$exe" 2>/dev/null); do
+        if command -v gdb >/dev/null && sudo -n true 2>/dev/null; then
+            echo "game_run: gdb backtraces of pid $gpid:"
+            sudo -n timeout 30 gdb -q -nx -p "$gpid" -batch -ex 'info threads' -ex 'thread apply all bt 12' 2>&1 | sed 's/^/  gdb: /' | head -n 200
+            echo "game_run: the PE modules of pid $gpid:"
+            grep -E '\.(dll|exe|drv)$' "/proc/$gpid/maps" 2>/dev/null | awk '!seen[$6]++ {print "  map: " $1 " " $6}' | head -n 80
+        fi
+    done
     log=$(dirname "$exe")/swofty/loader.log
     if [ -f "$log" ]; then
         echo "game_run: the last lines of $log:"
@@ -109,7 +119,11 @@ game_run() {
         ) >/dev/null 2>&1 &
         watch=$!
         rc=0
-        timeout -k 5 "$secs" "${PIN[@]}" xvfb-run -a wine cmd /c "$exe" "$@" >"$out" 2>&1 || rc=$?
+        if [[ ${GAME_RUN_BARE:-} == 1 ]]; then
+            timeout -k 5 "$secs" "${PIN[@]}" xvfb-run -a wine "$exe" "$@" >"$out" 2>&1 || rc=$?
+        else
+            timeout -k 5 "$secs" "${PIN[@]}" xvfb-run -a wine cmd /c "$exe" "$@" >"$out" 2>&1 || rc=$?
+        fi
         kill $watch 2>/dev/null || :
         wait $watch 2>/dev/null || :
         game_settle
