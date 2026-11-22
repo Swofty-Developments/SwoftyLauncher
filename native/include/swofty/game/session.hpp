@@ -636,6 +636,7 @@ inline constexpr address<"Sess_RC_SendAheadOfLeadData"> Sess_RC_SendAheadOfLeadD
 inline constexpr address<"Sess_RaceRuleset_GetTimeRemaining"> Sess_RaceRuleset_GetTimeRemaining{}; // L2 experimental
 inline constexpr address<"Sess_RaceRuleset_OnLapCompleted"> Sess_RaceRuleset_OnLapCompleted{}; // L2 experimental
 inline constexpr address<"Sess_RaceRuleset_SetTimeLimit"> Sess_RaceRuleset_SetTimeLimit{}; // L2 experimental
+inline constexpr address<"Sess_RaceRuleset_SetTotalLaps"> Sess_RaceRuleset_SetTotalLaps{}; // L2 experimental
 inline constexpr address<"Sess_RaceState_ResetTimingAndTowState"> Sess_RaceState_ResetTimingAndTowState{}; // L2 experimental
 inline constexpr address<"Sess_RaceState_VehicleHasNamedEntry"> Sess_RaceState_VehicleHasNamedEntry{}; // L2 experimental
 inline constexpr address<"Sess_RaceStrategy_BuildPitPlan"> Sess_RaceStrategy_BuildPitPlan{}; // L2 experimental

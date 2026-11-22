@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144630450",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
-  "proto": "-",
+  "proto": "void Car_Chassis_ComputeWheelGeometry(void *rig, void *car)",
   "evidence": "decomp:re/decomp/144630450.c;xref:0x14462ea68,0x144632071",
-  "notes": "Per wheel (4, [car+0x580]+0x70) computes wheel/suspension geometry into +0x6cc.. using model node data (+0x5d0 +0xe8) and Car_Compute_ChassisMatrix / Car_Suspension_ComputeWheelTransform. Callers: Car_Parse_Chassis, 0x144631e50."
+  "notes": "Loop over the 4 wheels ([car+0x580]+0x70+i*8) writing a 3x4 wheel transform to rig+0xb50+i*0x30 and the wheel-node pose matrices of the skeleton [rig+0x38] (node ids per wheel at rig+0x5f4/+0x660/+0x6a8/+0x6cc, stride 0xfc; each write sets the node's dirty bit with a locked or and clears byte +0x40 bit 1). A wheel with a model-node override ([wheel]+0x5d0 -> +0xe8[idx], byte +0x38 set) takes that node's local matrix (vcall +0x38) times the body matrix [car+0x558]+0x1d0..+0x20f and Car_Compute_ChassisMatrix([car+0x558]). Otherwise it builds the hub from wheel spin/steer and suspension (wheel +0x154/+0x174/+0x178, [wheel+0x140]+0x1600/+0x1604, side sign table 0x1455d8b30 by wheel +0x2b4 == 2), Car_Compute_ChassisMatrix([rig+0x58]+0x558) and, when [car]+0x9f40 > 6, Car_Suspension_ComputeWheelTransform (0x1446b8ce0); rig+0xfc8+i == 0 clears one matrix. Calls from Car_Parse_Chassis (0x14462ea68) and the rig transform update 0x144631e50 (0x144632071). Used by vmknolle dukati-lean (wheels on the centre line)."
  },
  "signature": {
   "id": "car.chassis_compute_wheel_geometry",
@@ -48,5 +48,25 @@
    "notes": "V7416 name matches log/pretty-function string and body; sibling-consistent"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14462ea68",
+    "target": "0x144630450"
+   },
+   "sigcheck": "passed",
+   "digest": "33834d997cabf676d5e92afceec1c89520a06af2747f06b9a65ff942dff98949"
+  }
+ ]
 }

@@ -104,6 +104,27 @@ int main()
     expect(!camera.observe(1, 8, TRACKSIDE) && camera.kind() == REVERSE_POD, "ignore a secondary type 8 assignment");
     expect(camera.observe(0, 8) && camera.kind() == OTHER, "an unknown type 8 cannot retain the previous classification");
 
+    ViewportCamera recovered;
+    expect(!recovered.recover(0), "recovery requires an active session");
+    recovered.update_phase(true, true);
+    expect(!recovered.recover(3), "recovery cannot set a camera in replay");
+    const Kind native_kinds[] = {OTHER, OTHER, OTHER, COCKPIT, TCAM, TCAM_OFFSET, OTHER, OTHER, OTHER};
+    for (uint8_t type = 0; type < sizeof(native_kinds) / sizeof(*native_kinds); ++type) {
+        recovered.update_phase(true, true);
+        recovered.update_phase(true, false);
+        expect(recovered.recover(type) && recovered.kind() == native_kinds[type],
+               "recover native viewport type " + std::to_string(type));
+    }
+    recovered.update_phase(true, true);
+    recovered.update_phase(true, false);
+    expect(!recovered.recover(9) && !recovered.recover(255) && recovered.kind() == UNKNOWN,
+           "recovery ignores unrecognized native types");
+    expect(recovered.recover(8, TRACKSIDE) && recovered.kind() == TRACKSIDE, "recover a verified trackside camera");
+    expect(!recovered.recover(4) && recovered.kind() == TRACKSIDE, "recovery preserves a known classification");
+    recovered.update_phase(true, true);
+    recovered.update_phase(true, false);
+    expect(recovered.recover(8, REVERSE_POD) && recovered.kind() == REVERSE_POD, "recover a verified reverse pod");
+
     printf("%s\n", fails ? "view flow test: FAILED" : "view flow test: ok");
     return fails ? 1 : 0;
 }

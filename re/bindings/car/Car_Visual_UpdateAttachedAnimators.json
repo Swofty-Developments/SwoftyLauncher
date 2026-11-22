@@ -7,9 +7,9 @@
   "addr": "0x14039ff50",
   "level": "L2",
   "subsystem": "car",
-  "proto": "-",
+  "proto": "void Car_Visual_UpdateAttachedAnimators(void *car_visual, float frac)",
   "evidence": "decomp:re/decomp/14039ff50.c;xref:0x14039ddde,0x1403a677b",
-  "notes": "(vis,t): for node [+0x5d8] index +0x5e0 and node [+0x1390] index +0x137c: min start / max end over the node's children (vcall +0x20 -> start,end); writes +0x5d4 / +0x1384 = start + (end-start)*t. Does not tick animators. +0x5d4 is slot 0 of Car_Visual_UpdateSlotBlend's 0x50-stride slots. Callers in 0x14039aa80, 0x1403a66d0. (lane owner review requested) Better name: Car_Visual_SeekAnimSlotsNormalized (bound record keeps its name)."
+  "notes": "Not a tick. For two clip sets (list [[cv+0x5d8]+0x18] index cv+0x5e0, and [[cv+0x1390]] index cv+0x137c; skipped when the index is 0xffffffff or the entry is null) it asks every animator for its time range (vcall +0x20 -> start, end), takes min start / max end and writes cv+0x5d4 resp. cv+0x1384 = min + (max - min) * frac. frac is a normalised 0..1 position. Callers: Car_Visual_UpdateRenderState (0x14039ddde) and 0x1403a66d0 (0x1403a677b). Better name: Car_Visual_SetAnimatorsTimeFraction. Used by vmknolle dukati-lean."
  },
  "signature": {
   "id": "car.visual_update_attached_animators",
@@ -77,5 +77,25 @@
    "notes": "V7125 name fits; finding facts hold; 2 direct calls"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14039ff50",
+    "target": "0x14039ff50"
+   },
+   "sigcheck": "passed",
+   "digest": "08051f13b120799d52970d6c981c53ce3a5dfbf82fe37692f766a5bd85ad371e"
+  }
+ ]
 }

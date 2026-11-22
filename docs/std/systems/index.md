@@ -42,6 +42,7 @@ Shipped in 1.6.0:
 - **[Liveries](./liveries)** `swofty/systems/liveries.hpp`: `liveries::liveries`.
 - **[Teams](./teams)** `swofty/systems/teams.hpp`: `teams::constructors`, `identities`, `logos`, `pit_times`, `garages`.
 - **[Garage art](./garage)** `swofty/systems/teams.hpp`: `teams::garages`.
+- **[Sponsor boards](./sponsors)** `swofty/systems/tracks.hpp`: `tracks::sponsors` (experimental).
 - **[Vehicle overrides](./vehicle-override)** `swofty/systems/teams.hpp`: `teams::vehicle_overrides` (experimental, 1.10.15).
 - **[Drivers](./drivers)** `swofty/systems/drivers.hpp`: `drivers::people`, `identities`, `heads`, `looks`, `stats`.
 - **[Helmets, suits and gloves](./wearables)** `swofty/systems/wearables.hpp`: `wearables::helmets`, `suits`, `gloves`, `season_sets`.

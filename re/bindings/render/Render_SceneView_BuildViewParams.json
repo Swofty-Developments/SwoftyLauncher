@@ -46,7 +46,37 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/143be0360.c;xref:0x14013c2c8",
    "notes": "V8145 decomp body and callers match claim"
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "vogtmarcel07-cloud",
+   "kind": "func",
+   "item": "Render_SceneView_BuildViewParams",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143be0360-0x143be17e6 (re/tools/disx.py);xref:0x14013c2c9,0x1401583d1,0x142fae639,0x143c389e0,0x143c74dff,0x143ce5d0f,0x143cebec7,0x143d4f517",
+   "notes": "gh:vogtmarcel07-cloud independent re-check 2026-11-21 at L2: pdata 0x143be0360-0x143be17e6, rcx = params object (rsi), rdx = camera desc (rdi); reads desc floats +0x24..+0x38 and +0xd0..+0xec, calls Render_SceneView_UpdateVrEyeParams 0x143be0492 and Ne_RenderViewParams_InitDefaults 0x143be179a (statics), Ne_Crt_Atanf 0x143be101b; writes two 4x4 matrices to params+0x80..+0xbf (0x143be082d..0x143be0815) and +0xc0..+0xff (0x143be086d..0x143be0855) plus fields up to +0x3f8; per-viewport caller 0x140157d90 passes rcx = [view+(i+6)*8+0x168] at 0x1401583c5. Matches the row."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14013c2c8",
+    "target": "0x143be0360"
+   },
+   "sigcheck": "passed",
+   "digest": "deef37e38028bbfacae2f0bffd5b9da8fa245255fdb28109c9a74175a0c5e4d0"
+  }
+ ]
 }

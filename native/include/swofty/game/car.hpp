@@ -480,6 +480,8 @@ using Car_DetachablePart_Update_t = bool(void *part, float dt);
 inline constexpr fn<"Car_DetachablePart_Update", Car_DetachablePart_Update_t> Car_DetachablePart_Update{}; // L2 experimental
 inline constexpr address<"Car_Differential_Reset_Thunk"> Car_Differential_Reset_Thunk{}; // L2 experimental
 inline constexpr address<"Car_Engine_ComputeDerived_Thunk"> Car_Engine_ComputeDerived_Thunk{}; // L2 experimental
+using Car_Engine_UpdateWear_t = void(void *engine, float dt);
+inline constexpr fn<"Car_Engine_UpdateWear", Car_Engine_UpdateWear_t> Car_Engine_UpdateWear{}; // L2 experimental
 using Car_FrontWing_Init_t = void(void *front_wing, char reset);
 inline constexpr fn<"Car_FrontWing_Init", Car_FrontWing_Init_t> Car_FrontWing_Init{}; // L2 experimental, game::FrontWing
 inline constexpr address<"Car_FrontWing_OnCollision"> Car_FrontWing_OnCollision{}; // L2 experimental
