@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_RequestList_Destroy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14082a190",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14082a190.c;xref:0x1408255a1,0x140825915,0x14082bbfd",
+  "notes": "Dtor of the request-args object built by 0x14443bd40/0x14443bb40: destroys vector +0x78..+0x80 of 0x50-byte entries (two string objects each), frees via allocator +0x70, releases shared_ptr ctrl +0x60, destroys strings +0x30 and +0x8. Callers Game_F1os_OnStart_* (0x140824650, 0x140835470, 0x140b165a0), 0x14082bbd0. (lane owner review requested) Better name: Game_F1os_RequestArgs_Destruct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.f1os_request_list_destroy",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 4C 8B 71 78 48 8B",
+  "match": "0x14082a190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14082a190",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_RequestList_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14082a190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14082a190.c;xref:0x1408255a1",
+   "notes": "V8009 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

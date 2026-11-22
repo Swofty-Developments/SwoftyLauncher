@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EadpSDK_SubscriptionsWebApiReturned",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fdc380",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fdc380.c;pat:log-channel-EadpSDK;xref:0x143fdbb17",
+  "notes": "Response callback lea'd at 0x143fdbb17 in 0x143fdb010. Parses JSON 'subscriptions' (type/level/subscriptionGroup/state/acquisition/detail), logs 'Found subscription: ...', 'Subscriptions web api returned %u subscriptions for user' or '... returned no subscriptions for user' (EadpSDK). (lane owner review requested) Better name: Game_EadpSDK_OnSubscriptionsWebApiResponse (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_sdk_subscriptions_web_api_returned",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 C5 F8 29 B4 24 C0 01 00 00 39 91 50 01 00 00",
+  "match": "0x143fdc380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fdc380",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpSDK_SubscriptionsWebApiReturned"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fdc380",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fdc380.c;xref:0x143fdbb19",
+   "notes": "V6335 partial: better name Game_EadpSDK_ParseSubscriptionsResponse; 8 KB http response handler parsing subscriptions json; no-subscriptions is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143fdc380",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fdc380.c;xref:0x143fdbb19",
+   "notes": "V7069 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_DestroyGoalList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410f6f20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Sponsors_DestroyGoalList(void **list)",
+  "evidence": "decomp:re/decomp/1410f6f20.c;xref:0x1410f6d60,0x1410f8e26,0x1410f8fbf,0x14111600f,0x14111693f",
+  "notes": "Destructor of the sponsor definition part: releases shared ptr +0x120, string +0xe8, decal entries +0xb8..+0xc0 (vf+0 per 0x10 entry), loyalty levels +0x98..+0xa0 (0x78 stride, reward lists +0x50), goal vectors +0x78/+0x58/+0x38 (dtor 0x1410f7230), string +0x10. Base dtor called at the end of 0x1410f6bf0; also used by loader 0x141114160 and save reader 0x1410f85c0. (lane owner review requested) Better name: Career_SponsorDefinition_Dtor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.sponsors_destroy_goal_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 48 8B B9 20 01 00 00",
+  "match": "0x1410f6f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410f6f20",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_DestroyGoalList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1410f6f20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1410f6f20.c;xref:0x1410f6d5f",
+   "notes": "V9650 Destructor of one 0x160-byte goal-like object (refcount +0x120, strings, object vector +0xb8) with its own inline cleanup, not a list container calling the reset helper."
+  }
+ ],
+ "proofs": []
+}

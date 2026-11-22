@@ -1,0 +1,53 @@
+# The lines of the guards written as SiteGuard or MidHookSpec specs from the start, pinned by hand; guard_lines_test
+# renders each guard's lines from its spec and compares them with these. extract.py writes expected.txt and leaves this
+# file alone.
+#
+# A SiteGuard, under its core set's name:
+#
+#   [ers_mode]
+#   off [ers] mode guard off (SWOFTY_ERS_MODE_GUARD=%s)
+#   unresolved [ers] mode guard off: needs site_Car_ErsGearModifierLoad, which this build does not resolve
+#   armed [ers] mode guard armed: a car whose ERS mode is out of range gets its ERS reset to Medium instead of faulting
+#   not_installed [ers] mode guard did not install (see the [core] lines)
+#
+# with part_unresolved, part_armed and part_not_installed lines for each part, in order. A MidHookSpec guard, under
+# its hook guard's name:
+#
+#   [hook teammate_pairs]
+#   off [strategy] teammate pairs guard off (SWOFTY_TEAMMATE_PAIRS_GUARD=%s)
+#   failed [strategy] teammate pairs guard: the hook failed: %s
+#   armed [strategy] teammate pairs guard armed: a team with more than two cars pairs its first two for strategy instead of throwing
+
+[hook ai_ers]
+off [ai] ers corner guard off (SWOFTY_AI_ERS_GUARD=%s)
+failed [ai] ers corner guard: the hook failed: %s
+armed [ai] ers corner guard armed: a car with no corner marker for its next corner keeps its ERS decision without that corner's bonus
+
+[hook calendar_track]
+off [career] calendar track guard off (SWOFTY_CALENDAR_TRACK_GUARD=%s)
+failed [career] calendar track guard: the hook failed: %s
+armed [career] calendar track guard armed: a season round on a track the game has no track data for is left out of the calendar instead of faulting
+
+[tyre_curve]
+off [car] tyre curve guard off (SWOFTY_TYRE_CURVE_GUARD=%s)
+unresolved [car] tyre curve guard off: needs Car_Tyre_CurveMap_FindBracketA and Car_Tyre_CurveMap_FindBracketB, which this build does not resolve
+armed [car] tyre curve guard armed: a tyre curve lookup with a key that is not a number uses the curve's first point instead of faulting
+not_installed [car] tyre curve guard did not install (see the [core] lines)
+
+[anim_clip_time]
+off [anim] clip time guard off (SWOFTY_ANIM_CLIP_TIME_GUARD=%s)
+unresolved [anim] clip time guard off: needs Ne_AnimClipPlayer_Sample_Thunk, which this build does not resolve
+armed [anim] clip time guard armed: an animation clip sampled at a time that is not a finite number shows its first frame instead of faulting
+not_installed [anim] clip time guard did not install (see the [core] lines)
+
+[marshal_lights]
+off [session] marshal lights guard off (SWOFTY_MARSHAL_LIGHTS_GUARD=%s)
+unresolved [session] marshal lights guard off: needs site_Sess_MarshalLights_PrevLightLoad and site_Sess_MarshalLights_WalkDone, which this build does not resolve
+armed [session] marshal lights guard armed: a track whose first marshal light is in no marshal light zone ends the zone walk at the start of the light list instead of faulting
+not_installed [session] marshal lights guard did not install (see the [core] lines)
+
+[anim_packet_time]
+off [anim] packet time guard off (SWOFTY_ANIM_PACKET_TIME_GUARD=%s)
+unresolved [anim] packet time guard off: needs Ne_AnimPacketB1_Sample, Ne_AnimPacketB4_Sample, Ne_AnimPacketL1_Sample, Ne_AnimPacketL3_SampleTrack, Ne_AnimPacketL4_SampleTrack and Ne_AnimPacketS4_SampleTrack, which this build does not resolve
+armed [anim] packet time guard armed: an animation packet sampled at a time that is not a finite number shows its first key instead of faulting
+not_installed [anim] packet time guard did not install (see the [core] lines)

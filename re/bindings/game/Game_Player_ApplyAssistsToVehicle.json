@@ -1,0 +1,101 @@
+{
+ "schema": 1,
+ "name": "Game_Player_ApplyAssistsToVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142424060",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Player_ApplyAssistsToVehicle(void *assist_mgr, void *assist_settings, uint32_t local_player)",
+  "evidence": "xref:0x142422c89;doc:re/db/subsystems/game.md;decomp:re/decomp/142424060.c;xref:0x142422c89,0x14ca05349",
+  "notes": "Per local player (human car [mgr+0xc8]+p*0x50+0x4c): writes ctrlSys g 0x146096578 record +0xc0+veh*0x14: +0xd4 = a+0x78, +0xd5 = a+0x80, +0xd6 ERS auto = a+0x68 (0x142424506), +0xd7 FUEL AUTO = (a+0x84 != 0) = assist int[0x21] auto_fuel_mode (cmp 0x142424606, setne 0x142424611), each sent as a network message (0x145884f00 for fuel). FuelAuto set -> player mix ignored, MFD Up/Down blocked, fuel row not editable. Player-only unlock: 0x142424606 80 be 84 00 00 00 00 -> 39 c0 90 90 90 90 90 or clear +0x17 after this call (fuel-mix, fuel-verify claim 1) | findings from PR #474 by vogtmarcel07-cloud; independent check 2026-10-28 by fuel-verify: agree | TC (era-tc): assist int a[6] traction_control (rdx+0x18, byte-clamped to 2) -> ctrlSys record float +0xcc+veh*0x14 (record base = [mgr+0xc8]+p*0x50+0x58, veh = byte [mgr+0xc8]+p*0x50+0x4c, written only when veh < 0x1a): 0 Off -> 0.0 (0x142424403), 1 Medium -> clamp01(f32 [mgr+0xc8]+p*0x50+0x90) (0x14242444b), 2 Full -> 1.0 (0x1424243e2); the value is also kept at [mgr+0xc8]+p*0x50+0x8c (0x142424459). No network message for TC (unlike ERS/DRS/fuel). ABS a[5] (+0x14) -> record +0xc8 = 1.0/0.0 and pm+p*0x50+0x88. Callers: Game_AssistManager_BuildAssistSettings 0x142422c89 and the controller-change re-apply 0x14ca05349 (Game_DifficultySystem_ReapplyAssists_Body). Hook point for a per-era TC level: post-hook this function and rewrite record +0xcc (it is the only writer found). (engine-re era-tc round 2026-11-18, static, build d873a1c8) raised by engine-re with --force 2026-11-18 at user request (lane owner review requested) | CORRECTION(V11800): in Medium the +0x8c copy at 0x142424459 is the raw f32 +0x90 (reloaded at 0x142424455, not clamped), and the +0x8c store runs even when veh > 0x19."
+ },
+ "signature": {
+  "id": "game.player_apply_assists_to_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 44 89 C3 48 89 D6 48 89 CF 48",
+  "match": "0x142424060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142424060",
+  "kind": "func_start",
+  "names": [
+   "Game_Player_ApplyAssistsToVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "fuel-verify",
+   "kind": "func",
+   "item": "Game_Player_ApplyAssistsToVehicle",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142424606,0x142424611",
+   "notes": "V1655 recorded by engine-re from fuel-verify (blind capstone): cmp byte [rsi+0x84],0; setne byte [rax+rcx*4+0xd7] inside 0x142424060"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Game_Player_ApplyAssistsToVehicle",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142424117,0x14242418e",
+   "notes": "V1661 aaa-verify: braking assist 0 / 0.61 / 0.91 / 1.0 -> record +0xd0"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "fuel-verify",
+   "kind": "func",
+   "item": "Game_Player_ApplyAssistsToVehicle",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142424606,0x142424611",
+   "notes": "V3896 recorded by engine-re from fuel-verify (blind capstone): cmp byte [rsi+0x84],0; setne byte [rax+rcx*4+0xd7] inside 0x142424060"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Game_Player_ApplyAssistsToVehicle",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142424117,0x14242418e",
+   "notes": "V3928 aaa-verify: braking assist 0 / 0.61 / 0.91 / 1.0 -> record +0xd0"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142424060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142424060.c;xref:0x142422c89",
+   "notes": "V5271 Verified cmp/setne offsets +0x78->0xd4, +0x80->0xd5, +0x68->0xd6, +0x84->0xd7 (stride 0x14), fuel msg 0x145884f00, patch bytes valid"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "era-tc-verify",
+   "kind": "func",
+   "item": "0x142424060",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142424060-0x14242469c;xref:0x142422c89 (call from 0x142422120), 0x14ca05349",
+   "notes": "V11800 Mode = byte [rdx+0x18] clamped to 2 (cmovb); rec/veh offsets, veh<=0x19 guard and stores at 0x1424243e2 (1.0), 0x142424403 (0.0), 0x14242444b (clamp01 of +0x90, consts 1.0 at 0x145381184/0x145382510) confirmed. Correction: for mode 1 the value stored to +0x8c at 0x142424459 is the RAW f32 [+0x90] reloaded at 0x142424455, not the clamped one; +0x8c store also runs when veh>0x19. No call between 0x142424386 and 0x142424467 (calls 0x1434db8c0/0x1434dbaa0 follow after the block)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailTask_StateAbortingRTTTaskCompleteId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e3a7f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e3a7f0.c;pat:log-channel-THUMBNAIL_TASK;xref:0x14f346255,0x14f3462c6",
+  "notes": "CS param_1[0xd]. Abort flag +0x1c0: 'Aborting on RTT Task Complete', state!=7 marks subtasks + 0x142e3a4d0, vt+0x60, state=10 Cancelled (names 0x1457f1298). Else stores RTT result param_2 under FNV hash of entry name in map param_1[0x22..0x2a], pops stack +0x168/+0x170, next via vt+0x58; stack empty: Dynamic -> state 8, else 'Thumbnail Task Complete, cleaning up.' state 9. (lane owner review requested) Better name: Game_ThumbnailTask_OnRttTaskComplete (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.thumbnail_task_state_aborting_rtt_task_complete_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 D7 48 89 CE 48 8B 49 68",
+  "match": "0x142e3a7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e3a7f0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailTask_StateAbortingRTTTaskCompleteId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e3a7f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e3a7f0.c;xref:0x14f346257",
+   "notes": "V5485 442-line RTT task complete handler (Single/Dynamic modes, hash map, cleanup); better Game_ThumbnailTask_OnRTTTaskComplete"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142e3a7f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e3a7f0.c",
+   "notes": "V6903 442 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

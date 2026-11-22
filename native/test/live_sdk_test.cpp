@@ -1,17 +1,109 @@
 #include <swofty/fake_live.hpp>
 
 #include <cstdio>
+#include <cstddef>
 
 static int failures;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 namespace live = swofty::live;
+
+static int image_getter_calls;
+static const SwoftyLiveImages test_images = {1, nullptr, nullptr, nullptr, nullptr};
+static const SwoftyLiveImages *image_getter()
+{
+    ++image_getter_calls;
+    return &test_images;
+}
+
+static void image_table_versions()
+{
+    SwoftyLive table{};
+    table.images = image_getter;
+    for (uint32_t version : {1u, 2u, 3u}) {
+        table.version = version;
+        live::detail::set_table(&table);
+        CHECK(!live::images() && image_getter_calls == 0);
+    }
+    table.version = 4;
+    CHECK(live::images() == &test_images && image_getter_calls == 1);
+    table.images = nullptr;
+    CHECK(!live::images() && image_getter_calls == 1);
+    live::detail::set_table(nullptr);
+}
+
+static void tyre_table_versions()
+{
+    swofty::fake::Live fake;
+    auto &car = fake.add_car(0, 1);
+    car.have |= SWOFTY_LIVE_HAVE_TYRE;
+    fake.set_tyre_icon_texture(0, "#overrides.tyre_allocation.key_icons.Soft");
+    fake.install();
+    for (uint32_t version : {1u, 2u, 3u, 4u}) {
+        fake.set_table_version(version);
+        CHECK(!live::tyre_icon_texture(0));
+    }
+    fake.set_table_version(5);
+    CHECK(live::tyre_icon_texture(0) == std::string("#overrides.tyre_allocation.key_icons.Soft"));
+    CHECK(!live::tyre_icon_texture(1) && !live::tyre_icon_texture(40));
+    car.have &= ~SWOFTY_LIVE_HAVE_TYRE;
+    CHECK(!live::tyre_icon_texture(0));
+    // A real v4 allocation ends at images: the wrapper must not read its tail.
+    struct V4 {
+        uint32_t version;
+        unsigned char tail[offsetof(SwoftyLive, tyre_icon_texture) - sizeof(uint32_t)];
+    } old{};
+    old.version = 4;
+    live::detail::set_table(reinterpret_cast<const SwoftyLive *>(&old));
+    CHECK(!live::tyre_icon_texture(0));
+    live::detail::set_table(nullptr);
+}
+
+static void car_detail_versions()
+{
+    swofty::fake::Live fake;
+    auto &car = fake.add_car(3, 1);
+    car.have |= SWOFTY_LIVE_HAVE_GRID | SWOFTY_LIVE_HAVE_LAP_TIMES | SWOFTY_LIVE_HAVE_TYRE_WEAR;
+    auto &d = fake.detail(3);
+    d.grid_position = 7;
+    d.last_lap_ms = 91250;
+    d.best_lap_ms = 90500;
+    d.best_lap_number = 4;
+    d.tyre_wear[2] = 12.5f;
+    fake.install();
+    for (uint32_t version : {1u, 2u, 3u, 4u, 5u}) {
+        fake.set_table_version(version);
+        CHECK(!live::car_detail(3));
+    }
+    fake.set_table_version(6);
+    auto got = live::car_detail(3);
+    CHECK(got && got->vehicle == 3 && got->version == SWOFTY_LIVE_VERSION && got->size == sizeof(SwoftyLiveCarDetail));
+    CHECK(got && live::grid_position(*got) == 7 && live::best_lap_ms(*got) == 90500u && live::last_lap_ms(*got) == 91250u);
+    CHECK(got && got->best_lap_number == 4 && got->tyre_wear[2] == 12.5f && live::has(*got, SWOFTY_LIVE_HAVE_TYRE_WEAR));
+    CHECK(!live::car_detail(4) && !live::car_detail(40));
+    car.have &= ~(SWOFTY_LIVE_HAVE_GRID | SWOFTY_LIVE_HAVE_LAP_TIMES);
+    got = live::car_detail(3);
+    CHECK(got && !live::grid_position(*got) && !live::best_lap_ms(*got) && !live::last_lap_ms(*got));
+    car.have |= SWOFTY_LIVE_HAVE_LAP_TIMES;
+    d.best_lap_ms = 0;
+    got = live::car_detail(3);
+    CHECK(got && !live::best_lap_ms(*got) && live::last_lap_ms(*got) == 91250u);
+    // A real v5 allocation ends at tyre_icon_texture: the wrapper must not read its tail.
+    struct V5 {
+        uint32_t version;
+        unsigned char tail[offsetof(SwoftyLive, car_detail) - sizeof(uint32_t)];
+    } old{};
+    old.version = 5;
+    live::detail::set_table(reinterpret_cast<const SwoftyLive *>(&old));
+    CHECK(!live::car_detail(3));
+    live::detail::set_table(nullptr);
+}
 
 static SwoftyLiveTurn turn(int number, float apex)
 {
@@ -27,6 +119,9 @@ static SwoftyLiveTurn turn(int number, float apex)
 
 int main()
 {
+    image_table_versions();
+    tyre_table_versions();
+    car_detail_versions();
     CHECK(!live::available() && !live::session() && !live::car(0) && !live::subject() && live::order().ids.empty());
 
     {
@@ -45,6 +140,7 @@ int main()
         fake.set_player(0);
         fake.set_turns({turn(1, 500.f), turn(2, 1200.f)});
         fake.set_badge(1, "ferrari_2026");
+        fake.set_driver_name(1, "Charles Leclerc");
         fake.install();
         (void)b;
 
@@ -61,6 +157,16 @@ int main()
         CHECK(t && t->number == 1 && t->distance_ahead_m == 100.f);
         CHECK(live::track_turns().size() == 2);
         CHECK(live::team_badge(1) == std::string("ferrari_2026") && !live::team_badge(0));
+        CHECK(live::driver_name(1) == std::string("Charles Leclerc") && !live::driver_name(0));
+        CHECK(live::team_badge_texture(1) == std::string("#overrides.osd.timing_tower.team_badges_hud.ferrari_2026"));
+        fake.set_badge_texture(2, "eaid://ui_package/art/textures/render_badge_ePreLoaded 7");
+        CHECK(live::team_badge_texture(2) == std::string("eaid://ui_package/art/textures/render_badge_ePreLoaded 7"));
+        CHECK(!live::team_badge(2) && !live::team_badge_texture(0));
+        fake.set_table_version(2);
+        CHECK(!live::team_badge_texture(1) && live::driver_name(1) && live::team_badge(1));
+        fake.set_table_version(1);
+        CHECK(!live::driver_name(1) && !live::team_badge_texture(1) && live::team_badge(1));
+        fake.set_table_version(SWOFTY_LIVE_VERSION);
         auto o = live::order();
         CHECK(o.ids.size() == 3 && o.player_rank == 1 && o.ahead(0) && o.ahead(0)->vehicle == 1);
         CHECK(o.ahead(1) && o.ahead(1)->vehicle == 0 && !o.behind(2) && o.behind(1)->vehicle == 0);

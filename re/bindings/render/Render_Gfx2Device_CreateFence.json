@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_CreateFence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a076f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a076f0.c;xref:0x142bd01d7,0x14379c6d1,0x143b5a999",
+  "notes": "Under device CS takes the next slot of the fence ring device+0x2630 (16-byte {fence, value}, index +0x2648, wraps to >= 1), ++ +0x3194, flushes queued barriers (0x1439d3e20), names the fence (default Unnamed fence), takes serial 0x14618c160+1 as value (queue+0x140, slot+8) and calls ID3D12CommandQueue::Signal (vcall +0x70, rdx fence, r8 value) on queue+0x30; returns {index, value}. Callers 0x142bcfc30, 0x14379c250, Ne_Gfx2Renderer_FrameStartEnd 0x143b5a830. (lane owner review requested) Better name: Render_Gfx2CommandQueue_SignalFence (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_device_create_fence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 4C 89 C3 48 89 D6 48 89 CF",
+  "match": "0x143a076f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a076f0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_CreateFence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a076f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a076f0.c;xref:0x142bd01d7",
+   "notes": "V7816 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

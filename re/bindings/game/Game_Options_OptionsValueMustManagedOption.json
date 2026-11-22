@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Options_OptionsValueMustManagedOption",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142accfc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142accfc0.c;pat:log-channel-OPTIONS;xref:0x142ace393,0x142acffb3",
+  "notes": "(system, jsonPath, contexts): reads '<path>.option' array; per option name not yet in map +0x270 asks context handlers (vcall +0xc0) or creates an option (0x142ab7170, vtable 0x1457c5160, 0x1c0 bytes), masks with +0x400..+0x438 / +0x518 sets, logs 'unhandled in any context' and 'Options of value must be managed', inserts into hash map +0x288 and list +0x2c0; then recurses over '<path>.options_folder' entries ('%s.%s', self call 0x142ace393). Old name was a log fragment. (lane owner review requested) Better name: Game_OptionsSystem_LoadOptionsFolder (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.options_options_value_must_managed_option",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 07 00 00 C5 F8 29 B4 24 C0 07 00 00 4D 89 C6 48 89 D6",
+  "match": "0x142accfc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142accfc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Options_OptionsValueMustManagedOption"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142accfc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142accfc0.c;xref:0x142ace393",
+   "notes": "V5009 5KB scope OptionsSystem.AddDummyUnhandledOptions: registers/validates options, logs unhandled-in-any-context and must-be-managed; better Game_OptionsSystem_AddDummyUnhandledOptions"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142accfc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142accfc0.c;xref:0x142ace393",
+   "notes": "V6882 790 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

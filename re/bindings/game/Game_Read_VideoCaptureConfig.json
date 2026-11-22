@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_VideoCaptureConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ad22a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ad22a0.c;pat:log-channel--;xref:0x14566a200",
+  "notes": "Allocator EGO_APPLICATION->+0x30; VideoCapture.enabled->+0x4a0 (off: return 0). Debug camera +0xf0: DebugCamera.speedMultiplier, quickSpeedMultiplier, enableDpadCommands, fov (-> +0x358), invertVerticalLook; VideoCapture rotation/translation speed, fov, near, far min/max -> +0x4c0..+0x4e4; registers debugCamera via 0x143b535d0. Returns 0 or 0xe. (lane owner review requested) Better name: Game_VideoCapture_InitDebugCamera (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_video_capture_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 CE 48 8B 0D",
+  "match": "0x140ad22a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ad22a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_VideoCaptureConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ad22a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ad22a0.c",
+   "notes": "V4410 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

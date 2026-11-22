@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnGameModeSyncReceived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f0cb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430f0cb0.c;pat:log-message-method;xref:0x140996f4c",
+  "notes": "Caller 0x140996e20. Logs 'onGameModeSyncReceived: gameModeStatId, matchingContext', calls 0x1407d07a0, then tail-jumps Game_NetworkSubsystem_SetupGameSession 0x143065250 (0x1430f0e1f); the decomp prints that body too. (lane owner review requested) Better name: Game_NetworkSubsystem_OnGameModeSyncReceived (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_on_game_mode_sync_received",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 44 89 CE 44 89 C3",
+  "match": "0x1430f0cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f0cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnGameModeSyncReceived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f0cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f0cb0.c;xref:0x140996f4c",
+   "notes": "V5389 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

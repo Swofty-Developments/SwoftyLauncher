@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_DevSessionDataContractDriversConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141129850",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141129850.c;pat:log-channel--;xref:0x141127869,0x1411278a0",
+  "notes": "Read in full. Callers in Sess_DevSession_Apply 0x141125e80. Reads DevSessionDataContract.Drivers.%sDriver/%sTeam/%sVehicle/%sCarNumber (team via 'entrants.teams' tree -> stat_id). Driver, team and vehicle all set: appends a 0x88-byte entrant record (vtable 0x145612e20, grow x1.5) to param_2; else unless +0x351, DevSessionDataContract.Entrants.%sEntrant picks a matching entrant index and overwrites its identity block. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_dev_session_data_contract_drivers_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 07 00 00 4D 89 C6",
+  "match": "0x141129850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141129850",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_DevSessionDataContractDriversConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141129850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141129850.c;xref:0x141127869",
+   "notes": "V4604 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

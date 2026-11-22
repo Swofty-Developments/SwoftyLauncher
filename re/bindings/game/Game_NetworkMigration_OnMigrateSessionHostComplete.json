@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMigration_OnMigrateSessionHostComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144069f10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144069f10.c;pat:log-message-method;xref:0x144069d83",
+  "notes": "Logs '%s: migrationSuccess: %d, m_migrationHostTask: %d' with onMigrateSessionHostComplete (NETWORK-SESSION); on failure 'migration failed. Aborting', else 'save the migration data, start migration host task' and tail jumps to 0x144068e20 (NeNetSystemClassicMatchmaking::notifyPeersMigrationResult, inlined in the decomp). Callback stored by lea 0x144069d83 in 0x144069ce0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_migration_on_migrate_session_host_complete",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x144069f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144069f10",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMigration_OnMigrateSessionHostComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144069f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144069f10.c;xref:0x144069d85",
+   "notes": "V6493 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

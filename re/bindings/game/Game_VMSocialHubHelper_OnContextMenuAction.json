@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VMSocialHubHelper_OnContextMenuAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418522f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1418522f0.c;pat:log-message-cxx;xref:0x141851fe4",
+  "notes": "Read in full (helper, u8 action): logs 'onContextMenuAction (%s)' (names 0x145719a98); takes the selected entry (helper[0x18] vcall +0x20) and its user id (entry+0x278 xor +0x270); unless helper[0x21], a switch over actions 0..10 runs platform handlers via 0x141853260 (0x1406d2210, 0x1406d2b10, 0x1406d2d10, 0x1406d2f30, 0x1406d2470, 0x1406d2700), sub view (4), invite join (9); then callback helper[0x33](helper[0x34], action, entry+0x258, name). lea 0x141851fe4 in 0x141851ba0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vm_social_hub_helper_on_context_menu_action",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 70 B8 2D 00 00 00",
+  "match": "0x1418522f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418522f0",
+  "kind": "func_start",
+  "names": [
+   "Game_VMSocialHubHelper_OnContextMenuAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1418522f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418522f0.c;xref:0x141851fe6",
+   "notes": "V4907 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

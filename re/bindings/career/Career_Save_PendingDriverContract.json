@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Save_PendingDriverContract",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c5ab20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Save_PendingDriverContract(void *contract, void *save_node)",
+  "evidence": "decomp:re/decomp/140c5ab20.c;xref:0x145682c50",
+  "notes": "Save writer (vtable ptr 0x145682c50) of the automatic contracts state: idle_days_remaining u16 +0x292, ramping_approach_chance +0x294, num_ai_driver_switches +0x3e4, team_handlers (vector +0x4f0..+0x4f8, 0xc0 stride: team_stat_id packed key, days_until_contract_processed +0x20, pending_driver_contract packed key +4/+6 if byte +8), base_cap_ai_signing_icon +0x458. (lane owner review requested) Better name: Career_AutoContracts_WriteSaveData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.save_pending_driver_contract",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D6 48 89 CB 48 C7 44 24 30 00 00 00 00",
+  "match": "0x140c5ab20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c5ab20",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_PendingDriverContract"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c5ab20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c5ab20.c;str:\"pending_driver_contract\"",
+   "notes": "V9502 Writer for pending_driver_contract with offsets +0x292,+0x294,+0x3e4 and vector +0x4f0..+0x4f8 (plus team_handlers etc. strings); +0x458 does not appear in this function."
+  }
+ ],
+ "proofs": []
+}

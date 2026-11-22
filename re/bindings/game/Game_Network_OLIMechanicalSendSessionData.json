@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OLIMechanicalSendSessionData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143254b60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143254b60.c;pat:log-channel-NETWORK;xref:0x1432550ff,0x143255191",
+  "notes": "Tail jumps from OnRequestSessionData 0x143254e50 and 0x143255110. (this, target): logs 'OLI/Mechanical: sendSessionData(%02d)'; for each entry of the hash set +0xf8..+0x108 with byte +0x80 sends message 0x145836530 (0x14402e500, channel 2 or 1 by target) and for vehicles < 0x1b with state 2 sends 0x145843a50 records (0x1434c4280). (lane owner review requested) Better name: Game_Network_MechanicalSendSessionData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_oli_mechanical_send_session_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143254b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143254b60",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OLIMechanicalSendSessionData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143254b60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143254b60.c;xref:0x143255100",
+   "notes": "V5768 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

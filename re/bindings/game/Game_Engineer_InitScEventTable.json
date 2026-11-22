@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Engineer_InitScEventTable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142b77fa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142b77fa0.c;doc:re/db/subsystems/game.md;xref:0x145d31cb0",
+  "notes": "Merged dynamic-initializer (atexit regs via FUN_1449e071c). Builds std::map at 0x146076bd8 from 0x60-byte stack {name,handler} entries (TriggerBeginGameplay..TriggerOnDevelopmentWithoutFail, e.g. FUN_142a371a0); SC/VSC notif records at 0x146077878.. (lng_notif_main_sc_deployed, SC_Deploy, VSC_Returned); FUN_143a860a0 action handles 0x146078c90-0x146078d90 (MFD Button..); interns vol_* names at 0x1460793d8. (lane owner review requested) Better name: Game_StaticInit_TriggerMap_ScNotif_MfdInputs (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.engineer_init_sc_event_table",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 B8 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29",
+  "match": "0x142b77fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142b77fa0",
+  "kind": "func_start",
+  "names": [
+   "Game_Engineer_InitScEventTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142b77fa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142b77fa0.c",
+   "notes": "V4041 vtable/indirect (slot 0x145d31cb0 in static-init list). It is a ~1840-line mega static initializer (55 atexit registrations, system/module name tables, input actions, HUD modules) not just an SC table; the SC part exists (globals near 0x146077878: lng_notification_safety_car_deployed, SC_Deploy, SC_InThisLap, SC_Returned, VSC_Deploy, VSC_Returned) but name is far too narrow. Better: Game_StaticInit_NamedTables (includes SC event table). speechEvents.bin claim not checkable"
+  }
+ ],
+ "proofs": []
+}

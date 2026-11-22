@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Get_FeatureFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413ca0d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1413ca0d0.c;doc:research/exe.md#3.1;xref:0x140152e45,0x140217e98,0x140217f74",
+  "notes": "Thunk (jmp) to .data1 body 0x14aaaef80: once (guard 0x146064618) gets the current content set name (Sess_Get_CurrentContentSetName 0x1413e1cd0), finds its row in gamedb table 'content_sets' (Gdb_Find_RowByLabel 0x1445a2bd0) and loads its feature mask (Game_Features_LoadContentSetMask 0x1413ed470) into 0x146064620; returns &0x146064620 (16 bytes). call sites. Better name: Ne_Get_ContentSetFeatureMask (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.get_feature_flags",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 5D DE FD A3 48 0F 80 3A DE A5 FD",
+  "match": "0x1413ca0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413ca0d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Get_FeatureFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_Get_FeatureFlags",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1413ca0d0.c;xref:0x140152e45",
+   "notes": "V1987 thunk to FUN_14aaaef80; lazy-inits static (DAT_146064618 flag) from 'content_sets' after log 'Loading feature list - Content set'; returns &DAT_146064620 (16-byte struct pointer), not words; rsi use unchecked"
+  }
+ ],
+ "proofs": []
+}

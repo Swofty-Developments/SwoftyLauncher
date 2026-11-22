@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_CleanUpRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b4440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432b4440.c;pat:log-message-method;xref:0x1432c256a,0x1432c25b8,0x1432c2f31",
+  "notes": "F1OS task manager cleanUpRequest: logs '%s(%d): Cleaning up task %s : method %s .' (method name 'cleanUpRequest'), 'Aborted OnlineServiceRequest %d', 'The task to clean was the current task in the Task Manager'; lookup via 0x143294550. Callers 0x1432c2420 (0x1432c256a, 0x1432c25b8), 0x1432c2980 (0x1432c2f31). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1os_clean_up_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 44 89 C5 48 89 D7",
+  "match": "0x1432b4440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b4440",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_CleanUpRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432b4440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432b4440.c;xref:0x1432c256b",
+   "notes": "V5883 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

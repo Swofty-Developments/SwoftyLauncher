@@ -1,0 +1,9 @@
+third_party/**
+include/swofty/game.hpp
+include/swofty/game/**
+src/core/hud/hud_font_atlas.hpp
+src/core/hud/hud_font_data.hpp
+src/core/live/live_corners_data.hpp
+src/core/apply/content/row_keys.inc
+src/core/apply/tracks/track_keys.inc
+src/core/apply/tracks/venues.inc

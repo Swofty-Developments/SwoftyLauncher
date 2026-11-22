@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SunOverride_Activate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409a1a10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1409a1a10.c;pat:log-channel-SunOverrideComponent;xref:0x145663148",
+  "notes": "activate (vt cell 0x145663148): +0xf90=1; registers sun override data 0x1438c6ff0 -> index +0xf68 (<0x40, active check 0x145f96d2c/0x145f96d28, table 0x146106620); +0xf94 from weather data; maps weather preset name +0xf28 (0x14460e6d0) to a sun preset (0-4 ->3, 5->4, 6->5, 7-10 warn), forces weather state 9 and applies via 0x14461bb70. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.sun_override_activate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CE 80 3D ?? ?? ?? ?? 01 75 62 B8 E3 00 00 00",
+  "match": "0x1409a1a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409a1a10",
+  "kind": "func_start",
+  "names": [
+   "Game_SunOverride_Activate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409a1a10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409a1a10.c",
+   "notes": "V4363 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

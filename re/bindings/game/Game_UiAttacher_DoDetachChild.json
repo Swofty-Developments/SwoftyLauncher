@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UiAttacher_DoDetachChild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144218690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144218690.c;pat:log-message-method;xref:0x14421879a,0x144218842",
+  "notes": "Read in full: if child this+0x50 set, logs 'doDetachChild' (UI_ATTACHER), calls child vcalls +0xc0(0,0) and +0xd0(0,0), clears +0x50/+0x5c and bit0 of +0x58, then notifies via 0x1442468d0 on [g 0x146ca5500 vcall +0x48]+0x230 with key 0x146ca22dc. Callers 0x144218790 (0x14421879a) and 0x144218810 (0x144218842). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ui_attacher_do_detach_child",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8B 49 50",
+  "match": "0x144218690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144218690",
+  "kind": "func_start",
+  "names": [
+   "Game_UiAttacher_DoDetachChild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144218690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144218690.c;xref:0x14421879a",
+   "notes": "V6570 size=248; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

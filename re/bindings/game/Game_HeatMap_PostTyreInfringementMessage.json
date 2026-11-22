@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HeatMap_PostTyreInfringementMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a502d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a502d0.c;xref:0x14356d451",
+  "notes": "(sys, infr, playerIdx). Key penalty_tyre_regulations or safety_rating_tyre_regulations (+0x58: +0x388/+1000), template via 0x142a4cc50, built with 0x142a4eef0 if missing; fills [TYRE_0]/[TYRE_1] from infr tyre list (infr[0xf] entries, stride 0x18) and sets 'infringement'. Caller 0x14356bb00. (lane owner review requested) Better name: Game_Hud_PostTyreRegulationsInfringement (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.heat_map_post_tyre_infringement_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 48 83 7A 78 00",
+  "match": "0x142a502d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a502d0",
+  "kind": "func_start",
+  "names": [
+   "Game_HeatMap_PostTyreInfringementMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142a502d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a502d0.c;xref:0x14356d451",
+   "notes": "V3411 keys penalty_tyre_regulations/safety_rating_tyre_regulations chosen by online flags (+0x58)->+0x388/+0x3e8, [TYRE_0]/[TYRE_1] placeholders, infringement/message strings; caller Sess_Infringement_ProcessQueue"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneParams_SetupSecondaryDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d83150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d83150.c;xref:0x142d82c00",
+  "notes": "(owner, params, driverArg, char* mode): calls 0x14022d670(params, driverArg, 0); params+0x2be = (*mode == 5); if [[[owner+0xca0]+0x88]+0x260]+0xe35 is set takes the stat id at +0x50 of 0x1400fa760(g 0x146044988,1) and runs the inlined setupSecondaryDriverDataFromDriverStatId (same body as 0x14022fe10). Caller 0x142d81270. (lane owner review requested) Better name: Game_CutsceneParams_SetupWithSecondaryDriver (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.cutscene_params_setup_secondary_driver",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 CF 48 89 D6 48 89 CB",
+  "match": "0x142d83150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d83150",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneParams_SetupSecondaryDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d83150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d83150.c;xref:0x142d82c00",
+   "notes": "V3706 CUTSCENE_PARAMS log 'setupSecondaryDriverDataFromDriverStatId(driverStatId %s) [%s]' built with '%s %u' via 0x1401009f0, fills secondary driver data (+0x46, +0x16c) from stat id; callers Sess_PreRaceGridState_OnEnter (+Career_TeamHqFacilities_CameraCycleStep)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamVM_HandleSponsorCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422693e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void **cmd",
+  "evidence": "decomp:re/decomp/1422693e0.c;xref:0x145777060",
+  "notes": "Vtable slot (cell 0x145777060), command hash dispatch with mode byte [this+0x2b28]. Select 0x2b0357a writes the choice into the setup record 0x14606d340 (mode1 [+0x2b34], mode3 driver_1 [+0x2b2a], mode4 driver_2 [+0x2b2e]; mode2 writes [+0x2b32] and calls 0x142270160([this+0x2b10])), fires route; 0x493fe92b back; 0x70d928ee stores focused stat_id; then 0x1422703e0 -> [this+0x2b38]. (lane owner review requested) Better name: Career_MyTeamSetupVM_HandleCommand (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.my_team_vm_handle_sponsor_command",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 8B 02",
+  "match": "0x1422693e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422693e0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamVM_HandleSponsorCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422693e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422693e0.c;xref:0x145777060",
+   "notes": "V10065 Command handler covering sponsor, engine, driver_1/driver_2 and back, not only sponsor; calls RefreshSponsorSelection."
+  }
+ ],
+ "proofs": []
+}

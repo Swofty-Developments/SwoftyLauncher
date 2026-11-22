@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RenderDriverNameViewModel_PushBackResourceGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d7cff0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d7cff0.c;xref:0x141d7c20f,0x141d7ca8e,0x141d7cbbe",
+  "notes": "vector<DriverProperties 0xc0>::emplace_back(vec, parent): when size == capacity [3] grows 1.5x via allocator vcall +0x18, move-relinks the six 0x20-byte handles of each element, constructs the new one with 0x141d7b5f0, destroys old handles (0x1442b3d70), frees the old buffer; else constructs at end. Callers CreateDriverRoot 0x141d7c20f,0x141d7ca8e,0x141d7cbbe. (lane owner review requested) Better name: Game_RenderDriverNameViewModel_PushBackDriverProperties (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.render_driver_name_view_model_build_nodes",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 BC 24 80 00 00 00 48 8B 84 24 88 00 00 00 48 85 C0 74 46 48 8B",
+  "match": "0x141d7c20f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141d7cff0",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderDriverNameViewModel_PushBackResourceGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x141d7cff0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141d7cff0.c;xref:0x141d7c20f",
+   "notes": "V8092 Better name Game_RenderDriverNameViewModel_PushBackResourceGroup: vector push_back with 1.5x growth of 0xc0-byte elements of six intrusive resource handles (vtable 145612e48), not a node builder"
+  }
+ ],
+ "proofs": []
+}

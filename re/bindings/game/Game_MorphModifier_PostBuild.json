@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MorphModifier_PostBuild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401c5fc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401c5fc0.c;pat:log-message-cxx;xref:0x1455e32a8,0x147343d58",
+  "notes": "MorphModifier::postBuild (cell 0x1455e32a8; also called at 0x147343d58). Under the set lock finds the 'neutral' target, lazily builds targets (Game_MorphModifier_BuildTargets, 0x30-byte objects), sets base layer 'base' (0x143a373c0) and the other layers (0x143a37510); then caches channels 'Look_Left'/'Look_Right'/'Look_L_Left'/'Look_L_Right'/'Look_R_Left'/'Look_R_Right' -> +0xa0..+0xc8; +0x98 = 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.morph_modifier_post_build",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 63 B8 42 01 00 00",
+  "match": "0x1401c5fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401c5fc0",
+  "kind": "func_start",
+  "names": [
+   "Game_MorphModifier_PostBuild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401c5fc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401c5fc0.c",
+   "notes": "V4354 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,5 +1,5 @@
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
 use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, h_flex};
@@ -12,9 +12,9 @@ use swofty_i18n::trf;
 use super::state::*;
 use super::widgets::*;
 use super::*;
-use crate::sections::tone;
+use crate::features::sections::tone;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 #[derive(Clone, Copy)]
 pub(super) struct CellCtx<'a> {
@@ -104,8 +104,34 @@ impl Shell {
         if spec.align == Align::Right {
             content = content.justify_end();
         }
-        // A picture before the text: a square as tall as the row allows, or the cell's size.
-        if let Some(image) = &c.image {
+        let memory_image = c.image_data.as_ref().and_then(|data| {
+            self.blocks
+                .image_data
+                .borrow_mut()
+                .get(&data.png)
+                .map(|image| (data, image))
+        });
+        if let Some((data, image)) = memory_image {
+            let (w, h) = data.size((row_h - 8.).max(16.));
+            let (w, h) = (w.clamp(1., 512.), h.clamp(1., (row_h - 4.).max(1.)));
+            let fit = match data.fit {
+                Fit::Cover => ObjectFit::Cover,
+                Fit::Contain => ObjectFit::Contain,
+            };
+            content = content.child(
+                div()
+                    .w(px(w))
+                    .h(px(h))
+                    .flex_shrink_0()
+                    .when(!data.transparent, |d| {
+                        d.rounded(px(if h > 24. { 6. } else { 2. }))
+                    })
+                    .overflow_hidden()
+                    .when(!data.transparent, |d| d.bg(p.elevated))
+                    .child(img(image).w(px(w)).h(px(h)).object_fit(fit)),
+            );
+        // Existing file-backed pictures retain their existing allowed-root checks.
+        } else if let Some(image) = &c.image {
             let (w, h) = image.size((row_h - 8.).max(16.));
             let (w, h) = (w.clamp(1., 512.), h.clamp(1., (row_h - 4.).max(1.)));
             let fit = match image.fit() {
@@ -131,7 +157,7 @@ impl Shell {
                 .pending_cells
                 .get(&key)
                 .map_or(tf.value, |v| v == "true");
-            let busy = self.busy.contains(&key);
+            let busy = self.addon_views.busy.contains(&key);
             let (addon, section, table, row, column, control) = (
                 at.addon.to_owned(),
                 at.section.to_owned(),
@@ -186,7 +212,7 @@ impl Shell {
                 .colour_shown(&key, cx)
                 .or_else(|| parse_colour(&shown).filter(|_| pending))
                 .or_else(|| original.as_str().and_then(parse_colour));
-            let (busy, disabled) = (self.busy.contains(&key), cf.disabled);
+            let (busy, disabled) = (self.addon_views.busy.contains(&key), cf.disabled);
             let start = rgb.unwrap_or([0xFF, 0xFF, 0xFF]);
             let open_key = key.clone();
             return content
@@ -202,7 +228,7 @@ impl Shell {
                 .when(!busy && !disabled, |d| d.hover(move |s| s.bg(p.hover)))
                 .on_click(cx.listener(move |this, _, window, cx| {
                     cx.stop_propagation();
-                    if disabled || this.busy.contains(&open_key) {
+                    if disabled || this.addon_views.busy.contains(&open_key) {
                         return;
                     }
                     let target = ColourTarget::Cell {
@@ -251,7 +277,7 @@ impl Shell {
             },
             v => v,
         };
-        let busy = self.busy.contains(&key);
+        let busy = self.addon_views.busy.contains(&key);
         content
             .id(SharedString::from(format!("cell-{key}")))
             .px(px(6.))
@@ -263,7 +289,7 @@ impl Shell {
             .on_click(cx.listener(move |this, _, window, cx| {
                 // Editing the cell doesn't also open the row.
                 cx.stop_propagation();
-                if this.busy.contains(&key) {
+                if this.addon_views.busy.contains(&key) {
                     return;
                 }
                 this.edit_cell(

@@ -1,0 +1,30 @@
+{
+  "about": "The s1 mark sent again after the server answered 503: the same body with attempt 2 and since_ms updated.",
+  "answer": {
+    "body": {
+      "receipt": "tk1.czE.bWFj"
+    },
+    "status": 200
+  },
+  "request": {
+    "body": {
+      "json": {
+        "attempt": 2,
+        "game_ms": 28411,
+        "lap": 1,
+        "mark": "s1",
+        "prev": "tk1.c3RhcnQ.bWFj",
+        "since_ms": 609
+      }
+    },
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "gzip",
+      "authorization": "Bearer <token>",
+      "content-type": "application/json",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "POST",
+    "path": "/v1/tt/sessions/5e5510b0c0de5e5510b0c0de5e5510b0/ticks"
+  }
+}

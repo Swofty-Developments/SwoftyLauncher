@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NeosSignalr_CreatedHandshakeRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444440d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444440d0.c;pat:log-channel-NEOS_SIGNALR/V;xref:0x1444435c4,0x144443fc5",
+  "notes": "Callers 0x1444435c4, 0x144443fc5. Builds the SignalR connect query: clientProtocol=1.5, connectionData=[{\"name\":\"%s\"}], connectionToken, transport=webSockets, SessionToken (0x14443e9f0 appends), then logs 'created handshake request: %s' (NEOS_SIGNALR/V). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.neos_signalr_created_handshake_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 4C 89 C6 89 D7 48 89 CB",
+  "match": "0x1444440d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444440d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NeosSignalr_CreatedHandshakeRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1444440d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444440d0.c;xref:0x143be16d3",
+   "notes": "V6606 size=614; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

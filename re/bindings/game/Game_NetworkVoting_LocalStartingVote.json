@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoting_LocalStartingVote",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14308f6c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14308f6c0.c;pat:log-channel-NETWORK-VOTING;xref:0x14580f7f0",
+  "notes": "Logs NETWORK-VOTING '%s Local - starting vote' with its own name startVote, builds the vote option list ('Adding track %s' per candidate) and sends it (Game_Network_SendOptions); in the wrong state calls Game_Network_TryingStartVoteWrongState. Only reference is vtable cell 0x14580f7f0 (MultiVotingManager vtable, next cell Game_Network_RestartVote). (lane owner review requested) Better name: Game_NetworkVoting_StartVote (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_voting_local_starting_vote",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 2B 00 00",
+  "match": "0x14308f6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14308f6c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoting_LocalStartingVote"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x14308f6c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14308f6c0.c",
+   "notes": "V5294 better name Game_NetworkVoting_UpdateVotingState: 1194-line voting tick/state machine (startVote, sendOptions, onNewConnection callees, Adding track), not just the Local-starting-vote log line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x14308f6c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14308f6c0.c",
+   "notes": "V6963 name fits (startVote, Adding track, NETWORK-VOTING, 1194 lines); sendOptions/onNewConnection callees not visible in strings; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

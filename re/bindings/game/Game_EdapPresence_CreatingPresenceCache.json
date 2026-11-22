@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EdapPresence_CreatingPresenceCache",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fea580",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fea580.c;pat:log-channel-EDAP_PRESENCE;xref:0x143fea1ef",
+  "notes": "If +0x138 == 0: logs EDAP_PRESENCE 'Creating presence cache' (tail 0x143fea801), [+0xd8] vcall +0xe8 with {0x7d0, 1.0} and callback vt 0x145a45c18, +0x138=1; else 'NOT Creating presence cache'. Registers callback vt 0x145a46880 via [+0xd8] vcall +0x18 -> id +0x13c, +0x70=2 under lock +0x20, logs EADP_PRESENCE 'registered PresenceCallback #%lu '. Tail jmp from 0x143fea050. (lane owner review requested) Better name: Game_EdapPresence_CreatePresenceCacheAndRegister (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.edap_presence_creating_presence_cache",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 48 89 CE 0F B6 81 38 01 00 00",
+  "match": "0x143fea580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fea580",
+  "kind": "func_start",
+  "names": [
+   "Game_EdapPresence_CreatingPresenceCache"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fea580",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fea580.c;xref:0x143fea1ef",
+   "notes": "V6341 partial: better name Game_EadpPresence_RegisterPresenceCallback; conditionally creates presence cache and registers a PresenceCallback"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143fea580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fea580.c;xref:0x143fea1ef",
+   "notes": "V7070 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

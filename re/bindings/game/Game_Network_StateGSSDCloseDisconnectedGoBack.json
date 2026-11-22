@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_StateGSSDCloseDisconnectedGoBack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d8e10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436d8e10.c;pat:log-channel-NETWORK;xref:0x14585be18",
+  "notes": "State update: if disconnected (this+0xc88 == 0 or session field) logs \"StateGSSDClose - we are disconnected, go back to lobby.\" and returns the state id from 0x146cb2294; else closes the season document (Game_SeasonDocument_CloseDocument) and returns 0x146cb2280/0x146cb2284 by flag +0x765. (lane owner review requested) Better name: Game_StateGSSDClose_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_state_gssd_close_disconnected_go_back",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 83 B9 88 0C 00 00 00",
+  "match": "0x1436d8e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d8e10",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_StateGSSDCloseDisconnectedGoBack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436d8e10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436d8e10.c",
+   "notes": "V6132 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

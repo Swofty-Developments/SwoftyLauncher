@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_EventsAtDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fdad10",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Find_EventsAtDay(void *comp, int64_t day, int64_t unused, char flag)",
+  "evidence": "decomp:re/decomp/140fdad10.c;xref:0x140fdaf4d,0x141729149,0x1417292d7,0x141a0c36d,0x141a0c621,0x141a083c4",
+  "notes": "Exact-day lookup in the ordered tree at comp+0x330 (key node+0x20, lower bound then equality), then walks the set at value+0x178: for each element calls Sess_Match_EntrantIdentity 0x1431146d0(elem+0x20, 0x40-byte identity key, vtable 0x145612e20) and returns elem+0x70 of the first whose match result != param_4; null if day or element missing. No event list is collected. (lane owner review requested) Better name: Career_Find_DayEventByEntrant (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.find_events_at_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 44 89 CB 4C 89 C6",
+  "match": "0x140fdad10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fdad10",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_EventsAtDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fdad10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140fdad10.c;xref:0x140fdaf4c",
+   "notes": "V9625 Lower_bound on day key in tree at comp+0x330 and walks list at entry+0x178, but returns the first matching node (+0x70) by predicate vs flag instead of collecting events; contract-negotiation meaning unproven."
+  }
+ ],
+ "proofs": []
+}

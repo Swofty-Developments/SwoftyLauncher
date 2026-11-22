@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_RequestRegisterEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14310e1e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14310e1e0.c;pat:log-message-method;xref:0x14310a9c8,0x143113d65,0x1432b27cb",
+  "notes": "Logs requestRegisterEntrant(player, team, index); finds the requesting player in the player set (user id match) and needs flag +0x5b bit 4; builds a request message (vtable 0x145824410); host (this+8 < 2) handles it directly via 0x143110b90, client sends it via 0x14402e500. Returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_entrants_request_register_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 31 FF",
+  "match": "0x14310e1e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14310e1e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_RequestRegisterEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14310e1e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14310e1e0.c;xref:0x14310a9c8",
+   "notes": "V5752 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

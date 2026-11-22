@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePointsAward_WriteSaveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143501450",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int f(void *award, void *save_out)",
+  "evidence": "decomp:re/decomp/143501450.c;xref:0x14a6c63ca",
+  "notes": "myteam-g1: Save writer: resource_point_counts, resource_point_types_mask, resource_points_for_career / entrants / weekend."
+ },
+ "signature": {
+  "id": "career.resource_points_award_write_save_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 02 00 00 C5 78 29 8C 24 90 02 00 00 C5 78 29 84 24 80 02 00 00 C5 F8 29 BC 24 70 02 00 00 C5 F8 29 B4 24 60 02 00 00 4C 89 C7",
+  "match": "0x143501450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143501450",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePointsAward_WriteSaveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143501450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143501450.c;xref:0x14a6c63ca",
+   "notes": "V10262 Writes resource_points_for_entrants/career/weekend, resource_point_types_mask, has_ever_been_updated_mask, multipliers and resource_point_counts (also driver_id, weekend_index, session_id)."
+  }
+ ],
+ "proofs": []
+}

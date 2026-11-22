@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_DecalTypeCarousel_Entry",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416d2f83",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1416d2790.c;doc:re/research/sponsors.md#catalogue",
+  "notes": "mov rsi,[rax+0xc8]: rax = decal type record, rsi = item, *(*(item+0x30)+0x10) = texture name; rax -> zero block makes rsi 0 and takes skip path 0x1416d40e0."
+ },
+ "signature": {
+  "id": "game.decal_type_carousel_entry",
+  "section": ".xtls",
+  "pattern": "0F 84 ?? ?? ?? ?? 48 8B B0 C8 00 00 00",
+  "match": "0x1416d2f7d",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416d2f83",
+  "kind": "mid",
+  "expect": "48 8B B0 C8 00 00 00",
+  "names": [
+   "site_Game_DecalTypeCarousel_Entry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

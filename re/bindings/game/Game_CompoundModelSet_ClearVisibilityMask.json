@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CompoundModelSet_ClearVisibilityMask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3dd10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3dd10.c;xref:0x142e83572,0x142e8367a",
+  "notes": "(model, mask16): +0x70 &= ~mask (vpandn); on change queues refresh job 0x143d3ce20 once (state +0x128 = 2) and sets +0x12c |= 0x20. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.compound_model_set_clear_visibility_mask",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 C5 F9 6F 02 C5 F9 6F 49 70 C5 F9",
+  "match": "0x143d3dd10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3dd10",
+  "kind": "func_start",
+  "names": [
+   "Game_CompoundModelSet_ClearVisibilityMask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d3dd10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3dd10.c;xref:0x142e83572",
+   "notes": "V7914 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Avatars_AttemptingRetrieveImageIdSize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441344d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441344d0.c;pat:log-channel-AVATARS;xref:0x1530f0e01",
+  "notes": "Steam avatar image fetch into a cache slot: size w*h*4 from table 0x145a5c180[size], ISteamUtils vt+0x30 (GetImageRGBA) into the buffer; on success stores user id, size and buffer in slot mgr+0x60+n*0x60 (6 slots, wraps at 6) and logs. Caller 0x1530f0b70. (lane owner review requested) Better name: Game_Avatars_RetrieveImageRgba (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.avatars_attempting_retrieve_image_id_size",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 F0 FF 05",
+  "match": "0x1441344d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441344d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Avatars_AttemptingRetrieveImageIdSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1441344d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1441344d0.c;xref:0x1440f5c40",
+   "notes": "V6555 better name Game_Avatars_RetrieveImageIntoBuffer: retrieves avatar image by id/size/userId and adds it to cache, not just the attempting log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1441344d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441344d0.c;xref:0x1440f5c40",
+   "notes": "V7180 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

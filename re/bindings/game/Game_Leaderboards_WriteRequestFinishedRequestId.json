@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Leaderboards_WriteRequestFinishedRequestId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144027dd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144027dd0.c;pat:log-channel-LEADERBOARDS;xref:0x1430e6a2f",
+  "notes": "Per-frame pump of the Steam leaderboard queue +0x40..+0x48 (caller 0x1430e6a2f). Per request state +0x128: 1 -> FindLeaderboard (SteamUserStats vcall +0xb8) + call result; 6 -> fixes entry names ('Entry = %s, score = %d'); by kind +0x28c: 0 ranking/1 around user/2 friends -> DownloadLeaderboardEntries (+0xe0), 3 -> ForUsers (+0xe8), 4 -> UploadLeaderboardScore (+0xf8), call results 0x144028680 / 0x144028c10. Done: logs 'Read/Write request finished', delegates, frees. (lane owner review requested) Better name: Game_SteamLeaderboards_UpdateRequests (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.leaderboards_write_request_finished_request_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 8B 59 48",
+  "match": "0x144027dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144027dd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Leaderboards_WriteRequestFinishedRequestId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144027dd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144027dd0.c;xref:0x1430e6a2f",
+   "notes": "V6389 partial: better name Game_Leaderboards_OnRequestFinished; handles both read and write request completion"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144027dd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144027dd0.c;xref:0x1430e6a2f",
+   "notes": "V7081 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

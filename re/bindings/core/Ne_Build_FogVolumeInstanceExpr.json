@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Build_FogVolumeInstanceExpr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c9ee50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Build_FogVolumeInstanceExpr(int64_t *self,void * a2,void * a3,void * a4,void * a5, void * param_6,void * param_7,void * param_8,void * param_9,void * self0, void * self1,void * self2,void * self3,void * self4, void * self5,void * self6,void * self7,void * self8, void * self9,void * a20,void * a21,void * a22, uint64_t a23,void * a24)",
+  "evidence": "decomp:re/decomp/143c9ee50.c;xref:0x143cbbc25",
+  "notes": "24-arg constructor returning this: stores the args, loads the fog compute shader variants (fog_lm_lut_export, fog_ibl_lut_export, fog_vol_lut_light_cull*, fog_vol_lut_export*, fog_vol_clear1/2, fog_vol_pt_cull, fog_vol_rnd_inst_exp, fog_vol_inst_cull, fog_vol_ray_exp, fog_vol_sort, fog_vol_shadows, fog_vol_lut_accum, clear_buffer utils) and creates buffers eaid://ego_package/fog_volume_cb etc.; uses 0x1439d4c90. Old name took 1 of ~20 strings. Caller 0x143cba630. Better name: Ne_FogRenderer_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.build_fog_volume_instance_expr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 04 00 00 C5 78 29 84 24 30 04 00 00",
+  "match": "0x143c9ee50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c9ee50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Build_FogVolumeInstanceExpr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143c9ee50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143c9ee50.c;xref:0x143cbbc24",
+   "notes": "V10340 Large fog-volume pass setup (many fog_vol_* LUT/cull/sort passes), not only the instance expression; not My Team."
+  }
+ ],
+ "proofs": []
+}

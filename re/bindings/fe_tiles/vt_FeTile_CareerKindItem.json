@@ -1,0 +1,44 @@
+{
+ "schema": 1,
+ "name": "vt_FeTile_CareerKindItem",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145703eb0",
+  "type": "vtable[22]",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/141725380.c;xref:0x14172557a,0x14179e02c,0x14179e24c,0x14179e4c5",
+  "notes": "Career tile item vtable of fe_career: installed by ctor 0x141725380 (lea 0x14172557a) and dtor/slot 0 0x14179e020. 22 code slots: shares most slots with vt_FeHome_CareerItem 0x145703de0, own slots 3-5 (slot 5 = FeTile_Route_CareerItem 0x141725620) and 13, plus slots 19-21 (0x141726150, 0x141726160, 0x141726e30). Kind NeStr at item+0x178 per the old note."
+ },
+ "signature": {
+  "id": "fe_tiles.career_kind_item",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 8E 78 01 00 00",
+  "match": "0x14172557a",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145703eb0",
+  "kind": "data",
+  "names": [
+   "vt_FeTile_CareerKindItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

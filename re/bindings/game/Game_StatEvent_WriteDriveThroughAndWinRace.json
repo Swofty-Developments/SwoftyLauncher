@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteDriveThroughAndWinRace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437751c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437751c0.c;pat:log-channel-STATEVENT;xref:0x143792ad4",
+  "notes": "STATEVENT sub-writer: keys via 0x1401009f0 + djb2, providers this+8..+0x10 vcall +0x18 (enabled) / +0x30 (write). Single key \"DriveThroughAndWinRace\", 1.0. Caller 0x143792ad4. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_drive_through_and_win_race",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 85 ED 0F 84 ?? ?? ?? ?? 44 89",
+  "match": "0x143792ad4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1437751c0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteDriveThroughAndWinRace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1437751c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437751c0.c;xref:0x143792ad4",
+   "notes": "V7401 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SetScenario",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430913f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Network_SetScenario(void *session, uint8_t stat_id, const void *spec)",
+  "evidence": "pat:log-channel-NETWORK;decomp:re/decomp/1430913f0.c;decomp:re/decomp/14315d880.c;xref:0x14315e579",
+  "notes": "Logs 'setScenario: scenarioStatId: %d, specRaceVehicleStatId: %s' and 'setGameSetupMode: gameSetupModeStatId: %d'. Returns early when session+0x410 already holds stat_id and the 4-byte spec matches (+0x18, valid flag +0x1c; default spec 0x3fff0000). Else stores stat_id at +0x410 and spec at +0x18, finds the scenario row (g_Game_Scenarios entries, stat id byte +0, game setup mode byte +0x18, entrant list +0x20), applies that setup mode's entrants, marks the session dirty (+0x766/+0x768 and the send thunk 0x143227630) and, when session+8 == 1 (host), sends the scenario to clients. setupFromUnranked ends with it (the scenario whose name equals the category value), session = *(*(self+0x10)+0x418). Callers: census steam 0x30913f0."
+ },
+ "signature": {
+  "id": "game.network_set_scenario",
+  "section": ".xtls",
+  "pattern": "0F B6 16 48 89 F9 4D 89 E0 E8 ?? ?? ?? ?? 48 83 C6 50 4C 39 EE",
+  "match": "0x14315e570",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x9"
+  },
+  "target": "0x1430913f0",
+  "kind": "call",
+  "names": [
+   "Game_Network_SetScenario"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "carcat-scenario",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/car_category.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-carcat-scenario",
+   "kind": "func",
+   "item": "Game_Network_SetScenario",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430913f0.c;xref:0x14315e579;sig:game.network_set_scenario",
+   "notes": "V1273 Re-checked statically by the same session as carcat-scenario (recorded under a verify name, as earlier rows did): at 0x14315e570 movzx edx,byte [rsi] (scenario row stat id); mov rcx,rdi (session); mov r8,r12 (spec); call 0x1430913f0. The callee logs setScenario/setGameSetupMode, writes +0x410/+0x18/+0x1c and sends when session+8 == 1."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_Network_SetScenario",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430913f0.c;xref:0x143091260",
+   "notes": "V2741 +0x410 scenario byte, +0x18/+0x1c setup, dirty +0x766/+0x768 confirmed; send is further down (host role==1 path)"
+  }
+ ],
+ "proofs": []
+}

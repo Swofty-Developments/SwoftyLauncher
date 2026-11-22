@@ -5,12 +5,12 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use swofty_core::baseline::{Identity, sha256_bytes};
-use swofty_core::busy;
+use swofty_core::game_folder::baseline::{Identity, sha256_bytes};
+use swofty_core::game_folder::busy;
+use swofty_core::game_folder::journal::Journal;
+use swofty_core::game_folder::placed::Placed;
+use swofty_core::game_folder::recovery::{self, Blocked, Notice, Scope, SessionLock};
 use swofty_core::install::{Drift, Game, Installer, OVERRIDE_HEADER, Plan};
-use swofty_core::journal::Journal;
-use swofty_core::placed::Placed;
-use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const UI: &str = "2025_asset_groups/ui_package/flow_frontend.erp";
@@ -303,15 +303,100 @@ fn a_live_session_is_never_rolled_back_underneath_it() {
     f.session(&game);
     assert!(SessionLock::held_elsewhere(&f.data));
     assert!(SessionLock::try_acquire(&f.data).unwrap().is_none());
-    assert!(
-        recovery::restore(&f.data, &game)
-            .unwrap_err()
-            .to_string()
-            .contains("still running")
+    assert_eq!(
+        recovery::restore(&f.data, &game).unwrap_err().to_string(),
+        recovery::SESSION_HELD
     );
     assert_eq!(f.read(GVDB), "db-modded");
     drop(wrapper);
     assert!(!SessionLock::held_elsewhere(&f.data));
+}
+
+fn play_build(data: &Path) -> busy::Busy {
+    let b = busy::Busy {
+        pid: std::process::id().wrapping_add(1),
+        ..busy::Busy::new("default", vec!["swofty.classic-seasons".into()])
+    };
+    b.write(data).unwrap();
+    b
+}
+
+#[test]
+fn a_restore_pressed_while_play_checks_the_game_files_waits_for_it_then_restores() {
+    let f = Fixture::new("restore-waits-build");
+    let game = f.game();
+    let wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    f.session(&game);
+    play_build(&f.data);
+    let data = f.data.clone();
+    let play = std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(600));
+        drop(wrapper);
+        busy::Busy::clear(&data);
+    });
+    let wait = recovery::Wait {
+        build: std::time::Duration::from_secs(30),
+        other: std::time::Duration::ZERO,
+    };
+    let lock = recovery::wait_for_lock(&f.data, wait, &|| false).unwrap();
+    play.join().unwrap();
+    let done = recovery::restore_locked(&lock, &f.data, &game).unwrap();
+    assert!(done.left.is_empty(), "{:?}", done.left);
+    assert_eq!(f.read(GVDB), "db-v1");
+}
+
+#[test]
+fn a_restore_that_outwaits_its_limit_names_the_build_still_running() {
+    let f = Fixture::new("restore-names-build");
+    let _wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let b = play_build(&f.data);
+    let wait = recovery::Wait {
+        build: std::time::Duration::from_millis(300),
+        other: std::time::Duration::ZERO,
+    };
+    let err = recovery::wait_for_lock(&f.data, wait, &|| false)
+        .unwrap_err()
+        .to_string();
+    assert_eq!(err, b.restore_text());
+    assert!(
+        err.starts_with("Play is still building the mods for profile default, started under a minute ago;"),
+        "{err}"
+    );
+    assert!(err.contains("cancel the build"), "{err}");
+}
+
+#[test]
+fn a_restore_while_f1_25_runs_says_to_close_it_without_waiting() {
+    let f = Fixture::new("restore-game-runs");
+    let _wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let wait = recovery::Wait {
+        build: std::time::Duration::from_secs(600),
+        other: std::time::Duration::from_secs(600),
+    };
+    let start = std::time::Instant::now();
+    let err = recovery::wait_for_lock(&f.data, wait, &|| true)
+        .unwrap_err()
+        .to_string();
+    assert_eq!(err, recovery::GAME_RUNNING);
+    assert!(start.elapsed() < std::time::Duration::from_secs(5));
+}
+
+#[test]
+fn a_restore_waits_for_a_session_that_is_putting_the_game_files_back() {
+    let f = Fixture::new("restore-waits-rollback");
+    let game = f.game();
+    let wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let rollback = std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(400));
+        drop(wrapper);
+    });
+    let wait = recovery::Wait {
+        build: std::time::Duration::ZERO,
+        other: std::time::Duration::from_secs(30),
+    };
+    let lock = recovery::wait_for_lock(&f.data, wait, &|| false).unwrap();
+    rollback.join().unwrap();
+    recovery::restore_locked(&lock, &f.data, &game).unwrap();
 }
 
 #[test]
@@ -490,6 +575,36 @@ fn a_hand_copied_file_is_never_deleted_or_overwritten() {
 
     inst.apply(&f.plan()).unwrap();
     assert_eq!(f.read(MIP), "mip-ferrari");
+}
+
+#[test]
+fn third_party_dlls_in_the_game_folder_never_stop_a_session_and_stay_in_place() {
+    let f = Fixture::new("third-party-dlls");
+    for rel in [
+        "dxgi.dll",
+        "d3d12.dll",
+        "nvngx_dlss.dll",
+        "reshade-shaders/addon64.dll",
+    ] {
+        write(&f.game.join(rel), "a third-party dll");
+    }
+    let original = f.snapshot();
+    let game = f.game();
+    let wrapper = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    f.session(&game);
+    assert_eq!(f.read("dxgi.dll"), "a third-party dll");
+    drop(wrapper);
+
+    let lock = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let r = recovery::recover(&lock, &f.data, &game, Scope::Sessions).unwrap();
+    assert!(r.problems.is_empty(), "{:?}", r.problems);
+    assert_eq!(f.snapshot(), original);
+    drop(lock);
+
+    let done = recovery::restore(&f.data, &game).unwrap();
+    assert_eq!(done.left, []);
+    assert!(done.set_aside.is_empty(), "{:?}", done.set_aside);
+    assert_eq!(f.snapshot(), original);
 }
 
 #[test]
@@ -763,4 +878,46 @@ fn a_zero_filled_offline_journal_never_stops_recovery_or_restore() {
         assert_eq!(now.get(LAUNCHER), original.get(LAUNCHER));
         assert_eq!(now.get(GVDB), original.get(GVDB));
     }
+}
+
+#[cfg(unix)]
+#[test]
+fn an_offline_restore_a_locked_file_stopped_stays_recorded_until_the_next_start_finishes_it() {
+    use std::os::unix::fs::PermissionsExt;
+    let f = Fixture::new("offline-locked");
+    let game = f.game();
+    f.play();
+    std::fs::remove_dir_all(f.game.join("swofty")).unwrap();
+    let journal = swofty_core::offline::journal_path(&f.data);
+
+    // A folder that refuses deletes stands in for the running F1 25 or EA
+    // app that holds the staged launcher on Windows. Root ignores the mode.
+    std::fs::set_permissions(&f.game, std::fs::Permissions::from_mode(0o555)).unwrap();
+    if std::fs::write(f.game.join("probe"), "x").is_ok() {
+        std::fs::set_permissions(&f.game, std::fs::Permissions::from_mode(0o755)).unwrap();
+        return;
+    }
+    let lock = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+    let locked = recovery::recover(&lock, &f.data, &game, Scope::Sessions);
+    std::fs::set_permissions(&f.game, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let locked = locked.unwrap();
+    assert!(!locked.offline);
+    assert!(!locked.complete());
+    assert!(
+        locked
+            .problems
+            .iter()
+            .any(|p| p.contains(LAUNCHER) && p.contains("still locked after 5 retries")),
+        "{:?}",
+        locked.problems
+    );
+    assert!(journal.exists());
+    assert_eq!(f.read(LAUNCHER), "session-launcher");
+
+    let next = recovery::recover(&lock, &f.data, &game, Scope::Sessions).unwrap();
+    assert!(next.offline);
+    assert!(next.complete(), "{:?}", next.problems);
+    assert!(!journal.exists());
+    assert_eq!(f.read(LAUNCHER), "anticheat");
+    assert!(!f.game.join(format!("{LAUNCHER}.bak")).exists());
 }

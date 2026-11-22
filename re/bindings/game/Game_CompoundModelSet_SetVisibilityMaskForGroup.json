@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CompoundModelSet_SetVisibilityMaskForGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3dc80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3dc80.c;xref:0x142e83594,0x142e836a2",
+  "notes": "(model, mask16, group, set): mask at +0x80 + group*0x10 |= mask or &= ~mask; on change queues refresh 0x143d3ce20 and sets +0x12e |= 0x80. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.compound_model_set_set_visibility_mask_for_group",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 44 89 C0 48 C1 E0 04 48",
+  "match": "0x143d3dc80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3dc80",
+  "kind": "func_start",
+  "names": [
+   "Game_CompoundModelSet_SetVisibilityMaskForGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d3dc80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3dc80.c;xref:0x142e83594",
+   "notes": "V7913 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

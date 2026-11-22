@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FriendsList_SocialHubFriendsTabBaseViewModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dffe30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141dffe30.c;pat:log-channel-FRIENDS_LIST;xref:0x1457447e0,0x145750980,0x145750dd0",
+  "notes": "Slot 0 of 3 vtables (next cells 0x141e01f10,0x141e024e0). Casts task result param_2; error flag obj+0x48 -> TRACE 'GetFriends task returned with an error'. Else platform friends obj+0x120 and EA friends obj+0x140 (64-byte entries): logs counts (FRIENDS_LIST), skips blocked (SOCIAL_HUB log), adds Online/Offline entries to this+0x1418/0x1458/0x1438 and vector +0x1400 (stride 0x88). Renamed: name was class only. (lane owner review requested) Better name: Game_SocialHubFriendsTabBaseViewModel_OnGetFriendsDone (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.friends_list_social_hub_friends_tab_base_view_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 C5 F8 29 B4 24 F0 03 00 00 48 89 D3 49 89 CF",
+  "match": "0x141dffe30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dffe30",
+  "kind": "func_start",
+  "names": [
+   "Game_FriendsList_SocialHubFriendsTabBaseViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141dffe30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141dffe30.c",
+   "notes": "V5227 1396-line friends-list builder (platform + EA friends from F1OS, blocked exclusion, GetFriends error); log is one step. Better Game_FriendsList_BuildFriendsListFromF1OS (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141dffe30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dffe30.c",
+   "notes": "V7272 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

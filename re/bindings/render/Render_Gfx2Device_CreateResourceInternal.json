@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_CreateResourceInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439d1b90",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439d1b90.c;xref:0x1439d5653,0x151f5d326",
+  "notes": "Constructor of the 0x2c0-byte surface object: vtable 0x14589f3c0 into param_1, copies the desc from param_2, Ne_Gfx2Texture_ClampBlockMinAndGetAllocInfo, creates the D3D12 resource (Render_Gfx2Device_CreatePlacedResourceChecked / CreateCommittedResource 0x1439fe030 / CreateReservedResource 0x1439fdf40), names it (default <unknown/NeGfx2Surface>), creates views (0x1439d7370, 0x1439d7570, 0x143a0e230). (lane owner review requested) Better name: Render_Gfx2Surface_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_device_create_resource_internal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 C5 F8 29 B4 24 E0 01 00 00 48 8D 05",
+  "match": "0x1439d1b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d1b90",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_CreateResourceInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439d1b90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439d1b90.c;xref:0x1439d5653",
+   "notes": "V8500 calls ClampBlockMinAndGetAllocInfo, CreatePlacedResourceChecked 1439bb970, CreateCommittedResource, SetD3DObjectName, <unknown/NeGfx2Surface>, memset"
+  }
+ ],
+ "proofs": []
+}

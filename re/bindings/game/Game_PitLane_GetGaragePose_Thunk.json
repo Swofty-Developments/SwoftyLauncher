@@ -1,0 +1,131 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_GetGaragePose_Thunk",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x1434c01a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float *Game_PitLane_GetGaragePose_Thunk(void *pit_system, float *out_matrix, uint32_t garage)",
+  "evidence": "decomp:re/decomp/1434c01a0.c;decomp:own disasm 1.0.145 body 0x14feb9670-0x14feb9892 58/58 equal to the ret at KB 0x1503fedfa and 96 of 100 over the whole body;xref:0x1434bbd7b;xref:0x1434be1ac;xref:0x1434c35ab;xref:0x1434c366e",
+  "notes": "engine-re 2026-11-17 track round C (static): 5-byte jmp to .data1 0x1503fecf0 (Ghidra decompiles the target through the thunk). (pitSystem in rcx, out 4x4 float matrix in rdx, 64 bytes written with vmovaps so 16-byte aligned, garage in r8d compared unsigned with cmp r8d,0x1f; ja at 0x1503fed01) returns out in rax (mov rax,rsi at 0x1503feded): garage < 32 and a request at [[sys+8]+0x638+garage*8] (VehiclePlacement type 6 = PitGarageN marker, slot = garage) -> Sess_VehiclePlacement_ResolveTransform([sys+8], request) (0x1503fed1a), a re-read and null test of the same slot, ResolveTransform again (0x1503fed33), then a copy of the request matrix (+0x20..+0x5f) to out; a null re-read gives the identity static 0x146095c90 (guard 0x146095cd0) instead. garage >= 32 or a null slot on the first read -> the static default 0x1460fb0b0 (guard 0x1460fb0f0, built once as identity times the translation through 0x140136690), an identity rotation with row 3 = (0, -9000, 0, 1) (the row at 0x145843020, its y 0xc60ca000 at 0x145843024). Calls: Game_PitLane_UpdateMovement 0x1434bbd7b (garage 0), Game_PitLane_HoldInGarage 0x1434be1ac (garage = the vehicle record's +0xe0), Game_PitLane_ProjectBoxPose 0x1434c35ab/0x1434c366e; none uses rax. Consequence for tracks: a car whose garage has no PitGarage marker is held/aligned 9 km below the track. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Other builds: the signature is the call in Game_PitLane_ProjectBoxPose (KB 0x1434c35ab), because the filler after the thunk's jmp differs on every build. Steam 1.0.145: call 0x1434c5b2b, thunk 0x1434c2720, body 0x14feb9670..0x14feb9892, the 58 instructions up to the ret (KB 0x1503fedfa) equal with both +0x638 reads at the same instructions; over the whole body (to its .pdata end) 96 of KB's 100 instructions match the port's 99, the four others being protector filler in the block that builds the static default (KB's dead mov r8b and its stack offset computed from the constant at 0x14d844204, where the port has mov r8w; xor byte and lea rcx,[rsp+0x60]). EA: thunk 0x1434b04d0, body 0x14e822fe0; EA 1.0.145: thunk 0x1434b2a50, body 0x14ee21150; both 57 instructions alike, with the protector's rewrites between, and the +0x638 reads in place."
+ },
+ "signature": {
+  "id": "game.pit_lane_get_garage_pose_thunk",
+  "section": ".xtls",
+  "pattern": "45 89 C8 E8 ?? ?? ?? ?? 40 F6 C5 01",
+  "match": "0x1434c35a8",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1434c01a0",
+  "kind": "call",
+  "names": [
+   "Game_PitLane_GetGaragePose_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_PitLane_GetGaragePose_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c01a0.c;xref:0x1503fecf0",
+   "notes": "V11204 jmp 0x1503fecf0 (.data1); garage<=0x1f and [[sys+8]+0x638+g*8]!=0 -> copies request+0x20 matrix. Else static 0x1460fb0b0 = 0x140136690(rsp+0x60 translation matrix with row3 from 0x145843020 = (0,-9000,0,1), identity) -> translation (0,-9000,0). Minor: re-read null after 0x142f62580 gives identity 0x146095c90."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_GetGaragePose_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434c01a0-0x1434c01a5,0x1503fecf0-0x1503fef17,0x142f62580-0x142f629e0,0x140136690-0x1401367b3,0x1449e05fc-0x1449e0674,1.0.145 0x1434c2720-0x1434c2725,0x14feb9670-0x14feb9892;xref:0x1434bbd7b;xref:0x1434be1ac;xref:0x1434c35ab;xref:0x1434c366e;xref:0x1503fed01;xref:0x1503fed0d;xref:0x1503fed1a;xref:0x1503fed33;xref:0x1503fee97;xref:0x1503feded",
+   "notes": "V100004 Blind: proto, rcx obj ([rcx+8] read after the range check), rdx 64B 16-aligned out, r8d u32 (cmp 0x1f/ja 0x1503fed01), [[rcx+8]+0x638+i*8] lookup, rax=out 0x1503feded, static (0,-9000,0) default (guard 0x1460fb0f0, built once as I*T via 0x140136690), caller names and 1.0.145 twin 0x1434c2720/0x14feb9670 (58/58 to ret) confirmed. Imprecise: caller/xref addresses are rel32 fields, calls are at 0x1434bbd7b/0x1434be1ac/0x1434c35ab/0x1434c366e; ResolveTransform 0x142f62580 is called twice (0x1503fed1a, 0x1503fed33) with a slot re-read, and a null re-read returns identity 0x146095c90; 0xc60ca000 is row 3's y, row 3 = (0,-9000,0,1)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_GetGaragePose_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434c01a0-0x1434c01a5,0x1503fecf0-0x1503fef17,0x142f62580-0x142f629e0,0x140136690-0x1401367b3,0x1449e05fc-0x1449e0674,0x156272100-0x156272169,1.0.145 0x1434c2720-0x1434c2725,1.0.145 0x14feb9670-0x14feb9892;xref:0x1434bbd7b,0x1434be1ac,0x1434c35ab,0x1434c366e,0x1503fed01,0x1503fed1a,0x1503fed33,0x1503feded,0x1503fee97,0x1434c5b2b",
+   "notes": "V100007 Blind: partial. Own capstone of KB thunk 0x1434c01a0 (jmp .data1 0x1503fecf0, .pdata end 0x1503fef17) confirms the proto, r8d<=0x1f unsigned (0x1503fed01), [[rcx+8]+0x638+i*8], 0x142f62580(mgr,node) twice (0x1503fed1a/0x1503fed33), copy of node+0x20..+0x5f, identity static 0x146095c90 (guard 0x146095cd0) on a null re-read, static 0x1460fb0b0 (guard 0x1460fb0f0) = I*T via 0x140136690, row 3 (0,-9000,0,1), rax=out on every path, 4 callers, none uses rax, 1.0.145 thunk 0x1434c2720, body 0x14feb9670, call 0x1434c5b2b. Imprecise: 58/58 covers only the code up to the ret at 0x1503fedfa; the whole body is 100 vs 99 insns, 96 equal (the static-init filler differs)."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_GetGaragePose_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434c01a0-0x1434c01a5,0x1503fecf0-0x1503fef17,0x142f62580-0x142f629e0,0x140136690-0x1401367b3,1.0.145 0x1434c2720-0x1434c2725,1.0.145 0x14feb9670-0x14feb9892;xref:0x1503fed01,0x1503fed0d,0x1503fed1a,0x1503fed33,0x1503feded,0x1503fee97,0x1503fedb4,0x1434bbd7b,0x1434be1ac,0x1434c35ab,0x1434c366e",
+   "notes": "V100010 Blind: own capstone disasm of KB thunk 0x1434c01a0 (E9) -> body 0x1503fecf0-0x1503fef17 and 1.0.145 0x14feb9670-0x14feb9892 confirms every checkable claim: rcx obj, rdx 64-B vmovaps out, r8d cmp 0x1f/ja 0x1503fed01, rax=out 0x1503feded; [[rcx+8]+0x638+i*8] -> 0x142f62580 twice (0x1503fed1a/0x1503fed33), copy slot+0x20; null re-read -> identity 0x146095c90 (guard 0x146095cd0); i>31 or first null -> 0x1460fb0b0 (guard 0x1460fb0f0) = I x T via 0x140136690, row3 (0,-9000,0,1) from 0x145843020. 4 E8 callers, none reads rax. 1.0.145: 58/58 to ret, 96 of 100 vs 99 whole, diffs only in S1 init. Game meaning, EA, Ghidra, history unchecked."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "std-libs",
+   "kind": "func",
+   "item": "Game_PitLane_GetGaragePose_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm of the thunks' bodies, KB 0x1503fecf0, Steam 1.0.145 0x14feb9670 (thunk 0x1434c2720), difflib aligned",
+   "notes": "V110009 1.0.145 witness, Steam only: the Steam 1.0.145 thunk 0x1434c2720 jumps to 0x14feb9670, and 97 of the body's 101 instructions align equal to the KB body; the rest are protector loads (a byte load against a word load and an xor of a protector global; a stack offset computed from a protector global against lea rcx, [rsp + 0x60]). EA 1.0.145: the thunk 0x1434b3450 jumps to 0x14ee21b50, which does not decode as the KB body in the dump (3 of 101 align), so it is not witnessed there."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434c35a8",
+    "target": "0x1434c01a0"
+   },
+   "sigcheck": "passed",
+   "digest": "26b49849a063182a4d3edff9a3c63798f48f14d1a35c614e0cb57b80ebca6700"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434c5b28",
+    "target": "0x1434c2720"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ab7fd7aa3512f0dae3a92b887ec39b262998e25340cba9d97aef87313394d494"
+  }
+ ]
+}

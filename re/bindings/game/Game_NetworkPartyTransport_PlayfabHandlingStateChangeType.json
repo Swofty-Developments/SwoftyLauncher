@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkPartyTransport_PlayfabHandlingStateChangeType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440ba650",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440ba650.c;pat:log-channel-NETWORK-PARTY-TRANSPORT;xref:0x145a596c8",
+  "notes": "NETWORK-PARTY-TRANSPORT: dispatches a PlayFab Party state change by type: connect-to-network and create-endpoint results ('Failed to connect to network : %hs', 'Failed to create local endpoint : %hs'), endpoint and invitation destroyed; other types log 'PLAYFAB not handling stateChangeType %d'. Only ref: vtable cell 0x145a596c8. (lane owner review requested) Better name: Game_NetworkPartyTransport_HandlePlayfabStateChange (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_party_transport_playfab_handling_state_change_type",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 F8 29 BC 24 10 02 00 00 C5 F8 29 B4 24 00 02 00 00 44 8B 02",
+  "match": "0x1440ba650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440ba650",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkPartyTransport_PlayfabHandlingStateChangeType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440ba650",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440ba650.c",
+   "notes": "V6547 better name Game_NetworkPartyTransport_HandlePlayfabStateChange: 5.5 KB handler: invitation/endpoint destroyed, connect to network, create local endpoint; not-handling is default (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1440ba650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440ba650.c",
+   "notes": "V7164 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Build_HubLaptop",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c3f130",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c3f130.c;pat:pdata-0x141c3f130-0x141c42b3e;kb:subsystems/rnd_ui.md#pie;xref:0x14568cdf8",
+  "notes": "Hub laptop builder (vtable cell 0x14568cdf8, no direct calls): creates every laptop tab with overrides.career.laptop.page_icons[0..5] (Career_Construct_HubLaptopTab + Career_Add_HubLaptopPage): weekend session, driver details, R&D (lng_workstation_r_and_d; Career_Create_RnDPerfViewModel at 0x141c41ca7), tyre allocation, standings/season results/trophies; flags r_and_d_visible, laptop_anim_in_progress. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.build_hub_laptop",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 CE C5 C8 57 F6 C5",
+  "match": "0x141c3f130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c3f130",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_HubLaptop"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c3f130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c3f130.c",
+   "notes": "V4946 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141c3f130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c3f130.c;str:\"overrides.career.laptop.page_icons[3]\";str:\"lng_workstation_r_and_d\";xref:0x141c41ca7",
+   "notes": "V9188 The R&D workstation block pushes page_icons[3] / lng_workstation_r_and_d and calls the perf view model constructor at 0x141c41ca7; the standings tab is also built here."
+  }
+ ],
+ "proofs": []
+}

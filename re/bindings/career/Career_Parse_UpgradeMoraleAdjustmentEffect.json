@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Parse_UpgradeMoraleAdjustmentEffect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14105c540",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void **Career_Parse_UpgradeMoraleAdjustmentEffect(void **out, void *allocator, void *unused, void *xml_node)",
+  "evidence": "decomp:re/decomp/14105c540.c;xref:0x1456b9d68",
+  "notes": "myteam-g1: XML factory for an upgrade effect that adjusts department morale: reads two int attributes (UNK_1456b9d0a, UNK_1456b9d15) and the upgrade_department name, FNV-1a hashed to a department enum 0..5 (0x184f58717a1a6a3f->1, 0x1e339d9dc3c05766->2, 0x3dacd07fc0cad3db->3, 0xef08697916801cf4->4, 0x2be5705c42a81bd0->5). Allocates 0x38-byte effect (vtable 1456ba370) with department at +0x30. Strings: morale_adjustment, upgrade_department."
+ },
+ "signature": {
+  "id": "career.parse_upgrade_morale_adjustment_effect",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4D 89 CE 4C 89 C3",
+  "match": "0x14105c540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14105c540",
+  "kind": "func_start",
+  "names": [
+   "Career_Parse_UpgradeMoraleAdjustmentEffect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x14105c540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14105c540.c;xref:0x1456b9d68;str:\"morale_adjustment\"",
+   "notes": "V9642 positivity and morale_adjustment ints plus upgrade_department hashed to dept 0..5 stored at +0x30; 0x38-byte object vtable 1456ba370."
+  }
+ ],
+ "proofs": []
+}

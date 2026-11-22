@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Wwise_ConvolutionReverb_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144cad8f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t (void *fx, void *alloc, void *ctx, uint64_t a, ...)",
+  "evidence": "decomp:re/decomp/144cad8f0.c;xref:0x1447b1fc7;xref:0x14547b638",
+  "notes": "myteam-g1: Wwise AkConvolutionReverb effect init with parameter validation messages. Third-party audio, keyword soundbank only."
+ },
+ "signature": {
+  "id": "core.wwise_convolution_reverb_init",
+  "section": ".xtls",
+  "pattern": "40 53 55 56 41 54 41 55 41 56 41 57 48 83 EC 30 48 89 91 18 01 00 00",
+  "match": "0x144cad8f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144cad8f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Wwise_ConvolutionReverb_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x144cad8f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144cad8f0.c;xref:0x1447b1fc7",
+   "notes": "V10365 Wwise AkConvolutionReverbFX init strings."
+  }
+ ],
+ "proofs": []
+}

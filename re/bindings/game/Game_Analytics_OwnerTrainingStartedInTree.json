@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_OwnerTrainingStartedInTree",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140749790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140749790.c;pat:log-channel-TELEMETRY;xref:0x1406ec578,0x140707322",
+  "notes": "Bus handler(this,msg); subscribed 0x1406ec578 (0x1406d8470), unregistered 0x140707322. 0x120-byte record: returns 0 if msg+0x1e4 == 0xffff; strings msg+0x20 (log arg)/+0x58/+0xb8/+0x120/+0x158, u32s msg+0xa0..+0x1e4. Tag 'owner_training_start_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Owner Training started in tree %s' (TELEMETRY). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_owner_training_started_in_tree",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 81 BA E4 01 00 00 FF FF 00 00",
+  "match": "0x140749790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140749790",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_OwnerTrainingStartedInTree"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140749790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140749790.c",
+   "notes": "V4236 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

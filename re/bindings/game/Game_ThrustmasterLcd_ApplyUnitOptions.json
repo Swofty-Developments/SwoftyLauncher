@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThrustmasterLcd_ApplyUnitOptions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fdd500",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fdd500.c;xref:0x142fd9b01,0x142fdd3f6",
+  "notes": "Once (+0x640): finds speed_unit and temperature_unit options (Game_OptionsStore_FindOption) into +0x630/+0x638, caches indices +0x644..+0x650, clamps current values and subscribes change callbacks 0x142fdd8b0/0x142fdd970. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.thrustmaster_lcd_apply_unit_options",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 80 B9 40 06 00 00 00 0F 85",
+  "match": "0x142fdd500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fdd500",
+  "kind": "func_start",
+  "names": [
+   "Game_ThrustmasterLcd_ApplyUnitOptions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142fdd500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fdd500.c;xref:0x142fd9b01",
+   "notes": "V7571 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

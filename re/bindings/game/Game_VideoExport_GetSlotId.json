@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_GetSlotId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f096b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f096b0.c;xref:0x141f0f289,0x141f0fefe,0x141f100b0,0x141f10c58,0x141f111d6,0x141f11f16,0x141f122a0,0x141f12308,0x141f12664",
+  "notes": "Read in full: (nodeRef) looks up child 'slot_id' (0x144252eb0) of node [p+8]+8, binds it (0x140970b00), returns the u32 value if the node is valid and its type id matches 0x146129f38, else 0; releases the ref. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.video_export_get_slot_id",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 8B 41 08 48 8D 48 08 48",
+  "match": "0x141f096b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f096b0",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_GetSlotId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x141f096b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f096b0.c;xref:0x141f0f289",
+   "notes": "V7523 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

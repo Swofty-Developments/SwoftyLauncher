@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Renderer_PassGroupMapB_Clear",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b46fe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b46fe0.c;xref:0x143b1c6f1,0x143b3a1f9,0x143b3a733,0x143b3ac49,0x143b3b1d2,0x143b3b762,0x143b4f289,0x143b4f364,0x143b4f9a3,0x143b4fa46,0x15239eba7",
+  "notes": "Open-addressing hash map destructor (5 identical instances A-E): if capacity +0x30 != 0, size +0x28 = 0; for each occupied slot (ctrl bytes +0x20, cap+1+min(0xff,80%) slots) destroys the slot's vector of 0x30-byte objects (vcall +0) and frees it via slot allocator +8; frees slot storage via allocator +8 unless it is the inline sentinel (+0x30). Instance B; called from InitPassGroups (0x143b1c6f1) and teardown 0x143b37e20/0x143b4ef00/0x143b4f5b0. (lane owner review requested) Better name: Game_Renderer_PassGroupMapB_Destroy (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.renderer_pass_group_map_b_clear",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8D 8E 90 00 00 00 E8 ?? ?? ?? ?? 49 8D 4E 48 E8 ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 49 8B 07 4C 89 F9 4C 89 F2 FF 50 38 EB 8F",
+  "match": "0x143b1c6f1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b46fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_Renderer_PassGroupMapB_Clear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143b46fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b46fe0.c;xref:0x143b1c6f1",
+   "notes": "V8272 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

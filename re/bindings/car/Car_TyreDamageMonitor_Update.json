@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_TyreDamageMonitor_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f15ce0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "ulonglong(void *monitor)",
+  "evidence": "decomp:re/decomp/142f15ce0.c;xref:0x142f1584a,0x142f16480",
+  "notes": "Resets count +0xc20; per car idx (entrants [+0x28]+0x28, vehicle +0x58, idx +0xe8) appends a 0x70 record at +0x50 {idx, vehicle, cleared states, timer +0xbc = -1}; copies max concurrent punctures +0xf74 to [[+0x28]+0x40]+0x3f70+0x20 and logs TYRE_DAMAGE_MONITOR; calls 0x142f16ed0; inlined bus queue push (0x145801010). Records read by Car_TerminalDamage_UpdateVehicle. Callers 0x142f15840, jmp thunk 0x142f16480. (lane owner review requested) Better name: Car_TyreDamageMonitor_InitVehicleRecords (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "car.tyre_damage_monitor_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 C7 81 20 0C 00 00 00 00 00 00",
+  "match": "0x142f15ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f15ce0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreDamageMonitor_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f15ce0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f15ce0.c;xref:0x142f1584a",
+   "notes": "V5587 Not an Update: rebuilds per-vehicle 0x70-byte slot table (count +0xc20) then copies max punctures +0xf74 and logs; better Car_TyreDamageMonitor_RebuildVehicleSlots"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f15ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f15ce0.c;xref:0x142f1584a",
+   "notes": "V6910 265 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCar_ComputeTargetSpeed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f572e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f572e0.c;xref:0x142f23624,0x142f23640",
+  "notes": "(sc, vehicle, distance, bool upper) -> float: safety-car target speed for the given vehicle (idx veh+0x18->+0x58->+0xe8, <0x1b); uses per-vehicle state +0x938/+0x105, SC delta +0x158 (+0x10/+0x14 mask, +0x2c), session time 0x142ccf150; called twice (upper 0/1) storing results at sc+0x58/+0x5c. Caller: Sess_SafetyCar_OnLapChanged."
+ },
+ "signature": {
+  "id": "session.safety_car_compute_target_speed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 44 89 CB 49",
+  "match": "0x142f572e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f572e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCar_ComputeTargetSpeed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f572e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f572e0.c;xref:0x142f23624,0x142f23640",
+   "notes": "V3737 Per-vehicle idx [+0x18]+0x58+0xe8 <0x1b, state +0x938/+0x105 (+0xec), SC delta +0x158 (+0x10/+0x14 mask, +0x2c), session time 142ccf150; 2 call sites in OnLapChanged."
+  }
+ ],
+ "proofs": []
+}

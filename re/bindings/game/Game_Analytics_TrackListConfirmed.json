@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_TrackListConfirmed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140734e70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140734e70.c;pat:log-channel-TELEMETRY;xref:0x1406e5304,0x1406febca",
+  "notes": "Loops track list entries, one record each. Bus handler: lea 0x1406e5304 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1406febca in unsubscribe-all 0x1406fd6c0. Allocs 0x90 record (ctor 0x1405cf3c0), copies msg fields, baseCtx by 0x14077bb90 'track_list_confirmed_record', pushed to static queue (guard 0x14604d3f8) under CS; logs TELEMETRY 'Track List Confirmed'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_track_list_confirmed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 CE 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 83 3D ?? ?? ?? ?? 00",
+  "match": "0x140734e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140734e70",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_TrackListConfirmed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140734e70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140734e70.c",
+   "notes": "V4197 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

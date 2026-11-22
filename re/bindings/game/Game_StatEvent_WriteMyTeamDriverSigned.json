@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteMyTeamDriverSigned",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143733ac0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143733ac0.c;pat:log-channel-STATEVENT;xref:0x143722af4,0x143749b22",
+  "notes": "Bus handler, providers mgr+0x50..+0x58, ctx FUN_14371fe70; 2 entries: MyTeamDriverSigned 1.0 type 0, MyTeamDriverSigned.CounterOffered.%d(msg+0x14) val=(float)msg+0x10 type 2. MessageOXPDriverSigned: subscribe 0x143722af4, unsubscribe 0x143749b22. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_my_team_driver_signed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 48 89 D7 48 89 CE 44 8B 7A 10",
+  "match": "0x143733ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143733ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteMyTeamDriverSigned"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143733ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143733ac0.c;xref:0x143722af6",
+   "notes": "V6172 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_StringPool_InternFormatted_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b58600",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b58600.c;xref:0x143b5ab96,0x143b809aa,0x143bd8291,0x143bd859a",
+  "notes": "printf-style format (0x14532e54c with 0x14029b190 stdio options): length pass, stack buffer, second pass; FNV-1a 64 of the result and Ne_StringPool_InternByHash on pool 0x146129740; writes {interned ptr, hash} to param_1. No closure/lambda. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.model_component_load_async",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 C4 20 49 8B 04 24 48 8B 48",
+  "match": "0x143b5ab96",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b58600",
+  "kind": "func_start",
+  "names": [
+   "Render_StringPool_InternFormatted_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143b58600",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143b58600.c;xref:0x143b5ab96",
+   "notes": "V8137 Better name Ne_StringPool_InternFormatted: vsnprintf style format (14532e54c) into stack buffer up to 0xff then FNV-1a64 hash and Ne_StringPool_InternByHash; no closure or async model load"
+  }
+ ],
+ "proofs": []
+}

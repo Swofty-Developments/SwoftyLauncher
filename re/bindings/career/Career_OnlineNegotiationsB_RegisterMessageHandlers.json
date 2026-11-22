@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiationsB_RegisterMessageHandlers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffeec0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_OnlineNegotiationsB_RegisterMessageHandlers(void *neg)",
+  "evidence": "decomp:re/decomp/140ffeec0.c;xref:0x1456b6940",
+  "notes": "Vtable slot ref 0x1456b6940. Subscribes 13 bus handlers via 0x143987810 (0x141001510 'ApproachNegotiationSucceeded', 0x1410015e0, 0x1410016c0 ... 0x141002410 'ProcessTeamSelectMessage', 0x1410026e0, 0x1410027a0) and registers net handlers on [[this+0x298]+0x3d0] vf+0x8: 0x8a 0x1410027e0, 0x91 0x141002b30, 0xc5 0x141002f20, 0xc6 0x141003050, 0xc7 0x141003320, 0xc8 0x141003420, 0xc9 0x1410036a0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_b_register_message_handlers",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 10 01 00 00 48 89 CE 48 8B 05",
+  "match": "0x140ffeec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffeec0",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiationsB_RegisterMessageHandlers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140ffeec0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ffeec0.c;xref:0x1456b6940;str:\"ProcessTeamSelectMessage\"",
+   "notes": "V9634 Subscribes handlers to ProcessNCSContractMessage, ProcessSMMessage, ProcessTeamSelectMessage, MessageContractBrk/Rv etc. via 143987810, but there are 13 subscriptions (not 7 pairs) and handler names are guesses."
+  }
+ ],
+ "proofs": []
+}

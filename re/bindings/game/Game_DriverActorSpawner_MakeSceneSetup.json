@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverActorSpawner_MakeSceneSetup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401b1860",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401b1860.c;pat:log-message-method;xref:0x1401b7512",
+  "notes": "(spawner p1, out setup p2, desc p3), log DRIVER_ACTOR_SPAWNER '%s()' makeSceneSetup (0x1455e23ee). Memsets 0x9c0 setup, move-assigns into p2, copies optionals p3+0x380/+0x460 to p2+0x7f0/+0x8d0; path vars via 0x1403178d0 (PREFIX..LIVERY_PACKAGE, sapien flag 0x14604c2c8+0x2e8); *p3==0 -> 'needs a head' return; scenes via 0x1401b6b40 + 0x1401a4810. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_actor_spawner_make_scene_setup",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 0A 00 00 4C 89 C3",
+  "match": "0x1401b1860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401b1860",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverActorSpawner_MakeSceneSetup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401b1860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401b1860.c",
+   "notes": "V4338 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

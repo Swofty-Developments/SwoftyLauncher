@@ -43,6 +43,17 @@ Some addons, such as Driver Manager, change what your careers store. Turning one
 
 In the `vanilla` profile the list is read-only and shows every installed addon. Switch to a modded profile to turn addons on.
 
+## Turn on, turn off, move or uninstall several addons
+
+Hold **Ctrl** (**Cmd** on macOS) to show a tick box on every row. Ctrl-click a row, or click its tick box, to tick or untick it. A plain click on a row opens its panel. While at least one addon is ticked, a bar above the list shows how many and has **Turn on**, **Turn off**, **Uninstall** and **Clear**. **Escape** also clears the ticks. The ticks clear after an action from the bar.
+
+- **Turn on** and **Turn off** change the active [profile](/using/profiles) the way a row's switch does. Always-on addons and shader-only addons are skipped, and a message says how many. **Turn off** leaves on the addons whose turning off warns about your saves, and a message names them.
+- **Uninstall** asks once for all the ticked addons, then removes them as **Uninstall** in a panel does. Built-in addons are skipped, and a message says how many.
+
+Drag a ticked row to move every ticked addon with it, also those a search, a filter or a closed folder hides. They keep their order and land together where you drop them, in a folder or outside folders, the way one dragged row does. The dragged card shows how many addons move. Ticked addons in Built In stay where they are, and a drop on a ticked row moves nothing. The ticks stay after the move, and **Escape** during the drag cancels it and keeps them. Dragging a row that isn't ticked moves only that row and leaves the ticks as they are.
+
+The list keeps its scroll position after an uninstall. Ticks are not available in the `vanilla` profile.
+
 ## Add an addon to a profile
 
 Each modded profile lists only its own addons and the built-in ones. To use an addon you installed from another profile, select **Add addons** above the list, tick the ones you want and confirm, or select **Add to** with the profile's name on its card in the Addon Browser. It joins the profile turned off, at the end of the list.
@@ -66,7 +77,7 @@ Folders are shared by every profile. The launcher saves them in `$DATA/folders.j
 
 ## Load order
 
-The list is the load order, top to bottom, and the number on a row is its place among the addons that are on. When two addons change the same thing, the one lower in the list wins. A folder's addons load together. Dragging a folder by its handle moves all of them and keeps their order. Drag a row, or use the arrows in its panel, to move an addon. The arrows move it within its folder. Rows that are always on have no drag handle. SwoftyMod and Simplified for Swofty always load first: nothing can be dragged above them.
+The list is the load order, top to bottom, and the number on a row is its place among the addons that are on. When two addons change the same thing, the one lower in the list wins. A folder's addons load together. Dragging a folder by its handle moves all of them and keeps their order. Drag a row, or use the arrows in its panel, to move an addon. The arrows move it within its folder. To move several addons at once, tick them and drag one of them; see [Turn on, turn off, move or uninstall several addons](#turn-on-turn-off-move-or-uninstall-several-addons). **Escape** during a drag cancels it. Rows that are always on have no drag handle. SwoftyMod and Simplified for Swofty always load first: nothing can be dragged above them.
 
 When the launcher opens a profile whose addons aren't grouped by folder, it moves each folder's addons up to the first of them and keeps their order. That can change which addon wins between two in different folders.
 
@@ -99,7 +110,7 @@ A row whose addon asks to remove records the game's database ships with shows a 
 
 ## Check an addon
 
-Select a row to open its panel: description, author, version, source, whether it works with your game version, what it changes (database values, game assets, text, files, tracks), its settings and its conflicts. **Game version** says **Works with this game version**, or names the game build the addon was made for next to yours. **Advanced** shows the addon's id.
+Select a row to open its panel: description, author, version, source, whether it works with your game version, what it changes (database values, game assets, text, files, tracks), its settings and its conflicts. **Game version** says **Works with this game version**, or names the game build the addon was made for next to yours. **Advanced** shows the addon's id. **Back**, pinned at the top of the panel, closes it; in a narrow window the panel opens under its row, and **Back** appears over the list once that row scrolls out of view and returns the list to where it was. **Escape**, **Alt+Left** and the mouse's back button also close the panel.
 
 **Conflicts** lists the addons this one overrides and the ones that override it, with what they both change. The list comes from the profile's last build. **Check conflicts**, at the top of the page and in the panel, builds the profile again without starting the game and refreshes the list. The list says it is out of date after an addon is turned on, turned off or moved, or after the addon itself changes. Play waits while a check runs.
 

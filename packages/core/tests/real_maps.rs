@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use swofty_core::activation::db::{Registry, Schema, Table, TrackHost, activate, datasets};
 use swofty_core::activation::dbx::{Db, field, row, sub_count, sub_table};
-use swofty_core::map::TrackPackage;
+use swofty_core::content::track_package::TrackPackage;
 use swofty_formats::gvdb::Gvdb;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
@@ -307,8 +307,16 @@ fn map_worlds_get_room_for_the_grid() {
             continue;
         };
         let file = ErpFile::open(&root.as_ref().unwrap().join(code).join(&pkg.erp)).unwrap();
-        assert_eq!(extend_grid(&file, code, 22).unwrap().map(|e| e.2), None, "{code}");
-        let (i, res, ext) = extend_grid(&file, code, 28).unwrap().unwrap();
+        assert_eq!(
+            extend_grid(&file, code, 22, &swofty_formats::erp::Packer::default())
+                .unwrap()
+                .map(|e| e.2),
+            None,
+            "{code}"
+        );
+        let (i, res, ext) = extend_grid(&file, code, 28, &swofty_formats::erp::Packer::default())
+            .unwrap()
+            .unwrap();
         eprintln!("{code}: {} {:?} -> {:?}", res.name, ext.before, ext.after);
         assert_eq!(res.name, file.erp.resources[i].name);
         assert_eq!(
@@ -346,9 +354,7 @@ fn map_worlds_get_room_for_the_grid() {
     }
 }
 
-#[test]
-fn stock_ai_lines_need_no_passing_space_fix() {
-    use swofty_core::activation::ailine::{Spacing, give_routes_space};
+fn stock_ai_lines(mut check: impl FnMut(&str, &[u8])) {
     use swofty_formats::erp::ErpFile;
 
     let Some(dir) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
@@ -368,10 +374,24 @@ fn stock_ai_lines_need_no_passing_space_fix() {
             continue;
         };
         for r in file.erp.resources.iter().filter(|r| r.kind() == "AISplineData") {
-            let data = file.load(r).unwrap().fragments[0].data().unwrap();
-            assert_eq!(give_routes_space(&data), Spacing::Fine, "{}", r.name);
+            check(&r.name, &file.load(r).unwrap().fragments[0].data().unwrap());
             lines += 1;
         }
     }
     eprintln!("{lines} stock AI racing line(s) checked");
+}
+
+#[test]
+fn stock_ai_lines_need_no_passing_space_fix() {
+    use swofty_core::activation::ailine::{Spacing, give_routes_space};
+
+    stock_ai_lines(|name, data| assert_eq!(give_routes_space(data), Spacing::Fine, "{name}"));
+}
+
+#[test]
+fn stock_ai_lines_load_in_the_game() {
+    use swofty_core::activation::ailine::loadable;
+    use swofty_formats::bxml::Document;
+
+    stock_ai_lines(|name, data| assert_eq!(loadable(&Document::parse(data).unwrap()), Ok(()), "{name}"));
 }

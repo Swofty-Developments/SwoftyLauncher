@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Lookup_UpgradeTreeNodeByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14351fdc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Lookup(void *tree, void *out16, uint64_t key)",
+  "evidence": "decomp:re/decomp/14351fdc0.c;xref:0x140ab205f,0x141241d06,0x14124275c,0x141c7d83f,0x141f42c30",
+  "notes": "Not a tree-node lookup. Switch on operating_mode (this+8 -> +0x3e0): 2 -> FindOrCreate 0x1435e9640 in map +0x178 (first use marks set +0x1d0 and inits via 0x14351fa70 on +0x138); 1 -> entrant row team key -> 0x143522ef0(+0xb8); 0 -> 0x14351b330(+0x18). Copies the 0x30-byte {base,dev,fit} recommended record to out; default 3x zero with 0x101 at +8. (lane owner review requested) Better name: Career_Get_RecommendedUpgradesForOwner (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.lookup_upgrade_tree_node_by_key",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 44 89 C3 48 89 D6 48 89 CF 48 8B 41 08",
+  "match": "0x14351fdc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14351fdc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Lookup_UpgradeTreeNodeByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14351fdc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14351fdc0.c;xref:0x140ab205f",
+   "notes": "V10284 It selects by mode byte at +0x3e0 (0 / 1 / 2) a recommendation-state record (via 1435e9640 etc.) and copies 0x30 bytes, default flags 0x101; not an RnD tree node lookup."
+  }
+ ],
+ "proofs": []
+}

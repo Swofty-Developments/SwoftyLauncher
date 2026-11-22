@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_PassTable_FatalStub",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f0dd70",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f0dd70.c;xref:0x143b81f58,0x143f0dfd2",
+  "notes": "10-byte noreturn stub: call Ne_Crt_InvalidParameterAbort (0x145351784); int3. Cold-path callers 0x143b81f58 (Render_PassTable_FindOrAddBitByName) and 0x143f0dfd2 (pass-table rehash 0x143f0dd80). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.pass_table_fatal_stub",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 48 89 F0 48 83 C4",
+  "match": "0x143b81f58",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143f0dd70",
+  "kind": "func_start",
+  "names": [
+   "Render_PassTable_FatalStub"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143f0dd70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f0dd70.c;xref:0x143b81f58",
+   "notes": "V8293 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

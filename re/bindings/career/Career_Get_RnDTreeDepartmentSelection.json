@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_RnDTreeDepartmentSelection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c7f9a0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint32_t *Get(void *tree_vm, int dept_index)",
+  "evidence": "decomp:re/decomp/141c7f9a0.c;xref:0x141c7b80d,0x141c7fe69",
+  "notes": "Walks [this+0x6d0]+0x858..+0x860 departments, their +0x2b0 lists and +0x1d0 property objects (type 0x146129f38 value == param_2), then resolves a child chain (<0x62 steps) and returns entry+0x830. Decomp contains label code_r0x0001414c70f0 and reads lVar11+0x838 after the loop: merged tail-jump target, not checked against disassembly."
+ },
+ "signature": {
+  "id": "career.get_rn_dtree_department_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 4C 24 20 85 D2 0F 84 ?? ?? ?? ?? 48 8B 44 24 20 48 8B 80 D0 06 00 00",
+  "match": "0x141c7f9a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c7f9a0",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_RnDTreeDepartmentSelection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c7f9a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c7f9a0.c;xref:0x141c7b80d;xref:0x141c7fe69",
+   "notes": "V9993 Same pattern as the row writer but at vm+0x6d0: finds the row matching dept index and writes an S64 property at +0x838; return value is incidental, it is a setter not a getter."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_RemoveAnyInvalidPendingComponents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428d96c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428d96c0.c;pat:log-message-method;xref:0x1428d7b2b",
+  "notes": "(mgr,sceneCfg). By scene type cfg+0x18 (table 0x1457ad830, mask 100) invalidates (0x1428daa30) components +0x6b60, +0x6fb8 (0x450), +0x1d0, cars +0x6fd8 (0x6990), objects +0x6ff8 (0x130); logs removeAnyInvalidPendingComponents; if +0x160 checks the pending cutscene +0x7188 exists in the new scene/subscene maps, else logs 'Found a Cutscene that is Pending Play, and will be invalid' and clears it. Caller 0x1428d7610 (SwitchScene). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_remove_any_invalid_pending_components",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D7 48 89 CE 48 63 42 18",
+  "match": "0x1428d96c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428d96c0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_RemoveAnyInvalidPendingComponents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428d96c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428d96c0.c;xref:0x1428c20f1",
+   "notes": "V5136 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

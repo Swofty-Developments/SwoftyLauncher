@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SpecialisationExtraDetailsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142355020",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142355020.c;pat:log-channel--;xref:0x145781d78",
+  "notes": "Vt 0x145781d78 slot +0x30. Resolves specialisation_extra_details.diagram.code_{stewardship,engineering,commercial,dot}_point (djb2 path) into +0x2b8..+0x2d0; subscribes OwnerPerksNodeUpdated (0x1456bc878, handler 0x1423584a0) via 0x143987810; builds 0x440 binding tree 'specialisation' (title,level,points,team_card...) at +0x2b0; per item 'owner_perks_specialisation_pill' + lng_op_tree_* labels. (lane owner review requested) Better name: Game_OwnerPerksSpecialisationVm_BuildBindings (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_specialisation_extra_details_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 C5 78 29 94 24 20 02 00 00 C5 78 29 8C 24 10 02 00 00 C5 78 29 84 24 00 02 00 00 C5 F8 29 BC 24 F0 01 00 00 C5 F8 29 B4 24 E0 01 00 00 49 89 CF 48 8B 81 88 02 00 00",
+  "match": "0x142355020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142355020",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SpecialisationExtraDetailsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142355020",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142355020.c",
+   "notes": "V5268 2348-line owner-perks specialisation node update (OwnerPerksNodeUpdated, levels, points, stewardship/engineering/commercial, team card); extra_details diagram keys minor. Better Game_OwnerPerks_UpdateSpecialisationNode (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142355020",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142355020.c",
+   "notes": "V7292 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysWorld_CreateBroadPhaseForRigidBodies",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440e27e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440e27e0.c;xref:0x1440c77fc,0x1440c7d27",
+  "notes": "(world): 0x1440e3260([world+0x1138], world+0xf80), then under CS [world+0x10e8] resets counter +0xf30 and recomputes body AABBs, inserting them into the caches [world+0x1130]/[world+0x1138] via 0x1440e1b90; large counts go through a job vcall +0x10 with worker 0x1441109b0 and label 'createBroadPhaseForRigidBodies', waited with 'WAIT:parallelForEach' (0x143ac0100). Clears bitset [world+0xf28] and byte +0x1160. Callers Ne_PhysWorld_RunStepPipeline, Ne_PhysWorld_AdvanceStepState."
+ },
+ "signature": {
+  "id": "core.phys_world_create_broad_phase_for_rigid_bodies",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 08 00 00 C5 78 29 84 24",
+  "match": "0x1440e27e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440e27e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysWorld_CreateBroadPhaseForRigidBodies"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1440e27e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440e27e0.c;xref:0x1440c77fc",
+   "notes": "V8376 0x1440e3260 is BuildBroadphaseGrid called once at start, not per-body worker"
+  }
+ ],
+ "proofs": []
+}

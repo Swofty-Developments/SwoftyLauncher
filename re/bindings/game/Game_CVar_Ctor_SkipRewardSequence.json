@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CVar_Ctor_SkipRewardSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c747f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c747f0.c;xref:0x140af400b,0x140af54f4,0x142d865fd,0x142d868bd,0x142d8af96,0x142d8afd8,0x142d8b01a,0x142d8b05c,0x142d8bd87,0x142d8c40b,0x142d8c7bb,0x14eb7e98a",
+  "notes": "Initialises a setting holder: SSO name string (cap 0x40, vtable 0x145613548), +0x58 = 0x3fff000000000001, zeroed fields, then reads bool setting Game.SkipRewardSequence via 0x143a43b90 into +0x318. call sites (xref list), not only the retirement sequence. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.c_var_ctor_skip_reward_sequence",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8D 41 18 48 C7 41 08",
+  "match": "0x142c747f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c747f0",
+  "kind": "func_start",
+  "names": [
+   "Game_CVar_Ctor_SkipRewardSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142c747f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c747f0.c;xref:0x142d8af96,0x142d865fd",
+   "notes": "V3480 Game.SkipRewardSequence cvar ctor: vtable 0x145613548, name buf 0x40, flags 0x3fff000000000001, register via [0x146ca5e28]+0x18 / 0x143a43b90; caller Sess_RetirementSequence_Update"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChallengeCareerLeaderboardReader_Start",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140adc450",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140adc450.c;str:s_ChallengeCareerLeaderboardReader_Start;xref:0x14566a588",
+  "notes": "Vtable cell 0x14566a588. Own pretty-function log. Stores context (+0xb0 name, +0xb8..+0xd8, +0x3c type, +0xe8=2, +0xf0 delegate). Type 2: collects friend ids into a comma list and requests the friends board with callback Game_ChallengeCareerLeaderboardReader_HandleGetFriendCC; else ranked request via 0x140b69920, callback 0x140add940. Returns +0x80 != 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.challenge_career_leaderboard_reader_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 4D 89 CD 44 89",
+  "match": "0x140adc450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140adc450",
+  "kind": "func_start",
+  "names": [
+   "Game_ChallengeCareerLeaderboardReader_Start"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140adc450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140adc450.c",
+   "notes": "V4412 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

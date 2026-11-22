@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_SetPrimitiveTopology",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a02a50",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a02a50.c;xref:0x143a013ff,0x143ecf7c4",
+  "notes": "If param_2 differs from ctx+0x143c, maps it through the 41-entry u32 table 0x1458a0a48 (values 1-5, 10-13, 33-64 = D3D_PRIMITIVE_TOPOLOGY lists/strips, adjacency variants, patch lists 1-32) and calls list vcall +0x118. Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143ecf6a0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_set_primitive_topology",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 38 91 3C 14 00 00 74 30 89 D6",
+  "match": "0x143a02a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a02a50",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_SetPrimitiveTopology"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a02a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a02a50.c;xref:0x143a013ff",
+   "notes": "V8516 topology table at 1458a0a48 index topo-1, cache +0x143c, vcall +0x118"
+  }
+ ],
+ "proofs": []
+}

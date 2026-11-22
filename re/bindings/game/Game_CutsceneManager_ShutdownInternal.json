@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneManager_ShutdownInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402289a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402289a0.c;pat:log-message-cxx;xref:0x1428b3c89,0x1428b55d2,0x1428b6296,0x1428bbc7b",
+  "notes": "(mgr, sharedPtr<script>*): if the script is non-null takes vcall +0x28 (name), logs CUTSCENE_MANAGER '>>>>>>>> CutsceneManager::shutdownInternal [%p] [%s]', calls script vcall +0xa0, then releases the local copy and the param shared_ptr. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_manager_shutdown_internal",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 8B 0A 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 01 FF 50 28 48 8B 4E 08 48 85 C9 74 0A F0 FF 41 08 48 8B 7E 08 EB 02 31 FF 48 8B 1E 80 3D ?? ?? ?? ?? 01 75 6D B9 58 00 00 00 48 8D 15 ?? ?? ?? ?? 0F 1F 80 00 00 00 00 44 8B 04 8A 41 81 F8 95 B3 6B D6 74 34 45 85 C0 74 48 83 C1 14 4C 69 C1 43 43 66 5F 49 C1 E8 20 41 89 C9 45 29 C1 41 D1 E9 45 01 C1 41 C1 E9 08 45 69 C1 75 01 00 00 44 29 C1 83 F9 58 75 C1 EB 19 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 49 89 D8 49 89 C1 E8 ?? ?? ?? ?? 48 8B 03 48 89 D9 FF 90 A0 00 00 00",
+  "match": "0x1402289a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402289a0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneManager_ShutdownInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1402289a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1402289a0.c",
+   "notes": "V4414 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

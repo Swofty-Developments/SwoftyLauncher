@@ -9,12 +9,16 @@
 #include <string>
 #include <type_traits>
 
+#include <swofty/d3d12.hpp>
 #include <swofty/ease.hpp>
 #include <swofty/events.hpp>
 #include <swofty/fake_hud.hpp>
+#include <swofty/game_assets.hpp>
+#include <swofty/game_mem.hpp>
 #include <swofty/hud_format.hpp>
 #include <swofty/hud_frame.hpp>
 #include <swofty/hud_leaves.hpp>
+#include <swofty/hud_slot.hpp>
 #include <swofty/log_csv.hpp>
 #include <swofty/mem.hpp>
 #include <swofty/settings_struct.hpp>
@@ -29,6 +33,8 @@
 #include <swofty/systems/drivers.hpp>
 #include <swofty/systems/liveries.hpp>
 #include <swofty/systems/power.hpp>
+#include <swofty/systems/pitlane.hpp>
+#include <swofty/systems/race_control.hpp>
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/sounds.hpp>
 #include <swofty/systems/laps.hpp>
@@ -37,6 +43,8 @@
 #include <swofty/systems/tyres.hpp>
 #include <swofty/systems/wearables.hpp>
 #include <swofty/systems/tracks.hpp>
+#include <swofty/systems/tyre_damage.hpp>
+#include <swofty/systems/weather.hpp>
 
 #include "sdk_payloads.h"
 
@@ -55,13 +63,13 @@
 #include <swofty/telemetry.hpp>
 #endif
 
-#define SWOFTY_CPP_SIZE(C, ns, T, n)                                                                                   \
-    static_assert(std::is_standard_layout_v<swofty::ns::events::T> && std::is_trivially_copyable_v<swofty::ns::events::T>, \
-                  #T " is standard layout and trivially copyable");                                                    \
-    static_assert(sizeof(swofty::ns::events::T) == n && sizeof(C) == n, #T " size matches " #C);                       \
+#define SWOFTY_CPP_SIZE(C, ns, T, n)                                                                                             \
+    static_assert(std::is_standard_layout_v<swofty::ns::events::T> && std::is_trivially_copyable_v<swofty::ns::events::T>,       \
+                  #T " is standard layout and trivially copyable");                                                              \
+    static_assert(sizeof(swofty::ns::events::T) == n && sizeof(C) == n, #T " size matches " #C);                                 \
     static_assert(alignof(swofty::ns::events::T) == alignof(C), #T " alignment matches " #C);
 SWOFTY_EV_PAYLOADS(SWOFTY_CPP_SIZE)
-#define SWOFTY_CPP_FIELD(C, ns, T, f, off)                                                                             \
+#define SWOFTY_CPP_FIELD(C, ns, T, f, off)                                                                                       \
     static_assert(offsetof(swofty::ns::events::T, f) == off && offsetof(C, f) == off, #T "." #f " offset matches " #C);
 SWOFTY_EV_FIELDS(SWOFTY_CPP_FIELD)
 static_assert(std::is_standard_layout_v<swofty::cars::live::Car> && std::is_trivially_copyable_v<swofty::cars::live::Car> &&
@@ -69,16 +77,20 @@ static_assert(std::is_standard_layout_v<swofty::cars::live::Car> && std::is_triv
 static_assert(std::is_same_v<std::underlying_type_t<swofty::cars::Department>, int32_t>);
 static_assert(std::is_same_v<std::underlying_type_t<swofty::teams::LogoContext>, int32_t>);
 static_assert(std::is_same_v<std::underlying_type_t<swofty::drivers::Stat>, int32_t>);
+static_assert(std::is_same_v<std::underlying_type_t<swofty::race_control::Flag>, uint8_t> &&
+              std::is_same_v<std::underlying_type_t<swofty::race_control::RedFlag>, uint8_t> &&
+              std::is_same_v<std::underlying_type_t<swofty::race_control::Status>, uint8_t> &&
+              std::is_same_v<std::underlying_type_t<swofty::race_control::Deployment>, uint8_t>);
 
 using namespace swofty;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                   \
-            failures++;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 struct ShopApi {
@@ -118,9 +130,14 @@ SWOFTY_REGISTER
 static void unavailable_without_core()
 {
     CHECK(!detail::registry_table());
+    CHECK(!d3d12::available());
+    CHECK(d3d12::on_srv_created([](void *, const d3d12::SrvCreated *) {}) == d3d12::Result::unavailable);
+    CHECK(d3d12::on_srv_created(nullptr) == d3d12::Result::invalid);
+    CHECK(d3d12::remove_srv_callback(1) == d3d12::Result::unavailable);
     auto v10 = sounds::engine_sounds.add("v10", {.bundle = file("a.bdl")});
     CHECK(v10.empty());
-    auto ferrari = cars::vehicles.variant("ferrari", cars::vehicles["game/ferrari_2025"], [](cars::Vehicle &v) { v.label = "x"; });
+    auto ferrari =
+        cars::vehicles.variant("ferrari", cars::vehicles["game/ferrari_2025"], [](cars::Vehicle &v) { v.label = "x"; });
     CHECK(ferrari.empty());
     auto h = content::packages.layer(content::packages["swofty.classic-seasons-2017/f1_2017"],
                                      [](content::Package &p) { p.teams.at("ferrari").engine_sound = {}; });
@@ -132,8 +149,8 @@ static void unavailable_without_core()
         x.upgrade("radUpgradeEngine").set("FuelTank", "FuelBsfcMin", '*', 0.85f);
     });
     CHECK(sel.result() == Result::unavailable);
-    cars::vehicles.layer(under<cars::Vehicle>("game/").except({cars::vehicles["game/ferrari_2025"]}), [](cars::Vehicle &) {},
-                         Scope::profile);
+    cars::vehicles.layer(
+        under<cars::Vehicle>("game/").except({cars::vehicles["game/ferrari_2025"]}), [](cars::Vehicle &) {}, Scope::profile);
     cars::vehicles.layer(where<cars::Vehicle>([](const cars::Vehicle &v) { return v.performance_class == cars::Class::f1_26; }),
                          [](cars::Vehicle &) {});
     content::packages.layer(tagged(&content::Package::calendar, Tag<career::Calendar>("career.calendar", "c/x")),
@@ -145,9 +162,9 @@ static void unavailable_without_core()
     CHECK(career::seasons.origin(career::seasons["swofty.progressive/2017"], "teams").empty());
     CHECK(!career::seasons.watch([](Ref<career::Season>) {}));
     CHECK(career::ratings.check([](const career::DriverRatings &r, Errors &e) {
-              if (r.pace > 100)
-                  e.add("pace", "0-100");
-          }) == Result::unavailable);
+        if (r.pace > 100)
+            e.add("pace", "0-100");
+    }) == Result::unavailable);
     CHECK(career::seasons.provide([](std::string_view) -> std::optional<career::Season> { return std::nullopt; }) ==
           Result::unavailable);
     CHECK(career::seasons.invalidate() == Result::unavailable);
@@ -160,13 +177,14 @@ static void unavailable_without_core()
     CHECK(last_error().empty());
     Registry<json::Value> untyped{"tails.whatif.presets"};
     CHECK(!untyped.get(untyped["tails.whatif-history/real_2016"]));
-    CHECK((adapter<test::Thing, test::Thing>(test::things, test::things, [](test::Thing t) { return t; },
-                                              [](test::Thing t) { return t; }) == Result::unavailable));
-    CHECK((migrate<test::Thing, test::Thing>(test::things, test::things, [](test::Thing t) { return t; }) ==
+    CHECK((adapter<test::Thing, test::Thing>(
+               test::things, test::things, [](test::Thing t) { return t; }, [](test::Thing t) { return t; }) ==
            Result::unavailable));
+    CHECK(
+        (migrate<test::Thing, test::Thing>(test::things, test::things, [](test::Thing t) { return t; }) == Result::unavailable));
 
-    using events::any, events::content, events::Context, events::Mode, events::mode, events::not_, events::on,
-        events::owner, events::track, events::year;
+    using events::any, events::content, events::Context, events::Mode, events::mode, events::not_, events::on, events::owner,
+        events::track, events::year;
     CHECK(on<career::events::SeasonStart>()
               .in(content("swofty.progressive/f1_career_progressive"))
               .when(year(2016, 2019))
@@ -176,10 +194,13 @@ static void unavailable_without_core()
                   (void)ctx.career();
                   (void)ctx.participants();
               }) == swofty::events::Result::unavailable);
-    CHECK(on<career::events::AddActivity>().in(any({content("a/x"), not_(track("game/monaco"))})).replace(
-              [](career::events::AddActivity &, const Context &) { return false; }) == swofty::events::Result::unavailable);
-    CHECK(on<cars::events::Built>().before([](cars::events::Built &e, const Context &) { (void)e.car.get(cars::live::Field::steering_lock); }) ==
+    CHECK(on<career::events::AddActivity>()
+              .in(any({content("a/x"), not_(track("game/monaco"))}))
+              .replace([](career::events::AddActivity &, const Context &) { return false; }) ==
           swofty::events::Result::unavailable);
+    CHECK(on<cars::events::Built>().before([](cars::events::Built &e, const Context &) {
+        (void)e.car.get(cars::live::Field::steering_lock);
+    }) == swofty::events::Result::unavailable);
     CHECK(on("swofty.progressive.seat_change").after([](std::span<const std::byte>, const Context &) {}) ==
           swofty::events::Result::unavailable);
     CHECK(events::define<ShopPoint>(owner("test")) == swofty::events::Result::unavailable);
@@ -218,15 +239,18 @@ static void unavailable_without_core()
                                                     });
     CHECK(toro.empty());
     teams::pit_times.add("toro_rosso", {.team = toro, .from = teams::pit_times["game/tororosso"]});
-    teams::logos.layer(teams::logos["game/williams"], [](teams::Logo &l) { l.images[teams::LogoContext::hud] = file("logos/w.png"); });
-    auto look = drivers::looks.add("salo_look", {.helmet = wearables::helmets["game/helmet_tier01_livery03"], .pose = "arms_crossed"});
+    teams::logos.layer(teams::logos["game/williams"],
+                       [](teams::Logo &l) { l.images[teams::LogoContext::hud] = file("logos/w.png"); });
+    auto look =
+        drivers::looks.add("salo_look", {.helmet = wearables::helmets["game/helmet_tier01_livery03"], .pose = "arms_crossed"});
     drivers::identities.variant("salo", drivers::identities["game/jarno_opmeer"], [=](drivers::Identity &i) {
         i.person = drivers::people["person/mika_salo"];
         i.look = look;
     });
-    drivers::looks.layer(drivers::looks["game/lewis_hamilton"], [](drivers::Look &l) { l.helmet = wearables::helmets["x/y"]; },
-                         Scope::career);
-    wearables::season_sets.add("mercedes_2016", {.team = teams::identities["swofty.classic-seasons-2016/mercedes"], .season = 2016});
+    drivers::looks.layer(
+        drivers::looks["game/lewis_hamilton"], [](drivers::Look &l) { l.helmet = wearables::helmets["x/y"]; }, Scope::career);
+    wearables::season_sets.add("mercedes_2016",
+                               {.team = teams::identities["swofty.classic-seasons-2016/mercedes"], .season = 2016});
     CHECK(wearables::helmets.all("giggles.helmet-exchange/").empty());
     CHECK(!drivers::heads.get(drivers::heads["mod.senna-face/senna"]));
     CHECK(career::set_seat(7, 1, Ref<drivers::Identity>("game/pierre_gasly")) == career::Result::unavailable);
@@ -247,6 +271,16 @@ static void unavailable_without_core()
     CHECK(from_json(to_json(profile), round) && round.power_scale == 0.9725f && round.limiter_offset_rpm == -300 &&
           round.ai_grip_scale == 0.87f && round.when.size() == 2 && !round.fuel_modes);
     CHECK(std::string(cars::profiles.name()) == "car.profile" && !cars::profiles.schema().empty());
+    cars::Profile team;
+    team.cars.team = {"mercedes"};
+    team.cars.driver = {"game/lewis_hamilton"};
+    team.scope = cars::ProfileScope::global;
+    cars::Profile team_round;
+    CHECK(from_json(to_json(team), team_round) && team_round.cars.team.size() == 1 && team_round.cars.driver.size() == 1 &&
+          team_round.scope == cars::ProfileScope::global && cars::Profile{}.scope == cars::ProfileScope::automatic);
+    CHECK(cars::profiles.schema().find("\"x-version\":\"1.1\"") != std::string::npos &&
+          cars::profiles.schema().find("\"automatic\"") != std::string::npos &&
+          cars::profiles.schema().find("\"driver\"") != std::string::npos);
     CHECK(detail::run_register(nullptr) == 1);
 }
 
@@ -320,8 +354,8 @@ static void payload_accessors()
     CHECK(b.set_engine_sound(sounds::engine_sounds["mod.esp/v10_screamer"]) == Result::ok &&
           b.engine_sound().id() == "mod.esp/v10_screamer");
 
-    teams::events::LogoResolve lr{sizeof lr, 1, teams::LogoContext::driver_select, "game/williams", "williams", "williams_logo",
-                                  nullptr, nullptr};
+    teams::events::LogoResolve lr{
+        sizeof lr, 1, teams::LogoContext::driver_select, "game/williams", "williams", "williams_logo", nullptr, nullptr};
     CHECK(lr.team().id() == "game/williams" && lr.livery_name() == "williams" && lr.key() == "williams_logo");
     CHECK(lr.set_key("progressive_williams_2017") == Result::unavailable);
     lr.set_key_fn = &set_logo_key;
@@ -397,7 +431,8 @@ static void round_trip()
     content::Package pkg{.title = Text::literal("F1 2017 (V10)"), .entrant_list = "esp_f1_2017_v10", .season = 2017};
     pkg.teams.at("ferrari").engine_sound = Ref<sounds::EngineSound>("mod.esp/v10_screamer");
     std::string pt = to_json(pkg);
-    CHECK(pt.find("{\"literal\":\"F1 2017 (V10)\"}") != std::string::npos && pt.find("\"stat_id\":\"auto\"") != std::string::npos);
+    CHECK(pt.find("{\"literal\":\"F1 2017 (V10)\"}") != std::string::npos &&
+          pt.find("\"stat_id\":\"auto\"") != std::string::npos);
     content::Package pb;
     CHECK(from_json(pt, pb) && pb.title.is_literal() && pb.teams.find(std::string("ferrari")));
 
@@ -434,7 +469,8 @@ static void round_trip()
     CHECK(lt.find("\"driver_select\":{\"stock\":\"ui/williams_driver_select.dds\"}") != std::string::npos &&
           lt.find("\"hud\":\"logos/williams_2017_hud.png\"") != std::string::npos);
     teams::Logo lb;
-    CHECK(from_json(lt, lb) && lb.images.size() == 2 && lb.images[teams::LogoContext::hud] == file("logos/williams_2017_hud.png"));
+    CHECK(from_json(lt, lb) && lb.images.size() == 2 &&
+          lb.images[teams::LogoContext::hud] == file("logos/williams_2017_hud.png"));
 
     drivers::Identity di{.person = drivers::people["person/mika_salo"],
                          .names = {Text::literal("Mika"), Text::literal("Salo"), Text::literal("Mika Salo"), "SAL"},
@@ -446,14 +482,16 @@ static void round_trip()
           db.look.id() == "swofty.driver-manager/mika_salo_look");
     drivers::Stats st{.driver = drivers::identities["swofty.driver-manager/mika_salo"], .pace = {78, 84}};
     CHECK(to_json(st).find("\"pace\":{\"start\":78,\"peak\":84}") != std::string::npos);
-    drivers::Head hd{.archive = file("heads/senna/"), .rig_from = drivers::heads["game/male_ls222"], .body = drivers::BodyType::male};
+    drivers::Head hd{
+        .archive = file("heads/senna/"), .rig_from = drivers::heads["game/male_ls222"], .body = drivers::BodyType::male};
     CHECK(to_json(hd).find("\"body\":\"male\"") != std::string::npos);
 
     wearables::Helmet hm{.archive = file("helmets/hamilton_2017_helmet.erp"),
                          .from = wearables::helmets["game/lewis_hamilton"],
                          .name = Text::literal("Hamilton 2017 (HX)"),
                          .driver = drivers::identities["game/lewis_hamilton"],
-                         .colours = std::array<Colour, 4>{Colour("#FFE600"), Colour("#00A19B"), Colour("#7A2A8B"), Colour("#FFFFFF")}};
+                         .colours =
+                             std::array<Colour, 4>{Colour("#FFE600"), Colour("#00A19B"), Colour("#7A2A8B"), Colour("#FFFFFF")}};
     std::string hmt = to_json(hm);
     CHECK(hmt.find("\"colours\":[\"#FFE600\",\"#00A19B\",\"#7A2A8B\",\"#FFFFFF\"]") != std::string::npos);
     wearables::Helmet hmb;
@@ -473,7 +511,7 @@ static void schemas()
 {
     std::string s = career::seasons.schema();
     CHECK(s.find("\"x-registry\":\"career.season\"") != std::string::npos);
-    CHECK(s.find("\"x-version\":\"1.0\"") != std::string::npos);
+    CHECK(s.find("\"x-version\":\"1.1\"") != std::string::npos);
     CHECK(s.find("\"x-applies\":\"read\"") != std::string::npos);
     CHECK(s.find("\"x-snapshot\":true") != std::string::npos && s.find("\"x-snapshot-budget\":65536") != std::string::npos);
     CHECK(s.find("\"x-key\":[\"slot\"]") != std::string::npos);
@@ -490,6 +528,7 @@ static void schemas()
     CHECK(hs.find("\"ffb_scale\"") != std::string::npos && hs.find("\"tyre_physics_group\"") != std::string::npos);
     CHECK(hs.find("\"slipstream\"") != std::string::npos && hs.find("\"hardware\"") != std::string::npos);
     CHECK(hs.find("\"mode\":{\"type\":\"string\",\"enum\":[\"off\",\"lag_spoof\",\"full\"]") != std::string::npos);
+    CHECK(hs.find("\"op\":{\"type\":\"string\",\"enum\":[\"=\",\"+\",\"-\",\"*\"]}") != std::string::npos);
     CHECK(hs.find("\"chassis_com_z\":{\"type\":\"object\"") != std::string::npos);
     CHECK(v.find("\"drs_capable\":{\"type\":[\"boolean\",\"null\"]") != std::string::npos);
     CHECK(v.find("\"x-ref\":\"power.supplier\"") != std::string::npos && v.find("\"tyre_group\"") != std::string::npos);
@@ -516,25 +555,65 @@ static void schemas()
     CHECK(teams::logos.schema().find("\"x-applies\":\"read\"") != std::string::npos);
     CHECK(teams::pit_times.schema().find("\"x-ref\":\"team.pit_times\"") != std::string::npos);
     std::string garage = teams::garages.schema();
-    CHECK(garage.find("\"x-registry\":\"team.garage\"") != std::string::npos && garage.find("\"x-applies\":\"boot\"") != std::string::npos);
+    CHECK(garage.find("\"x-registry\":\"team.garage\"") != std::string::npos &&
+          garage.find("\"x-applies\":\"boot\"") != std::string::npos);
     CHECK(garage.find("\"x-ref\":\"content.package\"") != std::string::npos && teams::garages.at_major() == "team.garage@1");
     teams::Garage garage_rec;
-    CHECK(swofty::to_json(garage_rec).find("\"root\":\"eaid://environment_package/core_assets/objects/textures/\"") != std::string::npos &&
+    CHECK(swofty::to_json(garage_rec).find("\"root\":\"eaid://environment_package/core_assets/objects/textures/\"") !=
+              std::string::npos &&
           garage_rec.srgb);
+    std::string boards = tracks::sponsors.schema();
+    CHECK(boards.find("\"x-registry\":\"track.sponsors\"") != std::string::npos &&
+          boards.find("\"x-applies\":\"boot\"") != std::string::npos);
+    CHECK(boards.find("\"x-ref\":\"content.package\"") != std::string::npos && tracks::sponsors.at_major() == "track.sponsors@1");
+    tracks::Sponsors boards_rec;
+    CHECK(swofty::to_json(boards_rec).find("\"root\":\"eaid://environment_package/core_assets/shared_textures/sponsors/\"") !=
+              std::string::npos &&
+          boards_rec.srgb);
+    std::string swap = teams::vehicle_overrides.schema();
+    CHECK(swap.find("\"x-registry\":\"team.vehicle_override\"") != std::string::npos &&
+          swap.find("\"x-applies\":\"session\"") != std::string::npos);
+    CHECK(swap.find("\"x-ref\":\"vehicle\"") != std::string::npos &&
+          swap.find("\"x-ref\":\"driver.identity\"") != std::string::npos &&
+          swap.find("\"x-ref\":\"track\"") != std::string::npos &&
+          teams::vehicle_overrides.at_major() == "team.vehicle_override@1");
+    teams::VehicleOverride swap_rec;
+    CHECK(swap_rec.when.year == 0 && swap_rec.drivers.empty() && swap_rec.when.session_types.empty());
+    std::string box_ui = content::package_ui.schema();
+    CHECK(box_ui.find("\"x-registry\":\"ui.per_package\"") != std::string::npos &&
+          box_ui.find("\"x-applies\":\"content\"") != std::string::npos);
+    CHECK(box_ui.find("\"x-ref\":\"content.package\"") != std::string::npos &&
+          content::package_ui.at_major() == "ui.per_package@1");
+    content::PackageUi ui_rec;
+    CHECK(swofty::to_json(ui_rec).find("\"root\":\"eaid://ui_package/art/\"") != std::string::npos && ui_rec.srgb &&
+          ui_rec.archives.empty());
+    std::string kit = content::box_assets.schema();
+    CHECK(kit.find("\"x-registry\":\"content.box_assets\"") != std::string::npos &&
+          kit.find("\"x-applies\":\"boot\"") != std::string::npos && kit.find("\"marshals\"") != std::string::npos);
+    CHECK(kit.find("\"x-ref\":\"content.package\"") != std::string::npos &&
+          content::box_assets.at_major() == "content.box_assets@1");
+    content::BoxAssets kit_rec;
+    kit_rec.resources = {"eaid://character_package_shared/crowd/"};
+    std::string kit_json = swofty::to_json(kit_rec);
+    CHECK(kit_json.find("\"kind\":\"other\"") != std::string::npos && kit_json.find("\"archive\":null") != std::string::npos &&
+          kit_json.find("\"resources\":[\"eaid://character_package_shared/crowd/\"]") != std::string::npos && kit_rec.srgb);
     std::string tree = career::rnd_trees.schema();
     CHECK(tree.find("\"x-applies\":\"boot\"") != std::string::npos && tree.find("\"x-key\":[\"label\"]") != std::string::npos);
     CHECK(tree.find("\"enum\":[\"aerodynamics\",\"chassis\",\"durability\",\"engine\"]") != std::string::npos);
     std::string market = career::markets.schema();
     CHECK(market.find("\"x-applies\":\"boot\"") != std::string::npos && market.find("\"x-key\":[\"team\"]") != std::string::npos);
-    CHECK(market.find("\"x-ref\":\"team.identity\"") != std::string::npos && market.find("\"x-ref\":\"driver.identity\"") != std::string::npos);
+    CHECK(market.find("\"x-ref\":\"team.identity\"") != std::string::npos &&
+          market.find("\"x-ref\":\"driver.identity\"") != std::string::npos);
     career::Market m{.retirements = std::vector<career::Retirement>{{.driver = drivers::identities["game/fernando_alonso"],
                                                                      .retire = std::chrono::year{2027} / 12 / 14,
                                                                      .announce = std::chrono::year{2027} / 9 / 16}}};
     m.team_ratings.items().push_back({.team = teams::identities["game/mclaren_26"], .rating = 97});
     CHECK(to_json(m).find("\"retire\":\"2027-12-14\"") != std::string::npos);
     career::RndTree rt{.token = "mercedes"};
-    rt.nodes.items().push_back({.label = "sw_wing_1", .type = "Drag", .size = career::UpgradeSize::major, .cost = 650, .after = {"default"}});
-    CHECK(to_json(rt).find("\"size\":\"major\"") != std::string::npos && to_json(rt).find("\"data_group\":\"\"") != std::string::npos);
+    rt.nodes.items().push_back(
+        {.label = "sw_wing_1", .type = "Drag", .size = career::UpgradeSize::major, .cost = 650, .after = {"default"}});
+    CHECK(to_json(rt).find("\"size\":\"major\"") != std::string::npos &&
+          to_json(rt).find("\"data_group\":\"\"") != std::string::npos);
     CHECK(drivers::identities.schema().find("\"x-ref\":\"driver.look\"") != std::string::npos);
     CHECK(drivers::identities.schema().find("\"x-ref\":\"driver.person\"") != std::string::npos);
     CHECK(drivers::looks.schema().find("\"x-ref\":\"helmet\"") != std::string::npos);
@@ -565,24 +644,27 @@ static void schemas()
     CHECK(td.find("\"x-applies\":\"session\"") != std::string::npos && td.find("\"x-ref\":\"tyre.class\"") != std::string::npos &&
           td.find("\"x-ref\":\"vehicle\"") != std::string::npos);
     std::string pp = tracks::per_package.schema();
-    CHECK(pp.find("\"x-applies\":\"content\"") != std::string::npos && pp.find("\"x-ref\":\"track.layer\"") != std::string::npos &&
+    CHECK(pp.find("\"x-applies\":\"content\"") != std::string::npos &&
+          pp.find("\"x-ref\":\"track.layer\"") != std::string::npos &&
           pp.find("\"x-ref\":\"content.package\"") != std::string::npos);
     CHECK(tracks::tracks.at_major() == "track@1" && tracks::per_package.at_major() == "track.per_package@1");
 }
 
 static void tracks_records()
 {
-    tracks::Track hock{.code = "hockenheim",
-                       .name = "Hockenheimring",
-                       .base = tracks::tracks["game/austria"],
-                       .provides = {tracks::venues["venue/hockenheimring"]},
-                       .names = {.title = Text::key("lng_hockenheim_title"), .gp = Text::key("lng_hockenheim_gp"), .acronym = "HOC"},
-                       .files = file("track/"),
-                       .length_metres = 4574,
-                       .corners = 17};
+    tracks::Track hock{
+        .code = "hockenheim",
+        .name = "Hockenheimring",
+        .base = tracks::tracks["game/austria"],
+        .provides = {tracks::venues["venue/hockenheimring"]},
+        .names = {.title = Text::key("lng_hockenheim_title"), .gp = Text::key("lng_hockenheim_gp"), .acronym = "HOC"},
+        .files = file("track/"),
+        .length_metres = 4574,
+        .corners = 17};
     std::string ht = to_json(hock);
     CHECK(ht.find("\"base\":\"game/austria\"") != std::string::npos && ht.find("\"slot\":null") != std::string::npos &&
-          ht.find("\"provides\":[\"venue/hockenheimring\"]") != std::string::npos && ht.find("\"time_trial\":false") != std::string::npos);
+          ht.find("\"provides\":[\"venue/hockenheimring\"]") != std::string::npos &&
+          ht.find("\"time_trial\":false") != std::string::npos);
     tracks::Track hb;
     CHECK(from_json(ht, hb) && hb.code == "hockenheim" && hb.provides.size() == 1 && hb.stat_id.is_automatic() && !hb.time_trial);
 
@@ -605,11 +687,13 @@ static void tracks_records()
           pj.find("\"offered\":true") != std::string::npos && pj.find("\"world\":null") != std::string::npos &&
           pj.find("\"pit\":null") != std::string::npos);
     tracks::PackageTrack pb;
-    CHECK(from_json(pj, pb) && pb.offered && pb.laps == 67 && pb.fuel && !pb.pit && !pb.names && pb.venue.id() == "venue/hockenheimring");
+    CHECK(from_json(pj, pb) && pb.offered && pb.laps == 67 && pb.fuel && !pb.pit && !pb.names &&
+          pb.venue.id() == "venue/hockenheimring");
 
-    tracks::TrackList list{.calendar = {tracks::tracks["game/bahrain"]},
-                           .more = {tracks::tracks["mod.bahrain24/bahrain24"]},
-                           .left_out = {{tracks::tracks["mod.miami24/igora_drive"], "its swofty_f1 world has 10 garages; the box has 11 teams"}}};
+    tracks::TrackList list{
+        .calendar = {tracks::tracks["game/bahrain"]},
+        .more = {tracks::tracks["mod.bahrain24/bahrain24"]},
+        .left_out = {{tracks::tracks["mod.miami24/igora_drive"], "its swofty_f1 world has 10 garages; the box has 11 teams"}}};
     std::string lj = to_json(list);
     CHECK(lj.find("\"left_out\":[{\"track\":\"mod.miami24/igora_drive\",\"reason\":") != std::string::npos);
 
@@ -652,7 +736,10 @@ static int fake_set_control(uint32_t car, uint32_t mode)
     g_mode = mode;
     return SWOFTY_ASSET_OK;
 }
-static int fake_disqualify(uint32_t car) { return car == 6 ? SWOFTY_ASSET_LATE : car == 2 ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID; }
+static int fake_disqualify(uint32_t car)
+{
+    return car == 6 ? SWOFTY_ASSET_LATE : car == 2 ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
+}
 static int fake_active(int on) { return g_on = on, SWOFTY_ASSET_OK; }
 static int fake_follow(uint32_t car) { return g_follow = int(car), SWOFTY_ASSET_OK; }
 static int fake_camera(int32_t c) { return g_camera = c, c == 1 || c == 2 ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID; }
@@ -668,7 +755,9 @@ static int fake_available() { return g_active; }
 
 static int fake_owned(const char *name)
 {
-    return std::string(name) == "f1_2026" ? SWOFTY_OWNERSHIP_OWNED : std::string(name) == "f1_2025" ? SWOFTY_OWNERSHIP_NOT_OWNED : SWOFTY_OWNERSHIP_UNKNOWN;
+    return std::string(name) == "f1_2026"   ? SWOFTY_OWNERSHIP_OWNED
+           : std::string(name) == "f1_2025" ? SWOFTY_OWNERSHIP_NOT_OWNED
+                                            : SWOFTY_OWNERSHIP_UNKNOWN;
 }
 
 static void content_ownership()
@@ -691,8 +780,15 @@ static void session_operations()
     CHECK(sessions::set_control(car, sessions::Control::ai) == sessions::Result::unavailable);
     CHECK(!car.control());
     CHECK(spectator::set_active(true) == Result::unavailable && !spectator::current());
-    SwoftySessionOps ops{SWOFTY_SESSION_OPS_VERSION, fake_available, fake_control, fake_set_control, fake_active,
-                         fake_follow, fake_camera, fake_current, fake_disqualify};
+    SwoftySessionOps ops{SWOFTY_SESSION_OPS_VERSION,
+                         fake_available,
+                         fake_control,
+                         fake_set_control,
+                         fake_active,
+                         fake_follow,
+                         fake_camera,
+                         fake_current,
+                         fake_disqualify};
     CHECK(sessions::disqualify(car) == sessions::Result::unavailable);
     swofty::detail::set_session_ops_table(&ops);
     CHECK(sessions::disqualify(cars::live::Car(2)) == sessions::Result::ok);
@@ -742,9 +838,146 @@ static void hud_runtime_headers()
     CHECK(swofty::ease::level(1.f, 4) == 4 && swofty::hud::format::speed(10.f).kph == 36);
 }
 
+namespace fake_game_assets {
+int available() { return 1; }
+int read(const char *uri, uint32_t fragment, void *buf, size_t cap, size_t *len)
+{
+    std::string_view bytes = fragment == SWOFTY_GAME_ALL_FRAGMENTS ? "abcdef" : "abc";
+    if (std::string_view(uri) != "eaid://ui_package/x.bin")
+        return SWOFTY_ASSET_INVALID;
+    *len = bytes.size();
+    if (!buf || cap < bytes.size())
+        return SWOFTY_TOO_SMALL;
+    std::memcpy(buf, bytes.data(), bytes.size());
+    return SWOFTY_ASSET_OK;
+}
+int texture(const char *, SwoftyGameTexture *out)
+{
+    *out = {70, 2, 2, 1, 3};
+    return SWOFTY_ASSET_OK;
+}
+int texture_rgba(const char *, uint32_t layer, uint32_t, void *rgba, size_t cap, uint32_t *w, uint32_t *h)
+{
+    if (cap < 16)
+        return SWOFTY_TOO_SMALL;
+    std::memset(rgba, int(layer), 16);
+    *w = *h = 2;
+    return SWOFTY_ASSET_OK;
+}
+const char *const names[] = {"ferrari", "redbull"};
+int catalogue_find(const char *, const char *name, char *uri, size_t cap, size_t *len, uint32_t *layer)
+{
+    std::string_view u = "eaid://ui_package/art/a.texarray.image";
+    for (uint32_t i = 0; i < 2; i++)
+        if (std::string_view(name) == names[i] && cap > u.size()) {
+            std::memcpy(uri, u.data(), u.size());
+            uri[u.size()] = 0;
+            *len = u.size();
+            *layer = i;
+            return SWOFTY_ASSET_OK;
+        }
+    return SWOFTY_ASSET_INVALID;
+}
+int catalogue_name(const char *, uint32_t index, char *name, size_t cap, size_t *len)
+{
+    if (index >= 2)
+        return SWOFTY_ASSET_LATE;
+    *len = std::strlen(names[index]);
+    if (cap <= *len)
+        return SWOFTY_TOO_SMALL;
+    std::memcpy(name, names[index], *len + 1);
+    return SWOFTY_ASSET_OK;
+}
+const SwoftyGameAssets table = {1, available, read, texture, texture_rgba, catalogue_find, catalogue_name};
+}
+
+static void game_assets_wrappers()
+{
+    namespace ga = swofty::game_assets;
+    ga::detail::set_table(nullptr);
+#if !defined(_WIN32)
+    CHECK(!ga::available());
+#endif
+    std::string out;
+    ga::detail::set_table(&fake_game_assets::table);
+    CHECK(ga::available());
+    CHECK(ga::read("eaid://ui_package/x.bin", out) == ga::Result::ok && out == "abcdef");
+    CHECK(ga::read("eaid://ui_package/x.bin", out, 0) == ga::Result::ok && out == "abc");
+    CHECK(ga::read("eaid://ui_package/y.bin", out) == ga::Result::invalid && out == "abc");
+    size_t n = 0;
+    CHECK(ga::size("eaid://ui_package/x.bin", &n) == ga::Result::ok && n == 6);
+    ga::Image im;
+    CHECK(ga::rgba("eaid://ui_package/art/a.texarray.image", 2, im) == ga::Result::ok && im.width == 2 && im.rgba.size() == 16 &&
+          im.rgba[5] == 2);
+    auto slot = ga::find("overrides.team_logos.list", "redbull");
+    CHECK(slot && slot->layer == 1 && slot->texture == "eaid://ui_package/art/a.texarray.image");
+    CHECK(!ga::find("overrides.team_logos.list", "nobody"));
+    std::vector<std::string> list;
+    CHECK(ga::names("overrides.team_logos.list", list) == ga::Result::ok && list.size() == 2 && list[1] == "redbull");
+    ga::detail::set_table(nullptr);
+}
+
+namespace game_mem_fake {
+struct Call {
+    std::string id;
+    size_t size = 0, offset = 0, n = 0;
+    uint32_t value = 0;
+    bool expect = false;
+    int restores = 0;
+};
+inline Call last;
+inline uint64_t heap[4];
+int write_data(const char *id, size_t size, size_t offset, const void *bytes, size_t n, const void *expect)
+{
+    last.id = id ? id : "";
+    last.size = size, last.offset = offset, last.n = n, last.expect = expect != nullptr;
+    std::memcpy(&last.value, bytes, n < sizeof last.value ? n : sizeof last.value);
+    return SWOFTY_ASSET_OK;
+}
+int restore_data(const char *id)
+{
+    last.id = id ? id : "*";
+    last.restores++;
+    return SWOFTY_ASSET_OK;
+}
+void *alloc(void *, size_t size, size_t) { return size <= sizeof heap ? heap : nullptr; }
+void free(void *, void *p) { last.value = p == heap ? 1u : 0u; }
+inline constexpr swofty::data<"k_Test_ColourTable", uint32_t[6]> colours{};
+inline constexpr swofty::data<"g_Test_Scalar", float> scalar{};
+}
+
+static void game_memory()
+{
+    namespace gm = swofty::game_mem;
+    using namespace game_mem_fake;
+    CHECK(!gm::available());
+    CHECK(gm::write(colours, 4, 0xff00ff00u) == gm::Result::unavailable);
+    CHECK(gm::alloc(16) == nullptr);
+    static_assert(std::is_same_v<gm::detail::element_type<decltype(colours)>, uint32_t>);
+    static_assert(gm::detail::element_count<decltype(colours)> == 6 && gm::detail::element_count<decltype(scalar)> == 1);
+    SwoftyGameMem t{SWOFTY_GAME_MEM_VERSION, write_data, restore_data, alloc, free};
+    gm::set_table(&t);
+    CHECK(gm::available());
+    CHECK(gm::write(colours, 5, 0xff112233u, 0xffffffffu) == gm::Result::ok);
+    CHECK(last.id == "k_Test_ColourTable" && last.size == 24 && last.offset == 20 && last.n == 4 && last.value == 0xff112233u &&
+          last.expect);
+    CHECK(gm::write(colours, 6, 0u) == gm::Result::invalid);
+    CHECK(gm::write(scalar, 0, 1.5f) == gm::Result::ok && last.size == 4 && !last.expect);
+    CHECK(gm::restore(colours) == gm::Result::ok && last.id == "k_Test_ColourTable");
+    CHECK(gm::restore_all() == gm::Result::ok && last.id == "*" && last.restores == 2);
+    uint64_t *p = gm::alloc_array<uint64_t>(4);
+    CHECK(p == heap && gm::alloc_array<uint64_t>(5) == nullptr && gm::alloc_array<uint64_t>(0) == nullptr);
+    gm::free(p);
+    CHECK(last.value == 1u);
+    CHECK(std::strcmp(gm::name(gm::Result::invalid), "invalid") == 0);
+    gm::set_table(nullptr);
+}
+
 int main()
 {
+    game_memory();
     hud_runtime_headers();
+    game_assets_wrappers();
     unavailable_without_core();
     session_operations();
     content_ownership();

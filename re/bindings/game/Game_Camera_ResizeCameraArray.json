@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Camera_ResizeCameraArray",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144401ae0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144401ae0.c;xref:0x144400635,0x144400aca,0x144536916,0x144536c97,0x14453ad0e,0x14453adab",
+  "notes": "Grows the 0x270-byte per-viewport records in [this+0x48] up to index param_3 (defaults 1.0, far 1000.0, 0.2, 0.5625, -1.0 at +0x98), then pushes camera param_2 with param_4 onto that record's stack (+0xe0, 0x18 stride, max 16, oldest dropped, no push if already on top, count +0x260) and writes viewport data to the render resource (0x146c621e0 slots 3/6). Null camera/list -> errno 0xe. (lane owner review requested) Better name: Game_Camera_PushOnViewportStack (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.camera_resize_camera_array",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x144401ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144401ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_Camera_ResizeCameraArray"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144401ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144401ae0.c;xref:0x144400635",
+   "notes": "V7665 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

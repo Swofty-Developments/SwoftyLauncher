@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142474a60",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142474a60.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140c2f025",
+  "notes": "AddTeam for type 1 eUserDefined: array this+0x2d8; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Inserts via 0x140cdbd40, then posts bus msg 0x14578d678 {id, slot-empty flag bit32} via 0x1439876c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_team",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 90 07 00 00 4C 89 C7 48 89 CB 48 8B 89 D8 02 00 00",
+  "match": "0x142474a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142474a60",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142474a60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142474a60.c;xref:0x140c2f025",
+   "notes": "V5066 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

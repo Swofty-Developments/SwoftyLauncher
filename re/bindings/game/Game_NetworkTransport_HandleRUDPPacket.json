@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_HandleRUDPPacket",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14404a460",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14404a460.c;pat:log-message-method;xref:0x144046d39,0x144094948",
+  "notes": "Logs 'handleRUDPPacket' length/addr; on eDisconnect sets channel state disconnecting, on eConnect fires the new-connection callback with credentials. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_transport_handle_rudp_packet",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 01 00 00 4C 89 C3",
+  "match": "0x14404a460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14404a460",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_HandleRUDPPacket"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14404a460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14404a460.c;xref:0x144046d39",
+   "notes": "V6466 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

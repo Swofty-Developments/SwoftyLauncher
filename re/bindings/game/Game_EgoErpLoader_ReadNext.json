@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_ReadNext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a69720",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a69720.c;pat:log-message-method;xref:0x143a67fdd",
+  "notes": "(loader, read state rs, file offset): aligns the offset down to loader+0x308 (rs[3]=aligned, rs[4]=skip), QPC time rs[0xb], logs EGO_ERP_LOADER 'readNext - readNext \"%s\" at offset = %I64u'; drops old buffer rs[2], takes the next buffer of ring +0x28..+0x30 (index +0x1c, spins while its ref +0x20 > 1) and issues the async read 0x143f38900([+0x98], file rs[1], buf+0x10, aligned offset, size buf+0x18) storing the new request handle in rs[1]. Caller 0x143a65bd0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_read_next",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 78 01 00 00 4C 89 C3 48 89 D6",
+  "match": "0x143a69720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a69720",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_ReadNext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a69720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a69720.c;xref:0x143a67fdd",
+   "notes": "V6429 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

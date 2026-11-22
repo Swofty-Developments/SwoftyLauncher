@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_PlayerDroppedSendNetPhaseBase",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cf2960",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cf2960.c;pat:log-channel-NETWORK;xref:0x14e73da66,0x14e74777d",
+  "notes": "Bus-message handler: lea'd at 0x14e73da66 in .data1 fn 0x14e73da20 into the handler block passed to Ne_Subscribe_BusMessage 0x143987810 (also 0x14e74777d). If mode +0x28 == 1 logs 'Player (%d) Dropped In - Send the net phase base' and calls 0x142cf2f80 (send phase base). (lane owner review requested) Better name: Game_Network_SessionTime_OnPlayerDroppedIn (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_player_dropped_send_net_phase_base",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 83 79 28 01 0F 85",
+  "match": "0x142cf2960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cf2960",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_PlayerDroppedSendNetPhaseBase"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142cf2960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cf2960.c;xref:0x14e73da68",
+   "notes": "V5076 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

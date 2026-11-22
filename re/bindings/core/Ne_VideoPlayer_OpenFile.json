@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_VideoPlayer_OpenFile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14421c750",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14421c750.c;xref:0x140266da1,0x140aca13f",
+  "notes": "Opens a video file for the UI video widget: prefixes videos/ (format videos/%s) unless already present, builds the path (0x104 buffer) and starts playback with options param_4..param_6. Callers: FePopup_Dispatch_FeatureCmd, Game_TalkingPoints_PlayItem, Sess_PreRace_OnStateExit, Sess_RedFlagRaceStrategy_Enter."
+ },
+ "signature": {
+  "id": "core.video_player_open_file",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 02 00 00 44 89 CB 4C 89",
+  "match": "0x14421c750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14421c750",
+  "kind": "func_start",
+  "names": [
+   "Ne_VideoPlayer_OpenFile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14421c750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14421c750.c;xref:0x140266da1",
+   "notes": "V3654 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

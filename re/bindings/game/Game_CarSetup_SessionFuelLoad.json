@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "Game_CarSetup_SessionFuelLoad",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b78000",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float Game_CarSetup_SessionFuelLoad(void *setup)",
+  "evidence": "decomp:re/decomp/140b78000.c;decomp:re/decomp/140b77b70.c;xref:0x140b77bbe,0x140b77cf9;imm:0x14568e730",
+  "notes": "the session's starting fuel load (kg, float in xmm0): setup+0x270's vtable +0xa8 gives the session (type at +8, 1-18), mapped by the int table 0x14568e730 to 0 practice (20 kg), 1 qualifying (TrackDataTrack +0x1b0 + 4*mode byte: one-shot/short/full), 2 race (TrackDataTrack race_fuel row 0, 1 for type 16, 2 for type 17, field = the weekend's race length byte (+0x28 of the session entry in vt+0x98's list +0x258..+0x260) * 4, or +0x1c), else the default 10 kg; the track comes from Game_TrackData_GetTrack(setup+0x278 -> +0xf58, TRACK_DATA records +0x28..+0x30 [vt+0x98 result +0x278 byte] -> +0x08); the result is clamped by the two tunables at [0x14605a648]+8 (min) and [0x14605a4f8]+8 (max). Two calls, both in the setup manager's fuel apply 0x140b77b70 (setup = this - 0x290), which stores it in the setup (+0x28 -> +0xa0 -> +0xf94) and each car's setup fuel steps. Raised by w19-hooks for the session.fuel.load hook point; needs an independent verify."
+ },
+ "signature": {
+  "id": "game.car_setup_session_fuel_load",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CF",
+  "match": "0x140b78000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b78000",
+  "kind": "func_start",
+  "names": [
+   "Game_CarSetup_SessionFuelLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w19-hooks",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/game_points.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

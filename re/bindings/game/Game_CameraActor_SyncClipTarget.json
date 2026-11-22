@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CameraActor_SyncClipTarget",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401c1bb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401c1bb0.c;xref:0x140186e8b",
+  "notes": "CameraActor::NeSequenceClipTargetImpl::sync generic variant (1 call in 0x140184cb0): when owner+0x170 +0x1e0 is active and track index this+0x74 valid, evaluates the animation channels at time this+0x78 into a scratch float array and converts rotation channels (sin/cos) to a transform; lazily JIT-binds the target (0x143a35d90) under SRW lock, logs sync JIT bind failed. Probably the non-camera (object/light) clip target - role is a hypothesis. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2328)"
+ },
+ "signature": {
+  "id": "game.camera_actor_sync_clip_target",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC C8 00 00 00 48 8D AC 24 80 00 00 00 C5 78 29 7D 30",
+  "match": "0x1401c1bb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401c1bb0",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraActor_SyncClipTarget"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_CameraActor_SyncClipTarget",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401c1bb0.c;xref:0x140186e8b",
+   "notes": "V2328 owner+0x170+0x1e0, track idx +0x74, time +0x78, JIT bind 143a35d90; writes transform to this+0xf0..0x12f; role hypothesis only"
+  }
+ ],
+ "proofs": []
+}

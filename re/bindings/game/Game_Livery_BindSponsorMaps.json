@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Livery_BindSponsorMaps",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e85d50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *out, void *a, void *b, int c",
+  "evidence": "decomp:re/decomp/143e85d50.c;xref:0x143db23be",
+  "notes": "Ctor (vtable 0x1459bdd90), built in place at caller obj+0x2c0. Registers ~100 hashed material param ids (me_diffuseMap, me_albedoMap, me_uvScaleOffset...); hashes 4 shader eaids (object_car_monitor, vehicle_lcd_screen, f1_car_mirror_left/right) into map +0x7f0; creates NeRtShaderTable '%s.hitShaderTable' binding g_carMonitorSRV/g_steeringScreenSRV/g_mirrorLeft/RightSRV; ShaderTableMaterials buffer (stride 0xe0), Null textures. (lane owner review requested) Better name: Game_RtHitShaderTable_Ctor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.livery_bind_sponsor_maps",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 05 00 00 C5 F8 29 BC 24 40 05 00 00 C5 F8 29 B4 24 30 05 00 00 44 89 CB",
+  "match": "0x143e85d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e85d50",
+  "kind": "func_start",
+  "names": [
+   "Game_Livery_BindSponsorMaps"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143e85d50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143e85d50.c;xref:0x143db23be",
+   "notes": "V10341 Generic material/shader parameter binding for many me_* params and jumbotron, mirror, monitor SRVs; sponsor maps are only a subset."
+  }
+ ],
+ "proofs": []
+}

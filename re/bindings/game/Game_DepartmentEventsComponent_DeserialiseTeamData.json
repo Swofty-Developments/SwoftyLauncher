@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DepartmentEventsComponent_DeserialiseTeamData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cc1c90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cc1c90.c;str:s_Championship_DepartmentEventsComponent_DeserialiseTeamData;xref:0x140cc1796",
+  "notes": "Own DE_deserialise_trace logs carry this PRETTY_FUNCTION. Reads department_events_team_data list; per team: packed_team_stat_id, rare_event_random_seed/_iterations, new 0xb48 team data (0x140d6ad60) into map this+0x438 (0x140d61d40/0x140d62190), RNG at data+0x1c advanced 'iterations' times; event_cooldowns->+0x9f0, follow_up->+0xa48..+0xa50, thresholds->+0xa78, magnitudes->+0xab8, timed goals->+0xad0/+0xb28, active event->+0xa58/+0xa60. Errors 0x57/0x58. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.department_events_component_deserialise_team_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 C5 78 29 8C 24",
+  "match": "0x140cc1c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cc1c90",
+  "kind": "func_start",
+  "names": [
+   "Game_DepartmentEventsComponent_DeserialiseTeamData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cc1c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cc1c90.c;xref:0x140cc1796",
+   "notes": "V4672 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

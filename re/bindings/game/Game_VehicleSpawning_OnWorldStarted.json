@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleSpawning_OnWorldStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3e7c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f3e7c0.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x142f3c22b",
+  "notes": "Read in full; callback (lea at 0x142f3c22b in 0x142f3b410). Logs 'World started for vehicle %d', looks up the request by vehicle id in hash map this+0x60..+0x94, SetState(3) via 0x142f3d970 unless already 3, then tail-calls the request callback req+0x6860 if set. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_spawning_on_world_started",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142f3e7c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3e7c0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleSpawning_OnWorldStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3e7c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3e7c0.c;xref:0x142f3c22d",
+   "notes": "V5622 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

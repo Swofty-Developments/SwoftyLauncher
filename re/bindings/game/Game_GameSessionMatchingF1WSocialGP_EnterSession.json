@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingF1WSocialGP_EnterSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307c000",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14307c000.c;pat:log-message-cxx;xref:0x1430aeb16,0x1430b257f,0x1430b29e7",
+  "notes": "Own pretty-function string 0x14580cee5 'NEbool ...F1WSocialGP::enterSession(SessionSelectionDelegate, SearchDelegate, EnterSessionDelegate)'. Stores selection delegate p2 at +0x158/+0x160 and enter delegate p4 at +0x148/+0x150; only when idle (+0x58 == 0, no pending +0x100/+0xe8) and search delegate p3 set: copies p3 to +0x88..+0xa0, +0x80 = 1, restarts timers, +0x58 = 1, sets peer list from [[p1+8]+0x390] (0x1431fe880), resets selection +0xa8/+0xb0 and calls the selection delegate, then Game_..._SearchSession; on failure 0x14307c2c0(p1,0,0,0). Returns success. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_f1_w_social_gp_enter_session",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 4C 89 CB 4C 89 C7 49 89 D6",
+  "match": "0x14307c000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307c000",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingF1WSocialGP_EnterSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307c000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307c000.c;xref:0x1430aeb17",
+   "notes": "V5600 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

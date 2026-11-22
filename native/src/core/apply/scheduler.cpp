@@ -1,16 +1,29 @@
-#include "scheduler.hpp"
+#include "core/apply/scheduler.hpp"
 
-#include "../registry/table.hpp"
-#include "facts.hpp"
+#include "core/registry/table.hpp"
+#include "core/apply/facts.hpp"
+#include "core/diagnostics/steps.hpp"
 
 #include <algorithm>
+#include <condition_variable>
 #include <cstdio>
+#include <system_error>
+#include <thread>
 
 namespace swofty_core::apply {
 
 namespace {
 
 std::mutex list_mu;
+
+constexpr double STEP_FLOOR_MS = 1.0;
+
+std::string step_line(double ms, const std::string &name)
+{
+    char line[320];
+    std::snprintf(line, sizeof line, perf::STEP_LINE, ms, name.c_str());
+    return line;
+}
 
 std::vector<std::unique_ptr<Applier>> &list()
 {
@@ -20,14 +33,14 @@ std::vector<std::unique_ptr<Applier>> &list()
 
 std::string counts(const Report &r)
 {
-    return std::to_string(r.applied) + " applied, " + std::to_string(r.put_back) + " put back, " +
-           std::to_string(r.refused) + " refused";
+    return std::to_string(r.applied) + " applied, " + std::to_string(r.put_back) + " put back, " + std::to_string(r.refused) +
+           " refused";
 }
 
 std::string counts(const Totals &t)
 {
-    return std::to_string(t.applied) + " applied, " + std::to_string(t.put_back) + " put back, " +
-           std::to_string(t.refused) + " refused";
+    return std::to_string(t.applied) + " applied, " + std::to_string(t.put_back) + " put back, " + std::to_string(t.refused) +
+           " refused";
 }
 
 }
@@ -127,10 +140,14 @@ void Scheduler::log(const std::string &line)
 
 void Scheduler::reset()
 {
-    Lock g(mu_);
+    Lock g = settled_lock();
     ctx_ = Context();
     have_ctx_ = false;
     planned_ = booted_ = read_ = session_ = work_ = false;
+    started_ = false;
+    boot_.clear();
+    boot_keys_.clear();
+    boot_content_.clear();
     keys_.clear();
     active_.clear();
     active_label_.clear();
@@ -182,8 +199,8 @@ void Scheduler::publish(Lock &)
         facts_(ctx_);
 }
 
-Totals Scheduler::run(Moment m, Applies kind, const std::function<void(Applier &, Report &)> &call,
-                      std::vector<Applier *> *ran, bool reverse_order, const std::vector<Applier *> *only)
+Totals Scheduler::run(Moment m, Applies kind, const std::function<void(Applier &, Report &)> &call, std::vector<Applier *> *ran,
+                      bool reverse_order, const std::vector<Applier *> *only)
 {
     std::vector<Applier *> todo;
     if (only)
@@ -195,9 +212,14 @@ Totals Scheduler::run(Moment m, Applies kind, const std::function<void(Applier &
     if (reverse_order)
         std::reverse(todo.begin(), todo.end());
     Totals t;
+    perf::Stopwatch steps;
     for (Applier *a : todo) {
         Report r;
+        steps.lap_ms();
         call(*a, r);
+        double took = steps.lap_ms();
+        if (m == Moment::boot || took >= STEP_FLOOR_MS)
+            log(step_line(took, std::string("applier ") + a->registry() + " " + moment_name(m)));
         t.appliers++;
         t.applied += r.applied;
         t.put_back += r.put_back;
@@ -211,6 +233,8 @@ Totals Scheduler::run(Moment m, Applies kind, const std::function<void(Applier &
         if (ran)
             ran->push_back(a);
     }
+    if (!todo.empty())
+        log(step_line(steps.total_ms(), std::string("appliers ") + moment_name(m) + " (" + std::to_string(todo.size()) + ")"));
     return t;
 }
 
@@ -230,73 +254,232 @@ bool Scheduler::has_addon_content(const std::string &registry)
     return false;
 }
 
-std::size_t Scheduler::plan_boot()
+struct Scheduler::OffThread {
+    std::mutex mu;
+    std::condition_variable cv;
+    bool done = false;
+    uint64_t generation = 0;
+    std::vector<std::size_t> picks, keys;
+    std::string error;
+};
+
+void Scheduler::start_plan(bool off_thread)
 {
     Lock g(mu_);
-    if (planned_) {
-        std::size_t n = 0;
-        for (auto &[reg, k] : keys_)
-            n += k;
-        return n;
-    }
-    planned_ = true;
+    if (started_)
+        return;
+    started_ = true;
+    perf::Stopwatch steps;
+    boot_.clear();
     for (Applier *a : appliers())
         if (a->applies() == Applies::boot)
-            a->prepare(store_);
-    std::size_t total = 0;
-    int boot = 0;
-    for (Applier *a : appliers()) {
-        if (a->applies() != Applies::boot)
-            continue;
-        boot++;
-        std::size_t k = a->database_keys(store_);
-        bool content = has_addon_content(a->registry());
-        keys_.push_back({a->registry(), k});
-        total += k;
-        work_ = work_ || k || content;
-        log(std::string("[apply] ") + a->registry() + " boot: " + std::to_string(k) + " new database key(s) planned" +
-            (content ? "" : "; no addon records or layers"));
+            boot_.push_back(a);
+    for (Applier *a : boot_)
+        a->prepare(store_);
+    boot_keys_.assign(boot_.size(), 0);
+    boot_content_.assign(boot_.size(), 0);
+    if (!off_thread) {
+        count_on_thread_locked();
+        log(step_line(steps.total_ms(), "boot plan on this thread (" + std::to_string(boot_.size()) + ")"));
+        return;
     }
-    log("[apply] boot plan: " + std::to_string(boot) + " boot applier(s), " + std::to_string(total) +
-        " new database key(s) for the value map" + (work_ ? "" : "; nothing for the database to apply"));
-    return total;
+    log(step_line(steps.lap_ms(), "boot plan prepare (" + std::to_string(boot_.size()) + ")"));
+    auto off = std::make_shared<OffThread>();
+    std::vector<Applier *> todo;
+    bool counts = false;
+    for (std::size_t i = 0; i < boot_.size(); i++) {
+        Applier *a = boot_[i];
+        if (a->counts_off_thread()) {
+            counts = a->may_count(store_) || counts;
+            off->picks.push_back(i);
+            todo.push_back(a);
+            continue;
+        }
+        boot_keys_[i] = a->database_keys(store_);
+        boot_content_[i] = has_addon_content(a->registry());
+    }
+    log(step_line(steps.lap_ms(), "boot plan counts on this thread (" + std::to_string(boot_.size() - todo.size()) + ")"));
+    off->generation = store_.generation();
+    auto here = [&](const char *why) {
+        for (Applier *a : todo)
+            off->keys.push_back(a->database_keys(store_));
+        off->done = true;
+        log(step_line(steps.lap_ms(),
+                      std::string("boot plan counts on this thread, ") + why + " (" + std::to_string(todo.size()) + ")"));
+        settle_locked(*off);
+    };
+    if (!counts) {
+        here("none can count a key");
+        return;
+    }
+    std::function<void(const std::string &)> say = log_;
+    Store &st = store_;
+    try {
+        std::thread([off, todo, &st, say] {
+            perf::Stopwatch took;
+            try {
+                for (Applier *a : todo)
+                    off->keys.push_back(a->database_keys(st));
+            } catch (const std::exception &e) {
+                off->error = e.what();
+            } catch (...) {
+                off->error = "an unknown exception";
+            }
+            if (say)
+                say(step_line(took.total_ms(), "boot plan count off the thread (" + std::to_string(todo.size()) + ")"));
+            {
+                std::lock_guard l(off->mu);
+                off->done = true;
+            }
+            off->cv.notify_all();
+        }).detach();
+        off_ = off;
+    } catch (const std::system_error &) {
+        here("no worker thread");
+    }
 }
 
-std::size_t Scheduler::planned_keys() const
+void Scheduler::count_on_thread_locked()
 {
+    for (std::size_t i = 0; i < boot_.size(); i++) {
+        boot_keys_[i] = boot_[i]->database_keys(store_);
+        boot_content_[i] = has_addon_content(boot_[i]->registry());
+        note_count_locked(i);
+    }
+    close_plan_locked();
+}
+
+void Scheduler::note_count_locked(std::size_t i)
+{
+    std::size_t k = boot_keys_[i];
+    bool content = boot_content_[i];
+    keys_.push_back({boot_[i]->registry(), k});
+    work_ = work_ || k || content;
+    log(std::string("[apply] ") + boot_[i]->registry() + " boot: " + std::to_string(k) + " new database key(s) planned" +
+        (content ? "" : "; no addon records or layers"));
+}
+
+void Scheduler::close_plan_locked()
+{
+    std::size_t total = 0;
+    for (auto &[reg, k] : keys_)
+        total += k;
+    planned_ = true;
+    log("[apply] boot plan: " + std::to_string(boot_.size()) + " boot applier(s), " + std::to_string(total) +
+        " new database key(s) for the value map" + (work_ ? "" : "; nothing for the database to apply"));
+}
+
+void Scheduler::settle_locked(const OffThread &off)
+{
+    if (off_.get() == &off)
+        off_.reset();
+    perf::Stopwatch took;
+    bool moved = store_.generation() != off.generation;
+    if (moved || !off.error.empty() || off.keys.size() != off.picks.size()) {
+        log(std::string("[apply] boot plan: ") +
+            (moved ? std::string("the registry changed after the count off the thread started")
+                   : "the count off the thread failed (" + (off.error.empty() ? std::string("no count") : off.error) + ")") +
+            "; counted again on this thread");
+        for (std::size_t i : off.picks)
+            boot_[i]->forget_count();
+        for (std::size_t i : off.picks)
+            boot_keys_[i] = boot_[i]->database_keys(store_);
+        log(step_line(took.lap_ms(), "boot plan count again on this thread (" + std::to_string(off.picks.size()) + ")"));
+    } else
+        for (std::size_t n = 0; n < off.picks.size(); n++)
+            boot_keys_[off.picks[n]] = off.keys[n];
+    for (std::size_t i : off.picks)
+        boot_content_[i] = has_addon_content(boot_[i]->registry());
+    for (std::size_t i = 0; i < boot_.size(); i++)
+        note_count_locked(i);
+    close_plan_locked();
+}
+
+void Scheduler::await_count()
+{
+    std::shared_ptr<OffThread> off;
+    {
+        Lock g(mu_);
+        off = off_;
+    }
+    if (!off)
+        return;
+    perf::Stopwatch waited;
+    {
+        std::unique_lock l(off->mu);
+        off->cv.wait(l, [&] { return off->done; });
+    }
+    double ms = waited.total_ms();
     Lock g(mu_);
+    log(step_line(ms, "boot plan wait for the count off the thread"));
+    if (off_ == off)
+        settle_locked(*off);
+}
+
+Scheduler::Lock Scheduler::settled_lock()
+{
+    for (;;) {
+        await_count();
+        Lock g(mu_);
+        if (!off_)
+            return g;
+    }
+}
+
+std::size_t Scheduler::plan_boot()
+{
+    start_plan(false);
+    Lock g = settled_lock();
     std::size_t n = 0;
     for (auto &[reg, k] : keys_)
         n += k;
     return n;
 }
 
-std::size_t Scheduler::planned_keys(const std::string &registry) const
+std::size_t Scheduler::planned_keys()
 {
-    Lock g(mu_);
+    Lock g = settled_lock();
+    std::size_t n = 0;
+    for (auto &[reg, k] : keys_)
+        n += k;
+    return n;
+}
+
+std::size_t Scheduler::planned_keys(const std::string &registry)
+{
+    Lock g = settled_lock();
     for (auto &[reg, k] : keys_)
         if (reg == registry)
             return k;
     return 0;
 }
 
-bool Scheduler::boot_work() const
+bool Scheduler::boot_work()
+{
+    Lock g = settled_lock();
+    return work_;
+}
+
+bool Scheduler::boot_may_work() const
 {
     Lock g(mu_);
-    return work_;
+    return !planned_ || work_;
 }
 
 Totals Scheduler::run_boot()
 {
-    Lock g(mu_);
+    Lock g = settled_lock();
     if (booted_)
         return {};
     if (!planned_)
         plan_boot();
     booted_ = true;
+    uint64_t from = store_.generation();
+    Context was = store_.context();
     publish(g);
-    Totals t = run(Moment::boot, Applies::boot, [&](Applier &a, Report &r) { a.boot(store_, r); }, nullptr, false,
-                   nullptr);
+    boot_published_ = store_.generation();
+    boot_from_ = boot_published_ == from + 1 && store_.context() == was ? from : boot_published_;
+    Totals t = run(Moment::boot, Applies::boot, [&](Applier &a, Report &r) { a.boot(store_, r); }, nullptr, false, nullptr);
     log("[apply] boot: " + std::to_string(t.appliers) + " applier(s); " + counts(t) + " (" + summary(ctx_) + ")");
     if (!boot_summary_.empty()) {
         std::string line;
@@ -309,15 +492,42 @@ Totals Scheduler::run_boot()
     return t;
 }
 
+uint64_t Scheduler::boot_generation() const
+{
+    Lock g(mu_);
+    uint64_t now = store_.generation();
+    return booted_ && now == boot_published_ ? boot_from_ : now;
+}
+
 void Scheduler::log_unapplied()
 {
-    static const char *const READ_BY_CORE[] = {
-        "addon.option",   "career.character", "career.content",       "career.driver_ratings", "career.season",
-        "career.wizard",  "content.package",  "driver.head",          "driver.identity",       "driver.look",
-        "driver.person",  "driver.stats",     "engine_sound",         "era.box",               "gloves",
-        "helmet",         "hub.tab",          "lang.string",          "livery",                "suit",
-        "team.constructor", "team.identity",  "team.logo",            "team.pit_times",        "vehicle",
-        "vehicle.package", "wearable.season_set"};
+    static const char *const READ_BY_CORE[] = {"addon.option",
+                                               "career.character",
+                                               "career.content",
+                                               "career.driver_ratings",
+                                               "career.season",
+                                               "career.wizard",
+                                               "content.package",
+                                               "driver.head",
+                                               "driver.identity",
+                                               "driver.look",
+                                               "driver.person",
+                                               "driver.stats",
+                                               "engine_sound",
+                                               "era.box",
+                                               "gloves",
+                                               "helmet",
+                                               "hub.tab",
+                                               "lang.string",
+                                               "livery",
+                                               "suit",
+                                               "team.constructor",
+                                               "team.identity",
+                                               "team.logo",
+                                               "team.pit_times",
+                                               "vehicle",
+                                               "vehicle.package",
+                                               "wearable.season_set"};
     std::vector<std::string> names = store_.registries();
     std::sort(names.begin(), names.end());
     for (auto &name : names) {
@@ -363,8 +573,8 @@ Totals Scheduler::deactivate_locked(Lock &g, const std::string &why)
         return {};
     std::vector<Applier *> was;
     was.swap(activated_);
-    Totals t = run(Moment::deactivate, Applies::content, [&](Applier &a, Report &r) { a.deactivate(store_, r); }, nullptr,
-                   true, &was);
+    Totals t =
+        run(Moment::deactivate, Applies::content, [&](Applier &a, Report &r) { a.deactivate(store_, r); }, nullptr, true, &was);
     std::string label = active_label_;
     active_.clear();
     active_label_.clear();
@@ -373,8 +583,7 @@ Totals Scheduler::deactivate_locked(Lock &g, const std::string &why)
     ctx_.has_year = career_year_ != 0;
     ctx_.year = career_year_;
     publish(g);
-    log("[apply] put back: " + label + " ended (" + why + "); " + std::to_string(t.appliers) + " applier(s), " +
-        counts(t));
+    log("[apply] put back: " + label + " ended (" + why + "); " + std::to_string(t.appliers) + " applier(s), " + counts(t));
     return t;
 }
 
@@ -396,11 +605,12 @@ Totals Scheduler::activate_locked(Lock &g, const std::string &content, const std
         }
     }
     publish(g);
-    Totals t = run(Moment::activate, Applies::content,
-                   [&](Applier &a, Report &r) { a.activate(store_, ctx_, r); }, &activated_, false, nullptr);
+    Totals t = run(
+        Moment::activate, Applies::content, [&](Applier &a, Report &r) { a.activate(store_, ctx_, r); }, &activated_, false,
+        nullptr);
     t.put_back += put.put_back;
-    log("[apply] activate: " + label + " active (" + why + "); " + std::to_string(t.appliers) + " applier(s), " +
-        counts(t) + " (" + summary(ctx_) + ")");
+    log("[apply] activate: " + label + " active (" + why + "); " + std::to_string(t.appliers) + " applier(s), " + counts(t) +
+        " (" + summary(ctx_) + ")");
     return t;
 }
 
@@ -451,10 +661,7 @@ std::string Scheduler::facts_line() const
     return facts::line(ctx_.mode, ctx_.session_type, session_name_, ctx_.track);
 }
 
-void Scheduler::log_facts()
-{
-    log(facts_line());
-}
+void Scheduler::log_facts() { log(facts_line()); }
 
 Totals Scheduler::career_loaded(const std::string &career, const std::string &mode, const std::string &data_group)
 {
@@ -479,6 +686,22 @@ Totals Scheduler::career_season(int year)
     Totals t = activate_locked(g, active_, label, "season " + std::to_string(year) + " started");
     log_facts();
     return t;
+}
+
+bool Scheduler::career_dated(int year)
+{
+    Lock g(mu_);
+    if (!year || year == career_year_ || ctx_.career.empty())
+        return false;
+    career_year_ = year;
+    if (active_.empty()) {
+        ctx_.year = year;
+        ctx_.has_year = true;
+    }
+    publish(g);
+    log("[apply] career " + ctx_.career + ": season " + std::to_string(year) + ", which already started");
+    log_facts();
+    return true;
 }
 
 Totals Scheduler::career_unloaded()
@@ -519,10 +742,10 @@ Totals Scheduler::session_load(const SessionFacts &f)
     session_name_ = f.session;
     publish(g);
     log_facts();
-    Totals t = run(Moment::session_load, Applies::session,
-                   [&](Applier &a, Report &r) { a.session_load(store_, ctx_, r); }, &sessioned_, false, nullptr);
-    log("[apply] session load: " + std::to_string(t.appliers) + " applier(s); " + counts(t) + " (" + summary(ctx_) +
-        ")");
+    Totals t = run(
+        Moment::session_load, Applies::session, [&](Applier &a, Report &r) { a.session_load(store_, ctx_, r); }, &sessioned_,
+        false, nullptr);
+    log("[apply] session load: " + std::to_string(t.appliers) + " applier(s); " + counts(t) + " (" + summary(ctx_) + ")");
     return t;
 }
 
@@ -532,8 +755,8 @@ Totals Scheduler::session_end_locked(Lock &g, const std::string &why)
         return {};
     std::vector<Applier *> was;
     was.swap(sessioned_);
-    Totals t = run(Moment::session_end, Applies::session, [&](Applier &a, Report &r) { a.session_end(store_, r); },
-                   nullptr, true, &was);
+    Totals t =
+        run(Moment::session_end, Applies::session, [&](Applier &a, Report &r) { a.session_end(store_, r); }, nullptr, true, &was);
     session_ = false;
     ctx_.session_type.clear();
     ctx_.track.clear();
@@ -557,8 +780,8 @@ Totals Scheduler::install_read()
         return {};
     read_ = true;
     publish(g);
-    Totals t = run(Moment::read, Applies::read, [&](Applier &a, Report &r) { a.install_read(store_, r); }, nullptr,
-                   false, nullptr);
+    Totals t =
+        run(Moment::read, Applies::read, [&](Applier &a, Report &r) { a.install_read(store_, r); }, nullptr, false, nullptr);
     log("[apply] read: " + std::to_string(t.appliers) + " read path(s) installed at the window stage; " + counts(t));
     return t;
 }

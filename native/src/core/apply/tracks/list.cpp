@@ -1,11 +1,12 @@
-#include "box.hpp"
+#include "core/apply/tracks/box.hpp"
+#include "core/apply/content/appliers.hpp"
 
-#include "../../era_logic.hpp"
-#include "../content/gvdb.hpp"
-#include "../../registry/store.hpp"
-#include "../../registry/table.hpp"
-#include "../../runtime.hpp"
-#include "../scheduler.hpp"
+#include "core/boxes/era_logic.hpp"
+#include "core/apply/content/gvdb.hpp"
+#include "core/registry/store.hpp"
+#include "core/registry/table.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/apply/scheduler.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -18,10 +19,6 @@
 // made from its entrant list in the live database (box_from_list), its per_package entries along its
 // variant chain, its list against the effective base (C4), catalog.json's "tracks" object rewritten at each box
 // press (with the build's profile and an id of its registry/index.json), and the guard's decision for a confirmed track.
-
-namespace runtime {
-std::vector<era::Box> era_boxes();
-}
 
 namespace swofty_core::apply::tracks {
 
@@ -112,8 +109,8 @@ CellRead db_cell_read()
     return [db](const std::string &table, const std::string &label, const std::string &field) -> std::optional<int64_t> {
         SwoftyDbCursor c{};
         SwoftyDbValue v{};
-        if (db->row(table.c_str(), label.c_str(), &c) != SWOFTY_ASSET_OK ||
-            db->cell(&c, field.c_str(), &v) != SWOFTY_ASSET_OK || v.tag == SWOFTY_DB_STRING || v.tag == SWOFTY_DB_FLOAT)
+        if (db->row(table.c_str(), label.c_str(), &c) != SWOFTY_ASSET_OK || db->cell(&c, field.c_str(), &v) != SWOFTY_ASSET_OK ||
+            v.tag == SWOFTY_DB_STRING || v.tag == SWOFTY_DB_FLOAT)
             return std::nullopt;
         return v.i;
     };
@@ -150,10 +147,7 @@ const Facts &facts()
     return f;
 }
 
-int setup_mode_stat(const std::string &setup_mode)
-{
-    return setup_mode_stat_of(db_cell_read(), setup_mode);
-}
+int setup_mode_stat(const std::string &setup_mode) { return setup_mode_stat_of(db_cell_read(), setup_mode); }
 
 BoxInfo box_info(registry::Store &store, const std::string &package, const std::string &entrant_list)
 {
@@ -171,8 +165,8 @@ BoxInfo box_info(registry::Store &store, const std::string &package, const std::
                     b.package.c_str(), b.setup_mode.c_str(), b.teams < 0 ? "unknown" : std::to_string(b.teams).c_str(),
                     b.cars < 0 ? "unknown" : std::to_string(b.cars).c_str());
         if (!b.unread.empty())
-            swofty::log("[tracks] box %s: not fully read (%s); the garage and grid rules assume the grid's size", b.package.c_str(),
-                        b.unread.c_str());
+            swofty::log("[tracks] box %s: not fully read (%s); the garage and grid rules assume the grid's size",
+                        b.package.c_str(), b.unread.c_str());
         return b;
     }
     registry::Record r = store.get("content.package", package);
@@ -189,7 +183,7 @@ BoxInfo box_info(registry::Store &store, const std::string &package, const std::
             return nullptr;
         return &keep.emplace(key, std::move(rec.value)).first->second;
     };
-    return box_from_package(package, r.value, lookup, db_read());
+    return box_from_package(package, r.value, lookup, db_read(), content::box_world_tracks);
 }
 
 Entries box_entries(registry::Store &store, const std::vector<std::string> &chain)
@@ -250,10 +244,7 @@ Active active()
     return current;
 }
 
-Mode mode_named(std::string_view mode)
-{
-    return mode == "time_trial" ? Mode::time_trial : Mode::grand_prix;
-}
+Mode mode_named(std::string_view mode) { return mode == "time_trial" ? Mode::time_trial : Mode::grand_prix; }
 
 Decision guard_package(const std::string &package, const BaseTrack *track, Mode mode, std::string_view label)
 {

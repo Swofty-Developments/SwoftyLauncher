@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Config_GetStringWithDefault",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a44280",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a44280.c;xref:0x14023d937,0x142a9dd07,0x142a9fff5",
+  "notes": "Getter, not setter: (cfg,key,outBuf,bufSize,defaultStr). Locks cfg+0x10, looks key up in map [cfg+8] (0x143905280, entries 16 B, value str at +8); found: copies value to outBuf (returns 0, or 0x54 and copies default when value does not fit); missing: copies default, error 2. Unlocks, returns error code. 24 callers incl. Game_CutSceneScript_RunCommand, Game_Hardware_CheckRecommendedPCSpec."
+ },
+ "signature": {
+  "id": "core.config_set_string_property",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 44 89 CD 4C 89 C7",
+  "match": "0x143a44280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a44280",
+  "kind": "func_start",
+  "names": [
+   "Ne_Config_GetStringWithDefault"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a44280",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143a44280.c;xref:0x14023d937",
+   "notes": "V7825 better name Ne_Config_GetStringWithDefault: looks key up (0x143905280) and copies string/default into output buffer param_3 (size param_4) on miss with error code 2; reads, does not set"
+  }
+ ],
+ "proofs": []
+}

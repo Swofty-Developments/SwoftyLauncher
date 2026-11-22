@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MaterialActorProxyPropertyRegister_RegisterUpdateGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401c54e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401c54e0.c;pat:log-message-cxx;xref:0x1455f5af8",
+  "notes": "Virtual (cell 0x1455f5af8). Logs 'MaterialActorProxyPropertyRegister::registerUpdateGroup %s', appends param_5 to the vector [this+8]+0x68 (Ne_Vector16_PushBack), *out = 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.material_actor_proxy_property_register_register_update_group",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 89 CB 48 8B 7C 24 60 80 3D ?? ?? ?? ?? 01 75 6A B8 74 01 00 00",
+  "match": "0x1401c54e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401c54e0",
+  "kind": "func_start",
+  "names": [
+   "Game_MaterialActorProxyPropertyRegister_RegisterUpdateGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401c54e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401c54e0.c",
+   "notes": "V4348 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

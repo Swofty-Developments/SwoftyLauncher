@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Neos_SignalRConnectionReconnectRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144446600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144446600.c;pat:log-channel-NEOS;xref:0x144444bad,0x144444f3c",
+  "notes": "Callers 0x144444bad, 0x144444f3c. Mode byte 2: one invocation via 0x144446120 pushed to vector +0x80. Classic: T (reconnect, logged), G (groups token) -> +0x30, C (message id) -> +0x8, S (state) -> +0x58, array M -> each element parsed by 0x144446120 and pushed (0x1444f5620), count logged. (lane owner review requested) Better name: Game_Neos_SignalRParseServerMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.neos_signal_r_connection_reconnect_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 49 89 D6 48 8D B1 80 00 00 00",
+  "match": "0x144446600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144446600",
+  "kind": "func_start",
+  "names": [
+   "Game_Neos_SignalRConnectionReconnectRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144446600",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144446600.c;xref:0x144444bad",
+   "notes": "V6654 0x75c body is the SignalR message-receive handler (group message, handling message, state, JSON parse, N messages from server); reconnect request is one log. Better: Game_Neos_SignalRHandleServerMessages"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144446600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144446600.c;xref:0x144444bad",
+   "notes": "V7214 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RankedMatching_OnSessionLobby",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315b500",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315b500.c;pat:log-message-cxx;xref:0x14581d6b8",
+  "notes": "Virtual (vt cell 0x14581d6b8): logs NETWORK-MATCHING 'onSessionLobby'; rich presence [this+0x18]: track name (+0xe78) unless 'DEV', custom = name == lng_rp_multiplayer_custom, +0x40 = 2, +0x30 = lng_rp_action_in_the_lobby, +0x28 = lng_rp_multiplayer when +0x52, +0x51 = 1; if mode [+0x3c0]+0x1a8 == 1 posts a message (vtable 0x1458234b0) to [this+0x10]+0x458 vt+0x20. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ranked_matching_on_session_lobby",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14315b500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315b500",
+  "kind": "func_start",
+  "names": [
+   "Game_RankedMatching_OnSessionLobby"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14315b500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315b500.c",
+   "notes": "V6002 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}

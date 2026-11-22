@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lower.hpp"
+#include "core/apply/content/lower.hpp"
 
 #include <optional>
 #include <string>
@@ -24,7 +24,8 @@ struct WarmersPick {
 // The tyre warmer rule for the box whose entrant list was pressed: the last content.package (in the order given) with
 // that entrant list, and its rules.tyre_warmers when that is a bool.
 inline WarmersPick tyre_warmers_pick(const std::string &entrant_list,
-                                     const std::vector<std::pair<std::string, const Value *>> &packages)
+                                     const std::vector<std::pair<std::string, const Value *>> &packages,
+                                     const std::string &host = "swofty_f1")
 {
     WarmersPick p;
     const Value *found = nullptr;
@@ -34,17 +35,17 @@ inline WarmersPick tyre_warmers_pick(const std::string &entrant_list,
             found = rec;
         }
     if (!found) {
-        p.line = "box " + entrant_list + ": no content.package; swofty_f1 keeps its own tyre warmer setting";
+        p.line = "box " + entrant_list + ": no content.package; " + host + " keeps its own tyre warmer setting";
         return p;
     }
     const Value &w = (*found)["rules"]["tyre_warmers"];
     if (!w.is_bool()) {
-        p.line = "box " + entrant_list + " (" + p.package + "): no tyre warmer rule; swofty_f1 keeps its own setting";
+        p.line = "box " + entrant_list + " (" + p.package + "): no tyre warmer rule; " + host + " keeps its own setting";
         return p;
     }
     p.warmers = w.as_bool();
-    p.line = "box " + entrant_list + " (" + p.package + "): swofty_f1 races " +
-             (*p.warmers ? "with" : "without") + " tyre warmers (rules.tyre_warmers)";
+    p.line = "box " + entrant_list + " (" + p.package + "): " + host + " races " + (*p.warmers ? "with" : "without") +
+             " tyre warmers (rules.tyre_warmers)";
     return p;
 }
 

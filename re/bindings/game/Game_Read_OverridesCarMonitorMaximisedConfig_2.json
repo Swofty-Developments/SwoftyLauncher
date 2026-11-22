@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesCarMonitorMaximisedConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f893f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f893f0.c;pat:log-channel--;xref:0x145761988",
+  "notes": "vt 0x145761920 slot 13 (cell 0x145761988, same slot as GarageMonitorTvFeedVM_OnActivate). VM 'view_model_data.garage_monitor_practice_select'; Ne_Subscribe_BusMessage for Message{TrackAcclim,TyreWearManagement,QualiPace,FuelManagement,ERSManagement,RacePace}UpdateUIResults; data obj +0x6278 (programme_1..3, objectives, tyre_tex, session_timer); compounds Softer..Wet -> +0x6248; car_monitor_maximised icons +0xc80. (lane owner review requested) Better name: Game_GarageMonitorPracticeSelectVM_OnActivate (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_overrides_car_monitor_maximised_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 06 00 00 C5 F8 29 B4 24 80 06 00 00 49 89 CF 48 8D 15",
+  "match": "0x141f893f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f893f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesCarMonitorMaximisedConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f893f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141f893f0.c",
+   "notes": "V5240 2535-line garage-monitor practice-select VM update (programmes, objectives, Message*UpdateUIResults, session timer, warnings); max_pp_status_icons keys are a small part. Better Game_GarageMonitorPracticeSelectVm_Update (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141f893f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f893f0.c",
+   "notes": "V7282 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

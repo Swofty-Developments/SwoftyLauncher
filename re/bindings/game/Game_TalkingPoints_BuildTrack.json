@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TalkingPoints_BuildTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ac15d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ac15d0.c;pat:log-channel-TalkingPoints;xref:0x140acdca1",
+  "notes": "State machine byte +0x7b8 (0..4, ends 5), log 'TalkingPoints'. 0 'Generating Sequence'; 1 sorts TP/filler candidates (+0x7a0+0x10/+0x30), pattern key 'talking_points.patterns.*' + _practice/_qualifying/_race/_outro, F/G/S/T chars -> segments (+0x7a0+0x50, n +0x1250); 2 VO callbacks 0x140ac60b0/66e0/67e0 + VO simulate; 3 'Loading Sequence...'; 4 fit/remove fillers, [TRACK] times, hand off to +0x798+0x12a8. (lane owner review requested) Better name: Game_TalkingPoints_GenerateSequence_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.talking_points_build_track",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 25 00 00",
+  "match": "0x140ac15d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ac15d0",
+  "kind": "func_start",
+  "names": [
+   "Game_TalkingPoints_BuildTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ac15d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ac15d0.c",
+   "notes": "V4399 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "trkerp-verify2",
+   "kind": "func",
+   "item": "Game_TalkingPoints_BuildTrack",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:own disasm 0x140ac45df-0x140ac4ddd;str:talking_points.patterns.generic _reverse _outro _practice _qualifying _race",
+   "notes": "V11016 key = 'talking_points.patterns.'+[[rec+0x68]+0x10] + session suffix (+4 in 1..4 _practice, 5..14 _qualifying, else _race), then _outro (flag) or _reverse (rec+0x128 non-empty); correction: fallback (0x1445a2090 false) is generic WITH the same suffixes, not bare 'talking_points.patterns.generic'"
+  }
+ ],
+ "proofs": []
+}

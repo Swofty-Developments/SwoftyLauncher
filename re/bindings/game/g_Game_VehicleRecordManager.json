@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "g_Game_VehicleRecordManager",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1460fe6a0",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14360d700.c;xref:0x14360b2c7,0x14360b5a2,0x14360da80,0x14360db16;decomp:re/decomp/14360b230.c",
+  "notes": "Session participants object (same layout the rule manager caches at +0x1c30): +0x88..+0x90 participant list, +0xa0+idx*8 per-car participant cache (filled on miss by matching [[p+0x18]+0x58]+0xe8 == idx, 0x14360d700 lines 186-207), +0x1a8 session clock (+0x98 running, +0x60/+0x70 time, QPC based; read in 0x14360b230). Participants: +0x58 laps u32, +0x74 lap fraction float, +0x32 flags. 10 readers in 0x14360b230 / 0x14360d700 (lap / position update). (used by vmknolle cooldown-lap, red-flag-pit)"
+ },
+ "signature": {
+  "id": "game.vehicle_record_manager",
+  "section": ".xtls",
+  "pattern": "C5 F2 59 C8 C5 F2 58 52 6C 48 8B 15",
+  "match": "0x14360db0d",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xa",
+   "len": 6
+  },
+  "target": "0x1460fe6a0",
+  "kind": "data",
+  "names": [
+   "g_Game_VehicleRecordManager"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "global",
+   "item": "0x1460fe6a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/14360d700.c;decomp:work/verify_c/decomp/14360b230.c;decomp:work/verify_c/decomp/14360f4f0.c;xref:0x14360b2c7,0x14360da80,0x14360db16,0x14360f533",
+   "notes": "V1056 object with per-vehicle-id record cache +0xa0[id] and fallback list +0x88 matched on rec->+0x18->+0x58->+0xe8 (vehicle id); records give laps +0x58 and lap distance +0x6c; +0x1a8 session timer; void*"
+  }
+ ],
+ "proofs": []
+}

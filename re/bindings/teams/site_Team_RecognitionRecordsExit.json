@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Team_RecognitionRecordsExit",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1420bc680",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "teams",
+  "evidence": "decomp:re/decomp/1420bb330.c;xref:0x1420bbb95,0x1420bc117,0x1420bc680,0x1420bc693",
+  "notes": "mov rdx,[rsp+0xf8] in Team_Build_RecognitionTeamIcon (+0x1350): the function's own exit for a notification it stops building, the target of je 0x1420bc680 at 0x1420bbb95 (the vcall [[r13+0x1030]+0x10] 49 bytes after site_Team_RecognitionFirstRecord returns null) and at 0x1420bc117 (end of its last loop). It frees the collected pointer vector (store begin to [rsp+0x100]; test rdx,rdx / je 0x1420bc6a3; allocator [rsp+0xf0] vtable +0x38) and falls into the epilogue at 0x1420bc6a3 (xmm6..xmm8 reloaded from the frame, add rsp,0x178, eight pops, ret). It reads nothing but the frame. The function changes rsp only in its prologue and epilogue, and after the collection call returns nothing writes [rsp+0xf0..0xf8] (the slots are a plain 64-byte temp before it, 0x1420bb839..0x1420bb8c9, which the call overwrites whole), so resuming here from site_Team_RecognitionFirstRecord has the frame of the 0x1420bbb95 path; with begin 0 the free is skipped. Between the two sites only 0x1416e17b0 and that vcall run, and neither result is read here. The skip leaves the item without what 0x1416e17b0 writes (its names and icon keep the values the item was constructed with at 0x1420bb5a4..0x1420bb7b6) and without the perk values the rest of the function adds, as the game's own 0x1420bbb95 exit does. Resume target of the recognition record guard; not hooked or patched."
+ },
+ "signature": {
+  "id": "teams.recognition_records_exit",
+  "section": ".xtls",
+  "pattern": "48 89 48 28 E9 ?? ?? ?? ?? 48 8B 94 24 F8 00 00 00",
+  "match": "0x1420bc677",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420bc680",
+  "kind": "mid",
+  "expect": "48 8B 94 24 F8 00 00 00",
+  "names": [
+   "site_Team_RecognitionRecordsExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-15",
+    "by": "recogguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/sequencer_records_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-15",
+   "verifier": "recog-verify",
+   "kind": "global",
+   "item": "0x1420bc680",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1420bb330-0x1420bc6d2 and 0x1424ceb70-0x1424cecd9;xref:0x1420bbb95,0x1420bc117,0x1420bc680,0x1420bc693,0x1420bc6a3",
+   "notes": "V10540 0x1420bc680: mov rdx,[rsp+0xf8]; mov [rsp+0x100],rdx; test rdx,rdx; je 0x1420bc6a3; mov rcx,[rsp+0xf0]; mov rax,[rcx]; call [rax+0x38]; then 0x1420bc6a3 restores xmm6/7/8 from [rsp+0x140/0x150/0x160], add rsp,0x178, 8 pops, ret. Only direct branches to it are je 0x1420bbb95 and je 0x1420bc117 (plus fallthrough-free: preceded by jmp 0x1420bc100). Redirect 0x1420bbb4a -> 0x1420bc680 vs game je at 0x1420bbb95: (a) rsp is constant in the body (only prologue/epilogue touch it) so same rsp; (b) exit code reads only frame slots 0xf0/0xf8/0x140-0x160 and the pushed registers, takes no register input; with begin==0 it takes je 0x1420bc693 and calls nothing; (c) between 0x1420bba3e and 0x1420bbb4a the frame gets only plain copies/pointers ([rsp+0xd8] byte, [rsp+0x50..0x98] copied key + 3 pointers, [rsp+0xb0] pointer) and the vector; the function has no lock-prefixed instruction before 0x1420bc23e and the 0x1420bbb95 exit runs no destructor other than the vector free, so nothing is live at 0x1420bbb4a that the game's own exit would release. Skipped code 0x1420bbb4a..0x1420bbb95 is call 0x1416e17b0 (return value unused, rcx = notification object from [rsp+0xa8]/[rsi+0x6b8], sets its string fields) and a lookup vcall [r13+0x1030]->+0x10 whose null result is the game's own exit; neither releases anything this function holds. Not proven statically: that the object left without the 0x1416e17b0 fill is handled well by later consumers outside this function."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DLC_F1osEntitlementAttestation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14078f9c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14078f9c0.c;pat:log-channel-DLC;xref:0x14078f9aa,0x1407920ec",
+  "notes": "Atomic busy byte +0x4c0: if set, DLC log 'attestation already in progress' and vcall +0x28(0x25). Else clears string vector +0x4a8/+0x4b0, list from 0x14078f720(DAT_14604e9e0); entries passing 0x14078e2f0(+0x470,id) get XOR-decoded names pushed (0x14095c740). Empty: log 'request list is empty', vcall +0x28(0). Else posts bus msg 0x1439876c0 and async task with callback 0x140791110 kept at +0x498/+0x490. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.dlc_f1os_entitlement_attestation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 0C 00 00 C5 F8 29 B4 24 00 0C 00 00 48 89 CF B1 01",
+  "match": "0x14078f9c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14078f9c0",
+  "kind": "func_start",
+  "names": [
+   "Game_DLC_F1osEntitlementAttestation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x14078f9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14078f9c0.c",
+   "notes": "V4287 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

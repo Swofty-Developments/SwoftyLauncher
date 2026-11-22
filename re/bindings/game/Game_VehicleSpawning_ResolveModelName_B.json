@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleSpawning_ResolveModelName_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142eefe50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142eefe50.c;xref:0x142e82c40,0x142f3e3d1,0x1437102a1,0x1437102bd,0x1437102d2,0x14371039b",
+  "notes": "Read in full: same template as 0x14145d2b0 (find/create component by name in obj+200, vcall +0x20(propName, value)) with typed-value vt 0x1457f3430; used for Model.instanceDataSize = 0x1c at 0x142f3e3d1. Not a model-name resolver. (lane owner review requested) Better name: Game_WorldObject_SetComponentPropU32 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.vehicle_spawning_resolve_model_name_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 44 24 40 01 4C 8D 05",
+  "match": "0x142e82c40",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142eefe50",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleSpawning_ResolveModelName_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x142eefe50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142eefe50.c;xref:0x142e82c40",
+   "notes": "V8226 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

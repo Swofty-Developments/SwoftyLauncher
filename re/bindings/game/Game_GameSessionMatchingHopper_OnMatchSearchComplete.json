@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingHopper_OnMatchSearchComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307f900",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14307f900.c;pat:log-message-cxx;xref:0x14306130a,0x14307ff4c,0x1430819c7,0x1430e3c7e",
+  "notes": "Logs 'GameSessionMatchingHopper::onMatchSearchComplete(%s, %s)' (p2 ok, p3 error). Restarts timers p1[0x28..0x2e], clears +0x88, records ok/error into [[p1+0x10]+0x4d8]+0x40/+0x34 and +0x158, starts its timer +0x60. If the search delegate p1[0x15]/[0x16] is set logs 'Able to fire matchSearchDelegate', fills the result (vt+0x18 -> +0xe1, ok +0xe0, error +0xe4, session p1[5..6]/+0x36, p4 at +0xe8) at p1+0xb8, clears and calls the delegate. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_hopper_on_match_search_complete",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 44 89 CB 44 89 C7",
+  "match": "0x14307f900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307f900",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingHopper_OnMatchSearchComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307f900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307f900.c;xref:0x14306130b",
+   "notes": "V5606 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_UpgradeCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417f8090",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1417f8090.c;kb:subsystems/career.md#pipeline;xref:0x1418042ce,0x14180c886,0x141c658aa,0x141c658d1",
+  "notes": "Objective card binder: lng name from table 0x14571b340 (lng_fast_sector_1.., lng_clean_lap, lng_rnd_obj_*) indexed by dword [param_2+0x20] (<0x15) else lng_invalid; '%s_description_short'; reward upgrade name (engine_power..general_maintenance / INVALID UPGRADE, lng_rnd_%s), dept icon (rnd_dept_icons_small, error_department), objective/complete icons (pp_obj_icons_large, pp_icons_large.obj*), RP amount. (lane owner review requested) Better name: Career_Bind_RnDObjectiveCard (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.bind_upgrade_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 85 D2 0F 84 ?? ?? ?? ?? 4D 89 CF 4D",
+  "match": "0x1417f8090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417f8090",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_UpgradeCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1417f8090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417f8090.c;xref:0x1418042ce",
+   "notes": "V4903 name/description match decomp: strings and callees consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1417f8090",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1417f8090.c",
+   "notes": "V9182 It is a card binder, but the lng vocabulary table at 0x14571b340 holds objective names (lng_fast_sector_1.., lng_clean_lap, lng_rnd_obj_*), indexed by a dword at [arg2+0x20] (<0x15), so it binds an objective/R&D card rather than a plain upgrade card; department names come from a separate switch."
+  }
+ ],
+ "proofs": []
+}

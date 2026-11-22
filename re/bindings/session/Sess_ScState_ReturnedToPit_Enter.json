@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScState_ReturnedToPit_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143647f00",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ScState*, ScEntry*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/143647f00.c;xref:0x14c1c2c33,0x1458551f0",
+  "notes": "posts the SafetyCarDeployment record (vt 0x1457e7840 {entry, vehicle, phase, type}) through Sess_Set_SafetyCarDeploymentType: phase 2 type 1 (SC in the pit lane)."
+ },
+ "signature": {
+  "id": "session.sc_state_returned_to_pit_enter",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 8B 42 18 48 8B 40 58 48 85 C0 74 09 0F B6 80 E8 00 00 00 EB 02 B0 FF 8B 52 38 48 C7 44 24 30 00 00 00 00 4C 8D 05 ?? ?? ?? ?? 4C 89 44 24 28 89 54 24 38 88 44 24 3C C7 44 24 40 02 00 00 00",
+  "match": "0x143647f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143647f00",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScState_ReturnedToPit_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_ScState_ReturnedToPit_Enter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143647f00.c;xref:0x14c1c2c33,0x1458551f0",
+   "notes": "V1974 record phase 2 type 1"
+  }
+ ],
+ "proofs": []
+}

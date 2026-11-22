@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_GameTransactionSystem_StartPremiumItemPurchaseFlow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e66770",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e66770.c;str:s_GameTransactionSystem_StartPremiumItemPurchaseFlow;xref:0x1419e3209,0x141ce8fda",
+  "notes": "startPremiumItemPurchaseFlow(sys,delegate,packageId): stores delegate sys+0xb8/+0xc0; after overlay check 0x142e66210 shows 'transaction_confirm_purchase_premium_item' (callback 0x142e669d0) kept in sys+0x88 with purchase_type=PremiumItem and selected_productId. Callers 0x1419e2b70, 0x141ce8ed0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_transaction_system_start_premium_item_purchase_flow",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 83 BE D0 1B 00",
+  "match": "0x1419e3209",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142e66770",
+  "kind": "func_start",
+  "names": [
+   "Game_GameTransactionSystem_StartPremiumItemPurchaseFlow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x142e66770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e66770.c;xref:0x1419e3209",
+   "notes": "V7349 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ElasticSearchReporterModule_OnEngineComponentFitted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140718ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140718ce0.c;pat:log-message-cxx;xref:0x1406da1f4,0x1406fd9b1",
+  "notes": "Bus handler: only for the local player (msg+0x10/+0x12 vs [0x1400fa760()]+0x50); logs TELEMETRY 'onEngineComponentFitted(type=%s, penalty=%d)' (types 0x1456605b8, < 7); refreshes [+0x20a58]+0x168 vcall +0x40; 0x88 event (0x1404722b0; type, +0x84 = msg+0x1c, +0x80 = msg+0x18) sent as 'engine_management' (0x14077bb90), pushed into a 64-entry ring (Game_ElasticReporter_QueueEvent once). Fn ptr lea in 0x1406d8470, 0x1406fd6c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.elastic_search_reporter_module_on_engine_component_fitted",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 D3 48 89 CE 48 8B 0D",
+  "match": "0x140718ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140718ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_ElasticSearchReporterModule_OnEngineComponentFitted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140718ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140718ce0.c;xref:0x6da1f6",
+   "notes": "V4775 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

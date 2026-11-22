@@ -74,22 +74,23 @@ inline constexpr Event EVENTS[] = {
     {"weekend.end", N, SHELL, 1, false, Fired::no, nullptr},
 
     {"session.load", M, SHELL, 1, false, Fired::no, nullptr},
-    {"session.weather.setup", M, SHELL, 1, false, Fired::no, nullptr},
+    {"session.weather.setup", M, "swofty::weather::events::Setup", 1, false, Fired::yes, nullptr},
     {"session.fuel.load", C, "swofty::tracks::events::FuelLoad", 1, false, Fired::game, nullptr},
     {"session.start", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_SESSION_START},
     {"session.state.enter", N, SHELL, 1, false, Fired::no, SWOFTY_EVENT_STATE},
     {"session.grid", N, SHELL, 1, false, Fired::no, nullptr},
     {"session.formation_lap", N, SHELL, 1, false, Fired::no, nullptr},
     {"race.start", N, SHELL, 1, false, Fired::yes, SWOFTY_EVENT_RACE_START},
-    {"session.sector", N, SHELL, 1, true, Fired::no, nullptr},
+    {"session.sector", N, "swofty::race_control::events::Sector", 1, true, Fired::yes, nullptr},
     {"session.lap", N, "swofty::sessions::events::Lap", 1, true, Fired::yes, SWOFTY_EVENT_LAP},
     {"session.pit", N, "swofty::sessions::events::Pit", 1, false, Fired::game, nullptr},
     {"session.pit_stop", N, "swofty::sessions::events::PitStop", 1, false, Fired::game, nullptr},
-    {"session.flag", N, SHELL, 1, false, Fired::no, SWOFTY_EVENT_FLAG},
-    {"session.safety_car.deploy", N, SHELL, 1, false, Fired::no, nullptr},
-    {"session.red_flag", N, SHELL, 1, false, Fired::no, nullptr},
+    {"session.pit_stop.tyres", N, "swofty::sessions::events::PitStopTyres", 1, false, Fired::game, nullptr},
+    {"session.flag", N, "swofty::race_control::events::Flag", 1, false, Fired::yes, SWOFTY_EVENT_FLAG},
+    {"session.safety_car.deploy", N, "swofty::race_control::events::SafetyCar", 1, false, Fired::yes, nullptr},
+    {"session.red_flag", N, "swofty::race_control::events::RedFlag", 1, false, Fired::yes, nullptr},
     {"session.penalty.issue", C, SHELL, 1, false, Fired::no, nullptr},
-    {"session.car.status", N, SHELL, 1, false, Fired::no, nullptr},
+    {"session.car.status", N, "swofty::race_control::events::CarStatus", 1, false, Fired::yes, nullptr},
     {"session.player.control", C, "swofty::sessions::events::PlayerControl", 1, false, Fired::game, nullptr},
     {"session.finish", N, SHELL, 1, false, Fired::no, nullptr},
     {"session.grid.group_result", C, SHELL, 1, false, Fired::no, nullptr},
@@ -109,12 +110,17 @@ inline constexpr Event EVENTS[] = {
     {"car.setup.applied", N, "swofty::cars::events::SetupApplied", 1, false, Fired::game, nullptr},
     {"car.parts.register", N, "swofty::cars::events::PartsRegister", 1, false, Fired::game, nullptr},
     {"car.damage", N, "swofty::cars::events::Damage", 1, true, Fired::game, nullptr},
+    {"car.tyre.damage", N, "swofty::tyre_damage::events::Damage", 1, false, Fired::yes, nullptr},
     {"car.controllers.rebuilt", N, "swofty::cars::events::ControllersRebuilt", 1, false, Fired::game, nullptr},
 
     {"ai.controller.update", C, "swofty::ai::events::ControllerUpdate", 1, true, Fired::game, nullptr},
     {"hud.spectator.visible", M, "swofty::spectator::events::HudVisible", 1, false, Fired::game, nullptr},
 
     {"audio.bundle.resolve", M, "swofty::sounds::events::BundleResolve", 1, false, Fired::no, nullptr},
+
+    {"speech.line", N, "swofty::speech::events::Line", 1, false, Fired::yes, nullptr},
+    {"speech.line.timed", N, "swofty::speech::events::Timed", 1, false, Fired::yes, nullptr},
+    {"speech.line.end", N, "swofty::speech::events::Ended", 1, false, Fired::yes, nullptr},
 };
 
 inline const Event *find(std::string_view id)

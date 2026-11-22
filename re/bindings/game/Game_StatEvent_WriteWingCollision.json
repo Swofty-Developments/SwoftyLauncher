@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteWingCollision",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143778f30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143778f30.c;pat:log-channel-STATEVENT;xref:0x143778a14,0x14377923d",
+  "notes": "Lambda for wingdamage (lea 0x143778a14, unsub 0x14377923d): if ctx+0x172 set, msg+0x10 == player id ctx+0x173 and damage float msg+0x14 > 0, writes \"WingCollision\" value 1.0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_wing_collision",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 8B 41 08 80 B8 72 01 00 00 00",
+  "match": "0x143778f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143778f30",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteWingCollision"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143778f30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143778f30.c;xref:0x143778a16",
+   "notes": "V6245 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

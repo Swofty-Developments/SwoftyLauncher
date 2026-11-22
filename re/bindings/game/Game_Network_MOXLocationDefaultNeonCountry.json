@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXLocationDefaultNeonCountry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430d11b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430d11b0.c;pat:log-channel-NETWORK;xref:0x145814060",
+  "notes": "Slot 2 (+0x10) of vtable 0x145814050 (cell 0x145814060, 'Net-Subsystem' precedes). Init(this,registry,ctx): deps via registry vt+0x28 into +0xd0,+0xc8,+0x210,+0x30..; allocs 0x1460be8f0 tables; managers from ctx (+0x50..+0x150); new sub-objects (+0x3a0..+0x560,+0x1108); child init loop at +0x178; logs NETWORK 'MOX/Location: Default neon country'; returns 0, or 0x16 on missing dependency. (lane owner review requested) Better name: Game_NetworkSubsystem_Init (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_mox_location_default_neon_country",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 BC 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 4C 89 C7",
+  "match": "0x1430d11b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430d11b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXLocationDefaultNeonCountry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430d11b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430d11b0.c",
+   "notes": "V5372 better name Game_NetworkSubsystem_Init: 1071-line subsystem setup (config load, calls many init funcs, trace_log, 26 DLC); neon country log is one part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430d11b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430d11b0.c",
+   "notes": "V6971 1071 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Game_SetLocalPlayersStatuses",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cea230",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cea230.c;pat:log-message-method;xref:0x142cea220,0x142cea63e,0x142ceba5f,0x1430736e9",
+  "notes": "setLocalPlayersStatuses(game,status,all,reason,idx): for each local player slot (1 or 2, [game+0x220]+0x140 +0x1c0/+0x1c8) matching idx or all, finds its participant by user id in session list +0x2e0..+0x2e8 (stride 0x88) and posts MessageVehicleStatusRequest (vt 0x1456de3d0) = vehicle(+0x82) | status<<8 | reason<<16 | 1<<24. Callers 0x142cea190, 0x142cea5b0, 0x142ceb9c0, 0x143073200. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_set_local_players_statuses",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 44 89 CF",
+  "match": "0x142cea230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cea230",
+  "kind": "func_start",
+  "names": [
+   "Game_Game_SetLocalPlayersStatuses"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142cea230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cea230.c;xref:0x142cea220",
+   "notes": "V5069 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

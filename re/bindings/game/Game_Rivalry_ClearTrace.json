@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rivalry_ClearTrace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141254be0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141254be0.c;pat:log-channel-RIVALS;xref:0x1456cd0c0",
+  "notes": "Vtable slot (cell 0x1456cd0c0, next to 0x141254150). Inlined driver/team RivalryManager::clearTrace ('%s: Clearing trace'): driver trace 0x145f93b90 = 0x3fff0000 if any of +0x6b9/+0x801/+0x299, team trace 0x145f93b94 if +0x919; then unsubscribes three bus handlers (0x14125aea0, 0x14125af10, 0x14125b150; messages 0x1456982b8, 0x145659c79, 0x145697fc8) via 0x143988350 when the bus is live. (lane owner review requested) Better name: Game_RivalManagerComponent_Shutdown (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.rivalry_clear_trace",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 B9 B9 06 00 00 00",
+  "match": "0x141254be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141254be0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rivalry_ClearTrace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141254be0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141254be0.c",
+   "notes": "V4711 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

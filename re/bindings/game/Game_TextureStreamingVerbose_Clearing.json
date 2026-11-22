@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TextureStreamingVerbose_Clearing",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143eb8070",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143eb8070.c;pat:log-message-method;xref:0x1459bf918",
+  "notes": "Decomp truncated (call 0x1449e22b4 taken as branch); full pdata disasm read. TextureManager=[rcx+8]; SRW locks +0x590/+0x598; cancels stream cmds in lists +0x300/+0x348/+0x390/+0x3d8, cache counter +0x200 ('cache %d adjusted by %d'), 0x143bf3320; PURGE/SKIP tags, qsort 0x14535b670 (cmp 0x143bfb700), loads 0x143bfc8d0; quality +0x214 clamp +0x20c/+0x210; flag +0x4c0 requestLoadMoreFailedAndBlocked. (lane owner review requested) Better name: Game_TextureManager_UpdateStreaming (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.texture_streaming_verbose_clearing",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 04 00 00 C5 F8 29 BC 24 40 04 00 00 C5 F8 29 B4 24 30 04 00 00 48 8B 71 08",
+  "match": "0x143eb8070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143eb8070",
+  "kind": "func_start",
+  "names": [
+   "Game_TextureStreamingVerbose_Clearing"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143eb8070",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143eb8070.c",
+   "notes": "V6295 partial: better name Game_TextureStreaming_AdjustQualityFactor; 7 KB texture-manager cache/quality-factor/purge logic; reducing-quality-flag is one log of many"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143eb8070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143eb8070.c",
+   "notes": "V7054 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

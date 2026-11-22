@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AchieveLapTimeDynamicObjective_OnNewLapTimeRecorded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141191950",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141191950.c;pat:log-message-cxx;xref:0x1456c3d88",
+  "notes": "Vtable slot (cell 0x1456c3d88) of AchieveLapTimeDynamicObjective: when active (+0x18) and msg+0x10 == own car +0x44 (logs DYNAMIC_OBJECTIVES): lap time msg+0x1c -> +0x78; <= target +0x70 -> vslot +0x30, else may raise target to 0x141191370() when the % gap >= (+0x68)+0x110 and refresh UI. Then if msg+0x14+1 >= +0x58 calls vslot +0x118. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.achieve_lap_time_dynamic_objective_on_new_lap_time_recorded",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 80 79 18 01",
+  "match": "0x141191950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141191950",
+  "kind": "func_start",
+  "names": [
+   "Game_AchieveLapTimeDynamicObjective_OnNewLapTimeRecorded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141191950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141191950.c",
+   "notes": "V4646 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

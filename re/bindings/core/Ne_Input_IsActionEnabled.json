@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Input_IsActionEnabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a8fe80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a8fe80.c;xref:0x14039ca42,0x14039d2aa",
+  "notes": "Looks up an input action name (param_2+8, djb2 hash) in the global action override map g 0x14628fc10: entry int +8 1 = enabled, other non-zero = disabled; falls back to 0x143a86980(this+0x18). Used for the driver Gesture/Talk actions. Callers: Car_Visual_UpdateRenderState."
+ },
+ "signature": {
+  "id": "core.input_is_action_enabled",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 C8 4C 8B 1D",
+  "match": "0x143a8fe80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a8fe80",
+  "kind": "func_start",
+  "names": [
+   "Ne_Input_IsActionEnabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143a8fe80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a8fe80.c;xref:0x14039ca42",
+   "notes": "V3628 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

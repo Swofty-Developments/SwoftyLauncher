@@ -1,6 +1,6 @@
-// Host test of the test agent's protocol and runner (src/core/testagent/agent_logic.hpp) and of the
+// Host test of the test agent's protocol and runner (src/core/testing/agent/agent_logic.hpp) and of the
 // SWOFTY_TEST coroutine runner (packages/sdk/include/swofty/test.hpp).
-#include "../src/core/testagent/agent_logic.hpp"
+#include "core/testing/agent/agent_logic.hpp"
 
 #include <swofty/test.hpp>
 
@@ -16,10 +16,7 @@ static void expect(bool ok, const char *what)
     fails += !ok;
 }
 
-static bool has(const std::string &s, const char *part)
-{
-    return s.find(part) != std::string::npos;
-}
+static bool has(const std::string &s, const char *part) { return s.find(part) != std::string::npos; }
 
 struct FakeGame : ta::Game {
     bool home = false;
@@ -38,7 +35,10 @@ struct FakeGame : ta::Game {
         ++built;
         return ta::Outcome::ok();
     }
-    ta::Outcome skip(int d, int s) override { return ta::Outcome::ok("{\"d\":" + std::to_string(d) + ",\"s\":" + std::to_string(s) + "}"); }
+    ta::Outcome skip(int d, int s) override
+    {
+        return ta::Outcome::ok("{\"d\":" + std::to_string(d) + ",\"s\":" + std::to_string(s) + "}");
+    }
     ta::Outcome advance(int) override
     {
         if (!hq_vm)
@@ -163,7 +163,8 @@ struct FakeGame : ta::Game {
         if (!begin_error.empty())
             return ta::Outcome::fail(begin_error);
         begun.push_back(p);
-        return ta::Outcome::ok("{\"filled\":" + std::to_string(ta::session_fill(p, {"f1_26", "entrant_setup_mode_8", "swofty_f1"}).size()) + "}");
+        return ta::Outcome::ok(
+            "{\"filled\":" + std::to_string(ta::session_fill(p, {"f1_26", "entrant_setup_mode_8", "swofty_f1"}).size()) + "}");
     }
     bool sandboxed() override { return sandbox; }
     void note(const std::string &l) override { notes.push_back(l); }
@@ -187,10 +188,7 @@ static size_t answered(const std::vector<std::string> &out)
     return n;
 }
 
-static void submit(ta::Runner &r, const std::string &line)
-{
-    r.submit(ta::parse_command(line));
-}
+static void submit(ta::Runner &r, const std::string &line) { r.submit(ta::parse_command(line)); }
 
 static void parsing()
 {
@@ -305,10 +303,7 @@ static void runner()
     expect(has(out[4], "unknown command 'bogus'"), "an unknown command is an error");
 }
 
-static void flow(ta::Runner &r, const char *name)
-{
-    r.fires().fired(std::string("flow:") + name);
-}
+static void flow(ta::Runner &r, const char *name) { r.fires().fired(std::string("flow:") + name); }
 
 static_assert(ta::CareerTimes{}.title == 90000 && ta::CareerTimes{}.title_pad_after == 3000,
               "the title wait is 90 s, and the agent presses the virtual pad itself after 3 s");
@@ -350,7 +345,8 @@ static void pad_timing()
         ta::Runner r(g);
         uint64_t now = 1000;
         g.screens = 1;
-        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":0,\"retry\":2,\"retry_after_ms\":200}}");
+        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":0,\"retry\":2,\"retry_after_ms\":"
+                  "200}}");
         auto o = run(r, now, 100);
         expect(g.a_presses == 3 && answered(o) == 1 && has(o[0], "\"status\":\"error\"") && has(o[0], "did not change after 3"),
                "a pad that never changes the screen presses again twice, then fails");
@@ -360,7 +356,8 @@ static void pad_timing()
         ta::Runner r(g);
         uint64_t now = 1000;
         g.screens = 1;
-        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":0,\"retry\":3,\"retry_after_ms\":200}}");
+        submit(r, "{\"seq\":1,\"cmd\":\"pad\",\"args\":{\"press\":\"a\",\"ms\":30,\"settle_ms\":0,\"retry\":3,\"retry_after_ms\":"
+                  "200}}");
         auto o = run(r, now, 30);
         g.screens = 2;
         o = run(r, now, 30);
@@ -416,7 +413,8 @@ static void career()
         expect(!answered(out) && g.routes.empty(), "then route career waits for the home view model");
         g.home = true;
         out = run(r, now, 6);
-        expect(g.routes.size() == 1 && g.routes[0] == "career" && g.tiles == 0, "route career fires once the home view model is there");
+        expect(g.routes.size() == 1 && g.routes[0] == "career" && g.tiles == 0,
+               "route career fires once the home view model is there");
         g.fe_career = true;
         out = run(r, now, 6);
         expect(g.tiles == 1 && g.cards == 0, "the career tile's action runs once fe_career is up");
@@ -477,10 +475,12 @@ static void career()
          [](FakeGame &) {}},
         {"an unbound title falls back to the pad and says so", "press(es) of the virtual pad's a",
          [](FakeGame &g) { g.title_bound = false; }},
-        {"no home view model times out naming route career", "route career from the main menu did not happen within 0 s (no home view model",
-         [](FakeGame &g) { g.engaged = true; }},
-        {"no fe_career times out naming the tile", "the career tile's continue action did not happen", [](FakeGame &g) { g.engaged = g.home = true; }},
-        {"no cards time out naming the resume card", "the resume card's press did not happen", [](FakeGame &g) { g.engaged = g.home = g.fe_career = true; }},
+        {"no home view model times out naming route career",
+         "route career from the main menu did not happen within 0 s (no home view model", [](FakeGame &g) { g.engaged = true; }},
+        {"no fe_career times out naming the tile", "the career tile's continue action did not happen",
+         [](FakeGame &g) { g.engaged = g.home = true; }},
+        {"no cards time out naming the resume card", "the resume card's press did not happen",
+         [](FakeGame &g) { g.engaged = g.home = g.fe_career = true; }},
         {"no Team HQ times out naming it", "the career loading into Team HQ (StateTeamHQ) did not happen",
          [](FakeGame &g) { g.engaged = g.home = g.fe_career = g.resume = true; }},
     };
@@ -504,7 +504,8 @@ static void career()
         uint64_t now = 1000;
         submit(r, "{\"seq\":1,\"cmd\":\"career\",\"args\":{}}");
         auto out = run(r, now, 20);
-        expect(has(out[0], "\"status\":\"error\"") && has(out[0], "the career tile's continue action: the My Team tile has no saved"),
+        expect(has(out[0], "\"status\":\"error\"") &&
+                   has(out[0], "the career tile's continue action: the My Team tile has no saved"),
                "a tile without a save fails at once with its step");
     }
     {
@@ -614,7 +615,8 @@ static void session_args()
            "a Time Trial takes no other session");
     expect(has(parse("{\"mode\":\"grand_prix\",\"session\":\"time_trial\"}", p), "no time_trial session"),
            "a Grand Prix takes no time_trial session");
-    expect(has(parse("{\"mode\":\"grand_prix\",\"session\":\"warmup\"}", p), "not a session name"), "an unknown session is refused");
+    expect(has(parse("{\"mode\":\"grand_prix\",\"session\":\"warmup\"}", p), "not a session name"),
+           "an unknown session is refused");
     expect(has(parse("{\"mode\":\"grand_prix\",\"laps\":0}", p), "laps is 1 to 100"), "laps are 1 to 100");
     expect(has(parse("{\"mode\":\"time_trial\",\"laps\":3}", p), "no laps setting"), "a Time Trial has no laps");
     expect(has(parse("{\"mode\":\"grand_prix\",\"ai_difficulty\":111}", p), "0 to 110"), "AI difficulty is 0 to 110");
@@ -624,8 +626,8 @@ static void session_args()
     ta::Fill f = ta::session_fill(p, {"f1_26", "entrant_setup_mode_8", "swofty_f1"});
     expect(f.size() == 6 && f[0].first == "DevSessionDataContract.Game.setup_mode" && f[0].second == "f1_26" &&
                f[2].first == "DevSessionDataContract.Entrants.entrant_list" && f[2].second == "swofty_f1" &&
-               f[3].first == "DevSessionDataContract.Track.name" && f[3].second == "melbourne" &&
-               f[4].second == "qualifying_1" && f[5].first == "DevSessionDataContract.Game.laps" && f[5].second == "5",
+               f[3].first == "DevSessionDataContract.Track.name" && f[3].second == "melbourne" && f[4].second == "qualifying_1" &&
+               f[5].first == "DevSessionDataContract.Game.laps" && f[5].second == "5",
            "the fill is the dev session's keys in the order it reads them");
     expect(ta::session_fill(p, {}).size() == 3, "a box with no names leaves its keys out");
     expect(ta::session_unfilled(p) == "weather", "weather has no dev session setting");
@@ -795,11 +797,12 @@ static void sandboxed_ops()
     expect(answered(out) == 1 && has(out[0], "\"to_day\":17"), "then answers with the days");
     submit(r, "{\"seq\":3,\"cmd\":\"save\",\"args\":{\"what\":\"now\"}}");
     out = run(r, now, 3);
-    expect(has(out[0], "\"status\":\"unavailable\"") && has(out[0], "no save trigger"), "an unbound save now answers unavailable");
+    expect(has(out[0], "\"status\":\"unavailable\"") && has(out[0], "no save trigger"),
+           "an unbound save now answers unavailable");
 }
 
 // The coroutine runner: a fake host answers the test's ops.
-SWOFTY_TEST(waits_and_checks)(swofty::test::Context &t) -> swofty::test::Task
+SWOFTY_TEST(waits_and_checks)(swofty::test::Context &t)->swofty::test::Task
 {
     bool at = co_await t.at("team_hq", 60);
     t.expect(at, "reached team_hq");
@@ -809,7 +812,7 @@ SWOFTY_TEST(waits_and_checks)(swofty::test::Context &t) -> swofty::test::Task
     t.log_text("routed");
 }
 
-SWOFTY_TEST(a_failing_op)(swofty::test::Context &t) -> swofty::test::Task
+SWOFTY_TEST(a_failing_op)(swofty::test::Context &t)->swofty::test::Task
 {
     bool ok = co_await t.log("never", 1);
     t.expect(!ok, "the log wait failed");
@@ -827,34 +830,35 @@ struct Host {
 static void coroutines()
 {
     Host h;
-    SwoftyTestHost host{sizeof(SwoftyTestHost), SWOFTY_TEST_HOST_VERSION, &h,
-                        [](void *s, const char *line) -> uint64_t {
-                            auto *h = static_cast<Host *>(s);
-                            h->started.push_back(line);
-                            return h->started.size();
-                        },
-                        [](void *s, uint64_t op, char *out, size_t cap) -> int {
-                            auto *h = static_cast<Host *>(s);
-                            if (++h->polls % 2)
-                                return 0;
-                            snprintf(out, cap, "{\"seq\":%llu}", (unsigned long long)op);
-                            return h->fail_ops ? 2 : 1;
-                        },
-                        [](void *s, int ok, const char *what) {
-                            static_cast<Host *>(s)->expects.push_back(std::string(ok ? "+" : "-") + what);
-                        },
-                        [](void *s, const char *text) { static_cast<Host *>(s)->logs.push_back(text); },
-                        [](void *, const char *path, char *out, size_t cap) -> int {
-                            if (!std::strcmp(path, "car[0].chassis.mass"))
-                                snprintf(out, cap, "{\"value\":798.5,\"type\":\"f32\"}");
-                            else if (!std::strcmp(path, "ui.tab.visible"))
-                                snprintf(out, cap, "{\"value\":false,\"type\":\"bool\"}");
-                            else {
-                                snprintf(out, cap, "no reader");
-                                return 0;
-                            }
-                            return 1;
-                        }};
+    SwoftyTestHost host{
+        sizeof(SwoftyTestHost),
+        SWOFTY_TEST_HOST_VERSION,
+        &h,
+        [](void *s, const char *line) -> uint64_t {
+            auto *h = static_cast<Host *>(s);
+            h->started.push_back(line);
+            return h->started.size();
+        },
+        [](void *s, uint64_t op, char *out, size_t cap) -> int {
+            auto *h = static_cast<Host *>(s);
+            if (++h->polls % 2)
+                return 0;
+            snprintf(out, cap, "{\"seq\":%llu}", (unsigned long long)op);
+            return h->fail_ops ? 2 : 1;
+        },
+        [](void *s, int ok, const char *what) { static_cast<Host *>(s)->expects.push_back(std::string(ok ? "+" : "-") + what); },
+        [](void *s, const char *text) { static_cast<Host *>(s)->logs.push_back(text); },
+        [](void *, const char *path, char *out, size_t cap) -> int {
+            if (!std::strcmp(path, "car[0].chassis.mass"))
+                snprintf(out, cap, "{\"value\":798.5,\"type\":\"f32\"}");
+            else if (!std::strcmp(path, "ui.tab.visible"))
+                snprintf(out, cap, "{\"value\":false,\"type\":\"bool\"}");
+            else {
+                snprintf(out, cap, "no reader");
+                return 0;
+            }
+            return 1;
+        }};
     expect(std::string(SwoftyTestNames()) == "waits_and_checks\na_failing_op\n", "SWOFTY_TESTS lists both tests");
     expect(SwoftyTestStart("nope", &host) == nullptr, "an unknown test does not start");
     void *run = SwoftyTestStart("waits_and_checks", &host);

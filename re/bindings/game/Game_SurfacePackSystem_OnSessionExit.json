@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SurfacePackSystem_OnSessionExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437a5c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437a5c40.c;pat:log-channel-GameSurfacePack;xref:0x1458729e0",
+  "notes": "resetMappings (memset +0x18180 0x2f8, 3 tables -1); if +0x184e0 and car unchanged (+0x184b4==0) moves assigned surfaces +0xd8 (stride 0x40, count +0x180e0) to unassigned list +0xc0d8 (max 0x300) via Game_GameSurfacePack_HandleUnassignedSurfaceOwnershipTransfer; else removes all, then sets +0x180f8 destroy-atlas and +0x180f5. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.surface_pack_system_on_session_exit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5E B8 31 00 00 00",
+  "match": "0x1437a5c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437a5c40",
+  "kind": "func_start",
+  "names": [
+   "Game_SurfacePackSystem_OnSessionExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x1437a5c40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437a5c40.c;xref:0x14169cdae",
+   "notes": "V6297 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

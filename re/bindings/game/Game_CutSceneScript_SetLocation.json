@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_SetLocation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140241330",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140241330.c;pat:log-message-cxx;xref:0x14023e35e,0x14025baef,0x140260de6,0x140261baa,0x140261be2,0x140264c94,0x1402653ae,0x1402654fb,0x140267ea0,0x140267ee7,0x14026951d,0x140269533,0x140269876,0x14026988c,0x140269c46,0x140269c5c,0x14026a09d,0x14026a0b3,0x14026a3f6,0x14026a40c",
+  "notes": "(script, const char *marker <= 15 chars, bool warn): with the placement-marker registry 0x14607c1d8 set, packs the name into 16 bytes and scans its marker list (+0x278..+0x280) for a match at marker+0x18/+0x20; hit: copies the marker object's 4x4 transform (entry +0xf8 of the 0x70-stride table [+0xf0]+0x10 at +0x20, else +0x90) to script+0x470..+0x4af, normalizes the three axis rows, logs it, returns 1. Miss: with warn logs 'setLocation %p %s for [%s] failed - check the placement markers exist in the wep', returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_set_location",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 00 00 00 C5 78 29 94 24 B0 00 00 00",
+  "match": "0x140241330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140241330",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_SetLocation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140241330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140241330.c;xref:0x14023e35e,0x140260de6",
+   "notes": "V4055 CutSceneScript::setLocation + CUTSCENE_SCRIPT_VERBOSE failed string confirmed"
+  }
+ ],
+ "proofs": []
+}

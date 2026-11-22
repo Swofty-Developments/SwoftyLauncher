@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkF_SetupFromRankedMatchmakingSettings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a9610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430a9610.c;pat:log-message-method;xref:0x14315b818,0x14315c262",
+  "notes": "Logs 'setupFromRankedMatchmakingSettings()' (NETWORK/F). Reads a settings block (param_2: u32 mode at +0, bytes at +4, +0xd..+0x11) and pushes each value into session option objects at this+0x4a8..+0x4e0 (vtbl+0x10 get, +0x18 set) and setters 0x14309fe00, 0x1430a01f0, 0x1430a0390, 0x1430a0520; reads option mp_unsafe_pit_release. Callers 0x14315b6a0, 0x14315be10. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_f_setup_from_ranked_matchmaking_settings",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430a9610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a9610",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkF_SetupFromRankedMatchmakingSettings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a9610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a9610.c;xref:0x14315b818",
+   "notes": "V5323 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

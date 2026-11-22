@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_RemoveEditorDecalNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142c330",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142c330.c;pat:log-message-method;xref:0x141ffdc74,0x141ffe682,0x141ffeb00",
+  "notes": "Logs 'removeEditorDecalNode(%I64u)'. Erases the node with uniqueId *p2 (searched from the back) from the editor list system+0x178..+0x180 (shared_ptr shift + release), dirty +0x168 = 1, then CreateServiceForEditorNode(system, 0). Linked mode (0x146064623 bit7): also erases the linked partner (id = node+0x68): queues a request with its id on 0x1414290f0(system)+0x188 (0x142b525b0) and removes it from the list; when 0x146064624 bit0, same area and partner+0x64 set it clears partner+0x68 first, else sets dirty. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_remove_editor_decal_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 F8 29 74 24 60 48 89 D7 48 89 CE",
+  "match": "0x14142c330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142c330",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_RemoveEditorDecalNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14142c330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14142c330.c;xref:0x141ffdc74",
+   "notes": "V4854 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

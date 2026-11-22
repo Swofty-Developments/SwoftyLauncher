@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingAttribs_LoadDefinitions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143068ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143068ce0.c;pat:log-message-cxx;xref:0x1430d190b",
+  "notes": "Constructor (only caller 0x1430d190b in 0x1430d11b0; returns p1): vtable 0x14580bc60, owner p2 at +0x18, allocator [p2+0x10], reserves definition vectors (+0x70 0x900 bytes, +0x90, +0xb0), seeds an RNG table +0xd0..+0xa94 from a time value, timers via QueryPerformanceCounter. Then the inlined loadDefinitions: logs NETWORK-ATTRIBUTES 'GameSessionMatchingAttribs::loadDefinitions(%s).' for system/matchmaking.xml, loads the file (0x143f393a0), parses the XML (0x1439a91b0) and fills definitions via 0x14407ecf0(p1+0x40); logs 'MOX/Attrib: Successfully loaded %d attribute definitions.'. Renamed: constructor with inlined load. (lane owner review requested) Better name: Game_GameSessionMatchingAttribs_ConstructAndLoadDefinitions (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.game_session_matching_attribs_load_definitions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00 48 89 D3 48 89 CE",
+  "match": "0x143068ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143068ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingAttribs_LoadDefinitions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143068ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143068ce0.c;xref:0x1430d190c",
+   "notes": "V5546 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

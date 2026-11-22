@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCustomObject_ChangeObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14288e9e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14288e9e0.c;pat:log-message-method;xref:0x1428cb124,0x1428eccc6,0x1428f2d9a,0x1428f2e7d",
+  "notes": "(objMgr,id*,cfg,xform). Hash lookup u16 id in map +0x120..+0x154; logs 'changeObject()' (FRONTEND_SCENE_CUSTOM_OBJECT); if object state +0x48 == 3 and no change pending (+0x310): sets +0x310, copies cfg (vector +0x250 count +0x260, bytes +0x270/+0x311) and 64-byte transform +0x2b0..+0x2e8, then tail vcall +0x98(0) on [+0x288]. Callers 0x1428c9060, 0x1428ec620, 0x1428f2d40, 0x1428f2e20. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_custom_object_change_object",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4C 89 CF 4C 89 C6 48 89 C8",
+  "match": "0x14288e9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14288e9e0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCustomObject_ChangeObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x14288e9e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14288e9e0.c;xref:0x1428cb124",
+   "notes": "V5115 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

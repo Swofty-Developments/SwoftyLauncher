@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_NetworkSOCGuid_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14322f650",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14322f650.c;pat:log-channel-NETWORK/F;xref:0x140fe258e,0x1456bcae8",
+  "notes": "Vtbl 0x1456bcad0 slot +0x18. Log 0x14582a29e; championshipName->+0x238; inlined SOCGuid (SOCID_*U64 ->+0x220/+0x228/+0x230, else FUN_143236ad0); codeNumber->+0x210, lastModified->+0x288, teamName->+0x260; binaryBegin->+0x290..+0x400; entrants->vec +0x428 (0x88 recs); driver_info..badge_info->+0x448..+0x4c0; document_block->+0x410. Better name: Game_SavedOnlineChampionship_Deserialise (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_network_soc_guid_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 CB 00 00",
+  "match": "0x14322f650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14322f650",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_NetworkSOCGuid_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14322f650",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14322f650.c;xref:0x140fe258e",
+   "notes": "V6011 SavedOnlineChampionship_DeserialiseSaveDataContainer: 158KB deserialise of championship incl. SOCGuid; not just SOCGuid"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14322f650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14322f650.c;xref:0x140fe258e",
+   "notes": "V7022 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

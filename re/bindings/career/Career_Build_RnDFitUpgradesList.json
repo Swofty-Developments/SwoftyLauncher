@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDFitUpgradesList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c58840",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_RnDFitUpgradesList(void * self)",
+  "evidence": "decomp:re/decomp/141c58840.c;xref:0x141c585ff;xref:0x141c5acec;xref:0x141c5b72e",
+  "notes": "myteam-g1: Builds the fit-upgrades list for a driver: lng_rnd_no_fitted_upgrade / no_supplier_upgrade / no_swappable_upgrade / pre_equipped_upgrades / supplier_category; calls Career_Query_EnabledUpgrades."
+ },
+ "signature": {
+  "id": "career.build_rn_dfit_upgrades_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 67 00 00",
+  "match": "0x141c58840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c58840",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDFitUpgradesList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c58840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c58840.c;xref:0x141c585ff;xref:0x141c5acec",
+   "notes": "V9973 Fit upgrades list with lng_rnd_no_fitted_upgrade/pre_equipped/no_swappable/supplier strings, tile_%d."
+  }
+ ],
+ "proofs": []
+}

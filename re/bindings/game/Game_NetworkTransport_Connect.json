@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_Connect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144048de0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144048de0.c;pat:log-message-method;xref:0x14409465a,0x144094706",
+  "notes": "Logs 'Connect' inAddr, FindOrCreateChannel 0x144049210 (or 'channel already existed'), '[SendNewConnection]' and setState sslHandshake, then SendConnectMessage 0x144049a40. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_transport_connect",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 01 00 00 48 89 D3",
+  "match": "0x144048de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144048de0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_Connect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144048de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144048de0.c;xref:0x14409465a",
+   "notes": "V6460 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

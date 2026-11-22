@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UiMessage_DisplayMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442d9bf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442d9bf0.c;pat:log-message-method;xref:0x1406a777a,0x1406a7950,0x1406d1f57,0x14079c427,0x14079c543,0x14079c899,0x14079cb38,0x1408242f1,0x1408245b0,0x140835131,0x1408353f0,0x1409be1dd",
+  "notes": "Read in full (mgr, out handle, def key, attach, data, arg): logs 'displayMessage(). %s' (UI_MESSAGE); finds the message definition (0x144396dc0) in mgr[7]..mgr[8]; missing -> TLS error 2; else allocates a 0xb8-byte instance (serial g 0x146ca49d8), logs 'Constructed message: %s', optional attach 0x1441974e0, filter mgr[0x6f] vcall +0x18 may reject (instance destroyed), else returns {mgr, instance} and records the handle in the instance list +0x90. Xref list truncated. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ui_message_display_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4D 89 CE 4C 89 C3",
+  "match": "0x1442d9bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442d9bf0",
+  "kind": "func_start",
+  "names": [
+   "Game_UiMessage_DisplayMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1442d9bf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442d9bf0.c;xref:0x1406a777a",
+   "notes": "V6581 size=1232; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

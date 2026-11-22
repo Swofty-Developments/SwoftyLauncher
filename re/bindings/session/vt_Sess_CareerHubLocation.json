@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_CareerHubLocation",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457e4680",
+  "type": "vtable[20]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/14f0578a0.c;pat:flow-state-type-record;decomp:re/decomp/142db8900.c;xref:0x142db890e,0x14f057988",
+  "notes": "cxx=SessionStateCareerHubLocation; 20 slots (next vtable at +0xa0, lea 0x142df4357). Slot 0 -> type record 0x14607df40, +8=name set by static init 0x142df1ca0 at 0x142df4331. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142dad0c0/0x142dad490/0x142dad790. Ctor 0x14f0578a0 (lea 0x14f057988; mov [rsi],rax). Also loaded by 0x142db8900 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.career_hub_location",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 99 C8 0D 00",
+  "match": "0x142db890e",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457e4680",
+  "kind": "data",
+  "names": [
+   "vt_Sess_CareerHubLocation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457e4680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142db8911",
+   "notes": "V7447 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_FindEntrantToDropIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323fcb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14323fcb0.c;pat:log-message-method;xref:0x14323e72a,0x1432408a2,0x142d6a1da,0x141572ee0",
+  "notes": "Callers incl. UpdateDropInRequests 0x14323e5b0 and RequestDropIn 0x143240770. (this, request, verbose): returns the entrant to drop into or 0; unless host race status is 7 refuses OSQ (type 9/0xe), formation lap (0x1436183e0/0x1436184e0), red flag, invalid player-set entry, player/host race status not 8/9; then FindEntrantAttachedToPlayer, FindEntrantUnattached or the entrant with vehicle request+0x58, and CanDropIntoDriver 0x143240eb0. Logs only when verbose. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_find_entrant_to_drop_in",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 44 89 C3 49 89 D7",
+  "match": "0x14323fcb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323fcb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_FindEntrantToDropIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323fcb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323fcb0.c;xref:0x141572ee0",
+   "notes": "V6055 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

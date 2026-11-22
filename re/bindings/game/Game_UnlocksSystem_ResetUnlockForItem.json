@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UnlocksSystem_ResetUnlockForItem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ec8eb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ec8eb0.c;pat:log-message-cxx;xref:0x142a7ffff",
+  "notes": "Read in full (this, int id): linear search of 0x40-byte entries this+0x50..+0x58 for the one whose item (vcall +8) has +0xa4 == id; if found and entry item[2] != 0, sets entry+0x10 = 0 (locked) and logs 'UnlocksSystem::resetUnlockForItem() Resetting unlocks for item - now locked (type [%s], name [%s])'. Caller 0x142a7ff30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.unlocks_system_reset_unlock_for_item",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 59 50 4C 8B 71 58 4C 39 F3 0F 84",
+  "match": "0x142ec8eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ec8eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_UnlocksSystem_ResetUnlockForItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ec8eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ec8eb0.c;xref:0x142a7ffff",
+   "notes": "V5560 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

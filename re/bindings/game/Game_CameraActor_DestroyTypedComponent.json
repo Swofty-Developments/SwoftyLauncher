@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CameraActor_DestroyTypedComponent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401c0fe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401c0fe0.c;xref:0x14018f2bb,0x140190236,0x1401c1154,0x1402906f6",
+  "notes": "Switch on current type +0x1fc: types 0..3 take the typed component slot (+0x3c0/+0x440/+0x5a0/+0x848), call its vt+8 (arg 0) then owner allocator (+400) vt+0x38 free, and null the slot; type 4 clears [[0x14601db08+0x90]+0x90]. Counterpart of 0x1401c08d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.camera_actor_release_typed_component",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 8B 81 FC 01 00 00 48 83 F8",
+  "match": "0x1401c0fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401c0fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraActor_DestroyTypedComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1401c0fe0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1401c0fe0.c;xref:0x14018f2bb",
+   "notes": "V8440 switch on +0x1fc, calls component vtable+8 dtor then owner(+400) vtable+0x38 which is the allocator free (alloc is +0x18) not unregister; better name Game_CameraActor_DestroyTypedComponent"
+  }
+ ],
+ "proofs": []
+}

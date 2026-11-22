@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EndRaceUiSequencer_PlayEngineerVO",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea5630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ea5630.c;pat:log-message-method;xref:0x142daad03,0x142ea5122",
+  "notes": "Logs 'playEngineerVO() called'; if a pending VO +0x60: logs 'Playing engineed VO', +0x70=1, on the speech system [+0x28] (vcall +0x90 ready) registers 0x142ea5a50 as setSpeechVOFinishedDelegate (+0x960) and setSpeechVOFailedDelegate (+0x9a0) of [[+0x28]+0xa0]+0xc30, plays it via vcall +0x98(+0x60,0,0) -> id +0x6c, clears +0x60. Callers 0x142daa070, 0x142ea4410. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.end_race_ui_sequencer_play_engineer_vo",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4F B8 A1 00 00 00",
+  "match": "0x142ea5630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea5630",
+  "kind": "func_start",
+  "names": [
+   "Game_EndRaceUiSequencer_PlayEngineerVO"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea5630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea5630.c;xref:0x142daad03",
+   "notes": "V5548 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

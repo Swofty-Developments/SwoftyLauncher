@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalGeneration_Generate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414378f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414378f0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x141436e79",
+  "notes": "Called from the decal state machine 0x141435170 (0x141436e79). Logs 'Generate %I64d decals in list %I64d' (count = (+0x178 - +0x170)>>4, list +0x188); if flags +0x1e0 bit4 sets +0xd9; calls 0x142a97c70([this+8], this+0x168, this+0x1a0, {+0x1d0,+0x1d8}, flags&3); then sets state byte +0xd8 = 4 (eGenerateBake, name table 0x1456e5980) with a state-change log. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decal_generation_generate",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 54 01 00 00",
+  "match": "0x1414378f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414378f0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalGeneration_Generate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1414378f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414378f0.c;xref:0x141436e79",
+   "notes": "V4865 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -34,14 +34,18 @@ Steam keeps a manifest for each installed depot in `<steam>/depotcache/<depot>_<
 - Each original the baseline recorded at first sight (`"source": "first-sight"`) is compared with Steam's copy. A match becomes `"source": "depot"` and isn't compared again. A mismatch whose game folder file now matches Steam's, as after a Verify in Steam, is backed up again from the game folder.
 - Until a check passes for a game build, every file Steam installed is checked by size (`"stock_checked": true` in `baseline.json` once it has). Files `placed.json` records as written by the launcher are left to the install.
 - EA AntiCheat's launcher files (`EAAntiCheat.*` in the game root) are logged when they differ from Steam's and never stop a launch. EA rewrites them on a normal start. Modded sessions do not use them. Offline play parks and restores `EAAntiCheat.GameServiceLauncher.exe` through its own journal.
-- `amd_fidelityfx_dx12.dll` in the game root is logged when it differs from Steam's, as with an FSR 4 drop-in such as HelixSR, and never stops a launch. The launcher does not write or restore it, and no addon or profile can replace it. Verify integrity of game files in Steam puts Steam's copy back. `F1_25.exe` and `steam_api64.dll` must still be Steam's. A drop-in named `version.dll` cannot be used with Swofty; a drop-in named `dxgi.dll` is not blocked by the launcher.
+- A DLL in Steam's list that is in the game folder but differs from Steam's copy is a third-party file, such as an FSR 4 build of `amd_fidelityfx_dx12.dll` (HelixSR), OpenComposite's `openvr_api.dll` or a DLSS swap. It never stops a launch, and the launch log names every such DLL with its size and Steam's in one `[stock]` line. A DLL in Steam's list that is missing from the game folder stops the launch like any other missing file. Verify integrity of game files in Steam puts Steam's copies back. `F1_25.exe` and `steam_api64.dll` must still be Steam's; see [Copies Swofty plays](/reference/launch#copies-swofty-plays).
+- The launcher does not write or restore `amd_fidelityfx_dx12.dll`, and no addon or profile can replace it.
+- A DLL Steam doesn't list, such as a `dxgi.dll` drop-in, is not checked. A drop-in named `version.dll` cannot be used with Swofty: the launcher places its own `version.dll`, and a `version.dll` it didn't put there stops the install as described in [Leftovers](#leftovers).
 - When a game repair or update put `EAAntiCheat.GameServiceLauncher.exe` back while offline play was staged, rolling back offline play counts it as restored: with no `.bak` left (an EA app repair), or with a `.bak` identical to the repaired exe, which is removed (a Steam verify). A repaired exe whose certificate names Electronic Arts as the signer is kept, and a `.bak` that differs from it is set aside under `swofty/offline-recovery/`. Any other `.bak` that differs from the repaired exe still stops the roll-back.
 - On an EA app copy, the session checks the exe when F1 25 starts. When an EA app repair replaced offline play's file with EA's, EA's file becomes the `.bak` and the journal records its digest, the older `.bak` is set aside under `swofty/offline-recovery/`, and offline play's file goes back in place.
 - A `.bak` that is offline play's file is never put back as the original: the pinned stub, the stub the journal recorded, or a program Electronic Arts didn't sign. The roll-back and the stale-backup clean-up set it aside under `swofty/offline-recovery/`. When there's no `.bak` and the exe is offline play's file, the clean-up sets the exe aside too and the log says to repair F1 25 in the EA app or verify it in Steam.
 - Before the check, a stale `EAAntiCheat.GameServiceLauncher.exe.bak` an interrupted session left is cleared: a backup that is Steam's copy is put back over the live exe, and a backup that is not is set aside under `swofty/offline-recovery/` while a Steam-verified live exe is kept. This step is skipped while a session is pending.
 - Each original the install backs up for the first time is compared with Steam's copy before it is copied.
 
-A file that doesn't match, other than an EA AntiCheat launcher file, the VR runtime or `amd_fidelityfx_dx12.dll`, stops the session before anything is built or changed and writes `state/not-stock.json`. The launcher opens a **Your game files have been edited** modal that says how many files changed, names the first six, and lists the fix: **Verify game files in Steam** (`steam://validate/3059520`), or add mods through the Simplified Importer. `swofty run` and `swofty apply` print the same link. Files Steam doesn't list are not checked. A game folder outside Steam is not checked. Without a readable manifest for every installed depot, the check is skipped and the launch log says why.
+Some Steam installs keep their manifests with the file names encrypted (`filenames_encrypted` in the manifest's metadata). Each file is still listed under the SHA-1 of its lowercased path with `\` separators, with its size and content SHA-1, and the checks above find a file by that path hash. A file whose path hash isn't listed counts as Steam's when its size and SHA-1 are those of a file in the manifest. With encrypted names, the size check of every file is skipped, `stock_checked` stays false, and the launch log says `[stock] Steam's manifests have encrypted file names`. `setup::store_checks` counts such a copy as one it can't check.
+
+A file that doesn't match, other than an EA AntiCheat launcher file or a third-party DLL, stops the session before anything is built or changed and writes `state/not-stock.json`. The launcher opens a **Your game files have been edited** modal that says how many files changed, names the first six, and lists the fix: **Verify game files in Steam** (`steam://validate/3059520`), or add mods through the Simplified Importer. `swofty run` and `swofty apply` print the same link. Files Steam doesn't list are not checked. A game folder outside Steam is not checked. Without a readable manifest for every installed depot, the check is skipped and the launch log says why.
 
 ## The one-time setup
 
@@ -70,7 +74,13 @@ Before a rollback undoes a journal, the files in each `swofty/addons/<id>/` fold
 
 ## Free space
 
-Before an install backs up or copies anything, it adds up what it writes on each volume: on the game folder's, the files it copies less the files they replace; on the data folder's, the originals it backs up for the first time and 2 KB per file for the journal and the other state files. Both folders on one volume count together. When a volume has less free space than that, the install stops with `not enough free space on <drive>: this profile needs about <X> GB, <Y> GB free`, in GB of 1024³ bytes. A write that fails on a full volume during the install stops it with the same message, and the session rolls back.
+Before an install backs up or copies anything, it adds up the free space it needs on each volume. On the data folder's, that is the originals it backs up for the first time and 2 KB per file for the journal and the other state files. On the game folder's:
+
+- A file linked straight from the build output needs none.
+- The files linked from the link cache (`swofty-cache/overlay`, see [The game drive copy](/using/settings#the-game-drive-copy)) need the ones the cache doesn't hold yet, matched by size, modified time and SHA-256 as the cache matches them, plus 2 GB to spare; or, when it is less, what copying them straight into the game folder needs, less the files they replace. Play copies them that way when the cache has too little room. Cached files the profile no longer places are deleted first and count as freed. With an empty cache, every file counts.
+- With `SWOFTY_INSTALL_COPY=1`, or when the launcher can't tell the drives apart, every file counts as copied, less the files they replace.
+
+Both folders on one volume count together. When a volume has less free space than that, the install stops with `not enough free space on <drive>: this profile needs about <X> GB, <Y> GB free`, in GB of 1024³ bytes, with what that volume needs and has free. A write that fails on a full volume during the install stops it with the same message and what copying every file needs there, and the session rolls back.
 
 ## Sessions
 
@@ -82,13 +92,42 @@ A session journal still open while the lock is free belongs to a session that en
 
 Each session journal records the game folder it was written for (`"game"`). When that folder no longer has `F1_25.exe` and the rollback runs for another folder, as after Steam moved the library or the game was reinstalled elsewhere, the journal rolls back there only the files that hold exactly what it wrote: a replaced file goes back to its original and an added file is removed. Every other file of the journal is left in place and reported as `<file> is not what the earlier session wrote in the old game folder nor its original; left in place`; the stock check then names it. The journal closes either way and never stops a launch.
 
+When a file of offline play's journal stays locked, as while F1 25 or the EA app is still open, the roll back names each locked file and the journal stays. The direct `swofty run`, the next launcher start and the next Play replay it before anything else, and until one finishes the log never says the game files are rolled back: the wrapper says `rolled the profile's game files back, but not the offline play files above`, and the direct `swofty run` ends on `not every game file is back yet`.
+
 Offline play's journal names its game folder on its `meta` line. When that folder no longer has `F1_25.exe`, recovery and `swofty restore` move the journal's paths to the game folder they run for, when that folder holds at least one file the journal staged with the recorded digest and none that differs. Otherwise they stop with `offline play's record is for F1 25 in <folder>, which is gone, ...` and the journal stays.
 
 ## Leftovers
 
-A file in the way of an install counts as the launcher's own when `placed.json` records those exact bytes at that path, or when it is byte-identical to the file about to be placed and not a backed-up original. The install clears those files, logs the recovery and the `swofty doctor` report, and tries once more. Any other file stops the install untouched and is recorded in `blocked.json`; `swofty restore` moves it to `$DATA/set-aside/<time>/`. The launcher opens the **Your game files have been edited** modal, whose **Restore game folder** button runs the same restore.
+A file in the way of an install counts as the launcher's own when `placed.json` records those exact bytes at that path, or when it is byte-identical to the file about to be placed and not a backed-up original. The install clears those files, logs the recovery and the `swofty doctor` report, and tries once more. Any other file stops the install untouched and is recorded in `blocked.json`; `swofty restore` moves it to `$DATA/set-aside/<time>/`. A recorded file that replaced a game file and is now Steam's copy, as after a Verify, stays in place instead, and the baseline takes it as the original (`"source": "depot"`). The launcher opens the **Your game files have been edited** modal, whose **Restore game folder** button runs the same restore.
+
+`swofty restore` stops at once while another process holds `session.lock`. **Restore game folder** waits for it:
+
+| What holds the lock | The button |
+|---|---|
+| A Play still building or checking the game files (a live `build.json`) | Waits up to 15 minutes, then says `Play is still <step> for profile <name>, started <when>; restore the game folder again when it finishes, or cancel the build in the launcher` |
+| F1 25, running from that game folder | Stops at once with `F1 25 is still running; close F1 25, then restore the game folder again` |
+| A session starting F1 25 or putting its files back, with F1 25 closed | Waits up to 2 minutes, then says to close any Steam or EA app window that is starting F1 25 and try again |
 
 At start, files that `placed.json` records and no open journal covers are cleared the same way.
+
+## The launcher's menus in a game original
+
+Before the menu build patches the game's menu archives, it reads the original of each of these (the original backed up for the game build, else the game folder's file) for the entries only the launcher's menus add:
+
+| Archive | Entries |
+|---|---|
+| `databases.erp` | the tooltips `mod_menu`, `mod_menu_offline` and `swofty_adjust`, `ui_menu_data.swofty`, `settings.swofty_addons` |
+| `persistent.erp` | the resources `swofty_o_row.idf` and `swofty_o_career_row.idf` |
+| `flow_persistent.erp` | messages with a `swofty_` id |
+
+An original that holds one of them is a menu build's output that an earlier session left in place of the game's file. The build stops with `menus: the game's <archive> already holds <entries>`, and Play puts a clean original back the way it does for an addon's entry:
+
+- When the recorded original holds the entries and the game folder's file differs, the game folder's file becomes the recorded original.
+- Otherwise the newest original of the file backed up for another game build goes back into the game folder.
+
+The build then runs again, and the log starts with `stale: <file> in the game folder still held the launcher's changes from an earlier session; ...`. With no clean original on record, Play stops with the same message, `the launcher has no clean copy of it on record`, and the repair steps for Steam and the EA app. A check before Play, such as **Check conflicts**, says that Play puts the backed-up original back.
+
+The menu build writes its tooltips, `ui_menu_data.swofty`, `settings.swofty_addons` and the F1 World flow entries `swofty_enter_time_trial`, `swofty_enter_grand_prix` and `swofty_enter_return` in place of the ones the archive it reads already holds. A menu build of `databases.erp` from its own output writes the same archive.
 
 ## Damaged state files
 

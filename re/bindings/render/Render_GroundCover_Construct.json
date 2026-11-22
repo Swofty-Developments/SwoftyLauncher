@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_GroundCover_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ce0630",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ce0630.c;pat:log-channel-GROUND_COVER;xref:0x1401500f5",
+  "notes": "Constructs NeGroundCoverSystem: logs 'Constructed NeGroundCoverSystem' and the enhanced ground cover (ultra quality) messages, formats per-camera names (ground_cover_camera_%u_%u, skids, eaid://ego_package/ground_cover_*_%u(.uav/.srv), skidmarks_mask_vp_%u_c_%u), builds two state blocks (0x143cee760) and calls 0x143ce1f40. Only caller Game_Read_RendererGfxConfig 0x1401500f5. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.ground_cover_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 01 02 00",
+  "match": "0x143ce0630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ce0630",
+  "kind": "func_start",
+  "names": [
+   "Render_GroundCover_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143ce0630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ce0630.c;xref:0x1401500f5",
+   "notes": "V6473 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

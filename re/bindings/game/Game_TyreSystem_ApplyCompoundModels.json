@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreSystem_ApplyCompoundModels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e96a20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e96a20.c;xref:0x14023891a,0x142dfec10,0x142e904c2,0x142e91c03,0x142e92fb0,0x142e96416,0x14f402a86,0x14f4297d4",
+  "notes": "(tyreEntry): needs both compound refs (+0x9920/+0x9938 < 5 with pointers) and +0x20. For wheels 0..3 runs 0x142e83130 + 0x142e87540 on the current/next blocks (stride 0xde0 by map [+0x9bc0]+0x1d8, +0x4d0/+0x970); hides slots 4/5 of every set; then re-resolves both refs from the table +0x9bd0 (stride 0x18, 0x142e9e6c0 rebuild) for +0x9c98[-0x6c] and +0x9c70 (fallback id (id>2)*3+1, else -1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_system_apply_compound_models",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 83 B9 20 99 00",
+  "match": "0x142e96a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e96a20",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreSystem_ApplyCompoundModels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e96a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e96a20.c;xref:0x142e96416,0x142e91c03,0x142e904c2",
+   "notes": "V3691 +0x9920/+0x9938 <5, ptrs +0x9928/+0x9930/+0x9940/+0x9948, stride 0xde0 at +0x4d0/+0x970, [+0x9bc0]+0x1d8 mapping, 142e83130/142e87540, then LapStats 142e9e6c0 verified."
+  }
+ ],
+ "proofs": []
+}

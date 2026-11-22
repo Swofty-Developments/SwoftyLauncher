@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SafetyRating_OnEarlyQuit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c6d630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c6d630.c;pat:log-channel-SAFETY_RATING;xref:0x1500091fc",
+  "notes": "(sys, penalty): snapshot prev rating +0x58 = +0x40, reason byte +0x5c (3 if +0x428, else 5 or from list +200..+0xd0), +0x60 = +0x48; rating +0x40 = clamp(+0x40 - penalty, +0xe0, +0xe4); 0x142c6db00; float +0x48 = clamp(+0x48 + +0x11c, +0x114, +0x118); logs 'The lead player has quitted a match early...'; tail-jmp WriteOnlinePlayerData (decomp merges it). Caller 0x150009120. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.safety_rating_on_early_quit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 89 D7 48 89 CE C5 FA 10 71 48",
+  "match": "0x142c6d630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c6d630",
+  "kind": "func_start",
+  "names": [
+   "Game_SafetyRating_OnEarlyQuit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c6d630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c6d630.c",
+   "notes": "V5052 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

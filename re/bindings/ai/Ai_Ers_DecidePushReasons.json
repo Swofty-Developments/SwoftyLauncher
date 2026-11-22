@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Ai_Ers_DecidePushReasons",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406487a0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "uint64_t Ai_BehaviourTestERSBoost_Update(void *self, void *unused, void *ai_system)",
+  "evidence": "decomp:re/decomp/1406487a0.c;xref:0x145636d60",
+  "notes": "Slot 4 of vtable 0x145636d40 'BehaviourTestERSBoost' (same slot as Ai_BehaviourTestRetire_Update). Entry = ai_system+0xa8 + self.byte(+0x1d)*0x508. Mode self+0x50: 0 if entry+0x502==0, 1 if (entry+0x38)->+0xe0==0 (xmode_passive), else 2; ers_use set = config(entry+0x230)+0x220 + mode*0x30. self+0x70 bits, each only when battery (entry+0x38)->+0xb0 >= level: 1 build gap (+0x220; +0x2c0/+0x2c8), 2 close gap (+0x228; +0x2d0), 4 in/out lap (+0x2e0), 8 overtake (+0x238; +0x2f0, +0x2f8), 0x10 defend (+0x230; +0x2d8); +0x2e8 push_to_overtake_distance_to_corner gates bits 1,2,4,8,0x10 (corrected 2026-11-14: was overtake only). Extra bits: 0x40 = session type (&~1) != 2, 0x20 (vs switch_from_medium_to_none +0x240), 0x80 (energy model). Then picks a strategy record ('default' fallback) and writes +0x51,+0x52,+0x54,+0x58,+0x5c,+0x60,+0x68. Always returns 0. Stock defend level 1.0 = DB value (not from code). Name kept (used in repo docs/code/signatures); a code-true name would be Ai_BehaviourTestERSBoost_Update (vtable slot 4). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.ers_decide_push_reasons",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 49 89 CF 0F B6 41 1D",
+  "match": "0x1406487a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406487a0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Ers_DecidePushReasons"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Ai_Ers_DecidePushReasons",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x145636d60",
+   "notes": "V1694 aaa-verify: vtable 0x145636d40 slot 4"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Ai_Ers_DecidePushReasons",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x145636d60",
+   "notes": "V3929 aaa-verify: vtable 0x145636d40 slot 4"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406487a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406487a0.c",
+   "notes": "V4703 state*0x30 from +0x220, reason offsets 0x220/228/230/238/2c0.. confirmed; vtable/indirect"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1406487a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1406487a0-0x140649fc8;xref:0x145636d60",
+   "notes": "V10566 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145636d60 = vtable 0x145636d40 slot 4. Entry = ai_system+0xa8 + byte self+0x1d * 0x508, +0x502 / [+0x38]+0xe0 mode tests, ers_use set from [entry+0x230], battery [..+0x38]+0xb0 compares, distance-to-corner +0x2e8 read before each push bit, self+0x70 mask writes confirmed. Arity 3 (rcx, r8 used; rdx unused). Cosmetic: proto name Ai_BehaviourTestERSBoost_Update differs from row name."
+  }
+ ],
+ "proofs": []
+}

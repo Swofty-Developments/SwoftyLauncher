@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Livery_ApplyTeamColourParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424ad4e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424ad4e0.c;xref:0x14025a6e9,0x1418cbd85,0x142514b96,0x142514c13,0x142514ce6,0x142514d61,0x142514e06,0x1425154c0,0x14251562c,0x1425167df,0x142d01c27",
+  "notes": "(out[3], entry): out = {0xff000000 x3}; if entry name (+0x10) is set, looks up '<name>.primary_colour', '.secondary_colour', '.tertiary_colour' (FNV-1a 64) in the colour map [0x146cc4278] (+0xb8 multiplier, +0xc0/+0xc8 robin-hood buckets) and stores each hit's +8 value in out[0..2]. Returns out. Pure lookup; 'ApplyTeamColourParams' overstated it. (lane owner review requested) Better name: Game_Livery_ResolveTeamColours (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.livery_apply_team_colour_params",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 89 CE 48 B8",
+  "match": "0x1424ad4e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424ad4e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Livery_ApplyTeamColourParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1424ad4e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424ad4e0.c;xref:0x14025a6e9",
+   "notes": "V8462 %s.%s with primary_colour/secondary_colour/tertiary_colour; caller ApplyTeamTextureSet"
+  }
+ ],
+ "proofs": []
+}

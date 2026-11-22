@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_DeleteEffectsSinceMark",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b05370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b05370.c;xref:0x143b08f8c,0x143b090da",
+  "notes": "For effects in mgr+0x858e90 after mark mgr+0x1052f0: negative count logs 'The old code using size_t would have failed here...'; effects whose state (+0x64 & 0xfc) is not deletable log 'not deleting %s'; deletable ones: reset emitters (stride 0x180, +0x158 lock, +0xe0/+0xe8/+0x104 = 0, chunks back to free list 0x146294210), clear particle buffers, swap with last (index +0x58), shrink list, free emitter array and effect (allocator mgr+0x857aa8). Callers in 0x143b06d90. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.particles_reset_effects_since_mark",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 44 8B",
+  "match": "0x143b05370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b05370",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_DeleteEffectsSinceMark"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143b05370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b05370.c;xref:0x143b08f8c,0x143b090da",
+   "notes": "V4074 not deleting %s and size_t message strings confirmed; caller Game_Particles_UpdateManager"
+  }
+ ],
+ "proofs": []
+}

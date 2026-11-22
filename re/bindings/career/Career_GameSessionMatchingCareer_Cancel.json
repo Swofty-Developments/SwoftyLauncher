@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_GameSessionMatchingCareer_Cancel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143076510",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143076510.c;pat:log-message-cxx;xref:0x1430623d9,0x1430adfd9,0x1430b2e6b,0x1430ef360",
+  "notes": "__FUNCTION__ GameSessionMatchingCareer::cancel(NeNetError), logs '%s: (%d)'; calls 0x1430727e0, 0x143071a30, 0x1430766c0, 0x144065670, 0x1430605c0. Callers incl. onJoinCareerSessionFailedPopupCompleted (0x1430adf50). The 0x14307642c rip match is not a reference. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.game_session_matching_career_cancel",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 F8 00 00 00",
+  "match": "0x143076510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143076510",
+  "kind": "func_start",
+  "names": [
+   "Career_GameSessionMatchingCareer_Cancel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143076510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143076510.c;xref:0x1430623da",
+   "notes": "V5584 name matches own log/pretty string and body; no broader behaviour found"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x143076510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143076510.c;str:\"NEbool network::GameSessionMatchingCareer::cancel(neon::NeNetError)\"",
+   "notes": "V9220 cancel cxx string and %s: (%d) format present."
+  }
+ ],
+ "proofs": []
+}

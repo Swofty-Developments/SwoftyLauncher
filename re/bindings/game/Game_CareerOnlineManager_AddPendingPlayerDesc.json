@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineManager_AddPendingPlayerDesc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fdb4f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fdb4f0.c;pat:log-message-method;xref:0x1456b39a8",
+  "notes": "For each pending connection in set +0x360 finds session player ([+0x2d0]+0x100 list +0x58..+0x60); online path adds member record to set +0x3a8 (0x70 node, 0x1410c5ad0); else inlined addPendingPlayerDesc (log CAREER_ONLINE_MANAGER) into vector +0x378 (0x58 stride); erases connection (0x1410c6b30). State +0x350: 0 -> op 0x140fd6a00 (+0x390/+0x398), state 1; 2 -> sends member msgs (0x140fe3710 or 0x14402e500), state 0. (lane owner review requested) Better name: Game_CareerOnlineManager_ProcessPendingConnections (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.career_online_manager_add_pending_player_desc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 48 89 CE 48 8B 81 D0 02 00 00",
+  "match": "0x140fdb4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fdb4f0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineManager_AddPendingPlayerDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fdb4f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fdb4f0.c",
+   "notes": "V4831 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  }
+ ],
+ "proofs": []
+}

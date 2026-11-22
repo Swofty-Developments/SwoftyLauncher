@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_CareerEmailContainers_SerialiseSaveDataContainer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dd5210",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140dd5210.c;pat:log-message-cxx;xref:0x145694320",
+  "notes": "CareerEmailContainers::serialiseSaveDataContainer (vtable cell 0x145694320): writes new_session, last_trigger, email_containers (driver_id, team_id, container_version, emails with type/body_type/version/data) and emailCooldowns (dayAdded, numDaysCooldown, groupStatId); logs CAREER_EMAIL_COMPONENT container listings. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.career_email_containers_serialise_save_data_container",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 4C 89 C5",
+  "match": "0x140dd5210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dd5210",
+  "kind": "func_start",
+  "names": [
+   "Career_CareerEmailContainers_SerialiseSaveDataContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140dd5210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dd5210.c",
+   "notes": "V4767 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140dd5210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dd5210.c",
+   "notes": "V9099 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

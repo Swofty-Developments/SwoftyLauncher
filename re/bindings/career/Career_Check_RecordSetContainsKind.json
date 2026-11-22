@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_RecordSetContainsKind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14126d1e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool Career_Check_RecordSetContainsKind(void *alloc, void *key, void *set_owner, void *record, char kind)",
+  "evidence": "decomp:re/decomp/14126d1e0.c;xref:0x140df08e1;xref:0x14126d18d;xref:0x14126d57a",
+  "notes": "myteam-g2: Collects records for key via FUN_1407c6380 and returns true if any record id (short at rec+0x10->+8) exists in the hash set at set_owner+0x378 with kind byte (+0x10) equal to kind. Read-only membership test used by sponsor-update VM and facilities camera code. Level 1: semantics of the set not proven."
+ },
+ "signature": {
+  "id": "career.check_record_set_contains_kind",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 31 FF 4D 85 C0",
+  "match": "0x14126d1e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14126d1e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_RecordSetContainsKind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14126d1e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14126d1e0.c;xref:0x140df08e1;xref:0x14126d18d",
+   "notes": "V9699 Returns 1 when a record id is in the set at +0x378 with kind == param_5; matches."
+  }
+ ],
+ "proofs": []
+}

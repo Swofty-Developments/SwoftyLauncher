@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_StartHandshakingServer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144094590",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144094590.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x145a54680",
+  "notes": "Vtable cell: logs 'Start handshaking with the server', InitialiseAsyncSocket 0x144076cd0, Connect 0x144048de0, socket update 0x144047600, then NetTransportCommon_StartHandshaking 0x14407a230. (lane owner review requested) Better name: Game_NetworkTransport_StartHandshaking (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_transport_start_handshaking_server",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 44 89 CF",
+  "match": "0x144094590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144094590",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_StartHandshakingServer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144094590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144094590.c",
+   "notes": "V6524 size=277; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

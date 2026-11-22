@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeSystem_StartPhotoModeRender",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bcf890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bcf890.c;pat:log-message-cxx;xref:0x142bce4d8,0x142bcf413,0x142bcf703,0x142bd717c",
+  "notes": "PhotoModeSystem::startPhotoModeRender (own log string): with replay (+0x238) mode < 2 reads playback/end time, moves back when < 1/15 s left (log), logs times; copies per-car transforms (+0x430/+0x5e0/+0x790..) to motion-render buffers for cars with speed > 0; frame count +0x2d8c -> globals 0x146543ca0..a8, exposure step +0x3ec = shutter +0x2d88 / frames, sets +0x3f8; arms motion render +0x2b8. Callers listed. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_system_start_photo_mode_render",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE 48 8B 81 38 02 00 00",
+  "match": "0x142bcf890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bcf890",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeSystem_StartPhotoModeRender"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bcf890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bcf890.c;xref:0x142bce4d8",
+   "notes": "V5024 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

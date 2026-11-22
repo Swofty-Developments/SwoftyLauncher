@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UILatency_FrameSignalUIList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144217490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144217490.c;pat:log-channel-UI_latency;xref:0x143816e61,0x14382b936,0x1442173f6,0x14588b2e0,0x145a67630,0x145a67910,0x145a6b2d0",
+  "notes": "UI list signal handler (vtable cells 0x14588b2e0, 0x145a67630, 0x145a67910, 0x145a6b2d0): 0x144209cf0, then by signal id msg+8 (0x146ca2590..0x146ca25f0): focus/scroll vcalls (+0x1e0/+0x288/+0x290/+0x240; page dec/inc log UI_latency), entry flags +0x5a/+0x5b/+0x5c/+0xb1, 'scrollV'/'scrollH', 'forceUpdate', 'index' -> 0x14423f400, then vt+0x298. (lane owner review requested) Better name: Game_UIList_HandleSignal (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_latency_frame_signal_ui_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 4C 89 C3 48 89 D7 48 89 CE 48 8B 84 24 90 00 00 00",
+  "match": "0x144217490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144217490",
+  "kind": "func_start",
+  "names": [
+   "Game_UILatency_FrameSignalUIList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144217490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144217490.c;xref:0x143816e61",
+   "notes": "V6569 size=2266; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

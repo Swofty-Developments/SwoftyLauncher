@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_ResetGoalList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410f7230",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Sponsors_ResetGoalList(void **list)",
+  "evidence": "decomp:re/decomp/1410f7230.c;xref:0x1410f6c14,0x1410f6c64,0x1410f6cc4,0x1410f70f4,0x141113831,0x141113e8a",
+  "notes": "Destructor of a 0x160-byte sponsor goal entry: frees vectors +0x60, +0x148, +0x128 via their allocators (vf+0x38) and resets begin/end/cap, frees strings at +0xe8, +0xb0, +0x88, +0x30, +0x0 (string vtable 0x145612ec0). Called per goal by 0x1410f6bf0, 0x1410f6f20 and the goal loaders 0x141111fc0 / 0x141113b70. (lane owner review requested) Better name: Career_SponsorGoal_Dtor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.sponsors_reset_goal_list",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE 48 8D 79 60",
+  "match": "0x1410f7230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410f7230",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_ResetGoalList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1410f7230",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1410f7230.c;xref:0x1410f6c13",
+   "notes": "V9651 Resets a single 0x160-byte goal element (vectors at +0x60,+0x128,+0x148, three strings); per goal, called in a loop, not per list."
+  }
+ ],
+ "proofs": []
+}

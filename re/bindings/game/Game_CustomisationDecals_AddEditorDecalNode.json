@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_AddEditorDecalNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142dc70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142dc70.c;pat:log-message-method;xref:0x14142e7c6,0x141fef4da,0x141ffe66e",
+  "notes": "Logs 'addEditorDecalNode()' (CUSTOMISATION_DECALS). Allocates a 0x70-byte decal node (vt 0x1456e3240) copying p2+0x10..+0x70, wraps it in a shared_ptr block (vt 0x1456c6670), uniqueId node+0x20 = max(p1+0x1a0, ids in list p1+0x178..+0x180)+1, appends to list p1+0x170 (0x141108480). Global 0x146064623 bit7 + area (p1+0x98 stride 0x108, area id == node+0x28) with partner +0x40 != -1: adds a second node, cross-links ids at +0x68, 0x14142c860. Then dirty p1+0x168 = 1, 0x141428e60(p1,&node,1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_add_editor_decal_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 63 B8 54 01 00 00",
+  "match": "0x14142dc70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142dc70",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_AddEditorDecalNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14142dc70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14142dc70.c;xref:0x14142e7c6",
+   "notes": "V4855 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

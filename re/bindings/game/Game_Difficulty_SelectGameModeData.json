@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Difficulty_SelectGameModeData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142424d50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142424d50.c;pat:log-channel-DifficultySystem;xref:0x140baa963,0x14c9f108e",
+  "notes": "(sys, game mode). Profile sys+0x30 = 'settings' entry of map sys+0x68 (+0x98); clears +0x128/+0x130 then, online, gets restriction components 0x14605adc0 -> +0x128 and 0x14605b388 -> +0x130 from mode+0x1030; if the map has the mode name (mode+0x210) uses that entry (log 'Difficulty now using data for GameMode: %s'), else logs 'Difficulty now using global settings'. Split-screen (mode+0xe35): creates 'secondaryPlayerSettings' in sys+0x40 (0x1424251a0), copies unlocked ints, ApplySettingsToUi 0x142419550(sys, a, 1). Callers 0x140baa900 (jmp), 0x14c9f0fa0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.difficulty_select_game_mode_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 D7 48 89 CE 48 8D 59 68",
+  "match": "0x142424d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142424d50",
+  "kind": "func_start",
+  "names": [
+   "Game_Difficulty_SelectGameModeData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142424d50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142424d50.c;xref:0x140baa963",
+   "notes": "V5272 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

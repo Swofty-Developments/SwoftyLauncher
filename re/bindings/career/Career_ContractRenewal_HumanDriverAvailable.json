@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_HumanDriverAvailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8df10",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d8df10.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d8c169,0x140d8c239,0x140d8c33b,0x140d8c3c9",
+  "notes": "Returns 1 if any entrant row with +0x4b&0x10 has its driver key in the list +0x308..+0x310 (u16 packed byte<<14|key), logging 'Human driver available: %s'. callers. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.contract_renewal_human_driver_available",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 8B 81 78 02 00 00",
+  "match": "0x140d8df10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8df10",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_HumanDriverAvailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d8df10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8df10.c;xref:0x140d8c169,0x140d8c239",
+   "notes": "V4695 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d8df10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8df10.c",
+   "notes": "V9075 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

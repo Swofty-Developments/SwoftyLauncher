@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_Flushing",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434b3fd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434b3fd0.c;pat:log-channel-TELEMETRY;xref:0x140c77434,0x142d53174,0x142df5744,0x142df620c,0x1436b1233,0x1436b19a4,0x1436d044b,0x1436d4805,0x1436d6f32,0x1436d9a91,0x1436dffbd,0x1436e0af7,0x1436e1f57,0x1436f6b10,0x1436fb9e7,0x143701500,0x143704c78,0x14bebce03,0x1503cbacf",
+  "notes": "FNV-1a hash of name param_2, searches 32-byte marker entries (vector at [0x1460fa568] or static 0x1460fa4d0); not found: stack backtrace note, returns 2. Found: kind param_3==0 calls 0x140766110 (Report_LoadingTimesEnd) and logs 'Flushing'; calls 0x1434b3870; erases the entry, returns 0. Callers pass names like 'boot_to_press_start'. (lane owner review requested) Better name: Game_Analytics_EndLoadingTimeMarker (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_flushing",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 98 02 00 00 44 89 C3 48 89 D7",
+  "match": "0x1434b3fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434b3fd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_Flushing"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434b3fd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434b3fd0.c;xref:0x140c77435",
+   "notes": "V6008 Better name Game_LoadingTimes_EndAssetGroupRegion: FNV-1a name lookup in registered asset-group list (17 callers), name sanitising (.assetgroup), TELEMETRY Flushing log and entry removal; Flushing is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1434b3fd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434b3fd0.c;xref:0x140c77434",
+   "notes": "V7073 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

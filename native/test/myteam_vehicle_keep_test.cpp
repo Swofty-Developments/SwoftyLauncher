@@ -1,7 +1,7 @@
-// Host-native unit test for the core's My Team vehicle keep (native/src/core/myteam_vehicle_keep_logic.hpp).
-// Built and run by native/test/run_myteam_vehicle_keep_test.sh.
+// Host-native unit test for the core's My Team vehicle keep (native/src/core/guards/career/myteam_vehicle_keep_logic.hpp).
+// Built and run by native/test/run_tests.sh myteam_vehicle_keep.
 
-#include "myteam_vehicle_keep_logic.hpp"
+#include "core/guards/career/myteam_vehicle_keep_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -43,11 +43,12 @@ int main()
     expect(mk::text_at(row, 0x100) == "entrants.vehicles" && mk::text_at(row + mk::ROW_NAME, 0x100) == "vehicle_412" &&
                count == -1 && row[mk::ROW_FOUND] == 1 && row[0x40] == 0,
            "it reads like Gdb_Get_RowByIndex's row: container, vehicle_<index>, +0x200 -1, +0x204 1");
-    expect(!mk::build_row(row, "", "vehicle", 1) && !mk::build_row(row, "entrants.vehicles", "", 1), "an empty name builds no row");
+    expect(!mk::build_row(row, "", "vehicle", 1) && !mk::build_row(row, "entrants.vehicles", "", 1),
+           "an empty name builds no row");
 
     mh::Stock table;
-    table.myteam = {{0x1000, "myteam_ferrari"}, {0x2000, "myteam_mercedes"}, {0x3000, "myteam_honda_2026"},
-                    {0x4000, "myteam_mercedes_2026"}};
+    table.myteam = {
+        {0x1000, "myteam_ferrari"}, {0x2000, "myteam_mercedes"}, {0x3000, "myteam_honda_2026"}, {0x4000, "myteam_mercedes_2026"}};
     mh::Source src;
     expect(mk::pick(table, "myteam_mes_porsche_2026", src) && src.label == "myteam_mercedes_2026",
            "a 2026 addon car is kept as myteam_mercedes_2026");
@@ -66,7 +67,8 @@ int main()
     uint64_t at = reinterpret_cast<uint64_t>(live.data());
     mk::Shadow s = mk::shadow_of(at, live.data(), p);
     mk::patch(live.data(), p.stock);
-    expect(s.bytes.size() == mk::SAVED_BYTES && mk::text_at(s.bytes.data() + mk::VEHICLE_FILE_NAME, 0x100) == "myteam_mes_hyundai" &&
+    expect(s.bytes.size() == mk::SAVED_BYTES &&
+               mk::text_at(s.bytes.data() + mk::VEHICLE_FILE_NAME, 0x100) == "myteam_mes_hyundai" &&
                s.bytes[mk::VEHICLE_ENGINE] == 21 && mk::base_of(s.bytes.data()) == 0x00a40000u && s.saved_engine == 21,
            "the shadow holds the saved file_name (the game stored the stock row's), engine and base car");
     expect(mk::text_at(live.data() + mk::VEHICLE_FILE_NAME, 0x100) == "myteam_mercedes" && live[mk::VEHICLE_ENGINE] == 2 &&

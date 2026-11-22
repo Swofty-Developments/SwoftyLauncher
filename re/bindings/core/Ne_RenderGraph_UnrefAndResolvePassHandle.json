@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_UnrefAndResolvePassHandle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdace0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdace0.c;xref:0x140101952,0x143c72b98",
+  "notes": "(graph,out u32): fetches a ref via [graph+8] vt+8, lock-decrements its count +0x18; resource = [[ref+0x28]+8]; initial D3D12 state = res+0x78 or from usage flags res+0x20 (0x40->8, 0x400->0x400, 0x1000->0xac3, 2->0x42, 1->0x41, 4->1, else 0x8c0/0xac3); out = Render_Gfx2_HandleMap_FindOrAdd(graph,out,res,state), or 0xffffffff when absent. Callers 0x140101940, Ne_CustomisationDecalRenderer_BakePasses. Better name: Ne_RenderGraph_ImportResourceWithInitialState (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.render_graph_release_pass_ref",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 48 8B 49 08 48 8B 01 48",
+  "match": "0x143bdace0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bdace0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_UnrefAndResolvePassHandle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bdace0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bdace0.c;xref:0x140101952",
+   "notes": "V7811 Ne_RenderGraph_UnrefAndResolvePassHandle: resolves handle via vcall +8, decrements refcount at +0x18, then derives a usage mask and returns the handle via Render_Gfx2_HandleMap_FindOrAdd; no recycle"
+  }
+ ],
+ "proofs": []
+}

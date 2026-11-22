@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SceneManager_BuildMaterialActorForScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401e9150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401e9150.c;pat:log-message-cxx;xref:0x1401a5955",
+  "notes": "Builds ALL actor kinds of scene p3 into instance p4 (not only material): per list logs ACTOR 'buildMaterial/World/TOD/Light/Camera/Actor/DynamicActorForScene'. Material(+0xb0,n+0x118,0x160)->inst+0x90; WorldActorProxy(+0x70,0x170, 0x1443ab250/ab380)->+0x80; TOD(+0x90,0xe8)->+0x88; Light(+0x30)->+0x70; Camera(+0x10)->+0x68; Actor(+0x50,0x140187560, parts 0x1401cb030 'addPart')->+0x78; Dynamic(+0xd0)->+0x98; then queues them; Sleep(1) ... (lane owner review requested) Better name: Game_SceneManager_BuildActorsForSceneInstance (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.scene_manager_build_material_actor_for_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 85 00 00",
+  "match": "0x1401e9150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401e9150",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneManager_BuildMaterialActorForScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401e9150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401e9150.c",
+   "notes": "V4384 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

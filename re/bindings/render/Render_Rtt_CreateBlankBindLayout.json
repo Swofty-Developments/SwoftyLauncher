@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Rtt_CreateBlankBindLayout",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d834e0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d834e0.c;xref:0x140176bd2,0x143d834a5",
+  "notes": "Creates the default bind layout of an RTT target set: names '<unknown-because-not-initialised/resource>' / 'default://blank', MD5 key (Ne_Hash_Md5Transform_Alt), Render_Gfx2_BindLayout_Create through the stored factory; Ne_Std_ThrowBadFunctionCall when it is empty. Callers Render_Rtt_ConstructTargetSet 0x143d834a5 and a tail jump at 0x140176bd2 in 0x140176530. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.rtt_create_blank_bind_layout",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC A0 00 00 00 48 89 D7 48 89 CE 48 8B 49 40",
+  "match": "0x143d834e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d834e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Rtt_CreateBlankBindLayout"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143d834e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d834e0.c;xref:0x140176bd2",
+   "notes": "V8346 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

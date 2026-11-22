@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Player_ResetSaveDataContainer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d61b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434d61b0.c;str:s_Player_ResetSaveDataContainer;xref:0x1458449e0",
+  "notes": "Secondary-vtable cell 0x1458449e0, this = Player+0x1e0. Gets/creates VM node 'player_backup', logs restoreDefaultSettings, copies 'settings', resets bindings, Game_Input_GenerateCustomControlSchemes, enable_subtitles option for modes 9/10, sets +0x438; arg 1 logs 'resetSaveDataContainer - eRecovery', else clears +0x43a/+0x360/+0x368..+0x387. Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.player_reset_save_data_container",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 89 D7 48 89 CE 48 8D 99",
+  "match": "0x1434d61b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d61b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Player_ResetSaveDataContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434d61b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d61b0.c",
+   "notes": "V6058 log eRecovery only when param_2==1; also logs restoreDefaultSettings (inlined) and touches player_backup/settings/enable_subtitles; name acceptable (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

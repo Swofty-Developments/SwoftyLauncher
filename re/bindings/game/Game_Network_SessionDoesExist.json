@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SessionDoesExist",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142226950",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142226950.c;pat:log-channel-NETWORK;xref:0x141a9a1db,0x14222dfde",
+  "notes": "If +0xa0 set: compares local safety rating (0x142c6d930) with the limit of session param_2 (list stride 0x170, rating +0x110); OK -> 0x143065250(...,7) and join 0x1431512a0; failures show 'network_error_unsuitable_safety_rating' / 'network_invite_join_error_doesnt_exist' and log '%s failed : ...' ('session browser'). Callers 0x141a99ab0 (jmp), 0x14222da20. (lane owner review requested) Better name: Game_Network_SessionBrowser_JoinSessionByIndex (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_session_does_exist",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D7 48 89 CE 0F B6 81 A0 00 00 00",
+  "match": "0x142226950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142226950",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SessionDoesExist"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142226950",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142226950.c;xref:0x141a9a1db",
+   "notes": "V5247 Join-session check: safety-rating test vs session, else error network_error_unsuitable_safety_rating or network_invite_join_error_doesnt_exist; session-does-not-exist is one branch. Better Game_Network_JoinSessionValidate"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142226950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142226950.c;xref:0x141a9a1db",
+   "notes": "V7289 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

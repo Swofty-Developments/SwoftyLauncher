@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStatePreloadRewardSequence_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d864c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d864c0.c;pat:log-message-cxx;xref:0x1457e1460",
+  "notes": "Vtable cell 0x1457e1460. Stores QPC time at +0xdc0 (and +0xdc8 if set); lazy-inits the monitor 0x146053ee8 and feeds it [+0xdd8] (0x142c75340); +0xdb0 = pending count 0x146053f40 > 0; if > 0 logs FLOW_VERBOSE \"...rewardCsMonitor.preloadRewardCustcene\", sets 0x146053f4a = 1 and 0x142c75060(monitor). Returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_state_preload_reward_sequence_on_state_enter",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8D 4C 24 28 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 03 44 24 28 48 89 86 C0 0D 00 00",
+  "match": "0x142d864c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d864c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStatePreloadRewardSequence_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d864c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d864c0.c;xref:0x140afb630",
+   "notes": "V5410 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

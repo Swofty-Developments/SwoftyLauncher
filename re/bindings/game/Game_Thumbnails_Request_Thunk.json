@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Thumbnails_Request_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e31cf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e31cf0.c;xref:0x142d4d5b4",
+  "notes": "Not a thunk: builds a 0x1c8 stack request (vtable 0x145624810) from driver id, optional 0x30 livery block (if +0x28), optional number (word!=0x3fff) and flags, then calls 0x142e30a60. Caller Sess_Loader_RequestLoadThumbnails. (lane owner review requested) Better name: Game_Thumbnails_RequestDriverThumbnail (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.thumbnails_request_thunk",
+  "section": ".xtls",
+  "pattern": "48 81 EC C8 01 00 00 48 8B 84 24 18 02 00 00 44",
+  "match": "0x142e31cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e31cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_Thumbnails_Request_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142e31cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e31cf0.c;xref:0x142d4d5b4",
+   "notes": "V3824 body is only FUN_142e30a60(); return (tail-call thunk); caller Sess_Loader_RequestLoadThumbnails"
+  }
+ ],
+ "proofs": []
+}

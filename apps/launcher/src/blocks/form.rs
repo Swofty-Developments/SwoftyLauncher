@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::notices::{Notification, Notify};
-use crate::scale::{Hit, px};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::{Hit, px};
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputEvent, InputState, NumberInput};
 use gpui_kit::component::select::{Select, SelectDelegate, SelectEvent, SelectState};
@@ -21,7 +21,7 @@ use super::state::*;
 use super::widgets::*;
 use super::*;
 use crate::shell::Shell;
-use crate::theme::Palette;
+use crate::ui::theme::Palette;
 
 #[derive(Clone, Copy)]
 pub(super) struct FieldCtx<'a> {
@@ -294,7 +294,7 @@ impl Shell {
         cx: &mut Context<Self>,
     ) {
         let key = format!("{addon}/{section}/{}", form.id);
-        if self.busy.contains(&key) || form.disabled {
+        if self.addon_views.busy.contains(&key) || form.disabled {
             return;
         }
         let mut values = Map::new();
@@ -337,7 +337,7 @@ impl Shell {
         self.blocks.pending_cells.remove(control);
         if let Some(slot) = self.blocks.forms.get_mut(control) {
             slot.reset = match effect {
-                Ok(Effect::Reload | Effect::Notice(_)) => Reset::After(self.view_gen),
+                Ok(Effect::Reload | Effect::Notice(_)) => Reset::After(self.addon_views.generation),
                 Ok(_) => Reset::Now,
                 Err(_) => Reset::No,
             };
@@ -364,7 +364,7 @@ impl Shell {
 
     pub(super) fn form(&self, at: At, f: &Form, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let key = at.key(&f.id);
-        let busy = self.busy.contains(&key);
+        let busy = self.addon_views.busy.contains(&key);
         let cols = f.columns.unwrap_or(1).clamp(1, 3);
         let cols = cols.min(((at.width + GAP) / (220. + GAP)).floor().max(1.) as usize);
         let (changed, valid) = self.form_changes(&key, f, cx);

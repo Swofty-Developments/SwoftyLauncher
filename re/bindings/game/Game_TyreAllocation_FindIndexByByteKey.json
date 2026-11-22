@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreAllocation_FindIndexByByteKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b03110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b03110.c;xref:0x140ab5cef,0x140ab5d06,0x140ab5dd1,0x140af894f,0x140af8966,0x140af89f7,0x140bcbd25,0x140bcbd3c,0x140bce8b0,0x140bce8c7,0x1412073b6,0x1412073cd,0x14181ba68,0x14181ba7d,0x141f32fea,0x141f32fff,0x14244acfd,0x14244ad14,0x14244af18,0x14244af2f,0x14244b038,0x14244b04f,0x14244bae5,0x14244bafc,0x14244bc87,0x14244bc9e,0x14244be56,0x14244be6b,0x14244c063,0x14244c078,0x14244c263,0x14244c278,0x14244c643,0x14244c658,0x14295e2fe,0x14295e315,0x142e887b2,0x142e887cd,0x142e8ee2f,0x142e8ee46",
+  "notes": "(out optional<i64>, src, key): gets the shared-ref list via 0x140afe6a0(src) and returns the index of the first element whose object byte +0x34 == key (out+8 = 1), else out+8 = 0; releases the temporary refs and buffer. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_allocation_find_index_by_byte_key",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 44 89 C3 48 89 D0 48",
+  "match": "0x140b03110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b03110",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreAllocation_FindIndexByByteKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140b03110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b03110.c;xref:0x140bcbd25",
+   "notes": "V8017 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

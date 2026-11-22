@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CompoundModelSet_SetWingVisibilityOnCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e87ab0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e87ab0.c;pat:log-message-method;xref:0x140239ebd,0x142e946a8,0x142e95360,0x142e95bee,0x14f3c6ad1,0x14f49900b",
+  "notes": "Own log. For 24 front-wing part slots resolves the node (Car_FrontWing_ResolvePartNodeId), caches the vehicle part objects (+0x190, once, flag +0x188), SetPartVisibilityBit, and when hiding or part detached rewrites the local matrix and recomputes world matrices; queues refresh; [veh+0xe0]+0xd34 bit3 = param_3. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.compound_model_set_set_wing_visibility_on_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4C 89 CE 44 88 44 24 2F",
+  "match": "0x142e87ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e87ab0",
+  "kind": "func_start",
+  "names": [
+   "Game_CompoundModelSet_SetWingVisibilityOnCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e87ab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e87ab0.c;xref:0x140239ebd",
+   "notes": "V5516 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

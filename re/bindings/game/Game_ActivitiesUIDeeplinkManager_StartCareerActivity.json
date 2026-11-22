@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_StartCareerActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143864640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143864640.c;str:s_ActivitiesUIDeeplinkManager_StartCareerActivity;xref:0x143862e71,0x143862f7b",
+  "notes": "PlayGo (+0x63)/trial (0x14078e1a0) gate, then finds the career mode (0x1407d22d0; predicate 0x14077cd40 if param_2 == 0, 0x140778420 if 1); if its current slot (+0x280) has +0xd2 && !+0xd1: activates it (0x1407d07a0), #ui_menu_data.frontend_transition_state = career_resume, +0x61 = 1, logs 'to resume', ReportCareerActivityStart 0x143866d50. Caller OnDeepLinkActivityStarted (type 1 -> 0, 8 -> 1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_start_career_activity",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 31 F6 80 3D ?? ?? ?? ?? 01 0F",
+  "match": "0x143862e71",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143864640",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_StartCareerActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x143864640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143864640.c;xref:0x143862e71",
+   "notes": "V7406 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

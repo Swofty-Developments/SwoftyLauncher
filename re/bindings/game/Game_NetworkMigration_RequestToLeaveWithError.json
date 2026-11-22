@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMigration_RequestToLeaveWithError",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143062f90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143062f90.c;pat:log-message-method;xref:0x14305efd7,0x14305efee",
+  "notes": "Logs '%s: message: %s, error: %d' with requestToLeaveWithError (NETWORK-MIGRATION); calls Game_GameSessionManager_CallHandleStatus 0x143060fb0 and fires an InterruptQueue interrupt with lng_rp_in_the_front_end (game_session_manager.cpp path string). Callers in 0x14305c1f0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_migration_request_to_leave_with_error",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 00 00 00 44 89 C3 48 89 D6",
+  "match": "0x143062f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143062f90",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMigration_RequestToLeaveWithError"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143062f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143062f90.c;xref:0x14305efd8",
+   "notes": "V5521 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

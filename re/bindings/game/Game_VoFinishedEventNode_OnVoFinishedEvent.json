@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VoFinishedEventNode_OnVoFinishedEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425292d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1425292d0.c;pat:log-message-method;xref:0x142529252,0x14252937a",
+  "notes": "Read in full by disassembly (pdata 0x1425292d0-0x142529352; decomp merged the tail-jmp target). Logs VoFinishedEventNode 'onVoFinishedEvent: sending end signal', then tail-jmps 0x14400c680(this[1], this[2]) (graph signal send). Refs are lea sites (callback registration) in 0x1425291f0 and 0x142529360. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vo_finished_event_node_on_vo_finished_event",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 1F 00 00 00",
+  "match": "0x1425292d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425292d0",
+  "kind": "func_start",
+  "names": [
+   "Game_VoFinishedEventNode_OnVoFinishedEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1425292d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425292d0.c;xref:0x142529254",
+   "notes": "V5093 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

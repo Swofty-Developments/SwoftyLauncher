@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Post_PopupRequestMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422774f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint32_t (void *bus_owner, void *src, int mode)",
+  "evidence": "decomp:re/decomp/1422774f0.c;xref:0x142276ff0,0x1423f33b6",
+  "notes": "mode==0: builds msg 0x14565a998 on stack (strings from src+0x18/+0x48/+0x70 plus scalars) and posts with Ne_Post_BusMessage 0x1439876c0; mode!=0: tail-jmp 0x1423a18f0, which allocs a 0xa0 copy under a critical section, appends it to a queue and signals (0x14391cdd0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ui.post_popup_request_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 D6 48 89 CF 45 85 C0",
+  "match": "0x1422774f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422774f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Post_PopupRequestMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422774f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422774f0.c;xref:0x142276ff0",
+   "notes": "V10070 Builds a three-string message and posts it when mode==0; no strings visible, popup/dialog purpose and non-zero mode path unprovable."
+  }
+ ],
+ "proofs": []
+}

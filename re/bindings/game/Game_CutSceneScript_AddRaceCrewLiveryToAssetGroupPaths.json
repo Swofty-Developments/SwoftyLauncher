@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_AddRaceCrewLiveryToAssetGroupPaths",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14023a860",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14023a860.c;pat:log-message-cxx;xref:0x1455eb9a0,0x1455ed170",
+  "notes": "Refs = vtable cells. Script text +0x850 split by CRLF, '%s %s'; on 'BeginSceneContext' logs 'loadAssetGroupsUsingSceneContext()' (CUTSCENE_SCRIPT_COMMANDS), parses context 0x14023b9a0, stores via 0x140230250 at +0x190, adds driver assets (0x140234750, 0x140234a20, 0x140234440) for ids +0x198 and +0x1b6, race crew livery of vehicle +0x1b2 twice (team record +0x28 and +0x40); id 0x3fff -> addRaceCrewLivery warning. Better name: Game_CutSceneScript_LoadAssetGroupsUsingSceneContext (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_add_race_crew_livery_to_asset_group_paths",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 09 00 00 48 89 CE",
+  "match": "0x14023a860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14023a860",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_AddRaceCrewLiveryToAssetGroupPaths"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14023a860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14023a860.c",
+   "notes": "V4459 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

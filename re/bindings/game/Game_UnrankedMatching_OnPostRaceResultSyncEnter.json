@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UnrankedMatching_OnPostRaceResultSyncEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315f6f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315f6f0.c;pat:log-message-cxx;xref:0x14581deb0",
+  "notes": "Read in full: exitType = byte [[this+0x10]+0x40]+0x1fc; reads UI data '#ui_menu_data.frontend_transition_state' and logs 'exitType: %d, transition state: %s' (NETWORK-MATCHING); if exitType == 1, the current event (as in onIncomingConnection) has a session record whose name matches string 0x14565e69b and [lobby+0x1058]+0x208 vcall +0x78 == 2: sets the transition state to 'main_menu', this+0x58 = 1 and logs the new state. Returns 1. Vtable cell 0x14581deb0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.unranked_matching_on_post_race_result_sync_enter",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 48 89 CF 48 8B 41 10",
+  "match": "0x14315f6f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315f6f0",
+  "kind": "func_start",
+  "names": [
+   "Game_UnrankedMatching_OnPostRaceResultSyncEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14315f6f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315f6f0.c",
+   "notes": "V5771 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

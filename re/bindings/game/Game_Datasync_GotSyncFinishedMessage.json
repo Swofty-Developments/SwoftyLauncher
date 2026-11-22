@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Datasync_GotSyncFinishedMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143103860",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143103860.c;pat:log-channel-DATASYNC;xref:0x14fe71f28",
+  "notes": "Handler (lea at 0x14fe71f28 in 0x14fe71e00). Finds the session by msg+0x10 in list this+0x48; ignores stale (msg+0x14 == +0x20) or foreign cookies (!= +0x1c). State 1/2: logs '[%s] Got sync finished message from %d' and sets state +0x24 = 3 (Finishing) with 'State %s -> %s'; other states: 'Ignoring sync finished message ... in state %s'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.datasync_got_sync_finished_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B 41 50 48 83 C1 48",
+  "match": "0x143103860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143103860",
+  "kind": "func_start",
+  "names": [
+   "Game_Datasync_GotSyncFinishedMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143103860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143103860.c;xref:0x14fe71f2a",
+   "notes": "V5737 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

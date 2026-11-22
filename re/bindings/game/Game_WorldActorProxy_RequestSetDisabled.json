@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WorldActorProxy_RequestSetDisabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140190110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140190110.c;pat:log-message-method;xref:0x14018ffdd,0x1401906ea,0x1401908cd,0x1401a3865,0x1401a59e9,0x1401b8bf8,0x14025dca7,0x14025f9ad,0x14025fc5c,0x14026eb5c,0x14026ec0c,0x14034162f,0x14034163f,0x14035378f,0x14035379f,0x14035381f,0x14035382f,0x14035430f,0x14035431f,0x14035439f,0x1403543af,0x140355204,0x1403554b3,0x1403554ca,0x1403554dd,0x1403554f0,0x140368cad,0x140368dfd,0x1403747cf,0x1403747df,0x14037485d,0x14037486d,0x1403847e3,0x1403847f6,0x140384809,0x14038481c,0x1403a7d3f,0x1403b9498,0x1403c2477,0x1403d26c8,0x140c9355c,0x141213891,0x1412138a1,0x1412138fd,0x14121390d,0x14288ae0f,0x14288c8fa,0x142891c9a,0x1428997f1,0x1428999c6,0x1428a4e41,0x147b43a0d,0x147b43a1d,0x147b43e0f,0x147b43e1f,0x147b4726f,0x147b4727f,0x147d21ed5,0x147dc87c7",
+  "notes": "Read in full: (proxy, disabled) if changed (+0xd8): pushes enabled = !disabled to child lists described by [this+0xa0] counts (+0x100 vcall +0x110, +0xf0 vcall +8, +0xf8 byte +0x1e0 with 0x1401c08d0/0x1401c0fe0, +0x108 byte +0x160 with STORE/RESTORE callbacks and logs 'requestSetDisabled [%p] STORE/RESTORE', +0x110 byte +0xe5, +0x118 byte +0x150) and recurses into child proxies +0x98. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.world_actor_proxy_request_set_disabled",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 38 91 D8 00 00 00",
+  "match": "0x140190110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140190110",
+  "kind": "func_start",
+  "names": [
+   "Game_WorldActorProxy_RequestSetDisabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140190110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140190110.c",
+   "notes": "V4324 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

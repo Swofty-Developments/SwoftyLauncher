@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_JoinChannel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144036890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144036890.c;pat:log-message-method;xref:0x14305cac1",
+  "notes": "Logs '%s: channel #%u created' with its own name joinChannel; first calls Game_NetworkVoice_LeaveActiveChannel, then creates/joins the channel. Called from Gdb_Unk_14305c1f0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_voice_join_channel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 80 79 08 00",
+  "match": "0x144036890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144036890",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_JoinChannel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144036890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144036890.c;xref:0x14305cac1",
+   "notes": "V6409 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

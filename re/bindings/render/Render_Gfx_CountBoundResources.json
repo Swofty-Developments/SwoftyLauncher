@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_CountBoundResources",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ff9f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ff9f0.c;xref:0x142433c03,0x142a462b0,0x143b593df",
+  "notes": "Takes a render-target set param_2: counts the non-null pointers of the 8 colour slots +0x20..+0x58 and of the 8 slots +0x60..+0x98, reads depth +0xa0 and, when the context has no list or list type (+0x20) is 0, calls Render_Gfx_SetRenderTargets(ctx, nColour, +0x20, depth, nSecond, +0x60). Callers 0x142433b80, 0x142a46250, 0x143b59380. (lane owner review requested) Better name: Render_Gfx_SetRenderTargetSet (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx_count_bound_resources",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D0",
+  "match": "0x1439ff9f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ff9f0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_CountBoundResources"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439ff9f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ff9f0.c;xref:0x142433c03",
+   "notes": "V7800 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

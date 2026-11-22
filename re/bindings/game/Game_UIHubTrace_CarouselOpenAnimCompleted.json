@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_CarouselOpenAnimCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143802f80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143802f80.c;pat:log-channel-UIHubTrace;xref:0x145888ff8",
+  "notes": "Hub UI event handler (vtable cell 0x145888ff8): type 0x3f (alpha anim done) on content (+0x58) / header (+0x54) sets +0x6c / +0x68 from pending +0x70, logs 'Content/Header Faded Up/Down', sends follow-up events, runs Close/OpenToCarousel/OpenToLarge by +0x74. Type 0x35 by hash +0x20: close done -> +0x70 = +0x64 = 0; carousel open -> +0x64 = 2; large open -> +0x64 = 1. (lane owner review requested) Better name: Game_UIHub_HandleUIEvent (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_carousel_open_anim_completed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 8B 47 10 83 F8 3F",
+  "match": "0x143802f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143802f80",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_CarouselOpenAnimCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143802f80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143802f80.c",
+   "notes": "V6262 handles many hub animation events (carousel open, close, large open, content fade down/up), not only carousel open. Better Game_UIHubTrace_OnAnimationEvent; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143802f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143802f80.c",
+   "notes": "V7117 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

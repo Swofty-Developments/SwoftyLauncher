@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "vt_Game_DriverCareerSlotPredicate",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14588ab80",
+  "type": "vtable[6]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1438fb390.c;decomp:re/decomp/141725620.c;xref:0x1417256bf,0x143858809",
+  "notes": "vtable of the driver-career save-slot predicate functor (slots 0x1438fb350, 0x1438fb370, 0x1438fb390 = the predicate, 0x1438fb4c0, 0x1438fb4d0, 0x1438fb580), built by FeTile_Route_CareerItem (0x1417256bf), the new-career path (0x143858809) and ~25 UI sites and handed to 0x1407d22d0 (slot manager lookup over item+0x158). Slot 2 (self: [self+8] -> the wanted data group name; rdx = the mode championship): false unless 0x14077cd40(champ) (a VM-obfuscated driver-career gate: 1 only for the 2025/2026 driver-career modes, coordinator gdb 2026-10-21), champ's type (vt +0x28) is not 0x146129ca0, and a championship of champ +0x1040..+0x1048 has a CareerSetupComponent whose data group ((comp+0x290)+0x560[idx = comp vt +0x268], name *(group+0x28)+0x10) is the wanted name. champ +0x2a8 = the mode statId. The my-team functor 0x14588abb0 has the same shape (slot 2 0x1438fb5d0, gate 0x140778420). The predicate itself is cloned, so no unique signature: hook it through this slot. Raised by native-1990 for the F1 1990 career tile"
+ },
+ "signature": {
+  "id": "game.driver_career_slot_predicate",
+  "section": ".xtls",
+  "pattern": "0F 85 ?? ?? ?? ?? 48 8B 87 80 01 00 00 48 8D 50 09 48 85 C0 49 0F 44 D4 48 8B 8F 58 01 00 00 48 89 54 24 60 48 8D 05",
+  "match": "0x14172569b",
+  "anchor": "0x27",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x24",
+   "len": 7
+  },
+  "target": "0x14588ab80",
+  "kind": "data",
+  "names": [
+   "vt_Game_DriverCareerSlotPredicate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "global",
+   "item": "vt_Game_DriverCareerSlotPredicate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/1438fb390.c;decomp:work/exe/std-content/decomp/141725620.c;xref:0x1417256bf,0x143858809,0x14588ab90;sig:game.driver_career_slot_predicate",
+   "notes": "V0910 Independent: 6 slots 0x1438fb350, 0x1438fb370, 0x1438fb390, 0x1438fb4c0, 0x1438fb4d0, 0x1438fb580 (my-team twin 0x14588abb0, slot 2 0x1438fb5d0). Slot 2 0x1438fb390(self, champ) calls the gate 0x14077cd40(champ) first (0x1438fb3a4), then the vt+0x28 type check against 0x146129ca0, then walks champ+0x1040..+0x1048 (stride 0x10, entry+8), gets CareerSetupComponent (&k_Career_CareerSetupComponentDesc) from entry+0x208 (not +0x1030), idx = comp vt+0x268 byte, group = ((comp+0x290)+0x560)[idx].+8, returns 1 when strcmp(*(group+0x28)+0x10, **(self+8)) == 0. self+8 is &name and name = item+0x180 (router). 22 riprel refs. sigcheck: riprel data 1 hit"
+  }
+ ],
+ "proofs": []
+}

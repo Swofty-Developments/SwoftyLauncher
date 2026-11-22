@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionManager_OnIncomingConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143056c90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143056c90.c;pat:log-message-cxx;xref:0x143056b2b",
+  "notes": "__FUNCSIG__ 'neon::NeNetError network::GameSessionManager::onIncomingConnection(const NEbyte *, NEsize_t, neon::NePresenceUserIDList &)' logged with '%s: user (%s) is banned from the session'. Fn ptr lea'd at 0x143056b2b in 0x143056b10 (handler table). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_manager_on_incoming_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 4C 89 4C 24 50",
+  "match": "0x143056c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143056c90",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionManager_OnIncomingConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143056c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143056c90.c;xref:0x143056b2e",
+   "notes": "V5483 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

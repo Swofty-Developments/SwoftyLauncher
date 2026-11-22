@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_SetVehicleStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434bc540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Pitlane_SetVehicleStatus(void *self, uint8_t vehicle, uint32_t status)",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1434bc540.c;xref:0x140274f09,0x140344669,0x1403625f9,0x1403698e9,0x14036a429,0x14293fcda,0x142941260,0x142a3c7c7,0x142d59d76,0x142f66734",
+  "notes": "Pit lane: set pit status of car idx (<= 26) to param_3 (0..16; status names in the KB pit status name table). Stored at [self+0x68+idx*16]+4; returns early when unchanged. While the car's pit-stop record is in state 99, statuses in mask 0x1bf01 are forced to 4. Statuses outside mask 0x1ff07 set bit 0 of the car's lane entry ([self+0x2d0]+0x60 stride 0x14, +9), inside clear it. Online: status 10 (leave garage) gets a release time = now (+14 s when [self+0x2e8]+0x68) + 3x max player latency (cap 1 s) in the car's status entry ([self+0x68+idx*16]+0x20). Transitions 7->14 (or 14->1 with feature flag 4) count a pit stop (status entry +0x14 += 1) and report it with the stop record. 30+ callers incl. WantsToLeaveGarage (10), TeleportToGarage (9), EnteringPitLane (2/15). (used by vmknolle race-start, red-flag-pit) | qualilaps 2026-10-30: proto from re/decomp/1434bc540.c: rcx the pit lane system, dl the car index (read as a byte; above 0x1a returns at once), r8d the requested status (below 0x11 it indexes g_Game_PitStatusNames); returns nothing. The stored status can differ from the requested one (the state-99 rule above), so a caller that needs it reads [self+0x68+idx*16]+4 after the call. Raised for the F1 1990 qualifying lap limit (owner bypass approved by the lead). Wording fix 2026-10-30 from verify V2151: the release time and the stop count live in the status entry, not in the pit-stop record."
+ },
+ "signature": {
+  "id": "game.pitlane_set_vehicle_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 79 29 84 24 D0 00 00 00",
+  "match": "0x1434bc540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434bc540",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_SetVehicleStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x1434bc540",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_b/decomp/1434bc540.c;xref:0x1434b8048,0x1434cb3d5,0x1434d0059,0x142d59d76,0x140274f09",
+   "notes": "V1033 logs '%s(%d, %s) : NEXT (%s) <----- PREV (%s)' with 'setVehicleStatus'; param_2 vehicle byte checked <=0x1a, param_3 status <0x11 indexes a status-name table 0x145845b90; stores new status per vehicle; (mgr,uint8 vehicle,uint status) - no proto in KB"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-1990",
+   "kind": "func",
+   "item": "Game_Pitlane_SetVehicleStatus",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434bc540.c;decomp:re/decomp/1434d1260.c;xref:0x140274f09,0x14293fcda,0x142a3c7c7,0x142d59d76,0x142f66734,0x143251cc9,0x1434b8048,0x1434ba5d5,0x1434c0050,0x1434d014c,0x1434d12d1,0x1434d1867,0x1434d1e4f;sig:game.pitlane_set_vehicle_status",
+   "notes": "V2151 Proto agreed from the disassembly: rcx is the pit lane system (base of the +0x48, +0x68, +0x278, +0x2d0 reads), dl the car index (cmp dl,0x1a then movzx edi,dl; above 0x1a returns at once), r8d the requested status as a full dword (cmp r8d,0x10, bt 0x1bf01,r8d, stored as a dword at [[self+0x68+idx*16]+4]). Nothing is returned: rax is never set for the caller, and none of the 42 .xtls call sites (plus the tail jmp at 0x1434d1e4f and 7 calls from .data1) reads al/eax after the call; every caller passes the index in edx and a 32-bit status in r8d. Name: the transition log prints the method string 0x1458445a6 'setVehicleStatus'. The state-99 rule (mask 0x1bf01 forces 4) and the lane-entry bit (mask 0x1ff07) are as the row says. sigcheck --only game.pitlane_set_vehicle_status passes with one hit at 0x1434bc540, the only hit in any section of the image; the .pdata entry is 0x1434bc540-0x1434bcea3. Wording nit in the older text: the release time (+0x20) and the pit stop count (+0x14 += 1) are written through [self+0x68+idx*16], the car's status entry (r13 at 0x1434bc9bc and 0x1434bc9f6), not the pit-stop record [[self+0x48]+0x938+idx*16]."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-1990b",
+   "kind": "func",
+   "item": "Game_Pitlane_SetVehicleStatus",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434bc540.c;xref:0x1434bc5d3,0x1434bc9bc,0x1434bc9f6,0x1434bca05",
+   "notes": "V2159 Scope: the corrected wording only (where the release time and the stop count are written). r13 = self+0x68+idx*16 (0x1434bc5d3; spilled at 0x1434bc865, reloaded at 0x1434bc9b3). The release time goes to qword [[r13]+0x20] at 0x1434bc9bc: now (+14000000 us when qword [[self+0x2e8]+0x68] != 0) + 3 x min(max(x >> 1) * 1000, 1000000), only for stored status 10. The stop count is inc dword [[r13]+0x14] at 0x1434bc9f6 on 7->14 (feature flags byte +4 bit 2, i.e. bit 34, clear) or 14->1 (bit 34 set). Both live in the car's status entry; the pit-stop record [[self+0x48]+0x938+idx*16] is only read (+0xe0 for the state-99 rule, +0xf0 and +0x130 for the report at 0x1434bca05). sigcheck game.pitlane_set_vehicle_status: still one hit at 0x1434bc540."
+  }
+ ],
+ "proofs": []
+}

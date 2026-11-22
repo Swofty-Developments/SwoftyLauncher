@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Pass_ReleaseOutputBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c20160",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c20160.c;xref:0x14015e5df,0x14029d29b,0x143b1a2a9,0x143b1a507,0x143b1a75c,0x143b1a849",
+  "notes": "If the object at +0x10 and allocator +8 are set: 0x143e843b0 on it, releases its buffers +0x20/+0x18/+0x10 with Render_Gfx2Device_QueueDeferredRelease (device 0x14618caa8), Ne_Handle_ReleaseSlotWithErrorTrace, frees it via allocator vcall +0x38. The object is the 0x90 triple-buffer of 0x143d761d0. Callers incl 0x14015e5df, Game_Renderer_CreateRenderPasses 0x143b1a2a9, Game_Renderer_InitPassGroups 0x143b1cead. (lane owner review requested) Better name: Render_Gfx2TripleBufferHolder_Destruct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.pass_release_output_buffers",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8B 71 10 48 85 F6 0F 84",
+  "match": "0x143c20160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c20160",
+  "kind": "func_start",
+  "names": [
+   "Render_Pass_ReleaseOutputBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c20160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c20160.c;xref:0x14015e5df",
+   "notes": "V7856 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

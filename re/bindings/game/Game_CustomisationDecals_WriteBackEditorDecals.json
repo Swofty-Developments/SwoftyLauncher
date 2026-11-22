@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_WriteBackEditorDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142d800",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142d800.c;doc:re/research/sponsors.md#decal-system;xref:0x141fed3d9,0x141ff6945,0x141ff8806,0x141ff89b0,0x141ffe46c,0x141ffeb0e",
+  "notes": "(system, u8 flag): copies customisation key system+0x1a8 (0x14246dcb0 + copy 0x14096e580), replaces its decal list with copies of the editor nodes (+0x178..+0x180), stores it via Ent_EntrantsSystem_ReplaceVehicleCustomisation 0x142477900, 0x14142daa0([system+0x298]); flag -> 0x1436595b0([system+0x278]) and dirty +0x168 = 0; then +0x1a8 = 0x3fff0000 and SetEditorVehicleCustomisation(old key) reloads; copy destroyed (0x14030c740). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_write_back_editor_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 88 54 24 2F",
+  "match": "0x14142d800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142d800",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_WriteBackEditorDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

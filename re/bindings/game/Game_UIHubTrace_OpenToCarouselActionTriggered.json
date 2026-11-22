@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_OpenToCarouselActionTriggered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143803e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143803e90.c;pat:log-channel-UIHubTrace;xref:0x143803435,0x143803b37,0x1516196a7",
+  "notes": "Logs '[ACTION] OpenToCarousel Action Triggered'. State +0x64 == 2 and +0x74 != 0: event 0x146103098 then the inlined FadeUpContentAndHeader; +0x64 == 2 else: +0x74 = 2. +0x64 == 1: +0x70/+0x74 = 2/2, vt+0xd0(1, 0), 0x143805e20, posts vt 0x14588bcd0 hash 0x509b7f74, event 0x1461030a0. +0x64 == 0: +0x70/+0x74 = 1/2, hash 0xbdfde777, event 0x14610309c. Then UI signal 0x519/0x1505 (vt+0x158/+0x160). Callers 0x143803435, 0x143803b37, 0x1516196a7. (lane owner review requested) Better name: Game_UIHub_OpenToCarousel (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_open_to_carousel_action_triggered",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5D B8 7B 00 00 00",
+  "match": "0x143803e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143803e90",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_OpenToCarouselActionTriggered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143803e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143803e90.c;xref:0x143803435",
+   "notes": "V6267 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

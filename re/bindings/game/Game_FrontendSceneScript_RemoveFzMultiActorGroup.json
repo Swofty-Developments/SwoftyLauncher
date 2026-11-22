@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneScript_RemoveFzMultiActorGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142897fe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142897fe0.c;xref:0x1427af60f,0x1428960f6",
+  "notes": "Remove scene from MultiActorManager for FZ Room/Group. Callers 0x1427af60f, 0x1428960f6. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2970)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_script_remove_fz_multi_actor_group",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 4C 89 CE 4D 85 C9",
+  "match": "0x142897fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142897fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneScript_RemoveFzMultiActorGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneScript_RemoveFzMultiActorGroup",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142897fe0.c;xref:0x1427af60f",
+   "notes": "V2970 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

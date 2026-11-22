@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamActivities_OnActivityPressed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14231c710",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14231c710.c;pat:log-channel-MY_TEAM_ACTIVITIES;xref:0x142319d18,0x14231acd1",
+  "notes": "(ui, item ref): item = param or +0x8a8; with a selection (+0x898) logs MY_TEAM_ACTIVITIES 'Function: activityPressed'; if the item's and the slot's enable flags (+0x110) are set: icon '#overrides.team_hq.activities.calendar_icons.activity_%s' -> slot +0x130, copies activity +0x2b0 to the slot, 0x1423205e0(this,1), schedules via 0x140bf1850([+0x308], id, +0x348, value), ticks tutorials 'my_team_activity_scheduled' etc. (0x142e6ef40), 0x142314ef0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.my_team_activities_on_activity_pressed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D6 48 89 CB 48 8D 81 A8 08 00 00",
+  "match": "0x14231c710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231c710",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamActivities_OnActivityPressed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14231c710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14231c710.c;xref:0x142319d18",
+   "notes": "V5266 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "FeTile_Press_EraTile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a6e420",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "char *FeTile_Press_EraTile(void *view_model, void *command)",
+  "evidence": "decomp:re/decomp/141a6e420.c;xref:0x14572a4f0,0x141a6e977;decomp:re/decomp/141a6e420.c",
+  "notes": "DynamicEraSelectTabViewModel command handler (vtable 0x14572a4a0 slot 10 at 0x14572a4f0, also via the adjustor thunk 0x141a6e970). On a tile press it reads the pressed index from the VM tiles node, takes the Tile from the vector at vm+0x6d8, reports dynamic_era_select_tile_pressed with the Tile's command (Tile+0x150) and raises entrant_list_selected with it; entrant_goto_select otherwise. Tiles added by FeTile_Add_EraTile after the stock ones are handled the same way. Raises entrant_list_selected only while vm+0x6f0 is set, the latch vm+0x708 is 0, the Tile is enabled (node at Tile+0xf0) and 0x1424283d0(*(vm+0x688), command, dynamic_era_select_tile_pressed) returns nonzero; the index comes from the tile node order under VM tiles and is not bounds-checked against the vector (V1005)."
+ },
+ "signature": {
+  "id": "fe_tiles.press_era_tile",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 58 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 7A 35 B0 02",
+  "match": "0x141a6e420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a6e420",
+  "kind": "func_start",
+  "names": [
+   "FeTile_Press_EraTile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-23",
+    "by": "era-picker",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/era_picker.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-seasons",
+   "kind": "func",
+   "item": "FeTile_Press_EraTile",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a6e420.c;decomp:re/decomp/141a6d0e0.c;xref:0x14572a4f0,0x141a6e977",
+   "notes": "V1005 The role is right, but the xrefs are wrong. 0x1457295f0 holds 0x141b40b80. The handler is slot 10 at 0x14572a4f0 of the vtable at 0x14572a4a0. It is also reached through the adjustor thunk 0x141a6e970 (add rcx,-0x268, then jmp at 0x141a6e977, not 0x141a6e978), which sits in the slot at 0x14572a5e0. Command 0x493fe92b raises entrant_goto_select. Command 0x2b0357a needs vm+0x6f0 set. It follows the selected_tile node (+0x6b8), and 0x14420b270(reg, tiles node vm+0x698, node, &idx) gives the child index. The Tile is then *(*(vm+0x6d8)+idx*0x10+8), with no bounds check against the vector, so the VM child order of tiles must match the vector order. It reads the string of the node at Tile+0x150 (the command) and gates on 0x1424283d0(*(vm+0x688), command, 'dynamic_era_select_tile_pressed'). It also requires the Tile+0xf0 enabled node to be a true bool and the one-shot latch vm+0x708 to be 0, which it sets. Only then does it raise entrant_list_selected with the command (type 9). Two args, so the arity is right (the char* return is a decompiler artefact)"
+  },
+  {
+   "date": "2026-10-23",
+   "verifier": "verify-era-picker",
+   "kind": "func",
+   "item": "FeTile_Press_EraTile",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a6e420.c;xref:0x14572a4f0,0x141a6e977;sig:fe_tiles.press_era_tile",
+   "notes": "V1011 Signature check only (the row was verified as V1005). fe_tiles.press_era_tile is a 34-byte func_start pattern with match 0x141a6e420, anchor 0 and resolve addr. Its only wildcards are the je rel32 at +0x14, and it neither starts nor ends on a wildcard. sigcheck gets one hit with target 0x141a6e420, and my own regex scan of .xtls also finds exactly one match. 0x141a6e420 is a .pdata function start (0x141a6e420-0x141a6e96f). The pattern covers the prologue (push r15..rbx, sub rsp,0x58), then mov rax,[rdx]; test; je; mov rsi,rcx; mov eax,[rax]; cmp eax,0x2b0357a. In a fresh decompile that is the handler's first command-hash compare; the second is 0x493fe92b, the entrant_goto_select branch. The function has two references: the qword at 0x14572a4f0, which is slot 10 of vtable 0x14572a4a0, and the jmp at 0x141a6e977 in the adjustor thunk 0x141a6e970 (add rcx,-0x268). The decompile has 2 args (view_model, command), which matches the proto. Row nit: the char* return is a leftover rax (hash constants, refcount values), so void describes it better. That does not affect the signature. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

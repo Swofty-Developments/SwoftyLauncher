@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_FadeUpContentActionTriggered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438050c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438050c0.c;pat:log-channel-UIHubTrace;xref:0x15161975a",
+  "notes": "Hub action: logs '[ACTION] FadeUpContent Action Triggered'. If state this+0x64 is 1 or 2: this+0x74 = state, sends UI event 0x1461030c8 to the communicator this+0x78 (0x1442468d0); this+0x6c == 1 also event 0x1461030c0; this+0x6c == 0: this+0x70 = 6 and posts message vt 0x14588bb20 hash 0x6f82260d. Else logs 'not already in an opened state'. Caller jmp 0x15161975a. (lane owner review requested) Better name: Game_UIHub_FadeUpContent (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_fade_up_content_action_triggered",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 98 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 7B 00 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 49 81 FA 07 72 D6 47 74 2E 83 C0 11 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 83 F8 7B 75 C5 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 46 64 8D 48 FF",
+  "match": "0x1438050c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438050c0",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_FadeUpContentActionTriggered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438050c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438050c0.c",
+   "notes": "V6274 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

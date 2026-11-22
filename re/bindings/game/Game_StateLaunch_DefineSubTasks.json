@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateLaunch_DefineSubTasks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436db620",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436db620.c;str:s_StateLaunch_DefineSubTasks;xref:0x14585c100",
+  "notes": "game::StateLaunch::defineSubTasks (str 0x14585c546; vt cell 0x14585c100). If [+0xc08]==0: clears task list [+0xd8], scans [+0xc88], may queue 'RunF1WRequestSubTask' (+0xcdd=1, 0x144426920). Then [[+0xc90]+0x3c0]+0x1a8; 0x1436dc120 KickInappropriatePlayers -> 0x1436dc850 FinaliseNetworkDocuments; m_flowState +0xce0 = 0 (online, wait for document close) or 2 (offline, close UI flow), NETWORK logs. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.state_launch_define_sub_tasks",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE C5 FB 10 81 08 0C 00 00 C5 F1 57 C9 C5 F9 2E C1 0F 85",
+  "match": "0x1436db620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436db620",
+  "kind": "func_start",
+  "names": [
+   "Game_StateLaunch_DefineSubTasks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436db620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436db620.c",
+   "notes": "V6133 defineSubTasks log verified; function is bigger (flow state changes) but plausible as defineSubTasks; claim self-hedged (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

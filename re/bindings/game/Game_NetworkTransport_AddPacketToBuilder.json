@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_AddPacketToBuilder",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144049e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144049e30.c;pat:log-message-method;xref:0x144077073,0x144093bd6",
+  "notes": "Appends a message to the channel's packet builder: header = len&0x7ff | reliability<<11 | flags<<13/<<14, flushes via sendToSocket when over 0x48e/0x492, logs 'addPacketToBuilder' and 'Failed to add packet ... after dispatch!'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_transport_add_packet_to_builder",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 44 89 CD 4C 89 C3",
+  "match": "0x144049e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144049e30",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_AddPacketToBuilder"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144049e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144049e30.c;xref:0x144077073",
+   "notes": "V6465 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

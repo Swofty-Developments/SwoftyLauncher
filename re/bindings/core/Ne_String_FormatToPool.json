@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_String_FormatToPool",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143994d00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143994d00.c;xref:0x142a9830c",
+  "notes": "vsnprintf into a 256-byte stack buffer (0x14532e54c), then interns the result in the string pool; returns the pooled handle ('<unknown-because-not-initialised/resource>' placeholder when param_2==0). Used by Ne_Gfx2Renderer_Initialise and Asset_Unk_142a982b0."
+ },
+ "signature": {
+  "id": "core.string_format_to_pool",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC A0 01 00 00 48 89 CE 4C 89 84",
+  "match": "0x143994d00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143994d00",
+  "kind": "func_start",
+  "names": [
+   "Ne_String_FormatToPool"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143994d00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143994d00.c;xref:0x142a9830c",
+   "notes": "V7666 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

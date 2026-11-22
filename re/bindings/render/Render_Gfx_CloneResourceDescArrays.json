@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_CloneResourceDescArrays",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c208d0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c208d0.c;xref:0x140100cfc,0x140100e8c,0x140101024,0x1401011bc,0x14010134c,0x14010475c",
+  "notes": "Initialises a builder object (vtable 0x1458c3610) from desc param_2: copies three arrays (idx 8/9, 0x11/0x12, 0x1a/0x1b) with the desc allocator (vcall +0x18, Ne_Crt_Memcpy), calls 0x143c20b40 with count (param_2[3]-param_2[2])/12, frees the temporaries. In Render_Gfx_InitResourceDescBuilder the builder feeds 0x143b5c740 (0x550 object). Callers incl 0x140100cfc, 0x140100e8c, Render_Gfx_BuildConfigObject 0x140109c9d. (lane owner review requested) Better name: Render_Gfx_DescBuilder_InitFromDesc (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx_clone_resource_desc_arrays",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 D3 48 89 CE 4C",
+  "match": "0x143c208d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c208d0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_CloneResourceDescArrays"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143c208d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c208d0.c;xref:0x140100cfc",
+   "notes": "V8332 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

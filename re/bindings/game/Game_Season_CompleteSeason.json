@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Season_CompleteSeason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407ba160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407ba160.c;pat:log-message-cxx;xref:0x1412676a7,0x1422cc5cb,0x14234c587",
+  "notes": "Gets the season ([+0x1058]+0x208 vcall +0x88); returns if none or status +0x538 == 2; sets status 2 when the current event (+0x2a0) is the last one and its state +0x23c == 2; logs GAME \"Season::completeSeason() completion status (%s)\" (names 0x1456608d0); 0x1407ba290(this); per-mode passes over +0x12e8 and [+0x1058]+0x4e8 entries (0x1407bd940 / 0x1407bd950); pushes a bool to view node +0x13d8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.season_complete_season",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 89 58 10 00 00 48 8B 81 08 02 00 00 48 81 C1 08 02 00 00 FF 90 88 00 00 00 48 85 C0",
+  "match": "0x1407ba160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407ba160",
+  "kind": "func_start",
+  "names": [
+   "Game_Season_CompleteSeason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407ba160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407ba160.c",
+   "notes": "V4302 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

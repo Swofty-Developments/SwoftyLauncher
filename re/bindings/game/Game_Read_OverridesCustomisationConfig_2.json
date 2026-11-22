@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesCustomisationConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142015a30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142015a30.c;pat:log-channel--;xref:0x142013d15,0x142013d3e,0x142013d67,0x142013d90,0x142013db9,0x142013de2,0x142013e7b,0x142013ea7,0x142013ed3,0x142013eff,0x142013f2b,0x142013f57",
+  "notes": "Fills menu-entry struct param_2 for customisation category param_3 (+0x34) via jump table: 0 helmet,2 gloves,3 suit,8 emotes,9 poses,0x10 victory_vo,0x11-0x15 casual eyewear..bottoms; sets +8 overrides.customisation.* icon, +0x10 lng_ label, +0x18 t_ texture, +0x28 short name, +0x20 state name. *param_2 = item flag from lists at +0xd008/map +0xd010, ORed into +0xd040/+0xd041. Default+param_5: advance_career_setup entry. No config read. (lane owner review requested) Better name: Game_Customisation_BuildPipMenuEntry (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_overrides_customisation_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 44 89 C5 48 89 D6",
+  "match": "0x142015a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142015a30",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesCustomisationConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142015a30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142015a30.c;xref:0x142013d15",
+   "notes": "V5242 1494-line customisation menu item descriptor builder (pip_menu_icons, casual_item_catergories, lng_customisation_*); called 12x from one function. Better Game_Customisation_BuildMenuItem"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142015a30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142015a30.c;xref:0x142013d15",
+   "notes": "V7283 name fits; finding facts hold; 12 direct calls"
+  }
+ ],
+ "proofs": []
+}

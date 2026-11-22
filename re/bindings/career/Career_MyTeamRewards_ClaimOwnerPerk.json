@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamRewards_ClaimOwnerPerk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410189d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1410189d0.c;pat:log-channel-MY_TEAM_REWARDS;xref:0x1456b7b18",
+  "notes": "Vtable slot ref 0x1456b7b18. Logs \"Claiming rewards for owner perk '%s'\" (name this+0x70, channel MY_TEAM_REWARDS). Reward set [this+0x60]: if not yet claimed (+0x28 == 0) calls per reward (list +0x8..+0x10, 0x10 stride) vf+0x30 check, vf+0x10 and 0x140fc6000(reward, [set+0x20]), then sets +0x28 = 1. Returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.my_team_rewards_claim_owner_perk",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 63 B8 A9 00 00 00",
+  "match": "0x1410189d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410189d0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamRewards_ClaimOwnerPerk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1410189d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410189d0.c",
+   "notes": "V4574 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1410189d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410189d0.c;str:\"Claiming rewards for owner perk \"",
+   "notes": "V9141 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

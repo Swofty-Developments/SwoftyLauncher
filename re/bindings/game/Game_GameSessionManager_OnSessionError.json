@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionManager_OnSessionError",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430568f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430568f0.c;pat:log-message-cxx;xref:0x143056bc4",
+  "notes": "__FUNCSIG__ 'void network::GameSessionManager::onSessionError(neon::NeNetError)' logged with '%s: error: %s, connection status: %s' (NETWORK); calls onLeavingSession 0x143057720 (0x14305697c). Fn ptr lea'd at 0x143056bc4 in 0x143056b10 (handler table). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_manager_on_session_error",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 89 D6 48 89 CF",
+  "match": "0x1430568f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430568f0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionManager_OnSessionError"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430568f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430568f0.c;xref:0x142754458",
+   "notes": "V5482 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

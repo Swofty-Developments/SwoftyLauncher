@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InviteManager_UpdateTimeOut",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431644e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431644e0.c;pat:log-message-cxx;xref:0x1430e8cc7,0x1430e8dd3,0x1430e8e20",
+  "notes": "'NEbool network::InviteManager::updateTimeOut()': if no +0xba8 and elapsed since +0xba0 > 120 s logs 'Timed out (%.2f secs)', records error 0x6057d in the error ring (net_invite_manager.cpp), fail(8) 0x143161f50, returns 0; else 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.invite_manager_update_time_out",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC E0 00 00 00 40 B7 01",
+  "match": "0x1431644e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431644e0",
+  "kind": "func_start",
+  "names": [
+   "Game_InviteManager_UpdateTimeOut"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431644e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431644e0.c;xref:0x1430e8cc7",
+   "notes": "V5796 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

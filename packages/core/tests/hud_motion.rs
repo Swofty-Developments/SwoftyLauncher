@@ -213,3 +213,209 @@ fn a_slide_and_a_fade_compose_into_a_dial_and_the_preview_stays_static() {
         "the preview control has no players or triggers"
     );
 }
+
+#[test]
+fn a_turn_composes_into_a_dial_with_one_event_per_step() {
+    let Some(stock) = real() else { return };
+    let record = serde_json::json!({
+        "dial": "f1_26", "box": [-40, -40, 40, 40],
+        "elements": [
+            { "kind": "group", "id": "needle", "at": [0, 0],
+              "motion": { "id": "rpm", "kind": "turn", "keys": [[0, 225], [0.4, -45]], "curve": "default_curve_1",
+                          "play_to": { "view_model": "view_model_data.hud_t_rpm" }, "steps": 9 },
+              "children": [
+                { "kind": "text", "id": "tip", "style": "OSD_19_regular", "cap_height": 5.9, "at": [20, 0],
+                  "literal": "-" } ] }
+        ]
+    });
+    let input = hud::Input {
+        addon: "a.needle".into(),
+        key: "needle".into(),
+        dir: std::env::temp_dir(),
+        record: hud::model::HudElement::parse(&record).unwrap(),
+    };
+    let out = hud::compose(&stock, &[input]).unwrap();
+    for l in &out.lines {
+        eprintln!("{l}");
+    }
+    assert!(hud::check::constant_rotations(&out.archives).unwrap().is_empty());
+    assert!(hud::check::unpadded_clips(&out.archives).unwrap().is_empty());
+    let pfx = "a_needle";
+    let holder = format!("zh_{pfx}_needle_rpm");
+    let archive = out.archives.iter().find(|a| a.file == "hud_scene.erp").unwrap();
+    let erp = Erp::parse(&archive.bytes).unwrap();
+    let scene = Pkg::parse(&erp.find(dials::F126.scene).unwrap().fragments[0].data().unwrap()).unwrap();
+    let root = idf::scenes(&scene).unwrap()[0].o().unwrap().at("scene").unwrap();
+    let names: Vec<String> = idf::elements(root).into_iter().map(|(p, _)| p).collect();
+    let tip = format!("{}.{pfx}.{pfx}_needle.{holder}.{pfx}_tip_n", dials::CUSTOMISATION);
+    assert!(names.contains(&tip), "{tip} in {names:#?}");
+    let clip = erp
+        .find(&format!("{}/{holder}?context=animation", dials::F126.scene))
+        .unwrap();
+    let (temp, syst) = (
+        clip.fragments[0].data().unwrap(),
+        clip.fragments[1].data().unwrap(),
+    );
+    assert!(syst.len().is_multiple_of(animclip::SYST_ALIGN));
+    assert!(!animclip::has_constant_rotation(&temp, &syst).unwrap());
+    let read = animclip::read_clip(&temp, &syst).unwrap();
+    assert_eq!(read.node, holder);
+    assert_eq!(read.channels.len(), 1);
+    assert_eq!(read.channels[0].target, animclip::Target::Rotation);
+    assert_eq!(
+        read.channels[0].times.len(),
+        4,
+        "270 degrees in three spans of 90"
+    );
+
+    let t = template_of(&out, "hud_template.erp", dials::TEMPLATE);
+    let ctl = format!("{}.{pfx}_ctl", dials::F126.race_parent);
+    let at = |name: &str| node_at(&t.root, &find_path(&t.root, &format!("{ctl}.{name}")).unwrap()).unwrap();
+    assert_eq!(at("m_needle_rpm").type_code(), "UIXA");
+    let mv = at("mv_needle_rpm");
+    assert_eq!(mv.type_code(), "MVCD");
+    let events: Vec<String> = mv
+        .slot(node::EVENTS)
+        .unwrap()
+        .iter()
+        .filter_map(|e| {
+            e.as_obj()?
+                .get("eventName")?
+                .as_val()?
+                .as_str()
+                .map(str::to_owned)
+        })
+        .collect();
+    assert_eq!(events, (0..9).map(|i| i.to_string()).collect::<Vec<_>>());
+    let canon = node::canonical(mv);
+    assert!(canon.contains("#view_model_data.hud_t_rpm") && canon.contains("playToFraction"));
+}
+
+/// Project Halo 0.2.4's copies of the dial: `dial_complete`'s anim string table ends at `zh_sg8_anim`,
+/// and its template adds `halo_ctl.drs_state`, an MVCD on `drs_pit_state`, beside the game's under the
+/// dial. Everything else is the game's.
+struct Halo<'a> {
+    game: &'a GameStock,
+    strtab: Vec<u8>,
+    template: Vec<u8>,
+}
+
+impl Stock for Halo<'_> {
+    fn read(&self, erp: &str, resource: &str) -> swofty_core::Result<Vec<Vec<u8>>> {
+        if resource == dials::F125.strtab {
+            return Ok(vec![self.strtab.clone()]);
+        }
+        if resource == dials::TEMPLATE {
+            return Ok(vec![self.template.clone()]);
+        }
+        self.game.read(erp, resource)
+    }
+
+    fn layout(
+        &self,
+        name: &str,
+        kind: &str,
+        fragments: usize,
+    ) -> swofty_core::Result<swofty_formats::erp::Resource> {
+        self.game.layout(name, kind, fragments)
+    }
+
+    fn header(&self) -> swofty_core::Result<([u8; swofty_formats::erp::HEADER_LEN], u32)> {
+        self.game.header()
+    }
+
+    fn carriers(
+        &self,
+        names: &[&str],
+    ) -> swofty_core::Result<std::collections::BTreeMap<String, Vec<String>>> {
+        self.game.carriers(names)
+    }
+
+    fn game_copy(&self, erp: &str, resource: &str) -> swofty_core::Result<Vec<Vec<u8>>> {
+        self.game.read(erp, resource)
+    }
+}
+
+/// SWOFTY 2010's onboard dial beside Project Halo 0.2.4: the record's anim names start `zi_` after
+/// Halo's `zh_sg8_anim`, and its `drs` decision takes the game's MVCD, not Halo's.
+#[test]
+fn a_dial_record_composes_after_another_addons_anim_names_and_beside_its_drs_decision() {
+    let Some(game) = real() else { return };
+    let tab = game.read(dials::STOCK_ERP, dials::F125.strtab).unwrap().remove(0);
+    let (strtab, _) = animclip::append_strings(&tab, &["zh_rpm_flash_anim", "zh_sg8_anim"]).unwrap();
+    let mut t = Pkg::parse(&game.read(dials::STOCK_ERP, dials::TEMPLATE).unwrap().remove(0)).unwrap();
+    let at = find_path(&t.root, dials::F125.race_parent).unwrap();
+    let events = ["invalid", "drs_live", "pit_live", "pit_active"]
+        .into_iter()
+        .map(|e| node::event(e, vec![]))
+        .collect();
+    let mut halo = node::group_node(
+        "halo_ctl",
+        vec![],
+        &[],
+        vec![node::mvcd_node("drs_state", "drs_pit_state", events)],
+    );
+    node::fix_ids(&mut halo, Some(dials::F125.race_parent));
+    node::node_at_mut(&mut t.root, &at)
+        .unwrap()
+        .slot_mut(node::CHILDREN)
+        .unwrap()
+        .push(halo);
+    let stock = Halo {
+        game: &game,
+        strtab,
+        template: t.to_bytes().unwrap(),
+    };
+    let record = serde_json::json!({
+        "dial": "f1_25", "box": [-40, -40, 40, 40],
+        "decisions": [
+            { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+              "states": { "invalid": [], "pit_live": ["lim"], "pit_active": ["lim"] } }
+        ],
+        "elements": [
+            { "kind": "group", "id": "needle", "at": [0, 0],
+              "motion": { "id": "rpm", "kind": "turn", "keys": [[0, 225], [0.4, -45]], "curve": "default_curve_1",
+                          "play_to": { "view_model": "view_model_data.hud_t_rpm" }, "steps": 9 },
+              "children": [
+                { "kind": "text", "id": "tip", "style": "OSD_19_regular", "cap_height": 5.9, "at": [20, 0],
+                  "literal": "-" } ] },
+            { "kind": "group", "id": "lim", "at": [0, -20],
+              "children": [
+                { "kind": "text", "id": "pit", "style": "OSD_19_regular", "cap_height": 5.9, "literal": "PIT" } ] }
+        ]
+    });
+    let input = hud::Input {
+        addon: "a.needle".into(),
+        key: "needle".into(),
+        dir: std::env::temp_dir(),
+        record: hud::model::HudElement::parse(&record).unwrap(),
+    };
+    let out = hud::compose(&stock, &[input]).unwrap();
+    let pfx = "a_needle";
+    let holder = format!("zi_{pfx}_needle_rpm");
+    assert!(
+        out.lines
+            .iter()
+            .any(|l| l.contains("already ends at zh_sg8_anim, so this record's anim names start zi_")),
+        "{:#?}",
+        out.lines
+    );
+    let find = |name: &str| -> Option<Vec<u8>> {
+        out.archives.iter().find_map(|a| {
+            let erp = Erp::parse(&a.bytes).ok()?;
+            erp.find(name).ok()?.fragments[0].data().ok().map(|d| d.to_vec())
+        })
+    };
+    assert!(find(&format!("{}/{holder}?context=animation", dials::F125.scene)).is_some());
+    let names = animclip::read_strings(&find(dials::F125.strtab).unwrap()).unwrap();
+    assert!(names.is_sorted());
+    assert_eq!(names.last().map(String::as_str), Some(holder.as_str()));
+    let t = template_of(&out, "hud_template.erp", dials::TEMPLATE);
+    let ctl = format!("{}.{pfx}_ctl", dials::F125.race_parent);
+    find_path(&t.root, &format!("{ctl}.d_drs")).unwrap();
+    find_path(
+        &t.root,
+        &format!("{}.halo_ctl.drs_state", dials::F125.race_parent),
+    )
+    .unwrap();
+}

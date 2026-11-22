@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SSL_EncryptMessageBuffersize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144055340",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144055340.c;pat:log-channel-SSL/V;xref:0x145a4e748",
+  "notes": "Vtable slot (cell 0x145a4e748). (peer, data, size): only when the handshake is done (+0x15 == 2): logs SSL/V 'Encrypt Message Buffersize %d', writes data into the SSL object +0xd8 (0x144c60940), drains the output BIO +0xe8 (0x144c64850, 0x578-byte chunks) into send callback +0x50 vcall +0x10(peer id +0x10, buf, len); returns 1, else 0. (lane owner review requested) Better name: Game_SslPeer_EncryptAndSend (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ssl_encrypt_message_buffersize",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC C0 05 00 00",
+  "match": "0x144055340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144055340",
+  "kind": "func_start",
+  "names": [
+   "Game_SSL_EncryptMessageBuffersize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144055340",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144055340.c",
+   "notes": "V6483 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

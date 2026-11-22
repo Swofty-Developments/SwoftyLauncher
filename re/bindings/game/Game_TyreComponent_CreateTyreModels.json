@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreComponent_CreateTyreModels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea1180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ea1180.c;pat:log-message-cxx;xref:0x1457efbd8",
+  "notes": "TyreComponent::createTyreModels (vtable cell 0x1457efbd8; log CompoundModelSet): per tyre set (count +0x98d0, stride 0xde0 from +0x30) builds three model sets (+0, +0x4a0, +0x940) via 0x142e82640 with the lists +0x9968/+0x9a00/+0x9a98/+0x9b30; for the last two sets +0x522/+0x9c2 = 1 and the model [+0x518/+0x9b8]+0x80 gets +0x138 = index of 'x1_tyre_bl' (default 0x13), +0x134 = 5.0, refresh job 0x143d3ce20, +0x12c |= 0x10. Then 0x142ea1620(this). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_component_create_tyre_models",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 8B 41 08",
+  "match": "0x142ea1180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea1180",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreComponent_CreateTyreModels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea1180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea1180.c",
+   "notes": "V5540 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

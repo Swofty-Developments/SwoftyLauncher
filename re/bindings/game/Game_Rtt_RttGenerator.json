@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_RttGenerator",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d84490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d84490.c;pat:log-message-method;xref:0x143d8b5a3",
+  "notes": "Own log tag 'createScenes' (RTT, '%s: no forwardPlus/gbufferExport/translucentForwardPlus ctxsetup' -> return 0). Returns 1 only if scene slots param_2+0x100..0x1c0 exist and +0xd0==ctx+0x24; else one-time ctx init (6 Rtt*.ContextSetup at ctx[0x97..0x9c]) and builds Rtt_GBufferExport30/ScreenSpaceDecals/LightTiling/ASSAO/DeferredLighting/ForwardPlus*/CMAA2/SSAOEye/SSS* scenes via 0x143b5c570, returns 0. (lane owner review requested) Better name: Game_Rtt_RttGenerator_CreateScenes (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.rtt_rtt_generator",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 0C 00 00 C5 78 29 A4 24 C0 0C 00 00",
+  "match": "0x143d84490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d84490",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_RttGenerator"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143d84490",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143d84490.c;xref:0x141efec67",
+   "notes": "V6290 partial: better name Game_Rtt_CreateScenes; builds ~20 RTT render scenes (gbuffer export, lighting, forward+, SSS); the log is one error branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143d84490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d84490.c;xref:0x141efec67",
+   "notes": "V7052 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

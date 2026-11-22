@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AttributeSetReplicationManager_RemovePlayerReplicatedData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431bc270",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431bc270.c;pat:log-message-cxx;xref:0x145824568",
+  "notes": "AttributeSetReplicationManager::removePlayerReplicatedData(desc) (vtable cell 0x145824568): key from desc (+0x48 or xor of id pair); non-host only logs; when replication applies removes the set unless it is the lead player (0x140b44530, bus msg 0x14566bd20) and sends remove msg 0xb3 to the server (0x14402e500(net,1,...)). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.attribute_set_replication_manager_remove_player_replicated_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 8B 59 08",
+  "match": "0x1431bc270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431bc270",
+  "kind": "func_start",
+  "names": [
+   "Game_AttributeSetReplicationManager_RemovePlayerReplicatedData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431bc270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431bc270.c",
+   "notes": "V5913 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

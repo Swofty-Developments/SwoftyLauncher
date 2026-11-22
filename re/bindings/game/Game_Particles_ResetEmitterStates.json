@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_ResetEmitterStates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b0e370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b0e370.c;xref:0x143b08f84,0x143b09773,0x143b0de4c",
+  "notes": "For every effect in mgr+0x858e90..98 resets each emitter (stride 0x180): +0x158 = 1, +0xe8/+0x104/+0xe0 = 0, particle chunk list +0xf0/+0xf8 returned to free list 0x146294210, +0x158 = 0; then clears global 0x146c62038. Callers in 0x143b06d90. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.particles_reset_emitter_states",
+  "section": ".xtls",
+  "pattern": "56 57 53 4C 8B 81 98 8E 85 00 4C 2B 81 90 8E 85",
+  "match": "0x143b0e370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b0e370",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_ResetEmitterStates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b0e370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b0e370.c;xref:0x143b08f84",
+   "notes": "V7890 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

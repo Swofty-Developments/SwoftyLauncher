@@ -89,6 +89,7 @@ typedef struct SwoftyAssets {
    available() returns non-zero only when its feature is on and the core implements it. */
 
 #define SWOFTY_EVENT_SESSION_START "session.start"
+#define SWOFTY_EVENT_GARAGE_PARKED_CAR "garage.parked_car.evaluated"
 #define SWOFTY_EVENT_SESSION_END "session.end"
 #define SWOFTY_EVENT_SESSION_UNLOAD "session.unload"
 #define SWOFTY_EVENT_RACE_START "race.start"
@@ -132,8 +133,9 @@ typedef void (*SwoftyPaintFn)(SwoftyPaint *paint, void *user);
 /* Overlay v2: the SwoftyOverlay entries after image() exist when the running swofty_core.dll exports
    SwoftyCoreOverlayVersion and it returns 2 or more (swofty/overlay.hpp checks); the v3 entries after
    ui_scale() exist when it returns 3 or more. A text style and an input snapshot are read and written
-   up to their size field, so later fields can be added. */
-#define SWOFTY_OVERLAY_VERSION 3
+   up to their size field, so later fields can be added. The v4 entry after focus() exists when it returns 4 or
+   more. */
+#define SWOFTY_OVERLAY_VERSION 4
 
 enum {
     SWOFTY_TEXT_LEFT = 0x00,
@@ -257,6 +259,8 @@ typedef struct SwoftyOverlay {
     /* v3 */
     int (*input)(const SwoftyPaint *paint, SwoftyInput *out);
     int (*focus)(int on);
+    /* v4 */
+    int (*load_image_rgba)(const char *id, uint32_t width, uint32_t height, const void *rgba);
 } SwoftyOverlay;
 
 #define SWOFTY_TELEMETRY_VERSION 2
@@ -594,13 +598,23 @@ typedef struct SwoftyHub {
    game runs. language NULL or "*" means every language; otherwise a language code (eng, fre, ...)
    that applies while it is the game's current language and wins over "*". The text is UTF-8 and is
    copied. A change shows wherever the game looks the key up next; refresh() re-sends the current
-   language to the game's language listeners so bound labels read their text again (game thread). */
+   language to the game's language listeners so bound labels read their text again (game thread).
+   Version 2 appends text and language, present when the core exports SwoftyCoreLangVersion and it
+   returns 2 or more: text(key) writes the key's text in the current language (the override when one
+   applies, else the game's text) as UTF-8 into out, with *len the byte count without the NUL, and
+   returns SWOFTY_TOO_SMALL with *len set when cap is too small or out is NULL, or SWOFTY_ASSET_INVALID
+   when no table has the key; language writes the current language code (eng, fre, ...). Both copy
+   and work from any thread once the game's locale module is up; before that they return
+   SWOFTY_ASSET_UNAVAILABLE. */
+#define SWOFTY_LANG_VERSION 2
 typedef struct SwoftyLang {
     int (*available)(void);
     int (*override_set)(const char *language, const char *key, const char *text);
     int (*override_clear)(const char *language, const char *key);
     int (*override_clear_all)(void);
     int (*refresh)(void);
+    int (*text)(const char *key, char *out, size_t cap, size_t *len);
+    int (*language)(char *out, size_t cap, size_t *len);
 } SwoftyLang;
 
 /* Extra career contents (no API version of its own: the table is read only when the core exports
@@ -924,7 +938,8 @@ typedef struct SwoftyServices {
    Table version 2 adds report_season: the addon that owns the active career's data group (its career
    content or career.mode record) says the season at the Championship's season_index is year; the core
    then fires career.season.start once per career and year, activates the season's records and freezes
-   its snapshot. Any other caller gets SWOFTY_REFUSED; no career loaded, SWOFTY_ASSET_LATE.
+   its snapshot. Any other caller gets SWOFTY_REFUSED; no career loaded, SWOFTY_ASSET_LATE. A report from
+   off the flow thread also gets SWOFTY_ASSET_LATE, and the core runs it at the next flow tick.
    Table version 3 adds apply_teams: the request {"season": <a career.season record>}; each listed slot
    (1-12) races as its team (the data group's slot table, the Championship's participants), and a team
    with no career rows gets them, built from its donor's (contracts, R&D, standings, initial cash, renown
@@ -961,8 +976,16 @@ typedef struct SwoftyServices {
    set_dropped_scores(data_group, best): while the loaded career is filed under data_group, the drivers'
    championship counts each driver's best `best` results (0 counts every result): the cumulative totals, and so
    the order, use the counted sum of the best per-round totals; the constructors' championship and the
-   per-session points stay gross. */
-#define SWOFTY_CAREER_OPS_VERSION 7
+   per-session points stay gross.
+   Table version 8 adds standings: the loaded career's current season's drivers' championship as JSON,
+   {"season": season_index, "rounds": n, "drivers": [{"driver": driver stat, "position": 1-based, "points": total,
+   "rounds": [{"points": that round's points, "finishes": [{"session": id, "position": 1-based, "status": n}]}]}]},
+   the drivers in the game's order (the order and the totals of its standings table, dropped scores included).
+   A round's points add up its sessions' points; its finishes are the driver's result in each of its results
+   sessions, with the game's status (points score at 0 and 1). Call it on the flow thread; SWOFTY_ASSET_LATE
+   when no career is loaded (also while it is busy), SWOFTY_ASSET_UNAVAILABLE on a build the read is not proven
+   on, SWOFTY_TOO_SMALL with *len set to the size when cap is too small. */
+#define SWOFTY_CAREER_OPS_VERSION 8
 enum { SWOFTY_REFUSED = 5 };
 enum { SWOFTY_NUMBER_SWAP = 1 };
 
@@ -984,6 +1007,7 @@ typedef struct SwoftyCareerOps {
     int (*current_round)(int32_t *season_index, int32_t *round, int32_t *rounds);
     int (*team_stat)(const char *team_ref, uint32_t *out);
     int (*set_dropped_scores)(const char *data_group, uint32_t best);
+    int (*standings)(char *json, size_t cap, size_t *len);
 } SwoftyCareerOps;
 
 /* Career saves (standard library 1.7.0, experimental), from the core export SwoftyCoreCareerSaves; not a
@@ -1073,14 +1097,28 @@ typedef struct SwoftyContentOps {
    zero, never another car's value. Calls answer SWOFTY_ASSET_UNAVAILABLE while no session is live, the build is
    not the one the offsets are from, or the group is off because a KB row it needs has no independent verify row
    yet (the core logs "live <group> off: needs <row>" once), and SWOFTY_ASSET_INVALID for a bad argument.
-   Table version 1.
+   Table version 6 appends car_detail; version 5 appends tyre_icon_texture; version 4 appends images (see
+   swofty/live_images.h); version 3 appends team_badge_texture. Check version >= 6 before calling car_detail and
+   version >= 5 before reading tyre_icon_texture.
+   Version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
+   check version >= 3 before calling team_badge_texture and version >= 2 before calling driver_name.
    session: the session header. car: one car by vehicle id. subject: the watched car while the spectator HUD is
    up, else the player's. turn: the official turn at that car's lap_m (SWOFTY_ASSET_UNAVAILABLE for a track
    without a table). track_turns: the whole turn list of the loaded track; count is the turns in the list on
    return, at most cap are written. team_badge: the timing tower team badge key of that car (the string after
    "#overrides.osd.timing_tower.team_badges_hud."), NUL-terminated within cap. seq: the snapshot counter, which
-   changes on every refresh. */
-#define SWOFTY_LIVE_VERSION 1
+   changes on every refresh. driver_name (version 2): the driver name the game shows for that car, as UTF-8: the
+   player's name for a car a human drives, else the display name of the driver record of the car's entrant; at most
+   cap - 1 bytes, cut at a character boundary, then NUL. It reads the game's memory at the call (not the snapshot), so
+   a timing tower can fetch one name per visible row.
+   team_badge_texture (version 3): the texture path the race HUD timing pill binds for
+   that car, NUL-terminated within cap: "#overrides.osd.timing_tower.team_badges_hud.<key>" for a catalogue team,
+   "eaid://ui_package/art/textures/render_badge_<table> <index>" (or render_badge_default.tga) for a team record
+   with show_custom_badge_in_UI set, or for a user-defined team's badge. My Team careers on the verified
+   Steam 26566308 build use the saved assignment for the active mode and loaded career slot; an unavailable
+   saved assignment is not replaced by the entrant fallback.
+   SWOFTY_ASSET_UNAVAILABLE when the reference cannot be read or the path does not fit cap. */
+#define SWOFTY_LIVE_VERSION 6
 #define SWOFTY_LIVE_MAX_CARS 32
 #define SWOFTY_LIVE_NO_GAP INT32_MIN
 
@@ -1111,6 +1149,14 @@ typedef struct SwoftyContentOps {
 #define SWOFTY_LIVE_HAVE_SECTOR (1ull << 24)
 #define SWOFTY_LIVE_HAVE_GAP_AHEAD (1ull << 25)
 #define SWOFTY_LIVE_HAVE_PIT_LANE (1ull << 26)
+#define SWOFTY_LIVE_HAVE_GARAGE (1ull << 27)
+#define SWOFTY_LIVE_GARAGE_SAFETY_CAR 99
+#define SWOFTY_LIVE_HAVE_TYRE_DAMAGE (1ull << 28)
+#define SWOFTY_LIVE_TYRE_PUNCTURED 2
+#define SWOFTY_LIVE_TYRE_BURST 3
+#define SWOFTY_LIVE_HAVE_GRID (1ull << 29)
+#define SWOFTY_LIVE_HAVE_LAP_TIMES (1ull << 30)
+#define SWOFTY_LIVE_HAVE_TYRE_AGE (1ull << 31)
 
 #define SWOFTY_LIVE_CAR_PLAYER (1u << 0)
 #define SWOFTY_LIVE_CAR_AI_DRIVING (1u << 1)
@@ -1155,7 +1201,21 @@ typedef struct SwoftyLiveCar {
     uint8_t pit_status;
     uint8_t pit_stops;
     uint8_t pad3[2];
-    uint32_t reserved[7];
+    /* The car's pit lane garage and pit box (SWOFTY_LIVE_HAVE_GARAGE): garage = 2 x the team's garage slot plus its
+       seat (the reverse on tracks whose garage order runs the other way), pit box = garage / 2, and
+       SWOFTY_LIVE_GARAGE_SAFETY_CAR (box 12) for the safety car. Both are 0 with the have bit clear on a build
+       whose live state does not walk the pit lane. They take the first word of what was reserved[7]: the struct's
+       size and every other offset are unchanged. */
+    uint8_t garage;
+    uint8_t pit_box;
+    uint8_t pad4[2];
+    /* Each wheel's tyre damage (SWOFTY_LIVE_HAVE_TYRE_DAMAGE), RL, RR, FL, FR: tyre_damage is the wheel's puncture
+       state, SWOFTY_LIVE_TYRE_PUNCTURED or SWOFTY_LIVE_TYRE_BURST (0 none), and tyre_deflation its deflation level
+       (0 without a puncture, 1 when one starts, growing until the tyre bursts at 2). They take the next five words of
+       what was reserved: the struct's size and every other offset are unchanged. */
+    uint8_t tyre_damage[4];
+    float tyre_deflation[4];
+    uint32_t reserved[1];
 } SwoftyLiveCar;
 
 #define SWOFTY_LIVE_SHAVE_TYPE (1ull << 0)
@@ -1171,6 +1231,8 @@ typedef struct SwoftyLiveCar {
 #define SWOFTY_LIVE_SHAVE_SECTORS (1ull << 10)
 #define SWOFTY_LIVE_SHAVE_ORDER (1ull << 11)
 #define SWOFTY_LIVE_SHAVE_ROAD_ORDER (1ull << 12)
+#define SWOFTY_LIVE_SHAVE_TIME_LEFT (1ull << 13)
+#define SWOFTY_LIVE_SHAVE_TOTAL_LAPS (1ull << 14)
 
 #define SWOFTY_LIVE_MODE_UNKNOWN 0
 #define SWOFTY_LIVE_MODE_GRAND_PRIX 1
@@ -1202,7 +1264,12 @@ typedef struct SwoftyLiveSession {
     uint32_t classified;
     uint32_t road_order[SWOFTY_LIVE_MAX_CARS];
     uint32_t on_track;
-    uint32_t reserved[8];
+    /* The session time left in seconds (SWOFTY_LIVE_SHAVE_TIME_LEFT) and the race's lap count
+       (SWOFTY_LIVE_SHAVE_TOTAL_LAPS). Not read yet on any build: both bits stay clear and both fields 0. They take
+       the first two words of what was reserved[8]: the struct's size and every other offset are unchanged. */
+    float time_left_s;
+    uint32_t total_laps;
+    uint32_t reserved[6];
 } SwoftyLiveSession;
 
 #define SWOFTY_LIVE_TURN_OFFICIAL 1
@@ -1222,6 +1289,42 @@ typedef struct SwoftyLiveTurn {
     uint32_t reserved[4];
 } SwoftyLiveTurn;
 
+#define SWOFTY_LIVE_LAP_CURRENT_VALID (1u << 0)
+#define SWOFTY_LIVE_LAP_LAST_VALID (1u << 1)
+
+/* More of one car's state, from car_detail (table version 6). have holds the car's SWOFTY_LIVE_HAVE_* bits, the same
+   as SwoftyLiveCar.have for that car in the same snapshot; a clear bit leaves its fields 0.
+   SWOFTY_LIVE_HAVE_GRID: grid_position, the car's starting grid slot from 1.
+   SWOFTY_LIVE_HAVE_TYRE_WEAR: tyre_wear, each wheel's tyre wear in percent (0 new, 100 worn out), RL, RR, FL, FR.
+   SWOFTY_LIVE_HAVE_LAP_TIMES: laps_completed; current_lap_ms, the time of the lap in progress so far, and
+   current_sector_ms, its sector 1 and sector 2 times (0 until the car crosses that sector line); last_lap_ms and
+   last_sector_ms, the last completed lap (0 before the first one); best_lap_ms, best_lap_number (from 1) and
+   best_sector_ms, the fastest valid completed lap and its sectors (0 while there is none); lap_flags,
+   SWOFTY_LIVE_LAP_CURRENT_VALID and SWOFTY_LIVE_LAP_LAST_VALID.
+   SWOFTY_LIVE_HAVE_TYRE_AGE: tyre_age_laps, the laps the fitted set has run, earlier stints on it included (the
+   count the game sends as tyresAgeLaps); tyre_stint_laps, the laps since it was fitted. */
+typedef struct SwoftyLiveCarDetail {
+    uint32_t version;
+    uint32_t size;
+    uint64_t have;
+    uint32_t vehicle;
+    uint8_t grid_position;
+    uint8_t tyre_age_laps;
+    uint8_t tyre_stint_laps;
+    uint8_t lap_flags;
+    float tyre_wear[4];
+    uint32_t laps_completed;
+    uint32_t current_lap_ms;
+    uint32_t current_sector_ms[2];
+    uint32_t last_lap_ms;
+    uint32_t last_sector_ms[3];
+    uint32_t best_lap_ms;
+    uint32_t best_lap_number;
+    uint32_t best_sector_ms[3];
+    uint32_t reserved[17];
+} SwoftyLiveCarDetail;
+
+typedef struct SwoftyLiveImages SwoftyLiveImages;
 typedef struct SwoftyLive {
     uint32_t version;
     int (*available)(void);
@@ -1232,6 +1335,16 @@ typedef struct SwoftyLive {
     int (*track_turns)(uint32_t *count, SwoftyLiveTurn *out, uint32_t cap);
     int (*team_badge)(uint32_t vehicle, char *key, uint32_t cap);
     int (*seq)(uint64_t *frame);
+    int (*driver_name)(uint32_t vehicle, char *out, uint32_t cap);
+    int (*team_badge_texture)(uint32_t vehicle, char *path, uint32_t cap);
+    const SwoftyLiveImages *(*images)(void);
+    /* Version 5: fitted visual compound's effective GameDB "small" icon template.
+       Pass the returned reference to images()->image(). No stock-letter fallback.
+       UTF-8 buffer of 160 bytes suffices; INVALID for a short buffer/invalid car,
+       UNAVAILABLE while fitted tyres, GameDB or the supported template are absent. */
+    int (*tyre_icon_texture)(uint32_t vehicle, char *path, uint32_t cap);
+    /* Version 6: one car's SwoftyLiveCarDetail by vehicle id, from the same snapshot as car. */
+    int (*car_detail)(uint32_t vehicle, SwoftyLiveCarDetail *out);
 } SwoftyLive;
 
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi
@@ -1456,6 +1569,73 @@ typedef struct SwoftyMem {
     void (*invalidate)(void);
 } SwoftyMem;
 
+/* Game assets (standard library, swofty/game_assets.hpp), from the core export SwoftyCoreGameAssets; not a SwoftyApi
+   field, so SWOFTY_API_VERSION is unchanged and the table carries its own version. NULL export or table: a core
+   without it. Table version 1. Every call reads the game's archives in the game folder, with the overlay archives
+   the launcher layers on them on top; it blocks on file reads, so call it off the game's threads. Calls are safe
+   from any thread. The results are the SWOFTY_ASSET_* codes plus SWOFTY_TOO_SMALL; unavailable when the game
+   folder is unknown, invalid for a bad argument or a resource, catalogue or name the game does not have.
+   read: the decompressed bytes of fragment `fragment` of the resource at an eaid:// URI, or of all its fragments one
+   after another with SWOFTY_GAME_ALL_FRAGMENTS; *len is set to the size, and a NULL buf or a cap below it returns
+   SWOFTY_TOO_SMALL. The first call for a package (eaid://<package>/...) opens the index of every archive in
+   2025_asset_groups/<package>/ and keeps it. texture: the header of the texture or texture array at uri (its first
+   fragment): the engine format id, the size of the top level, the level and layer counts. texture_rgba: one level of
+   one layer decoded to straight RGBA8 rows, top row first, width*height*4 bytes; formats 52 and 54 (BC1), 55 and 57
+   (BC3), 65 (BC5, blue 0 and alpha 255) and 69 and 70 (BC7). catalogue_find: the texture array of a UI image
+   catalogue entry and its layer: catalogue is the dotted name of a list in a UI database, the first part naming
+   eaid://ui_package/databases/<part>.uidb ("overrides.team_logos.driver_career_2024_team_select"), name an entry's
+   Name ("redbull"); texture_uri gets the array's eaid:// URI (SWOFTY_TOO_SMALL with *len when cap is too small).
+   catalogue_name: the Name of the entry at index (an empty name for an entry without one), SWOFTY_ASSET_LATE past
+   the last entry. */
+#define SWOFTY_GAME_ASSETS_VERSION 1
+#define SWOFTY_GAME_ALL_FRAGMENTS 0xffffffffu
+
+typedef struct SwoftyGameTexture {
+    uint32_t format, width, height, levels, layers;
+} SwoftyGameTexture;
+
+typedef struct SwoftyGameAssets {
+    uint32_t version;
+    int (*available)(void);
+    int (*read)(const char *uri, uint32_t fragment, void *buf, size_t cap, size_t *len);
+    int (*texture)(const char *uri, SwoftyGameTexture *out);
+    int (*texture_rgba)(const char *uri, uint32_t layer, uint32_t level, void *rgba, size_t cap, uint32_t *width,
+                        uint32_t *height);
+    int (*catalogue_find)(const char *catalogue, const char *name, char *texture_uri, size_t cap, size_t *len,
+                          uint32_t *layer);
+    int (*catalogue_name)(const char *catalogue, uint32_t index, char *name, size_t cap, size_t *len);
+} SwoftyGameAssets;
+
+/* Game memory writes (standard library, swofty/game_mem.hpp, experimental), from the core export SwoftyCoreGameMem;
+   not a SwoftyApi field, so SWOFTY_API_VERSION is unchanged and the table carries its own version. Table version 1.
+   The owner of every call is the addon whose code calls it (the module of the return address), as the core's
+   loader.log names it.
+   write_data: copies n bytes from bytes into the data binding id at offset. size is the size the caller declares
+   for the binding (sizeof of its type in swofty/game.hpp). The core checks that id is a data binding of the binding
+   set that resolved on this build, that offset + n fits in size, that size is the one every earlier write of id
+   declared, that the size bytes lie in one section of the game exe's image that is not code, that no other addon
+   holds one of the bytes, and with expect (n bytes, or NULL) that the bytes there are expect now. It saves the
+   bytes there on the owner's first write of the range, makes the pages writable for the copy only and puts their
+   protection back. SWOFTY_ASSET_OK, SWOFTY_ASSET_UNAVAILABLE for an unknown or unresolved id or one that is not a
+   data binding, SWOFTY_ASSET_INVALID for any other check that fails (the reason goes to loader.log).
+   restore_data: copies back the saved bytes of the owner's writes of id (NULL: of every binding), newest first.
+   SWOFTY_ASSET_OK also when the owner wrote nothing there.
+   alloc: size bytes aligned to align (a power of two up to 4096) from the game allocator object allocator through
+   its vtable (+0x18 alloc(self, size, align)); NULL allocator: the game's default allocator (g_Ne_DefaultAllocator).
+   NULL when the allocator is not a game object whose slot points into the exe image, the arguments are out of
+   range or the game's call returns NULL. free: gives p back to allocator (+0x38 free(self, p), NULL: the default
+   one); a NULL p does nothing. Memory from alloc belongs to the game's heap and may be handed to game objects that
+   free it themselves. Every call is safe from any thread. */
+#define SWOFTY_GAME_MEM_VERSION 1
+
+typedef struct SwoftyGameMem {
+    uint32_t version;
+    int (*write_data)(const char *id, size_t size, size_t offset, const void *bytes, size_t n, const void *expect);
+    int (*restore_data)(const char *id);
+    void *(*alloc)(void *allocator, size_t size, size_t align);
+    void (*free)(void *allocator, void *p);
+} SwoftyGameMem;
+
 typedef struct SwoftyApi {
     uint32_t version;
     void (*log)(const char *fmt, ...);
@@ -1487,6 +1667,187 @@ typedef struct SwoftyApi {
 typedef int (*SwoftyAddonInitFn)(const SwoftyApi *api);
 typedef SwoftyAddonInitFn SwoftyModInitFn;
 
+/* Lap host, from the core export SwoftyCoreLapHost; not a SwoftyApi field. Table version 2. What a lap module
+   (a plugin that records laps and serves lap boards) needs from the core beyond the SDK. A string a function
+   returns belongs to the calling thread until its next call of this table; never NULL. NULL table: a core
+   without it.
+   attach: the module's callbacks; one client, the last attach wins, NULL detaches. The core calls offer while
+   it collects hook sets (the module calls add_hooks there) and settle once they are installed or dropped; tick
+   on every flow tick; session_enter and session_watch(1) as a session starts, session_end as it ends;
+   lap_line when a car starts a new lap; recording, board_session and player_id are asked by the core's toasts
+   and name display.
+   add_hooks: a named hook set installed like the core's own (hooks_active says whether it is in place).
+   build: bit 0 the KB build, bit 1 a build the layouts are checked on. feature: a core feature switch.
+   swofty_root, files_root: the game's swofty folder and the folder the launcher collects files from, UTF-8.
+   mode_kind: 0 unknown, 1 time trial, 2 career, 3 other; it starts the mode watch. view_flags: the view state's
+   flags. time_trial_*: the Time Trial mode's selection (track codes, entrant list, the player's team and a team
+   reference's label), its track record stat (-1), setup(request JSON) for a session of that mode (0 pending,
+   1 done, -1 failed with why) and setup_reset. press_list: an entrant list counts as the pressed box.
+   session_unlisted: the session's list no box names. track: the track base's entry at index (0 past the end;
+   kind 0 stock, 1 record, 2 older). content_ids: the stat ids of a content id registry. car, motion: the
+   player's car this frame. sealing, recorded: fire laps.sealing and laps.recorded for a lap file the module
+   wrote. copy: a guarded memory write. notice: one line of text the core paints at the top of the overlay frame
+   (NULL or empty: none); the core asks the client notice_wanted once, at overlay setup, whether to arm the
+   overlay for it, and gives screen every UI screen that opens. name_tick: the core's player name display step, run
+   from the module's in-session tick (probe 1: its probe step).
+   Table version 2 adds mark at the end: a timing line of the player's Time Trial lap, for server-timed laps. lap is
+   the lap's number (0 to 100000), the lap_index of the lap file the lap ends in; the Time Trial plugin numbers each
+   lap at its start line from 1, and a discarded lap keeps its number, so the numbers have gaps. which is 0 the start
+   line, 1 sector 1, 2 sector 2, 3 the finish, and for pause n of the lap (1 to 4) 2n+2 as the game pauses and 2n+3 as
+   it resumes; game_ms the game's lap clock at the line or the pause (0 at the start, at most an hour). Call it at the
+   line or the pause, on the flow thread, and the finish before the lap's file is written. A core before 1.10.0
+   refuses the pause marks. The core stamps the moment and hands it to the launcher, which sends it off the game's
+   threads; 1 queued, 0 refused. A module takes a table of at least SWOFTY_LAP_HOST_V1_SIZE bytes and
+   calls mark only on version 2 or later. */
+typedef struct SwoftyLapClient {
+    uint32_t size, version;
+    void (*offer)(void);
+    void (*settle)(void);
+    void (*tick)(void);
+    void (*session_enter)(void);
+    void (*session_watch)(int live);
+    void (*session_end)(void);
+    void (*lap_line)(int car);
+    int (*recording)(void);
+    int (*board_session)(void);
+    int (*player_id)(void *out, uint32_t size);
+    void (*screen)(const char *name);
+    int (*notice_wanted)(void);
+} SwoftyLapClient;
+
+typedef struct SwoftyLapTrack {
+    const char *id, *code, *base, *addon, *name;
+    int32_t stat_id;
+    uint32_t kind, time_trial;
+} SwoftyLapTrack;
+
+typedef struct SwoftyLapCar {
+    uint32_t size, has;
+    float wetness, wheel_wetness, speed_kmh, throttle, brake, steer, rpm, max_rpm, g_lateral, g_long;
+    int32_t gear, player, ai;
+    uint8_t surface[4];
+} SwoftyLapCar;
+
+typedef struct SwoftyLapMotion {
+    uint32_t size, has;
+    float pos[3], vel[3], angvel[3], quat[4], spin[4], slip_angle[4], slip_ratio[4], drs;
+    int32_t player, ai;
+} SwoftyLapMotion;
+
+typedef void (*SwoftyLapFlowLinkFn)(uint8_t *state, uint32_t *link);
+typedef int32_t (*SwoftyLapSectionFn)(void *user, const char *tag, const void *bytes, uint32_t len);
+
+typedef struct SwoftyLapHost {
+    uint32_t size, version;
+    int (*attach)(const SwoftyLapClient *client);
+    int (*add_hooks)(const char *name, const SwoftyMixin *mixins, size_t count);
+    int (*hooks_active)(const char *name);
+    int (*when_code_ready)(const char *what, void (*fn)(void));
+    int (*code_ready)(void);
+    /* Bit 0: the exe is the Steam KB build (PE timestamp 1789118616). Bit 1: its struct layouts were checked against the
+       lap module's signatures (the KB build, its EA App link, Steam 1.0.145 and EA 1.0.145). A module that reads game
+       structs asks bit 1, or feature(name) for whether one core feature is on; bit 0 stays clear on every later build. */
+    uint32_t (*build)(void);
+    const char *(*build_sha)(void);
+    int (*feature)(const char *name);
+    const char *(*swofty_root)(void);
+    const char *(*files_root)(void);
+    int (*session_kind)(void);
+    int (*mode_kind)(void);
+    const char *(*session_mode)(void);
+    const char *(*session_content)(void);
+    const char *(*content_title)(const char *content);
+    const char *(*player_label)(uint32_t what); /* 0 team, 1 vehicle, 2 driver */
+    uint32_t (*view_flags)(void);
+    void *(*game_manager)(void);
+    int (*flow_link_listen)(SwoftyLapFlowLinkFn listener);
+    const char *(*time_trial_track)(int session);
+    const char *(*time_trial_list)(void);
+    int (*time_trial_team)(uint32_t *ref, const char **label);
+    const char *(*time_trial_team_of)(uint32_t ref);
+    int (*time_trial_track_stat)(void);
+    int (*time_trial_setup)(const char *request, const char **why);
+    void (*time_trial_setup_reset)(void);
+    void (*press_list)(const char *entrant_list);
+    int (*session_unlisted)(const char **list);
+    int (*track)(uint32_t index, SwoftyLapTrack *out);
+    uint32_t (*content_ids)(const char *registry, int64_t *out, uint32_t cap);
+    int (*car)(SwoftyLapCar *out);
+    int (*motion)(SwoftyLapMotion *out);
+    uint32_t (*car_state)(void); /* bit 0 the car table resolves, bit 1 KB fields */
+    uintptr_t (*player_car)(void);
+    int (*sealing)(const char *path, int32_t time_ms, const uint8_t *body, uint32_t body_len, SwoftyLapSectionFn add_section,
+                   void *user);
+    int (*recorded)(const char *path, int32_t time_ms, int32_t valid);
+    int (*copy)(void *to, const void *from, size_t n);
+    void (*notice)(const char *text);
+    void (*name_tick)(int probe);
+    int (*mark)(int32_t lap, int32_t which, int32_t game_ms);
+    /* Version 3: the core's own version (the launcher's, such as "1.10.0"), for the lap file header. */
+    const char *(*core_version)(void);
+} SwoftyLapHost;
+
+#define SWOFTY_LAP_HOST_VERSION 3
+#define SWOFTY_LAP_HOST_V1_SIZE offsetof(SwoftyLapHost, mark)
+#define SWOFTY_LAP_HOST_V2_SIZE offsetof(SwoftyLapHost, core_version)
+#define SWOFTY_LAP_CAR_SPEED 1u
+#define SWOFTY_LAP_CAR_PEDALS 2u
+#define SWOFTY_LAP_CAR_STEER 4u
+#define SWOFTY_LAP_CAR_GEAR 8u
+#define SWOFTY_LAP_CAR_RPM 16u
+#define SWOFTY_LAP_CAR_G 32u
+#define SWOFTY_LAP_CAR_SURFACE 64u
+#define SWOFTY_LAP_CAR_WETNESS 128u
+#define SWOFTY_LAP_CAR_WHEEL_WETNESS 256u
+#define SWOFTY_LAP_MOTION_POS 1u
+#define SWOFTY_LAP_MOTION_VEL 2u
+#define SWOFTY_LAP_MOTION_ANGVEL 4u
+#define SWOFTY_LAP_MOTION_ORIENT 8u
+#define SWOFTY_LAP_MOTION_SPIN 16u
+#define SWOFTY_LAP_MOTION_SLIP 32u
+#define SWOFTY_LAP_MOTION_DRS 64u
+
+/* Session host, from the core export SwoftyCoreSessionHost; not a SwoftyApi field. Table version 1. It serves
+   one plugin that sets up an online session from outside the menus; each listener has one slot and a later call
+   replaces it. root: the game's swofty folder, with a trailing backslash. on_ready: fn runs once the core's
+   runtime setup is done, at once when it already is; the game's code is readable from then on. on_flow: every
+   flow state change (the state's name hash and its new status), on the flow thread. on_screen: every screen
+   the UI opens, by name. on_message: every game message before it is queued, with its reply callback and that
+   callback's context; a nonzero answer takes the message, which is then not shown. on_home: the home view
+   model on every home command. on_exit: the process is ending.
+   pad_claim: takes (1) or drops (0) a claim on the core's virtual pad, installing it first; 0 when there is
+   none, and pad_error says why. pad_set holds buttons and triggers, pad_release lets them go.
+   direct_start_setup: the setup of the direct start's external target, polled on the flow thread until it
+   answers 1 (done) or 2 (failed, the reason in why); 0 is pending. cover_step names the launch cover's step
+   and its progress (ceiling below 0: none); cover_state copies the step's label and percent and answers 1
+   while the cover is armed; cover_signal sets what the cover of an external target waits for: -1 failed,
+   0 waiting, 1 shown. ui_set writes one UI view-model path (type 0: a string; 1: a bool and 2: an integer, both from
+   an int32); car_category chooses a Car Category box by value as the screen would (empty: a stock one), 0 with the reason in why. */
+#define SWOFTY_SESSION_HOST_VERSION 1
+typedef int (*SwoftySessionSetupFn)(void *user, char *why, size_t cap);
+typedef int (*SwoftySessionSignalFn)(void *user);
+typedef struct SwoftySessionHost {
+    uint32_t size;
+    uint32_t version;
+    const wchar_t *(*root)(void);
+    void (*on_ready)(void (*fn)(void *user), void *user);
+    void (*on_flow)(void (*fn)(uint32_t state, uint32_t status, void *user), void *user);
+    void (*on_screen)(void (*fn)(const char *name, void *user), void *user);
+    void (*on_message)(int (*fn)(const char *id, void *reply, void *ctx, void *user), void *user);
+    void (*on_home)(void (*fn)(void *vm, void *user), void *user);
+    void (*on_exit)(void (*fn)(void *user), void *user);
+    int (*pad_claim)(int on);
+    const char *(*pad_error)(void);
+    void (*pad_set)(uint16_t buttons, uint8_t lt, uint8_t rt);
+    void (*pad_release)(void);
+    void (*direct_start_setup)(SwoftySessionSetupFn fn, void *user);
+    void (*cover_step)(const char *what, float fraction, float ceiling);
+    int (*cover_state)(char *label, size_t cap, int *percent);
+    void (*cover_signal)(SwoftySessionSignalFn fn, void *user);
+    int (*ui_set)(const char *path, int type, const void *value);
+    int (*car_category)(const char *value, char *why, size_t cap);
+} SwoftySessionHost;
+
 typedef int (*SwoftyCoreAttachFn)(SwoftyApi *api);
 typedef int (*SwoftyCoreInitFn)(const wchar_t *name, SwoftyAddonInitFn init);
 typedef int (*SwoftyCoreCommitFn)(void);
@@ -1502,6 +1863,11 @@ typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
 typedef const SwoftyContentOps *(*SwoftyCoreContentOpsFn)(void);
 typedef const SwoftyLive *(*SwoftyCoreLiveFn)(void);
 typedef const SwoftyMem *(*SwoftyCoreMemFn)(void);
+typedef const SwoftyGameAssets *(*SwoftyCoreGameAssetsFn)(void);
+typedef const SwoftyGameMem *(*SwoftyCoreGameMemFn)(void);
+typedef const SwoftyLapHost *(*SwoftyCoreLapHostFn)(void);
+typedef const SwoftySessionHost *(*SwoftyCoreSessionHostFn)(void);
+typedef uint32_t (*SwoftyCoreLangVersionFn)(void);
 
 #define SWOFTY_STAGE_WINDOW 1
 
@@ -1524,6 +1890,11 @@ SWOFTY_EXPORT const SwoftyCarOps *SwoftyCoreCarOps(void);
 SWOFTY_EXPORT const SwoftyContentOps *SwoftyCoreContentOps(void);
 SWOFTY_EXPORT const SwoftyLive *SwoftyCoreLive(void);
 SWOFTY_EXPORT const SwoftyMem *SwoftyCoreMem(void);
+SWOFTY_EXPORT const SwoftyGameAssets *SwoftyCoreGameAssets(void);
+SWOFTY_EXPORT const SwoftyGameMem *SwoftyCoreGameMem(void);
+SWOFTY_EXPORT const SwoftyLapHost *SwoftyCoreLapHost(void);
+SWOFTY_EXPORT const SwoftySessionHost *SwoftyCoreSessionHost(void);
+SWOFTY_EXPORT uint32_t SwoftyCoreLangVersion(void);
 
 #ifdef __cplusplus
 }

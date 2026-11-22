@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteWonWCC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14371e8b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14371e8b0.c;pat:log-channel-STATEVENT;xref:0x14371e792",
+  "notes": "Direct writer (stat, info, seasonLen): 7 WonWCC[.TeamStatId/.GameplayModeId/.IsInTeamCareer/.SeasonLength/.GameSetupModeStatId] keys value 1.0; ids info +8/+0x10/+0x2c/+0x30. Caller 0x14371e750. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_won_wcc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 08 00 00 44 89 44 24 2C",
+  "match": "0x14371e8b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14371e8b0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteWonWCC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14371e8b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14371e8b0.c;xref:0x14371e792",
+   "notes": "V6165 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

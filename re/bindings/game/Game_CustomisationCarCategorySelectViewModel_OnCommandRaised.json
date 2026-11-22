@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationCarCategorySelectViewModel_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a495f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a495f0.c;str:s_CustomisationCarCategorySelectViewModel_OnCommandRaised;xref:0x145729240",
+  "notes": "Own pretty-function 0x1457292d0 logged at 0x141a49920 inside the pdata range; ref = vtable cell 0x145729240. vt+0x90 true -> 'ignore command ... Player Card menu'. Else base 0x141a499c0; hash 0x2b0357a: bus post, 't_car', resets 0x146066be0/bd8/c18 = 0x3fff0000, 'goto_next_screen'; hash 0x70d928ee: picks a [0x146064df0]+0x230 entry into this[0x7a], tail-jumps 0x1428db0e0/0x1428db2c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_car_category_select_view_model_on_command_raised",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 48 89 D7 48 89 CE 48 8B 01 FF",
+  "match": "0x141a495f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a495f0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationCarCategorySelectViewModel_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a495f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a495f0.c",
+   "notes": "V4927 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

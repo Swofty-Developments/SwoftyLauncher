@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXStartLightsECompleteCountTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cd62a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cd62a0.c;pat:log-channel-NETWORK/T;xref:0x142d56ca9,0x142d5d553,0x142d5ff84",
+  "notes": "Start-lights state machine: returns unless +0xbbd; switch on state +0x29 (<5) with timers +0x70/+0x78, light modes 'formation', 'all_green', 'off', sound 'play_hud_start_light_beep', logs 'MOX/StartLights: eCompleteCount %+1.3f at time %1.3fs' (NETWORK/T). Callers include 0x142d566a0, 0x142d5d480, 0x142d5fd60, 0x143273710. (lane owner review requested) Better name: Game_Network_StartLights_UpdateState (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_mox_start_lights_e_complete_count_time",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 00 00 00 C5 F8 29 BC 24 80 00 00 00",
+  "match": "0x142cd62a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cd62a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXStartLightsECompleteCountTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142cd62a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142cd62a0.c;xref:0x142d56ca9",
+   "notes": "V5062 3.4KB StartLights update state machine (eWaitForStart, eCompleteCount, formation, all_green, beep); better Game_StartLights_Update"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142cd62a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cd62a0.c;xref:0x142d56ca9",
+   "notes": "V6887 582 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkPresence_AddedUserIDEadpResolveList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144125280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144125280.c;pat:log-channel-NETWORK-PRESENCE;xref:0x145a5b9d8",
+  "notes": "NePresenceNameResolverEADP: vcall +0x38 on this+0x18 matches user id; active presence ('Integrating name ... from active presence') -> sink this+8 vcall+8, ret 2; EADP friends cache [0x146c64520]+0x110 (0xa8 stride) ret 2; else under lock +0x28 scans +0x70/+0x90 (0x50 entries, 0x144135be0): found -> 'already in to-resolve or in-transmit list' ret 1, else push to +0x70 ret 2. (lane owner review requested) Better name: Game_NetworkPresence_EadpAttemptNameResolution (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_presence_added_user_id_eadp_resolve_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 48 89 D7 48 89 CE 8B 42 4C",
+  "match": "0x144125280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144125280",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkPresence_AddedUserIDEadpResolveList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144125280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144125280.c",
+   "notes": "V6552 better name Game_NetworkPresence_EadpResolveUserNames: NePresenceNameResolverEADP: player card service, active presence and friends cache name resolution, not only the added-to-list log (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144125280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144125280.c",
+   "notes": "V7176 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

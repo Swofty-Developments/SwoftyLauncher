@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_FacilityNodeScaledValueA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f8e5f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Calc(void *node)",
+  "evidence": "decomp:re/decomp/140f8e5f0.c;xref:0x140f819d3,0x140f8233f,0x140f823f5,0x140f89918",
+  "notes": "value = node int +0x80; stat A (Career_Find_TeamStatRange 0x1412192b0 with +0x58, +0x68, [+0x98]) clamped by descriptor min/max -> value = round(A * value); if stat B ([+0x98]+0x10) >= int +0x40, stat C ([+0x98]+0x18) -> value = round(C * value). Returns value. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.calc_facility_node_scaled_value_a",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CF",
+  "match": "0x140f8e5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f8e5f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_FacilityNodeScaledValueA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f8e5f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140f8e5f0.c;xref:0x140f819d3",
+   "notes": "V9601 Scaled value: base +0x80 times clamped stat (selector +0), then if second stat (+0x10) rounds >= node+0x40 multiplies by a third stat (+0x18); not just one factor times +0x80."
+  }
+ ],
+ "proofs": []
+}

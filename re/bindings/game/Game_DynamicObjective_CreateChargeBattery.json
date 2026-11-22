@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_DynamicObjective_CreateChargeBattery",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14116b540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14116b540.c;pat:log-channel-DYNAMIC_OBJECTIVES;xref:0x141167555,0x14116755f,0x141167569,0x141167573,0x14116757d,0x141167587,0x141167591,0x14116759b,0x1411675a5,0x1411675af,0x1411675b9,0x1411675c3,0x1411675cd,0x1411675d7,0x1411675e1,0x1411675eb,0x1411675f5,0x1411675ff,0x141167609,0x141167613,0x14116761d",
+  "notes": "Factory switch(type 0..0x14): allocates via [+0x210] vcall +0x18 (0x78..0xa70 bytes), fills base (vt 0x1456c28b0, per-type config block e.g. +0x2f0/+0x410/+0xc70) and class vtable, logs DYNAMIC_OBJECTIVES 'Created <X>DynamicObjective' (0 AchieveLapTime, 1 AverageLapTime, 9 DrainBattery, 10 ChargeBattery, 0xd AvoidCarCollisions, 0x14 KeepDriverBehind, ...), appends to vector +0x2c8/+0x2d0/+0x2d8. Called from 0x141167540. (lane owner review requested) Better name: Game_DynamicObjectives_CreateObjective (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.dynamic_objective_create_charge_battery",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 80 FA 14",
+  "match": "0x14116b540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14116b540",
+  "kind": "func_start",
+  "names": [
+   "Game_DynamicObjective_CreateChargeBattery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14116b540",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14116b540.c;xref:0x141167555",
+   "notes": "V4643 factory that creates ALL dynamic objective types (AchieveLapTime..ChargeBattery..); not battery-specific; better Game_DynamicObjective_CreateByType"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x14116b540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14116b540.c;xref:0x141167555",
+   "notes": "V7188 name fits; finding facts hold; 21 direct calls"
+  }
+ ],
+ "proofs": []
+}

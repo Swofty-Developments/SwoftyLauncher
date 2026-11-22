@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VirtualSessionSystem_OnMessagePlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f714d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f714d0.c;pat:log-message-cxx;xref:0x14fab4629,0x14fab557b",
+  "notes": "Read in full: logs NETWORK 'VirtualSessionSystem::onMessagePlayerDroppedIn()' and calls this vcall +0x88, returns 0. Static refs are two lea (handler registration) in 0x14fab45f0/0x14fab5560. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.virtual_session_system_on_message_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 43 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 00 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 06",
+  "match": "0x142f714d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f714d0",
+  "kind": "func_start",
+  "names": [
+   "Game_VirtualSessionSystem_OnMessagePlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f714d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f714d0.c;xref:0x1416bcc63",
+   "notes": "V5654 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

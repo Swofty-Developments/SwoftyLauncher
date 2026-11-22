@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamDriverCounterOffers_Names",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142343bf0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142343bf0.c;xref:0x145780ec8",
+  "notes": "Vtable slot (cell 0x145780ec8). Builds the driver counter-offer screen: selected_contract_index, driver_ref, current_contract, first/second_name (+_style), contract_option_%d (0x142345950), card data (Career_Build_UpgradeCardData, Game_Build_TeamHqCards_C), driver thumbnail request, name keys my_team_driver_counter_offers_forename/_surname. (lane owner review requested) Better name: Career_MyTeamDriverCounterOffersVM_Build (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.my_team_driver_counter_offers_names",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 04 00 00 C5 F8 29 B4 24 70 04 00 00 48 89 CE 48 8D 99 70 02 00 00",
+  "match": "0x142343bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142343bf0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamDriverCounterOffers_Names"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142343bf0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142343bf0.c;str:\"my_team_driver_counter_offers_forename\"",
+   "notes": "V10152 Names are set, but it is the whole counter-offers screen builder (selected_contract_index, current_contract, contract_option_%d, focus_contracts, quote via BuildDriverContractQuote), not just names."
+  }
+ ],
+ "proofs": []
+}

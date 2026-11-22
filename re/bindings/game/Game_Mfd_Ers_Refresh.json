@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_Ers_Refresh",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141790a20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Mfd_Ers_Refresh(void *ers_sub, uint8_t veh)",
+  "evidence": "decomp:re/decomp/141790a20.c;doc:re/db/subsystems/game.md;xref:0x1415361ba,0x141790622",
+  "notes": "(mfd, car idx): +0x1d0 = idx; vehicle = component 0x146ce8b00 of [[+0xb8]+0x28][idx] -> +0x58 -> +0x1d8. Two bools: session [[+0xc8]+0x1a8]+4 != 0x12 and [+0xd8]+0xd6+idx*0x14 ^ 1, both cleared without ERS block [veh+0x5a8]; with it the mode mask from [+0xc0]+0x38..+0x44+idx*0x20 -> 0x141791140, +0x1e4 = [ers]+0x1a6c != 5. Bools written to nodes +0x50/+0x30. Callers: jmp 0x1415361ba, call 0x141790622. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.mfd_ers_refresh",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 88 91 D0 01 00 00",
+  "match": "0x141790a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141790a20",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_Ers_Refresh"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141790a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141790a20.c;xref:0x1415361ba",
+   "notes": "V4896 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

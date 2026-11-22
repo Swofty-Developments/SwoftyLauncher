@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamAttributeSet_GetValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141216a90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float Game_MyTeamAttributeSet_GetValue(void *attr_set, uint32_t team_key, void *attr_id)",
+  "evidence": "decomp:re/decomp/141216a90.c;xref:0x140f813a3;xref:0x140f81575;xref:0x1423e6a0a",
+  "notes": "myteam-g2: Finds the team entry in attr_set+0x2c8..+0x2d0 (0x30 stride, id short +2 / kind byte +0), takes the refcounted attribute container (+0x20/+0x28) and returns the clamped float value of the attribute whose id equals attr_id (value at attr+0x78, clamped to def min/max at def+0xc/+0x10). Same structure written by Career_Bank_OnBankAccountValidTransactionMessage. Hook: read any My Team stat here. CORRECTION(V9016): Team entry lookup (stride 0x30, short +2 / byte +0) and attribute lookup by id via FUN_1409ed390 are right, returns 0 if not found or attr id null. Correction: disassembly of FUN_1409ed390 shows the returned value is clamp(float at attr+0x7c, def min/max at def+0xc/+0x10 with presence flags +0x14/+0x15), not attr+0x78; +0x78 is the field the valid-transaction handler writes, +0x7c is the effective one."
+ },
+ "signature": {
+  "id": "game.my_team_attribute_set_get_value",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 4D 85 C0",
+  "match": "0x141216a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141216a90",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamAttributeSet_GetValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x141216a90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141216a90.c;xref:0x140f813a3;xref:0x140f81575",
+   "notes": "V9016 Team entry lookup (stride 0x30, short +2 / byte +0) and attribute lookup by id via FUN_1409ed390 are right, returns 0 if not found or attr id null. Correction: disassembly of FUN_1409ed390 shows the returned value is clamp(float at attr+0x7c, def min/max at def+0xc/+0x10 with presence flags +0x14/+0x15), not attr+0x78; +0x78 is the field the valid-transaction handler writes, +0x7c is the effective one."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141216a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141216a90.c;xref:0x140f813a3",
+   "notes": "V9673 Team entry (stride 0x30, short +2 / byte +0) then attribute lookup via 1409ed390; clamped value with +0x7c is consistent with other readers (not verifiable in this file)."
+  }
+ ],
+ "proofs": []
+}

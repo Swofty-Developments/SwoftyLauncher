@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_NextFrameUploadSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d75270",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d75270.c;xref:0x143af8fe1,0x143b28c78,0x143b28c90,0x143b28ca8,0x143b28cc0,0x143b28cd8",
+  "notes": "Advances slot +0x70 mod 3 of a 0x90 triple-buffer; with per-frame mapping (+0x89) maps the slot buffer [+0x10+slot*8] via 0x1439ad480 (resource vcall +0x40 = Map) into the slot desc +0x28+slot*0x18, success to +0x88; else uses +0x88 (error 0x16); returns status. Callers Render_Particles_ReadbackVertexBuffer 0x143af8fe1, 0x143b21800 (0x143b28c78), 0x1442e1c40 (0x1442e2bf4). (lane owner review requested) Better name: Render_Gfx2TripleBuffer_AdvanceAndMap (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_next_frame_upload_slot",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CF 8B 41 70 89 C1 FF",
+  "match": "0x143d75270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d75270",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_NextFrameUploadSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d75270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d75270.c;xref:0x143af8fe1",
+   "notes": "V7923 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

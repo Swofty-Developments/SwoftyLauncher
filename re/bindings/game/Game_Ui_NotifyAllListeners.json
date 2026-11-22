@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ui_NotifyAllListeners",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bfc50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442bfc50.c;xref:0x1423592f8,0x1437f0146,0x1437f02ac,0x1437f03af,0x1437f26ff,0x1437f2a68,0x1437f2b48,0x1437f34f1,0x1437f84cb,0x1437f910e,0x1437f91d1,0x1437f99cd",
+  "notes": "Read in full (reg, event): key = event+0x18. Key 0 with event+0x14 == 0: calls vcall +0x58(listener, event) on every non-null 16-byte entry of the sparse map +0xb0/+0xb8. Key != 0: hash lookup (mult +0xa8, mask +0xc8) and calls vcall +0x58 only on the listener with that key. Returns 0. Renamed: not always all listeners. Xref list truncated. (lane owner review requested) Better name: Game_Ui_DispatchToListeners (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_notify_all_listeners",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D6 48 89 C8 8B 52",
+  "match": "0x1442bfc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bfc50",
+  "kind": "func_start",
+  "names": [
+   "Game_Ui_NotifyAllListeners"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1442bfc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442bfc50.c;xref:0x1423592f8",
+   "notes": "V7656 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

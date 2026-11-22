@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RenderBadge_ResizeTextureList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141e6eb70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141e6eb70.c;xref:0x141d71645,0x141d7739b,0x141e6ee24,0x141e6ee6a,0x141e6f3ba,0x141e6f3f6,0x141e6f407,0x141e6f6e7",
+  "notes": "Pooled list reserve(list, capacity, max): shrink releases the 3 refcounted handles (+0x10,+0x18,+0x28) of trailing nodes and, for capacity>0, rebuilds into a temp list via 0x141e6f560 and swaps; capacity 0 frees chunks (0x141e6f830); grow allocates a 0x28 chunk + n*0x30 nodes linked to the free list. Capacity [7], max [8]; returns 0 or 0xc/0x16/1 (trace ring). Callers 0x141d715c0, LoadTexture, self. (lane owner review requested) Better name: Game_RenderBadge_TextureList_Reserve (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.render_badge_insert_texture_slot",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 96 A0 03 00 00 48 85 D2 74 0C 48 8D 8E",
+  "match": "0x141d71645",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141e6eb70",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderBadge_ResizeTextureList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x141e6eb70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141e6eb70.c;xref:0x141d71645",
+   "notes": "V8093 Better name Game_RenderBadge_ResizeTextureList: std::list style resize (counters +0x30/+0x38, same template as Ne_PoolList_Resize) releasing refcounted short at obj+4; resize not insert"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WeeklyGp_OnEnterRaceResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142767250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142767250.c;pat:log-channel-WEEKLY_GP;xref:0x14258ebc9",
+  "notes": "Read in full: error +0x10 or +0x28 -> 0x1432d4d00(this+0x98, err+8) (+0x28 also 0x140bf9310 on the session component); else participant +0x40: no list -> 'EnterRace completed with no qualifying results' and clears [this+0x98]+0x218; else logs each 0x38-byte entry ('EnterRace returned participant %s, qualifying time...') and copies them to [this+0x98]+0x210; clears +0x110..+0x150. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.weekly_gp_on_enter_race_result",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8B 42 18",
+  "match": "0x142767250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142767250",
+  "kind": "func_start",
+  "names": [
+   "Game_WeeklyGp_OnEnterRaceResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142767250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142767250.c;xref:0x14258ebc9",
+   "notes": "V5109 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

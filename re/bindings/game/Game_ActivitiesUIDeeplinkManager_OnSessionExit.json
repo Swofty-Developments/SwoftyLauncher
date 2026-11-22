@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_OnSessionExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143865780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143865780.c;str:s_ActivitiesUIDeeplinkManager_OnSessionExit;xref:0x14587e4d0",
+  "notes": "Virtual onSessionExit (vtable cell 0x14587e4d0, own pretty string). PlayGo/trial gate; if activity +0x60 == 5 and started (+0x61) calls 0x14386b610. If exit target ((+0x30)+0x40)+0x1fc is 4 or 1: logs 'go to frontend reset activity', +0x60 = 10, clears presence ((+0x30)+0x10f8)+0x18 and calls vslot +0x38. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_on_session_exit",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 80 79 63 00 74 6B 80 3D",
+  "match": "0x143865780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143865780",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_OnSessionExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143865780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143865780.c",
+   "notes": "V6340 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteFastestInPracticePoleAndWin",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14371f1f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14371f1f0.c;pat:log-channel-STATEVENT;xref:0x140b8ae65",
+  "notes": "Providers this+8..+0x10; 5 entries 1.0 type 0: FastestInPracticePoleAndWin, .GameplayModeId(+8), x IsInTeamCareer(+0x30) / AIDifficulty(arg3). Caller 0x140b8a6b0. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_fastest_in_practice_pole_and_win",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 06 00 00 44 89 C7",
+  "match": "0x14371f1f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14371f1f0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteFastestInPracticePoleAndWin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14371f1f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14371f1f0.c;xref:0x140b8ae65",
+   "notes": "V6166 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

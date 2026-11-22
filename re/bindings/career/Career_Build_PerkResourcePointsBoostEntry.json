@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_PerkResourcePointsBoostEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14169c060",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *entry)",
+  "evidence": "decomp:re/decomp/14169c060.c;xref:0x14169ef9e;xref:0x14169eff6",
+  "notes": "myteam-g1: Owner perk entry lng_perk_resource_points_boost with locked_low_acclaim / unlocked_at_acclaim."
+ },
+ "signature": {
+  "id": "career.build_perk_resource_points_boost_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 44 88 4C 24 4F",
+  "match": "0x14169c060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14169c060",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_PerkResourcePointsBoostEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14169c060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14169c060.c;xref:0x14169ef9e;xref:0x14169eff6",
+   "notes": "V9748 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

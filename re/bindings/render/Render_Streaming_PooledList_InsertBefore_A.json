@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Streaming_PooledList_InsertBefore_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143aca640",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143aca640.c;xref:0x143abdd3e,0x143abe850,0x143abeb11,0x143abfa4c",
+  "notes": "Pooled linked-list insert-before: when count +0x30 == capacity +0x38 grows the pool 1.5x up to max +0x40 (0x143abcbd0, error 0xc if full) and re-finds the position by index; takes a node from the free list +0x18, copies a 4-qword+u16 payload from param_3 and links it before param_2. A real function, not a funclet. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.streaming_process_request_catch_cleanup_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 89 C5 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 18 66 66 66",
+  "match": "0x143abdd3e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143aca640",
+  "kind": "func_start",
+  "names": [
+   "Render_Streaming_PooledList_InsertBefore_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143aca640",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143aca640.c;xref:0x143abdd3e",
+   "notes": "V8269 Render_Streaming_PooledList_InsertBefore_A - pooled list insert-before returning 0xc ENOMEM, real function not catch funclet"
+  }
+ ],
+ "proofs": []
+}

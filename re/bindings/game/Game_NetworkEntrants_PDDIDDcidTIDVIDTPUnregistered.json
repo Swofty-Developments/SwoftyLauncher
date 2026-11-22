@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_PDDIDDcidTIDVIDTPUnregistered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14310ecb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14310ecb0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x14310c649,0x143068798,0x1430ee38e",
+  "notes": "Sets the dirty flag [[this+0x28]+0x4f8]+0x2f8; logs \"PD..TID..VID..TP - Unregistered Entrant -\"; removes the 0x88-byte entrant from the entrants vector, calls 0x1430adae0 and sends an unregister message via 0x14402e500. (lane owner review requested) Better name: Game_NetworkEntrants_UnregisterEntrant (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_entrants_pddid_dcid_tidvidtp_unregistered",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 48 89 D7 48 89 CE",
+  "match": "0x14310ecb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14310ecb0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_PDDIDDcidTIDVIDTPUnregistered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14310ecb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14310ecb0.c;xref:0x143068798",
+   "notes": "V5753 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

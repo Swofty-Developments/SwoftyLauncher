@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreAllocation_CachePreferredChoices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bca760",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bca760.c;pat:log-channel-TYRES/V;xref:0x140bcad95,0x1498d1565",
+  "notes": "TyreAllocationComponent cachePreferredAllocationChoices() (entry log TYRES/V). Unless 0x14077c790(this+0x278, 1): for each driver entry this+0x2b0..+0x2b8 (stride 0x10, ptr +8 -> {u32 id, u32 preset}) updates the matching {u16 key, u32 preset} cell of the cache vector this+0x328..+0x338, else (preset hi16 != 0x3fff and driver in [this+0x278]+0x2e0 list, stride 0x88, flag +0x4b & 0x10) appends it; logs 'driver %d: (cached) preset %s' (names 0x14568e838). Callers 0x140bcad95, 0x1498d1565. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_allocation_cache_preferred_choices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8B 89 78 02 00 00",
+  "match": "0x140bca760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bca760",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreAllocation_CachePreferredChoices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bca760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bca760.c",
+   "notes": "V4484 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

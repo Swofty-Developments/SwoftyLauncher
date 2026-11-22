@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsStore_FindOption",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142b5dfd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_OptionsStore_FindOption(void *map, const char **name)",
+  "evidence": "decomp:re/decomp/142b5dfd0.c;decomp:re/decomp/14315d880.c;xref:0x14315dac8;xref:0x1407a4860,0x1414a7c50",
+  "notes": "FNV-1a 64 hash map lookup by option name (map = *(g_Game_OptionsStore)+0x270). Returns the entry index; entries are 0x10 bytes from map+0x18 (store+0x288), the option object at entry+8; a miss returns the index of the end (store+0x290). Callers: census steam 0x2b5dfd0. | (map, const char **key): robin-hood map find with FNV-1a C-string hash * seed map+0x10; 16-byte slots map+0x18, meta +0x20, mask +0x30; returns slot index. Callers: benchmark session settings, session HUD enter, settings view models. | #589 proposed the name Ne_RobinHoodMap_Str_FindIndex | #589 proposed the subsystem core"
+ },
+ "signature": {
+  "id": "game.options_store_lookup",
+  "section": ".xtls",
+  "pattern": "48 8B 35 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 40 48 8D 8E 70 02 00 00 48 8D 54 24 40 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 86 88 02 00 00 48 3B 86 90 02 00 00 0F 84 EB 00 00 00",
+  "match": "0x14315daa9",
+  "anchor": "0x20",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x1f"
+  },
+  "target": "0x142b5dfd0",
+  "kind": "call",
+  "names": [
+   "Game_OptionsStore_FindOption"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "mp-carcat",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/car_category.cpp",
+   "native/src/core/boxes/box_options.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "verify-mp-carcat",
+   "kind": "func",
+   "item": "Game_OptionsStore_FindOption",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142b5dfd0.c;xref:0x14315dac8;sig:game.options_store_lookup",
+   "notes": "V1159 Re-checked: FNV-1a 64 of *name, returns an index; the caller shifts it by 4 and adds store+0x288, comparing with store+0x290. Same-session verify pass."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x142b5dfd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142b5dfd0.c;xref:0x1407a49e6,0x1407a7dc3",
+   "notes": "V3466 FNV-1a over C string * seed +0x10, 16B slots +0x18, meta +0x20, mask +0x30, strcmp 0x14535d850; 431 refs incl benchmark/HUD callers"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_OptionsStore_FindOption",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142b5dfd0-0x142b5e116,0x14535d850-0x14535d8b6,0x14315da96-0x14315dae5,0x1407a49b5-0x1407a4a03,0x1414a8e7c-0x1414a8ed3,0x140c52576-0x140c52599,1.0.145 0x142b60560-0x142b606a6;xref:0x142b5dfed,0x142b5e02f,0x142b5e0a7,0x142b5e0bc,0x142b5e0f2,0x142b5e100,0x14315dac8,0x1407a49e6,0x1414a8eba,0x152be3793",
+   "notes": "V100051 Blind: agree. rcx=map, rdx=address of a const char* (0x142b5dfed). FNV-1a 64 (0x142b5dfe3/dffd), *[map+0x10], ^>>33; info=[+0x40]+((h&0x1f)>>[+0x44]), idx=(h>>5)&[+0x30]; robin-hood probe unrolled x2 over 16-byte slots [+0x18] and info bytes [+0x20], null slot keys skipped, strcmp 0x14535d850. Hit returns the slot index; miss returns ([+0x20]-[+0x18])>>4 = end, or 0 when mask==0 (0x142b5e100). Callers add idx*16 to store+0x288, cmp store+0x290, read entry+8. Census row 423/235/.data1:60,.xtls:363/8/4/4/0/0/0 matches census.py. 120 sites load g_Game_OptionsStore 0x146079258; others pass +0x270 of member-held pointers (0x1414a8e95). 1.0.145 twin 0x142b60560 identical."
+  }
+ ],
+ "proofs": []
+}

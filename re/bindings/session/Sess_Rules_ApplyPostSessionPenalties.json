@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_ApplyPostSessionPenalties",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143575170",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/143575170.c;xref:0x1411d57b3,0x1411d59c1,0x1411d61c9",
+  "notes": "Log channel RULES: '%s' | '%s: applied post session penalties'"
+ },
+ "signature": {
+  "id": "session.rules_apply_post_session_penalties",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 C1 00 00 00",
+  "match": "0x143575170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143575170",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_ApplyPostSessionPenalties"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_Rules_ApplyPostSessionPenalties",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143575170.c;xref:0x1411d57b3",
+   "notes": "V1844 RULES '%s' (arg applyRaceGridPenaltiesChange) and '%s: applied post session penalties'"
+  }
+ ],
+ "proofs": []
+}

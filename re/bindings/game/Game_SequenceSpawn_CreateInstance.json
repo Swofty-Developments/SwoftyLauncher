@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SequenceSpawn_CreateInstance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14366d1a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14366d1a0.c;pat:log-message-method;xref:0x145857728",
+  "notes": "Vtable cell 0x145857728. Needs [[+0x90]+0x28] (else error 0x16 to the error ring); logs SequenceSpawn \"createInstance [%s]\" (string table entry [res+0x38]); res+8 refcount +1; allocates a 0x78 instance (0x143660b60) into +0x88; if +0x40 set, appends a 0x30 record (from [+0x40]+0x30/+0x38, +0x98/+0xa0, 0x146100750 defaults) to [[+0x40]+0x20]+0x88, sets its +0xc0 and pushes this into [+0x28]+0x28; returns 0 or 2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.sequence_spawn_create_instance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 8B 81 90 00 00 00",
+  "match": "0x14366d1a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14366d1a0",
+  "kind": "func_start",
+  "names": [
+   "Game_SequenceSpawn_CreateInstance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14366d1a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14366d1a0.c",
+   "notes": "V6118 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

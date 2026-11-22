@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_IgnoringBecauseTaskAlready",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432dc910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432dc910.c;pat:log-channel-F1OS-TASKSYSTEM;xref:0x1432d888c,0x1432d9e1e,0x1432dbea2",
+  "notes": "Logs '[%s] creating error %s : %s' and stores the error on the task, or '[%s] ignoring error %s because the task has already an error %s' when one exists (F1OS-TASKSYSTEM). Callers include 0x1432d8820, 0x1432d9780 (0x1432d9e1e), 0x143369ea0, 0x14336b030. (lane owner review requested) Better name: Game_F1osTasksystem_SetTaskError (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_ignoring_because_task_already",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 28 48 8D 6C 24 20 4D 89 CE",
+  "match": "0x1432dc910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432dc910",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_IgnoringBecauseTaskAlready"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432dc910",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1432dc910.c;xref:0x1432d888d",
+   "notes": "V5971 Better name Game_F1osTasksystem_RaiseTaskError: logs both ignoring-error-because-task-already-has-error and creating error branches (7 callers); name covers one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1432dc910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432dc910.c;xref:0x1432d888c",
+   "notes": "V7059 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

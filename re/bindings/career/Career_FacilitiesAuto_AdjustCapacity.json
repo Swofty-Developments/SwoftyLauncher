@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_FacilitiesAuto_AdjustCapacity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f82580",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140f82580.c;pat:log-channel-FACILITIES_AUTO;xref:0x1456af020",
+  "notes": "Facilities cost-cap adjust (vtable cell 0x1456af020): logs 'Team %s is tracking %s %.2f of the cost cap', compares projection (0x140f8f690) and team attributes (0x140f88c60, 0x140f88ed0), adjusts capacity via 0x140f890e0 / 0x140f893b0 with ( UP )/(DOWN) FACILITIES_AUTO logs. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.facilities_auto_adjust_capacity",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 C5 78 29 84 24 C0 01 00 00 C5 F8 29 BC 24 B0 01 00 00 C5 F8 29 B4 24 A0 01 00 00 48 83 B9 C8 02 00 00 00",
+  "match": "0x140f82580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f82580",
+  "kind": "func_start",
+  "names": [
+   "Career_FacilitiesAuto_AdjustCapacity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140f82580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f82580.c",
+   "notes": "V4790 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140f82580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f82580.c",
+   "notes": "V9103 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

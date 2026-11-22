@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SkinnedActor_PostBuild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401cf780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401cf780.c;pat:log-message-cxx;xref:0x1455e5bb0",
+  "notes": "Vtable cell 0x1455e5bb0. Logs, vcall +0x78(this,*(this+0x4c)); once (flag +0x44 bit 8): 0x1401f47e0(this+0x240) and vcall +0xa8 on each component +0x68..+0x70, then sets the bit; returns true only the first time. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.skinned_actor_post_build",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 70",
+  "match": "0x1401cf780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401cf780",
+  "kind": "func_start",
+  "names": [
+   "Game_SkinnedActor_PostBuild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401cf780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401cf780.c",
+   "notes": "V4368 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

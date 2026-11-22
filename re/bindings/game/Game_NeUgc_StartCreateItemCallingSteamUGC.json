@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NeUgc_StartCreateItemCallingSteamUGC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14415f630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14415f630.c;pat:log-channel-NeUgc;xref:0x14415ca33,0x144160473",
+  "notes": "Callers jmp 0x14415ca33, call 0x144160473. SteamUGC null -> error 0xe, +0x408 = 1, state 3. Else state 1 (CreateItem_WaitingForResult), SteamUGC vslot +0x148 CreateItem(appId,0), registers the call result at +0x560 with handler 0x14415fc00 (+0x570 handle, +0x578 this); handle 0 -> state 3. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ne_ugc_start_create_item_calling_steam_ugc",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8D 0D",
+  "match": "0x14415f630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14415f630",
+  "kind": "func_start",
+  "names": [
+   "Game_NeUgc_StartCreateItemCallingSteamUGC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14415f630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14415f630.c;xref:0x14415ca33",
+   "notes": "V6562 size=1480; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

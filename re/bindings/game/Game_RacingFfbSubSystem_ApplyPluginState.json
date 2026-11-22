@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingFfbSubSystem_ApplyPluginState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f83f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f83f0.c;pat:log-channel-FFB_DEBUG;xref:0x145c00828",
+  "notes": "Virtual (vt cell 0x145c00828): if !+0x2c9: lazily creates the 'RacingFFBSubSystem' worker (+0x1c8, 0x14391d280 stack 0xc000, callback 0x1446fab00) and global 0x146ce83e0; when state +0x2c0 != applied +0x2c4 logs 'applying plugin state change %d -> %d', 0 -> 0x1446f8640 (stop effects), 1 -> 0x1446f8780 (resume), then +0x2c4 = +0x2c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.racing_ffb_sub_system_apply_plugin_state",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 80 B9 C9 02 00 00 00",
+  "match": "0x1446f83f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f83f0",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingFfbSubSystem_ApplyPluginState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f83f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f83f0.c",
+   "notes": "V6857 Plugin state change strings confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

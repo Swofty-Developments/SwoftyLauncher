@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXSeasonLobbyResettingCurrent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143067d40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143067d40.c;pat:log-channel-NETWORK;xref:0x14305bbda,0x143065572,0x1430a551b,0x140bb4d38,0x1430957b0",
+  "notes": "Callers incl. 0x14305af60, 0x143065250, 0x1430a5170. (this, reset): returns if role +8 > 1 or +0x765 already set; logs cxx=void network::GameSessionSeasonDocument::openDocument(NEbool), sets +0x765=1; with reset resets the current lobby session (0x140af2a10) or 0x14309d6a0/0x14309b9f0; opens/closes the entrants document (NETWORK-ENTRANTS); sends the open message (0x14402e500) and sets +0x766/+0x768. (lane owner review requested) Better name: Game_GameSessionSeasonDocument_OpenDocument (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_mox_season_lobby_resetting_current",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 83 79 08 01",
+  "match": "0x143067d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143067d40",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXSeasonLobbyResettingCurrent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143067d40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143067d40.c;xref:0x140bb4d39",
+   "notes": "V5543 536 lines: GameSessionSeasonDocument::openDocument(bool) + entrants document open/close + lobby reset. Better: Game_GameSessionSeasonDocument_OpenDocument"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143067d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143067d40.c;xref:0x140bb4d38",
+   "notes": "V6945 536 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

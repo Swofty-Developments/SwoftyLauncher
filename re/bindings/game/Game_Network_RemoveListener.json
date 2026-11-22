@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_RemoveListener",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430c81f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430c81f0.c;pat:log-message-method;xref:0x1421d4693",
+  "notes": "Caller 0x1421d45a0. Logs 'removeListener(%p).', finds the pointer in the vector [+0x30,+0x38), erases it with memmove (0x1453784c0) and decrements the end at +0x38. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_remove_listener",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 77",
+  "match": "0x1430c81f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430c81f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_RemoveListener"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430c81f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430c81f0.c;xref:0x1421d4693",
+   "notes": "V5358 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

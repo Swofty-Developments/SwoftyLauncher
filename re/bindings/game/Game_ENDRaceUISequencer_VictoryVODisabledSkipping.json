@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ENDRaceUISequencer_VictoryVODisabledSkipping",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea4410",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ea4410.c;pat:log-channel-END_RACE_UI_SEQUENCER;xref:0x1457f0078",
+  "notes": "Update(dt): timer +0x78 -= dt; state machine cur +0x58 / next +0x59, logs END_RACE_UI_SEQUENCER 'Changed state: %s to %s'. 0 victory VO enabled? (else 'Victory VO is disabled. Skipping'), 1 play victory VO (bus 0x14565e950 id 299), 2 wait playback, 3 -> 0x142ea5630 engineer VO or 9, 4..10 timed UI msgs (0x1457f1970.. 'Driver of the day', ids 0x12d/0x115), 0xb..0xe finish. Ref: vtable cell. Old name was a log fragment. (lane owner review requested) Better name: Game_EndRaceUiSequencer_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.end_race_ui_sequencer_victory_vo_disabled_skipping",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 7C 24 70 C5 F9 29 74 24 60 48 89 CE C5 FB 10 41 78",
+  "match": "0x142ea4410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea4410",
+  "kind": "func_start",
+  "names": [
+   "Game_ENDRaceUISequencer_VictoryVODisabledSkipping"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea4410",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142ea4410.c;xref:0x142ea3351",
+   "notes": "V5547 688-line EndRaceUiSequencer state update (state changes, victory VO, driver of the day); log is one branch; better Game_EndRaceUiSequencer_Update"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142ea4410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea4410.c;xref:0x142ea3351",
+   "notes": "V6906 688 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

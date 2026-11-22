@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_BuildTypeAndPlaytestIDConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406c2600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406c2600.c;pat:log-channel--;xref:0x14708b8c2",
+  "notes": "(db, overwrite): reads string keys BuildTypeAndPlaytestID.buildType / playtestID / hostUser (0x143a44700, 64-byte buffer) into global [0x145f8d6c0]+0x50/+0x70/+0x90 (32 bytes each) when overwrite or the field is empty; chars outside 0x20..0x7e and the quote/apostrophe/']' characters become '_'. Caller 0x14708b8c2 (0x14708b830). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_build_type_and_playtest_id_config",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 78 89 D3 48 89 CE 48 8D 44 24 38",
+  "match": "0x1406c2600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406c2600",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_BuildTypeAndPlaytestIDConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406c2600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406c2600.c;xref:0x708b8c2",
+   "notes": "V4745 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

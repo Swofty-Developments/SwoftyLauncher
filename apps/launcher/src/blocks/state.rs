@@ -9,8 +9,8 @@ use serde_json::Value;
 use swofty_core::view::Field;
 
 use super::select::*;
-use crate::colour::ColourPicker;
-use crate::scroll::SmoothScroll;
+use crate::ui::colour_picker::ColourPicker;
+use crate::ui::scroll::SmoothScroll;
 
 pub(crate) enum Reset {
     No,
@@ -88,6 +88,8 @@ pub(crate) struct ColumnDrag {
 
 #[derive(Default)]
 pub(crate) struct Blocks {
+    pub(super) image_data: RefCell<super::image_data::Images>,
+    pub(crate) charts: HashMap<String, (u64, std::sync::Arc<super::chart::Scene>)>,
     pub(crate) forms: HashMap<String, FormSlot>,
     pub(crate) searches: HashMap<String, SearchSlot>,
     pub(crate) sorts: HashMap<String, (String, bool)>,

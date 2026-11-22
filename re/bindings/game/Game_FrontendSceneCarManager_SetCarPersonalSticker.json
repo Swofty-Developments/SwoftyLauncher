@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCarManager_SetCarPersonalSticker",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428b22f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428b22f0.c;pat:log-message-method;xref:0x1428c3e63,0x1428e6e8d",
+  "notes": "(carMgr,carId*,sticker). Logs 'setCarPersonalSticker()'; map lookup +0x168 (miss logged); spawned car (+0x94==2) with decal object +0x7268: logs 'Setting Personal Sticker', gets sticker component 0x143f9b3c0(..,0x1460798c0), stores optional id at desc+0x6880..+0x6890, applies via 0x142a9a040; on change pushes a render-param update via 0x146c621e0. Callers 0x1428c3ba0, 0x1428e6c30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_car_manager_set_car_personal_sticker",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 4C 89 C6 48 89 D3",
+  "match": "0x1428b22f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428b22f0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCarManager_SetCarPersonalSticker"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428b22f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428b22f0.c;xref:0x1428c3e63",
+   "notes": "V5123 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

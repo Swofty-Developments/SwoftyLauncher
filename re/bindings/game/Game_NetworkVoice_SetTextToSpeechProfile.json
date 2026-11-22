@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_SetTextToSpeechProfile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403f970",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14403f970.c;pat:log-message-method;xref:0x14403d5e5",
+  "notes": "Sets the PlayFab TTS profile; on failure logs '%s: Failed to set TTS profile: %hs' with its own name setTextToSpeechProfile. Called from Game_NetworkVoice_HandlePlayFabPartyStateChange. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_voice_set_text_to_speech_profile",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 3D ?? ?? ?? ?? 00 0F 84",
+  "match": "0x14403f970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403f970",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_SetTextToSpeechProfile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403f970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403f970.c;xref:0x143fd2ce6",
+   "notes": "V6447 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_RequestLoadThumbnails",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4d040",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d4d040.c;xref:0x142d4ac53,0x142d4b786",
+  "notes": "Called from Sess_Loader_Update and Game_StreamingAssetLoadTask_Update (param_2 flag): sets ThumbnailSystem reason 3 (+0x140 or 8 = session loading) and queues thumbnails via 0x142e31cf0 / 0x140ac6b30. Reason 3 = session loading. Callers: census steam 0x2d4d040."
+ },
+ "signature": {
+  "id": "session.loader_request_load_thumbnails",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 88 54 24 57",
+  "match": "0x142d4d040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d4d040",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_RequestLoadThumbnails"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Sess_Loader_RequestLoadThumbnails",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/42d4d040.c;xref:None",
+   "notes": "V3241 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

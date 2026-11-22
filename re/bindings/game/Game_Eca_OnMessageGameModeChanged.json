@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Eca_OnMessageGameModeChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14244fe70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Eca_OnMessageGameModeChanged(void *self, void *msg)",
+  "evidence": "str:s_cfg_GameEcaEnabled;decomp:re/decomp/14244fe70.c;xref:0x14244e36c,0x14244ec0b,0x14244ff26,0x14244ff27",
+  "notes": "Bus-message handler: its address is stored with self into a handler record together with MessageGameModeChanged at 0x14244e36c (in 0x14244e230) and 0x14244ec0b (in 0x14244ebf0, guarded by g_Game_MessageBus). self+0x118 = self+0x110; msg+0x10 = game-mode object; if absent or its type (vt+0x28, chain walk to k_Ne_TypeRoot 0x146129ca0) does not match, sets self+0x60 = 0. Else reads Game.ecaEnabled via Ne_Get_SettingBool on the global engine config object 0x14604e8d8 (function-static, also used by the config.xml loader functions 0x1443c....), default 1, into self+0x60, then ANDs it with: 1 if the mode has the career component (k_Career_CareerComponentDesc 0x14605b128 via [mode+0x1030] vt+0x10), otherwise not 0x14077c790(mode,1). Returns 0. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.eca_on_message_game_mode_changed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 81 10 01 00 00",
+  "match": "0x14244fe70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14244fe70",
+  "kind": "func_start",
+  "names": [
+   "Game_Eca_OnMessageGameModeChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x14244fe70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14244fe70.c;xref:0x14244e36c,0x14244ec0b",
+   "notes": "V9358 Delegate subscribed to bus message 'MessageGameModeChanged' (Ne_Subscribe_BusMessage at 0x14244e387) and unsubscribed in 0x14244ebf0; clears a field, reads Game.ecaEnabled (default true) into self+0x60, then ANDs it with checks on the new game mode object (msg+0x10: class test and mode query); returns 0; arity 2 matches."
+  }
+ ],
+ "proofs": []
+}

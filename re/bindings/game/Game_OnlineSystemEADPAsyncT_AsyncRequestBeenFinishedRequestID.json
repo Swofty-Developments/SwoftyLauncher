@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineSystemEADPAsyncT_AsyncRequestBeenFinishedRequestID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432d2330",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432d2330.c;pat:log-channel-OnlineSystemEADPAsyncTask;xref:0x1432d216f",
+  "notes": "Callback (this, requestId, err): logs 'Async request has been finished: requestID = %I64u, err = %d' and under lock [this+0x138] stores err at this+0x168. Address taken (lea) in Game_OnlineSystemEADPAsyncTask_OnStart. (lane owner review requested) Better name: Game_OnlineSystemEADPAsyncTask_OnAsyncRequestFinishedId (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.online_system_eadp_async_t_async_request_been_finished_request_id",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 44 89 C6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 70",
+  "match": "0x1432d2330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432d2330",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineSystemEADPAsyncT_AsyncRequestBeenFinishedRequestID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432d2330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432d2330.c;xref:0x1432d2172",
+   "notes": "V5961 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

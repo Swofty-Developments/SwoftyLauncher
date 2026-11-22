@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RollingStartSystem_OnMessagePlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f11ad0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f11ad0.c;pat:log-message-cxx;xref:0x142f0dab4,0x142f0e910",
+  "notes": "Bus handler (lea'd at 0x142f0dab4 and 0x142f0e910). Logs its name; +0x490 = Sess_Get_PlayerVehicleIndex(0x146044988, 0); only if msg+0x11: calls 0x142cf3980 on every value of the set +0x4b0 (count +0x4c0) and Ne_RobinHoodMap_ClearDestroy(+0x498); returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.rolling_start_system_on_message_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 6A",
+  "match": "0x142f11ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f11ad0",
+  "kind": "func_start",
+  "names": [
+   "Game_RollingStartSystem_OnMessagePlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f11ad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f11ad0.c;xref:0x142f0dab6",
+   "notes": "V5571 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

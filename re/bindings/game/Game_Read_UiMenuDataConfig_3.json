@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_UiMenuDataConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d9bf60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d9bf60.c;pat:log-channel--;xref:0x142dcabb0,0x142dcb53b,0x149eeb9b6,0x14f040b6b,0x14f04228b",
+  "notes": "Ctor: base 0x142d74480 (vtable 0x1457d31d0) then vtable 0x1457e3c70; registration with 0x146c621e0 when device 0x14618caa8 exists; VM bindings ui_menu_data.in_replay +0xee0, replay_control_mode +0xf00 (string table 0x1457e7b20 by +0xed8), show_event_mode_info +0xf20. (lane owner review requested) Better name: Game_ReplayMenuUi_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_ui_menu_data_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 CE E8",
+  "match": "0x142d9bf60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d9bf60",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_UiMenuDataConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d9bf60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d9bf60.c;xref:0x142dcabb0",
+   "notes": "V5437 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

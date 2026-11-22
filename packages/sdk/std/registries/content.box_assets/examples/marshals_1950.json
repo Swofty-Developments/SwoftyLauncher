@@ -1,0 +1,14 @@
+{
+  "content.box_assets": {
+    "marshals_1950": {
+      "package": "vmknolle.season-1950/f5_1950",
+      "kind": "marshals",
+      "textures": "box_assets/marshals_1950",
+      "resources": [
+        "eaid://character_package/kitpart_assets/male/upperbody/tabard_marshal_01/",
+        "eaid://character_package_shared/kitpart_assets/male/upperbody/tabard_marshal_01/",
+        "eaid://character_package_shared/kitpart_assets/male/upperbody/racesuit_01/"
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_Trophies_ParseSeasonLocTag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434ef600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434ef600.c;xref:0x145846420",
+  "notes": "JSON object reader (code pointer cell 0x145846420): scans the members (stride 0x20) for 'seasonId' (8 chars); found -> this+8 = byte value when the value flag 0x40 is set, then reads string 'locTag' into this+0x10 via 0x144435020. Missing -> logs JSON 'Unable to find value for %s in JSON'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.trophies_parse_season_loc_tag",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D6 49 89 C8 49 BC",
+  "match": "0x1434ef600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434ef600",
+  "kind": "func_start",
+  "names": [
+   "Game_Trophies_ParseSeasonLocTag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

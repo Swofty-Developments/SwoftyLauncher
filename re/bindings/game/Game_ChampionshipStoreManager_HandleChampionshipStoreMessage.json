@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChampionshipStoreManager_HandleChampionshipStoreMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143037b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143037b80.c;pat:log-message-cxx;xref:0x143036f83",
+  "notes": "Own log; bound by lea 0x143036f83. Client (state +8 > 1): msg GUID +0x18..+0x28 -> +0x48..+0x58, msg+0x40 -> +0x71/+0x72, searches saves [+0x80]+0x228..+0x230 by GUID (+0x220..+0x230); refuses unnamed or newer saves (msg+0x38..+0x3a vs save +0x344/+0x348), else resumes: +0x60 = save, +0x18 = name index, +0x28..+0x38 = GUID. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.championship_store_manager_handle_championship_store_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 57 B8 5B 01 00 00",
+  "match": "0x143037b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143037b80",
+  "kind": "func_start",
+  "names": [
+   "Game_ChampionshipStoreManager_HandleChampionshipStoreMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x143037b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143037b80.c;xref:0x143036f85",
+   "notes": "V5726 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

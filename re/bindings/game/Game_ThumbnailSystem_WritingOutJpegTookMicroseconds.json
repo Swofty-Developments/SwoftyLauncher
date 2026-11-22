@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_WritingOutJpegTookMicroseconds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14379c250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14379c250.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x145872198",
+  "notes": "vtable cell 0x145872198. If +0x238: CPU copy 'BackBuffer CPU Copy', map ('ScreenShot-Start'), RGBA buffer w*4*h, overlays 0x14379d710. Path +0xa0: libpng 1.6.37 RGBA8 write, log PNG time. +0x1a8: RGB convert, JPEG encode (0x1449d4404(.,0x5f,1) likely quality 95), callback +0x68(+0x70,buf) kept in +0x1b0. Thumbnail request reason 9 clears bit 2 of (+0x48)+0x141 or logs rejected; +0x239=1 ok. (lane owner review requested) Better name: Game_Screenshot_CaptureBackBufferWritePngJpeg (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.thumbnail_system_writing_out_jpeg_took_microseconds",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 06 00 00 C5 79 7F 94 24 10 06 00 00",
+  "match": "0x14379c250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14379c250",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_WritingOutJpegTookMicroseconds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14379c250",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14379c250.c",
+   "notes": "V6277 5307-byte function: BackBuffer CPU copy, ScreenShot-Start, thumbnail generation request/disabled rejection, JPEG and PNG write with timing logs; not only JPEG timing. Better name Game_ThumbnailSystem_RequestAndWriteScreenshot; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14379c250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14379c250.c",
+   "notes": "V7109 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

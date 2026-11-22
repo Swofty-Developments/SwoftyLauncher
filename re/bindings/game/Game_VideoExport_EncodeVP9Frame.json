@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_EncodeVP9Frame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444b2c30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444b2c30.c;pat:log-message-method;xref:0x142bd35a3,0x1444b1d1e",
+  "notes": "Read in full: pts = counter +0x290 * 1e9/fps(+0x25c); SendFrame 0x1444b6340(codec+8, image +0x1c0) - none: 'encodeVP9Frame: No packets returned'; each packet -> video track +0x280 via 0x144c80000 (keyframe bit pkt+0x24); every 250 ms cue 0x144c7ff10; then vorbis packets from audio source +0x298 between pts and pts+frame ('Looking for vorbis packet...') to track +0x288; counter++; returns 0 ok / 1..5 error codes. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.video_export_encode_vp9_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 48 89 CE B8 00 CA 9A 3B",
+  "match": "0x1444b2c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444b2c30",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_EncodeVP9Frame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1444b2c30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444b2c30.c;xref:0x142bd35a3",
+   "notes": "V6669 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

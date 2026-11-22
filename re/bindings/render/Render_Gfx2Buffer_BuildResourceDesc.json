@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Buffer_BuildResourceDesc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439dd050",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439dd050.c;xref:0x1439d59aa,0x143bd9db6",
+  "notes": "Builds a D3D12_RESOURCE_DESC on the stack (dimension 1 BUFFER, width = param_3+0x20 * +0x28 min 1, 1x1x1, layout ROW_MAJOR, flags from usage bits +0x18; 256-byte rounding for flag 4, 4-byte for 0x10000000) and calls ID3D12Device::GetResourceAllocationInfo (vcall +0xc8, mask = node count > 1); returns {size, alignment} in param_2. Callers Render_Gfx2Buffer_Construct 0x1439d5710, 0x143bd9b30. (lane owner review requested) Better name: Render_Gfx2Buffer_GetAllocationInfo (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_buffer_build_resource_desc",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 48 89 D6 C7 44 24 40 01 00 00",
+  "match": "0x1439dd050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439dd050",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Buffer_BuildResourceDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439dd050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439dd050.c;xref:0x1439d59aa",
+   "notes": "V7782 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

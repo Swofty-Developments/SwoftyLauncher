@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_Multiplayer_handleGarageEventMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a427e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a427e0.c;pat:log-message-method;xref:0x143252214",
+  "notes": "Logs '%s(%s(%d, %d), %d).' with method name 'multiplayer_handleGarageEventMessage' (NETWORK). Reached by tail jmp at 0x143252214 from thunk 0x143252210 (mov rcx,[rcx+0x78]; jmp; the thunk has no pdata). (lane owner review requested) Better name: Game_Network_Multiplayer_HandleGarageEventMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_multiplayer_handle_garage_event_message",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 48 89 CE 48 8B 81 18 02 00 00",
+  "match": "0x142a427e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a427e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_Multiplayer_handleGarageEventMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a427e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a427e0.c;xref:0x142a6acf2",
+   "notes": "V5171 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

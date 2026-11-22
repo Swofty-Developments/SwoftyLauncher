@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_SerialisedATotalOfBytes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407622c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407622c0.c;pat:log-channel-TELEMETRY;xref:0x145642120",
+  "notes": "vtable cell 0x145642120. Ret 0 if !+0x38. Polls presence (0x1441207d0/+0x412d), change -> 0x140761f40 or flag +0x4135. State +0x3c: 0 interval -> ELASTIC url, tier none/standard/pro/trial; 1 serialise queues +0x4028/+0x4029 via 0x140762100 ('serialised a total of %d bytes'); 2/3 https auth (+0x402f, 'Got auth!'/retry); 4 post via 0x14404b9a0, json content type, X-Steam-AppID, cb 0x1407659a0; 5 results, reset. (lane owner review requested) Better name: Game_Analytics_Update_SerialiseAndPostToElastic (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_serialised_a_total_of_bytes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 F8 29 B4 24 10 02 00 00 80 79 38 00",
+  "match": "0x1407622c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407622c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_SerialisedATotalOfBytes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407622c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1407622c0.c",
+   "notes": "V4279 large ElasticSearch send/flush routine (url config, auth request, JSON POST, retry); two separate log lines not one event; better Game_ElasticSearch_SendReportBatch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1407622c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407622c0.c",
+   "notes": "V7147 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

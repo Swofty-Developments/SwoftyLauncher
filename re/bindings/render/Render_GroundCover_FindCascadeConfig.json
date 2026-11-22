@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_GroundCover_FindCascadeConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144468680",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144468680.c;xref:0x14446737c,0x144467559,0x144468072",
+  "notes": "Rename (not a cascade-config finder): same three-source lookup as 0x144468330 ([*this]+0xf0/+0xe8/+0xe0, status 0x57 absent), type check against the int type descriptor 0x146129f38, copies 4 bytes to *param_4 (status 0), else 0x16. Callers 0x14446737c, 0x144467559, 0x144468072 in Render_GroundCoverCascade_Load. (lane owner review requested) Better name: Render_GroundCover_GetPropertyInt (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.ground_cover_find_cascade_config",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 84 24 90 00 00 00 85 C0 0F 45 F8 4C 8D 05",
+  "match": "0x14446737c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144468680",
+  "kind": "func_start",
+  "names": [
+   "Render_GroundCover_FindCascadeConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x144468680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144468680.c;xref:0x14446737c",
+   "notes": "V8174 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

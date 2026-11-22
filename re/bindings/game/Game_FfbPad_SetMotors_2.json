@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbPad_SetMotors_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143aa9e10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143aa9e10.c;pat:log-channel-FFB_PLUGIN;xref:0x1458a7768",
+  "notes": "Vtable cell 0x1458a7768 (neighbours code). Hash-map lookup (+0x40..+0x74) of device key param_2+0x18 -> slot byte; logs 'leftMotor rightMotor' (FFB_PLUGIN) and sends clamped 0..255 motor bytes from param_3[0..1] via 0x14491dfd0 with pad handle this+0xf8+slot*0xa0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_pad_set_motors_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 CE 48 8B 52 18",
+  "match": "0x143aa9e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143aa9e10",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbPad_SetMotors_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143aa9e10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143aa9e10.c",
+   "notes": "V6449 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

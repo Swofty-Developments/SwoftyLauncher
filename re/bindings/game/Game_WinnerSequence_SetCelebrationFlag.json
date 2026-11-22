@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WinnerSequence_SetCelebrationFlag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c76160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c76160.c;xref:0x142daad82",
+  "notes": "Read in full by disassembly (decomp body is polluted with labels outside the function). (state, idx, enable): only when the session object [[this+0xca0]+0x88]+0x260 vcall +0xb0 is false and global 0x146cc3a80 exists: enable -> tail-jmp 0x14453f4e0(global, idx); disable -> for every 0x14-byte entry i of global+0x60..+0x68 calls 0x14453f760(global, i, idx). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.winner_sequence_set_celebration_flag",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 C7 89 D3 48 8B",
+  "match": "0x142c76160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c76160",
+  "kind": "func_start",
+  "names": [
+   "Game_WinnerSequence_SetCelebrationFlag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142c76160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c76160.c;xref:0x142daad82",
+   "notes": "V3486 session via param_1+0xca0->+0x88->+0x260 vcall +0xb0; global 0x146cc3a80 entries +0x60..+0x68 stride 0x14, bit 1<<idx set/clear, calls 0x14453f760; caller Sess_WinnerSequence_Enter"
+  }
+ ],
+ "proofs": []
+}

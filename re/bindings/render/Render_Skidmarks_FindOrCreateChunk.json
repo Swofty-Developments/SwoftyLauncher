@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Skidmarks_FindOrCreateChunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14471d4b0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14471d4b0.c;xref:0x14471c89c,0x14472151f,0x144721a25,0x144725c28",
+  "notes": "Rename: scans the chunk table backwards ([this+0x4190] entries of 0x20 bytes, key at +0x198, value at +0x1a0) for key param_2; on miss allocates a 0x2180-byte chunk from allocator [this+0x188], inits 0xb0-byte slots and bounds (+/-FLT_MAX), then copies 0x2100 bytes plus the trailer fields from param_2; *param_3 = created flag. Callers 0x14471c89c (Game_SkidmarksReplay_ApplyCommand), 0x14472151f/0x144721a25 (Render_Skidmarks_Update), 0x144725c28 (Game_SkidmarksReplay_Rewind). (lane owner review requested) Better name: Render_Skidmarks_FindOrCloneChunk (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.skidmarks_find_or_create_chunk",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 4C 89 C6 48 89 D7 8B 81",
+  "match": "0x14471d4b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14471d4b0",
+  "kind": "func_start",
+  "names": [
+   "Render_Skidmarks_FindOrCreateChunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14471d4b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14471d4b0.c;xref:0x14471c89c",
+   "notes": "V7700 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

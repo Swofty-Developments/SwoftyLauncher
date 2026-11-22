@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ContentList_AddUniqueTriple",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413e3a20",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1413e3a20.c;xref:0x1413e6a21,0x1413e6e41",
+  "notes": "Adds a 6-byte {value,valid} x3 record to a vector if no equal record exists. Callers: Sess_Apply_ContentAvailability."
+ },
+ "signature": {
+  "id": "session.content_list_add_unique_triple",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 41 08 48 8B",
+  "match": "0x1413e3a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413e3a20",
+  "kind": "func_start",
+  "names": [
+   "Sess_ContentList_AddUniqueTriple"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1413e3a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413e3a20.c;xref:0x1413e6a21,0x1413e6e41",
+   "notes": "V3366 compares 6-byte records {val,valid}x3 with validity-aware equality, returns if equal else appends; caller Sess_Apply_ContentAvailability"
+  }
+ ],
+ "proofs": []
+}

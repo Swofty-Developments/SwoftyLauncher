@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Sign_DriverContract",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d79ff0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Sign_DriverContract(void *contracts, void *contract, uint64_t driver_key, uint32_t replaced_key, uint8_t notify)",
+  "evidence": "decomp:re/decomp/140d79ff0.c;xref:0x1422f209f,0x140d787fe,0x140d7b8de;decomp:re/decomp/1422f1d50.c",
+  "notes": "signs a built contract for driver_key (replaced_key 0x3fff0000 = work out the driver being replaced); logs CONTRACT_RENEWAL Cache contract - Driver %s - Team %s and writes the record through 0x140d7cda0; notify 1 from the screen. Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.sign_driver_contract",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 45 89 CF",
+  "match": "0x140d79ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d79ff0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sign_DriverContract"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_Sign_DriverContract",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d79ff0.c;decomp:re/decomp/1422f1d50.c;xref:0x1422f209f,0x140d787fe,0x140d7b8de,0x140d7be00,0x140d7cc66,0x140d7d4b0,0x141002c3c;sig:career.sign_driver_contract",
+   "notes": "V0986 Seven rel32 callers (the KB lists three). Arity 5: rcx contracts, rdx contract, r8d driver, r9d replaced, byte [rsp+0x210] notify (read at 0x140d7af5c). With replaced_key high half 0x3fff it works out the replaced driver (CONTRACT_RENEWAL 'Calculate driver we are replacing' logs), logs 'Cache contract - Driver %s - Team %s' (string 0x1456906b9), appends a 0x38-byte entry to c+0x408..+0x410, then calls 0x140d7cda0(c, driver, team, replaced, contract, notify). Type 0 on a non-human entrant with an existing unsigned record copies the contract into that record, sets +0x2c = 1 and posts a message instead. notify is 1 from the screen (0x1422f209f) and the 0x140d787fe/0x140d7b8de/0x140d7be00/0x140d7cc66 callers, 0 from 0x140d7d4b0 and 0x141002c3c. Nit: driver_key is read as r8d, so uint32_t (as in Build) fits better than uint64_t; harmless on x64. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

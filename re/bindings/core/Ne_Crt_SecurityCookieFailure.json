@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_SecurityCookieFailure",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144c93ae0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144c93ae0.c;xref:0x140002062",
+  "notes": "CRT stack cookie mismatch handler: fastfail(2) when available, fills a context block and raises 0xc0000409. 3482 callers (every /GS function epilogue)."
+ },
+ "signature": {
+  "id": "core.crt_security_cookie_failure",
+  "section": ".xtls",
+  "pattern": "48 3B 0D ?? ?? ?? ?? 75 10 48 C1 C1 10 66 F7 C1",
+  "match": "0x144c93ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c93ae0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_SecurityCookieFailure"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x144c93ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144c93ae0.c;xref:0x140002062",
+   "notes": "V8425 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

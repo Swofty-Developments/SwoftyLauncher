@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Hud_FormatTyreAndCompoundText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141883960",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141883960.c;xref:0x14151c5ea,0x14152c45d,0x14154bb54,0x1415b7076,0x1415c6156,0x1417f9a04,0x1417f9aa6,0x141c07df8,0x141fabff0",
+  "notes": "(vm, tyreInfo) text: mode +0x8c picks the value via 0x142e9dc20 / 0x142e9d530; +0x88==0 uses the compound name; else if the visual name (djb2) differs from the compound name and not simple mode builds lng_tyre_and_compound with TYRE/COMPOUND tokens (0x1417eaa50); passes the result to 0x141883fd0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hud_format_tyre_and_compound_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 48 89 D7 48 89",
+  "match": "0x141883960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141883960",
+  "kind": "func_start",
+  "names": [
+   "Game_Hud_FormatTyreAndCompoundText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x141883960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141883960.c;xref:0x14151c5ea",
+   "notes": "V8460 text builder with lng_tyre_and_compound, tokens TYRE and COMPOUND; caller PopulateRow"
+  }
+ ],
+ "proofs": []
+}

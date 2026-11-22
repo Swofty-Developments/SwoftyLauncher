@@ -197,13 +197,14 @@ The core runs the group count that covers the output. A pass that is not raw run
 ```
 
 ```text
-views  cockpit  tcam  tcam_offset  chase_near  chase_far  other
+views  cockpit  tcam  tcam_offset  chase_near  chase_far  other  trackside  reverse_pod
 skip   paused  replay  photo  menu  cutscene  spectating
 ```
 
 - `menu` is every state without a player-driven session view: the frontend, the garage and the hub.
 - A pass without `when` runs in every view.
-- The view is reported only where the core recognises the game's state, and `swofty/loader.log` logs each change as `[view] kind=… flags=… valid=…`. While `valid` is 0, a pass with `views` does not run and `skip` does not apply. The driving camera stays unknown until it is confirmed on the game's build, so `views` passes stay off for now.
+- The view is reported only where the core recognises the game's state, and `swofty/loader.log` logs each change as `[view] kind=… flags=… valid=…`. While `valid` is 0, a pass with `views` does not run and `skip` does not apply. On builds without a verified camera hook, the driving camera stays unknown and `views` passes stay off.
+- On Steam 1.0.145 (26566308), recognized driving and replay views report `cockpit`, `tcam` or `tcam_offset` for the active forward onboard camera. A camera from the current stock circuit’s replay layers reports `trackside`. The centered and offset rear pod definitions (`pod_reverse` and `podoff_reverse`) report `reverse_pod`. Other observed cameras report `other`. When driving starts or resumes, a camera assignment supplies the view. If the view is still unknown when the driving state finishes entering, the core can recover the current primary viewport using the same camera classifications as a regular assignment.
 - A shader reads the same state with `view_kind()` and `view_is(SWOFTY_VIEW_PAUSED)`, to change what it draws rather than whether it runs. The `paused` flag follows the game's pause flow state; native code reads the game's pause reasons with [`swofty::view::paused()`](/reference/std/events#pause-and-resume).
 
 ## Live options and enabled
@@ -291,7 +292,7 @@ uint   swofty_pass;                // the pass's place in this frame's chain, fr
 float  random(uint2 pixel, uint salt); // a hash of pixel, frame and salt, from 0 to 1, for grain and dithering
 
 // the view
-uint   view_kind();                // SWOFTY_VIEW_COCKPIT, _TCAM, _TCAM_OFFSET, _CHASE_NEAR, _CHASE_FAR, _OTHER or _UNKNOWN
+uint   view_kind();                // SWOFTY_VIEW_COCKPIT, _TCAM, _TCAM_OFFSET, _CHASE_NEAR, _CHASE_FAR, _OTHER, _TRACKSIDE, _REVERSE_POD or _UNKNOWN
 bool   view_is(uint flag);         // SWOFTY_VIEW_PAUSED, _REPLAY, _PHOTO, _MENU, _CUTSCENE or _SPECTATING
 
 // colour
@@ -343,7 +344,7 @@ float4 effect(float2 uv, uint2 pixel)
 
 - `set_data(addon_id, pass, data, size)` gives the addon's pass with that `name` up to 64 KB (`swofty::postfx::data_max`). The pass reads them from the next frame on, until the code gives others; size 0, or `clear_data`, takes them away.
 - The core copies the bytes, so the caller's buffer can go at once. Any thread of the addon's own DLL can call it.
-- An addon gives data only to its own passes: the call must come from the DLL under `swofty\addons\<addon_id>\`, and the pass must be one its manifest lists. Otherwise it returns `denied` or `unknown_pass` and keeps nothing, so one addon can't feed another addon's passes, and the core holds at most 64 KB a pass.
+- An addon gives data only to its own passes: the call must come from the DLL under `swofty\addons\<addon_id>\`, and the pass must be one its manifest lists, or a pass of the addon's own effect in the active shader config. Otherwise it returns `denied` or `unknown_pass` and keeps nothing, so one addon can't feed another addon's passes, and the core holds at most 64 KB a pass.
 - `unknown_pass` also means the profile's build left the pass out, as it does when the shader doesn't compile or dxc isn't found (`warning: <addon>: pass <name> is skipped: ...` in the build's output).
 - It returns `Result::ok` when the pass is running, and `no_pass` when the bytes are kept but the pass isn't: switched off by its option, its addon's key or a rule, or over its GPU budget. Code that would otherwise draw the same thing itself can go on doing so until it gets `ok`.
 - From an addon's on-load it can also be `no_pass`: in a profile without the early stage, addons load before the core reads the profile's passes. The bytes wait for the passes (16 passes an addon at most), and those of a pass the profile hasn't go then.
@@ -401,31 +402,42 @@ The passes run between the game's picture and its HUD. The HUD and the menus dra
 
 The passes run once a frame, at the first of these the frame reaches:
 
-- While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer.
+- While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer. In the first frame without a read, as on a resume or when the HUD skips a frame on track, the passes wait for a read that still comes and otherwise run at the later places below: after the list that closes the step, before the list that takes the back buffer to the HUD, or at `Present`. Where the game's own frames close the core's frames (no `Present` to fall back on) and the core sees neither list, that frame runs no passes.
 - Otherwise, inside the game's own command list, at the step where it keeps a copy of the picture without the HUD.
 - Where the game ends that list inside the step: in the list that closes the step, where it has the back buffer bound as its render target (`path=in-list (split step)` in the trace). That list can draw the rest of the picture first. The passes wait for it, also when the game submits the first list before it records the closing one.
 - Where the list that closes the step does not have the back buffer bound: in a list of the core's own, submitted right after the closing list (`path=between (after the list that closed the step)`).
-- Where no list closes the step before the game presents the frame: on the back buffer at `Present` (`path=at Present`). The HUD is in it by then, so the passes run over the HUD in that frame.
+- Where no list has closed the step by the time the game submits the list that takes the back buffer out of render target for the HUD and `Present`: in a list of the core's own, submitted right before that list (`path=between (before the list that takes the back buffer to the HUD)`).
+- Where the core saw no such list either: on the back buffer at `Present` (`path=at Present`). The HUD is in it by then, so the passes run over the HUD in that frame.
+- Where the swapchain is a frame generation one (FidelityFX's or Streamline's), which copies each frame into a buffer of its own inside `Present`, and the core saw no such list either: on that copy (`path=at Present (the swapchain's copy)`), while Frame Generation is off in the game's settings. The HUD is in the copy too.
 - Where the game ends that list with the step done and no HUD: in a list of the core's own, submitted right after it (`path=between`).
 
-In the game's lists the core records the passes and then puts back the pipeline and bindings it changed. Every 60 s for the first 30 minutes, the log counts where they ran:
+In the game's lists the core records the passes and then puts back the pipeline and bindings it changed. Every 60 s for the first 30 minutes and every 5 minutes after that, the log counts where they ran, why frames went without them, and how many runs had no `previous` picture:
 
 ```text
-[postfx] last 60 s: 6427 frame(s) presented; passes ran in the game's list on 6134 (913 in a split step's closing list), between its lists on 0 (0 after a split step's closing list) and at Present on 0; 913 picture list(s) left the HUD-less step to a later list; 0 recorded into lists the game reset unsubmitted; 293 without passes (0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind); 0 frame(s) ran them twice
+[postfx] last 60 s: 6427 frame(s) presented; passes ran in the game's list on 6134 (212 at the HUD's read of the picture, 913 in a split step's closing list), between its lists on 0 (0 after a split step's closing list, 0 before the list that takes the back buffer to the HUD) and at Present, over the HUD, on 0 (0 on a frame generation swapchain's copy of the frame); 913 picture list(s) left the HUD-less step to a later list; 0 recorded into lists the game reset unsubmitted; 293 without passes (0 toggle key, 0 swofty/postfx.off, 2 after the HUD's last read of the picture, 0 every pass off: 0 budget or pipeline, 0 rule, 0 option, 0 addon key, 0 view, 0 mixed; 0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind, 291 with no picture list, 0 with no place in the frame's lists); 0 frame(s) ran them twice; 3 run(s) without the frame before's result (0 after a frame gap); 0 on/off line(s) left out
 ```
 
 The game records frames ahead, so a minute's runs and presents are counted in slightly different frames. Frames without passes are mostly loading screens and menus without a 3D picture. With Frame Generation on in the game's settings, the passes' result also goes into the game's HUD-less copy, which Frame Generation reads. Frame Generation still uses the game's own motion vectors, so a pass that moves pixels can smear in the generated frames.
 
+When the passes stop and when they run again, the log says so with the reason, at most 20 such lines per count line:
+
+```text
+[postfx] the passes stopped at frame 48211: the shader toggle key turned them off, key B (view tv_pod, flags -, serial 12)
+[postfx] the passes run again at frame 48440, in-list, after 229 frame(s) without them: the shader toggle key turned them off (view tv_pod, flags -, serial 12)
+[postfx] the passes stopped at frame 51873: the game submitted no picture list (view unknown, flags menu, serial 12)
+[postfx] the passes run again at frame 51874, in-list (split step), after 1 frame(s) without them: the game submitted no picture list (view unknown, flags menu, serial 12)
+```
+
 XeSS frame generation (`libxess_fg.dll`) presents the game's frames and its own generated ones through `Present1`, on its own thread. Its swapchain is made even with frame generation off. On it, and while no `Present` reaches the core's hooks, a frame is one frame the game draws: it starts where the game submits the list that draws into its next back buffer. `swofty_frame` and `swofty_frametime` count those frames. The minute's line counts them too:
 
 ```text
-[postfx] xess fg: 2391 real frame(s), 2391 pass run(s), 0 skipped in the last 60 s (2391 in the game's list, 0 between its lists, 0 with the GPU behind); 4782 Present(s) from frame generation
+[postfx] xess fg: 2391 real frame(s), 2391 pass run(s), 0 skipped in the last 60 s (2391 in the game's list, 0 between its lists, 0 with the GPU behind); 4782 Present(s) from frame generation; 1 run(s) without the frame before's result (0 after a frame gap); 0 on/off line(s) left out
 ```
 
 A key from `postfx_toggle` logs and shows a toast:
 
 ```text
-[postfx] PolyphoniX Native's passes are off (its key)
+[postfx] PolyphoniX Native's passes are off (its key F8)
 ```
 
 A pass is turned off when its pipeline cannot be made, or when its average GPU time over 120 frames stays above `budget_ms` three times in a row. The core measures each pass's GPU time.

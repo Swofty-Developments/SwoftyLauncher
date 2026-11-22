@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacecrewWeatherModifier_PostBuild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401d9570",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401d9570.c;pat:log-channel-RacecrewWeatherModifier;xref:0x1455e46e8",
+  "notes": "postBuild (vt cell 0x1455e46e8): logs RacecrewWeatherModifier 'postBuild'; weather class from this+0x20 (table 0x1456138b8) or [actor+0x528]+0xb7; hides all clothing meshes (trousers_x, shorts_x, radio_x...) via actor vt+0xc0, then shows the e_ClothingDry (1), e_ClothingSun (2) or e_ClothingWet set (+0x24 adds extras); 2-float param via 0x143d3d8e0 on [actor+0x580]+0x228. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.racecrew_weather_modifier_post_build",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5D B8 37 00 00 00",
+  "match": "0x1401d9570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401d9570",
+  "kind": "func_start",
+  "names": [
+   "Game_RacecrewWeatherModifier_PostBuild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401d9570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401d9570.c",
+   "notes": "V4378 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

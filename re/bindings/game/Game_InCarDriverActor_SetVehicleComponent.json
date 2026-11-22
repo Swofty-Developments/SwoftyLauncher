@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InCarDriverActor_SetVehicleComponent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14039a330",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14039a330.c;pat:log-message-cxx;xref:0x1403a7c74",
+  "notes": "DRIVER 'InCarDriverActor::setVehicleComponent %p %p'. Under lock +0x1218: +0x1248=veh; team (+4000) of the car; pose buffers (shared per team at 0x146045b20, refcount 0x146045ba0; own +0xfa8/+0xfb0), mirrored joints, 0x140399fa0 x4; +0x1250 = cast(veh+8, 0x146096430). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.in_car_driver_actor_set_vehicle_component",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 D7",
+  "match": "0x14039a330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14039a330",
+  "kind": "func_start",
+  "names": [
+   "Game_InCarDriverActor_SetVehicleComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14039a330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14039a330.c;xref:0x3a7c74",
+   "notes": "V4608 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

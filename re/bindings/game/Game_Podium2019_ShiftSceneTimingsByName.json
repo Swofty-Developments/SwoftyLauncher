@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019_ShiftSceneTimingsByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140359f20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140359f20.c;xref:0x14035a7c2,0x14035aeff,0x14035beaf,0x14035c5df,0x14035cd0f,0x14035d8fb,0x14035e06c,0x14035e6bb,0x14035ef2b,0x14035f79b,0x1403604b8,0x1403610c8,0x14036519e,0x140367001,0x140367281,0x14036768c,0x140367912,0x140368503",
+  "notes": "(this, name): looks up scenes name, 'night_'+name and 'clear_day_'+name (0x140240410) and subtracts offset this+0x53c from their times +0x58/+0x5c/+0x60; 'overcast_'+name is looked up and passed to 0x140240700. Called by all Make*Seq builders and 0x140363850. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cut_scene_build_named_scene_key",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 70 01 00 00 48 89 CE C7 84 24 90 00",
+  "match": "0x140359f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140359f20",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019_ShiftSceneTimingsByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140359f20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140359f20.c;xref:0x14035a7c2",
+   "notes": "V7993 Game_Podium2019_ShiftSceneTimingsByName: builds night_/clear_day_ name variants, looks up scene objects (0x140240410) and subtracts this+0x53c from floats +0x58/0x5c/0x60; not a key builder"
+  }
+ ],
+ "proofs": []
+}

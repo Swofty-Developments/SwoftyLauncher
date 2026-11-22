@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InCarDriverComponent_Spawn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403a7040",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403a7040.c;pat:log-message-cxx;xref:0x145623320",
+  "notes": "Vtable slot 0x145623320 (neighbours 0x1403a8570/0x14043f140). Returns if actor +0x20 set; once (+0x30) subscribes 'animate_driver_message' via Ne_Subscribe_BusMessage 0x143987810 (handler 0x1403a6ee0). Gets vehicle id from component 0x146ce8b00 +0x58 +0xe8, finds entrant/driver/team in session +0x290 tables; logs DRIVER 'InCarDriverComponent::spawn ...' (game mode null / no Entrant / no Driver / no animation set / scene for driver). Spawns 'incar' scene 0x1401b71c0 -> +0x18, actor 'InCarDriver' -> +0x20 (else WARN 'Failed to spawn driver m_inCarDriverActor is null'). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.in_car_driver_component_spawn",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 04 00 00 48 83 79 20 00",
+  "match": "0x1403a7040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403a7040",
+  "kind": "func_start",
+  "names": [
+   "Game_InCarDriverComponent_Spawn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403a7040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403a7040.c;xref:0x4a6f36",
+   "notes": "V4614 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

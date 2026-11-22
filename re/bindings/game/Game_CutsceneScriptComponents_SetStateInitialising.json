@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneScriptComponents_SetStateInitialising",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140251d10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140251d10.c;pat:log-message-method;xref:0x1455ecf38",
+  "notes": "Vtable cell 0x1455ecf38 of the DataDrivenCutSceneScript vtable (next cell 0x1455ecf40 = setStateInitialised). Logs CUTSCENE_SCRIPT_VERBOSE 'setStateInitialising %p %s', state this+0x40 = 3, this+0x830 = 0, logs CUTSCENE_SCRIPT_COMPONENTS_VERBOSE '[%s]' setStateInitialising, then calls vslot +0x18 on each component this+0x8c0..+0x8c8. (lane owner review requested) Better name: Game_DataDrivenCutSceneScript_SetStateInitialising (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.cutscene_script_components_set_state_initialising",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4F B8 56 01 00 00",
+  "match": "0x140251d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140251d10",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneScriptComponents_SetStateInitialising"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140251d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140251d10.c",
+   "notes": "V4468 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

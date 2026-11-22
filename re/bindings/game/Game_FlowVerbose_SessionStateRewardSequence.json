@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowVerbose_SessionStateRewardSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d8b5f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d8b5f0.c;pat:log-channel-FLOW_VERBOSE;xref:0x1457e1fd0",
+  "notes": "Slot 4 (+0x20, onStateEnter) of state vtable 0x1457e1fb0 (cell 0x1457e1fd0). If fade (+0xc88+0x790) state 0: requests full-screen fade out Broadcast/BroadcastFull (flags 4/8 at +0x7b8, FADE_REQUESTS log). When state 2 (faded out): iterates +0xda8 list (0x1519eb350), m_hasCutsceneToPlay -> +0xdb5; playRewardCutscene 0x142c74860 fail -> +0xdb0=1; else bus post 0x14565e950 code 0x11f (Screen::LiveFeed). Returns done flag. (lane owner review requested) Better name: Game_SessionStateRewardSequence_OnStateEnter (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.flow_verbose_session_state_reward_sequence",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CE 66 C7 81 B2 0D 00 00 00 00",
+  "match": "0x142d8b5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d8b5f0",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowVerbose_SessionStateRewardSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d8b5f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d8b5f0.c",
+   "notes": "V5417 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

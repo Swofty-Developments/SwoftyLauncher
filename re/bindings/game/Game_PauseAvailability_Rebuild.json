@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_PauseAvailability_Rebuild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bb3370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_PauseAvailability_Rebuild(uint8_t *avail24, ...)",
+  "evidence": "decomp:re/decomp/142bb3370.c;doc:re/db/subsystems/game.md;xref:0x142bb724d,0x142bb74a6,0x142bbd14c,0x14e36edef",
+  "notes": "(ctx): zeroes the 16+8 availability bytes (ctx[0], ctx[1]), gathers state via 0x142bb40f0 and computes each byte from session/mode/garage/replay/multiplayer flags, then compares with the previous copy ctx[2] and returns 1 only when something changed (copies new state). Callers 0x142bb7020, 0x142bb73e0 (jmp), 0x142bb74b0, 0x14e36ede0. Index-to-option names in the KB (game.md) not re-verified here. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pause_availability_rebuild",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 78 04 00 00 C5",
+  "match": "0x142bb3370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bb3370",
+  "kind": "func_start",
+  "names": [
+   "Game_PauseAvailability_Rebuild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Game_PauseAvailability_Rebuild",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x142bb338f,0x142bbd14c",
+   "notes": "V1676 cg-verify: zeroes 24 bytes at rcx; VM+0x278 only for caller 0x142bbd14c"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Game_PauseAvailability_Rebuild",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x142bb338f,0x142bbd14c",
+   "notes": "V3912 cg-verify: zeroes 24 bytes at rcx; VM+0x278 only for caller 0x142bbd14c"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bb3370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bb3370.c;xref:0x142bb724d",
+   "notes": "V5020 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

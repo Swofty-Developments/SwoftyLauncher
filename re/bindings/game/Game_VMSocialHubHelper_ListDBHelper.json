@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VMSocialHubHelper_ListDBHelper",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14184ca90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14184ca90.c;pat:log-message-cxx;xref:0x14184ca09,0x14184fedf,0x1457121f8,0x145712418",
+  "notes": "Read in full: gets the selected entry via vcall +0x20 and logs 'VMSocialHubHelper::ListDBHelper::onSelectedListEntryChanged (%s)' (name resolved via 0x144179360 from entry+0x50; '(nullptr)' variant when none), then releases the temp string ref. Vtable cells 0x1457121f8, 0x145712418; mov ref 0x14184ca09 in 0x14184c930, call 0x14184fedf in 0x14184fed0. Renamed: old name was the nested class, not the method. (lane owner review requested) Better name: Game_VMSocialHubHelper_ListDBHelper_OnSelectedEntryChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.vm_social_hub_helper_list_db_helper",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8B 01 FF 50 20 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14184ca90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14184ca90",
+  "kind": "func_start",
+  "names": [
+   "Game_VMSocialHubHelper_ListDBHelper"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14184ca90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14184ca90.c;xref:0x14184ca0b",
+   "notes": "V4905 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

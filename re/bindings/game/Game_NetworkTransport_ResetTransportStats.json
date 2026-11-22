@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_ResetTransportStats",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440772d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440772d0.c;pat:log-message-method;xref:0x145a52048,0x145a54798",
+  "notes": "Vtable cell (two vtables): logs 'resetTransportStats' and clears the stats array at +0x308. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_transport_reset_transport_stats",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 AC 00 00 00",
+  "match": "0x1440772d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440772d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_ResetTransportStats"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440772d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440772d0.c",
+   "notes": "V6509 size=741; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

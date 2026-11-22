@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NeCheckEventChainUid_GetVehicleInFocusEventNodeInputPin",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144550bc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144550bc0.c;pat:log-channel-NeCheckEventChainUid;xref:0x154b8ff39",
+  "notes": "Binder 0x154b8ff00 (lea 0x154b8ff39). vp index from hash map 0x146cc3ab8 (r8>>32), optional NeCheckEventChainUid log; for vp 0..1 reads [0x146cc3ab8]+0x38 entry vp*0x28+0x98 -> vehicle list +0x2a0 first -> +8 -> +0x88 (16 bytes, else zero) into data pin this+0x18, fires output this+0x10 (0x14400c680). Decomp polluted; disassembly read. (lane owner review requested) Better name: Game_EventNode_GetVehicleInFocus_OnInput (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ne_check_event_chain_uid_get_vehicle_in_focus_event_node_input_pin",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 48 89 D6",
+  "match": "0x144550bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144550bc0",
+  "kind": "func_start",
+  "names": [
+   "Game_NeCheckEventChainUid_GetVehicleInFocusEventNodeInputPin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144550bc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144550bc0.c;xref:0x154b8ff3b",
+   "notes": "V6683 log channel used as prefix; body is the GetVehicleInFocus event node input handler. Better: Game_GetVehicleInFocusEventNode_OnInput"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144550bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144550bc0.c;xref:0x154b8ff3b",
+   "notes": "V7231 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

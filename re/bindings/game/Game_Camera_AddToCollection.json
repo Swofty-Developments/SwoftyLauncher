@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Camera_AddToCollection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14453a420",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14453a420.c;pat:log-channel-CAMERA;xref:0x14563e008,0x145be89b8",
+  "notes": "Copies the camera's collection name (component 0x146cc2128 +0x28) into a static string, djb2-lowercase hash; finds the collection in this+0x60..+0x68 by hash (+0x30) or creates a 0x58-byte one (allocator +0x50, vector alloc +0x58). If the camera (or one with the same id +0x70) is already in the collection's 0x28-byte entry list +0x40 logs the CAMERA duplicate warning, else appends (0x144538dc0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.camera_add_to_collection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8B 4E 08",
+  "match": "0x14453a420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14453a420",
+  "kind": "func_start",
+  "names": [
+   "Game_Camera_AddToCollection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14453a420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14453a420.c",
+   "notes": "V6679 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

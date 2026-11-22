@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_FindEffectDefByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af7480",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af7480.c;xref:0x143af7057,0x143b02e1d",
+  "notes": "(mgr, name, id): djb2 hash (seed 0x1505) of name; lazily builds the def table at mgr+0x857af0 with Game_Particles_BuildEmitterDefs from resource pack 0x146294200; finds def with hash (+8); if effect count < cap mgr+0xa5b7f8 allocates a 0xa0-byte instance (allocator mgr+0x857aa8), id -> +100, init 0x143af4990, sort keys +0x170 step 0.001, index +0x58, appends to mgr+0x858e90; returns instance or 0. Callers 0x143af5620, 0x143b02910. (lane owner review requested) Better name: Game_Particles_CreateEffectInstanceByName (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.particles_find_effect_def_by_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 44 89 C3 48 89 CE 0F B6",
+  "match": "0x143af7480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af7480",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_FindEffectDefByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143af7480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af7480.c;xref:0x143af7057",
+   "notes": "V7860 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

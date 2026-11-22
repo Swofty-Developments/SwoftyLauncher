@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_GotoEventSubstate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143180ee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143180ee0.c;pat:log-message-method;xref:0x143173a17,0x14317a9da",
+  "notes": "Logs 'gotoEventSubstate: %d:%s -> %d:%s' and stores the new substate (same pattern as Game_NetworkLeagues_GotoSyncSubstate). Callers in 0x1431717c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_leagues_goto_event_substate",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 39 51 3C 0F 84 ?? ?? ?? ?? 89 D6",
+  "match": "0x143180ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143180ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_GotoEventSubstate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143180ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143180ee0.c;xref:0x143173a17",
+   "notes": "V5856 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

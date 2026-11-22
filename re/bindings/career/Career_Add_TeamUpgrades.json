@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Add_TeamUpgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14123ca40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14123ca40.c;imm:0x1b10;kb:subsystems/rnd_ui.md#instances;xref:0x14123fd65,0x14a6d4697",
+  "notes": "Allocates the 0x1b10-byte per-team Upgrades model via the (+0x290) allocator; model+8/+9/+0xa = +0x3e0/+0x3e1/+0x3e2, +0xc team key, +0x10 vehicle key (param_3); fills tree/record data (0x1435294e0, 0x14352b3f0, 0x143539260), then Career_Instantiate_UpgradeTrees (0x14352cac0) and Career_ResetAll_Upgrades (0x14352e1c0); returns the model (0 on alloc fail). Callers 0x14123f930 and rebuild body 0x14a6d4570. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.add_team_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 04 04 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 44",
+  "match": "0x14123ca40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14123ca40",
+  "kind": "func_start",
+  "names": [
+   "Career_Add_TeamUpgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/rnd_suppliers_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14123ca40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14123ca40.c;xref:0x14123fd65",
+   "notes": "V4696 0x1b10 alloc @0x14123cad4, Instantiate_UpgradeTrees @0x14123cfa1, ResetAll @0x14123d06f verified; Career_Load_UpgradeRows (0x143539bc0) has no direct call from here (only 0x143539260 is called)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x14123ca40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14123ca40.c;xref:0x14123fd65",
+   "notes": "V9168 Allocates 0x1b10 at 0x14123cad4 and calls 14352cac0 (0x14123cfa1) and 14352e1c0 (0x14123d06f); the caller site is a direct call."
+  }
+ ],
+ "proofs": []
+}

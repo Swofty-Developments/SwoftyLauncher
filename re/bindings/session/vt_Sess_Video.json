@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_Video",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457e36d0",
+  "type": "vtable[21]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142d99f10.c;pat:flow-state-type-record;decomp:re/decomp/142db6ea0.c;xref:0x142d99fd1,0x142db6eab,0x142dca748,0x14f525c8b,0x14f53d16b",
+  "notes": "cxx=SessionStateVideo; 21 slots (class-name string follows). Slot 0 -> type record 0x14607ef38, +8=name set by static init 0x142df1ca0 at 0x142df4227. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142d9a7a0/0x142d9acd0/0x142d9b5b0. Ctor 0x142d99f10 (lea 0x142d99fd1; mov [rsi],rax). Also loaded by 0x142db6ea0,0x14f525c80 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.video",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 81 C1 50 0E 00",
+  "match": "0x142db6eab",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457e36d0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_Video"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457e36d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142d99fd4",
+   "notes": "V7446 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

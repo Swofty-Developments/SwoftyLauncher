@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_PlayHighlightInTheatre",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f10c30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f10c30.c;xref:0x141f107c5,0x141f113cf",
+  "notes": "Read in full: selected entry -> slot_id / is_locked pick list table 0x14606b688 or 0x14606b660 (fn table: count, get, item, status). Valid index and status 0: posts bus vt 0x14576daf0 with item+0x188 (0x1439876c0), fires 'trigger_play_highlight', sends 'fade_out_and_exit' with 't_loading_screen' to [this+0x620] vcall +0x80, sets a VM node, 0x143759dd0([this+0x9c0]); else fires 'trigger_failed_play_highlight'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.video_export_play_highlight_in_theatre",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 48 89 CE 48 8D 54 24 50 E8",
+  "match": "0x141f10c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f10c30",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_PlayHighlightInTheatre"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x141f10c30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f10c30.c;xref:0x141f107c5",
+   "notes": "V7528 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Puncture_Add",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14464e200",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14464e200.c;pat:log-channel-TYRE_DAMAGE_MONITOR;xref:0x1409b353c,0x1409b375b,0x142bdd2ec,0x142bdd3b7,0x142bdd485,0x142bdd54c,0x142e888f9,0x142e889e9,0x142e88adc,0x142e88bd3,0x14324bb77,0x144656d85,0x144656ef5,0x144656fee,0x1446b5ba6,0x1446b5c98,0x1446b5d31,0x1446b5df2,0x1446b5edc,0x14470e183",
+  "notes": "(monitor, veh, tyre): under CS [+0x28]: if count +0x24 < max +0x20: count++, push {tyre, veh byte} (16 bytes) to vector +8..+0x18 (allocator [+0]); log TYRE_DAMAGE_MONITOR 'Added puncture...'; returns bool added. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.puncture_add",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C7 89 D3",
+  "match": "0x14464e200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14464e200",
+  "kind": "func_start",
+  "names": [
+   "Car_Puncture_Add"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14464e200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14464e200.c;xref:0x1409b353c",
+   "notes": "V6720 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

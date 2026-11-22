@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_PlacedResourceForward_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439b84d0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439b84d0.c;xref:0x1439ad573,0x1439b9533,0x1439b9db3",
+  "notes": "Forwards (device, hr, label) to Render_Check_GfxResult 0x1439b8510 (dead stack constant 0x8beb6546). Chosen when vendor id device+0x880 is 0x8086/0x8087. (lane owner review requested) Better name: Render_Check_GfxResult_Intel (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_placed_resource_forward_b",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 4C 89 44 24 38 89 54 24 2C 48 89 4C 24 30 48 8B 4C 24 30 4C 8B 44 24 38 8B 54 24 2C E8 ?? ?? ?? ?? C7 44 24 44 46 65 EB",
+  "match": "0x1439b84d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439b84d0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_PlacedResourceForward_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439b84d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439b84d0.c;xref:0x1439ad573",
+   "notes": "V8496 pure thunk to 1439b8510; sibling"
+  }
+ ],
+ "proofs": []
+}

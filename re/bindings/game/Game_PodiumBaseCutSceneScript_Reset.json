@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14036fcb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14036fcb0.c;pat:log-message-cxx;xref:0x1455f6ed8,0x1455f71e8,0x1455f74f8,0x145603298,0x145603628,0x1456039c8",
+  "notes": "reset override (6 vt cells): logs 'PodiumBaseCutSceneScript::reset'; for i < this+0x888 calls 0x140238500(this+0x878, byte (this+0x860)[i]) (BIND log 'unbindAllVehicles'), clears +0x888; resets transforms +0x470..+0x4af and +0x53c/+0x544 to identity/1.0, clears +0x538 bits, +0x539 low nibble, +0x548, +0x550, +0x5d0..+0x5e2, +0x5e4, +0x830; 0x14018edd0(this+0x50). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_reset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 3D",
+  "match": "0x14036fcb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14036fcb0",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14036fcb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14036fcb0.c",
+   "notes": "V4557 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VirtualHelpPromptListener_OnGotoVirtualHelpPage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419cd960",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1419cd960.c;pat:log-message-cxx;xref:0x1419ce24f,0x141c45ffa,0x141c5874a,0x141c5dc6a,0x141c708c2,0x141c71b3a,0x141fe58c4,0x141fec47b,0x141ff51b2,0x1422e5786,0x14231462a,0x142326622,0x142337c0a,0x142347ebf,0x14234b236,0x142354876,0x1423d5f0c,0x1423d9368,0x1423dcfeb,0x1423e687c,0x1423efd4a,0x1423f6b60,0x1423fb2ce,0x1423fd669,0x1423ff14c,0x14c6a295a",
+  "notes": "Read in full; refs are lea sites (listener registration). If VM bool 'ui_menu_data.paused' is true: logs '...session is paused, ignoring', calls 0x1419ce990, returns 0. Else builds route params with 'FocusedHelpArticle', decodes the XOR-obfuscated article id at [this+8]+0x148 (len +0x248, max 255), resolves it (0x1443379f0) and posts a bus msg with id + name strings, then fires the route via 0x1442c0e20(this[2], this[1], this+3, params) and vcall +0x10 on this[0xd]. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.virtual_help_prompt_listener_on_goto_virtual_help_page",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 04 00 00 48 89 CE 48 8B 0D",
+  "match": "0x1419cd960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419cd960",
+  "kind": "func_start",
+  "names": [
+   "Game_VirtualHelpPromptListener_OnGotoVirtualHelpPage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1419cd960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419cd960.c;xref:0x1419ce251",
+   "notes": "V4918 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceVehicleCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142477900",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142477900.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x1410f6bd2,0x141425096,0x14142da19,0x141449f7b,0x14144a422,0x141fdb9ef,0x141fe2636,0x14200e010,0x142011541,0x142011d17,0x14201250c,0x142053fcc,0x14208230c,0x142082c6c,0x142083205,0x142266ef9,0x142573514,0x142ea987b,0x143140178,0x143141383,0x154bfbae3",
+  "notes": "(entrants, key, record): kind 0 refused -> 5; list [entrants+0x388+kind*0x10] missing -> 1; equal check with the record from Ent_Get_VehicleCustomisation_Thunk; removes with 0x142477710, adds a copy via 0x140cdd730; fail -> 3, else 0/2. Logs on ENTRANTS_SYSTEM. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_vehicle_customisation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 4A 00 00",
+  "match": "0x142477900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142477900",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceVehicleCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142477900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142477900.c;xref:0x1410f6bd2",
+   "notes": "V5079 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

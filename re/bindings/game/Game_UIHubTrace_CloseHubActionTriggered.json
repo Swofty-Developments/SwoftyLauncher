@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_CloseHubActionTriggered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143804a80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143804a80.c;pat:log-channel-UIHubTrace;xref:0x143803b2d,0x143805e00,0x151619716",
+  "notes": "(hub, immediate): logs '[ACTION] Close Hub Action Triggered', hub+0x74 = 0, hub+0xb0 = immediate; with header or content open (+0x68 / +0x6c == 1) first calls 0x143805410 and continues only when immediate. Sends event 0x1461030a8, state +0x64 == 2 / 1 -> hub+0x70 = 3 and posts message vt 0x14588bcd0 hash 0xd9ce87d7 / 0xf2cfb6ac (else event 0x1461030a4), then raises UI signal 0x519/0x1505 via vt+0x158/+0x160. Callers 0x143803b2d, 0x143805e00, 0x151619716. (lane owner review requested) Better name: Game_UIHub_CloseHub (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_close_hub_action_triggered",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B",
+  "match": "0x143804a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143804a80",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_CloseHubActionTriggered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143804a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143804a80.c;xref:0x143803b2d",
+   "notes": "V6269 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

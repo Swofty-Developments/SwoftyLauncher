@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ResultsContainer_Activate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d255a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d255a0.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141d24c0c,0x141d50a67,0x14574ac18",
+  "notes": "Vtable slot (cell 0x14574ac18). Logs 'container activated'; +0x11b1 = 1; re-inits view model +0x2c0 (0x141d7e5b0, 0x141809750 with name [+0x10]+8), +0x3e0 = 1, 0x141d54460; current screen +0x1070 = -1; clears callback slots +0x1078/+0x10b8/+0x10f8/+0x1138 and step queue +0x1178; state string +0x11a8 = 'none'. Callers 0x141d24c0c, 0x141d50a67. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.results_container_activate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 87 00 00 00",
+  "match": "0x141d255a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d255a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ResultsContainer_Activate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d255a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d255a0.c;xref:0x141d24c0c",
+   "notes": "V5195 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

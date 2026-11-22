@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateViewReplay_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d9d480",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d9d480.c;pat:log-message-method;xref:0x142d9d461,0x142da018f,0x142da26a2,0x142da51c6,0x142da628e,0x1457e3cb0",
+  "notes": "Logs SessionStateViewReplay \"onStateEnter\"; once (+0xf40 bit0), or +0xed4 = 1 when 0x1407c13f0 fails; keeps [+0xc98]+0x1e8 in +0xed0 and sets mode 8; frees [+0xd8] tasks; mode +0xed8 < 5 -> [+0xdb8]+0x140 from table 0x1457e7b48; posts replay task 0x1457e66b8; mode 2 adds the event_mode_details_close handler 0x142da4090 and audio state \"in_race\", else \"main\". Called by derived state enters and vtable 0x1457e3cb0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_state_view_replay_on_state_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142d9d480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d9d480",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateViewReplay_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d9d480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d9d480.c;xref:0x142d9d461",
+   "notes": "V5439 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

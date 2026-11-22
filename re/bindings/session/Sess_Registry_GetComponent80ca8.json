@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Registry_GetComponent80ca8",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142eff3d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142eff3d0.c;xref:0x142efeec7,0x143567915,0x14356850a",
+  "notes": "Registry lookup: key 0x146080ca8 -> 0x14030ffd0(reg,&key), entry = idx*0x10 + [reg+0x18]; returns entry+8 or 0. Key 0x146080ca8 is the type record whose name ptr (+8) is set to 'SpectatorDirector' (0x1457eac0b) at 0x142efcf8e in Game_Register_TransactionSponsorManagerTypes. Callers 0x142efec80, Sess_RuleManager_Initialise (-> +0x1c88), Sess_RuleManager_ResolveSubsystems. Better name: Sess_Registry_GetSpectatorDirector (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "session.registry_get_component80ca8",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 46 18 48 3B 46 20 74 06 48 8B 40 08 EB 02 31 C0 48 83 C4 30 5E C3 CC CC CC CC CC CC 31 C0 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC 41 56 56 57",
+  "match": "0x142eff3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142eff3d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Registry_GetComponent80ca8"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142eff3d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142eff3d0.c;xref:0x143567915,0x14356850a",
+   "notes": "V3701 Lookup key 146080ca8 correct and Initialise stores result at +0x1c88 (verified), but callers are Sess_RuleManager_Initialise, Sess_RuleManager_ResolveSubsystems and 0x142efec80, not Game_Network_ReceivedRuleMessage."
+  }
+ ],
+ "proofs": []
+}

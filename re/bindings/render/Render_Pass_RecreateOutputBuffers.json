@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Pass_RecreateOutputBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c20210",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c20210.c;xref:0x14014ffb5,0x14016f401,0x143b1a2d7,0x143b1a538,0x143b1a78d,0x143b1a87a",
+  "notes": "Body is 0x123 bytes: allocates a zeroed 0x90 object (+8 = -1), swaps it into +0x10, destroys the old one like 0x143c20160, stores the allocator at +8, then tail-jumps to 0x143bc4b30 (creates the three buffers from desc param_3). The decomp file also holds 0x143bc4b30's body (labels 0x143bc4cbd...). Callers incl Game_Read_RendererGfxConfig 0x14014ffb5, Game_Renderer_CreateRenderPasses 0x143b1a2d7. (lane owner review requested) Better name: Render_Gfx2TripleBufferHolder_Recreate (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.pass_recreate_output_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C6 48 89 D7 48 89 CB 48 8B 02 BA",
+  "match": "0x143c20210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c20210",
+  "kind": "func_start",
+  "names": [
+   "Render_Pass_RecreateOutputBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c20210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c20210.c;xref:0x14014ffb5",
+   "notes": "V7859 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

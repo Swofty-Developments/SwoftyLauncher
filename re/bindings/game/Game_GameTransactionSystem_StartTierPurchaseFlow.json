@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_GameTransactionSystem_StartTierPurchaseFlow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e65740",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e65740.c;str:s_GameTransactionSystem_StartTierPurchaseFlow;xref:0x141d1ebd1",
+  "notes": "startTierPurchaseFlow(sys,delegate,tier): stores delegate sys+0xa8/+0xb0; offline -> 'customisation_confirm_reconnect'; else 'transaction_confirm_purchase' (callback 0x142e654e0) with purchase_type=PPTier and selected_tier. Caller 0x141d1e1d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_transaction_system_start_tier_purchase_flow",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 B6 1A 00 00 01 48 89 F1 E8 ?? ?? ?? ?? 48 8B 7C 24",
+  "match": "0x141d1ebd1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142e65740",
+  "kind": "func_start",
+  "names": [
+   "Game_GameTransactionSystem_StartTierPurchaseFlow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x142e65740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e65740.c;xref:0x141d1ebd1",
+   "notes": "V7348 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

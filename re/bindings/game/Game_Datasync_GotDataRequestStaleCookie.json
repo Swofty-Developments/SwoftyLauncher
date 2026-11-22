@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Datasync_GotDataRequestStaleCookie",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431033e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431033e0.c;pat:log-channel-DATASYNC;xref:0x14fe71edb",
+  "notes": "Handler (lea at 0x14fe71edb in 0x14fe71e00). Finds the sync session by msg+0x10 in list this+0x48; stale cookie (msg+0x14 == +0x20) -> logs and broadcasts finished (msg 0x73, 0x14402e500). Else needs cookie +0x1c and state 2 (Syncing): sender (+0x30 == 1) starts sending to the peer (entry 0x1431053e0, +0x50 = 5); receiver confirms when the peer is host (msg 0x72), else logs ignore. (lane owner review requested) Better name: Game_Datasync_OnDataRequestMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.datasync_got_data_request_stale_cookie",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 8B 41 50",
+  "match": "0x1431033e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431033e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Datasync_GotDataRequestStaleCookie"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431033e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1431033e0.c;xref:0x14fe71edd",
+   "notes": "V5736 Data-request message handler with several ignore/start-send branches; stale cookie is one. Better: Game_Datasync_HandleDataRequestMessage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431033e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431033e0.c",
+   "notes": "V6986 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

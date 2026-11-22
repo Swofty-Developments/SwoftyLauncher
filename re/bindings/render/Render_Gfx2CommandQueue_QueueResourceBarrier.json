@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2CommandQueue_QueueResourceBarrier",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a06fc0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a06fc0.c;xref:0x142bcff54,0x14379c535,0x143bf46f8",
+  "notes": "Appends a 0x20-byte barrier to the queue array +0x150 (count +0x20150; at 0xfff flushes via ResourceBarrier vcall +0xd0 on the immediate list): before == after == 8 (UNORDERED_ACCESS) on queue types 1/2 -> UAV barrier (type 2); else transition {flags param_7&3, resource, subresource param_3, before param_5, after param_6}; skipped when before == after on other queues. Callers 0x142bcfc30, 0x14379c250, Game_Hbcn_SetAdditionalMips 0x143bf3fc0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx2_command_queue_flush_barriers_and_copy",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 44 89 C3 48 89 D7",
+  "match": "0x143a06fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a06fc0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2CommandQueue_QueueResourceBarrier"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a06fc0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143a06fc0.c;xref:0x142bcff54",
+   "notes": "V7814 better name Ne_Gfx2CommandQueue_QueueResourceBarrier: appends 0x20-byte barrier records at +0x150[idx] and flushes via vcall +0xd0 when count hits 0xfff; no copy"
+  }
+ ],
+ "proofs": []
+}

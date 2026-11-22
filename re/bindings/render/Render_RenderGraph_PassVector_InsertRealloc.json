@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_RenderGraph_PassVector_InsertRealloc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ecda30",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ecda30.c;xref:0x143bdc9c0,0x143bdcca1,0x143bdcf7e,0x143bdd26e",
+  "notes": "vector insert-with-reallocation for 0x160-byte elements: new capacity, allocator vcall +0x18 (align 0x10), element-wise move of the prefix, the new element param_3 at position param_2, then the suffix, frees the old buffer. Callers 0x143bdc9c0 (Render_Gfx2_BuildBindDescriptor), 0x143bdcca1 (Ne_RenderGraph_AppendPassDesc), 0x143bdcf7e (Ne_RenderGraph_CreateResourceDescB), 0x143bdd26e (Render_RenderGraph_CreateResourceDescC). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.render_graph_pass_vector_insert_realloc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 4D 89 C6 48 89 D7 48 89 CE 48 8B 09 4C 8B 46 08 4C 8B 66 10 4D 29 C4 49 C1 FC 05 49 B9",
+  "match": "0x143ecda30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ecda30",
+  "kind": "func_start",
+  "names": [
+   "Render_RenderGraph_PassVector_InsertRealloc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143ecda30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ecda30.c;xref:0x143bdc9c0",
+   "notes": "V8361 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

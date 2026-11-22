@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RendererUIConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442e2f80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442e2f80.c;pat:log-channel--;xref:0x1444a88b7",
+  "notes": "Reads Renderer.UI.Draw.maxShapeInstanceCount/maxCanvasCount/maxLineSegmentCount/maxTriangleCount/maxAAGraphCount into +0x124..+0x134, builds 4 materials (+0x70..), bind layout NeUIDrawingPlugin (+0x68), buffers lineData +0xb8, triangleData +0xc8, canvasData +0xd8, shapeInstanceData +0xe8, aaGraphInstanceData +0x108, batch buffers +0xf8/+0x118, prebuilt shapes +0x110. (lane owner review requested) Better name: Game_UiDrawingPlugin_CreateGpuResources (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_renderer_ui_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 03 00 00 C5 F8 29 BC 24 B0 03 00 00",
+  "match": "0x1442e2f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442e2f80",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RendererUIConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1442e2f80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1442e2f80.c;xref:0x1444a88b7",
+   "notes": "V6582 better name Game_UIDrawing_InitBuffers: reads 5 Renderer.UI.Draw limits but then creates NeUIDrawingPlugin GPU buffers (uiDraw/*.buffer)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1442e2f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442e2f80.c;xref:0x1444a88b7",
+   "notes": "V7197 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

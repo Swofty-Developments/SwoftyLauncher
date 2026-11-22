@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Resource_RequestLoadOrWait",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c770d0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c770d0.c;xref:0x142a963e6",
+  "notes": "Sets state +0x38 = 2 (xchg); if it was 0 posts callback 0x143c77060 via 0x146c621e0 vcall +0x68. If param_3 bit0: creates a completion event object (0x38 bytes, CreateEventW) with shared control block. Sets +0x39, resets event +0x28, posts plugin message 6 (0x30 bytes: flags, event, shared param_4, sequence +0x3c) to connection [+8], returns the event pair. Caller Game_CustomDecalModel_Bake 0x142a963e6. (lane owner review requested) Better name: Render_PluginConnection_PostFencedCommand (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.resource_request_load_or_wait",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 CF 44 89 C5 48 89",
+  "match": "0x143c770d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c770d0",
+  "kind": "func_start",
+  "names": [
+   "Render_Resource_RequestLoadOrWait"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c770d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c770d0.c;xref:0x142a963e6",
+   "notes": "V7888 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

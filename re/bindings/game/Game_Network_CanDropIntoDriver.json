@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_CanDropIntoDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143240eb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143240eb0.c;pat:log-message-method;xref:0x1432405b2",
+  "notes": "Caller FindEntrantToDropIn 0x14323fcb0. (this, player, entrant): returns 0 for vehicle 0xff or unknown player, else records a reason code at this+0xe8+peer*4 and returns 0 with a log: 1 watching, 2 no online championship, 3 OSQ (session type 9/0xe), 4 not entitled to the vehicle, 6 result status, 7 driver's player description, 8 vehicle (not) in garage, 9 safety car out, 10 progressData local/remote; all checks pass -> code 0, returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_can_drop_into_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 41 80 B8 82 00 00 00 FF",
+  "match": "0x143240eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143240eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_CanDropIntoDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143240eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143240eb0.c;xref:0x1432405b3",
+   "notes": "V5745 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

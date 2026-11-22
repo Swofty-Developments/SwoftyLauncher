@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TimeOfDaySystem_SetCameraCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144621370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144621370.c;pat:log-message-method;xref:0x145bf49a8",
+  "notes": "vtable cell 0x145bf49a8 (this-0x28 adjust). Logs setCameraCallback and under CS +0xb418 stores callback +0xb448, clears +0xb450. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.time_of_day_system_set_camera_callback",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7C",
+  "match": "0x144621370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144621370",
+  "kind": "func_start",
+  "names": [
+   "Game_TimeOfDaySystem_SetCameraCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144621370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144621370.c",
+   "notes": "V6708 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

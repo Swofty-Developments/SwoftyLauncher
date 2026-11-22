@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_EmplaceKey64_1416235d0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416235d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void* (void *map, void *out_iter, uint64_t *key, void *alloc)",
+  "evidence": "decomp:re/decomp/1416235d0.c;xref:0x1415dbcd3,0x141642f6f,0x141647189",
+  "notes": "(map, out, const u64 *key, alloc): takes a node from the free list map+8 (chunk alloc 0x141623a70): node[0]=key, node[2]=alloc, plus an empty inner robin-hood map (seed 0xc4ceb9fe1a85ec53 at node[3], inline table node+0x38, info inc 0x20). Inserts via 0x141623720: state 1 key exists (node back to free list), 2/3 stored in slot map+0x28, 0 full (0x141623a60). out = {slot ptr, info ptr map+0x30, inserted}. call sites."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_emplace_key64_1416235d0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 4D 89 CF 4D 89 C4 48 89 D6 48 89 CF 4C 8D 71 08 48 8B 59 08 48 85 DB 75 0B 4C 89 F1 E8 ?? ?? ?? ?? 48 89 C3 48 8B 03 48 89 47 08 49 8B 04 24 48 89 03 4C 89 7B 10",
+  "match": "0x1416235d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416235d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodMap_EmplaceKey64_1416235d0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416235d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1416235d0.c;xref:0x1415dbcd3;xref:0x141642f6f",
+   "notes": "V9726 Emplaces key into a node-pool backed open-addressed map (freelist at +8, FUN_141623720 find slot, switch on result, out_iter = slot/inserted); the 0x58 node size and hash constant 0xc4ceb9fe1a85ec53 are not visible here."
+  }
+ ],
+ "proofs": []
+}

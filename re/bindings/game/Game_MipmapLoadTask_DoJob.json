@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MipmapLoadTask_DoJob",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bfed50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bfed50.c;pat:log-message-cxx;xref:0x1459bf970",
+  "notes": "MipmapLoadTask::doJob: job=[this+0x10]; sums sizes of mip chunks +0x180 (0x10 stride, +0x19c..+0x198-1), allocs via +0x18 vcall+0x18; per chunk: type 7 = palette/bit-packed decode (16/8/32-byte), type 3 = 0x1447bf1d0, else 'UNSUPPORTED MIPMAP COMPRESSION METHOD'; raw = memcpy. Swaps buffer +0x30/+0x38; status +0x1b4 = 0/5 (failed)/0xc (OOM)/0x55. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.mipmap_load_task_do_job",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 49 89 CE",
+  "match": "0x143bfed50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfed50",
+  "kind": "func_start",
+  "names": [
+   "Game_MipmapLoadTask_DoJob"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143bfed50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bfed50.c;xref:0x14397ac84",
+   "notes": "V6469 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

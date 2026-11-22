@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CameraActor_RefreshCameraState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401c1110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401c1110.c;xref:0x140186e5e,0x14018f273,0x1401901eb",
+  "notes": "When enabled (+0x1e0): if requested type +0x1f8 != current +0x1fc runs 0x1401c0fe0 then 0x1401c08d0. For types 0..2 copies params +0x200..+0x217 (flag bits from +0x213..+0x217, active = +0x1e0 && +0x188) into the typed block and uploads basis +0x140/+0x150/+0x160 + translation +0x170 via 0x146c621e0 vt+0x28 (sizes 0x50/0xa0/0x70); type 3 only when dirty +0x840: 0x143d2e8b0 with the translation, clears +0x840. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.camera_actor_refresh_camera_state",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 90 00 00 00 C5 78 29 8C 24 80 00 00",
+  "match": "0x1401c1110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401c1110",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraActor_RefreshCameraState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1401c1110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401c1110.c;xref:0x140186e5e",
+   "notes": "V7973 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

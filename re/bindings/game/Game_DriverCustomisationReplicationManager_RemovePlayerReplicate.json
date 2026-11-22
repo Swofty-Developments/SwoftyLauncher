@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomisationReplicationManager_RemovePlayerReplicate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14313bcd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14313bcd0.c;pat:log-message-cxx;xref:0x14313c70a",
+  "notes": "(mgr, player desc), called from 0x14313c660 (0x14313c70a). Only when int [mgr+0x10]+8 < 2: hashes the player id (+0x48 flags, +0x10..+0x28 ids by kind +8) into the map (buckets [mgr+0x58], mask mgr+0x70, end mgr+0x40); found -> logs 'removing player %s', sends net message 0x145824860 (player desc + id entry+0x60) via 0x14402e500([mgr+0x20], 1, ...) and calls RemovePlayerDriverCus 0x14313c000(mgr, player, id); not found -> logs 'could not be found'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_customisation_replication_manager_remove_player_replicate",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 B8 07 00 00 00 61 00 00 00 48 89 44 24 28 4C 8D 3D",
+  "match": "0x14313c70a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14313bcd0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomisationReplicationManager_RemovePlayerReplicate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14313bcd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14313bcd0.c;xref:0x14313c70a",
+   "notes": "V7353 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_TrackGrid_SampleHeight",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447949b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447949b0.c;xref:0x140158971,0x14462f237,0x14472119c",
+  "notes": "(grid, layer, x, z, byte *valid, float *refHeight): x/z clamped to +-5000, floored; four corners (x0/x1, z0/z1) located via 0x14479ecc0 (tile, row, col) and read as u16 at grid+0xc88 + tile*0x8000 + row*0x100 + col*2 (0 = no data); height = grid+0x3f0a1c + u16 * grid+0x3f0a34. *valid = all four present and within 0.5 of the reference (refHeight, else the first present corner). Returns the bilinear blend. Callers 0x140158971, 0x14462f237, 0x14472119c. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.track_grid_sample_height",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 7C 24 30 00 0F 84 ?? ?? ?? ?? 42 80 3C 26",
+  "match": "0x140158971",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1447949b0",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackGrid_SampleHeight"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1447949b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447949b0.c;xref:0x140158971",
+   "notes": "V7420 clamp +-5000, 4 samples via 0x14479ecc0, tile 0x8000 at +0xc88, cell +0x3f0a1c, default +0x3f0a34 confirmed; callers are Car_Chassis_InitialiseRuntime (listed as Car_Parse_Chassis) + 0x140157d90 + Render_Skidmarks_Update"
+  }
+ ],
+ "proofs": []
+}

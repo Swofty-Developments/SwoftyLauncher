@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnUnlockSlotRequested",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430abfc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430abfc0.c;pat:log-message-method;xref:0x1430aaa59,0x1430df52a",
+  "notes": "UI command handler lea'd in NetworkUi init 0x1430aa810 (and 0x1430dda70): logs 'onUnlockSlotRequested(%d)' and displays a UI message 0x1442d9bf0 with a listener handle at +0x3a8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ui_on_unlock_slot_requested",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC E8 00 00 00 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430abfc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430abfc0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnUnlockSlotRequested"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430abfc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430abfc0.c;xref:0x1430aaa5b",
+   "notes": "V5325 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

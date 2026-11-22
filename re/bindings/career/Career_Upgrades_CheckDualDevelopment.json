@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_Upgrades_CheckDualDevelopment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143526e60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143526e60.c;pat:log-channel-UPGRADES/D;xref:0x143526c70,0x143533bcd",
+  "notes": "Filters an instance list (count at +0xc00) into out: an instance whose last entry byte +0xb == 1 (dual-dev flag) is dropped if a later item has the same node hash +0x58; logs UPGRADES/D 'Mismatched dual development mode for upgrades %s and %s' when both have the same state but the partner lacks the flag. Returns out. (lane owner review requested) Better name: Career_Upgrades_FilterDualDevelopmentPairs (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.upgrades_check_dual_development",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 C7 81 00 0C 00 00 00 00 00 00",
+  "match": "0x143526e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143526e60",
+  "kind": "func_start",
+  "names": [
+   "Career_Upgrades_CheckDualDevelopment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143526e60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143526e60.c;xref:0x143526c70",
+   "notes": "V6076 Body builds a de-duplicated list (count at +0xc00) dropping entries with equal id [+0x58] and flag(-5)==1; mismatch log only on a dup with differing -8 byte. Better: Career_Upgrades_FilterDualDevelopment."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143526e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143526e60.c;xref:0x143526c70",
+   "notes": "V7075 facts verified (strings, size, caller)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x143526e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143526e60.c;str:\"Mismatched dual development mode for upgrades %s and %s\";str:\"UPGRADES/D\"",
+   "notes": "V9235 Name matches the UPGRADES/D message."
+  }
+ ],
+ "proofs": []
+}

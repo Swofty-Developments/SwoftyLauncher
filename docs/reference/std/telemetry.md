@@ -309,7 +309,7 @@ The core logs the first packet of each format and id whose length differs from t
 
 The Session packet's `m_trackId` is one signed byte, and an added track's `statId` is given per install (from 254 down), so the byte differs from one PC to the next and names no track an overlay knows. Every added track has a **Swofty track id** instead: a `u32` that is the same on every PC.
 
-- A track listed in `LISTED` (`packages/core/src/udp_ids.rs`) has the id given there, in `256..0x80000000`. Ids `0..=255` are left to the game's stock tracks.
+- A track listed in `LISTED` (`packages/core/src/games/f1_25/game_db/udp_ids.rs`) has the id given there, in `256..0x80000000`. Ids `0..=255` are left to the game's stock tracks.
 - Any other track has `0x80000000 | (FNV-1a 32 of "<addon id>/<track code>" & 0x7fffffff)`. Nothing has to be registered: everyone who installs the same track package gets the same id.
 
 Overlays that only read `m_trackId` know a track by its number there, and that field is one byte. The stock tracks use `0..=41` in F1 25, `42..=63` stay free for tracks the game may add and `-1` means unknown, so `LISTED` can give an added track a fixed `m_trackId` byte in `64..=254` (`session`), the same on every PC: 191 tracks. Read as the specification's `int8`, `128..=254` arrive as `-128..=-2`; the list gives out `64..=127` first. An overlay adds those numbers to its track table once; `m_trackLength` (u16 at 33) tells most tracks with `-1` apart too. More tracks than that are told apart only by the Swofty Track packet. A list entry is added by pull request and its numbers are never reused.

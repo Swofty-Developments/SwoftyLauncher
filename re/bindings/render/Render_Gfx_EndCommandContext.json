@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_EndCommandContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a00140",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a00140.c;xref:0x143b5a6f2,0x143b5a7f4",
+  "notes": "Stores device+0xa38 into list+0x4c, fills ctx+0x1724..+0x1814 with 0xFF, clears the TLS current context (error ring on failure), list vcall +0x188, appends a closing node (Render_Gfx2CmdContext_ReserveNodeSlot 0x1439b9040, flag +0x3c = 1) to the list node chain (+0x28/+0x30), list vcall +0x50, clears ctx+0x60 and +0x58. Pair of Render_Gfx_BeginCommandContext (same callers 0x143b5a680, 0x143b5a770). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_end_command_context",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 05 ?? ?? ?? ?? 8B 80 38",
+  "match": "0x143a00140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a00140",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_EndCommandContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a00140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a00140.c;xref:0x143b5a6f2",
+   "notes": "V8510 frame stamp +0x4c, 0xFF fill ctx+0x1724..0x1814, TlsSetValue(index,0); pair of Begin"
+  }
+ ],
+ "proofs": []
+}

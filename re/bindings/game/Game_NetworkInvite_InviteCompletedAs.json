@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkInvite_InviteCompletedAs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143161ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143161ce0.c;pat:log-channel-NETWORK-INVITE;xref:0x143162408,0x1431625b8,0x143165bed,0x143165cae",
+  "notes": "cxx=network::InviteManager::onJoinCompleted(NEbool, NeNetError): logs '%s(%s, %d)' onJoinCompleted. On failure calls Game_InviteManager_Fail 0x143161f50; on success logs 'Invite completed as Host/Client', changes state (eConnecting) and enters the session (0x1430647a0). Tail jumps from 0x1431622c0, 0x143162480, 0x143162850, 0x143162a10 and thunks 0x143165bd0, 0x143165c90; lea in 0x143165d50. (lane owner review requested) Better name: Game_NetworkInvite_OnJoinCompleted (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_invite_invite_completed_as",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 57",
+  "match": "0x143161ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143161ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkInvite_InviteCompletedAs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143161ce0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143161ce0.c;xref:0x143162408",
+   "notes": "V5786 InviteManager_Complete: 14KB: completes invite, changeState, fail, stopOnlineComponents, cancel; log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143161ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143161ce0.c;xref:0x143162408",
+   "notes": "V7003 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

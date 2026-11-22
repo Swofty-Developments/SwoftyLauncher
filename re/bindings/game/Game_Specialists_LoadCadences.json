@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Specialists_LoadCadences",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412eb290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1412eb290.c;pat:log-message-method;xref:0x1412ed5f4",
+  "notes": "Per specialist rec (+0x358..+0x360, 0x128): cadence +0xa0 if set, else MT19937 (seed this+0x280) mod entries-1 (+0x2e0, 0x28 each); copies entry, resizes byte vectors to list len from (+0x278)+0x1030 vt+0x88, calls 0x1412db360. If 0x1412dcbd0, resolves two driver ids (0x3fff=none) and copies one driver's cadence to the other (dir by +0x418), SPECIALISTS logs 'loadCadences - ...'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.specialists_load_cadences",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 0B 00 00 C5 78 29 84 24 80 0B 00 00",
+  "match": "0x1412eb290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412eb290",
+  "kind": "func_start",
+  "names": [
+   "Game_Specialists_LoadCadences"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1412eb290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412eb290.c;xref:0x1412eb280",
+   "notes": "V4747 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

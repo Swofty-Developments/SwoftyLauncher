@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_InitEffectInstance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af7160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af7160.c;xref:0x143af5d93,0x143b02efd,0x143b02f08",
+  "notes": "(node, mat[8 qwords]): effect = node+0xc0; stores the 4x4 at effect +0x10..+0x48; per emitter (stride 0x180) keeps previous transform at +0x50..+0x88 and copies the new one; for emitters with +0x178 bit3 extracts scale (stored +0x124..+0x12c, length +0x150) when not ~1; then tail-jumps (0x143af7453) into 0x143af7870 bounds. Callers 0x143af5620 (jmp), 0x143b02910. (lane owner review requested) Better name: Game_Particles_SetEffectTransform (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.particles_init_effect_instance",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 8B 81 C0 00",
+  "match": "0x143af7160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af7160",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_InitEffectInstance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143af7160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af7160.c;xref:0x143adb75b",
+   "notes": "V7858 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

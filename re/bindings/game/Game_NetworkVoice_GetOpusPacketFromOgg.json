@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_GetOpusPacketFromOgg",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403b010",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14403b010.c;pat:log-message-method;xref:0x145a49ab0",
+  "notes": "Logs 'LOCAL getOpusPacketFromOgg: got compressed data %d bytes' and parses an Ogg stream (ogg_stream_pagein/packetout: Opus header, tags, data), copying the Opus packet out. Only reference is the vtable cell 0x145a49ab0 (next cells CreateOggOpusStream, Game_Audio_CompressDataHelper). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_voice_get_opus_packet_from_ogg",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 4D 89 C7",
+  "match": "0x14403b010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403b010",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_GetOpusPacketFromOgg"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403b010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403b010.c;xref:0x14403ae5f",
+   "notes": "V6418 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

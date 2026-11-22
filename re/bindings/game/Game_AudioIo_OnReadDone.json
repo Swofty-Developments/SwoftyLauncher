@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AudioIo_OnReadDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fbc3c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fbc3c0.c;pat:log-channel-AUDIO_IO;xref:0x143fbb422,0x143fbb59e,0x143fbb8f0",
+  "notes": "onReadOperationCompleted(io, op, result): logs, calls device vt+8(op+0x20, op+0x28, ok = result 0 or 0x55), clears op state, drops type-2 (cancel) requests for this handle from list io+0x560 (CS io+0x578); if saved requests remain (op+0x68) starts the next chunk read (0x143f38900) and logs the count. Callers: 3 sites in 0x143fba2d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.audio_io_on_read_done",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 48 89 D6 48 89 CF 45 85 C0",
+  "match": "0x143fbc3c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fbc3c0",
+  "kind": "func_start",
+  "names": [
+   "Game_AudioIo_OnReadDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fbc3c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fbc3c0.c;xref:0x143fbb422",
+   "notes": "V6314 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

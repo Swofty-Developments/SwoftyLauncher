@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_CreateScreenSpaceDecalsPass",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143db37a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143db37a0.c;xref:0x143d8528a,0x143db7ef9",
+  "notes": "Constructor (vt 0x1459b6860, CS init) of the screen-space decal generator: stores args at +0x60..+0x90, registers resource param_8 in the 12-slot table param_9+0x128 (refcount +0x188, index -> +0x98); with param_3 creates contexts ScreenSpaceDecals_ANS.ContextSetup (+0x48) and _N (+0x50), else _Main (+0x58); looks up 'applyTrackConstants' via param_11 vcall +0x98 into +0x80/+0x88. Callers RttGenerator, 0x143db7a90. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.rtt_create_screen_space_decals_pass",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 4C 89 4C 24 28",
+  "match": "0x143db37a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143db37a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_CreateScreenSpaceDecalsPass"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143db37a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143db37a0.c;xref:0x143d8528a",
+   "notes": "V7930 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

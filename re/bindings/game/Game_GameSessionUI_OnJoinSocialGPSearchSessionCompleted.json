@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionUI_OnJoinSocialGPSearchSessionCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b2a70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430b2a70.c;pat:log-message-cxx;xref:0x1430aeade,0x1430b2547,0x1430b29af",
+  "notes": "Refs: lea 0x1430aeade, 0x1430b2547 (Game_GameSessionUI_TriggerSocialGP) and 0x1430b29af (OnJoinSocialGPSessionCompleted), all passing it as the search delegate to F1WSocialGP_EnterSession. Own bounds 0x1430b2a70..0x1430b2b37 (decomp merges the tail target 0x1442aad70 = UI closeMessage). Logs NETWORK-UI 'success: %d, error code: %d, retry: %d' with 'onJoinSocialGPSearchSessionCompleted(NEbool, NeNetError, NEbool)'; if the 'searching' popup [p1+0x390] has a non-empty message, tail-jumps to close it (0x1442aad70(p1+0x388)). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_ui_on_join_social_gp_search_session_completed",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7D",
+  "match": "0x1430b2a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b2a70",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionUI_OnJoinSocialGPSearchSessionCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b2a70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b2a70.c;xref:0x1430aeae0",
+   "notes": "V5352 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

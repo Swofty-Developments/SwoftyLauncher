@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ModelInstance_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3c770",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3c770.c;xref:0x14069c7c1,0x1429ab927,0x1442f7dad,0x14446e492,0x144636c9e,0x144662952,0x1447974fb,0x14742c470",
+  "notes": "Ctor (vt 0x1459b26e8): identity transforms, model +0xc8, skeleton +0xd0, lod count +0xd8, flag +0xd9, bounds +0xe0/+0xf0, +0x100/+0x108, +0x130, flags 0x8007e. One zeroed block from the render allocator 0x146c621e0 (+0x48) for node matrices/bitsets sized by *param_2 nodes and the lods, wired into +0xa0; registers the instance (+0x18) -> +8, queues update 0x143d3ce20 once and a 0x40-byte create command (+0x20/+0x30). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.model_instance_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 CE 8B BC 24 08 01",
+  "match": "0x143d3c770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3c770",
+  "kind": "func_start",
+  "names": [
+   "Game_ModelInstance_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x143d3c770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3c770.c;xref:0x14069c7c1",
+   "notes": "V6785 Vtable 0x1459b26e8, identity matrices, flags confirmed; hypothesis."
+  }
+ ],
+ "proofs": []
+}

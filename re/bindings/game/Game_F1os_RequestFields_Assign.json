@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_RequestFields_Assign",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140826200",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140826200.c;xref:0x140822a97,0x1408338e7,0x140b14be7",
+  "notes": "Copy-assign of a vector {alloc +0, begin +8, end +0x10, cap +0x18} of 0x40-byte records (u32 id, shared_ptr +8/+0x10 with atomic inc of ctrl+8, string object +0x18 vtable 0x145612ec0->0x145612eb8); reallocates via allocator vcall +0x18 when cap is too small. Callers include 0x1408225a0, 0x140833320, 0x140b14610 (Game_F1os_Create_GetCalendar). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1os_request_fields_assign",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D3 48 8B 52",
+  "match": "0x140826200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140826200",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_RequestFields_Assign"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140826200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140826200.c;xref:0x140822a97",
+   "notes": "V8005 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

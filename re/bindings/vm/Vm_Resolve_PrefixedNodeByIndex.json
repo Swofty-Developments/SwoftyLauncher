@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Resolve_PrefixedNodeByIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14182cfc0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm_obj, uint32_t index)",
+  "evidence": "decomp:re/decomp/14182cfc0.c;xref:0x1415c4743;xref:0x141727402;xref:0x1419100ca",
+  "notes": "myteam-g2: Looks up a name in a 20-entry string table (UNK_14571b560) by index, formats a path with Ne_StrBuf_Printf and resolves the matching registry node with Vm_Resolve_RegistryNode; only if the object type matches (vm_obj+0x206 sub-object). Used by Career_MyTeam_IsRaceWeekendOrTimeline and the wizard title slice."
+ },
+ "signature": {
+  "id": "vm.resolve_prefixed_node_by_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 89 D7",
+  "match": "0x14182cfc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14182cfc0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Resolve_PrefixedNodeByIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14182cfc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14182cfc0.c;xref:0x1415c4743",
+   "notes": "V9815 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

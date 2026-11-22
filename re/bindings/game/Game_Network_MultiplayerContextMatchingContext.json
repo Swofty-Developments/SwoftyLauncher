@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MultiplayerContextMatchingContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142214550",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142214550.c;pat:log-channel-NETWORK;xref:0x1457753d8",
+  "notes": "Logs '%s: Multiplayer Context %s Matching Context %s' with __FUNCSIG__ 'virtual void game::FrontendLobbyTabViewModel::onScreenActivated()' at entry (0x14221462e), inlined createData(options::MultiplayerContext), subscribes MessageLobbyTrackVoteChanged / MessageLobbyKickVoteChanged. Virtual (vtable cell 0x1457753d8). (lane owner review requested) Better name: Game_FrontendLobbyTabViewModel_OnScreenActivated (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_multiplayer_context_matching_context",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142214550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142214550",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MultiplayerContextMatchingContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142214550",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142214550.c;xref:0x14ad8eef2",
+   "notes": "V5246 1047-line FrontendLobbyTabViewModel::onScreenActivated/createData (MessageLobbyTrackVoteChanged, KickVoteChanged); context log is one line. Better Game_FrontendLobbyTabViewModel_OnScreenActivated"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142214550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142214550.c",
+   "notes": "V7288 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

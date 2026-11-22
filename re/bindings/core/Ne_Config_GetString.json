@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ne_Config_GetString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a44700",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a44700.c;xref:0x14020a6a2,0x140346003",
+  "notes": "(cfg, key, outBuf, default) -> NEerrno: looks up key in the config hash map (+8) and copies the value (or default) into outBuf (+0x10 data, +8 cap). Callers: census steam 0x3a44700, among them Ne_Gfx2Renderer_Initialise, Asset_Load_DevSessionWorlds, Sess_Entrant_BuildCandidate, Game_GridCutSceneScript_SetupDriverTalkToPress."
+ },
+ "signature": {
+  "id": "core.config_get_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 4C 89 CF 4D 89 C6 48",
+  "match": "0x143a44700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a44700",
+  "kind": "func_start",
+  "names": [
+   "Ne_Config_GetString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143a44700",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a44700.c;xref:0x14020a6a2",
+   "notes": "V3624 name, offsets and callers match decompile"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Config_GetString",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143a44700-0x143a44b71,0x143905280-0x1439053c6,0x14391ade0-0x14391af40,1.0.145 0x143a46cd0-0x143a47141;xref:0x143a44727,0x143a4473c,0x143a44749,0x143a4476b,0x143a44772,0x143a44783,0x143a4487d,0x143a44a99,0x14020a6a2,0x140346003",
+   "notes": "V100048 Blind: agree. Own disasm 0x143a44700..b71 (.pdata, no thunk). 4 args: rcx cfg (map ptr [cfg+8], shared SRWLOCK at cfg+0x10), rdx key C string (FNV-1a robin_hood find 0x143905280, strcmp), r8 out {+8 u64 cap, +0x10 char* data}, r9 default (nullable). eax: 0 found and copied; 2 no map or key absent (default copied, cut to cap-1); 0x54 len+1>cap (default copied, value not). Codes recorded to TLS listeners + 10-slot ring only on no-map and too-long paths. NULL default writes data[0]=0 with no cap check. Callers 89 calls/48 funcs (.xtls 84, .data1 5), 0 ptrs, equal to census row; both xrefs and all 4 named callers call it. 1.0.145 twin 0x143a46cd0, 268/268 same."
+  }
+ ],
+ "proofs": []
+}

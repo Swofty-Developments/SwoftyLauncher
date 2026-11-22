@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkContent_ScanningContentItemsEnableDisable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303cf10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14303cf10.c;pat:log-channel-NETWORK-CONTENT;xref:0x14305f52b,0x14305f79f",
+  "notes": "If flag this+299: logs \"Scanning content items for enable/disable state. Mask\"; for each item (this+0x30..0x38) updates the own bit in its mask from item vtable+8, compares with the required mask this+0x118 and logs \"ContentItem %s is now enabled/DISABLED\". (lane owner review requested) Better name: Game_NetworkContent_RescanContentItems (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_content_scanning_content_items_enable_disable",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 80 B9 2B 01 00 00 00",
+  "match": "0x14303cf10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303cf10",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkContent_ScanningContentItemsEnableDisable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303cf10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303cf10.c;xref:0x14305f52c",
+   "notes": "V5450 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

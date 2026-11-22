@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_LogitechLights_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143aa3680",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143aa3680.c;pat:log-channel-LOGITECH;xref:0x1458a7390",
+  "notes": "Virtual (cell 0x1458a7390). (sys, device name, telemetry): finds the entry (map +0x60) whose +0x178 == name; SDK handle +0x2a8 -> RPM LED call 0x1449e8cd0(h, telem+0x2c, 0.001, 1.0) (model names C29/C24/C26/C27), LOGITECH 'Updating logi lights %f.'. If +0x2d9: speed display +0x2e0 vcall +0x48(round(telem+0x24)), flag LEDs +0x2f8 coloured from telem bytes +0x4c..+0x53, RPM bars +0x2e8/+0x2f0 up to telem+0x2c; WHEEL_LIGHTS 'Speed:%d || RPM%d'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.logitech_lights_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 8B 41 60",
+  "match": "0x143aa3680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143aa3680",
+  "kind": "func_start",
+  "names": [
+   "Game_LogitechLights_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143aa3680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143aa3680.c",
+   "notes": "V6448 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

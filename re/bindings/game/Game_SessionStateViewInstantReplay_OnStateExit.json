@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateViewInstantReplay_OnStateExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142da2de0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142da2de0.c;pat:log-message-method;xref:0x1457e3950",
+  "notes": "Vtable cell 0x1457e3950 (code neighbours). Returns 1 when exit may finish: m_dropThrough (+0xed4); else audio exit vt+0x70/+0x78 (s_replay_instant_Id 0x146053e08), subtasks, UI fade param_1[0x1ac], m_replayFlowHandle param_1[0x1c0], swipe +0xf7a/+0xf7b; on exit posts 0x1457e6698/0x145754fc0 via Ne_Post_BusMessage, calls 0x142d9f2a0. Logs 'onStateExit <cond>'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_state_view_instant_replay_on_state_exit",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 98 02 00 00 48 89 CE",
+  "match": "0x142da2de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142da2de0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateViewInstantReplay_OnStateExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142da2de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142da2de0.c",
+   "notes": "V5449 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

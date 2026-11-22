@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomDriverNetworkMessageHandler_HandleCustomDriverMess_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143137af0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143137af0.c;pat:log-message-cxx;xref:0x14312f431",
+  "notes": "Pretty-function 0x1458194f9 = handleCustomDriverMessageInfoUpdate(NeNetMessage&, NeNetConnectionID); registered by lea at 0x14312f431 (in 0x14312f230). If msg+0x5e0 != 0 and stat id u16 msg+0x1a != 0x3fff: copies the DriverInfo from msg+0x28.. and calls 0x14246e3a0([p1+0x28], statId msg+0x18, &info, 0); result 0 + session [[p1+0x58]+0x88]+0x260 of the right type -> component 0x14605ade0, 0x140c00580; logs 'Driver Info Update %s' (result names 0x145827478). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_driver_network_message_handler_handle_custom_driver_mess_2",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 40 06 00 00 48 89 D3",
+  "match": "0x143137af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143137af0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomDriverNetworkMessageHandler_HandleCustomDriverMess_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143137af0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143137af0.c;xref:0x14312f433",
+   "notes": "V5887 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

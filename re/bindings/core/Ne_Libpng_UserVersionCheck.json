@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_UserVersionCheck",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14390e0a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14390e0a0.c;xref:0x14390e3f4",
+  "notes": "(png, const char *ver): libpng png_user_version_check: compares ver with '1.6.37', sets bit 2 of png+0x16a on mismatch or null; then builds 'Application built with libpng-<ver> but running with 1.6.37' and calls Ne_Libpng_Warning 0x1447a0590; returns 1 ok / 0. Only caller Render_Png_EncodeContextInit 0x14390e3f4."
+ },
+ "signature": {
+  "id": "core.libpng_write_struct_init_14390e0a0",
+  "section": ".xtls",
+  "pattern": "48 81 EC A8 00 00 00 48 85 D2 0F 84 ?? ?? ?? ?? 44 0F B6 02",
+  "match": "0x14390e0a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14390e0a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_UserVersionCheck"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14390e0a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14390e0a0.c;xref:0x14390e3f4",
+   "notes": "V8475 compares user version string against 1.6.37 and builds Application built with libpng- warning = png_user_version_check, not write struct init; better name Ne_Libpng_UserVersionCheck"
+  }
+ ],
+ "proofs": []
+}

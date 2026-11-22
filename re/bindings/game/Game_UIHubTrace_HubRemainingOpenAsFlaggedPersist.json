@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_HubRemainingOpenAsFlaggedPersist",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438060f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438060f0.c;pat:log-channel-UIHubTrace;xref:0x143806e45,0x143806f9e",
+  "notes": "(hub, comm): logs '[COMMS] Communicator unregistered [%s]' (name via comm vt+0x20, 'UNKNWOWN' when null). If comm == hub+0x78: [comm+0x50]+0x90 = 0, hub+0x78 = 0, logs the persist / 'flagged to close on the next Update' lines; when hub+0x99 == 0 writes 2 to hub+0x9c. Callers 0x143806e45, 0x143806f9e. (lane owner review requested) Better name: Game_UIHub_UnregisterCommunicator (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_hub_remaining_open_as_flagged_persist",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5A",
+  "match": "0x1438060f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438060f0",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_HubRemainingOpenAsFlaggedPersist"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438060f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1438060f0.c;xref:0x143806e45",
+   "notes": "V6286 also logs communicator unregistered and flagged-to-close; main role is unregister communicator. Better Game_UIHubTrace_UnregisterCommunicator"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1438060f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438060f0.c;xref:0x143806e45",
+   "notes": "V7118 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

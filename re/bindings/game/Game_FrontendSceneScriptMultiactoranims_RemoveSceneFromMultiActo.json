@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneScriptMultiactoranims_RemoveSceneFromMultiActo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428b7b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428b7b80.c;pat:log-message-method;xref:0x1428960b1,0x1428982c7",
+  "notes": "Strings 0x1457abbbb/0x1457abc37/0x1457abcb1 = removeSceneFromMultiActorAnimManager() (channel FRONTEND_SCENE_SCRIPT/MultiActorAnims). Looks up p2 (animation key, name *p2) in FNV-1a-of-pointer hash map p1+0x28/mask +0x40; missing -> log. Else decrements refcount node+0x18, under CS node[0x1e] walks list +0x90..+0x98, removes scene p3 (and p4) from node+0x28; at 0 destroys shared sequence node+0x20, unlinks node, frees via allocator [p1+8] vt+0x38. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_script_multiactoranims_remove_scene_from_multi_acto",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D3",
+  "match": "0x1428b7b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428b7b80",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneScriptMultiactoranims_RemoveSceneFromMultiActo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428b7b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428b7b80.c;xref:0x1428960b1",
+   "notes": "V5127 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

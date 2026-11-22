@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleLapTimesSystem_FindOrCreateLapTimesData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f32ee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f32ee0.c;pat:log-message-cxx;xref:0x142f31cac,0x142f31dc8,0x142f32521,0x142f3282a",
+  "notes": "Read in full (this, u8 vehicle): if vehicle entry this+0x58[v] exists with +0x18 set: returns cached component this+0x138[v] if any, else entry+0x38; otherwise returns this+0x138[v] or allocates a 0x9cb8-byte component (allocator this+0x10, init 0x140987660) and stores it. Logs the ' - vehicle has ...' / ' - creating ...' lines (LAPTIMES/V). Callers 0x142f31ca0, 0x142f31d10, 0x142f32480, 0x142f327a0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_lap_times_system_find_or_create_lap_times_data",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CF 80 3D ?? ?? ?? ?? 01 0F B6 F2 75 6F B8 8E 00 00 00",
+  "match": "0x142f32ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f32ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleLapTimesSystem_FindOrCreateLapTimesData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f32ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f32ee0.c;xref:0x142f31cac",
+   "notes": "V5613 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

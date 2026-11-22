@@ -10,7 +10,10 @@
   kb.py --agent A verify <kind> <item> agree|disagree|partial "<evidence>" ["notes"]
   kb.py --agent A test-new "<question>"               allocate re/tests/T###.md
   kb.py --agent A import <rows.tsv> <table>           add rows not yet present (ghidra_export output)
+  kb.py export <dir>                                  every table with the binding records merged in, plus structs/
+  kb.py function-names                                rewrite re/db/function_names.tsv (crash symbols for the apps)
 Tables: functions globals db_keys strings_anchors subsystems verify
+functions, globals and verify also hold the rows of the binding records under re/bindings (binding_record.py).
 """
 import argparse, datetime, json, os, re, sys, contextlib
 try:
@@ -33,6 +36,7 @@ TABLES = {
     'strings_anchors': (['id', 'addr', 'enc', 'text', 'refs', 'funcs', 'level', 'notes'], ('id',)),
     'subsystems': (['id', 'prefix', 'owner', 'status', 'description'], ('id',)),
     'verify': (['date', 'verifier', 'kind', 'item', 'claimed', 'verdict', 'evidence', 'notes'], None),
+    'verify_ranges': (['first', 'last', 'owner', 'granted', 'notes'], ('first',)),
 }
 LEVELS = ('L0', 'L1', 'L2', 'L3')
 TOKEN_KINDS = ('decomp', 'xref', 'str', 'imm', 'pat', 'doc', 'kb', 'trace', 'sig')
@@ -48,7 +52,28 @@ def path(table):
     return os.path.join(DB, f'{table}.tsv')
 
 
+RECORD_TABLES = ('functions', 'globals', 'verify')
+
+
 def read_table(table):
+    rows, errs = read_tsv(table)
+    if table in RECORD_TABLES:
+        import binding_record
+        more, more_errs = binding_record.Store.get().table_rows(table)
+        rows += more
+        errs += more_errs
+    return rows, errs
+
+
+def load_signatures():
+    with open(os.path.join(DB, 'signatures.json')) as f:
+        doc = json.load(f)
+    import binding_record
+    doc['signatures'] += binding_record.Store.get().signatures()
+    return doc
+
+
+def read_tsv(table):
     cols, _ = TABLES[table]
     p = path(table)
     rows = []
@@ -72,7 +97,44 @@ def read_table(table):
     return rows, errs
 
 
+FUNCTION_NAMES = os.path.join(DB, 'function_names.tsv')
+
+
+def function_names_text(rows=None):
+    """addr and name of every function, tables and records together, by address: the crash symbols the launcher and
+    the CLI embed. Generated; kb.py rewrites it on every functions write."""
+    rows = read_table('functions')[0] if rows is None else rows
+    return 'addr\tname\n' + ''.join(f'{r["addr"]}\t{r["name"]}\n' for r in sorted(rows, key=lambda r: int(r['addr'], 16)))
+
+
+def write_function_names():
+    text = function_names_text()
+    try:
+        with open(FUNCTION_NAMES) as f:
+            if f.read() == text:
+                return False
+    except OSError:
+        pass
+    tmp = f'{FUNCTION_NAMES}.{os.getpid()}.tmp'
+    with open(tmp, 'w') as f:
+        f.write(text)
+    os.replace(tmp, FUNCTION_NAMES)
+    return True
+
+
 def write_table(table, rows):
+    """Base rows go to <table>.tsv; rows that came from a binding record go back into that record."""
+    records = [r for r in rows if r.get('_record')]
+    if records:
+        import binding_record
+        store = binding_record.Store.get()
+        for r in records:
+            rec = store.by_relpath(r['_record'])
+            before = rec.to_json()
+            rec.set_table_row(r)
+            if rec.to_json() != before:
+                rec.save()
+    rows = [r for r in rows if not r.get('_record')]
     cols, key = TABLES[table]
     if key and key[0] in ('addr',):
         rows = sorted(rows, key=lambda r: int(r['addr'], 16))
@@ -85,6 +147,8 @@ def write_table(table, rows):
         for r in rows:
             f.write('\t'.join(r[c] for c in cols) + '\n')
     os.replace(tmp, p)
+    if table == 'functions':
+        write_function_names()
 
 
 def row_key(table, r):
@@ -105,9 +169,27 @@ def tokens(ev):
     return out
 
 
+_subsystems = (None, {})
+
+
 def subsystems():
-    rows, _ = read_table('subsystems')
-    return {r['id']: r for r in rows}
+    """subsystems.tsv by id, parsed again only when the file's bytes differ from the last parse."""
+    global _subsystems
+
+    def raw():
+        try:
+            with open(path('subsystems'), 'rb') as f:
+                return f.read()
+        except OSError:
+            return None
+    data = raw()
+    if data is None or data != _subsystems[0]:
+        rows, _ = read_table('subsystems')
+        parsed = {r['id']: r for r in rows}
+        if data is not None and raw() == data:
+            _subsystems = (data, parsed)
+        return {k: dict(v) for k, v in parsed.items()}
+    return {k: dict(v) for k, v in _subsystems[1].items()}
 
 
 def check_level_evidence(level, ev, kind='function'):
@@ -135,7 +217,8 @@ def check_level_evidence(level, ev, kind='function'):
 
 
 def validate_row(table, r, subs=None):
-    subs = subs if subs is not None else subsystems()
+    if subs is None and table in ('functions', 'globals', 'db_keys'):
+        subs = subsystems()
     errs = []
     cols, _ = TABLES[table]
     for c in cols:
@@ -205,6 +288,15 @@ def validate_row(table, r, subs=None):
             errs.append('subsystem id must be snake_case')
         if not re.match(r'^[A-Z][A-Za-z0-9]*$', r['prefix']):
             errs.append('prefix must be PascalCase')
+    elif table == 'verify_ranges':
+        if not (re.match(r'^[1-9][0-9]*$', r['first']) and re.match(r'^[1-9][0-9]*$', r['last'])):
+            errs.append('first and last must be decimal verify ids')
+        elif int(r['first']) < RANGED_VERIFY_IDS_FROM or int(r['last']) < int(r['first']):
+            errs.append(f'a range runs from first to last, both at or above {RANGED_VERIFY_IDS_FROM}')
+        if not OWNER_RE.match(r['owner']):
+            errs.append(f'owner {r["owner"]!r} must be a verifier name or the start of one')
+        if not re.match(r'^\d{4}-\d{2}-\d{2}$', r['granted']):
+            errs.append(f'granted {r["granted"]!r} must be a date')
     elif table == 'verify':
         if r['verdict'] not in ('agree', 'disagree', 'partial'):
             errs.append(f'verdict {r["verdict"]!r}')
@@ -414,6 +506,110 @@ def cmd_note(a):
     print(f'noted in {p}')
 
 
+SHARED_VERIFY_IDS_UP_TO = 10540
+
+
+def colliding_verify_ids(rows):
+    """{n: rows} for each verify id above SHARED_VERIFY_IDS_UP_TO that more than one row carries. The ids up to that
+    bound were handed out twice on parallel branches before kb_lint checked them, and stay as they are."""
+    out = {}
+    for r in rows:
+        m = re.match(r'V(\d+) ', r.get('notes') or '')
+        if m and int(m.group(1)) > SHARED_VERIFY_IDS_UP_TO:
+            out.setdefault(int(m.group(1)), []).append(r)
+    return {n: rs for n, rs in out.items() if len(rs) > 1}
+
+
+RANGED_VERIFY_IDS_FROM = 100000
+RANGE_SIZE = 10000
+OWNER_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$')
+
+
+def verify_id(r):
+    m = re.match(r'V(\d+) ', r.get('notes') or '')
+    return int(m.group(1)) if m else None
+
+
+def range_owner(verifier, ranges):
+    """The owner whose ranges a verifier's ids come from: the longest owner that is the verifier's name or the start
+    of it up to a '-' (re-bindings owns re-bindings and re-bindings-blind)."""
+    owners = {r['owner'] for r in ranges if verifier == r['owner'] or verifier.startswith(r['owner'] + '-')}
+    return max(owners, key=len) if owners else None
+
+
+def next_verify_id(verifier, rows, ranges):
+    """The next free id in the ranges of the verifier's owner. Ranges are granted on the trunk and never overlap, so
+    rows written on different branches by different owners cannot get the same id. `rows` are every verify row of
+    the checkout, verify.tsv's and the records'; the id handed out lies above every id of theirs in its range, whoever
+    wrote it, so it is never one of theirs."""
+    owner = range_owner(verifier, ranges)
+    if not owner:
+        raise SystemExit(f'refused: {verifier} has no verify id range in re/db/verify_ranges.tsv; a lead grants one '
+                         f'on the trunk with kb.py --agent LEAD grant-range OWNER')
+    taken = {n for x in rows if (n := verify_id(x)) is not None}
+    for g in sorted((x for x in ranges if x['owner'] == owner), key=lambda x: int(x['first'])):
+        first, last = int(g['first']), int(g['last'])
+        used = [n for n in taken if first <= n <= last]
+        n = max(used) + 1 if used else first
+        if n <= last:
+            return n
+    raise SystemExit(f'refused: the verify id ranges of {owner} are used up; a lead grants another on the trunk')
+
+
+def verify_range_errors(ranges, rows):
+    """Overlapping ranges, and ids at or above RANGED_VERIFY_IDS_FROM outside every range of their verifier's
+    owner."""
+    errs = []
+    spans = sorted((int(r['first']), int(r['last']), r['owner']) for r in ranges
+                   if not validate_row('verify_ranges', r))
+    for (f1, l1, o1), (f2, l2, o2) in zip(spans, spans[1:]):
+        if f2 <= l1:
+            errs.append(f'verify_ranges: {o1} {f1}..{l1} and {o2} {f2}..{l2} overlap; grant ranges on the trunk only')
+    for r in rows:
+        n = verify_id(r)
+        if n is None or n < RANGED_VERIFY_IDS_FROM:
+            continue
+        owner = range_owner(r['verifier'], ranges)
+        if not any(x['owner'] == owner and int(x['first']) <= n <= int(x['last']) for x in ranges):
+            errs.append(f'verify: V{n} by {r["verifier"]} ({r["kind"]} {r["item"]}) lies outside every range of '
+                        f'{owner or "its owner, which has none"} in verify_ranges.tsv')
+    return errs
+
+
+def cmd_grant_range(a):
+    if not OWNER_RE.match(a.owner):
+        raise SystemExit(f'refused: owner {a.owner!r} must be a verifier name or the start of one')
+    with locked():
+        rows, errs = read_table('verify_ranges')
+        if errs:
+            raise SystemExit('\n'.join(errs))
+        top = max([RANGED_VERIFY_IDS_FROM - 1, *(int(r['last']) for r in rows)])
+        first = (top // a.size + 1) * a.size
+        r = {'first': str(first), 'last': str(first + a.size - 1), 'owner': a.owner,
+             'granted': datetime.date.today().isoformat(), 'notes': a.notes or '-'}
+        e = validate_row('verify_ranges', r) + uniqueness('verify_ranges', rows, r)
+        if e:
+            raise SystemExit('refused:\n  ' + '\n  '.join(e))
+        rows.append(r)
+        write_table('verify_ranges', rows)
+        journal(a.agent, 'add', 'verify_ranges', r['first'], None, r)
+    print(f'granted V{r["first"]}..V{r["last"]} to {a.owner}; commit it on the trunk before the lane writes verify rows')
+
+
+def struct_level(kind, item):
+    """The level a field or struct row claims: the field's level or the struct's size level in re/db/structs, which
+    the export gate compares with the level at export time; '-' when the struct file has no such item."""
+    from kb_lint import parse_struct
+    sname, _, fname = item.partition('.')
+    path = os.path.join(DB, 'structs', sname + '.h')
+    if not os.path.isfile(path) or (kind == 'field') != bool(fname):
+        return '-'
+    s = parse_struct(path)
+    if kind == 'struct':
+        return s['size_level'] or '-'
+    return next((f['level'] for f in s['fields'] if f['name'] == fname), '-')
+
+
 def cmd_verify(a):
     table = {'func': 'functions', 'global': 'globals', 'db_key': 'db_keys', 'anchor': 'strings_anchors'}.get(a.kind)
     claimed = '-'
@@ -426,6 +622,8 @@ def cmd_verify(a):
         who = raiser(table, '|'.join(row_key(table, r) or ()))
         if who == a.agent:
             raise SystemExit(f'refused: {a.agent} raised this item to {claimed}; verification must come from another agent')
+    elif a.kind in ('field', 'struct'):
+        claimed = struct_level(a.kind, a.item)
     r = {'date': datetime.date.today().isoformat(), 'verifier': a.agent, 'kind': a.kind, 'item': a.item, 'claimed': claimed,
          'verdict': a.verdict, 'evidence': a.evidence, 'notes': a.notes or '-'}
     e = validate_row('verify', r)
@@ -433,9 +631,17 @@ def cmd_verify(a):
         raise SystemExit('refused:\n  ' + '\n  '.join(e))
     with locked():
         rows, _ = read_table('verify')
-        taken = [int(m.group(1)) for x in rows if (m := re.match(r'V(\d+) ', x['notes']))]
-        n = max([len(rows), *taken]) + 1
+        n = next_verify_id(a.agent, rows, read_table('verify_ranges')[0])
         r['notes'] = f'V{n:04d} ' + r['notes']
+        import binding_record
+        rec = binding_record.Store.get().by_item(a.item)
+        if rec:
+            rec.verify.append(r)
+            rec.save()
+            journal(a.agent, 'verify', a.kind, a.item, None, r)
+            print(f'V{n:04d} recorded in re/bindings/{rec.relpath} ({a.verdict})')
+            return
+        rows = [x for x in rows if not x.get('_record')]
         rows.append(r)
         cols = TABLES['verify'][0]
         p = path('verify')
@@ -483,6 +689,57 @@ def cmd_import(a):
     print(f'imported {added}, skipped {skipped} (invalid or already present; fix and add them by hand)')
 
 
+EXPORT_KEEP = 3
+
+
+def export_tree(out):
+    """Every table as kb.py reads it (re/db plus re/bindings), signatures.json and the structs, written into `out`."""
+    import shutil
+    os.makedirs(os.path.join(out, 'structs'))
+    for t, (cols, key) in TABLES.items():
+        rows, _ = read_table(t)
+        if key and key[0] == 'addr':
+            rows = sorted(rows, key=lambda r: int(r['addr'], 16))
+        elif key:
+            rows = sorted(rows, key=lambda r: tuple(r[k] for k in key))
+        with open(os.path.join(out, f'{t}.tsv'), 'w') as f:
+            f.write('\t'.join(cols) + '\n' + ''.join('\t'.join(r[c] for c in cols) + '\n' for r in rows))
+    with open(os.path.join(out, 'signatures.json'), 'w') as f:
+        f.write(json.dumps(load_signatures(), indent=1) + '\n')
+    src = os.path.join(DB, 'structs')
+    structs = sorted(f for f in os.listdir(src) if f.endswith('.h'))
+    for f in structs:
+        shutil.copyfile(os.path.join(src, f), os.path.join(out, 'structs', f))
+    return len(structs)
+
+
+def cmd_export(a):
+    """One folder for tools outside Python such as the Ghidra scripts. Each export is written whole into a new
+    sibling folder and `dir` becomes a symlink to it in one rename, so a reader that resolves `dir` once sees one
+    export, never files from two. The last EXPORT_KEEP exports stay for readers still holding an older one."""
+    import shutil, time
+    link = os.path.abspath(a.dir.rstrip('/' + os.sep))
+    parent, base = os.path.dirname(link), os.path.basename(link)
+    os.makedirs(parent, exist_ok=True)
+    version = f'{base}.v{time.time_ns()}.{os.getpid()}'
+    out = os.path.join(parent, version)
+    try:
+        n = export_tree(out)
+    except BaseException:
+        shutil.rmtree(out, ignore_errors=True)
+        raise
+    if os.path.isdir(link) and not os.path.islink(link):
+        os.rename(link, os.path.join(parent, f'{base}.v0.{os.getpid()}'))
+    tmp = os.path.join(parent, f'.{base}.{os.getpid()}.link')
+    os.symlink(version, tmp)
+    os.replace(tmp, link)
+    mine = re.compile(r'^' + re.escape(base) + r'\.v(\d+)\.(\d+)$')
+    old = sorted((int(m.group(1)), f) for f in os.listdir(parent) if (m := mine.match(f)) and f != version)
+    for _, f in old[:max(0, len(old) - (EXPORT_KEEP - 1))]:
+        shutil.rmtree(os.path.join(parent, f), ignore_errors=True)
+    print(f'exported {len(TABLES)} tables, signatures.json and {n} structs to {a.dir} ({version})')
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--agent', default=os.environ.get('RE_AGENT'))
@@ -498,12 +755,16 @@ def main():
     p = sp.add_parser('verify'); p.add_argument('kind'); p.add_argument('item'); p.add_argument('verdict'); p.add_argument('evidence'); p.add_argument('notes', nargs='?')
     p = sp.add_parser('test-new'); p.add_argument('question')
     p = sp.add_parser('import'); p.add_argument('file'); p.add_argument('table', choices=['functions', 'globals'])
+    p = sp.add_parser('export'); p.add_argument('dir')
+    sp.add_parser('function-names')
+    p = sp.add_parser('grant-range'); p.add_argument('owner'); p.add_argument('--size', type=int, default=RANGE_SIZE); p.add_argument('--notes')
     a = ap.parse_args()
-    if a.cmd not in ('get', 'find') and not a.agent:
+    if a.cmd not in ('get', 'find', 'export', 'function-names') and not a.agent:
         raise SystemExit('--agent NAME (or RE_AGENT) is required for writes')
     {'add': cmd_add, 'set': cmd_set, 'get': cmd_get, 'find': cmd_find, 'claim': cmd_claim,
      'release': lambda x: cmd_claim(x, True), 'note': cmd_note, 'verify': cmd_verify, 'test-new': cmd_test_new,
-     'import': cmd_import}[a.cmd](a)
+     'import': cmd_import, 'export': cmd_export, 'grant-range': cmd_grant_range,
+     'function-names': lambda a: print('function_names.tsv ' + ('rewritten' if write_function_names() else 'unchanged'))}[a.cmd](a)
 
 
 if __name__ == '__main__':

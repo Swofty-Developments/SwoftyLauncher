@@ -2,9 +2,12 @@
 //! Swofty registry, fetched and saved so the last catalog shows offline, and
 //! downloads checked against the size and SHA-256 the registry lists.
 
+pub mod media;
+pub mod pending;
 pub mod publishers;
 pub mod requires;
 pub mod search;
+pub mod source;
 pub mod stars;
 
 use std::io::{Read, Write};
@@ -18,7 +21,7 @@ use sha2::{Digest, Sha256};
 
 use crate::manifest::{AddonManifest, Category, Platform, Requirement};
 use crate::store::Store;
-use crate::transfer;
+use crate::updates::transfer;
 use crate::{Error, Result, io_err};
 
 pub const URL_ENV: &str = "SWOFTY_REGISTRY_URL";
@@ -27,7 +30,7 @@ pub const CACHE_DIR: &str = "cache/registry";
 pub const CATALOG_FILE: &str = "catalog.json";
 pub const LOG_FILE: &str = "state/registry.log";
 pub const TIMEOUT: Duration = Duration::from_secs(10);
-pub const DOWNLOAD_LIMIT: u64 = 4 * 1024 * 1024 * 1024;
+pub const DOWNLOAD_LIMIT: u64 = 6 * 1024 * 1024 * 1024;
 const CATALOG_LIMIT: u64 = 16 * 1024 * 1024;
 /// The least time the catalog's body gets.
 const CATALOG_FLOOR: Duration = Duration::from_secs(60);
@@ -87,6 +90,13 @@ pub struct Addon {
     pub latest: Option<Version>,
     #[serde(default)]
     pub versions: Vec<Version>,
+    /// The pictures, videos and video links on the addon's page, in order.
+    #[serde(
+        default,
+        deserialize_with = "media::listed",
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    pub media: Vec<media::Media>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -294,12 +304,13 @@ pub fn updates<'a>(
         .collect()
 }
 
-/// [`updates`] for the addons in `store`, leaving out the ones the launcher ships.
+/// [`updates`] for the addons in `store`, leaving out the ones the launcher ships and the imports
+/// ([`source::takes_updates`]).
 pub fn store_updates(store: &Store, catalog: &[Addon], launcher: &semver::Version) -> Result<Vec<Update>> {
     let addons = store.addons()?;
-    let installed = addons
-        .values()
-        .filter(|m| !store.is_builtin(&m.id) && !crate::managed::is_managed(&m.id));
+    let installed = addons.values().filter(|m| {
+        !store.is_builtin(&m.id) && !crate::updates::managed::is_managed(&m.id) && source::takes_updates(m)
+    });
     Ok(updates(installed, catalog, launcher))
 }
 
@@ -564,7 +575,10 @@ pub fn log(root: &Path, line: &str) {
         && let Ok(text) = std::fs::read_to_string(&path)
     {
         let keep = text.len() / 2;
-        let cut = text[keep..].find('\n').map_or(text.len(), |i| keep + i + 1);
+        let cut = text.as_bytes()[keep..]
+            .iter()
+            .position(|&b| b == b'\n')
+            .map_or(text.len(), |i| keep + i + 1);
         std::fs::write(&path, &text[cut..]).ok();
     }
     if let Some(dir) = path.parent() {
@@ -845,6 +859,7 @@ mod tests {
             updated_at: String::new(),
             latest: versions.first().cloned(),
             versions,
+            media: Vec::new(),
         }
     }
 
@@ -1027,6 +1042,26 @@ mod tests {
 
     fn sha256_hex(data: &[u8]) -> String {
         Sha256::digest(data).iter().map(|b| format!("{b:02x}")).collect()
+    }
+
+    #[test]
+    fn a_full_log_halves_at_a_line_even_when_the_middle_is_inside_a_character() {
+        let root = scratch("log-half");
+        let path = root.join(LOG_FILE);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let line = "Synced stars \u{b7} 0 starred\n";
+        let mut text = line.repeat(LOG_LIMIT as usize / line.len() + 2);
+        while text.is_char_boundary(text.len() / 2) {
+            text.insert(0, 'x');
+        }
+        assert!(!text.is_char_boundary(text.len() / 2));
+        std::fs::write(&path, &text).unwrap();
+        log(&root, "after");
+        let kept = std::fs::read_to_string(&path).unwrap();
+        assert!(kept.len() < text.len() / 2 + line.len() + 64);
+        assert!(kept.starts_with("Synced stars"));
+        assert!(kept.trim_end().ends_with(" after"));
+        std::fs::remove_dir_all(&root).ok();
     }
 
     fn scratch(name: &str) -> PathBuf {
@@ -1230,7 +1265,7 @@ mod tests {
         assert_eq!(body_timeout(0), DOWNLOAD_FLOOR);
         assert_eq!(body_timeout(200 * 1024 * 1024), DOWNLOAD_FLOOR);
         assert_eq!(body_timeout(1024 * 1024 * 1024), Duration::from_secs(8192));
-        assert_eq!(body_timeout(DOWNLOAD_LIMIT), Duration::from_secs(32768));
+        assert_eq!(body_timeout(DOWNLOAD_LIMIT), Duration::from_secs(49152));
     }
 
     #[test]

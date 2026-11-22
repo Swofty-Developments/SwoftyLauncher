@@ -9,8 +9,8 @@ description: Settings holds the launcher's own options in five categories, shows
 
 | Category | What it holds |
 |---|---|
-| **General** | Language and starting your game's store |
-| **Display** | PC or TV mode |
+| **General** | Language, starting your game's store, profiles and addon updates |
+| **Display** | PC or TV mode and the interface scale |
 | **Storage** | Where your addons and saves are, finding them again, their size, and cleanup |
 | **Advanced** | Developer mode and clearing old logs automatically |
 | **About** | The launcher's version, update status and links |
@@ -21,11 +21,25 @@ description: Settings holds the launcher's own options in five categories, shows
 
 **Start Steam automatically** (or the EA app) starts your game's store when you press **Play**, as the same item in the **Play** menu does.
 
+**Use profiles** is on by default. Turned off, the launcher hides the profile sidebar, profile names in the **Play** bar, the **Addons** heading and the **Saves** page, and the **Copy careers to** action, and you can no longer switch profiles. It keeps working on the profile that is active when you turn it off, or on `default` (else your first modded profile) if that was `vanilla`. Turning it on again brings the full interface back, and your profiles are never deleted.
+
+**Update turned-off addons** is off by default: **Update addons** in the **Play** bar updates only the addons that are on in your active profile, and updates for the others never take the place of **Play**. Turned on, **Update addons** also updates every installed addon that is off, in every profile including Vanilla, and their updates turn **Play** into **Update addons** too (see [Addon updates](/using/updating#addon-updates)). It covers addons the Addon Browser lists. Simplified for Swofty, the launcher's own updates and the addons that ship with the launcher update as before, and an install or update still installs or updates the requirements it needs, on or off. `config.json` keeps it as:
+
+```json
+{
+  "update_off_addons": true
+}
+```
+
 **Home screen video** shows the latest Swofty video in the bottom right of the F1 25 home screen, with **RB** (**V** on a keyboard) to watch it. It is on by default. Turned off, the home screen has no video card from the next time you press **Play**, and the launcher no longer fetches the latest video.
+
+**Ad privacy choices** opens the ad privacy form again, to change how ads in the launcher may use your data. It shows only to players who see ads.
 
 ## Display
 
 **Display mode** switches between **PC mode**, the normal layout, and **TV mode**, which scales the whole launcher up by 30% and widens the scrollbars, for handhelds and couch play. The welcome wizard asks for it, with your language, the first time the launcher opens and once after an update that changes the wizard. Each choice applies as you pick it, Esc or **Skip** closes the wizard, and you can change both here at any time.
+
+**Interface scale** makes the whole launcher larger or smaller on top of the display mode. **Auto** is the default and keeps the size the display mode gives. The slider runs from 1% to 400% in steps of 1%, and the percentage multiplies the display mode's size: TV mode at 75% is about 98% of the PC layout. The change applies when you let go of the slider, and the launcher keeps it for next time. **Reset to automatic** returns to Auto, and so does **Ctrl+0** on any page. A **Reset interface scale** button also shows at a fixed size in the bottom right corner, just above the play bar, when the scale is below 60%, or above 100% with the window narrower than 1024 pixels at that scale (on a window 1920 pixels wide, from 188% in PC mode). On a Steam Deck in gaming mode, TV mode with **90%** or **75%** fits the 1280x800 screen with room to spare.
 
 ## Storage
 
@@ -65,6 +79,8 @@ On the same drive the folder is renamed and nothing is copied. A copy is checked
 
 The launcher refuses to start the move while F1 25 is open, a build is running or downloads are queued. It refuses a whole drive, a folder inside or around the launcher's own folder, inside or around the F1 25 folder, inside the folder they are in now, one that isn't empty, one it can't write to, and one on a drive without room for the data plus a margin. When `SWOFTY_DATA_DIR` sets the folder, it refuses and says so: change the variable instead.
 
+When your addons and saves are in the launcher's own folder, or the launcher is installed inside theirs, **Move…** moves nothing. It names the folder they are in, the one a junction or link resolves to, and points to the installer: install to a new, empty folder and the installer moves only the launcher's files there; see [Moving your addons and saves](/guide/installation#moving-your-addons-and-saves). A folder of their own inside the launcher's folder moves out as usual, without the launcher's files.
+
 If the launcher or the computer stops during a move, the next start finishes it or puts everything back. When the old copy can't be deleted, the message names it so you can delete it yourself.
 
 ### Finding your addons and saves
@@ -88,7 +104,7 @@ A hard link joins two names for one file and only works inside one drive. Play k
 
 The first Play copies every file; later Plays copy only files that are new or whose size or modified time changed, and delete files that are no longer placed. A cached copy the game wrote to is copied again.
 
-The copy stays when the game goes back to stock. It needs the size of those files on F1 25's drive plus 2 GB to spare; with less room, Play copies each file straight into the game folder and the Play log says why. **Clear** removes the copy at any time and doesn't run while F1 25 is open; the next Play rebuilds it.
+The copy stays when the game goes back to stock. Play needs room on F1 25's drive for the files the copy doesn't hold yet, plus 2 GB to spare; with less room, Play copies each file straight into the game folder and the Play log says why. With the copy up to date, Play needs at most those 2 GB there, not the size of the profile. When neither fits, Play stops with `not enough free space on <drive>` and the room it needs; see [Free space](/reference/restore#free-space). **Clear** removes the copy at any time and doesn't run while F1 25 is open; the next Play rebuilds it.
 
 ### Low space when you press Play
 

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_Add",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410f5590",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1410f5590.c;pat:log-channel-SPONSORS;xref:0x1410f45c0,0x1410f4a39",
+  "notes": "Returns if the team already has a record with def id +0x28. Else logs 'Sponsor %s added with stat id %d ' (SPONSORS), copies the def into a 0x160 record (0x140ce3080), day param_8; per loyalty level (0x78) 0x14111a560 and +0x68/+0x70 = param_2/3; record +0xd8==0: contract provider 0x1410f8230; ==1: claims reached levels 0x141118600; pushes via 0x1410fe630 to team+0x10; dtor 0x1410f6bf0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.sponsors_add",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 02 00 00 4C 89 CB",
+  "match": "0x1410f5590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410f5590",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_Add"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1410f5590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410f5590.c;xref:0x1410f45bf",
+   "notes": "V4583 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1410f5590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410f5590.c;str:\"Sponsor %s added with stat id %d \"",
+   "notes": "V9145 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EadpSDK_CreatingFriendsCache",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fd7d60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fd7d60.c;pat:log-channel-EadpSDK;xref:0x143fd31f4",
+  "notes": "Callback (fn ptr lea'd at 0x143fd31f4 in 0x143fd16b0 into a request block +0x28): returns unless param_2 == pending request id this[0xe]; on error param_3 clears +0x70/+0x78/+0x7c; then logs 'Creating Friends cache of %d' and fills the friends cache from the returned list (EadpSDK). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.eadp_sdk_creating_friends_cache",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 39 51 70",
+  "match": "0x143fd7d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fd7d60",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpSDK_CreatingFriendsCache"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fd7d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fd7d60.c;xref:0x143fd31f6",
+   "notes": "V6331 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

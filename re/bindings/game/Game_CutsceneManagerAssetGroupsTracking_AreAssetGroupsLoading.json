@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneManagerAssetGroupsTracking_AreAssetGroupsLoading",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140229ed0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140229ed0.c;pat:log-message-method;xref:0x140c751a9",
+  "notes": "(tracking, sharedRef *batch): under CriticalSection *p1, refreshes states (0x1402291f0), logs 'areAssetGroupsLoading -------------------' and each group path (CUTSCENE_MANAGER_ASSET_GROUPS_TRACKING); returns 1 ('LOADING -> TRUE') when a tracked 0x20-byte entry p1[0x17..0x18] for that batch has its loading byte +0x18 set, else 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_manager_asset_groups_tracking_are_asset_groups_loading",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 40 01 00 00 48 89 D7",
+  "match": "0x140229ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140229ed0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneManagerAssetGroupsTracking_AreAssetGroupsLoading"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140229ed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140229ed0.c",
+   "notes": "V4419 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

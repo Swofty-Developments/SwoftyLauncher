@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnViewProfileRequestedByDriverStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430acb90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430acb90.c;pat:log-message-method;xref:0x1430ab39b,0x1430df8fd",
+  "notes": "UI command handler lea'd in 0x1430aa810: logs 'onViewProfileRequestedByDriverStatId(%d)', resolves the player description and shows the profile or 'no_view_profile_privilege'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ui_on_view_profile_requested_by_driver_stat_id",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 70 01 00 00 48 8D 0D ?? ?? ?? ?? 8B 14 81 81 FA 2A 91 DA 80 74 34 85 D2 74 4D 83 C0 17 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 70 01 00 00 75 C3 EB 1D 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 41 89 F9 E8 ?? ?? ?? ?? 48 8B 86 B0 04 00 00",
+  "match": "0x1430acb90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430acb90",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnViewProfileRequestedByDriverStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430acb90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430acb90.c;xref:0x1430ab39d",
+   "notes": "V5334 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

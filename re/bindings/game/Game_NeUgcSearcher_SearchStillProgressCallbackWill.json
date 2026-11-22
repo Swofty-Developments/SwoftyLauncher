@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NeUgcSearcher_SearchStillProgressCallbackWill",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14449ddb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14449ddb0.c;pat:log-channel-NeUgcSearcher;xref:0x145a92100",
+  "notes": "vt cell 0x145a92100. Frees the searcher +0x28 (logs 'Search still in progress...' and SteamAPI_UnregisterCallResult if a query is pending), then the UGC impl +0x20: DeleteCriticalSection +0x1160, CloseHandle +0x1158, destroys entries +0x1138..+0x1140, unregisters Steam callbacks +0x628/+0x648/+0x668 and call results +0x560..+0x600, frees via allocator +0x10. (lane owner review requested) Better name: Game_NeUgc_Shutdown (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ne_ugc_searcher_search_still_progress_callback_will",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 79 28",
+  "match": "0x14449ddb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14449ddb0",
+  "kind": "func_start",
+  "names": [
+   "Game_NeUgcSearcher_SearchStillProgressCallbackWill"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14449ddb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14449ddb0.c",
+   "notes": "V6662 0x33f body is cleanup: warns when search in progress then releases handles/callbacks via many vcalls. Better: Game_NeUgcSearcher_Destroy (vtable/indirect; no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14449ddb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14449ddb0.c",
+   "notes": "V7221 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_LightPeripheralThrustMasterDisplay_OnDeviceConnectionStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fdcf40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fdcf40.c;pat:log-message-cxx;xref:0x142fd86f4,0x142fedd32",
+  "notes": "onDeviceConnectionStatusChanged(connected, device) (fn ptr lea 0x142fd86f4 and 0x142fedd32). Logs THRUSTMASTER. Finds the provider in [*this]+0x28..+0x30 whose id (vcall +0x20) == device[0] and of type 0x146292218, then the device record by device[2] in its tree (+0x58). Disconnect: removes it from list +0x618..+0x620; when empty and +0x640 set unregisters 0x142fdd8b0/0x142fdd970. Connect: appends it if new, then 0x142fdd500(this). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.light_peripheral_thrust_master_display_on_device_connection_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 4C 89 C7 89 D3",
+  "match": "0x142fdcf40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fdcf40",
+  "kind": "func_start",
+  "names": [
+   "Game_LightPeripheralThrustMasterDisplay_OnDeviceConnectionStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fdcf40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fdcf40.c;xref:0x142fd86f6",
+   "notes": "V5721 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

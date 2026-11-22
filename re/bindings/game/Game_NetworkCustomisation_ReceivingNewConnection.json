@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkCustomisation_ReceivingNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143184840",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143184840.c;pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION;xref:0x145821c18",
+  "notes": "Logs on channel NETWORK-CUSTOMISATION-REPLICATION (0x145821ce8) with __FUNCTION__ network::CustomisationReplicationManager::onNewConnection: \"Receiving new connection from %d\"; if flag bit 8 set, iterates list at this+0x88 and sends replicated entries via 0x14402e500(this+0x38,2,msg) with sendReplicatedData logs \"Sending/Sent replicated data\"; then finds player at (this+0x30)+0x58 with +0x63==conn, +0x5b&0x10, builds msg (0x143188a40) and sends; else logs \"was not from a human player description\". (lane owner review requested) Better name: Game_CustomisationRepl_OnNewConnection (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_customisation_receiving_new_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 E9 00 00",
+  "match": "0x143184840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143184840",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkCustomisation_ReceivingNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143184840",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143184840.c;xref:0x140383be2",
+   "notes": "V5864 CustomisationReplicationManager_OnNewConnection: onNewConnection: sends replicated data to new connection; 82KB, receive log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143184840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143184840.c",
+   "notes": "V7013 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

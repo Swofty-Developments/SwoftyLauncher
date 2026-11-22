@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_VirtualSessionBroadcastNewLap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f69b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f69b80.c;pat:log-channel-NETWORK/VX;xref:0x142f69a51,0x142f6c797",
+  "notes": "Callers 0x142f68b80 and Game_VirtualSessionEntrant_CompleteVirtualLap 0x142f6b170. (this, flag, check): logs 'Virtual Session broadcast new lap', builds a message (vtable 0x1457e6ec0) from XOR-paired fields (+0x30^+0x38, +0x40^+0x48, +0x90^+0x98 vs +0xa0^+0xa8) and byte +0xb24, appends it to the queue of [g 0x14618b3b8+8] under its critical section, Ne_Event_Set, then 0x143987400 and 0x142f2f750([this+8]+0x90, msg). (lane owner review requested) Better name: Game_VirtualSession_BroadcastNewLap (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_virtual_session_broadcast_new_lap",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 44 89 C7 89 D3 48 89 CE",
+  "match": "0x142f69b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f69b80",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_VirtualSessionBroadcastNewLap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f69b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f69b80.c;xref:0x142f69047",
+   "notes": "V5651 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

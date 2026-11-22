@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_DestroySetProxy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a925e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a925e0.c;xref:0x141435df4,0x142a98082",
+  "notes": "'Vehicle %d: Desctroy NeCustomisationDecalsSetProxy, baseSurfaceId, srvId'. Callers: Game_DecalGeneration_OnReadback, Game_CustomisationDecals_ApplyVehicleDecalNodeList. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3098)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_destroy_set_proxy",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 49 28 48 85 C9",
+  "match": "0x142a925e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a925e0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_DestroySetProxy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_CustomisationDecals_DestroySetProxy",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a925e0.c;xref:0x142a925e0",
+   "notes": "V3098 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

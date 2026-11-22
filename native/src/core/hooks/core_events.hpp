@@ -25,6 +25,24 @@ struct BundleResolve;
 namespace swofty::laps::events {
 struct Sealing;
 }
+namespace swofty::race_control::events {
+struct Flag;
+struct SafetyCar;
+struct RedFlag;
+struct Sector;
+struct CarStatus;
+}
+namespace swofty::tyre_damage::events {
+struct Damage;
+}
+namespace swofty::weather::events {
+struct Setup;
+}
+namespace swofty::speech::events {
+struct Line;
+struct Timed;
+struct Ended;
+}
 namespace swofty::career::events {
 struct AddActivity;
 struct StandingsRebuild;
@@ -56,10 +74,8 @@ bool car_setup_applied(swofty::cars::events::SetupApplied &payload);
 bool car_parts_register(swofty::cars::events::PartsRegister &payload);
 bool audio_bundle_resolve(swofty::sounds::events::BundleResolve &payload);
 
-bool car_upgrades_fit(int32_t car, const char *vehicle, swofty::cars::Department department, float driver_stat,
-                      float &rating);
-bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade,
-                  float &value);
+bool car_upgrades_fit(int32_t car, const char *vehicle, swofty::cars::Department department, float driver_stat, float &rating);
+bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const char *field, const char *upgrade, float &value);
 bool car_built(const swofty::cars::live::Car &car);
 bool car_reset(const swofty::cars::live::Car &car, bool upgrade);
 bool car_upgrades_replayed(const swofty::cars::live::Car &car, float progress);
@@ -70,8 +86,19 @@ bool audio_bundle_resolve(int32_t car, const char *vehicle, const char *switch_n
 bool car_damage(const swofty::cars::live::Car &car, uint32_t part, float amount);
 bool session_pit(uint32_t car, uint32_t previous, uint32_t status);
 bool session_pit_stop(uint32_t car, uint32_t stops);
+bool session_pit_stop_tyres(uint32_t car, bool kept);
 bool session_lap(uint32_t car);
+bool session_flag(swofty::race_control::events::Flag &payload);
+bool session_safety_car(swofty::race_control::events::SafetyCar &payload);
+bool session_red_flag(swofty::race_control::events::RedFlag &payload);
+bool session_sector(swofty::race_control::events::Sector &payload);
+bool session_car_status(swofty::race_control::events::CarStatus &payload);
+bool car_tyre_damage(swofty::tyre_damage::events::Damage &payload);
+bool speech_line(swofty::speech::events::Line &payload);
+bool speech_line_timed(swofty::speech::events::Timed &payload);
+bool speech_line_end(swofty::speech::events::Ended &payload);
 bool laps_sealing(swofty::laps::events::Sealing &payload);
+bool weather_setup(swofty::weather::events::Setup &payload);
 bool laps_recorded(const char *path, int32_t time_ms, int32_t valid);
 
 }

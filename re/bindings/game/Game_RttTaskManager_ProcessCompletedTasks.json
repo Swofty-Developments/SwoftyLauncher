@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RttTaskManager_ProcessCompletedTasks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434f0950",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434f0950.c;xref:0x1458465a8",
+  "notes": "Update slot (vtable 0x1458465a8): processes completed render tasks (processCompletedRenderTask task ID), starts queued ones (Game_RttTaskManager_StartTask), cleans resources (Game_RttTaskManager_CleanupTask), disables the RTT renderer when idle ('Disabling RTT Renderer'). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2541)"
+ },
+ "signature": {
+  "id": "game.rtt_task_manager_process_completed_tasks",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 79 7F 44 24 70 C5 F9 7F 7C 24 60 C5 F9 7F 74 24 50 48 89 CE",
+  "match": "0x1434f0950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434f0950",
+  "kind": "func_start",
+  "names": [
+   "Game_RttTaskManager_ProcessCompletedTasks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Game_RttTaskManager_ProcessCompletedTasks",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434f0950.c;xref:0x1458465a8",
+   "notes": "V2541 processCompletedRenderTask, cleanupTaskResources, Disabling RTT Renderer"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ProcessTransaction_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c679d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c679d0.c;pat:log-channel-BANK;xref:0x140c6379c,0x140c63888",
+  "notes": "BANK log. Copies the 0x14-byte transaction param_2 into a temp allocation, logs day (+0xc minutes/1440) and type names (+0x10, +0), applies it via 0x140c66c30, frees the temp. Callers in 0x140c635c0 (0x140c6379c, 0x140c63888). (lane owner review requested) Better name: Career_Bank_ProcessTransactionNow (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.bank_process_transaction_2",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 49 89 D6",
+  "match": "0x140c679d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c679d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ProcessTransaction_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c679d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c679d0.c;xref:0x140c6379c,0x140c63888",
+   "notes": "V4594 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140c679d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c679d0.c",
+   "notes": "V9053 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

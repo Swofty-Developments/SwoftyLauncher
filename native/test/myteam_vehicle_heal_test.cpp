@@ -1,9 +1,10 @@
-// Host-native unit test for the core's My Team vehicle heal (native/src/core/myteam_vehicle_heal_logic.hpp) and the
-// game manager's entrants system displacement it reads the cars through (native/src/core/game_manager_layout.hpp).
-// Built and run by native/test/run_myteam_vehicle_heal_test.sh.
+// Host-native unit test for the core's My Team vehicle heal (native/src/core/guards/career/myteam_vehicle_heal_logic.hpp) and the
+// game manager's entrants system displacement it reads the cars through (native/src/core/runtime/game_manager_layout.hpp).
+// Built and run by native/test/run_tests.sh myteam_vehicle_heal.
 
-#include "game_manager_layout.hpp"
-#include "myteam_vehicle_heal_logic.hpp"
+#include "core/runtime/game_manager_layout.hpp"
+#include "core/guards/career/myteam_vehicle_heal_logic.hpp"
+#include "core/guards/env.hpp"
 
 #include <cstdio>
 #include <map>
@@ -57,20 +58,11 @@ struct Fake {
 constexpr uint64_t ENTRANTS = 0x340d01000, STOCK_TABLE = 0x340e00000, CUSTOM_TABLE = 0x340e10000, STOCK_SLOTS = 0x341000000,
                    CUSTOM_SLOTS = 0x342000000, VEHICLES = 0x350000000, LIST = 0x360000000;
 
-static uint64_t car(int i)
-{
-    return VEHICLES + static_cast<uint64_t>(i) * 0x1000;
-}
+static uint64_t car(int i) { return VEHICLES + static_cast<uint64_t>(i) * 0x1000; }
 
-static uint32_t stock_handle(uint16_t id)
-{
-    return static_cast<uint32_t>(id) << 16;
-}
+static uint32_t stock_handle(uint16_t id) { return static_cast<uint32_t>(id) << 16; }
 
-static uint32_t custom_handle(uint16_t id)
-{
-    return static_cast<uint32_t>(id) << 16 | mh::KIND_CUSTOM;
-}
+static uint32_t custom_handle(uint16_t id) { return static_cast<uint32_t>(id) << 16 | mh::KIND_CUSTOM; }
 
 static Fake game(const std::vector<std::string> &stock, size_t custom_slots)
 {
@@ -100,10 +92,7 @@ static void entrants(Fake &f, const std::vector<uint32_t> &handles)
         f.d[LIST + i * mh::ENTRANT_SIZE + mh::ENTRANT_VEHICLE] = handles[i];
 }
 
-static uint64_t list_end(size_t n)
-{
-    return LIST + n * mh::ENTRANT_SIZE;
-}
+static uint64_t list_end(size_t n) { return LIST + n * mh::ENTRANT_SIZE; }
 
 int main()
 {
@@ -122,10 +111,17 @@ int main()
     expect(!mh::healable(stock_handle(5)) && !mh::healable(0x3fff0000u), "stock handles and the empty handle are not");
     expect(!mh::healable(custom_handle(0x3fff)) && !mh::healable(custom_handle(mh::MAX_ID)), "an out-of-range custom id is not");
 
-    std::vector<std::string> stock = {"ferrari",           "mercedes",          "",
-                                      "myteam_ferrari",    "myteam_mercedes",   "myteam_honda",
-                                      "ferrari_2026",      "mercedes_2026",     "myteam_mes_nissan_2026",
-                                      "myteam_honda_2026", "myteam_mercedes_2026"};
+    std::vector<std::string> stock = {"ferrari",
+                                      "mercedes",
+                                      "",
+                                      "myteam_ferrari",
+                                      "myteam_mercedes",
+                                      "myteam_honda",
+                                      "ferrari_2026",
+                                      "mercedes_2026",
+                                      "myteam_mes_nissan_2026",
+                                      "myteam_honda_2026",
+                                      "myteam_mercedes_2026"};
     Fake f = game(stock, 2);
     expect(mh::vehicle(f, ENTRANTS, stock_handle(1)) == car(1), "a stock handle resolves through the kind 0 table");
     expect(mh::vehicle(f, ENTRANTS, stock_handle(2)) == 0, "an empty stock slot resolves to nothing");
@@ -143,13 +139,15 @@ int main()
     entrants(f, {stock_handle(6), stock_handle(7), custom_handle(1), custom_handle(1)});
     expect(mh::season_2026(f, ENTRANTS, LIST, list_end(4)), "a session of 2026 stock cars is a 2026 season");
     mh::Source src;
-    expect(mh::plan(f, ENTRANTS, LIST, list_end(4), src) && src.label == "myteam_mercedes_2026" && src.vehicle == car(10) && src.y2026,
+    expect(mh::plan(f, ENTRANTS, LIST, list_end(4), src) && src.label == "myteam_mercedes_2026" && src.vehicle == car(10) &&
+               src.y2026,
            "a 2026 session rebuilds the car from myteam_mercedes_2026");
 
     Fake f25 = game(stock, 2);
     entrants(f25, {stock_handle(0), stock_handle(1), custom_handle(0), custom_handle(0)});
     expect(!mh::season_2026(f25, ENTRANTS, LIST, list_end(4)), "a session of 2025 stock cars is not a 2026 season");
-    expect(mh::plan(f25, ENTRANTS, LIST, list_end(4), src) && src.label == "myteam_mercedes" && src.vehicle == car(4) && !src.y2026,
+    expect(mh::plan(f25, ENTRANTS, LIST, list_end(4), src) && src.label == "myteam_mercedes" && src.vehicle == car(4) &&
+               !src.y2026,
            "a 2025 session rebuilds the car from myteam_mercedes");
 
     std::vector<std::string> no_mercedes26 = {"ferrari_2026", "myteam_mercedes", "myteam_audi_2026", "myteam_honda_2026"};
@@ -258,10 +256,11 @@ int main()
            "a readable range, or an allocated empty one, goes on to the census");
 
     mh::Tables mt_tables = mh::tables(ea_mes, ENTRANTS);
-    std::string line = mh::stopped(mh::heal_stop(load, true, ms), load, ms, mt_tables, mh::loaded(ea_mes, ENTRANTS, mh::KIND_CUSTOM),
-                                   "armed");
+    std::string line =
+        mh::stopped(mh::heal_stop(load, true, ms), load, ms, mt_tables, mh::loaded(ea_mes, ENTRANTS, mh::KIND_CUSTOM), "armed");
     std::printf("      %s\n", line.c_str());
-    expect(line.rfind("no census as the career loaded: no entrant is on a My Team car (heal armed; manager 0x2a0000000, ", 0) == 0,
+    expect(line.rfind("no census as the career loaded: no entrant is on a My Team car (heal armed; manager 0x2a0000000, ", 0) ==
+               0,
            "the line names the reason, the heal state and the manager");
     expect(line.find("entrants 0x360000000..0x3600002a8, entrants system [manager+0x260] 0x340d01000") != std::string::npos,
            "and the entrant range and the entrants system with the offset it was read at");
@@ -353,7 +352,9 @@ int main()
         ids.first(i);
     expect(!ids.first(999), "cars past 32 are not logged");
 
-    expect(mh::switch_off("0") && mh::switch_off("off") && !mh::switch_off("1") && !mh::switch_off(nullptr), "the switch reads 0 or off");
+    expect(swofty_core::guards::switch_off("0") && swofty_core::guards::switch_off("off") &&
+               !swofty_core::guards::switch_off("1") && !swofty_core::guards::switch_off(nullptr),
+           "the switch reads 0 or off");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

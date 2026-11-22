@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeedSystem_InterpolateSimulatorCarDataFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c31280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c31280.c;pat:log-message-cxx;xref:0x142c1b69f",
+  "notes": "Own log string. Mode 2 of FetchCarDataFrame 0x142c1b630. Finds two lines around time (0x142c36820), seeks each via SetStreamPosition 0x142c31e10, reads a text line into this+0x65a and parses it (0x142c34e50), then lerps position, rotation and velocities into the output frame param_3. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_data_feed_system_interpolate_simulator_car_data_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 0B 00 00 C5 78 29 84 24 30 0B 00 00",
+  "match": "0x142c31280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c31280",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeedSystem_InterpolateSimulatorCarDataFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c31280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c31280.c;xref:0x1405b852e",
+   "notes": "V5046 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -31,7 +31,7 @@ With F1 25 on both Steam and the EA app, select the game name next to the cover 
 1. [Install your addons](/using/addons) and [mods](/using/mods), then pick a [profile](/using/profiles).
 2. Press **Play**.
 3. On your first Play, the launcher opens a one-time setup. Say whether your game folder holds mods Swofty didn't add, then select **I understand**. If you said no on a Steam copy, the launcher checks the game files against Steam's own list at launch and goes straight on. Otherwise select **Verify game files in Steam**, wait for Steam to finish, then select **I've verified, continue**. On the EA app copy, repair the game in the EA app instead.
-4. On your first launch, select **Accept and launch** in the **Modded play runs offline** dialog. For why modded play runs offline, see [Offline play](/reference/safety).
+4. **Play** launches straight away, since you accepted the **Swofty Launcher EULA** when the launcher first opened. For why modded play runs offline, see [Offline play](/reference/safety).
 5. The first launch after the setup can take 5 to 8 minutes. Don't press Play in Steam or the EA app while it runs.
 
 You'll see **Launching…** on the button, then **Stop** while the game runs. While Swofty builds your mods or copies them into the game folder, the button shows **Building…** and the bar beside it shows how far it got. **Cancel** stops the build after the file it is on and puts the game files back; your profile and addons stay as they are, and the next Play builds again. Addons in a running build can't be updated or removed until it finishes. If Steam is closed, the launcher starts it and waits for it to sign in first; see [Steam](/reference/launch#steam). When you want to play vanilla, launch through Steam as usual.
@@ -91,13 +91,13 @@ Smart App Control has no exceptions for single apps. To use the launcher, turn i
 2. Select **Off**.
 3. Press **Play** again.
 
-On some versions of Windows, Smart App Control can only be turned back on by resetting Windows. Microsoft Defender Antivirus keeps protecting the PC with it off. To keep Smart App Control on, play F1 25 from Steam, without mods.
+On Windows 11 25H2 and 26H2, and 24H2 build 26100.8116 or later, with current updates, Smart App Control can be turned back on in the same **Smart App Control settings** page without resetting Windows. Older builds can only turn it back on by resetting Windows. Microsoft Defender Antivirus keeps protecting the PC with it off. To keep Smart App Control on, play F1 25 from Steam, without mods.
 
 If Smart App Control is already off, a policy set by whoever manages the PC blocked the program. They can allow the launcher folder and the game folder.
 
 ## If your game files aren't the ones Steam installed
 
-Before a modded session builds anything, the launcher checks the game against Steam's record of the files it installed. If a file was changed outside the launcher, for example by another mod tool or a manual install, F1 25 is not started and a **Your game files have been edited** modal says how many files changed, names the first six, and lists the fix.
+Before a modded session builds anything, the launcher checks the game against Steam's record of the files it installed. If a file was changed outside the launcher, for example by another mod tool or a manual install, F1 25 is not started and a **Your game files have been edited** modal says how many files changed, names the first six, and lists the fix. A DLL other than `steam_api64.dll` that differs from Steam's copy, such as an FSR 4, DLSS or VR runtime drop-in, doesn't stop the launch; a missing one does.
 
 To fix it:
 
@@ -109,6 +109,10 @@ The next launch checks the game again and continues once it matches Steam's copy
 ## If an addon needs a newer F1 25
 
 Addons are made for the latest F1 25 update. When an addon's changes don't apply to an older F1 25, F1 25 is not started and the play bar names the addon, your F1 25 version and the version it needs. Update F1 25 in Steam or the EA app, then press **Play** again. The original error is in the launch log, under **View log**.
+
+## If a program is set to run as administrator
+
+On the EA app copy, **Play** stops with **A program is set to run as administrator** when `EALauncher.exe`, `EADesktop.exe`, `F1_25.exe` or `EAAntiCheat.GameServiceLauncher.exe` is set to **Run this program as an administrator**. The dialog names each file. Right-click it, open **Properties > Compatibility**, untick **Run this program as an administrator**, and untick it under **Change settings for all users** too. Then press **Play** again. For `F1_25.exe` and `EAAntiCheat.GameServiceLauncher.exe`, running Swofty Launcher as administrator doesn't help. See [Programs set to run as administrator](/using/game-copies#programs-set-to-run-as-administrator).
 
 ## If the game closes as it starts
 

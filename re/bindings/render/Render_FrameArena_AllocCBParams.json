@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_FrameArena_AllocCBParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc6b10",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc6b10.c;xref:0x143bc1b32,0x143bc26a3",
+  "notes": "Bump-allocates a 16-aligned 0x250-byte block from the frame arena (CAS +0x20, limit +0x10, Ne_FatalAbort on overflow), memcpy from param_3, interns 'CBParams' and adds the binding via 0x143bdcfb0 / Ne_Vector_GrowEmplace_Elem384. Callers in Ne_PostProcessXGenerator_Copy_Render. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.frame_arena_alloc_c_b_params",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC A8 01 00 00 4D 89 C1 48 89 D6 48 89 CF 66 66 2E 0F 1F 84 00 00 00 00 00 8B 47 20 8D 48 0F 83 E1 F0 8D 91 50",
+  "match": "0x143bc6b10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bc6b10",
+  "kind": "func_start",
+  "names": [
+   "Render_FrameArena_AllocCBParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bc6b10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc6b10.c;xref:0x143bc1b32",
+   "notes": "V7806 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

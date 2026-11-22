@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ControllerSet_DeserialiseFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14389ceb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14389ceb0.c;pat:log-channel-CONTROLLER_SET;xref:0x1458825f8",
+  "notes": "Vtable cell 0x1458825f8. For every set in list +0x10..+0x18: u32 flags -> +0x30, obfuscated state +0x10/+0x18 = (no human or flags != 0), logs 'deserialised flags', one byte into the human controller data (vt+0x18: bits0-1, bits4-6). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.controller_set_deserialise_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 8B 71 10",
+  "match": "0x14389ceb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14389ceb0",
+  "kind": "func_start",
+  "names": [
+   "Game_ControllerSet_DeserialiseFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x14389ceb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14389ceb0.c",
+   "notes": "V6380 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

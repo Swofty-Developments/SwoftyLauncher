@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameWeatherSystem_SetLightingDataBasePaths",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438c6ca0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438c6ca0.c;pat:log-message-method;xref:0x14370b92d",
+  "notes": "setLightingDataBasePaths(gws,paths[],count): releases both path lists of global 0x1461068d0, allocates a new list, logs the name and each path, adds non-null paths via 0x143a5a460(list,path,0x17), mirrors list[0] into list[1], sets global byte 0x146106670 from [gws+0x1e00] (vt+0x128)+0x290. Caller 0x14370a8a0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_weather_system_set_lighting_data_base_paths",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 4C 89 C7 48 89 D3",
+  "match": "0x1438c6ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438c6ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameWeatherSystem_SetLightingDataBasePaths"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438c6ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438c6ca0.c;xref:0x14370b92d",
+   "notes": "V6391 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

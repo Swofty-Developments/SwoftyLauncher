@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_PresenceChangedResettingIndicesAndAuthentication",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140761f40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140761f40.c;pat:log-channel-TELEMETRY;xref:0x14076251d,0x140762b19",
+  "notes": "Logs TELEMETRY 'Presence changed. Resetting indices and authentication.', resets 4 vectors mgr+0x20150..0x20168 (end=begin), calls vtbl+0x18 of mgr+0x20178, writes 'none' to global+0x17c, sets mgr+0x209a8=0x100, mgr+0x208b8=-1. Callers inside 0x1407622c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_presence_changed_resetting_indices_and_authentication",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 2C 01 00 00",
+  "match": "0x140761f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140761f40",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_PresenceChangedResettingIndicesAndAuthentication"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140761f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140761f40.c",
+   "notes": "V4278 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

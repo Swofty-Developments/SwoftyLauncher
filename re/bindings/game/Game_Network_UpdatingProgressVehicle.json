@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_UpdatingProgressVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325f800",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14325f800.c;pat:log-channel-NETWORK;xref:0x14325dcd9,0x1432e27ac",
+  "notes": "Logs onMessageDriverPlayerChanged(isLocal msg+0x12, vehicleId msg+0x10); registers new vehicles / changes authority (logs \"+ new vehicle registration\", \"+ vehicle authority changed\"), calls vtable+0x90 (required to finish), sets the vehicle simulation type (+0x124) from msg+0x12/+0x13. (lane owner review requested) Better name: Game_Network_OnMessageDriverPlayerChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_updating_progress_vehicle",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x14325f800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325f800",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_UpdatingProgressVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325f800",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14325f800.c;xref:0x14325dcdc",
+   "notes": "V5803 Better name Game_VehicleProgressManager_OnMessageDriverPlayerChanged: logged method name is onMessageDriverPlayerChanged (isLocal, vehicleId); registers vehicle/authority change, required-to-finish and simulation type; UpdatingProgressVehicle is only a sub-log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14325f800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325f800.c",
+   "notes": "V7032 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

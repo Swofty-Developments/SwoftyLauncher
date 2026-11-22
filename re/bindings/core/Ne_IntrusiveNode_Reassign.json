@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_IntrusiveNode_Reassign",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bba60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442bba60.c;xref:0x14079da54,0x140b98e5a,0x140c15fb1,0x140c17d64,0x141478a9e",
+  "notes": "Handle assignment (holder+8 = target, +0x10/+0x18 next/prev in the target's handle list [target+0x28]): new null -> unlink, Vm_Release_Node 0x1442b3d70 old, clear. New non-null and vcall +0x28 true and different -> unlink/release old, link holder at head of new target's list, then atomically ++target+0x24. 1283 sites (VM property code). Better name: Ne_NodeHandle_Assign (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.intrusive_node_unlink",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 0A 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 01 FF 50 28 84",
+  "match": "0x1442bba60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bba60",
+  "kind": "func_start",
+  "names": [
+   "Ne_IntrusiveNode_Reassign"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1442bba60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1442bba60.c;xref:0x14079da54",
+   "notes": "V7654 BetterName Ne_IntrusiveNode_Reassign: unlinks old node then relinks to *param_2 (assign), not just release"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayBuffer_GetMinimumTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445c3c90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445c3c90.c;pat:log-message-cxx;xref:0x145befcd0,0x145befe60",
+  "notes": "ReplayBuffer vtable slot (cells 0x145befcd0/0x145befe60). Returns 0 if [this-0x28] vcall +0x70 is true. Waits/ends pending compression, saves position (vcall +0x28), logs, rewinds (vcall +0xd0) and walks back over 'FR' (0x5246) 0x20-byte frame headers (peek vcall +0x18) while before the start [-0x38]; logs 'previousFrameOffset' errors; returns the earliest header time; restores position via Game_PagedBuffer_UsePageAt. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.replay_buffer_get_minimum_time",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CB",
+  "match": "0x1445c3c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445c3c90",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayBuffer_GetMinimumTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445c3c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445c3c90.c;xref:0x155daf2d7",
+   "notes": "V6687 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

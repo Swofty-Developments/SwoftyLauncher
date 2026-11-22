@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SkinnedActor_PreDelete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401cfe50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401cfe50.c;pat:log-message-cxx;xref:0x1403c3654,0x1403c3673,0x14738f7f5,0x14738f813,0x1455e5bc0",
+  "notes": "Vtable cell 0x1455e5bc0; also called at 0x1403c3654,0x1403c3673,0x14738f7f5,0x14738f813. Logs preDelete and ACTOR_MIN_INFO \"#### %p %s %s\" (+0x200,+0x210); if resource handle +0x1f8 is set, unregisters it from [[0x14601db08]+0x70]+0x78 (vcall +0x10, callback 0x1401f34d0); clears +0x528..+0x537. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.skinned_actor_pre_delete",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 3C 01 00 00",
+  "match": "0x1401cfe50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401cfe50",
+  "kind": "func_start",
+  "names": [
+   "Game_SkinnedActor_PreDelete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401cfe50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401cfe50.c",
+   "notes": "V4374 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

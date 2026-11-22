@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TextureStreaming_LogPriorities",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bfc330",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bfc330.c;xref:0x143eb9512",
+  "notes": "Walks priority list +0x148..+0x150 from the end while budget allows; for entries over budget computes how many mips to drop (+0x39), logs 'Priority/Density/Deficit ... Mips %d to %d' and issues a remove command (0x143ed57b0 into +0x370); entries with 0 drop are erased. (lane owner review requested) Better name: Game_TextureStreaming_ScheduleMipRemovals (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.texture_streaming_log_priorities",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 04 00 00 C5 F8 29 BC 24 40 04 00 00 C5 F8 29 B4 24 30 04 00 00 C5 F8 28",
+  "match": "0x143bfc330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfc330",
+  "kind": "func_start",
+  "names": [
+   "Game_TextureStreaming_LogPriorities"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bfc330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bfc330.c;xref:0x143eb9512",
+   "notes": "V7844 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

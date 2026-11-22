@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ERPInfo_EUnloading",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a6a9d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a6a9d0.c;pat:log-message-cxx;xref:0x143a62240,0x15214e6f1",
+  "notes": "(loader, erp, listener, p4, p5): info = 0x143a5e4a0([+0x3c0]); status 3 -> 'processUnload - \"%s\" - already in the middle of unloading', status 0 -> 'no record of this erp being loaded', both reply vt 0x1458a3548 {0x25} to the listener. Else status 3 (eUnloading, logged), QPC +0x38, listener +0x20, +0x28=p4, drops resource refs posting vt 0x1458a35b0; none -> 0x143a6b120. (lane owner review requested) Better name: Game_EgoErpLoader_ProcessUnload (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.erp_info_e_unloading",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 4C 89 CF 4C 89 C6",
+  "match": "0x143a6a9d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a6a9d0",
+  "kind": "func_start",
+  "names": [
+   "Game_ERPInfo_EUnloading"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a6a9d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a6a9d0.c;xref:0x143a62240",
+   "notes": "V6437 function is ERP loader processUnload (guards: no record, already unloading, sets eUnloading). Better Game_EgoErpLoader_ProcessUnload"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143a6a9d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a6a9d0.c;xref:0x143a62240",
+   "notes": "V7048 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

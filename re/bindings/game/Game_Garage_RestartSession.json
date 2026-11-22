@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Garage_RestartSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140383360",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140383360.c;pat:log-message-method;xref:0x14038c694,0x14038e073,0x14038ef63,0x14038f143",
+  "notes": "GarageCrewInstance restartSession (logs vehicleId inst+0x120, garageId inst+0x11c): clears event queue, resets the state machine to self (state 1), releases +0xf8/+0x100/+0x108, 0x140381810, copies the garage pose from [[0x14601f5c8]+0x20]+0x1a8 +0xad8 (stride 0x6780) into inst+0x200, 0x140383660(inst,0), sets the render flag. Callers 0x140388cf0, 0x14038dfc0, 0x14038eeb0, 0x14038f090. (lane owner review requested) Better name: Game_GarageCrewInstance_RestartSession (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.garage_restart_session",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 78 B8 F6 00 00 00",
+  "match": "0x140383360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140383360",
+  "kind": "func_start",
+  "names": [
+   "Game_Garage_RestartSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140383360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140383360.c;xref:0x38c694",
+   "notes": "V4569 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

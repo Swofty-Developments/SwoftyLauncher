@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UnlockSystem_ForceUnlockItem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142eca1e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142eca1e0.c;pat:log-message-method;xref:0x142eca410,0x142eca7f2",
+  "notes": "Read in full (sys, item, callback): logs 'forceUnlockItem() - Item [%s] is being forced unlocked'; finds the item by id +0xa0 in hash set +0x88..+0xbc; entry = sys+0x50 + item+0xa8*0x40; state 0 -> set 1, store callback, handleCompletedTask 0x142eca470 with result 1; states 1/2 -> immediate callback (5 / 0); recurses on child items (vcall +0x50 list). Callers: itself (0x142eca410) and 0x142eca470. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.unlock_system_force_unlock_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4C 89 C7 48 89 D6 48 89 CB 48 8B 02",
+  "match": "0x142eca1e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142eca1e0",
+  "kind": "func_start",
+  "names": [
+   "Game_UnlockSystem_ForceUnlockItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142eca1e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142eca1e0.c;xref:0x142eca410",
+   "notes": "V5563 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

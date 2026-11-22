@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChampionshipStoreManager_OnSaveRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143038620",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143038620.c;pat:log-message-cxx;xref:0x140bb4cd9,0x141de960b,0x141de9a94,0x143098212,0x1430ac6b1,0x1430ecbb1,0x1436dd5a6,0x1436dd687,0x1436fec37,0x1436fed28",
+  "notes": "Own log onSaveRequest. Picks or creates the target save +0x60: unnamed when +0x18 == 0, else named; new ones via Game_SavedOnlineChampionshipContainer_Create... with the first free slot id (+0x210); copies GUID +0x48..+0x58 into save +0x220..+0x230, 0x143038bd0(this, save, param_3), and if param_2 Game_SaveMgr_RequestProfileSave_Thunk. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.championship_store_manager_on_save_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 44 89 C7 89 D3",
+  "match": "0x143038620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143038620",
+  "kind": "func_start",
+  "names": [
+   "Game_ChampionshipStoreManager_OnSaveRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143038620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143038620.c;xref:0x140bb4cda",
+   "notes": "V5424 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

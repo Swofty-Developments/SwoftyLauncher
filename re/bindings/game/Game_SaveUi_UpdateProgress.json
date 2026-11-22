@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SaveUi_UpdateProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436607c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436607c0.c;pat:log-channel-GameSaveSystemUserInterface;xref:0x145856780",
+  "notes": "Vtable cell 0x145856780. Body only logs GameSaveSystemUserInterface \"Continuing to display progress, %f\" with param_2; no other side effects. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.save_ui_update_progress",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 6C B8 1C 00 00 00",
+  "match": "0x1436607c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436607c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveUi_UpdateProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436607c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436607c0.c",
+   "notes": "V6114 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

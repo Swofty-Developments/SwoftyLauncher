@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleGhost_RefreshGhostDeadline",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1ccf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f1ccf0.c;xref:0x142f1cb3f",
+  "notes": "Read in full: blocked = (+0x4b8 & (+0x520[+0x628] | +0x518)) != 0 or vehicle [+0x18]+0x9f10/+0x9f0c == 3. If blocked: stamps QPC+[0x1461089f8] into +0x668 (and +0x670 if non-zero) and zeroes counter +0x680. Returns true only when not blocked AND +0x680 > 10 AND (now - +0x668)/+0x678 > 1.0 s. Caller 0x142f1cb00 (0x142f1cb3f). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_ghost_refresh_ghost_deadline",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 89 CE 8B 81 28 06 00 00 48",
+  "match": "0x142f1ccf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1ccf0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleGhost_RefreshGhostDeadline"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142f1ccf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1ccf0.c;xref:0x142f02c42",
+   "notes": "V7570 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

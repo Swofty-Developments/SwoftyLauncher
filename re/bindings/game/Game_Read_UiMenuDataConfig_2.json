@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_UiMenuDataConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d58df0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d58df0.c;pat:log-channel--;xref:0x141d58045,0x141d5889a",
+  "notes": "Handler (lea refs only): sets VM bools broadcast_ui.enable_grid_engineer and ui_menu_data.intros_and_outros.grid_engineer_tooltips_available from param_2+0x10, then writes string intros to ui_menu_data.current_game_state. Returns 0. (lane owner review requested) Better name: Game_Intros_SetGridEngineerUiState (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_ui_menu_data_config_2",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 D6 48 8B 0D",
+  "match": "0x141d58df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d58df0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_UiMenuDataConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d58df0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d58df0.c;xref:0x141d58046",
+   "notes": "V5197 Looks up the 3 listed DB keys (grid engineer, game_state intros); small; name acceptable"
+  }
+ ],
+ "proofs": []
+}

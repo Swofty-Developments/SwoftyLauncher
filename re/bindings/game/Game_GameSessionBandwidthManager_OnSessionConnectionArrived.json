@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionBandwidthManager_OnSessionConnectionArrived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143040b70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143040b70.c;pat:log-message-cxx;xref:0x145807678",
+  "notes": "Vtable cell 0x145807678 (next cell 0x145807680 = OnSessionConnectionLeft). Logs NETWORK-BANDWIDTH 'GameSessionBandwidthManager::onSessionConnectionArrived(%d)' with connection id byte p2, then adds it to the bandwidth tracker [[[p1+8]+0xd8]+0x140] via 0x144055f20(tracker,&id). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_bandwidth_manager_on_session_connection_arrived",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 88 54 24 2F 80 3D ?? ?? ?? ?? 01 75 75 B8 E3 00 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 44 8B 04 81 45 85 C0 74 51 41 81 F8 39 9A DF 4A 74 31 83 C0 0F 4C 69 C0 43 43 66 5F 49 C1 E8 20 41 89 C1 45 29 C1 41 D1 E9 45 01 C1 41 C1 E9 08 45 69 C1 75 01 00 00 44 29 C0 3D E3 00 00 00 75 BF EB 17 44 0F B6 C2 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 46 08 48 8B 80 D8 00 00 00 48 8B 88 40 01 00 00 48 8D 54 24 2F E8 ?? ?? ?? ?? 90 48 83 C4 30 5E C3 CC CC CC 56 48 83 EC 30",
+  "match": "0x143040b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143040b70",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionBandwidthManager_OnSessionConnectionArrived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143040b70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143040b70.c",
+   "notes": "V5661 name matches own log/pretty string and body; no broader behaviour found [vtable/indirect]"
+  }
+ ],
+ "proofs": []
+}

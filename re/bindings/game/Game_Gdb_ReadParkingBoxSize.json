@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Gdb_ReadParkingBoxSize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bb26e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bb26e0.c;xref:0x14102ec16,0x143619728",
+  "notes": "(out vec3, prefix): copies prefix, appends 'parking_box', opens the gdb table (0x1445a25c0) and for each row reads ints width/height/depth (0x1445a2cf0) into out[0..2]. Callers 0x14102b110, 0x143618cf0 (old third xref not code). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.gdb_read_parking_box_size",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 04 00 00 C5 F8 29 B4 24 30 04 00 00 48 89 CE C5",
+  "match": "0x142bb26e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bb26e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Gdb_ReadParkingBoxSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x142bb26e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bb26e0.c;xref:0x14102ec16",
+   "notes": "V6758 parking_ + box key and width/height/depth verified"
+  }
+ ],
+ "proofs": []
+}

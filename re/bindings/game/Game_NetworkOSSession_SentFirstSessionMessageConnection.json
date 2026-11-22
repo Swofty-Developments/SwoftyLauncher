@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_SentFirstSessionMessageConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430fe110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430fe110.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x1430fe108,0x1430fc53d",
+  "notes": "With an active session (this+0x70, refcount held) builds the session message (0x1430fcd70) for connection param_2, sends it and logs '[MESSAGE] Sent first session message to connection %d'. Tail jumps from 0x1430fe060 and 0x1430fc4e0. (lane owner review requested) Better name: Game_NetworkOSSession_SendSessionMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_os_session_sent_first_session_message_connection",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 89 D3 48 8B 51 70",
+  "match": "0x1430fe110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430fe110",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_SentFirstSessionMessageConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1430fe110",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430fe110.c;xref:0x1430afd06",
+   "notes": "V5730 Sends the session message to a connection (wrapper over 0x1430fcd70); log is only a debug trace. Better: Game_NetworkOSSession_SendSessionMessageToConnection"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1430fe110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430fe110.c;xref:0x1430fc53d",
+   "notes": "V6982 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

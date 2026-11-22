@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_BadgeReplicationManager_HandleBadgeIdAllocated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143128e40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143128e40.c;pat:log-message-cxx;xref:0x14febe045",
+  "notes": "Body read in full. When (+0x10)+8 > 1 and [(+8)+0xd8] vt+0x10 == param_3: looks up the badge for id [+0x80]+0x1b8 via 0x14246d820(+0x28) (missing: logs '%s : There is no badge assigned to the standard slot.'); else replaces the player badge 0x143128730(this,..,param_2+0x60,badge) and sends a message (vtable 0x1458245e0, badge fields +0x18..+0x158) via 0x14402e500(+0x20,1,..). Only ref: lea 0x14febe045 (registration in 0x14febdd60). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.badge_replication_manager_handle_badge_id_allocated",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 58 02 00 00 48 8B 41 10",
+  "match": "0x143128e40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143128e40",
+  "kind": "func_start",
+  "names": [
+   "Game_BadgeReplicationManager_HandleBadgeIdAllocated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143128e40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143128e40.c;xref:0x14febe047",
+   "notes": "V5862 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

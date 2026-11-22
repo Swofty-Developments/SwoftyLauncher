@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_DrawInstanced",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a02d00",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a02d00.c;xref:0x143a014bd",
+  "notes": "Same flush as Render_Gfx_Draw, then list vcall +0x130(count param_3, instances param_4, start param_2, 0). Caller Render_Gfx_SubmitDraw 0x143a007e0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_draw_instanced",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 89 CD 44 89 C3 89 D7",
+  "match": "0x143a02d00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a02d00",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_DrawInstanced"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a02d00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a02d00.c;xref:0x143a014bd",
+   "notes": "V8519 dirty-state flush then vcall +0x130 with instance count"
+  }
+ ],
+ "proofs": []
+}

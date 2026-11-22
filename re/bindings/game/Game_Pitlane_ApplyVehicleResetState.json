@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_ApplyVehicleResetState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434c03c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434c03c0.c;xref:0x1434c00ac,0x1434ce856,0x1434d1336,0x1434d18c6",
+  "notes": "Dispatcher, not a reset: rec = [ctx+0x938+car*0x10] (null -> return); box = rec+0xe0 == 99 ? 0xc : rec+0xe0>>1; returns when type (arg4) == 6 or rec+0xe0 > 0x17; type 0 0x1434c0600, 1 0x1434c0fb0, 2 0x1434c1c00, 3 0x1434c2870, 4 0x1434c3520, 5 0x1434c1780; false result / bad type records a stack backtrace (code 0x58). Callers: Game_Pitlane_Multiplayer_resetToTrack, 0x1434ce470, Game_PitLane_PutVehicleInPitBox, Game_Pitlane_Multiplayer_teleportToGarage. (lane owner review requested) Better name: Game_PitLane_BuildPitSplineByType (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.pitlane_apply_vehicle_reset_state",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 41 0F B6 C0 48 C1 E0 04 48 8B",
+  "match": "0x1434c03c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434c03c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_ApplyVehicleResetState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1434c03c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c03c0.c;xref:0x1434c00ac",
+   "notes": "V7586 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_PassTable_Rehash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f0d760",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f0d760.c;xref:0x143b81f1a",
+  "notes": "Rename (this is the emplace; the rehash is 0x143f0dd80): robin-hood map keyed by C string (FNV-1a 64 * seed [+0x10], info bytes [+0x20], 0x20-byte slots [+0x18]); probes and compares with Ne_Crt_Strcmp, on miss shifts entries and writes the info byte, size [+0x28]++; first use allocates via allocator vcall +0x10 (ne_hash_map.h, line 0x1d6), grows via 0x143f0dd80. Writes {slot index, result code} to param_2. Caller 0x143b81f1a in Render_PassTable_FindOrAddBitByName. (lane owner review requested) Better name: Render_PassTable_FindOrInsert (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.pass_table_rehash",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 44 24 38 85 C0 74 2E 83 F8 03 74 05 83 F8",
+  "match": "0x143b81f1a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143f0d760",
+  "kind": "func_start",
+  "names": [
+   "Render_PassTable_Rehash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143f0d760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f0d760.c;xref:0x143b81f1a",
+   "notes": "V8292 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

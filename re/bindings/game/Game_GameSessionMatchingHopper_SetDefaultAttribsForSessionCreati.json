@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingHopper_SetDefaultAttribsForSessionCreati",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307ff90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14307ff90.c;pat:log-message-cxx;xref:0x14580d798,0x14580dad8",
+  "notes": "Vtable cells 0x14580d798 and 0x14580dad8 (two vtables). Own pretty-function string 0x14580d99f 'virtual NeNetSessionAttribs *...Hopper::setDefaultAttribsForSessionCreation(NeNetSessionCreateDescription &, NEint)'. Builds attribs via own vt+0x60(p1, p1+0x20, desc+0x124, p3) into desc p2+0xf8; for context types 1..7 ([[p1+0x10]+0x4d8]+0x28 +8) selects the template whose name (+0x28) matches table 0x1458274f8 from [[p1+0x10]+0x3e8]+0x90..+0x98 into desc+0x130; logs host name desc+0x10. Returns the attribs. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_hopper_set_default_attribs_for_session_creati",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 45 89 C1",
+  "match": "0x14307ff90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307ff90",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingHopper_SetDefaultAttribsForSessionCreati"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307ff90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307ff90.c",
+   "notes": "V5669 name matches own log/pretty string and body; no broader behaviour found [vtable/indirect]"
+  }
+ ],
+ "proofs": []
+}

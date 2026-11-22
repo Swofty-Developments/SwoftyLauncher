@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeViewModel_OnTargetDriverChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d08280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d08280.c;pat:log-message-cxx;xref:0x141cefd93",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int vehicle -> 0x142bdc8a0(system, v, 1); resets camera_roll 0 and dof_focal_length to the default (system+0x310 table), FOV recomputed into +0x2d78/+0x2d7c and camera +0x160; reapplies camera selection when this+0x490 != 0; this+0x48c = v; sets 'tyres' item to per-car tyre this+0x308[v]. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_view_model_on_target_driver_changed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC C0 00 00 00 83 7A 08 0A",
+  "match": "0x141d08280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d08280",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeViewModel_OnTargetDriverChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d08280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d08280.c;xref:0x141cefd95",
+   "notes": "V5189 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

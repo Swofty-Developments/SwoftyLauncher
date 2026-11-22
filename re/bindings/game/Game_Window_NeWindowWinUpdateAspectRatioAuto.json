@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Window_NeWindowWinUpdateAspectRatioAuto",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439f14f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439f14f0.c;pat:log-channel-WINDOW;xref:0x142c93e37,0x1439eff03,0x1439f70c2,0x1439f897d,0x1439fa398,0x1439fc993",
+  "notes": "Read in full: NeWindowWin::updateAspectRatio(settings) - 'auto=%d' is only its first log arg. Manual (settings+0x180 == 0): aspect = +0x184/+0x188; auto and mode +0x15c != 1: desktop size 0x1460446ec; else MonitorFromWindow(hwnd +0x278), finds the monitor in list +0x8a0 (stride 0x18), divides width by the multi-monitor grid X ([0x14618caa8]+0xa00, only if Y == 1 and +0xa19); writes aspect 0x1460446f4 and 1/aspect 0x1460446f8. (lane owner review requested) Better name: Game_Window_NeWindowWinUpdateAspectRatio (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.window_ne_window_win_update_aspect_ratio_auto",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1439f14f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439f14f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Window_NeWindowWinUpdateAspectRatioAuto"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439f14f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439f14f0.c;xref:0x142c93e37",
+   "notes": "V6405 updateAspectRatio handles auto, custom and window modes; auto is one branch. Better Game_Window_NeWindowWinUpdateAspectRatio"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1439f14f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439f14f0.c;xref:0x142c93e37",
+   "notes": "V7041 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

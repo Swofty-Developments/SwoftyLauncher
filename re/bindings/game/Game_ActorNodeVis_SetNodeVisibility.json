@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActorNodeVis_SetNodeVisibility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401ce3a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401ce3a0.c;pat:log-message-method;xref:0x1401ce2f6,0x1401ce31c,0x1401ce340,0x1401ce36f,0x1401cea78,0x1455e5b88",
+  "notes": "(this, pattern, visible, lodIdx): model = +0x230 or +0x228; for each node (count ((+0xd0)+0x48)) of type 10 or 1, matches the name by substring ('~' prefix, 0x14532aaf8) or exact (0x14535e280); sets/clears its bit in ((+0xa0)+0x80) + stride(+0x96)*(lodIdx+2), queues 0x143d3ce20 once (+0x128 = 2), +0x12c |= 4, logs matches. Returns 1 if any, else logs 'found no matches' and 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.actor_node_vis_set_node_visibility",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 44 89 4C 24 34",
+  "match": "0x1401ce3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401ce3a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ActorNodeVis_SetNodeVisibility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401ce3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401ce3a0.c",
+   "notes": "V4366 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

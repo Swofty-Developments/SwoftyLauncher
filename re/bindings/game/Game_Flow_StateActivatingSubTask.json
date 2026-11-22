@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Flow_StateActivatingSubTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144426920",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144426920.c;pat:log-channel-FLOW;xref:0x142d9d6e1,0x142e0299e,0x1436b1605,0x1436c15b6,0x1436c1c31,0x1436c4516,0x1436c4da2,0x1436c892f,0x1436cb0fa,0x1436cbade,0x1436cc930,0x1436cfce9,0x1436d5e55,0x1436d6e38,0x1436da48f,0x1436db809,0x1436e1ebc,0x1436e6ce3,0x1436f3e31,0x1436fbdcd,0x14370100a",
+  "notes": "Flow state: sets status +0xc18=2; for each pending sub task in vector [+0xd8]: checks blockers in [+0xe0] (vcall +0x28, removes ready ones); if none block, logs '[machine] State - Activating sub task (immediate)' (FLOW, name de-XORed with 0x145890978), calls task vcall +0x18 (activate), appends to active vector [+0xc8], erases from pending. Renamed: activates all ready pending tasks. (lane owner review requested) Better name: Game_FlowState_ActivatePendingSubTasks (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.flow_state_activating_sub_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 C7 81 18 0C 00 00 02 00 00 00",
+  "match": "0x144426920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144426920",
+  "kind": "func_start",
+  "names": [
+   "Game_Flow_StateActivatingSubTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144426920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144426920.c;xref:0x142d9d6e1",
+   "notes": "V6602 size=952; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

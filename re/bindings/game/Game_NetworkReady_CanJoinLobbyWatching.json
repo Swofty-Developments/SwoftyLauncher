@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_CanJoinLobbyWatching",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436f1bf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436f1bf0.c;pat:log-message-method;xref:0x14585ded8",
+  "notes": "State function (vtable cell) writing a next-state hash to *param_2 (0xb446c5b9 / 0x1046f5da / 0x8eeefb3a, default [0x146cb2280]); logs '%s: Player %s is LOCAL and PLAYING.' ('canJoinPlayingLobby') or '...LOCAL and watching.' ('canJoinLobbyWatching'). Old name covered one branch only. (lane owner review requested) Better name: Game_NetworkReadyState_UpdateCanJoinLobby (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ready_can_join_lobby_watching",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 48 89 D6 48 89 CF 48 8B 89 90 0C 00 00",
+  "match": "0x1436f1bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436f1bf0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_CanJoinLobbyWatching"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436f1bf0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436f1bf0.c",
+   "notes": "V6145 Link-selecting predicate with BOTH canJoinPlayingLobby (LOCAL and PLAYING) and canJoinLobbyWatching (LOCAL and watching) branches, returns link hash. Better: Game_NetworkReady_SelectJoinLobbyLink. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1436f1bf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436f1bf0.c",
+   "notes": "V7102 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

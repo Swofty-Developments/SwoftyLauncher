@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418cfc90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1418cfc90.c;pat:log-channel--;xref:0x1418cfaac,0x1418cface,0x1418cfc84",
+  "notes": "Body read fully. Returns if byte 0x146067750. Unless 0x146067751 or DB bool Game.F1World.ForceFanzoneChoices (0x143a43b90): needs [[p+0x10]+0x140]+0x1a0==0, 0x143882d30(p[4]), player p[5] +199==0 and key +0xa0/+0xa2 or +0xa4/+0xa6 valid, 'fanzone_choices_onboarding_complete' absent in [p+0x38]+0x228, and not Testing.EnableSmokeTest / Game.F1World.SkipFanzoneChoices. Then [p+0x80] vt+0x10('fan_zone_choices'), sets 0x146067751. Better name: Game_F1World_CheckFanzoneChoicesOnboarding (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_game_config_2",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 00 00 00 80 3D ?? ?? ?? ?? 00",
+  "match": "0x1418cfc90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418cfc90",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1418cfc90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418cfc90.c;xref:0x1418cfaac",
+   "notes": "V4910 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

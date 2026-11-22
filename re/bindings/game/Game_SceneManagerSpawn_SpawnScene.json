@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SceneManagerSpawn_SpawnScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401a4b70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void * Game_SceneManagerSpawn_SpawnScene(void *mgr, const uint8_t *opts, void *scene, const float *mtx44, void *ov_a, void *ov_b, uint64_t p7)",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1401a4b70.c;xref:0x1401a2b34,0x1401b7dd7,0x1401e9044,0x14020923d,0x14020ac24,0x14023fe68,0x14024abf7,0x140389ffe,0x14038a34a,0x14038a592;xref:0x1401a5600",
+  "notes": "SceneManagerSpawn::spawnScene: under the manager lock (*self) spawns scene param_3 (scene from Game_Scene_FindByName, its id at +0xe8 names it in the log) with spawn options param_2 (byte flags [1],[2],[4],[6..9] logged as yes/no), instance overrides param_5 (count +0xa0, stride 0x28) and param_6 (count +0x50, stride 0x28): allocates the instance (0x1401e9150 with param_7), copies the 64-byte world matrix param_4 into instance+0x30..+0x6f, activates it (0x1401e7aa0(inst,1), optional 0x140190110) and returns the instance pointer. (used by vmknolle race-start for grid / crew scenes) | 2026-11-19 engine-re: param_5 is the material context list; after copying it into the instance the list goes through Game_SceneManager_FormatMaterialContexts_Thunk 0x1401e8c50 (call 0x1401a5601), which makes each entry '.emb?context=<entry>'. raised by engine-re with --force 2026-11-19 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.scene_manager_spawn_spawn_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 4C 89 4C 24 48 4C 89 44 24 38",
+  "match": "0x1401a4b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401a4b70",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneManagerSpawn_SpawnScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x1401a4b70",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_b/decomp/1401a4b70.c;xref:0x1401a2b34,0x14038a34a,0x1403ada73,0x14288c866",
+   "notes": "V1037 logs 'spawnScene [%s]' / SceneManagerSpawnOptions Should* flags read from param_2 bytes, scene ptr param_3 (+0xe8 id), param_4 64-byte matrix copied, param_5/param_6 override arrays (stride 0x28, counts at +0xa0/+0x50), forwards p7 to 0x1401e9150, returns new instance; 7-arg proto matches"
+  }
+ ],
+ "proofs": []
+}

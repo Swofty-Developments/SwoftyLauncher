@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_ApplyEffectJitter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af3e80",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af3e80.c;xref:0x143af3dfe,0x143af5c64,0x143b02fbf,0x143b041e9",
+  "notes": "Reads the effect transform rows param_1+0x10..+0x40, adds an LCG jitter (seed 0x145f96f80, mults 0x60b7a437/0x10d63af1/0x41a7, 11-bit, -0.5..0.5) scaled by def +0x63c/+0x644 to the translation and writes the rows into every emitter instance (+0x10..+0x40, stride 0x180); non-unit axes are normalised, scales stored at +0x124..+0x12c and +0x150. (lane owner review requested) Better name: Render_Particles_SetEmitterTransformsJittered (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.particles_apply_effect_jitter",
+  "section": ".xtls",
+  "pattern": "48 81 EC A8 00 00 00 C5 78 29 BC 24 90 00 00 00 C5 78 29 B4 24 80 00 00 00 C5 78 29 6C 24 70 C5 78 29 64 24 60 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 F8 28 41",
+  "match": "0x143af3e80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af3e80",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_ApplyEffectJitter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143af3e80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af3e80.c;xref:0x143af3dfe",
+   "notes": "V7855 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

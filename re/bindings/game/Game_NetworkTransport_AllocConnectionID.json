@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_AllocConnectionID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405b670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14405b670.c;pat:log-message-method;xref:0x14405b43f,0x14407a1b5",
+  "notes": "Logs 'allocConnectionID(%02d)' and marks id p2 allocated. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_transport_alloc_connection_id",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 84 D2 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x14405b670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14405b670",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_AllocConnectionID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14405b670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405b670.c;xref:0x14405b43f",
+   "notes": "V6487 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

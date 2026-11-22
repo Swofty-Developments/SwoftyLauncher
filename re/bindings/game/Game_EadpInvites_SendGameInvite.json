@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EadpInvites_SendGameInvite",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ff63a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ff63a0.c;pat:log-channel-EADP_INVITES;xref:0x145a46250",
+  "notes": "Completion callback (vtable cell 0x145a46250; this, result param_2 moved out, error param_3). Error -> 'Failed to send game invite. Error: %s' (error text +0x30); else 'Successfully sent game invite'; then calls the stored functor this+8/+0x10 (EADP_INVITES). (lane owner review requested) Better name: Game_EadpInvites_OnSendGameInviteResult (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_invites_send_game_invite",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C3 48 89 CF 48 8B 32",
+  "match": "0x143ff63a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ff63a0",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpInvites_SendGameInvite"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143ff63a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ff63a0.c",
+   "notes": "V6346 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

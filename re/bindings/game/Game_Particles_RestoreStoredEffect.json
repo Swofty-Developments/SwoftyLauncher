@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_RestoreStoredEffect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b030e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b030e0.c;xref:0x143b04025,0x143b04d7d",
+  "notes": "Not a restore: decodes attach handle p2+0x64 (low byte slot, rest index): slot<4 copies 4x4 matrix from p1+0xa5e370; 4..0x23 multiplies p1+0xa5e530 entry by parent matrix p1+0xa5f2c0+idx*0x40; 0x24..0x27 p1+0xa5e548 (direct if flag p1+0xa5e560 byte 0, else times parent). Result -> p2+0x10..0x4f, pushed to emitters [p2+0x80,+0x88) stride 0x180 (prev at +0x50, scale normalise +0x124..+0x150, >5 m jump resets prev). (lane owner review requested) Better name: Game_Particles_UpdateEffectAttachTransform (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.particles_restore_stored_effect",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 44",
+  "match": "0x143b030e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b030e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_RestoreStoredEffect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b030e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b030e0.c;xref:0x143b04025",
+   "notes": "V7880 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

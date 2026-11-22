@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Write_ConvexHull",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14464a7f0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14464a7f0.c;xref:0x145bf8638",
+  "notes": "ConvexHull serialiser: numHulls (count of +0x50..+0x58), BoxifyFrontWing +0x10, BoxifyRearWing +0x11, OffsetX/Y/Z (XOR +0x18/+0x28/+0x38); per hull ConvexHullData name (+0x10), numVertices, HullVertex x,y,z (16-byte vertices at +0x40); XML writer (vcalls +0x28 begin, +0x58/+0x68/+0x70 value, +0x78 end, +0x98 comment). Only ref: vtable cell 0x145bf8638. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.parse_convex_hull",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D6 48 89 CF 48 8B 02 48 8D 15",
+  "match": "0x14464a7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14464a7f0",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_ConvexHull"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14464a7f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14464a7f0.c",
+   "notes": "V6719 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

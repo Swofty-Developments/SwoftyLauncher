@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UnlockSystem_HandleCompletedTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142eca470",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142eca470.c;pat:log-message-method;xref:0x142ec3c3c,0x142ec8e1d,0x142eca3be",
+  "notes": "Read in full (sys, entry, task): result = task vcall +0x10; 2..4 -> entry state 0 and logs 'handleCompletedTask() - Item [%s] has failed to unlock'; 1 -> unless entry+0x38: sets flag bit 1 of +0x14, posts bus message 0x1457f19c0 (Ne_Post_BusMessage 0x1439876c0) and an unlock event 0x145698370 with the item data (0x142ef8950), force-unlocks child items (0x142eca1e0); 1 or 5 -> state 1. Then calls and clears the stored callback +0x18/+0x20 and frees +0x30. Callers 0x142ec3a00, 0x142ec8da0, 0x142eca1e0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.unlock_system_handle_completed_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 01 00 00 C5 F8 29 B4 24 A0 01 00 00",
+  "match": "0x142eca470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142eca470",
+  "kind": "func_start",
+  "names": [
+   "Game_UnlockSystem_HandleCompletedTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142eca470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142eca470.c;xref:0x142ec3c3c",
+   "notes": "V5564 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

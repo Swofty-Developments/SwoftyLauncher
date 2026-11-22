@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Difficulty_CreateData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142417640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142417640.c;pat:log-channel-DIFFICULTY;xref:0x142417104",
+  "notes": "Logs DIFFICULTY 'Difficulty Data Created For %s' ('settings'); allocates 0x300 data (ctor 0x1424251a0 'settings', this+0x20, +0x28, 9, 1), inserts name 'settings' into hash map this+0x68 (nodes +0x70, buckets +0x90/+0x98), appends (allocator, data) to vector this+0x50..+0x60 and returns data; if the name exists the data is destroyed and 0 returned. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.difficulty_create_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CB 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142417640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142417640",
+  "kind": "func_start",
+  "names": [
+   "Game_Difficulty_CreateData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142417640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142417640.c;xref:0x142417104",
+   "notes": "V5269 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

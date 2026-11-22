@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_MigrationGroupSizeDecreased",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315a450",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315a450.c;pat:log-channel-NETWORK-LEAGUES;xref:0x14581d4d8",
+  "notes": "Counts connected peers with flag bit 28 in the player list [[this+0x10]+0x100]+0x58, compares half+1 with the stored group size, restarts the timer this+0x60/+0x68 and logs 'Migration group size increased/decreased: %d'. Only ref: vtable cell 0x14581d4d8. (lane owner review requested) Better name: Game_NetworkLeagues_UpdateMigrationGroupSize (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_leagues_migration_group_size_decreased",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CF 48 8B 49 10",
+  "match": "0x14315a450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315a450",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_MigrationGroupSizeDecreased"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14315a450",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14315a450.c",
+   "notes": "V5999 Logs both decreased and increased migration group size. Better: Game_NetworkLeagues_MigrationGroupSizeChanged; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14315a450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315a450.c",
+   "notes": "V6998 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

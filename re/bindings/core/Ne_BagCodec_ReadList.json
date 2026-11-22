@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Ne_BagCodec_ReadList",
+ "table": "functions",
+ "author": "swofty",
+ "row": {
+  "addr": "0x143935010",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_BagCodec_ReadList(NeBagCodec *codec, void *list)",
+  "evidence": "decomp:own disasm 0x143935010-0x143935300;xref:0x143934d50,0x1439353a3",
+  "notes": "List reader, the inverse of Ne_BagCodec_WriteList: clears the list, reads a u64 version (0x5a if above codec vt+0x18) and a u64 count, grows the u16-capacity item array through the list allocator, then per item a u32 type id looked up in the type list."
+ },
+ "signature": {
+  "id": "core.bag_codec_read_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D6 48 89 CF 48 8B 42 08",
+  "match": "0x143935010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143935010",
+  "kind": "func_start",
+  "names": [
+   "Ne_BagCodec_ReadList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-19",
+    "by": "swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "swofty",
+   "date": "2026-11-19",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143935010",
+    "target": "0x143935010"
+   },
+   "sigcheck": "passed",
+   "digest": "f05886026ead4e9d15f91208d13a518a41a54b20320bd5230a1c6c7b70ea8847"
+  }
+ ]
+}

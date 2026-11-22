@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownFormScreen_OnActivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423d4b60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/1423d4b60.c;xref:0x145786080",
+  "notes": "myteam-g1: Activates my_team_renown_and_form screen and binds renown node."
+ },
+ "signature": {
+  "id": "career.renown_form_screen_on_activate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE E8 ?? ?? ?? ?? F6 40 03 01",
+  "match": "0x1423d4b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423d4b60",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownFormScreen_OnActivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423d4b60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423d4b60.c",
+   "notes": "V10181 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

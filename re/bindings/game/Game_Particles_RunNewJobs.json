@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_RunNewJobs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b10fa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b10fa0.c;xref:0x143b09d6d,0x143b0d6c3",
+  "notes": "Read in full (pdata 0x143b10fa0-0x143b11588; ends with tail jmp 0x143ac0100 = job-queue wait-for-finish with deadlock dump, merged into the decomp). Clears 20000 B at mgr+0xa5fbd0, 0x143af9c70 fills per-emitter counts; batches (<=0x100) by limits +0xa5b860 emitters / +0xa5b864 particles; 0x20-byte job records + 0x30-byte items (pool [+0xa5b740]); 1 batch runs inline (+0xa5b828), else queue [+0xa5b748] vfunc +8 'ParticleManagerNewJobs' then 'WAIT:waitForFinish'. Callers in 0x143b06d90. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.particles_run_new_jobs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0C 00 00 C5 F8 29 B4 24",
+  "match": "0x143b10fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b10fa0",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_RunNewJobs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b10fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b10fa0.c;xref:0x143b09d6d",
+   "notes": "V7897 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

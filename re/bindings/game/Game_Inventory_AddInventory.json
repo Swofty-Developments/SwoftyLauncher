@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Inventory_AddInventory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a7d830",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a7d830.c;pat:log-channel-INVENTORY;xref:0x1425b0a57,0x1425b0aa7,0x1425b0af7,0x14279bdac,0x14279bdff",
+  "notes": "Allocates 0x68 inventory + shared ctrl (vtable 0x1457c45b0), id = ++this+0xd0; out param_2 = {id, empty name}. Node from freelist this+0x28 inserted into robin-hood NeHashMap this+0x20.. keyed by id (grow 0x142b3d9a0, 256 tries then fatal); duplicate frees node. Logs INVENTORY 'Added inventory [%s]' ('%d - %s'). Returns param_2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.inventory_add_inventory",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 48 89 D6 48 89 CB",
+  "match": "0x142a7d830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a7d830",
+  "kind": "func_start",
+  "names": [
+   "Game_Inventory_AddInventory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a7d830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a7d830.c;xref:0x1425b0a57",
+   "notes": "V4975 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

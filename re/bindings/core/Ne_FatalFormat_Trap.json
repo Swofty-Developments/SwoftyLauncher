@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_FatalFormat_Trap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143918230",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143918230.c;xref:0x1440cc1e2,0x143918223",
+  "notes": "13-byte noreturn stub (calls 0x145351784 fatal trap) following Ne_FatalFormat. Name only."
+ },
+ "signature": {
+  "id": "core.fatal_format_trap",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC 41 56 56 57 53 48 83 EC 38 4C 89 C6",
+  "match": "0x143918230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143918230",
+  "kind": "func_start",
+  "names": [
+   "Ne_FatalFormat_Trap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143918230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143918230.c;xref:0x143918223",
+   "notes": "V8480 13-byte stub: 145351784 abort then int3"
+  }
+ ],
+ "proofs": []
+}

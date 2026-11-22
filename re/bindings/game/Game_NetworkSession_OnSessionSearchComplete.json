@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_OnSessionSearchComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143083c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143083c40.c;pat:log-message-method;xref:0x14308149a,0x1430815fa",
+  "notes": "Search callback lea'd twice in 0x143081160 (findGame, quickfindGame): logs 'onSessionSearchComplete', reads GameState, ProgressionPercentage, Region, MatchingClusterID, SafetyRating, MinimumSafetyRating, RaceLength, Privacy attributes (buildEnumeratedGame). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_session_on_session_search_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 C5 79 29 A4 24 C0 02 00 00",
+  "match": "0x143083c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143083c40",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_OnSessionSearchComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143083c40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143083c40.c;xref:0x14308149d",
+   "notes": "V5629 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

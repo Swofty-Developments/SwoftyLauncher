@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_AcclaimAndFacilityLevel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a27410",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/141a27410.c;xref:0x145727618",
+  "notes": "Vtable cell 0x145727618. Ui_CareerSetup_BuildScreenBindings, Ne_Post_BusMessage(0x145732800), resets 'modes' list +0x380/+0x3a0; per mode entry of component 0x14605b008 (+0x498..+0x4a0, 0xa8 each) binds title +0x40, subtitle +0x68, cash (+0x4 plus type-1 resource), acclaim, facility_level +0x8; appends 200-byte tile +0x3c8 (djb2 of id +0x90, byte +0xd), calls 0x141a22240; ends 0x143879900, 0x143875010. (lane owner review requested) Better name: Career_Wizard_BuildModeTiles (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.update_acclaim_and_facility_level",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 C5 F8 29 BC 24 A0 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 89 CE",
+  "match": "0x141a27410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a27410",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_AcclaimAndFacilityLevel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a27410",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a27410.c;xref:0x145727618",
+   "notes": "V9923 Builds career-wizard mode tiles (modes, title, subtitle, cash, acclaim, facility_level, career_wizard_small_tile_button) in a 960-line builder; not just a read/update of acclaim and facility level."
+  }
+ ],
+ "proofs": []
+}

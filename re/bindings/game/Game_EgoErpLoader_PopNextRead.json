@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_PopNextRead",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a68490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a68490.c;pat:log-message-method;xref:0x143a657af,0x143a65a7d",
+  "notes": "Adds timers +0x3a0..+0x3b0 to globals 0x14628f5a8.., logs EGO_ERP_LOADER_TIMING summary; closes file +0x338 ('popNextRead - close \"%s\"'); frees buffers if +0x378; clears +0x330/+0x340, +0x3f5=1. Under lock +0x2d8 pops queue +0x318..+0x320: kind 1 -> unload +0x3f8, state 2, posts vt 0x1458a35b0; kind 0 -> state 1, StartRead(loader, &cur, req+8, req+0x10), frees req; empty -> 0x1439952f0([+0x3b8]). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_pop_next_read",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 48 89 CE 48 8B 81 A0 03 00 00",
+  "match": "0x143a68490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a68490",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_PopNextRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a68490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a68490.c;xref:0x143a657af",
+   "notes": "V6427 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

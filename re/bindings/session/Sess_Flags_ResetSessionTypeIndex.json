@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Flags_ResetSessionTypeIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14357aab0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14357aab0.c;xref:0x142d5ef97,0x143647421",
+  "notes": "(flagSys) flag/marshal system reset on restart: maps session type byte [[this+0x28]+0x1a8] (-4, cap 10) and sub-mode byte +8 (1,2,0xb->0; 3->1; 4->2; 5->3; 6->4; 8->6; 9->7; 10->8; 0xc->9; else 5) into this+0x6c (only for type ids 0xf..0x11, online-host override via session +0x2b0 +0x82), then +0x74 = 0x14077c790(session). Calls 0x14357abe0 first. Callers Sess_Session_ResetForRestart (state+0xea0), Sess_ScRedFlagDeploy_Update. Hypothesis: index selects flag rule profile."
+ },
+ "signature": {
+  "id": "session.flags_reset_session_type_index",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 41 28 48 8B 80 A8",
+  "match": "0x14357aab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14357aab0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Flags_ResetSessionTypeIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x14357aab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14357aab0.c;xref:0x142d5ef97",
+   "notes": "V3785 Type byte [[this+0x28]+0x1a8]-4 capped at 10 stored (+0x75), sub-mode switch 1,2,0xb->0;3->1;4->2;5->3;6->4;8->6;9->7;10->8;0xc->9; else 5 into +0x6c, online override via session +0x2b0+0x82, +0x74=14077c790(session), calls 14357abe0 first."
+  }
+ ],
+ "proofs": []
+}

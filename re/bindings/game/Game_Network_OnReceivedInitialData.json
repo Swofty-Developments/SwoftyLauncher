@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnReceivedInitialData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143066600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143066600.c;pat:log-message-method;xref:0x14305a3fb",
+  "notes": "Caller 0x143058640. Logs 'onReceivedInitialData()', sets +0x1e0=1, 0x143064ce0([[this+8]+0x4d8]); inlined GameSessionMigrationManager::setEnabled([this+0x58], byte +0x280): stores +0x70 and QPC timestamps +0x80/+0x88 on change; logs 'Detected a join in lobby. Waiting for all players to ready up.' when [[this+8]+0x418]+0x765 and [[this+8]+0x428]+0xdc are set. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_on_received_initial_data",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 90 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 4A 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 00 01 00 00 75 C3 EB 1A 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? C6 86 E0 01 00 00 01",
+  "match": "0x143066600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143066600",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnReceivedInitialData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143066600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143066600.c;xref:0x14305a3fc",
+   "notes": "V5533 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

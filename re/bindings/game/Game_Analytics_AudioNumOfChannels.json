@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_AudioNumOfChannels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140751bf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140751bf0.c;pat:log-channel-TELEMETRY;xref:0x1406ef7f4,0x140707fdd",
+  "notes": "TELEMETRY bus handler (bound by lea in 0x1406d8470/0x1406fd6c0): only when channel count msg+0x10 differs from cached +0x208b8; allocates a 0x68 record (0x1403ecbd0), +0x60 = count, serialises via 0x14077a240(this,rec,'audio_num_of_channels_record'), enqueues it (static queue, max 0x40), updates +0x208b8, logs 'audio num of channels %u'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_audio_num_of_channels",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 8B 81 B8 08 02 00",
+  "match": "0x140751bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140751bf0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_AudioNumOfChannels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140751bf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140751bf0.c",
+   "notes": "V4253 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UiAttacher_DoAttachChild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144218810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144218810.c;pat:log-message-method;xref:0x145a65138",
+  "notes": "Read in full (this = attacher+0x48), state +0x14: 2 (open) with pending child id or close bit -> 'Open->Closing', state 3, notify 0x146ca22d4; 1 with close bit -> 'Detach pending while on state', state 0; 0 -> doDetachChild 0x144218690, then if child id +0x18 set logs 'doAttachChild', takes the child with that id from list [this-0x30]+8, notifies 0x146ca22d8, child vcalls +0xd0/+0xc0(1,0), 'Closed->Opening', state 1, notify 0x146ca22d0. Vtable cell 0x145a65138. Renamed: doAttachChild is only an inlined part. (lane owner review requested) Better name: Game_UiAttacher_UpdateState (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_attacher_do_attach_child",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 CE 8B 41 14",
+  "match": "0x144218810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144218810",
+  "kind": "func_start",
+  "names": [
+   "Game_UiAttacher_DoAttachChild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144218810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144218810.c;xref:0x14321d00b",
+   "notes": "V6571 size=901; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

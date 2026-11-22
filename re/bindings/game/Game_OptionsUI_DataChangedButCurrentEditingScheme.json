@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsUI_DataChangedButCurrentEditingScheme",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dbf690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141dbf690.c;pat:log-channel-OPTIONS-UI;xref:0x141dad8cd,0x141dae534",
+  "notes": "lea 0x141dad8cd, 0x141dae534. Controls VM: when +0xd92 set scans device lists of [this+0xae8]+0x58; edited device gone -> logs 'device disconnected, go back to controls home', +0xd91 = 1, fires 'back_pressed' (vslot +0x50); else logs 'data changed, but current editing scheme is still valid' and refreshes scheme flags (+0xd8d, +0xd8f, +0xd90). (lane owner review requested) Better name: Game_OptionsUI_Controls_OnDeviceDataChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.options_ui_data_changed_but_current_editing_scheme",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 80 B9 92 0D 00 00 00",
+  "match": "0x141dbf690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dbf690",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsUI_DataChangedButCurrentEditingScheme"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141dbf690",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141dbf690.c;xref:0x141dad8cf",
+   "notes": "V5222 178-line SettingsEditScreen data-changed handler with two branches (device disconnected -> back to controls home; scheme still valid). Better Game_SettingsEditScreenViewModel_OnDataChanged"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141dbf690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dbf690.c",
+   "notes": "V7270 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

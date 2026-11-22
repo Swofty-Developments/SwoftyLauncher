@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_ParseNumber_L",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14534dd8c",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14534dd8c.c;xref:0x14015a2e4",
+  "notes": "Locale-aware CRT number parser wrapper (locale flag _DAT_1460142e0, worker 0x14534e05c, clears locale flag bit 2 at +0x3a8). Callers 0x14015a060, 0x1406c32d0 (config parsing). Hypothesis."
+ },
+ "signature": {
+  "id": "core.crt_parse_number_l",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 89 C3 48 8B 86 70 0B 00 00 48 85 C0 74 38 31",
+  "match": "0x14015a2e4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14534dd8c",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_ParseNumber_L"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14534dd8c",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14534dd8c.c;xref:0x14015a2e4",
+   "notes": "V8187 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

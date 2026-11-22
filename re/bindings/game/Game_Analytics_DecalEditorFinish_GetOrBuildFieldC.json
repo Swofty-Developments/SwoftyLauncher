@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_DecalEditorFinish_GetOrBuildFieldC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14045cff0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14045cff0.c;xref:0x14074ffa0,0x1408f126e",
+  "notes": "Lazy payload getter of the decal-editor-finish record (callers in 0x14074f320 and 0x1408f1250): if rec+0x50 is null allocs 400 bytes (refcounts 1/1, vtbl 0x145623f90), 0x1403f7cd0(obj, rec+0x40), stores obj at +0x50 and ctrl at +0x58; returns 16-byte ref {obj,ctrl} with refcount+1. (lane owner review requested) Better name: Game_Analytics_GetPayload_DecalEditorFinish (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_build_decal_editor_finish_event_c",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 54 24 30 4C 8D 05 ?? ?? ?? ?? 48 8B 4C",
+  "match": "0x14074ffa0",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14045cff0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_DecalEditorFinish_GetOrBuildFieldC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14045cff0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14045cff0.c;xref:0x14074ffa0",
+   "notes": "V7732 not a payload builder: lazy getter that returns refcounted cached sub-object (+0x58) building it on first use; BetterName Game_Analytics_DecalEditorFinish_GetOrBuildFieldC"
+  }
+ ],
+ "proofs": []
+}

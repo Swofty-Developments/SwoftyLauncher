@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Hud_BuildInfringementMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a4eef0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a4eef0.c;xref:0x142a502a1,0x142a50548,0x1505a0a0b",
+  "notes": "Returns early if 0x142a4fc80 rejects; builds a message node in hud_main_queue or hud_main_queue2 (by driver slot): message.infringement text (type param_4, later formatted with driver name), msg_duration 6.0 when flag +0xd1, message.number param_8/param_11, drive-through counter lookup, hide_sub_message+is_neutral for types 15-16, offender name, incident_points=param_5, message_type = eDriveThrough/eStopGo/eGridPenalty/ePenaltyReminder... by param_3. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hud_build_infringement_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 45",
+  "match": "0x142a4eef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a4eef0",
+  "kind": "func_start",
+  "names": [
+   "Game_Hud_BuildInfringementMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142a4eef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a4eef0.c;xref:0x142a502a1",
+   "notes": "V7542 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

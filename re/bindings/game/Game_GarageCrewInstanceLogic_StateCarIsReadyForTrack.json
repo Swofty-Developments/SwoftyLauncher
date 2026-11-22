@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstanceLogic_StateCarIsReadyForTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140385760",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140385760.c;pat:log-message-cxx;xref:0x145622ce8",
+  "notes": "StateCarIsReadyForTrack::processEvent(out,logic): event type [logic+0xa0]+0x14: 0 -> state 9 (logic+0x18) unless the crew busy check fails, 2 -> 0xc (logic+0x28), 3 -> 6 (logic+0x08), 5 -> 1 (self), else 'unexpected' log. Writes state id logic+0x80, next state +0x48, transition flag +0x90, pops the event. Vtable cell 0x145622ce8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_logic_state_car_is_ready_for_track",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CF 48 8B 82 A0 00 00 00",
+  "match": "0x140385760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140385760",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstanceLogic_StateCarIsReadyForTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140385760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140385760.c",
+   "notes": "V4578 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

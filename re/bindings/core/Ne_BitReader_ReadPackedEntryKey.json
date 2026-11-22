@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_BitReader_ReadPackedEntryKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b87cc0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b87cc0.c;xref:0x140b87c3c,0x140b87c48,0x140b87c54",
+  "notes": "(rec, BitStream *bs): reads a 3-field record: u16 at bit offset bs+0x24 (buf +0x10, bytes +0x1c, bit limit +0x20) stored rotated as ((v&0x3fff)<<16)|(v>>14) in rec[0]; ranged int -1..5 (0x143925a50) in rec[1]; u8 in rec+8. Typed mode (bs+0x29) checks tags 5/3 via 0x143925660. Overrun sets error byte bs+0x28. Only caller Game_ChampionshipQualifyingTyreComponent_Deserialize 0x140b87b40 (10 sites). Better name: Ne_BitStream_ReadPackedKeyRecord (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.bit_reader_read_u16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CF 0F B7",
+  "match": "0x140b87cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b87cc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_BitReader_ReadPackedEntryKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140b87cc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140b87cc0.c;xref:0x140b87c3c",
+   "notes": "V8020 Ne_BitReader_ReadPackedEntryKey: reads u16 (rotated by 14 bits), a ranged int via 0x143925a50 and a byte into a struct; not a plain u16 read"
+  }
+ ],
+ "proofs": []
+}

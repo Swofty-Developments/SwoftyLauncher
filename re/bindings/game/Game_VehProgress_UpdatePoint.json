@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehProgress_UpdatePoint",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144604430",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144604430.c;xref:0x14460419e,0x1446041c4,0x1446041eb,0x144604211,0x144604413",
+  "notes": "Read in full (P, vols, k, pos): volume = vols[k]; record P+0xc8+k*0x60 (each value xor-masked with the following u32): +0 = 0x1445fad40(vol,pos) clamped >= 0 (blend with 0x145382510 when >= 1), +0x10 = that + table 0x145bf3548[vol[1]], +0x20 = 0x1445fab20, +0x30 = route fraction via track [0x146ce5498]+0x28, +0x40 = 0x1445f3ad0 clamped to [0, g 0x146ce66b8], +0x50 = it * g 0x146ce666c. All callers in 0x144604120. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.veh_progress_update_point",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 44 89 C0 48 8B",
+  "match": "0x144604430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144604430",
+  "kind": "func_start",
+  "names": [
+   "Game_VehProgress_UpdatePoint"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144604430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144604430.c;xref:0x1445ece61",
+   "notes": "V6704 record P+0xc8+k*0x60, +0x10 = t + table[-1,0,1] lateral, +0x50 = LapDistance scaled verified"
+  }
+ ],
+ "proofs": []
+}

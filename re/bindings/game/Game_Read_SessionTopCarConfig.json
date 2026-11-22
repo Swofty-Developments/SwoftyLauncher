@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SessionTopCarConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414869d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414869d0.c;pat:log-channel--;xref:0x1414aec7d,0x1414b72a3",
+  "notes": "Session HUD/broadcast panel update. Sets timer widgets from vt+0xd8/+0x100 (x1000 ms); param_9: 6-slot weather forecast at param_1+0x65 (offsets UNK_1456e9060/9080, FUN_1438c60b0/1437cdc90, time-of-day h/m/s /60 /3600), air/track temp FUN_1441f03b0 with F conversion (x*9/5+32) if +0x77; weather icon by +0x32c: '#overrides.broadcast_ui_generic.icons.weather_clear_day/_night', light_cloud, overcast, light_rain, heavy_rain, stormy. End-... (lane owner review requested) Better name: Game_SessionHud_UpdateWeatherAndEndOfSession (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_session_top_car_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 C5 78 29 9C 24 A0 01 00 00 C5 78 29 94 24 90 01 00 00 C5 78 29 8C 24 80 01 00 00 C5 78 29 84 24 70 01 00 00 C5 F8 29 BC 24 60 01 00 00 C5 F8 29 B4 24 50 01 00 00 4C 89 84 24 48 01 00 00",
+  "match": "0x1414869d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414869d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SessionTopCarConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1414869d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1414869d0.c;xref:0x1414aec7d",
+   "notes": "V4872 51 KB broadcast top-car/end-of-session builder (weather icons, eos_* strings, race winner, chequered flag); top_car keys are a small part. Better: Hud_Build_BroadcastTopCarEndOfSession"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1414869d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414869d0.c;xref:0x1414aec7d",
+   "notes": "V7208 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_BroadcastLargeInfoMessageViewModel_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419d7170",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1419d7170.c;pat:log-message-cxx;xref:0x145724620",
+  "notes": "Vtable cell 0x145724620. Acts only on command id 0x2b1430b0, else TRACE 'onCommandRaised: Unsupported display type %s'. Writes +0x2c0 title (#track_data.track_list.%s.track_title, or session text when mode==4), +0x2e0 'lng_objective: ' + lng_event_target_driver/_win/_position, +0x300 lng_event_expired or text from 0x141716260, then 0x1419d86f0(+0x380) rows lng_driver and lng_lb_team. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.broadcast_large_info_message_view_model_on_command_raised",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 05 00 00 48 8B 02",
+  "match": "0x1419d7170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419d7170",
+  "kind": "func_start",
+  "names": [
+   "Game_BroadcastLargeInfoMessageViewModel_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1419d7170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419d7170.c",
+   "notes": "V4921 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Datasync_GotHashExchangeStaleCookie",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143100c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143100c40.c;pat:log-channel-DATASYNC;xref:0x14fe71e99",
+  "notes": "Bus handler registered for msg id 0x71 via [[ctx+0x20]+0x3d0]->vt+8 in 0x14fe71e00 (beside ids 0x70/0x72/0x73). Finds sync job by cookie (msg+0x14); stale cookie -> logs and sends finished msg 0x73; state!=2 -> 'Ignoring hash exchange'; msg+0x10 set = hash request -> sends own hashes (msg 0x71); else peer hash update -> compare containers, log diffs, resend (<4) or kick/leave/ignore peer. Old name = one log branch. (lane owner review requested) Better name: Game_Datasync_OnHashExchangeMsg (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.datasync_got_hash_exchange_stale_cookie",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 48 8B 41 50",
+  "match": "0x143100c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143100c40",
+  "kind": "func_start",
+  "names": [
+   "Game_Datasync_GotHashExchangeStaleCookie"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143100c40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143100c40.c;xref:0x14fe71e9b",
+   "notes": "V5735 1453-line hash-exchange message handler (hash request/send hashes/state checks); stale cookie is one branch. Better: Game_Datasync_HandleHashExchangeMessage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143100c40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143100c40.c",
+   "notes": "V6985 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_DeviceDataLoader_ListDirectory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a71420",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a71420.c;pat:log-channel-INPUT;xref:0x142a778af",
+  "notes": "Called at 0x142a778af (in 0x142a76ae0). Lists 'actionmaps/' (0x143f34900), opens each file (Ne_FileSystem_OpenStream 0x143f393a0), parses it, reads 'typeid', interns it (0x143a860a0) and compares with [this+0xd0]; on match keeps file buffer at this+0xe8/+0xf0, else frees it. Result code (0, error or 2 = none found) stored at this+0xf8. Old name covered only the first log line. (lane owner review requested) Better name: Game_DeviceDataLoader_FindActionMapForDevice (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.device_data_loader_list_directory",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 C5 F8 29 B4 24 E0 02 00 00 48 89 CE 48 8B 01",
+  "match": "0x142a71420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a71420",
+  "kind": "func_start",
+  "names": [
+   "Game_DeviceDataLoader_ListDirectory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a71420",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a71420.c;xref:0x142a71414",
+   "notes": "V4957 lists actionmaps/ dir, reads, parses, matches typeid: whole actionmap loader not just listing; better Game_DeviceDataLoader_LoadActionMapFiles"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142a71420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a71420.c;xref:0x142a71414",
+   "notes": "V6876 458 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

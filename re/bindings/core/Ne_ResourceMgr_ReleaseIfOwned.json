@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_ResourceMgr_ReleaseIfOwned",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14396a640",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14396a640.c;xref:0x14000af58,0x14000b003",
+  "notes": "Lazy-inits a global manager singleton (TLS-guarded static 0x14618b130), then if manager vcall +0xe0(handle) is true calls vcall +0x38 (release). Tiny helper, many callers (ctors/dtors across modules). Hypothesis on manager type."
+ },
+ "signature": {
+  "id": "core.resource_mgr_release_if_owned",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 0F 57 C0 0F 11 46 08 48 83 C4 20",
+  "match": "0x14000af58",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14396a640",
+  "kind": "func_start",
+  "names": [
+   "Ne_ResourceMgr_ReleaseIfOwned"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14396a640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14396a640.c;xref:0x14000af58",
+   "notes": "V8122 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

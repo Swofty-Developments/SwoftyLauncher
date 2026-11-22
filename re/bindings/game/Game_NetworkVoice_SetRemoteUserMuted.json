@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_SetRemoteUserMuted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440400e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440400e0.c;pat:log-message-method;xref:0x145a4a288",
+  "notes": "Sets the mute flag on the remote chat control and logs '%s: Local user has %s remote user %llu.' (muted/unmuted) with its own name setRemoteUserMuted. Only reference is vtable cell 0x145a4a288. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_voice_set_remote_user_muted",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 80 3D ?? ?? ?? ?? 00",
+  "match": "0x1440400e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440400e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_SetRemoteUserMuted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x1440400e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440400e0.c",
+   "notes": "V6454 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceBadge",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424710e0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424710e0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x141fca15c,0x141fd1408,0x1420542be,0x142075fe5,0x142267192,0x142573aaf,0x142ea9bda,0x143128612,0x143128928",
+  "notes": "(entrants, u32 key, record): kind 0 refused -> 5; list [entrants+0x3b8+kind*0x10] missing -> 1; skips when Ent_Get_Badge_Thunk finds an equal record (0x142471640); else removes old (0x142470f00), copies the record (key at +0x160) and inserts via Ent_EntrantsSystem_InsertBadgeRecord; insert fail -> 3, else 0 (existed) / 2 (new). Logs 'Badge replaced ... existing entry? yes/no'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_badge",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 01 00 00 89 54 24 24",
+  "match": "0x1424710e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424710e0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceBadge"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1424710e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424710e0.c;xref:0x141fca15c",
+   "notes": "V5286 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

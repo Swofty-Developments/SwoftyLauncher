@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_UpdateWheelTyreInstance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445acb00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_UpdateWheelTyreInstance(void *studio, uint8_t vehicle_id, uint32_t wheel, void *tyre_vis, void *tyre_asset, const void *wheel_params)",
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/1445acb00.c;xref:0x140174072;kb:subsystems/game.md#inbox",
+  "notes": "Per-wheel tyre VFX instance update in the parameter studio, called once per wheel 0..3 per vehicle by Game_GameRendererModule_Slot58 0x1401717b0 (call 0x140174072). rcx studio = GameRendererModule+0x68; dl vehicle id (0xff returns; indexes g_Sess_VehicleTable); r8d wheel; r9 tyre visual = CarLive+0x5d8 (holder [+0x1e8+wheel*8], wheel state byte [+0x278+wheel]); [rsp+0x28] tyre asset (null returns); [rsp+0x30] 0x70-byte per-wheel params. When the holder's matrix flag (byte [[[holder+0x48]+0x38]+0x18]+0x31) is set and its part cache [state+0x20..+0x28] is empty it rebuilds the cache: node index edi < ([[lists+0x1e8]+0x50]-[..+0x48]) sar 5, unsigned exit jbe 0x1445acc3d, times entries [lists+0x178..+0x180] whose u32 list [+0x170..+0x178] holds edi; each miss runs the inlined Ne errno trace (RtlCaptureStackBackTrace 0x1445acd0b). Then fills the part matrices, writes the wheel matrix (Car_Skeleton_GetWheelBoneMatrix x the studio's per-vehicle matrix), queues the TYRE/SHRD impact event once when shred (1.0 if wheel state >= 2) rises above record +0xc8 (Game_Vfx_VectorGrowShredEvent), and submits through Game_Vfx_FillTyreShredRecord. Old name Game_Vfx_TyreShredImpactEvent (PR #471 by vogtmarcel07-cloud, L1, verify V6686) named only the impact-event step; its proto (void *car, int wheel) put the car in rcx and the wheel in edx, which the code contradicts (rcx studio, dl vehicle id, r8d wheel, six args). EA twin 0x1445a2d90. Data flow: kb:subsystems/game.md#inbox (jobspin-kb 2026-11-14)."
+ },
+ "signature": {
+  "id": "game.vfx_update_wheel_tyre_instance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 C5 78 29 84 24 D0 01 00 00 C5 F8 29 BC 24 C0 01 00 00 C5 F8 29 B4 24 B0 01 00 00 80 FA FF",
+  "match": "0x1445acb00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445acb00",
+  "kind": "func_start",
+  "names": [
+   "Game_Vfx_UpdateWheelTyreInstance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-14",
+    "by": "jobspin-kb",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/diagnostics/session_job_probe.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445acb00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445acb00.c;xref:0x140174072",
+   "notes": "V6686 wheel byte +0x278 >= 2 gate and SHRD constant verified"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "jobspin-verify",
+   "kind": "func",
+   "item": "Game_Vfx_UpdateWheelTyreInstance",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1445acb00-0x1445ad5b0 (re/tools/disx.py);xref:0x140174072;sig:game.vfx_update_wheel_tyre_instance",
+   "notes": "V9298 Blind re-derivation on d873a1c8. .pdata 0x1445acb00-0x1445ad5b0, prologue push r15..rbx; sub rsp,0x1e8; ret 0x1445ad5af. Args: 0x1445acb2e cmp dl,0xff / je 0x1445ad581 (epilogue, before the lock inc); 5th arg [rsp+0x250]=entry+0x28 into r13, null -> je 0x1445ad57a (lock dec + return); 6th arg [rsp+0x258] read at 0x1445ad2a3, so six args; 0x1445acb4f mov ebp,r8d then 0x1445acb52 [r9+rbp*8+0x1e8] (null returns), wheel state byte [r9+rbp+0x278] at 0x1445ad28b (>=2 -> 1.0 vs record +0xc8 at 0x1445ad2af). dl indexes the byte count 0x146ce86dc / table 0x146ce86e0 (rbx=0 past the count). Matrix flag byte [[[holder+0x48]+0x38]+0x18]+0x31 (0x1445acb8e-0x1445acb96); lists=[holder+0x40] (null clears the flag); build only when state+0x20==+0x28. Outer: edi from 0, latch 0x1445acc20 inc edi; count=([[lists+0x1e8]+0x50]-[..+0x48]) sar 5; cmp rcx,rdi / jbe 0x1445acecf at 0x1445acc3d (unsigned). Inner: rsi over [lists+0x178]..[lists+0x180] step 8; each entry's u32 list [e+0x170]..[e+0x178] scanned for edi (0x1445acc90); hit -> push to state+0x20 vector (0x1445acdc0, grows x1.5 via allocator vtable +0x18); miss -> 0x1445acca1 errno/TLS path then call [0x145d3c808] at 0x1445acd0b, which is KERNEL32 RtlCaptureStackBackTrace (ecx=1,edx=1,r8=&buf,r9=0), unconditional per miss. Callers: whole-image rel32 scan (.xtls/.xtext/.data1) finds only e8 at 0x140174072 in 0x1401717b0; no abs64 refs. Caller passes rcx=[module+0x68], edx=vehicle index, r8d=wheel 0..3, r9=[CarLive+0x5d8], [rsp+0x20]=asset (0 when the model slot is null), [rsp+0x28]=r14+0x30+idx*0xde0+wheel*0x70+0x250. Callees Car_Skeleton_GetWheelBoneMatrix 0x144633230, Game_Vfx_VectorGrowShredEvent 0x143b34f10, Game_Vfx_FillTyreShredRecord 0x143b214d0 are called. EA twin 0x1445a2d90 not checkable here (mid-function in the Steam .pdata, so an EA address)."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "jobspin-verify",
+   "kind": "sig",
+   "item": "game.vfx_update_wheel_tyre_instance",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.vfx_update_wheel_tyre_instance;xref:0x1445acb00",
+   "notes": "V9300 Own sigcheck --only game.vfx_update_wheel_tyre_instance on d873a1c8 (sha256 d873a1c8d2044cef...): OK hits=1 match=0x1445acb00 target=0x1445acb00, resolve addr anchor 0. Pattern is the 47-byte prologue (8 pushes, sub rsp 0x1e8, three vmovaps xmm8/7/6 spills) plus the first body insn 80 fa ff cmp dl,0xff; no rel32/riprel bytes, so no wildcards are needed. 0x1445acb00 is the .pdata start of 0x1445acb00-0x1445ad5b0, matching func_start and the names entry Game_Vfx_UpdateWheelTyreInstance; used_by native/src/core/diagnostics/session_job_probe.cpp exists and names 0x1445acb00."
+  }
+ ],
+ "proofs": []
+}

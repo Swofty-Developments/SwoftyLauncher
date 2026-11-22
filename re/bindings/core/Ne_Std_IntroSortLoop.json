@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_IntroSortLoop",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435e8920",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435e8920.c;xref:0x143514c15,0x14351523d,0x1435156ec",
+  "notes": "(T **first, T **last, depth): std::sort introsort loop over pointers keyed by int elem+0x78: insertion sort below 0x108 bytes (memmove), heap sort at depth 0, partition and self-recursion. Callers Car_Fit_UpgradesToRating (2), 0x143515360."
+ },
+ "signature": {
+  "id": "core.std_intro_sort_loop",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 43 08 4C 8B B8 98 02 00 00",
+  "match": "0x143514c15",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1435e8920",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_IntroSortLoop"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1435e8920",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435e8920.c;xref:0x143514c15,0x1435156ec",
+   "notes": "V3471 Introsort loop on 8-byte pointers comparing int at +0x78 of pointee: ok; caller Car_Fit_UpgradesToRating ok; other caller is pdata fn 0x143515360, Sess_Misconduct_CheckWallRiding (0x1435ca400) is not a caller"
+  }
+ ],
+ "proofs": []
+}

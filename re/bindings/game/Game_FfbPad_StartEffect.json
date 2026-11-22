@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbPad_StartEffect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f3660",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f3660.c;pat:log-channel-FFB_DEBUG;xref:0x145bffe68",
+  "notes": "PS pad effect vtable 0x145bffe60 slot +8 (next slot 0x1446f3d70 StopEffect). Sets started flag +0x1e0 (logs 'PS pad effect started twice' if set), finds device entry matching +0x28/+0x30, default +0x1f0/+0x1f4 = 2; resolves bindings of actions 'Brake' and 'Accelerate': ps_pad_button_r2_pressure -> 1, l2 -> 0, stored at +0x1f0 (brake) and +0x1f4 (accelerate). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_pad_start_effect",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 89 CE",
+  "match": "0x1446f3660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f3660",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbPad_StartEffect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f3660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f3660.c",
+   "notes": "V6844 Started-twice log plus Accelerate/Brake L2/R2 pressure setup; bigger than the log line but consistent with StartEffect. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

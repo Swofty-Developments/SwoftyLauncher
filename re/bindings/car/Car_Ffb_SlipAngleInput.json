@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Ffb_SlipAngleInput",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446fd980",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446fd980.c;pat:log-channel-FFB_PLUGIN;xref:0x145c010d8",
+  "notes": "FFB input (vtable cell 0x145c010d8): needs scale +0x50>=0.001, lane mask +0x40, car g_table[[+0x38]+0x128] with |v.fwd|>=5; front/rear avg (max if +0x70) of slip angle ratio w+0x3b0/w+0x3c8 ([car+0x580]+0x70..+0x88) through Game_FfbEffect_EvalWaveform (+0x68 for 2nd) times [+0x38]+0x180..+0x18c; out = clamp(-1,1)*scale, only if >0.1, AND lane mask. Log FFB_PLUGIN 'slip angle input %f'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.ffb_slip_angle_input",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 D6 C5 7A 10 41 50",
+  "match": "0x1446fd980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446fd980",
+  "kind": "func_start",
+  "names": [
+   "Car_Ffb_SlipAngleInput"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446fd980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446fd980.c",
+   "notes": "V6863 FFB plugin compute from wheel +0x3b0/+0x3c8 ratios with plugin scale +0x50, slip angle log confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

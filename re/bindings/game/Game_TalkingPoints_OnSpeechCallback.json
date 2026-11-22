@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TalkingPoints_OnSpeechCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ac60b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ac60b0.c;pat:log-channel-TalkingPoints;xref:0x140ac16fc,0x140ac3193",
+  "notes": "Speech callback (param_2 duration ms, param_3 VO id): removes id from pending array +0x70 (count +0x170) else logs not ours; updates multi-part track lengths (+0x180 records) or sets the VO item length = rand(min..max extra) + duration in the sequence tracks (+0x7a0). Registered by lea in Game_TalkingPoints_BuildTrack. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.talking_points_on_speech_callback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 44 89 C7 89 D3 48 89 CE",
+  "match": "0x140ac60b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ac60b0",
+  "kind": "func_start",
+  "names": [
+   "Game_TalkingPoints_OnSpeechCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ac60b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ac60b0.c",
+   "notes": "V4400 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

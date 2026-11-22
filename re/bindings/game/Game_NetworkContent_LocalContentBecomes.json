@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkContent_LocalContentBecomes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303cd40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14303cd40.c;pat:log-channel-NETWORK-CONTENT/V;xref:0x1430603da",
+  "notes": "Logs \"local content %s becomes AVAILABLE/unavailable\"; in state 5 sets/clears the own connection bit (this+0xe1) in item mask param_2+0x28 and propagates it via the item map this+0xd0. (lane owner review requested) Better name: Game_NetworkContent_SetLocalContentAvailable (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_content_local_content_becomes",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC A8 00 00 00 44 89 C5",
+  "match": "0x14303cd40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303cd40",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkContent_LocalContentBecomes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303cd40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303cd40.c;xref:0x1430603db",
+   "notes": "V5448 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

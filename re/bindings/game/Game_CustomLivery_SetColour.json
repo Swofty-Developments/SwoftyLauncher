@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CustomLivery_SetColour",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a99780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a99780.c;pat:log-channel-CUSTOM_LIVERY_MODEL;xref:0x142a99393,0x14db40d84",
+  "notes": "Renamed (not a plain colour setter). Needs p1+0x50 == 0 and a vehicle index; finds the session entrant (0x88 stride, byte +0x82). Debug overrides at [0x14604ea28]: per-entrant customisation or 'Set beta instance colour' (float4 [p1+0x48]+0xe60). Else vehicle customisation 0x14246dcb0([p1+0x30], entrant+0x64): valid -> 0x142a968c0 + paint finish 0x142a9a040; invalid -> VEHICLE_LIVERY 'Setting to default customisation' (ConstructFromKey(entrant+0x5c)). Then CreateOverrideMaterial. (lane owner review requested) Better name: Game_CustomLiveryModel_SetupVehicleLivery (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.custom_livery_set_colour",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 B8 E8 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 29 84 24 D0 4A 00 00",
+  "match": "0x142a99780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a99780",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomLivery_SetColour"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a99780",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a99780.c;xref:0x142a99393",
+   "notes": "V4991 looks up livery/customisation by stat id, falls back to default customisation, sets colours; better Game_CustomLiveryModel_ApplyCustomisation"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142a99780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a99780.c;xref:0x142a99393",
+   "notes": "V6879 363 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

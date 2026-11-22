@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerEventsSequencerTeamMateDriverJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c72ebf",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c71e80.c;decomp:re/decomp/140c808e0.c;xref:0x140c72eba,0x140c72ebf,0x140c72ed2,0x140c80970",
+  "notes": "mov rdx,[rsp+0xa0] in Game_CareerEventsSequencer_Initialise (+0x103f): the return address of the call to Game_CareerEventResourceManager_AddDriverMorphData at 0x140c72eba, where the free of the collected pointer vector starts (reload begin, store it to [rsp+0xa8], test rdx,rdx / je site_Game_CareerEventsSequencerRecordsJoin, the allocator vtable +0x38 free). Resuming here from site_Game_CareerEventsSequencerTeamMateDriver skips only mov r8,rax and that call: rax, rcx, rdx and r8 are volatile and are rewritten before they are read (rdx at 0x140c72ebf, rcx at 0x140c72ed4, rax at 0x140c72edc), the call's return value is never read, there is no push, pop or rsp change between the two sites, and the callee-saved registers keep the values the call preserves. AddDriverMorphData itself returns with no effect when Ent_EntrantsSystem_FindDriverHead finds no head (test rax,rax / je 0x140c80a02 at 0x140c80970), so the skip leaves the resource manager as a team mate with no head would. No branch lands at 0x140c72eb8..0x140c72ebf (linear sweep of 0x140c71e80..0x140c74008 and a rel8/rel32 scan of 0x140c60000..0x140c90000); 0x140c72ebf is reached only by the call's return. Resume target of the sequencer team mate driver guard; not hooked or patched."
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_team_mate_driver_join",
+  "section": ".xtls",
+  "pattern": "49 89 C0 E8 ?? ?? ?? ?? 48 8B 94 24 A0 00 00 00",
+  "match": "0x140c72eb7",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c72ebf",
+  "kind": "mid",
+  "expect": "48 8B 94 24",
+  "names": [
+   "site_Game_CareerEventsSequencerTeamMateDriverJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "seqmate",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/sequencer_records_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "seqmate-verify",
+   "kind": "global",
+   "item": "0x140c72ebf",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140c71e80-0x140c74008,0x140c808e0-0x140c80a14;xref:0x140c72eba,0x140c72ebf,0x140c72ed2,0x140c72edc,0x140c72f01,0x140c72f53;xref:0x140c8096d,0x140c80970,0x140c80a02;sig:game.career_events_sequencer_team_mate_driver_join",
+   "notes": "V9280 Static: 0x140c72ebf = 48 8B 94 24 A0 00 00 00 mov rdx,[rsp+0xa0] (Initialise+0x103f), the return address of 0x140c72eba call 0x140c808e0 and a sweep boundary; then mov [rsp+0xa8],rdx; test rdx,rdx; 0x140c72ed2 je 0x140c72ee2 (site_Game_CareerEventsSequencerRecordsJoin); mov rcx,[rsp+0x98]; mov rax,[rcx]; call [rax+0x38]. Between 0x140c72eb7 and 0x140c72ebf only mov r8,rax and the call: no push/pop/rsp change, the call itself is stack-neutral. Own path walk from 0x140c72ebf over every successor (stopping at calls): no read of rax/rcx/rdx/r8-r11/xmm0-5 before a write; rdx first written at 0x140c72ebf; rax at 0x140c72edc (vector non-empty) or 0x140c72f01 mov eax,0x102 / 0x140c72f53 on the je path; rcx at 0x140c72ed4, 0x140c72f06, 0x140c72f7c or 0x140c72fce, so the call's return value is never read. No branch, rel32 or absolute reference lands in 0x140c72eb8..0x140c72ebf (function sweep, byte scan 0x140c60000..0x140c90000, binary-wide rel32 scan: two non-branch false positives only), so it is reached only by the call's return. AddDriverMorphData: 0x140c80962 mov edx,[rbx+8]; 0x140c80965 mov rcx,rdi (rdx arg); 0x140c80968 call 0x14246d700; 0x140c8096d test rax,rax; 0x140c80970 je 0x140c80a02 -> nop; add rsp,0x140; pop rbx/rdi/rsi; ret, with no write before it except the optional Ne_Log_Thunk call at 0x140c8095d (CareerEventResourceManager / addDriverMorphData, only when byte 0x14604bac4 == 1 and channel 0xb0655172 is on), so the skip matches the no-head return apart from that log line. sigcheck: OK hits=1 match=0x140c72eb7 target=0x140c72ebf, expect 48 8B 94 24 holds, call rel32 wildcarded."
+  }
+ ],
+ "proofs": []
+}

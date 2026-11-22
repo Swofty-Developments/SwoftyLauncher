@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_Schedule",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cae890",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cae890.c;pat:log-channel-DEPARTMENT_EVENTS;xref:0x140cb7736,0x14128f0b8",
+  "notes": "DEPARTMENT_EVENTS log 'Setting Department Event on Day: %d For Driver/Team/seed': validates driver/team stat ids, gets the schedule (0x140cb0e30), checks eligibility 0x140cb0750, picks a valid event with MT (0x143929b90), creates instance data 0x140cb1bd0 and inserts it (0x140cb1960). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.dept_event_schedule",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 1E 00 00",
+  "match": "0x140cae890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cae890",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_Schedule"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cae890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cae890.c;xref:0x140cb7736,0x14128ee0d",
+   "notes": "V4639 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140cae890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cae890.c",
+   "notes": "V9058 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

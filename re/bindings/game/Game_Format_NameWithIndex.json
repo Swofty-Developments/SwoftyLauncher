@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Format_NameWithIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401af660",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401af660.c;xref:0x140cb7080,0x140cbc32e,0x140cbc374,0x141d7a335,0x141d7b3d7,0x141d7b42f",
+  "notes": "(id{u8 kind,u16 index},outStr). Initialises a 0x40-byte inline string (vtable 0x145613548) and formats '%s %u' with enum name table 0x145612e60[kind] (ePreLoaded/eUserDefined/eNetworkReplicated) and u16 at id+2. Callers 0x140cb67a0, 0x140cbbc00, 0x141d79e00. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.format_name_with_index",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 D6 48 8D 42 18 48 C7 42 08 40 00 00 00 48 89 42 10 C6 42 18 00 48 8D 05 ?? ?? ?? ?? 48 89 02 44 0F",
+  "match": "0x1401af660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401af660",
+  "kind": "func_start",
+  "names": [
+   "Game_Format_NameWithIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1401af660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401af660.c;xref:0x140cb7080",
+   "notes": "V7972 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_RemovingConnectionRTTList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144070890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144070890.c;pat:log-channel-NETWORK;xref:0x14406c453,0x1440703b5,0x144070e79",
+  "notes": "Logs \"Removing connection [%d] from RTT list\"; clears the connection bit in the connectivity mask this+0x180 (logs setLocalConnectivity off), erases the 0x58-byte entry from the RTT vector this+0x10..0x18 and returns the next iterator in *param_2. (lane owner review requested) Better name: Game_Network_RemoveConnectionFromRttList (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_removing_connection_rtt_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 44 89 C3 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x144070890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144070890",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_RemovingConnectionRTTList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144070890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144070890.c;xref:0x14406c453",
+   "notes": "V6501 size=531; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

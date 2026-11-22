@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tod_SetSlotPlaybackMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14461cd20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14461cd20.c;xref:0x140c772b6,0x142d5263c,0x1438bb85c",
+  "notes": "(tod, mode, sessionFilter u16) under SRW lock this+0x2108: loops the 10 slot bytes at 0x14588c605; filter < 0x100 -> every slot, else only slots whose byte == low byte of filter. Per slot (lock this+0x530+slot*0x288): mode 7 -> 7200.0 at this+0xb350+slot*4 and this+0x34c+slot*0x288; 0x14461b3d0(this, mode, slot, 1); ++this+0x538+slot*0x288. Then ++this+0x2110. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tod_set_slot_playback_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 C6 89 D3 48 89 CF",
+  "match": "0x14461cd20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14461cd20",
+  "kind": "func_start",
+  "names": [
+   "Game_Tod_SetSlotPlaybackMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14461cd20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14461cd20.c;xref:0x140c772b6",
+   "notes": "V3678 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

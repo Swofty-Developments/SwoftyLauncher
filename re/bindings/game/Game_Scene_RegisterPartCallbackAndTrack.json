@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Scene_RegisterPartCallbackAndTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018d980",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14018d980.c;xref:0x14023ffce,0x140243e2e,0x140247f2c,0x14024adb3,0x140254469,0x14025c461,0x1427ae442,0x1427ae452,0x14288c8c6,0x1428a4e0d,0x1428b6bed,0x1428b709a,0x1428b72d3,0x1428b796a,0x1428b797c,0x14d233b3d,0x14d233b70",
+  "notes": "Under critical section: for each part in [+0x78] (count [[+0xa0]+0x100]) calls 0x1401d0740(part,{0x14018d620,param_1}); for each entry in [+0x68] (count [[+0xa0]+0xf0]) stores the same pair at +0x5e8/+0x5f0; then push_back of param_2 into the param_1 vector [1..3] (grow 1.5x); leaves the critical section param_1[0x19]. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.scene_for_each_object_part",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 8B 89 C8 00 00 00",
+  "match": "0x14018d980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018d980",
+  "kind": "func_start",
+  "names": [
+   "Game_Scene_RegisterPartCallbackAndTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14018d980",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14018d980.c;xref:0x14023ffce",
+   "notes": "V7963 Game_Scene_RegisterPartCallbackAndTrack: iterates parts calling 0x1401d0740 but also sets callback on +0x68 objects and appends scene to list param_1"
+  }
+ ],
+ "proofs": []
+}

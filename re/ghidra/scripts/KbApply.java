@@ -1,5 +1,5 @@
-// Applies the shared KB (re/db: functions.tsv, globals.tsv, structs/*.h) to the open program.
-// Args: <kb dir>
+// Applies the shared KB (functions.tsv, globals.tsv, structs/*.h) to the open program.
+// Args: <kb dir>, the merged export of re/db and re/bindings that `kb.py export` writes (re/ghidra/kb).
 import ghidra.app.script.GhidraScript;
 import ghidra.app.cmd.disassemble.DisassembleCommand;
 import ghidra.app.cmd.function.CreateFunctionCmd;
@@ -244,7 +244,7 @@ public class KbApply extends GhidraScript {
     @Override
     public void run() throws Exception {
         String[] args = getScriptArgs();
-        Path kb = Paths.get(args.length > 0 ? args[0] : "re/db");
+        Path kb = Paths.get(args.length > 0 ? args[0] : "re/ghidra/kb");
         dtm = currentProgram.getDataTypeManager();
         int structs = applyStructs(kb.resolve("structs"));
 

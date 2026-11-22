@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ReceivedRedFlagVehicleStatusUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435861f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435861f0.c;pat:log-channel-NETWORK/T;xref:0x143586032",
+  "notes": "Logs red flag vehicle status update (NETWORK/T, status name table 0x14584ed08); raises the stored status byte at this+0xe0[vehicle*2] to msg+0x11 only if higher (monotonic). (lane owner review requested) Better name: Game_Network_OnRedFlagVehicleStatusMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_received_red_flag_vehicle_status_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 C7 00 00 00",
+  "match": "0x1435861f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435861f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ReceivedRedFlagVehicleStatusUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1435861f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435861f0.c",
+   "notes": "V6088 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

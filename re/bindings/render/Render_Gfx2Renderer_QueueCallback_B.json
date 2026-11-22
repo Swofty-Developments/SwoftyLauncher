@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Renderer_QueueCallback_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d90280",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d90280.c;xref:0x143b7d389,0x143b7d429",
+  "notes": "Instruction-for-instruction identical to Render_Gfx2_RequestBatch_Push_A (same thunk 0x143ec0810, same flush 0x143abe3f0): a second template instance for another request record type. Caller Ne_Gfx2Renderer_RenderFrame 0x143b7d389, 0x143b7d429. (lane owner review requested) Better name: Render_Gfx2_RequestBatch_Push_B (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_renderer_queue_callback_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? EB 90 48 8B 44 24 48 8B 40 28 48",
+  "match": "0x143b7d389",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143d90280",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Renderer_QueueCallback_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143d90280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143d90280.c;xref:0x143b7d389",
+   "notes": "V8154 Better name Render_Gfx2Renderer_QueueCallback_B: code byte-identical to 143d90000 (same 32-slot table +0x368 count +0x868, vtable 143ec0810); second callback list not supported"
+  }
+ ],
+ "proofs": []
+}

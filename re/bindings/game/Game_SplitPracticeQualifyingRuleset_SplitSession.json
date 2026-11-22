@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SplitPracticeQualifyingRuleset_SplitSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d3ecc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d3ecc0.c;pat:log-message-cxx;xref:0x142d3ecb0,0x1457dce80",
+  "notes": "Read in full. Only ref: jmp thunk 0x142d3ecb0, whose address is vtable cell 0x1457dce80. Finds the local entrant (0x1431146d0) in [[this+0x320]+0x88]+0x260 list +0x2e0, stores group flag (group rec +0x1c &1 for id = entrant +0x82, -1 if 0xff) to +0x360; each vehicle of [this+0x2e0]+8..+0x10 in the other group: logs 'Disabling simulation for vehicle...', sets +0x11f=1,+0x11d=6,+0x11e=4 unless already retired, then Sess_Result_ChangeVehicleStatus 0x142c7bae0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.split_practice_qualifying_ruleset_split_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE 48 8B 81 20 03 00 00",
+  "match": "0x142d3ecc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d3ecc0",
+  "kind": "func_start",
+  "names": [
+   "Game_SplitPracticeQualifyingRuleset_SplitSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d3ecc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d3ecc0.c;xref:0x142d3ecb0",
+   "notes": "V5384 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

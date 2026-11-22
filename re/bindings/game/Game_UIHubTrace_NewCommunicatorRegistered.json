@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_NewCommunicatorRegistered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143805fa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143805fa0.c;pat:log-channel-UIHubTrace;xref:0x143806341,0x143806f13",
+  "notes": "(hub, comm) non-null: clears the visible flag [old+0x50]+0x90 of the previous hub+0x78, hub+0x78 = comm, hub+0x99 = 0, [comm+0x50]+0x90 = comm+0x49 && (hub+0x70 != 0 || (hub+0x64 != 0 && !(hub+0x68 == 1 && hub+0x6c == 1))), logs '[COMMS] New communicator registered [%s]'. Callers jmp 0x143806341, 0x143806f13. (lane owner review requested) Better name: Game_UIHub_RegisterCommunicator (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_new_communicator_registered",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x143805fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143805fa0",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_NewCommunicatorRegistered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143805fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143805fa0.c;xref:0x143806341",
+   "notes": "V6284 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

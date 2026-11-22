@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_TeamHQ",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14585f5d0",
+  "type": "vtable[20]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/15104c6b0.c;pat:flow-state-type-record;decomp:re/decomp/1437b8460.c;xref:0x1437b846c,0x15104c6c9",
+  "notes": "cxx=StateTeamHQ; 20 slots (next vtable at +0xa0, lea 0x143703e10). Slot 0 -> type record 0x1461024e0, +8=name set by static init 0x1437c1990 at 0x1437c2b55. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436ffae0/0x143703260/0x143704280. Ctor 0x15104c6b0 (lea 0x15104c6c9; mov [rsi],rax). Also loaded by 0x1437b8460 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.team_h_q",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 81 30 12 00",
+  "match": "0x1437b846c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14585f5d0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_TeamHQ"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14585f5d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1437b846f",
+   "notes": "V7501 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

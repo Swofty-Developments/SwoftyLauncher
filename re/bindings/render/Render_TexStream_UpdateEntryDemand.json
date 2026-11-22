@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TexStream_UpdateEntryDemand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bf38d0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bf38d0.c;xref:0x143c60066,0x143d4b70a,0x143db5cd6,0x143df117a",
+  "notes": "new = max(demand,0)*entry[8]; stamps entry[3] = ctx+0x4dc; if new > entry[2]: stores it, entry[1] = max(entry[1], p4+entry[0xc]), entry[0] = new*k - size[cur mip]. If wanted mip +0x37 > current +0x38 and ctx+0x21c bit0, sets bit0 of +0x24 atomically and appends the entry to ctx vector +0x148 (lock +0x590). Callers 0x143c60066, Render_Draw_ProcessInstanceBatch 0x143d4b70a, 0x143db5cd6, Render_TerrainPlugin_Render 0x143df117a. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.tex_stream_update_entry_demand",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 85 D2 74 6C",
+  "match": "0x143bf38d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bf38d0",
+  "kind": "func_start",
+  "names": [
+   "Render_TexStream_UpdateEntryDemand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bf38d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bf38d0.c;xref:0x143c60066",
+   "notes": "V7840 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

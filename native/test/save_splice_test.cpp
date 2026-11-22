@@ -2,9 +2,9 @@
 // format (re/db/subsystems/game.md#save-splice: header 1, entry count, then key length byte, key,
 // u32 type id and value per entry) stands in for Game_SaveData_WriteBag and the reader 0x143934620.
 // It checks that a profile save's containers block with the kept entries spliced in after a bumped
-// count reads back as the registered children plus the kept bags, unchanged. run_events_test.sh
+// count reads back as the registered children plus the kept bags, unchanged. native/test/run_tests.sh save_splice
 // builds and runs it.
-#include "../src/core/save_splice_logic.hpp"
+#include "core/career/save_splice_logic.hpp"
 
 #include <cstdio>
 #include <map>
@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace sp = runtime::save_splice;
+namespace sp = career::save_splice;
 
 static int fails;
 
@@ -136,7 +136,7 @@ static bool read_bag(In &in, Bag &out)
     return in.ok;
 }
 
-static std::unique_ptr<Bag> career(const std::string &tag, int slots)
+static std::unique_ptr<Bag> career_bag(const std::string &tag, int slots)
 {
     auto mode = std::make_unique<Bag>();
     mode->blobs.emplace_back("uid", std::vector<uint8_t>{1, 2, 3, 4});
@@ -150,8 +150,7 @@ static std::unique_ptr<Bag> career(const std::string &tag, int slots)
 // The inline containers block of the root: key, bag type, header, count, then the children. The
 // splice bumps the count before it is written and writes the kept entries right after it.
 static std::vector<uint8_t> containers_block(const std::vector<std::pair<std::string, const Bag *>> &registered,
-                                             const sp::Store &kept, sp::Owed &owed, const void *result,
-                                             bool splice)
+                                             const sp::Store &kept, sp::Owed &owed, const void *result, bool splice)
 {
     Out o;
     o.key("containers");
@@ -177,6 +176,38 @@ static std::vector<uint8_t> containers_block(const std::vector<std::pair<std::st
     return o.bytes;
 }
 
+// The profile's root and the race highlights save's root share one class. 20261121-024026: a highlights save went through
+// the splice as if it were the profile, and the plain store took it for a profile save generation.
+static void profile_roots()
+{
+    constexpr uintptr_t PROFILE = 0x7ff6a0001020, HIGHLIGHTS = 0x2b4c0040;
+    sp::ProfileRoot boot;
+    expect(boot.at_load(PROFILE, false) && boot.is(PROFILE),
+           "profile root: with no child table to read, the first root the game loads is the profile's");
+    expect(!boot.at_load(HIGHLIGHTS, false) && !boot.is(HIGHLIGHTS),
+           "profile root: a later load of another root without the profile child is not the profile's");
+    expect(!boot.at_save(HIGHLIGHTS, false), "profile root: a save whose root registers no options container is not spliced");
+    expect(boot.at_save(PROFILE, true) && boot.at_save(PROFILE, false) && boot.is(PROFILE),
+           "profile root: the profile's root saves as the profile, also when its children did not read");
+    expect(boot.at_load(PROFILE, false), "profile root: a second load of the profile's root is the profile's");
+
+    sp::ProfileRoot proven;
+    expect(proven.at_load(PROFILE, true) && !proven.at_load(HIGHLIGHTS, false),
+           "profile root: a root whose child table holds options_options is the profile's; the highlights root is not");
+    expect(!proven.at_save(HIGHLIGHTS, false) && proven.at_save(PROFILE, true),
+           "profile root: at save the registered children decide");
+
+    sp::ProfileRoot moved;
+    moved.at_load(PROFILE, false);
+    expect(moved.at_save(PROFILE + 0x1000, true) && moved.is(PROFILE + 0x1000) && !moved.is(PROFILE),
+           "profile root: a profile root at a new address is learned from its children");
+
+    sp::ProfileRoot none;
+    expect(!none.at_load(0, true) && !none.at_save(0, true) && !none.is(0), "profile root: a null root is never the profile's");
+    expect(!none.at_save(HIGHLIGHTS, false) && none.at_load(PROFILE, false),
+           "profile root: a save before any load teaches nothing without the profile child");
+}
+
 static bool read_block(const std::vector<uint8_t> &bytes, Bag &out)
 {
     In in{bytes};
@@ -187,10 +218,10 @@ static bool read_block(const std::vector<uint8_t> &bytes, Bag &out)
 
 int main()
 {
-    auto stock26 = career("s", 3);
-    auto stock24 = career("t", 1);
-    auto progressive = career("p", 2);
-    auto f1990 = career("n", 1);
+    auto stock26 = career_bag("s", 3);
+    auto stock24 = career_bag("t", 1);
+    auto progressive = career_bag("p", 2);
+    auto f1990 = career_bag("n", 1);
 
     sp::Store store;
     store.begin_load();
@@ -203,8 +234,8 @@ int main()
 
     sp::Owed owed;
     int result = 0;
-    auto block = containers_block({{"driver_career_26", stock26.get()}, {"driver_career_24", stock24.get()}}, store,
-                                  owed, &result, true);
+    auto block =
+        containers_block({{"driver_career_26", stock26.get()}, {"driver_career_24", stock24.get()}}, store, owed, &result, true);
     Bag got;
     expect(read_block(block, got), "the spliced block reads back to its end");
     expect(got.bags.size() == 4, "it holds the two registered and the two kept containers");
@@ -213,10 +244,8 @@ int main()
         by[k] = v.get();
     expect(by.count("driver_career_progressive") && *by["driver_career_progressive"] == *progressive,
            "the kept Progressive container reads back unchanged");
-    expect(by.count("driver_career_1990") && *by["driver_career_1990"] == *f1990,
-           "the kept 1990 container reads back unchanged");
-    expect(by.count("driver_career_26") && *by["driver_career_26"] == *stock26,
-           "a registered container is unchanged");
+    expect(by.count("driver_career_1990") && *by["driver_career_1990"] == *f1990, "the kept 1990 container reads back unchanged");
+    expect(by.count("driver_career_26") && *by["driver_career_26"] == *stock26, "a registered container is unchanged");
     expect(!owed.pending(), "the owed count was paid");
 
     auto plain = containers_block({{"driver_career_26", stock26.get()}}, store, owed, &result, false);
@@ -228,9 +257,9 @@ int main()
     expect(owed.take(&other).empty(), "a different save never pays another save's owed count");
     expect(!owed.pending(), "the mismatch clears the owed count");
 
-    auto late = career("l", 1);
-    auto dup = containers_block({{"driver_career_26", stock26.get()}, {"driver_career_1990", late.get()}}, store, owed,
-                                &result, true);
+    auto late = career_bag("l", 1);
+    auto dup =
+        containers_block({{"driver_career_26", stock26.get()}, {"driver_career_1990", late.get()}}, store, owed, &result, true);
     Bag got_dup;
     expect(read_block(dup, got_dup), "a kept name that a registered child also has still reads");
     size_t n1990 = 0;
@@ -268,6 +297,8 @@ int main()
 
     auto e = sp::entry_bytes("ab", 0x01020304, {9, 8});
     expect(e == std::vector<uint8_t>{2, 'a', 'b', 4, 3, 2, 1, 9, 8}, "an entry is length, name, type id, body");
+
+    profile_roots();
 
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;

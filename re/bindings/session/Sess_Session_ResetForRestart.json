@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Session_ResetForRestart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d5eb80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d5eb80.c;xref:0x1457df0b0",
+  "notes": "Session state vtable slot (ptr 0x1457df0b0). When st+0xe6a == 0: resets the session clock (+0xea8: +0x70 = 0, rates +0x88/+0x90 = 1.0, +0x9c = 0), progress (+0xda0, 0x142f0c900), the vehicle list (+0xda8, msg 0x145801e60 per car), 0x142cd4630(+0xe90), +0xe98 tables; then disqualified cars (state 5) in the result list (+0xcb0 +0x108..+0x110, rows +0x148) get their status re-requested; logs NETWORK '<<< PROGRESS REPLICATION %s >>>' ENABLED. Hypothesis: session restart / re-enter. d1-verify-a: disqualified cars are reset to status 2 (eActive)"
+ },
+ "signature": {
+  "id": "session.session_reset_for_restart",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 80 B9 6A 0E 00",
+  "match": "0x142d5eb80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d5eb80",
+  "kind": "func_start",
+  "names": [
+   "Sess_Session_ResetForRestart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-a",
+   "kind": "func",
+   "item": "Sess_Session_ResetForRestart",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d5eb80.c;xref:0x1457df0b0",
+   "notes": "V2301 Guard +0xe6a==0 (set to 1 at end, so effectively one-time init/reset); clock +0xea8 reset, progress +0xda0, vehicle list +0xda8; DSQ cars (state 5) set back to eActive (status 2); then 142d60f30/142d61070. Confirmed (DSQ cars -> status 2, not generic re-request)."
+  }
+ ],
+ "proofs": []
+}

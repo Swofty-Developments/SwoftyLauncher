@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkData_SendNetProgressUpdateBits",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14305c0e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14305c0e0.c;pat:log-channel-NETWORK-DATA;xref:0x1430e579b",
+  "notes": "Logs \"Send NetProgressUpdate to %d of %d bits\"; copies the bit payload into a packet buffer and sends it through Game_NetworkData_SendToConnection (call 0x14305c1cf). (lane owner review requested) Better name: Game_NetworkData_SendNetProgressUpdate (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_data_send_net_progress_update_bits",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC C0 04 00 00",
+  "match": "0x14305c0e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14305c0e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkData_SendNetProgressUpdateBits"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14305c0e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14305c0e0.c;xref:0x1430e579e",
+   "notes": "V5501 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_InGamePlaying",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457e6c90",
+  "type": "vtable[23]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;decomp:re/decomp/142dbc580.c;xref:0x142dbc5bf,0x142dbc944,0x142dc7ca4,0x142df4840,0x142df6263,0x142eccc4e,0x142efc080,0x14ec59e7e,0x14ec8b22e,0x14ecb293e,0x14f5337ae,0x14f5523fe,0x14f56411e",
+  "notes": "cxx=SessionStateInGamePlaying; 23 slots (null qword follows). Slot 0 -> type record 0x14607eed8, +8=name set by static init 0x142df1ca0 at 0x142df37e5. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142d55b80/0x142d566a0/0x142d56fa0. Ctor 0x142dbc580 (lea 0x142dbc5bf; mov [rsi],rax). Also loaded by 0x142eccc40,0x14ec59e70 (dtor, [rcx]). +8 lea sites in code without pdata (unverified)."
+ },
+ "signature": {
+  "id": "session.in_game_playing",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 C5 C8 57 F6 C5 F8 11 B6 A0 0E",
+  "match": "0x142dbc5bf",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457e6c90",
+  "kind": "data",
+  "names": [
+   "vt_Sess_InGamePlaying"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457e6c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142dbc5c2",
+   "notes": "V7451 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

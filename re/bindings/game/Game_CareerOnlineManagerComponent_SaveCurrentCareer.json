@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineManagerComponent_SaveCurrentCareer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fcfe10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fcfe10.c;str:s_Championship_CareerOnlineManagerComponent_SaveCurrentCareer;xref:0x140fd2e2a,0x140ff89fd",
+  "notes": "this = CareerOnlineDocumentComponent (manager at +0x398): binds callback 0x140fd04e0 to this, then inlined manager saveCurrentCareer (log): if the current career +0x340 is in map +0x330, creates the UpdateCareer operation (args 0x14329c0c0, queued on [manager+0x2b0]+0x30). Stores the op handle at +0x3a8 (allocator +0x3a0). (lane owner review requested) Better name: Game_CareerOnlineDocComp_SaveCareerWithCallback (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.career_online_manager_component_save_current_career",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 04 00 00 48 89 CE 48 8B A9 98 03 00",
+  "match": "0x140fcfe10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fcfe10",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineManagerComponent_SaveCurrentCareer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fcfe10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fcfe10.c;xref:0x140fd2e2a,0x140ff89fd",
+   "notes": "V4814 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

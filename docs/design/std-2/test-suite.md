@@ -42,7 +42,7 @@ It has two halves:
 ```sh
 swofty test fixture capture gp-base --from <a copy of userdata/<id>/3059520/remote> --store ~/fixtures
 swofty --profile default test session grand_prix cs_f1_2020 silverstone session=race laps=3 team=ferrari driver=vettel \
-    --fixture ~/fixtures/gp-base --lock /mnt/work/.f1-game.lock.d
+    --fixture ~/fixtures/gp-base --lock /mnt/work/F1/f1-game.lock.d
 ```
 
 In game on 2026-11-01 (Steam build, release CLI, profile `default` with Classic Seasons, a fixture made from a copy of the player's save):
@@ -74,7 +74,7 @@ The CLI writes the request to `<run folder>/direct_start.json` and starts the ga
 
 The game runs on a copy of the `--profile` profile (the active one without the flag), with the same addons in the same order and the same settings, so addon boxes and their database content are there. `swofty test shell --profile <p>` takes the same copy; `swofty test shell` without `--profile` keeps the minimal profile (core and `--addon` only).
 
-What the core does (`native/src/core/direct_start.cpp`), in order:
+What the core does (`native/src/core/testing/direct_start.cpp`), in order:
 
 1. The cover arms in `room_cover::setup()` for a `session` request and draws from the present hook's first frame.
 2. The title passes with the shared virtual pad (`title_skip.cpp`); the profile loads; `StateFTUE`'s finished link is held.
@@ -93,7 +93,7 @@ The flow is logged as `[direct] ...` lines: the weekend before and after (`weeke
 
 ```sh
 swofty --profile f1-1990 test session time_trial f1_1990_gp silverstone team=ferrari \
-    --fixture ~/fixtures/gp-base --lock /mnt/work/.f1-game.lock.d
+    --fixture ~/fixtures/gp-base --lock /mnt/work/F1/f1-game.lock.d
 ```
 
 ```text
@@ -161,23 +161,23 @@ The sandbox is a core feature at the save device's start (`Ne_SaveSystem2Win_Sta
 - **What's in one:** the two profile save files, the addon storage that lives outside the save (Progressive's career index, the Career Editor's points sidecar), the launcher profile, and `fixture.json` with the exe build and the addons it needs. About 1 MB.
 - **Layout:** `fixture.json` (schema 1: `name`, `description`, `created`, `exe` `{sha256, version}`, `addons` `{id: version}`, `holds` `{careers: [{mode, slot, name, season, round, team, driver}], notes}`, `files` `{path: {size, sha256}}`, `source`), `save/` with the Steam remote names (`savegame@profile#NXDSMWW.BWW` and `#QKRHMYXE`, plus mid-session saves; never highlights or corrupt-save bundles) and `storage/<addon id>/`. A run checks every file against `fixture.json`, copies `save/` into the sandbox and `storage/` into the batch profile's addon storage copy, which the session loads. Each career batch gets its own launcher profile and run folder.
 - **Where they live:** a test's `fixture` is a folder next to its test file (`fixtures/my-team-r3`), else a fixture in the store (`$SWOFTY_TEST_FIXTURES`, else `<data>/test-fixtures/`) by the same path or its last part. Fixtures for public addons can ship in the addon's `tests/fixtures/`. The project's own fixtures carry swofty's careers and names, so they stay out of the repo: the store on this machine is `/mnt/gaming/swofty-std16/fixtures/` (set `SWOFTY_TEST_FIXTURES` to it).
-- **Capture:** `swofty test fixture capture <name>` copies the newest run's sandbox (or `--run <id>`'s) and the addon storage the run left, with the run's exe and addons; `--from <dir>` takes a copy of a save folder instead and refuses the live one. `--career mode:slot`, `--description` and `--notes` fill `holds`. A fixture is never overwritten. `swofty test fixture list` and `check <name>` verify the files.
+- **Capture:** `swofty test fixture capture <name>` copies the newest run's sandbox (or `--run <id>`'s) and the addon storage the run left, with the run's exe and addons; `--from <dir>` takes a copy of a save folder instead and refuses the live one. On the EA app copy the run's sandbox is `saves/ea`: the fixture keeps each `<save>/<file>` under its Steam name and records `"layout": "ea"`, and it installs only into an EA run. `--career mode:slot`, `--description` and `--notes` fill `holds`. A fixture is never overwritten. `swofty test fixture list` and `check <name>` verify the files.
 - **The first ones:** `swofty-profile-20261028`, swofty's whole profile from the 2026-10-28 backup copy (exe d873a1c8, game 1.0.141.7865; its careers are not listed yet), then a Progressive 2018 career from an existing backup and captures from test runs: a My Team career at the contract window, a Driver Career at the season break, a Grand Prix weekend.
 - **Building states instead of capturing them:** the Career Editor's API, plus new operations to advance the calendar, set race results and save.
 
 ## Rules
 
 - The test agent and test DLLs load only when `swofty test` builds the profile and passes a token for that run. Normal Play never loads them.
-- One game per machine. Tests queue on the existing game lock (`/mnt/work/.f1-game.lock.d` here), and `--take-over` closes a running game first.
+- One game per machine. Tests queue on the existing game lock (`/mnt/work/F1/f1-game.lock.d` here), and `--take-over` closes a running game first.
 - The CLI never accepts the offline play terms for the player: a run without them fails with exit code 2.
 - Artefacts have size caps. Frames are optional.
 
 ## What ships in 1.6.0
 
 - **The CLI:** `swofty test plan`, `run`, `shell` and `fixture capture|list|check`. Environments `none`, `boot` and `benchmark` run in game. `route` and `career` (`team_hq`, `weekend_hub`) are experimental and not working in 1.6.0; `grand_prix` and `time_trial` parse and are listed as needing session setup. The test file schema is in [Testing your addon](/std/testing#the-test-file).
-- **The test agent** (`native/src/core/testagent`): the mailbox, `ai_drives_player`, `read`, `set`, `sample`, `pad`, `capture` and `skip` work. `route`, `career load`, `advance`, `save now` and `title` are experimental and not working in 1.6.0. Test DLLs written with `swofty/test.hpp` load only in a test run.
+- **The test agent** (`native/src/core/testing/agent`): the mailbox, `ai_drives_player`, `read`, `set`, `sample`, `pad`, `capture` and `skip` work. `route`, `career load`, `advance`, `save now` and `title` are experimental and not working in 1.6.0. Test DLLs written with `swofty/test.hpp` load only in a test run.
 - **Title screen:** the CLI waits 15 seconds for the agent to pass it, then presses the virtual pad.
-- **The save sandbox** (`native/src/core/save_sandbox.cpp`): runs in game. The Steam remote-storage proxy is fail-closed on any doubt. A profile load and three saves ran with the player's saves unchanged. Measured: the 0-entry snapshot case of the property-bag pool; the 64 KB and 256 KB cases are not measured. The fixture store is host-tested.
+- **The save sandbox** (`native/src/core/testing/save_sandbox.cpp`): runs in game. The Steam remote-storage proxy is fail-closed on any doubt. A profile load and three saves ran with the player's saves unchanged. Measured: the 0-entry snapshot case of the property-bag pool; the 64 KB and 256 KB cases are not measured. The fixture store is host-tested.
 - **Snapshots:** the registry save default is dry in 1.6.0.
 - **Checked only in the host tests** (no game run): the CLI's flow against a fake game and a fake agent, the run folder and token contract, the sandbox decision logic and the fixture check.
 

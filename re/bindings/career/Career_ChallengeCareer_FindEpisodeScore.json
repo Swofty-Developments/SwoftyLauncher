@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ChallengeCareer_FindEpisodeScore",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c84790",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c84790.c;pat:log-channel-CHALLENGE_CAREER;xref:0x140c8bde7,0x14173c09c,0x1418a2a37,0x141a6c10e",
+  "notes": "Sums the optional float scores (0x140c84590) of the episode weekends param_3+8..+0x10 (0x28 stride); out={sum,has} if any found, else logs CHALLENGE_CAREER 'Could Not Find Score For Episodes Weekends' with the joined ids and returns has=0. (lane owner review requested) Better name: Career_ChallengeCareer_SumEpisodeScore (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.challenge_career_find_episode_score",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 BC 24 50 01 00 00 C5 F8 29 B4 24 40 01 00 00 4C 89 C7",
+  "match": "0x140c84790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c84790",
+  "kind": "func_start",
+  "names": [
+   "Career_ChallengeCareer_FindEpisodeScore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c84790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c84790.c;xref:0x140c8bde7,0x14173c09c",
+   "notes": "V4627 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140c84790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c84790.c",
+   "notes": "V9054 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

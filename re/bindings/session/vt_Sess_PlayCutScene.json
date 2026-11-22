@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_PlayCutScene",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457e0920",
+  "type": "vtable[20]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142dc19a0.c;pat:flow-state-type-record;decomp:re/decomp/142db4e30.c;xref:0x142db4e3c,0x142dc1a88",
+  "notes": "cxx=SessionStatePlayCutScene; 20 slots (next vtable at +0xa0, lea 0x142d78d20). Slot 0 -> type record 0x14607d998, +8=name set by static init 0x142df1ca0 at 0x142df3bfc. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142d78f80/0x142d799b0/0x142d7a060. Ctor 0x142dc19a0 (lea 0x142dc1a88; mov [rsi],rax). Also loaded by 0x142db4e30 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.play_cut_scene",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 99 D0 0D 00",
+  "match": "0x142db4e3c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457e0920",
+  "kind": "data",
+  "names": [
+   "vt_Sess_PlayCutScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457e0920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142db4e3f",
+   "notes": "V7442 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

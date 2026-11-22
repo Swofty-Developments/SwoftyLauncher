@@ -1,6 +1,7 @@
 #include <swofty/mixin.hpp>
 
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 #include "declare_all.hpp"
 #include "older.hpp"
 #include "table.hpp"
@@ -8,10 +9,6 @@
 #include <windows.h>
 
 #include <mutex>
-
-std::string settings_addon(const void *from, std::string &dll);
-bool settings_state(const std::string &addon, const std::string &option, size_t &current, std::vector<std::string> *texts,
-                    std::vector<std::string> *commands, std::vector<std::string> *values);
 
 namespace {
 
@@ -69,8 +66,8 @@ void setup()
     st.set_override_source([](const std::string &addon) {
         size_t current = 0;
         std::vector<std::string> values;
-        return settings_state(addon, "also_change_year_packs", current, nullptr, nullptr, &values) &&
-               current < values.size() && values[current] == "true";
+        return settings_state(addon, "also_change_year_packs", current, nullptr, nullptr, &values) && current < values.size() &&
+               values[current] == "true";
     });
     std::string dir = swofty_dir();
     reg::IndexResult ix = reg::load_index(dir);
@@ -123,10 +120,7 @@ std::string older_addon(const void *from)
     return dll;
 }
 
-int registry_write_reports()
-{
-    return reg::write_reports(swofty_dir() + "\\registry");
-}
+int registry_write_reports() { return reg::write_reports(swofty_dir() + "\\registry"); }
 
 }
 
@@ -136,8 +130,9 @@ extern "C" __declspec(dllexport) int SwoftyCoreRegisterDone(void)
 {
     reg::Store &st = reg::store();
     st.end_register();
-    swofty::log("[registry] core declared %zu registr%s from the SDK headers; an addon that declares one again keeps its own newer minor",
-                declared_count, declared_count == 1 ? "y" : "ies");
+    swofty::log(
+        "[registry] core declared %zu registr%s from the SDK headers; an addon that declares one again keeps its own newer minor",
+        declared_count, declared_count == 1 ? "y" : "ies");
     for (auto &addon : st.order()) {
         std::size_t layers = st.layer_count(addon, "");
         if (layers)

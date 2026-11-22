@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EadpInvites_InviteRemovedServer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ff7210",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ff7210.c;pat:log-channel-EADP_INVITES;xref:0x145a46400",
+  "notes": "Invite stream read callback (vtable cell 0x145a46400): no payload -> 'Stream empty' / 'Stream error'; else per invite 'Added: %s,  %s' / 'Existing: %s,  %s', 'Invite Removed from server', 'Revoked/unspecified' and an ACTIVE/EXPIRED age check ('Time Now: %d seconds, time invite %d seconds...') (EADP_INVITES). (lane owner review requested) Better name: Game_EadpInvites_OnInviteStreamMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_invites_invite_removed_server",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 00 01 00 00 48 8B 32",
+  "match": "0x143ff7210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ff7210",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpInvites_InviteRemovedServer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143ff7210",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143ff7210.c",
+   "notes": "V6349 partial: better name Game_EadpInvites_OnInviteListUpdate; stream handler: invite add/remove/expiry bookkeeping"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143ff7210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ff7210.c",
+   "notes": "V7074 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

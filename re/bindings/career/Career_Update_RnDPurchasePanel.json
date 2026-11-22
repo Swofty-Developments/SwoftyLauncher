@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDPurchasePanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c8d540",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c8d540.c;pat:research-limit-store-0x6d2@0x141c8e76e;kb:subsystems/rnd_ui.md#modifiers;xref:0x141c8bb58,0x141c8d513",
+  "notes": "R&D purchase panel update (cost via Career_Get_EffectiveUpgradeCost, timeline icons, rnd_simultaneous_upgrades sim_upgrade_* nodes). Career_Get_TeamModifiers([this+0x680]+0xc90, [this+0x6cc]); slots = sum of f32 values of entries with kind 0, dept == [this+0x6e8], active; in-use = enabled upgrades (Career_Query_EnabledUpgrades) with +0x72 == dept and state 2; [this+0x6d2] = gate && slots <= in-use. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.update_rn_d_purchase_panel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 33 00",
+  "match": "0x141c8d540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c8d540",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDPurchasePanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c8d540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8d540.c;xref:0x141c8bb58",
+   "notes": "V4960 name/description match decomp: strings and callees consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141c8d540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8d540.c;xref:0x141c8e299;xref:0x141c8e76e;xref:0x141c8bb58",
+   "notes": "V9195 TeamModifiers entries filtered by kind==0, dept==panel dept and active byte, values summed; flag stored at [rsi+0x6d2] from setle at 0x141c8e76e."
+  }
+ ],
+ "proofs": []
+}

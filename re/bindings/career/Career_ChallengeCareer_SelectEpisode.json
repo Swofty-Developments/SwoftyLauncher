@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ChallengeCareer_SelectEpisode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141fb9610",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141fb9610.c;pat:log-channel-CHALLENGE_CAREER;xref:0x145762dd0",
+  "notes": "Vtable slot (cell 0x145762dd0), command hash dispatch: 0xbda0a8b0 sets [this+0x591]=1; 0xc22b77ef checks the 0x57 entry in [this+0x2a0] list; 0x2b0357a (select): if [this+0x588] and not is_disabled, reads episode_number, stores to [list]+0x5760 if < count, logs CHALLENGE_CAREER 'Select Episode: %d', fires route open_episode_screen. (lane owner review requested) Better name: Career_ChallengeCareerVM_HandleCommand (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.challenge_career_select_episode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 79 35 B0 02",
+  "match": "0x141fb9610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fb9610",
+  "kind": "func_start",
+  "names": [
+   "Career_ChallengeCareer_SelectEpisode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141fb9610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141fb9610.c",
+   "notes": "V5241 name/cxx or log string and body match; body size consistent with name (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141fb9610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141fb9610.c;str:\"Select Episode: %d\";str:\"CHALLENGE_CAREER\"",
+   "notes": "V9203 Logs Select Episode on the CHALLENGE_CAREER channel and fires open_episode_screen."
+  }
+ ],
+ "proofs": []
+}

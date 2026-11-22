@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Http_CallbackStatusId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14404d610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14404d610.c;pat:log-channel-HTTP/V;xref:0x14404ce21",
+  "notes": "WinHTTP status callback (hInternet,ctx,status,info,len); request via 0x14404c8d0, CS +0x70. 0x40000: alloc chunk, WinHttpReadData (0 -> push 0x80000); 0x80000: WinHttpQueryDataAvailable; 0x10: server cert (opt 0x4e) self-signed key pin vs +0xa0, mismatch closes, +8=0x10000; 0x80 sets +0x18; 0x10000 flags, 0x200000 error -> +8. Statuses pushed to +0x38. Fn ptr lea in 0x14404cae0. (lane owner review requested) Better name: Game_Http_WinHttpStatusCallback (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.http_callback_status_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 CE 44 89 C3",
+  "match": "0x14404d610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14404d610",
+  "kind": "func_start",
+  "names": [
+   "Game_Http_CallbackStatusId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14404d610",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14404d610.c;xref:0x14404ce23",
+   "notes": "V6477 partial: better name Game_Http_StatusCallback; 3 KB WinHTTP status callback (data available, certs, closing)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14404d610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14404d610.c;xref:0x14404ce23",
+   "notes": "V7119 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

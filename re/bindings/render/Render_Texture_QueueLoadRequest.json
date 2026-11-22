@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Texture_QueueLoadRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f3e5e0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f3e5e0.c;xref:0x143bef9ae,0x143fb9141,0x143fb91b8,0x143f3e350,0x1441574a5",
+  "notes": "Shared engine file open (rename: not texture-only, Ne_AudioIo_OpenFileRequest uses it too): under EnterCriticalSection([this+0x480]) finds a device for path param_3 via 0x143f41bc0 (0x104-char buffer), allocates a 0x78-byte refcounted handle from allocator +0x188 (init 0x143f41f10, state 2/0xc via 0x143f41ff0 on failure), device vcall +0x38 resolves, +0x88 opens with param_4..7; waits with 0x14391ca60(-1) and retries. Callers 0x143bef9ae (Render_Texture_CreateFromResourceCore), 0x143fb9141/0x143fb91b8 (Ne_AudioIo_OpenFileRequest). (lane owner review requested) Better name: Render_FileIo_OpenRequest (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.texture_queue_load_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 4C 89 4C 24 68",
+  "match": "0x143f3e5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f3e5e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Texture_QueueLoadRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143f3e5e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f3e5e0.c;xref:0x143bef9ae",
+   "notes": "V8366 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NeosSignalr_ReceivedSignalRPayload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144441070",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144441070.c;pat:log-channel-NEOS_SIGNALR/V;xref:0x1444409ae",
+  "notes": "In bounds: state +0x228==6: trims last char unless '}', JSON-parse 0x140b5e130, log 'Received SignalR payload'. Mode +0x10738!=2: 0x1444450e0 else 0x144444e30. Mode 2: 'error' -> 'Error in payload: %s'; 'type' 1 Invocation->0x144444e30, 3 Completion->0x1444450e0, 6 Ping, 7 Close->0x144441e70('Server closed connection'). Lines 326+ = merged handshake code 0x1444445e4..0x144444894 (outside pdata) (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.neos_signalr_received_signal_r_payload",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 08 01 00 00 0F B6 81 28 02 00 00",
+  "match": "0x144441070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144441070",
+  "kind": "func_start",
+  "names": [
+   "Game_NeosSignalr_ReceivedSignalRPayload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144441070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144441070.c;xref:0x1444409b0",
+   "notes": "V6604 size=1951; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

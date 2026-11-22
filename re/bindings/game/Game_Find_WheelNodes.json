@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Find_WheelNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14462bc90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14462bc90.c;xref:0x1428ab1a7,0x1446284df",
+  "notes": "Per wheel (param_3 count, out stride 0xfc at param_2) and LOD 0..8: 'x%d_%s' with tables 0x145bf71c0 wheel_{bl,br,fl,fr}, 0x145bf71e0 tyre_, 0x145bf7200 disc_, 0x145bf7220 hub_caliper_, 0x145bf7280 wheel_cover_, 0x145bf72e0 disc_inboard_, 0x145bf7350 suspension_fin_; djb2 hash -> 0x143a3df70 -> node id via 0x143cfc8f0 at +0/+0x24/+0x48/+0xb4/+0xd8/+0x6c/+0x90; fallback unprefixed name; missing -> -1 + VEHICLE_COMPONENT log. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.find_wheel_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 07 00 00 4C",
+  "match": "0x14462bc90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14462bc90",
+  "kind": "func_start",
+  "names": [
+   "Game_Find_WheelNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14462bc90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14462bc90.c;xref:0x1428ab1a7",
+   "notes": "V6711 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SceneManager_PushPendingSceneObjectB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140181500",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140181500.c;xref:0x14018b3c6,0x1401ecf17",
+  "notes": "Same as ...ObjectA for the vector +0x850..+0x860 (allocator +0x848, same spinlock +0x5c4). Callers Game_SceneManager_DestroyScene (0x14018b3c6) and Game_SceneManager_BuildMaterialActorForScene (0x1401ecf17). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.scene_manager_push_pending_scene_object_b",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE EB 0F 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 F3 90 F6 86 C4 05 00 00 01 75 F5 B0 01 86 86 C4 05 00 00 A8 01 75 EB 48 8B 8E 58 08",
+  "match": "0x140181500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140181500",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneManager_PushPendingSceneObjectB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140181500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140181500.c;xref:0x14018b3c6",
+   "notes": "V7960 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

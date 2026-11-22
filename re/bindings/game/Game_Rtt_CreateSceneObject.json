@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_CreateSceneObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b5bb00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b5bb00.c;xref:0x143b5ae2a,0x143b5c7e7,0x143d8877f,0x143f859d9,0x14478da1f",
+  "notes": "In-place constructor of a render scene object: zeroes header fields, sets 0x30 transform rows to identity patterns, misc defaults (+0x4a0 0x1000000000400, +0x4c0 1.0/20.0, -1 ids) and interns the name 'Unnamed Scene' (hash 0xc4e0605e6d31511b, Ne_StringPool_InternByHash) at +0x4f8/+0x500; returns it. Callers 0x143b5ad80, Render_GeometryPass_Parse, Game_Rtt_RttGenerator, Game_Bink_LoadSubtitles, 0x14478d9d0. (lane owner review requested) Better name: Game_RenderScene_InitDefault (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.rtt_create_scene_object",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE C5 C8 57 F6",
+  "match": "0x143b5bb00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b5bb00",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_CreateSceneObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b5bb00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b5bb00.c;xref:0x143b5ae2a",
+   "notes": "V7766 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

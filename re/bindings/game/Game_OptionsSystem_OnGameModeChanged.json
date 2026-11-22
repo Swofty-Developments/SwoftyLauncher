@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsSystem_OnGameModeChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ac9260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ac9260.c;str:s_OptionsSystem_OnGameModeChanged;xref:0x142ac7ae3,0x142ac7b10",
+  "notes": "OPTIONS onGameModeChanged (lea in 0x142ac7aa0): resets +0x480 set and +0x670 map, 0x142ad42e0(this,0); mode from msg+0x10 +0xf08 -> this+0x460, masks 0x1429121a0; 0x142ad4800/4990/4be0. No session: logs 'Clearing replicated restrictions', clears +0x580 (0x38 recs). Re-checks old mode +0x468 options (0x142abc3d0); state 0..4 -> 0x142aca2a0; returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.options_system_on_game_mode_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 48 89 D3 48 89",
+  "match": "0x142ac9260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ac9260",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsSystem_OnGameModeChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ac9260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ac9260.c;xref:0x142ac7ae5",
+   "notes": "V5008 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

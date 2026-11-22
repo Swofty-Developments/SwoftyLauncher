@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_BackgroundOutcomeField",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141015f10",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Career_Get_BackgroundOutcomeField(void *row_name)",
+  "evidence": "decomp:re/decomp/141015f10.c;xref:0x140ab4b6a;xref:0x140c33bcb;xref:0x140c33fbb",
+  "notes": "myteam-g2: Gdb_Find_RowByLabel + Gdb_Get_FieldInt on the career.my_team_background.outcome table (BackgroundOutcome); returns the stored int. Used by the DB config readers (Read_CareerSetupDataConfig, Read_FacilityUpgradeNodeConfig, Load_DepartmentEventOutcomes)."
+ },
+ "signature": {
+  "id": "career.get_background_outcome_field",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 04 00 00 49 89 C8 C7 84 24 28 02 00 00 FF FF FF FF C6 84 24 2C 02 00 00 01 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 44 24 28 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 44 24 38 66 C7 44 24 48 65 73 C6 44 24 4A 00 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 84 24 28 01 00 00 66 C7 84 24 38 01 00 00 65 00",
+  "match": "0x141015f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141015f10",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_BackgroundOutcomeField"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141015f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141015f10.c;xref:0x140ab4b6a;str:\"statId\"",
+   "notes": "V9635 Opens career.my_team_background.outcomes and returns int field statId of the row; table is \"outcomes\" and the field is statId."
+  }
+ ],
+ "proofs": []
+}

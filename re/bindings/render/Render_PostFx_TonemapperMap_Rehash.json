@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_PostFx_TonemapperMap_Rehash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ecbad0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ecbad0.c;xref:0x143bc98bf",
+  "notes": "Rehash(bucket_count, flag) of a robin-hood style hash map (info-byte array, max load 80 percent via *0x50/100, info clamp 0xff), allocation through the map allocator with the ne_hash_map.h source string, abort stub 0x143ecb9e0 on failure. Caller 0x143bc98bf in Render_PostFx_InitTonemapper. Not swiss-table as noted before. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.post_fx_tonemapper_map_rehash",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? FF C5 81 FD 00 01 00 00 0F 84 ?? ?? ?? ?? 45 8B 45 00 4C",
+  "match": "0x143bc98bf",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ecbad0",
+  "kind": "func_start",
+  "names": [
+   "Render_PostFx_TonemapperMap_Rehash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143ecbad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ecbad0.c;xref:0x143bc98bf",
+   "notes": "V8284 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

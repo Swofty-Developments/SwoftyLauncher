@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Car_CaptureVehicleState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405ee660",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "uint64_t Ai_Car_CaptureVehicleState(void *ai_input, void *car_entry, void *handling_config)",
+  "evidence": "decomp:re/decomp/1405ee660.c;xref:0x14063ebb9,0x1409d5cc5;doc:re/research/fuel_mix_five.md#sites",
+  "notes": "(out, carEntry, handlingCfg) -> 0. Only call 0x14063ebb9 in Ai_Job_UpdateCarsParallel: rcx = [AiSystem+0x88][i] (per-car AI input record), rdx = per-car entry (rbx), r8 = AiCarRecord[i].handling_config ([AiSystem+0xa8]+i*0x508+0x230, 0x14063ebae). Pure snapshot: vehicle V = [carEntry+0x18] (0x1405ee684); out[0] = V+0x1c4 (0x1405ee688), out[1] = V+0x190, out+0x34 = obf u32 [V+0x560]+0x28^+0x30, out+0x3c = |dot([V+0x558]+0x1b0, +0x170)|, matrix/vector rows [V+0x558]+0x170..+0x1d0 copied/normalised into out+0x190..+0x28c, carEntry+0x218/+0x21c -> out+0x54/+0x58, data from V+0x530/+0x538/+0x540/+0x548/+0x550/+0x568/+0x570/+0x5a8, gear-speed table [V+0x538]+0x6a4..+0x6f8 scaled into out+0x380..+0x3d4, V+0x9f0c/+0x9f10 == 3 flags, 4 per-wheel calls 0x1406071e0 averaged *0.25 into out+0x28, tail calls 0x140607350 / 0x1406078b0 / 0x140607ca0(out, handlingCfg). Second ref: lea at 0x1409d5cc5 (fixed 2026-11-14 after verifier ai-verify) = XOR-obfuscated pointer registration in Game_ObfKeyedTable_StaticInit. (corrected 2026-11-14: individual 'speed/rpm/gear' labels of +0x1c4 / +0x560 are not proven; the 3rd arg is the handling config, not a free '...') L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | engine-re fuel-mix-5 2026-11-20 (static): fuel inputs of the AI: out[6..8] = BURN scales of lean, standard and rich only (FuelECU +0x28/+0x38/+0x48, decomp lines 153-158; no max, no fifth) and out+0x294 = fuel_mode. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.car_capture_vehicle_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 CE 48 8B 7A 18",
+  "match": "0x1405ee660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405ee660",
+  "kind": "func_start",
+  "names": [
+   "Ai_Car_CaptureVehicleState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1405ee660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405ee660.c;xref:0x14063ebb9",
+   "notes": "V3529 out[0]=speed +0x1c4, rpm/gear from car+0x560 (+0x28^+0x30), rows via car+0x558 +0x170..+0x1b8; Ai_Job_UpdateCarsParallel caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1405ee660",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1405ee660-0x1405ef23b;xref:0x14063ebb9,0x1409d5cc5",
+   "notes": "V10593 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Call 0x14063ebb9 in Ai_Job_UpdateCarsParallel (rcx = [[sys+0x88]+i*8], rdx = rbx, r8 = [records+i*0x508+0x230] at 0x14063ebae); 3 args. V = [rdx+0x18] (0x1405ee684), out[0] = V+0x1c4, out[1] = V+0x190; tail calls 0x140607350/0x1406078b0/0x140607ca0. Second ref is a lea at 0x1409d5cc5 (notes say 0x1409d5cc6) xored into a table in 0x1409d50b0."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_HandleVehicleCust_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143145920",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143145920.c;pat:log-message-cxx;xref:0x14313f1b8",
+  "notes": "Read in full: decodes the decal node list from msg+0x78 (0x14313dbd0, list id lStack_138, complete flag msg+0xa8), logs 'Received ...SegmentedDecalsAddNetMessage ... %zu vehicle decal nodes'; if the player in tree this+0xa8 is ready (node+0x88): logs 'ready to apply decals ... will be applied', addPlayerVehicleSegmentedDecalNodeList 0x143142e80, and when complete 0x143144f50 + ready = 0 (0x143144370). Not ready: logs 'will store these %zu decals for when ready' and appends the nodes to the stored list with that id (or creates it via 0x1431445b0 / tree insert 0x143211920). Registered by lea 0x14313f1b8 in 0x14313f030. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_handle_vehicle_cust_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 89 D7 48 89 CB",
+  "match": "0x143145920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143145920",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_HandleVehicleCust_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143145920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143145920.c;xref:0x14313f1ba",
+   "notes": "V5946 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

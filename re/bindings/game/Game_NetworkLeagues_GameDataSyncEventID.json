@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_GameDataSyncEventID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315a280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315a280.c;pat:log-channel-NETWORK-LEAGUES;xref:0x14581d4a8",
+  "notes": "Calls the callback this+0x28(this+0x30, 1, 0) if set, logs 'GameDataSync() to Event ID %llu' and writes the event id (*param_2) to [[this+0x10]+0x3a8]+0x100. Only ref: vtable cell 0x14581d4a8. (lane owner review requested) Better name: Game_NetworkLeagues_GameDataSync (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_leagues_game_data_sync_event_id",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 48 8B 41 28",
+  "match": "0x14315a280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315a280",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_GameDataSyncEventID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14315a280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315a280.c",
+   "notes": "V5995 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_LeaderboardViewModelBase_RequestNextDataBlock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fc41b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fc41b0.c;str:s_LeaderboardViewModelBase_RequestNextDataBlock;xref:0x142fb8060,0x142fc3e88,0x142fc402c",
+  "notes": "void LeaderboardViewModelBase::requestNextDataBlock(NEint dir). Reader [+0x340] not complete and rows < total: index of displayed rank +0x3b0+1, logs 'requesting block: suggestedDirection[up/down/invalid]...'; previous (reader vcall +0x20) when dir != 0, index <= 0x28 and first rank != 0, else next (vcall +0x18) when index + +0x3a8 >= rows-0x28; delegate 0x142fc4860. On success sets bit 0x20 in the dirty flags of global 0x14604ed68 (+0x34). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.leaderboard_view_model_base_request_next_data_block",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 71 B8 38",
+  "match": "0x142fc41b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fc41b0",
+  "kind": "func_start",
+  "names": [
+   "Game_LeaderboardViewModelBase_RequestNextDataBlock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fc41b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fc41b0.c;xref:0x142fb8060",
+   "notes": "V5719 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

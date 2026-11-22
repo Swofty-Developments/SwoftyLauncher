@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FriendsList_ListDBHelperPopulateListAvailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14184e780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14184e780.c;pat:log-channel-FRIENDS_LIST;xref:0x141e02f3d,0x141e03043,0x141e0310d,0x141e03207",
+  "notes": "ListDBHelper::populateList (log FRIENDS_LIST 0x14571235d). Entries 0x88 B in [p2+8,p2+0x10); p5={index,pageSize,page}: only entries in window page*size..(page+1)*size get an item: alloc 0x2a0 + ctor 0x14184bd70, name 'list_entry_%04u', props from entry +0x20/+0x38/+0x78/+0x80, appended via 0x14184f6a0 (this+0x50) and 0x14193cb20 (this+0xc0). p4: clear 0x14184cef0 + reserve 0x14184d240. Else index += count. All callers in 0x141e024e0. (lane owner review requested) Better name: Game_FriendsList_ListDBHelper_PopulateList (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.friends_list_list_db_helper_populate_list_available",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 44 89 CD 4C 89 C7",
+  "match": "0x14184e780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14184e780",
+  "kind": "func_start",
+  "names": [
+   "Game_FriendsList_ListDBHelperPopulateListAvailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14184e780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14184e780.c;xref:0x141e02f3d",
+   "notes": "V4906 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_BenchmarkBenchmarkResultsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407acba0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407acba0.c;pat:log-channel--;xref:0x1407ab4f1",
+  "notes": "Not a config read: sets UI data-model nodes 'benchmark.benchmark_results.*.value' (version, number_of_tests, cpu, gpu, ram, hmd_name, resolution '{o:mixed}%d x %d{/o}', graphics_detail_preset, antialiasing, total/avg/min/max fps, min/max/avg frame_time) via FUN_1442b1b60/FUN_140828440 from hardware_settings_info, hardware_settings_config and this+0x10f0..0x110c; benchmark_xml_help_text. (lane owner review requested) Better name: Game_Benchmark_FillResultsDataModel (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_benchmark_benchmark_results_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 07 00 00 48 89 CD",
+  "match": "0x1407acba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407acba0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_BenchmarkBenchmarkResultsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407acba0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407acba0.c",
+   "notes": "V4299 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

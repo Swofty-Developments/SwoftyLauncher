@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ui.per_package 1.0",
+  "x-registry": "ui.per_package",
+  "x-version": "1.0",
+  "x-applies": "content",
+  "x-snapshot": false,
+  "description": "content::PackageUi (experimental, SWOFTY_BOX_UI=1): one box's own UI textures. While the box is the pressed one (Grand Prix or Time Trial; not careers in this release), the core routes each listed ui_package archive to its own copy in which every resource the archive shares with textures is swapped; leaving the box puts the game's archives back. A copy is read the next time the game loads that archive: race UI archives load with each session, front-end ones when the front end loads again. Archives the game loads at boot and keeps (persistent.erp, flow_persistent.erp, screens/persistent.erp, fonts*.erp) are refused, and a resource that one of them also holds stays stock, because the game keeps the first copy of a name it loads.",
+  "type": "object",
+  "properties": {
+    "package": {
+      "description": "The box's content package.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-ref": "content.package"
+    },
+    "textures": {
+      "$ref": "#/$defs/path"
+    },
+    "root": {
+      "description": "The resource name a folder's file paths are appended to.",
+      "type": "string",
+      "pattern": "^eaid://.*/$"
+    },
+    "srgb": {
+      "description": "A .png file is encoded as sRGB BC7 when true, linear BC7 when false. A .dds file keeps its own format.",
+      "type": "boolean"
+    },
+    "archives": {
+      "description": "The ui_package archives to swap, as game paths (2025_asset_groups/ui_package/...erp).",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^2025_asset_groups/ui_package/[A-Za-z0-9_./-]+\\.erp$"
+      }
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "ui.per_package",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "package",
+    "textures",
+    "archives"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "path": {
+      "description": "The textures: a folder in the addon's folder holding .dds and .png files (a file at osd/textures/message_system/ms_fia_logo.png is the resource root + osd/textures/message_system/ms_fia_logo.tif.image, with its .tif view), or { \"erp\", \"resources\" } for resources of an archive in the addon's folder, named like the stock resources they replace.",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[^/\\\\][^\\\\]*$"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "erp": {
+              "type": "string",
+              "pattern": "^[^/\\\\][^\\\\]*$"
+            },
+            "resources": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^eaid://"
+              }
+            }
+          },
+          "required": [
+            "erp",
+            "resources"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

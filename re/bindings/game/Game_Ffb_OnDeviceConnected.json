@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_OnDeviceConnected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f7a20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f7a20.c;pat:log-channel-FFB_DEBUG;xref:0x1446f6ae1,0x1446f8c99",
+  "notes": "deviceConnected(this, bool connected, descriptor) under lock +0x1d8: finds existing controller in vector +0x50..+0x58. Disconnect: remove audio-motion 0x14451dfb0, erase, destroy. Connect: by device type creates controller: pad (idx<4) 0xe0 vt 0x145bff850 init 0x1446f04c0; Logitech 0xf0 vt 0x145bff700 init 0x1446eeb70; Thrustmaster 0xe8 vt 0x145bff820 init 0x1446efd10; type 0x146292228 0xe0 vt 0x145bff7f0 init 0x1446ef680; push_back, log. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_on_device_connected",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C7 89 D5",
+  "match": "0x1446f7a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f7a20",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_OnDeviceConnected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f7a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f7a20.c;xref:0x1446f6ae3",
+   "notes": "V6856 Created/Removed/already exists/not support FFB strings confirmed."
+  }
+ ],
+ "proofs": []
+}

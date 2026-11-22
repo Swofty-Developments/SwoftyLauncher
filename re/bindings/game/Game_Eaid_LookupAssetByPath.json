@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Eaid_LookupAssetByPath",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441e04d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441e04d0.c;xref:0x14384a705,0x14384a790,0x14384acb3,0x14384b019",
+  "notes": "Copies the name at [param_2]+9 (<= 0x3ff), splits at '.'; first token prefixed 'eaid://%s' unless already, hashed 0x1439298f0 and looked up in [*param_1] vcall +0x98 table; entry -> key 0x143994bc0 + name (+0x50) hashed *33 seed 0x7bb34a05 -> table vcall +0x68. Further tokens: djb2 -> child vcall +0x60, 'eXRef' proxies followed (+0x178). Returns object or 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.eaid_build_path_hash",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 0C 00 00 48",
+  "match": "0x1441e04d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441e04d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Eaid_LookupAssetByPath"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1441e04d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1441e04d0.c;xref:0x14384a705",
+   "notes": "V7645 BetterName Game_Eaid_LookupAssetByPath: eaid:// prefix + MD5U64 hash confirmed, but then looks up the hash in a map and returns the entry"
+  }
+ ],
+ "proofs": []
+}

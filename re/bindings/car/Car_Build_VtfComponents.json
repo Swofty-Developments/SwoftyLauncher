@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Car_Build_VtfComponents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473c2e0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void(CarLive *car)",
+  "evidence": "decomp:re/decomp/14473c2e0.c;xref:0x144629964,0x144759f4e",
+  "notes": "Caches 23 systems of the CarLive component container (count car+0x398, array car+0x3a0) by type name into car+0x530 Engine, +0x538 GearBox, +0x540 FuelTank, +0x548 FuelECU, +0x550 BrakeECU, +0x558 Chassis, +0x560 Steering, +0x568 CoreAero, +0x570 F1Aero, +0x578 Differential, +0x580 SuspensionSystem, +0x588 DebugSystem, +0x590 F1Tuning, +0x598 F1Assists, +0x5a0 Turbo, +0x5a8 EnergyRecoverySystem, +0x5b0 ConvexHull, +0x5b8 WheelProxies, +0x5c0 F1Plank, +0x5c8 F1WingDamage, +0x5d0 F1SuspensionDamage, +0x5d8 F1TyreDamage, +0x5e0 F1BodyDamage (0 when absent). Name = system vt+0x38 -> data, data vt+8 -> char*. Called by Car_Chassis_Build after the systems are created and by Car_Systems_FindOrCreate after every append. Struct: structs/CarLive.h"
+ },
+ "signature": {
+  "id": "car.build_vtf_components",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 83 B9 98 03 00 00 00",
+  "match": "0x14473c2e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473c2e0",
+  "kind": "func_start",
+  "names": [
+   "Car_Build_VtfComponents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "func",
+   "item": "Car_Build_VtfComponents",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14473c2e0.c;xref:0x144629965,0x144759f4e;sig:car.build_vtf_components",
+   "notes": "V1319 Asm: count [rcx+0x398], systems [rsi+r14*8+0x3a0], name = vt+0x38 then vt+8, compare 0x14534d918; the 23 lea'd strings map exactly to the stores +0x530 Engine ... +0x578 Differential, +0x580 SuspensionSystem ... +0x5e0 F1BodyDamage as claimed; rbx reset to 0 per name so absent = 0. sigcheck OK. Callers: Car_Chassis_Build and Car_Systems_FindOrCreate."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Car_Build_VtfComponents",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14473c36e,0x14473c883",
+   "notes": "V1671 recorded by engine-re from cg-verify (blind capstone): 23 qword stores car+0x530..+0x5e0, names Engine .. F1BodyDamage"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Car_Build_VtfComponents",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14473c36e,0x14473c883",
+   "notes": "V3908 recorded by engine-re from cg-verify (blind capstone): 23 qword stores car+0x530..+0x5e0, names Engine .. F1BodyDamage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14473c2e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14473c2e0.c;xref:0x144629964",
+   "notes": "V6628 all 23 section names and stores car+0x530..0x5e0 verified in disasm"
+  }
+ ],
+ "proofs": []
+}

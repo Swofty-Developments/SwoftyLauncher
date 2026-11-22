@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Result_RequestVehicleStatus_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c21610",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION-RESULT;decomp:re/decomp/142c21610.c;xref:0x142c1fb7e,0x142c20745",
+  "notes": "Called by Game_F1DataFeedSystem_UpdateCar. Per car index (< g 0x146ce86dc, car = g 0x146ce86e0[i]): copies the 4x4 matrix arg3 into [car+0x558]+0x190/+0x290/+0x1d0, tyre temps (arg8[0x25..0x28]+273.15) into [car+0x580]+0x70..+0x88, wheel transforms, progress record [[this+0xe0]+0x38][i] (+0x30..+0xc0, PROGRESS setUnmodifiedProgressLap log); finally sets result row [[this+0xf0]+0x148][i] to eRetired (0x307) or eActive (2) with the SESSION-RESULT log. Better name: Sess_DataFeed_ApplyVehicleState (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "session.result_request_vehicle_status_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 78 29 94 24 10 02 00 00 C5 78 29 8C 24 00 02 00 00 C5 78 29 84 24 F0 01 00 00 C5 F8 29 BC 24 E0 01 00 00 C5 F8 29 B4 24 D0 01 00 00 38 15",
+  "match": "0x142c21610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c21610",
+  "kind": "func_start",
+  "names": [
+   "Sess_Result_RequestVehicleStatus_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Result_RequestVehicleStatus_2",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142c21610.c;xref:0x142c1fb7e",
+   "notes": "V1882 log string present (eRetired/eActive variants) but function is a large per-vehicle progress/lap update (setUnmodifiedProgressLap, TyreSystem warning); RequestVehicleStatus is only an inlined log"
+  }
+ ],
+ "proofs": []
+}

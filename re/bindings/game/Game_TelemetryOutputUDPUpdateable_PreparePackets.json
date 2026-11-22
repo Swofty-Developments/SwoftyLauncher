@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryOutputUDPUpdateable_PreparePackets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144736210",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144736210.c;pat:log-message-cxx;xref:0x14473138a,0x14473813c",
+  "notes": "Prepares UDP packets with m_packetFormat 0x7ea (2026): headers ids 0-2,4-7,10-16 (0x1001 new id 16, 0xf0 payload), motion-ex calcs (ride heights, slip, raycast), 24-car limit; logs 'TelemetryOutputUDPUpdateable::preparePackets took'. Used by Update for format 2; siblings Game_TelemetryUdp_Prepare2024/2025. (lane owner review requested) Better name: Game_TelemetryOutputUDPUpdateable_PreparePackets2026 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.telemetry_output_udp_updateable_prepare_packets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 C5 78 29 94 24 A0 01 00 00 C5 78 29 8C 24 90 01 00 00 C5 78 29 84 24 80 01 00 00 C5 F8 29 BC 24 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 48 89 CE 48 8D 8C 24 90 00 00 00",
+  "match": "0x144736210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144736210",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryOutputUDPUpdateable_PreparePackets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144736210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144736210.c;xref:0x14473138a",
+   "notes": "V6622 packetFormat 0x7ea (2026) stores and preparePackets took microseconds log; builds 2026 packets"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_FeTile_ListRowNone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424288d7",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/142428790.c;xref:0x142428857,0x142428865,0x142428876,0x142428886",
+  "notes": "xor edi,edi at the false return of FeTile_Check_EntrantListUsable (list index past the slot array, no record in the slot, or an entrant that is not available): returns 0."
+ },
+ "signature": {
+  "id": "fe_tiles.list_row_none",
+  "section": ".xtls",
+  "pattern": "31 FF 89 F8 48 81 C4 30 04 00 00 5B",
+  "match": "0x1424288d7",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424288d7",
+  "kind": "mid",
+  "expect": "31 FF 89 F8 48 81 C4 30 04 00 00",
+  "names": [
+   "site_FeTile_ListRowNone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "fe-tile-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/fe_tile_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-02",
+   "verifier": "verify-fe-tile",
+   "kind": "global",
+   "item": "site_FeTile_ListRowNone",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/vfe/142428790.c;xref:0x142428857,0x142428865,0x142428876,0x142428886",
+   "notes": "V8629 own disasm: 1424288d7 xor edi,edi falls into 1424288d9 mov eax,edi; add rsp,0x430; pops rbx,rdi,rsi,r14,r15; ret. It is the target of jbe 857, je 865, je 876, je 886 (list index past array, null record, entrant unavailable) and returns 0 to the populate, whose test al,al at 1424284ce then sets the flag bits. A jump from 142428832 keeps rsp (sub rsp,0x430 only at entry, calls balanced) and the callee-saved registers are restored from the frame, so r14 never being loaded is harmless. It is a continue target only, nothing is patched there."
+  }
+ ],
+ "proofs": []
+}

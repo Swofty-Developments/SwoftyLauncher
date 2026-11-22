@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Input_DeserialiseControlScheme",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a63340",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a63340.c;pat:log-channel-INPUT;xref:0x142a6a276,0x142a6ee19",
+  "notes": "Reads control-scheme object (param_3) keys id, name, is_ugc, device_types[device_type_name], actions[action_id, axes[calibrator_type, deadZone, saturation, axis_id, device_type_id]], calibration{version, steering/throttle/brake deadzone/linearity/saturation}, ffb{ffb_enabled..ffb_trueforceIntensity}, published_file_id; allocates 0x168-byte scheme (vtbl 0x1457bb690, default name '<unknown/control-scheme>') into *param_2. Errors 0x57/0x58/0xc. INPUT log. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.input_deserialise_control_scheme",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 C5 78 29 BC 24 60 04 00 00",
+  "match": "0x142a63340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a63340",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_DeserialiseControlScheme"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a63340",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a63340.c;xref:0x142a6a276",
+   "notes": "V4945 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_TrackingTimeSecondsFrameCount",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143092eb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143092eb0.c;pat:log-channel-NETWORK;xref:0x143092ea1,0x1430f332c",
+  "notes": "Tail jump from 0x143092b20 (setMyRaceStatus) and call from Game_NetworkSubsystem_OnSessionFinished 0x1430f3180. Logs 'reportNetworkStats, tracking time in seconds, frame count', inlined reportBandwidthStats (per data type average/peak bandwidth, player counts, race status, histogram) and resetNetworkStats. (lane owner review requested) Better name: Game_Network_ReportNetworkStats (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_tracking_time_seconds_frame_count",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 79 29 84 24 90 00 00 00",
+  "match": "0x143092eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143092eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_TrackingTimeSecondsFrameCount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143092eb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143092eb0.c;xref:0x142810a1f",
+   "notes": "V5299 better name Game_Network_ReportNetworkStats: 462-line reportNetworkStats/reportBandwidthStats/resetNetworkStats (bandwidth histogram); tracking-time line is one part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143092eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143092eb0.c;xref:0x142810a1f",
+   "notes": "V6964 462 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_DriverContractField_FromSaveNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c999d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Load_DriverContractField_FromSaveNode(void *comp, void *save_node)",
+  "evidence": "decomp:re/decomp/140c999d0.c;xref:0x140da7193,0x1410f9c41",
+  "notes": "Reader for 0x140c996a0's format: random_seed -> +0xa70, reroll_count -> +0x98, default_contract -> [+0x20] and fallback_contract -> new object at +0x50/+0x58 via 0x140c943f0, counteroffers rebuilt into +0x38..+0x40, then 0x140c993c0(this+0x30); TLS errors 0x57/0x58. (lane owner review requested) Better name: Career_ContractOffer_ReadSaveData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.load_driver_contract_field_from_save_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D7 49 89 CD",
+  "match": "0x140c999d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c999d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_DriverContractField_FromSaveNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c999d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c999d0.c;str:\"reroll_count\"",
+   "notes": "V9510 Is the load counterpart of 140c996a0: reads random_seed, reroll_count, default_contract, fallback_contract, counteroffers (errors 0x57/0x58); not a single driver contract field helper."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ActorNodeMat_BlackListByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f12750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f12750.c;pat:log-message-method;xref:0x1457f52f0",
+  "notes": "Renamed (was Game_ActorNodeMat_BlackListByName, a log fragment). Body read fully, vt cell 0x1457f52f0: registers self in [this+0x18]+0x58 table at index [[this+0x40]+0x58]+0xe8, subscribes MessageReplayPostDeserialisation (handler 0x142f132c0) via 0x143987810; then by node name: blacklisted material nodes -> indices in this+0x58 ('blackListByName [%s] matches [%s]'), anchor nodes -> {id,node} pairs in this+0x78 ('Anchoring to node' / 'Failed to find anchor node'); byte +0x90 -> 0x142f132d0. (lane owner review requested) Better name: Game_ActorNodeMat_InitNodeBindings (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.actor_node_mat_black_list_by_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 48 89 CE 48 8B 49 08",
+  "match": "0x142f12750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f12750",
+  "kind": "func_start",
+  "names": [
+   "Game_ActorNodeMat_BlackListByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f12750",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f12750.c",
+   "notes": "V5580 425-line anchor-node binding (anchor node logs, replay post-deserialisation message) with blacklist as a part; better Game_ActorNodeMat_BindAnchorsOnReplayDeserialise"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f12750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f12750.c",
+   "notes": "V6909 425 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

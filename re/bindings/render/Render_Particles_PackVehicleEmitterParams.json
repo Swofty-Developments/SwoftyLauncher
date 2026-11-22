@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_PackVehicleEmitterParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144705d80",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144705d80.c;xref:0x14463f24d,0x14463f2b4,0x14463f308,0x14463f35c",
+  "notes": "Packs one emitter record: byte 0 flags from param_3+0x20 bits and the slot byte +0x38 of [[*param_3]+0x5d0]+0xe8; rotated basis rows (+0x10/+0x20/+0x30) from the angle pair at param_3+0x1f8/+0x1fc and the 3x3 at [param_2+0x558]+0x190..+0x1bc; world position (+0x40) from local offsets param_3+0x300..+0x31c through the 4x4 at [[*param_3]+0x558]+0x1d0..+0x20c; ints at +0x60/+0x6c. Callers in Render_Particles_UpdateVehicleEffects. Not camera-relative. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.particles_pack_vehicle_emitter_params",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 0F B6",
+  "match": "0x144705d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144705d80",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_PackVehicleEmitterParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144705d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144705d80.c;xref:0x14463f24d",
+   "notes": "V7695 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

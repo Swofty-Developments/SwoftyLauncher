@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_RemovePlayerVehicleC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431407d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431407d0.c;pat:log-message-cxx;xref:0x1431407af,0x1431469d6",
+  "notes": "Read in full (this, key, u16 id): finds the key in map this+0x40 (0x143141940); if its id equals 'id': removes the stored customisation (0x1424773f0 on +0x28, id as kind | stat<<16) and on result 0/2/4 posts bus message 0x145824938 (Ne_Post_BusMessage 0x1439876c0), else logs 'Vehicle Customisation removal was unsuccessful!'; erases the key from map +0x40 (0x143211520) and erases the player's equal range from the decal tree +0xa8/+0xb0 (inline red-black erase, 0x143210b20 / 0x143210b70, count +0xb8). Callers 0x1431402a0, 0x143146890. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_remove_player_vehicle_c",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 44 89 C7",
+  "match": "0x1431407d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431407d0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_RemovePlayerVehicleC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431407d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431407d0.c;xref:0x1431407af",
+   "notes": "V5921 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

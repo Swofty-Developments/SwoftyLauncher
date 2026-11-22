@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InputModule_TakeSnapshot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a56310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-INPUT;decomp:re/decomp/142a56310.c;xref:0x141dbdda9,0x142a562fa,0x142a7d555,0x1434de6f5,0x1434df820,0x1434e0290,0x1434e03fc,0x1434e0433,0x1434e0c82",
+  "notes": "Whole body read: logs INPUT 'GameInputModule taking input snapshot' (0x1457bc834); collects device states (0xa8 stride) from devices in (this+0x28)->0x38 list via vfunc +0x28; per state finds device by id, vfunc +0x48 lists actions, +0x38 values into djb2(0x1505) hash set; allocates snapshot node from pool this+0xe0 (+8), copies state fields + name at +0x28, inserts keyed by djb2(name)+id, frees node on duplicate. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.input_module_take_snapshot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 89 8C 24 88 00 00 00",
+  "match": "0x142a56310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a56310",
+  "kind": "func_start",
+  "names": [
+   "Game_InputModule_TakeSnapshot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a56310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a56310.c;xref:0x141dbdda9",
+   "notes": "V5174 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

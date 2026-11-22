@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ChallengeCareerLeaderboardReader_HandleGetCCLeaderboardRe",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140add940",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140add940.c;pat:log-message-cxx;xref:0x140adc701,0x140ade34f,0x140ade94f,0x140adeea4",
+  "notes": "Name from __FUNCTION__ log string (LEADERBOARD). If the result error string (param_2+8, valid flag +0x88) is empty: builds a vector of entries from result+0xa0 (0x88 stride) via 0x140adc100 and stores result+0xb8 at reader+0x60, then frees the temp list; finally releases the pending op reader+0x80 (0x14443d110) and clears +0x78. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.challenge_career_leaderboard_reader_handle_get_cc_leaderboard_re",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00 49 89 D7 49 89 CC",
+  "match": "0x140add940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140add940",
+  "kind": "func_start",
+  "names": [
+   "Career_ChallengeCareerLeaderboardReader_HandleGetCCLeaderboardRe"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140add940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140add940.c",
+   "notes": "V4415 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140add940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140add940.c",
+   "notes": "V9039 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

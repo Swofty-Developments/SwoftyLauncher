@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_CountActiveEffects",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af95f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af95f0.c;xref:0x143af8db7,0x143b05b6c",
+  "notes": "Partitions the manager effect vector (+0x858e90): first moves effects with no emitter instances or first instance flag 8 to the front, then effects with id +100 < 0 or (id&0xfc)-4 < 0x1c; updates each effect index +0x58 and stores the total of both groups at +0x1052f0. Not a plain count. (lane owner review requested) Better name: Render_Particles_PartitionEffects (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.particles_count_active_effects",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 4C 8B 81 90 8E 85 00",
+  "match": "0x143af95f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af95f0",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_CountActiveEffects"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143af95f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af95f0.c;xref:0x143af8db7",
+   "notes": "V7869 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

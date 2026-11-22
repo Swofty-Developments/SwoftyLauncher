@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RendererGfxConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14014d230",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14014d230.c;pat:log-channel--;xref:0x1455ddc90",
+  "notes": "GameRendererModule vtable cell 0x1455ddc90 (0x1455ddc70+0x20). Gets 'GAME_RENDERER' allocator (+0x90; returns 0xe if missing), reads ~40 Renderer.Gfx.*/RearViewMirrors.*/RayTracing.ao config keys into this/globals, creates ego_package light/atlas buffers, 20 rttGenerator%d/rttShadowGen%d/rttCamera%d, subscribes DynamicResolutionMinimumScaleChange/MessageVehicleEnteredGarage/NeApplicationVisibilityChangedMessage via 0x143987810, returns 0. (lane owner review requested) Better name: Game_GameRendererModule_Init (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_renderer_gfx_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 03 00 00 C5 78 29 84 24 B0 03 00 00 C5 F8 29 BC 24 A0 03 00 00 C5 F8 29 B4 24 90 03 00 00 48 89 CE",
+  "match": "0x14014d230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14014d230",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RendererGfxConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14014d230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14014d230.c",
+   "notes": "V4308 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

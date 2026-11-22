@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NeUgc_SteamUGCGetQueryUGCTagSucceeded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441602f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441602f0.c;pat:log-channel-NeUgc;xref:0x14415d990",
+  "notes": "Query call-result handler (lea 0x14415d990). Result present and no IO failure: SteamUGC vslot +0x38 GetQueryUGCTag(handle,0,0,buf,0x40); tag found -> state 0 (Idle) and 0x14415dfa0; not found -> +0x58 = 0 and 0x14415f630 (create item). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ne_ugc_steam_ugc_get_query_ugc_tag_succeeded",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 48 85 D2 0F 84 ?? ?? ?? ?? 45 84 C0",
+  "match": "0x1441602f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441602f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NeUgc_SteamUGCGetQueryUGCTagSucceeded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1441602f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441602f0.c;xref:0x14415d992",
+   "notes": "V6564 size=450; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,112 @@
+{
+ "schema": 1,
+ "name": "site_Sess_MarshalLights_PrevLightLoad",
+ "table": "globals",
+ "author": "marshal-lights",
+ "row": {
+  "addr": "0x142c76f37",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own capstone disasm 0x142c76da0-0x142c772c9 (Sess_MarshalLights_AssignToZones, .pdata 0x142c76da0-0x142c772c9);xref:0x142c76f32,0x142c77243,0x142c76f4b,0x142c7745d",
+  "notes": "mov rax,[rbp-8] in Sess_MarshalLights_AssignToZones (+0x197), 4 bytes, then mov r13,rbp; add r13,-8; vmovss [rax+0x34],xmm7 (+0x1a2); cmp r13,[rsi+0x68]; je +0x4a8. The step of the back-to-front walk over the light list (rsi = MarshalLightsSystem, list begin [rsi+0x68], end [rsi+0x70]): reached by jmp from +0x4a3 after a light got a zone (rbp = r13, one past it) and by fall-through after a light in no zone was erased (memmove at +0x18d, end -= 8 at +0x192, rbp = the erased light's slot). It loads the light before rbp and stores the walk's lap fraction (xmm7) at its +0x34. When the erased light was the first one, rbp == [rsi+0x68] and [rbp-8] is the 8 bytes before the list's block: 0 in all three crash reports (ACCESS_VIOLATION writing 0x34 at +0x1a2, F1_25.exe+0x2c794d2 on Steam 26566308, rbp = list begin, 7 lights left, capacity 42); a non-zero value would be written to and the walk would go on below the list (r13 = begin-8 never equals begin). No branch lands in +0x198..+0x19d."
+ },
+ "signature": {
+  "id": "session.marshal_lights_prev_light_load",
+  "section": ".xtls",
+  "pattern": "48 83 46 70 F8 48 8B 45 F8 49 89 ED",
+  "match": "0x142c76f32",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c76f37",
+  "kind": "mid",
+  "expect": "48 8B 45 F8 49 89 ED",
+  "names": [
+   "site_Sess_MarshalLights_PrevLightLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "marshal-lights",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/marshal_lights_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-21",
+   "verifier": "marshal-lights-blind",
+   "kind": "global",
+   "item": "site_Sess_MarshalLights_PrevLightLoad",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142c76da0-0x142c772c9;xref:0x142c76f32,0x142c77243,0x142c76f4b,0x142c7745d,0x14e5d4013",
+   "notes": "gh:marshal-lights-blind Own capstone disasm of the whole function on the KB exe (.pdata 0x142c76da0-0x142c772c9, .xtls). 0x142c76f37 = +0x197 mov rax,[rbp-8] (4 bytes), then mov r13,rbp (+0x19b, 3 bytes; the 7 expect bytes are exactly these two instructions, neither rip-relative), add r13,-8, vmovss [rax+0x34],xmm7 at +0x1a2, cmp r13,[rsi+0x68], je +0x4a8. rsi = rcx at entry and never written again; both callers (0x142c7745d in .xtls, 0x14e5d4013 in .data1) pass the same object (light list at +0x68/+0x70). Paths in: fall-through after the erase (lea rbp,[r13-8] at +0x390; je to +0x180 from +0x3a5 empty zone list and +0x3d2 no zone matched; Ne_Crt_Memcpy(rbp, r13, end-r13) at +0x18d, overlap-safe; [rsi+0x70] -= 8 at +0x192) with rbp = the erased slot, and jmp from +0x4a3 after mov rbp,r13 at +0x4a0 (zone found) with rbp one past the light. All 57 branches in the function are direct and land on instruction boundaries, none in +0x198..+0x19d; no rel32 (every executable section), abs64 or rva32 reference to 0x142c76f38..0x142c76f3d in the image (disp32 hits at 0x142c76ead/0x142c76eb9 are [rsi+0x88]/[rsi+0x80] operands). r13 = begin-8 never equals begin. rsp is constant between prologue and epilogue. Pattern unique in KB .xtls (sigcheck OK) and whole-file unique on Steam 26566308 (.tls$ 0x2c794c2), EA 1.0.145 dump (0x2c6d212) and EA 1.0.141 dump (0x2c6ac82), equal to the overlay hints; the function body (318 instructions, same 57 branch offsets) is identical in all four. Crash reports crash-20261118-232030 (ashton) and crash-20261120-231438 (case 1573567766127190156): rax=0, rbp=rcx=[rsi+0x68], [rsi+0x70]=rbp+0x38 (7 lights), [rsi+0x78]=0x2a; crash-20261120-011814 (case 1573336827539230822) was cut from its bundle, its loader log shows rax=0, rbp=rcx, rdx=rbp+8, r8=0x38."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "marshal-lights",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c76f32",
+    "target": "0x142c76f37"
+   },
+   "sigcheck": "passed",
+   "digest": "cf5945273b3eb640d2cbe2083c0fec3b0c1c232b2d9f4ff54b884addb47686b9"
+  },
+  {
+   "by": "marshal-lights",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c794c2",
+    "target": "0x142c794c7"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a4901b87e998e879abc5093eacdef521215f9997421248f49db4913430513e49"
+  },
+  {
+   "by": "marshal-lights-blind",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c76f32",
+    "target": "0x142c76f37"
+   },
+   "sigcheck": "passed",
+   "digest": "cf5945273b3eb640d2cbe2083c0fec3b0c1c232b2d9f4ff54b884addb47686b9"
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneComponent_SpawnComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428f19c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428f19c0.c;pat:log-message-method;xref:0x1457b6618",
+  "notes": "Vtable cell 0x1457b6618 (neighbour 0x1457b6610 = Spawn 0x1428efd50). Passes 'spawnComplete' (0x1457aee84) to log. When scene mgr (this+0x98) +0x1048/+0x1049 == 4: if scene/subscene request changed -> logs, state +0xb0 -> eIdle, calls 0x1428f0cf0 (refresh); else logs 'Scene is ready to show', posts active names+0x120/0x124 via 0x1429f8ca0, +0xb4=0, returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_component_spawn_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 8B B9 98 00 00 00",
+  "match": "0x1428f19c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428f19c0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneComponent_SpawnComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428f19c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428f19c0.c",
+   "notes": "V5154 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

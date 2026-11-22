@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ThrowLengthError_1421288a0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1421288a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void (void)",
+  "evidence": "decomp:re/decomp/1421288a0.c;xref:0x141ee593c,0x141ee723b,0x141eea2fc",
+  "notes": "Noreturn: calls Ne_Std_ThrowExceptionNoReturn 0x1449e16b4 with 'invalid vector subscript' (0x1456de550), then int3. Callers Career_MyTeamAccolades_Page, Career_MyTeamAccolades_PageAlt, 0x141ee65a0, 0x141eeadd0. Better name: Ne_Std_ThrowInvalidVectorSubscript_1421288a0 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.std_throw_length_error_1421288a0",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 56 57 53 48 83 EC 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 20 04 00 00",
+  "match": "0x1421288a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1421288a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ThrowLengthError_1421288a0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1421288a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1421288a0.c;xref:0x141ee593c",
+   "notes": "V10058 Noreturn throw thunk confirmed, but message is \"invalid vector subscript\", not a length error; name should be vector-subscript throw."
+  }
+ ],
+ "proofs": []
+}

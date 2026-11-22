@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_SelectScrapeEffect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144704740",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144704740.c;pat:log-channel-PARTICLES_C;xref:0x14463c5f7",
+  "notes": "Rename: constructs a 0xb0-byte entry with three 0x20-char strings read from the PARTICLE node of param_2 (keys name, effect, scrapeEffect) and an int priority; remembers entries with ids CARB/CARC/PLNC/PLNW/PLNK (FourCC *param_3) in globals 0x146ce83f0..0x146ce8418; logs mat %s effect name %s scrape %s priority %d (PARTICLES_C). Registered as a callback by Game_RacingVehicles_Initialise (lea 0x14463c5f7, 0xb0-byte list entries). (lane owner review requested) Better name: Render_Particles_ParseSurfaceParticleEntry (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.particles_select_scrape_effect",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 D0 48 89 CE 41 8B 08 81 F9 42 41 52 43",
+  "match": "0x144704740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144704740",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_SelectScrapeEffect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "pl-verify",
+   "kind": "func",
+   "item": "Render_Particles_SelectScrapeEffect",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144704740.c;xref:0x145c01852",
+   "notes": "V3933 claim 8"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x144704740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144704740.c",
+   "notes": "V4147 scrape/priority log string confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

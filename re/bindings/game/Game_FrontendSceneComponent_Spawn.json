@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneComponent_Spawn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428efd50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428efd50.c;pat:log-message-method;xref:0x1457b6610",
+  "notes": "MAINSCENE component vtable cell. Main scene name +0xc0 != current +0x108: logs 'Spawning scene', inlined spawnMainScene on system +0x98 (scene map +0x1000, subscene/camera lookup with fallback), result +0x1050..+0x1068 copied to this+0x130..+0x148, ret 1. Else subscene 0x1428be0f0 / camera 0x1428efa50, then refreshActiveScene 0x1428f0cf0; ret 1 while new subscene inactive, else 0x1428f17d0, ret 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_component_spawn",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 30 07 00 00",
+  "match": "0x1428efd50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428efd50",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneComponent_Spawn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428efd50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428efd50.c",
+   "notes": "V5152 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

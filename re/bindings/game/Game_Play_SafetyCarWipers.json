@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Play_SafetyCarWipers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a01bd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Play_SafetyCarWipers(void *self)",
+  "evidence": "decomp:re/decomp/140a01bd0.c;xref:0x14039dfec",
+  "notes": "If [this+0xe30] exists and this+0x6c == 0, calls its vfunc +0x10 with 'play_mech_safety_car_wipers'. Caller 0x14039aa80 (site 0x14039dfec). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.play_safety_car_wipers",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 89 C8 48 8B 89 30 0E 00 00",
+  "match": "0x140a01bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a01bd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Play_SafetyCarWipers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140a01bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a01bd0.c",
+   "notes": "V4389 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeViewModel_OnSelectionChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d05b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d05b80.c;pat:log-message-cxx;xref:0x141cef7a5",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int -> this+0x848, keeps a ref to the value at +0x830..+0x840; bound flag +0x908 = (selection not 3/4); refresh 0x141ced320; system+0x2d14 = selection; 0x141ced190. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_view_model_on_selection_changed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 83 7A 08 0A 0F 85 ?? ?? ?? ?? 48 89 D3 48 89 CE",
+  "match": "0x141d05b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d05b80",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeViewModel_OnSelectionChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141d05b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d05b80.c;xref:0x141cef7a7",
+   "notes": "V4969 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HandleRaceStatusMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143091c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143091c40.c;pat:log-message-method;xref:0x143055498",
+  "notes": "Only ref: the lea at 0x143055498 in 0x143054470 (handler registration). (this, msg): msg+0x10 peer, +0x11 status, +0x14 sessionId; logs 'handleRaceStatusMessage: Received race status'; updates or inserts (0x143203110/0x1432036f0) the peer's 0xc-byte entry in the hash map this+0x40..+0x74, queues event 0x145823668 (Ne_Event_Set); for the local peer sets [..]+0x38 = (status == 8), else stores a timestamp in the peer's connection record. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_handle_race_status_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 44 0F B6 4A 10",
+  "match": "0x143091c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143091c40",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HandleRaceStatusMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143091c40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143091c40.c;xref:0x14305549a",
+   "notes": "V5296 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_RivalryIntensityChangedTo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407474b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407474b0.c;pat:log-channel-TELEMETRY;xref:0x1406eb7b4,0x14070795f",
+  "notes": "Bus handler: lea 0x1406eb7b4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x14070795f in unsubscribe-all 0x1406fd6c0. Allocs 0xb8 record (ctor 0x14057f910), copies msg fields, baseCtx by 0x14077bb90 'rivalry_intensity_changed_record', pushed to static queue (guard 0x14604de48) under CS; logs TELEMETRY 'Rivalry intensity changed to %s'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_rivalry_intensity_changed_to",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 D6 48 89 CF 48 8B 81 58 0A 02 00",
+  "match": "0x1407474b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407474b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_RivalryIntensityChangedTo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407474b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407474b0.c",
+   "notes": "V4231 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

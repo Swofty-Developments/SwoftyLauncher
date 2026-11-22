@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_RestartVote",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14308c4f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14308c4f0.c;pat:log-message-method;xref:0x14580f518,0x14580f7f8",
+  "notes": "Slot 5 (+0x28) of vtables 0x14580f4f0 and 0x14580f7d0; no direct calls. In the right state calls 0x14308c6c0(this, 0), recomputes the end time +0x68 = now_us/1e6 + float +0x60 and 0x14308c360(this, ...); else logs 'restartVote() : Trying to restart a vote in the wrong state'. (lane owner review requested) Better name: Game_NetworkVoting_RestartVote (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_restart_vote",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 83 79 10 01 0F 85",
+  "match": "0x14308c4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14308c4f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_RestartVote"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x14308c4f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14308c4f0.c;xref:0x1518b40dc",
+   "notes": "V5291 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

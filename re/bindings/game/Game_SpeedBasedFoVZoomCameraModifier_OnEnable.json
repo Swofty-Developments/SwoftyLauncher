@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SpeedBasedFoVZoomCameraModifier_OnEnable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14456bc80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14456bc80.c;xref:0x145bebc80",
+  "notes": "SpeedBasedFoVZoomCameraModifier: this+0x40 = 0, Car (VehicleComponent+0x58) -> this+0x48; missing VehicleComponent/Car -> warning + 0x57. Camera component onEnable (slot next to the class-name string): binds target entity components via Ne_Entity_FindComponent(target+0x200, type); logs CAMERA warning Problem enabling camera component and returns 0x57 when missing, else 0. Type ids: 0x146ce6690 VehicleProgressComponent, 0x146ce8b40 VehicleDataComponent, 0x146ce8b00 VehicleComponent (its +0x58 = Car). Addon: speed-dependent FOV zoom of chase/onboard cams (state float +0x40). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2350)"
+ },
+ "signature": {
+  "id": "game.speed_based_fo_v_zoom_camera_modifier_on_enable",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CF C7 41 40 00 00 00 00",
+  "match": "0x14456bc80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14456bc80",
+  "kind": "func_start",
+  "names": [
+   "Game_SpeedBasedFoVZoomCameraModifier_OnEnable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_SpeedBasedFoVZoomCameraModifier_OnEnable",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14456bc80.c;xref:0x14456bc80",
+   "notes": "V2350 +0x40=0, VehicleComponent+0x58 Car -> +0x48, 0x57 if missing"
+  }
+ ],
+ "proofs": []
+}

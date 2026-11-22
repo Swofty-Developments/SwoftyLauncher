@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UdpTelemetryV_OnUDPPreferencesChangedMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d04790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d04790.c;pat:log-message-method;xref:0x142d05e24,0x142d0699c",
+  "notes": "Handler (registered by lea at 0x142d05e24, 0x142d0699c): logs channel UDP-TELEMETRY/V 'onUDPPreferencesChangedMessage() calls refreshTelemetryPreferences()' and calls 0x142cf95d0(this) (the refreshTelemetryPreferences step). No other work in the body. (lane owner review requested) Better name: Game_UdpTelemetry_OnUDPPreferencesChangedMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.udp_telemetry_v_on_udp_preferences_changed_message",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 1C 00 00 00",
+  "match": "0x142d04790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d04790",
+  "kind": "func_start",
+  "names": [
+   "Game_UdpTelemetryV_OnUDPPreferencesChangedMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d04790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d04790.c;xref:0x142d05e26",
+   "notes": "V5368 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

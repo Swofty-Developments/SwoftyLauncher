@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Leaderboards_OnDiscoverFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143150520",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143150520.c;pat:log-message-method;xref:0x1430e6cef",
+  "notes": "onDiscoverFinished callback (fn ptr lea 0x1430e6cef). (ctx, .., status, .., result): clears +0x10. status 0: entry [[result+8]]; time +0x10 != wanted rating +0x290 -> logs '...not matching rating(%d ms). Search again.' and takes the retry path; match -> logs 'discovered', rank entry+8 -> +0x218, +0x1c=1, +0x210=1, +0x220=0. status 1 (retry): QPC -> +0x270 (+0x278), +0x288=1 (old value returned). Other: +0x218=0, done. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.leaderboards_on_discover_finished",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 C7 41 10 00 00 00 00",
+  "match": "0x143150520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143150520",
+  "kind": "func_start",
+  "names": [
+   "Game_Leaderboards_OnDiscoverFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143150520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143150520.c;xref:0x1430e6cf1",
+   "notes": "V5970 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

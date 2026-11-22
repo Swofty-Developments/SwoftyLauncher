@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_CreateLocalUserPlayFabParty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14409f370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14409f370.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x14409ec5c,0x1440a0f84",
+  "notes": "Logs 'initialiseInternal' (Initialise PlayFabParty manager) then 'createLocalUser' (Create local user for PlayFabParty / already created / failed). (lane owner review requested) Better name: Game_NetworkTransportPlayFab_InitialiseInternal (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_transport_create_local_user_play_fab_party",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 50",
+  "match": "0x14409f370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14409f370",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_CreateLocalUserPlayFabParty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14409f370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14409f370.c;xref:0x14409ec5c",
+   "notes": "V6535 size=783; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

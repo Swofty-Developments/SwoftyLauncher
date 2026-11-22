@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_ReceiveResourceCreatedMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a62d90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a62d90.c;pat:log-message-method;xref:0x143a60eca",
+  "notes": "Bus handler: logs EGO_ERP_LOADER_VERBOSE 'receiveResourceCreatedMessage'; for the resource msg+0x10 frees fragments (32-byte records at +0x38, count byte +0x20) tagged 'tmp0'/'temp'/'tmp1' via allocator [this] vcall +0x38 and nulls them; if msg+0x18 == 0 and status byte +0x22 != 4 sets status 3 and loader +0x3f4 = 1. Returns 0. Fn ptr taken by lea in 0x143a60bc0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_receive_resource_created_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 A4 00 00 00",
+  "match": "0x143a62d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a62d90",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_ReceiveResourceCreatedMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a62d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a62d90.c;xref:0x1435a0947",
+   "notes": "V6420 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

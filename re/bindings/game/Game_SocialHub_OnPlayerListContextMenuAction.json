@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SocialHub_OnPlayerListContextMenuAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c37970",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c37970.c;pat:log-message-method;xref:0x141c36938,0x145744810,0x14574fd10,0x145750030,0x1457509b0,0x145750e00,0x145751250",
+  "notes": "Called at 0x141c36938; also in view-model vtable cells (xref). Logs SOCIAL_HUB \"onPlayerListContextMenuAction(%s, %s, %s)\" (action name table 0x145719a98[param_2], player id string, name). Only action 2 acts: unless global 0x14604ea28+0x38 or session flag +0x750 blocks, finds player param_3 in tree +0x11c0, stores its name into [this+0x1190]+0x480 and fires UI event go_to_superlicence_comparison via [this+0x620] vcall +0x80. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.social_hub_on_player_list_context_menu_action",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC D0 00 00 00 4C 89 C7",
+  "match": "0x141c37970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c37970",
+  "kind": "func_start",
+  "names": [
+   "Game_SocialHub_OnPlayerListContextMenuAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c37970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c37970.c;xref:0x141c36938",
+   "notes": "V4943 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

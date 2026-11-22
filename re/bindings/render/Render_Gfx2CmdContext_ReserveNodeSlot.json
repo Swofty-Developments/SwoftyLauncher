@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2CmdContext_ReserveNodeSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439b9040",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439b9040.c;xref:0x143a00322,0x143a0638a,0x143a07d54",
+  "notes": "Under CS +0x28 pops a node from stack +0x10..+0x18, tracks low watermark (0x2000-left) in 0x14618c0c4; if param_2 takes two indices from counter +0x58 into node +0x24/+0x28 else -1; resets node, +0x20 from [0x14618caa8]+0xa38. Empty pool: error 0xc once (+0x5d), returns 0. Callers Render_Gfx_EndCommandContext, AllocCommandNodeA, PushProfileMarker. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx2_cmd_context_reserve_node_slot",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D3 48 89 CE 48 8B 49 28",
+  "match": "0x1439b9040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439b9040",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2CmdContext_ReserveNodeSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439b9040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439b9040.c;xref:0x143a00322",
+   "notes": "V8497 critical section +0x28, fields +0x10/+0x18/+0x5d, ENOMEM trace; callers EndCommandContext, AllocCommandNodeA, PushProfileMarker"
+  }
+ ],
+ "proofs": []
+}

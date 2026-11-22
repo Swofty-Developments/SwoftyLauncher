@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_Persistent",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14585cbb0",
+  "type": "vtable[16]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/150f77130.c;pat:flow-state-type-record;decomp:re/decomp/1437b5e20.c;xref:0x1437b5e2b,0x150f771a9",
+  "notes": "cxx=StatePersistent; 16 slots (next vtable at +0x80, lea 0x150f77497). Slot 0 -> type record 0x1461020b8, +8=name set by static init 0x1437c1990 at 0x1437c2646. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436e5850/0x1436e6d20/0x1436e6d60. Ctor 0x150f77130 (lea 0x150f771a9; mov [rsi],rax). Also loaded by 0x1437b5e20 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.persistent",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 81 C1 58 0F 00",
+  "match": "0x1437b5e2b",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14585cbb0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_Persistent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14585cbb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1437b5e2e",
+   "notes": "V7483 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

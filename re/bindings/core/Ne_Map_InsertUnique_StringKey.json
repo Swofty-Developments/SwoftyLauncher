@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_InsertUnique_StringKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f342d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Map_InsertUnique_StringKey(void *map, void *out_it, void *key_node)",
+  "evidence": "decomp:re/decomp/140f342d0.c;xref:0x140e6dad9;xref:0x140e6dd40;xref:0x140e6decb",
+  "notes": "myteam-g2: Red-black tree unique insert keyed by C string (Ne_Crt_Strcmp, throws Ne_Std_ThrowMapSetTooLong when full); returns iterator + inserted flag. Generic std::map insert used by the event-param type registration."
+ },
+ "signature": {
+  "id": "core.map_insert_unique_string_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4D 89 C6 48 89 D6",
+  "match": "0x140f342d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f342d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_InsertUnique_StringKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f342d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f342d0.c;xref:0x140e6dad9",
+   "notes": "V9573 Unique insert into tree keyed by C string (Ne_Crt_Strcmp), 0x148-byte node, max-size check 0xc7ce0c7ce0c7ce; returns iterator+flag."
+  }
+ ],
+ "proofs": []
+}

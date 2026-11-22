@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_EventParamVec_Push_DecalEditorFinish",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1408f1510",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1408f1510.c;xref:0x140750192,0x140750215,0x1408f0a7e",
+  "notes": "Move push_back on vector {alloc*,begin,end,cap(count)} of 24-byte elements {u64,u32,owned ptr}: grows x1.5 via alloc vcall +0x18, moves elements, releases old owned ptrs (vcall +0x28(p,1)), frees old block (alloc vcall +0x38). Decomp identical to the other 6 clones in this batch. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_event_param_vec_push_decal_editor_finish",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 5C 24 40 49 8B 4E 70 FF 15 ?? ?? ?? ?? 48 85 DB 74 0E 48 8B 03 48 89 D9 BA 01 00 00 00 FF 50 28 80 3D ?? ?? ?? ?? 01 75 71",
+  "match": "0x140750215",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1408f1510",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_EventParamVec_Push_DecalEditorFinish"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1408f1510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1408f1510.c;xref:0x140750192",
+   "notes": "V8068 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

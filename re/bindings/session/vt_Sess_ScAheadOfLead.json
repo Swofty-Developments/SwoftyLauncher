@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_ScAheadOfLead",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145851d30",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1435f81a0.c;decomp:re/decomp/1435f81a0.c;xref:0x1435f906b,0x14361bd10",
+  "notes": "SC condition class 'Ahead Of Lead' (name string before the vtable; type descriptor 0x145f96c98 at object+0x28). 11 slots, then 0 and the secondary vtable 0x145851d90 (stored at object+0x40). Slots 3/4 0x14361bbb0/0x14361bbc0 = shared condition base. Ctor 0x1435f81a0 (lea 0x1435f906b; mov [r15],rax). Also loaded by 0x14361bd00 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.sc_ahead_of_lead",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 49 89 07 48 8D 05 ?? ?? ?? ?? 49 89 47 40 C4 C1 78 11 47 68 C4 C1 78 11 47 58 C4 C1 78 11 47 78",
+  "match": "0x1435f906b",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145851d30",
+  "kind": "data",
+  "names": [
+   "vt_Sess_ScAheadOfLead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "global",
+   "item": "0x145851d30",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_e/decomp/1435f81a0.c;decomp:work/verify_e/decomp/14361bd00.c;xref:0x1435f906b,0x14361bd10",
+   "notes": "V1083 factory 1435f81a0 allocs 200 bytes, stores vt + secondary vt 0x145851d90 at +0x40 and type key 0x145f96c98 -> 'Ahead Of Lead' (string at 0x145851d20 just before vt) -> class agrees; differs: 11 code slots (slot10=0x14361dac0, a function start) before the 0 gap at 0x145851d88, so vtable[11] not [10]"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "bind7-verify",
+   "kind": "global",
+   "item": "vt_Sess_ScAheadOfLead",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x1435f906b",
+   "notes": "V1782 11 code slots, slot 10 0x14361dac0; factory 0x1435f8ff1, dtor 0x14361bd00"
+  }
+ ],
+ "proofs": []
+}

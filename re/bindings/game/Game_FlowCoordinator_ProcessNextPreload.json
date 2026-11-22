@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowCoordinator_ProcessNextPreload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143854570",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143854570.c;pat:log-message-cxx;xref:0x143857137,0x151879e2d,0x15187f50d",
+  "notes": "Own strings 'TEMP_LOG: FlowCoordinator::processNextPreload() ...' (FLOW/V). If this+0x4c counter >0 decrements; queue empty (this+0x58/0x60) -> runs completion callbacks this+0x78..0x80, state +0x40=+0x44=+0x3c. Else pops 0x30-byte task, switch type 0 eLoad/2 eUnload (flow table 0x1461038e0 stride 200, re-registers itself as callback), 1/3 Load/UnloadElements, 4 FunctionCallback, 5/6 Region(Un)load. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.flow_coordinator_process_next_preload",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 44 89 C7 48 89 D3",
+  "match": "0x143854570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143854570",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowCoordinator_ProcessNextPreload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143854570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143854570.c;xref:0x1438544c5",
+   "notes": "V6322 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

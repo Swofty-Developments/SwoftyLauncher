@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StartLights_SetSequenceState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cd7120",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cd7120.c;xref:0x142c1965d,0x14327381b",
+  "notes": "(lights, newState, mode, count): if newState and old state +0x29 == 0: Game_StartLights_ResetSequence(mode) and posts message vt 0x1457e4ba8 (0x142dd2100). Old state 3: lights off; old 4 with mode 2: blink = elapsed/freq <= +0xbb8 (stored +0x80) via ApplyLightNodes; for newState != 4 ApplyLightNodes(count or 0, flagB = mode 2 && count); if old != 4: 0x142cd5a50. Stores +0x29=newState, +0x28=mode, +0x7c=count. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.start_lights_set_sequence_state",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 44 89 CE 44 89 C3 89 D5",
+  "match": "0x142cd7120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cd7120",
+  "kind": "func_start",
+  "names": [
+   "Game_StartLights_SetSequenceState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142cd7120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cd7120.c;xref:0x142c1965d",
+   "notes": "V7553 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

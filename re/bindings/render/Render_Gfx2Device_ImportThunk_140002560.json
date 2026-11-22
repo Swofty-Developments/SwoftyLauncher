@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_ImportThunk_140002560",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140002560",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140002560.c;xref:0x1439c922a,0x1439ca5a4",
+  "notes": "Lazy import wrapper: bumps in-flight counter 0x145fb8734, gate 0x140002190, resolves target once via resolver 0x145fb8758(hash 0x78dba2) into cache 0x145fb8890, optional pre/post hooks 0x145fb8768/0x145fb8770, forwards 4 args, returns status or 0xfffffffd if unresolved. In 0x1439c8d00 called per GPU handle with an array of 0x30010-versioned records + count; returned ids feed 0x1400027f0. (lane owner review requested) Better name: Render_NvApi_GpuGetConnectedDisplayIds (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_device_import_thunk_140002560",
+  "section": ".xtls",
+  "pattern": "48 89 6C 24 10 48 89 74 24 18 48 89 7C 24 20 41 54 48 83 EC 30 41 8B F9",
+  "match": "0x140002560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140002560",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_ImportThunk_140002560"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x140002560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140002560.c;xref:0x1439c922a",
+   "notes": "V8428 lazy import thunk hash 0x78dba2, call counter, resolver 145fb8758; callers ApplyMultiGpuMode and 0x1439ca5a4 match"
+  }
+ ],
+ "proofs": []
+}

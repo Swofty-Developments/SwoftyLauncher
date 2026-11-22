@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionSeasonDocument_OnRequestSessionData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a5980",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430a5980.c;pat:log-message-cxx;xref:0x14580faf0",
+  "notes": "Vtable cell 0x14580faf0. Logs NETWORK/F 'GameSessionSeasonDocument::onRequestSessionData(%d)' (connection p2). Only as host (state p1+8 <= 1): copies the component list [[p1+0x420]+0x4f8]+0x1320..+0x1328 and for each component (vt+600) serialises each of its vt+8 chunks via vt+0x10 into a bit buffer, logs '  Component %08lX with %d bytes of data', copies the bytes into a message (0x1458242f0/0x1458238c0, type 7, component id, chunk index, bit count) and sends it to p2 via [[p1+0x420]+0x3d0] 0x14402e500(...,2,msg,0,p2). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_season_document_on_request_session_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 05 00 00 C5 F8 29 BC 24 80 05 00 00",
+  "match": "0x1430a5980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a5980",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionSeasonDocument_OnRequestSessionData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a5980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a5980.c",
+   "notes": "V5320 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

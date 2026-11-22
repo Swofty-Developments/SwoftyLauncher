@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSync_AdvanceChassisPhysics",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143274180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143274180.c;pat:log-message-cxx;xref:0x143261fe6",
+  "notes": "Read in full. Address taken by lea 0x143261fe6 in 0x143261250. Needs flags +0x7c bits 0+1: target time = clock [[+0x58]+8] + clamped offset (+/-0.05 s, cfg 0x1460bff80+0x718) - delay +0x298; history lag limit cfg +0x734; 0x143271400 samples history into a NetworkProgress (0xd2 B copied to +0xd8); if far from the chassis (cfg +0x728/+0x72c/+0x730 * speed) teleports via 0x14473d810 with logs; fills param_3 (pos/orient/vel, scaled gains cfg +0x748..+0x75c), returns 1; failure logs, resets state, returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_sync_advance_chassis_physics",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 04 00 00 C5 78 29 BC 24 F0 03 00 00",
+  "match": "0x143274180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143274180",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSync_AdvanceChassisPhysics"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143274180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143274180.c;xref:0x143261fe9",
+   "notes": "V5839 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

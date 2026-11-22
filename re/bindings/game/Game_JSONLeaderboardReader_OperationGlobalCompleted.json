@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_JSONLeaderboardReader_OperationGlobalCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fbbc80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fbbc80.c;pat:log-message-cxx;xref:0x142fbab07",
+  "notes": "Same body as OperationFriendsCompleted (0x142fbb880) except the mode check (+0x3c == 0) and its own strings ('operationGlobalCompleted() with %d results...' / 'with error %s: %s'). Fn ptr lea'd at 0x142fbab07 in StartOperation 0x142fba740 as the callback of the ranked (non-friends) request. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.json_leaderboard_reader_operation_global_completed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 78 48 89 D7 48 89 CE 48 8B 49 78 48 8B 96 C0 00 00 00 E8 ?? ?? ?? ?? 85 C0 0F 85 ?? ?? ?? ?? 8B 86 A0 00 00 00 3B 86 E8 00 00 00 0F 85 ?? ?? ?? ?? 0F B6 86 A4 00 00 00 3A 86 EC 00 00 00 0F 85 ?? ?? ?? ?? 80 7E 3C 00",
+  "match": "0x142fbbc80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fbbc80",
+  "kind": "func_start",
+  "names": [
+   "Game_JSONLeaderboardReader_OperationGlobalCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fbbc80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fbbc80.c;xref:0x142fbab09",
+   "notes": "V5712 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

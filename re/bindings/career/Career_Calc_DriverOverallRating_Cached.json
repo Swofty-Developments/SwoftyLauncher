@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_DriverOverallRating_Cached",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d7f0d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint16_t *Career_Calc_DriverOverallRating_Cached(void *comp, uint16_t *out, uint32_t driver_key)",
+  "evidence": "decomp:re/decomp/140d7f0d0.c;xref:0x140d794b4,0x140d79eee,0x140d7c262,0x140d7dd12,0x140d7dff4,0x140d7f95c,0x140d7fd9f,0x140d80ff1,0x140d83505,0x140d8351e,0x140d835f5,0x140d8360e,0x140ddb7b8,0x140dddf2d,0x140dde32d,0x140e58009,0x140e60ea7,0x14106621c,0x1410666bc,0x141069f26,0x14187950f,0x1422ef728",
+  "notes": "Out {u16,has}: settings 0x140d82070 must be valid, key top16 != 0x3fff; finds driver row in [[this+0x278]+0x2e0..+0x2e8] (0x88 stride, +0x52/+0x50); rating = 0x14113d120([this+0x360]); flag = 0x140d822a0 (no +0x4b&0x10) or rating <= days-[this+0x2d0]; band 0x200 if rating >= thr1, 0x100 if >= thr2; out = flag|band. Not a cached overall rating. (lane owner review requested) Better name: Career_DriverMarket_GetDriverRatingBand (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.calc_driver_overall_rating_cached",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 C5 48 89 D6 48 89 CF 48 8D 54 24 24",
+  "match": "0x140d7f0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d7f0d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_DriverOverallRating_Cached"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d7f0d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d7f0d0.c",
+   "notes": "V9533 Does call Career_Get_DriverOverallRating (14113d120) but returns a small result (bool | threshold bucket 0x100/0x200 plus validity byte) from comparing the rating, not the rating itself."
+  }
+ ],
+ "proofs": []
+}

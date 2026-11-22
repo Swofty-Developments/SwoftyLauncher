@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ContentDomainVerifier_DeletePlayerConnectionID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303cbb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14303cbb0.c;pat:log-message-cxx;xref:0x14303d4c4,0x14305ab27",
+  "notes": "Own log. Clears bit id in +0x118 and +0x120, +0x12b = changed; on change clears the bit in every peer record (+0x30..+0x38, field +0x28); byte list +0x90[id] = 0xff. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.content_domain_verifier_delete_player_connection_id",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CF 80 3D ?? ?? ?? ?? 01 0F B6 F2 75 6F B8 B1 00 00 00",
+  "match": "0x14303cbb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303cbb0",
+  "kind": "func_start",
+  "names": [
+   "Game_ContentDomainVerifier_DeletePlayerConnectionID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303cbb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303cbb0.c;xref:0x14303d21e",
+   "notes": "V5446 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

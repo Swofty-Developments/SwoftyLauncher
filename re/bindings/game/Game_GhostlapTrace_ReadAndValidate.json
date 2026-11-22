@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostlapTrace_ReadAndValidate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f8a730",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f8a730.c;pat:log-message-method;xref:0x142f8ad2b,0x142f8b0a5,0x142f98730,0x142f9dab6",
+  "notes": "readAndValidate(D,stream,ctx): deserialise 0x142f8a400 (its error returned); version D+0 > ctx+0x88 -> 0x49; reset table ctx+0x98..+0xa0 check logs only; size D+4 <1 -> 0x16, > 0xC800 -> 0x37, > stream remaining -> 0x16; if D+0x70 != 0x4fffffff the sectors D+0x74/+0x78/+0x7c must be > 0 and sum within 10 ms of D+0x70&0xbfffffff, else 0x16. Callers 0x142f8ac70, 0x142f8afc0, 0x142f98320, 0x142f9d860. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ghostlap_trace_read_and_validate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 4D 89 C6 48 89 D6",
+  "match": "0x142f8a730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8a730",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostlapTrace_ReadAndValidate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f8a730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f8a730.c;xref:0x142f8ad2b",
+   "notes": "V5689 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

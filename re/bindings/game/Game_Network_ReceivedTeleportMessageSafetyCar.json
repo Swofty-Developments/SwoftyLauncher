@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ReceivedTeleportMessageSafetyCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143609c50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143609c50.c;pat:log-channel-NETWORK;xref:0x143607868",
+  "notes": "Logs \"[SAFETY_CAR] received Teleport message for safety car index: %d\" (msg+0x10) when this+8 < 2, then tail-jumps (jmp 0x143609ce6) to 0x143609cf0 with msg+0x14 as payload. Decomp shows the jumped-to body inline. (lane owner review requested) Better name: Game_Network_SafetyCar_OnTeleportMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_received_teleport_message_safety_car",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 83 79 08 02 7D 07",
+  "match": "0x143609c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143609c50",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ReceivedTeleportMessageSafetyCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143609c50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143609c50.c",
+   "notes": "V6092 real function 155 bytes: log of received teleport message then tail jmp to 0x143609cf0; name fine (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

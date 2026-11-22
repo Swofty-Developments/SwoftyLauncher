@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalGeneration_ChangeState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414371c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414371c0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x1414365b7",
+  "notes": "(service, newState u8): if it differs from +0xd8, logs CUSTOMISATION_DECALS 'GenerationService: vehicle %d, list %I64d, changing state from %s to %s' (vehicle +0x10, list +0x188, names table 0x1456e5980) and stores it. Tail jmp at 0x1414365b7 in 0x141435170. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decal_generation_change_state",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 38 0F B6 81 D8 00 00 00",
+  "match": "0x1414371c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414371c0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalGeneration_ChangeState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1414371c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414371c0.c;xref:0x1414365b7",
+   "notes": "V4864 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

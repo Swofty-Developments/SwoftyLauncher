@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Game_VmBinding_ResolveStringNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140971220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140971220.c;xref:0x1407ac216,0x140999a13,0x140999bc5,0x140c22fd4,0x140c23e5c,0x140c24fd5,0x140c25b2d,0x141489870,0x14148997a,0x1414a8404,0x1414a851d,0x1414a862f,0x1414a8741,0x1414a8856,0x1414a8ac1,0x1414a8c2c,0x1414a8d8c,0x1415666f2,0x141610922,0x1416b20c2,0x1418c5e29,0x1418e28e9,0x141bb25c1,0x141d92f15,0x141d9f77f,0x141d9fcc4,0x141da06bd,0x141da0848,0x141da9531,0x141da9ff4,0x141daa454,0x141db1824,0x141dc2c68,0x141de4366,0x141de49d6,0x141e72c92,0x141e9ca2f,0x141efd8f2,0x141f16e19,0x1422378f0,0x142237b62,0x1429186b1,0x142919f9c,0x142a7b41c,0x142a7cd7c,0x142a7ce4a,0x142c02d01,0x142c02df8,0x142c02ee3,0x142c02ffd,0x142c030fc,0x142c031ff,0x142c03302,0x142c03405,0x142c035b2,0x142c036b1,0x142c039a3,0x142c03c9b,0x142c042a2,0x142c043a5,0x142c044a8,0x142c28e46,0x142c2c034,0x142c41e4e,0x142c420d9,0x142c44298,0x142c4438a,0x142c44679,0x142c4486b,0x142cf3406,0x142d5874e,0x142d58c52,0x142d59374,0x142d715bd,0x142d8867c,0x142d90c26,0x142d9c211,0x142da8991,0x142dc2bb4,0x142e00a74,0x142e02e62,0x142e0371a,0x142e196f1,0x142f75052,0x142fd4243,0x1430640bd,0x1430aa5e2,0x1430c4502,0x1430c48a0,0x1430c49ad,0x1430c4ab0,0x1430c5145,0x1430c5248,0x1430d80dd,0x1430d81e3,0x14365fc02,0x14365ff18,0x14365ffa8,0x143660038,0x1436ca4ad,0x1436ce446,0x1436d013d,0x1436d28ae,0x1436d569d,0x1436e864f,0x1436e8887,0x1436e89cc,0x1436f8245,0x1436fc42c,0x1437047c2,0x1437d7b31,0x144353a8b,0x14d9bb7f0,0x14e47235a,0x14e4724a8,0x14e5d3bbc,0x14ea3d8f5,0x1530bd721",
+  "notes": "Read in full: (alloc*, parentRef, path, default, overwrite) null path/parent -> default node 0x146048da0; existing string-type (0x146ca5508) node returned, set to default if overwrite == 1 (0x140828440); else creates a 0x68-byte node (0x140846570, djb2 leaf name) under the deepest existing parent and inserts it (0x1442b32b0/0x1442b3770). Creates, not only resolves. (lane owner review requested) Better name: Game_VmBinding_GetOrCreateStringNode (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.vm_binding_resolve_string_node",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 A4 24 80 01 00 00 C5 F8 57",
+  "match": "0x1407ac216",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140971220",
+  "kind": "func_start",
+  "names": [
+   "Game_VmBinding_ResolveStringNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140971220",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140971220.c;xref:0x1407ac216,0x141489870",
+   "notes": "V3444 Same template as 0x14083d100/0x14084cde0 with tail helper 0x140828440; nothing string-specific visible so the StringNode typing is unsupported; callers ok"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140971220",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140971220.c;xref:0x1407ac216,0x141489870",
+   "notes": "V3986 Same template as 0x14083d100/0x14084cde0 with tail helper 0x140828440; nothing string-specific visible so the StringNode typing is unsupported; callers ok"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140971220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140971220.c;xref:0x1407ac216,0x140999a13",
+   "notes": "V4097 empty node 0x146048da0 on null, typed string node (type 0x146ca5508), callers confirmed"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Parse_RewardDefinitionFields",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc4630",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Parse_RewardDefinitionFields(void *self, void *owner, void *row)",
+  "evidence": "decomp:re/decomp/140fc4630.c;xref:0x140f99e63,0x140f9a1d7,0x140f9a3a0,0x140f9a760",
+  "notes": "Reward definition base ctor: vtable 0x1456b0fd0, +0x28 = param_2, statId -> +8, reward_context (FNV hash) -> byte +0x38, description -> +0x40, ui_icon_name -> +0x48, ui_is_positive -> +0x50, show_adjustment_arrow -> +0x51, row label (0x1445a3900) into the string at +0x10. Returns param_1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.parse_reward_definition_fields",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01",
+  "match": "0x140fc4630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc4630",
+  "kind": "func_start",
+  "names": [
+   "Career_Parse_RewardDefinitionFields"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc4630",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140fc4630.c;xref:0x140f99e63;str:\"reward_context\"",
+   "notes": "V9612 Reward definition parse from a config node via FUN_1445a2cf0 (statId, reward_context, description, ui_icon_name, ui_is_positive, show_adjustment_arrow) with FNV hash of reward_context; no Gdb_Get_FieldInt calls seen and the discount-value link is unproven."
+  }
+ ],
+ "proofs": []
+}

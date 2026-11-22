@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Startup_InitStep2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443c1ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1443c1ce0.c;xref:0x1443c0650",
+  "notes": "Called at 0x1443c0650. Decomp is polluted by the merged tail target 0x143a52550; judged by disasm in pdata (+0x49a): allocates a 0x148 object (vt 0x1458a2280, CS + CreateEventW), returns 0xc on alloc failure (0x1443c1f1d), 0x16 when [[arg+8]+0x14f0] is null (0x1443c200d), else vcall +0x18 on it and jmp 0x143a52550 at 0x1443c1e9c (status from there). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.startup_init_step2",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8B 1D",
+  "match": "0x1443c1ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443c1ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_Startup_InitStep2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443c1ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443c1ce0.c;xref:0x1443c0650",
+   "notes": "V6588 verified 0xc at 0x1443c1f1d, 0x16 at 0x1443c200d, [[arg+8]+0x14f0], tail jmp 0x143a52550 at 0x1443c1e9c"
+  }
+ ],
+ "proofs": []
+}

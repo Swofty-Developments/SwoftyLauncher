@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EadpPresence_StartPresenceServiceWaitingConnect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fea330",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fea330.c;pat:log-channel-EADP_PRESENCE;xref:0x143fea07e,0x143fea0c4,0x143fea101",
+  "notes": "bool; called from 0x143fea050 (sites 0x143fea07e, 0x143fea0c4, 0x143fea101, 0x143fea153). Logs 'Start presence service waiting for connect' or 'Starting presence service after connect and %u seconds' (EADP_PRESENCE); same start pattern as the invite/notification services. (lane owner review requested) Better name: Game_EadpPresence_StartPresenceService (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_presence_start_presence_service_waiting_connect",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8B 49 08",
+  "match": "0x143fea330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fea330",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpPresence_StartPresenceServiceWaitingConnect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fea330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fea330.c;xref:0x143fea07e",
+   "notes": "V6339 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

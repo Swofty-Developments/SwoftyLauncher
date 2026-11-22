@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleResetToGarageComponent_Trigger",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f33d80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f33d80.c;str:s_VehicleResetToGarageComponent_Trigger;xref:0x142f34f15,0x14f7a2424",
+  "notes": "Read in full (asm checked). Pretty-fn 0x1457f72b5, GARAGE/V. If car+0x32 bit 0x20 is CLEAR only stores pending +0x40..+0x43 and returns (input note inverted). Status 1: 'Hiding and returning vehicle to garage' -> 0x142f1be60(+0x30,3)/0x142f1c000; 2: reset, tail-jmp 0x142f1c000(+0x30,0x23); 5/7: hide, 0x142f343d0 or 0x142a3f330, post vt 0x1458016d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_reset_to_garage_component_trigger",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 44 89 CF 45",
+  "match": "0x142f33d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f33d80",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleResetToGarageComponent_Trigger"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f33d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f33d80.c;xref:0x141c318f7",
+   "notes": "V5614 verified switch cases 1,2,5,7, flag 0x20 at +0x32, remember +0x40..43, names table"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkInvite_OnCareerJoinedSessionComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143162480",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143162480.c;pat:log-message-method;xref:0x143166933",
+  "notes": "Logs '%s: success: %d, error: %d, retry: %d' with onCareerJoinedSessionComplete; on retry/failure changes state to eIdle, else tail jumps to Game_NetworkInvite_OnJoinCompleted 0x143161ce0 (decomp inlines that body). Callback stored by lea 0x143166933 in 0x143165d50. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_invite_on_career_joined_session_complete",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 44 89 CD 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 53 B8 73 00 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 38 81 FA 1F A4 C1 3A 0F 84 ?? ?? ?? ?? 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 83 F8 73 75 C1 40 84 ED 0F 84 ?? ?? ?? ?? 84 DB 0F 85 ?? ?? ?? ?? 0F B6 46 10",
+  "match": "0x143162480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143162480",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkInvite_OnCareerJoinedSessionComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143162480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143162480.c;xref:0x143166935",
+   "notes": "V5793 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

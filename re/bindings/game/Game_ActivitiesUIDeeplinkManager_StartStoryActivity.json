@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_StartStoryActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438641f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438641f0.c;str:s_ActivitiesUIDeeplinkManager_StartStoryActivity;xref:0x143862e00",
+  "notes": "PlayGo (+0x63)/trial (0x14078e1a0) gate, then finds the story mode (predicate 0x1407c5ff0); resume = current slot +0xd2 (returns if +0xd1); activates the mode (0x1407d07a0), frontend_transition_state = story_new / story_resume, +0x61 = 1, logs 'to new/resume', then 0x143866ba0(this,mode). Caller OnDeepLinkActivityStarted (type 0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_start_story_activity",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? EB 91 31 F6 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143862e00",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1438641f0",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_StartStoryActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1438641f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438641f0.c;xref:0x143862e00",
+   "notes": "V7405 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

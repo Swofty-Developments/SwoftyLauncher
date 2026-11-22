@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_SetStateFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140362c00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140362c00.c;pat:log-message-cxx;xref:0x140362b95,0x1455f7428",
+  "notes": "setStateFinished override (vt cell 0x1455f7428; also call 0x140362b95 from 0x140362b20): logs class string, 0x140238af0(this); under crit sec, for 32 cars in [0x14601f5c8+0x40]+0x68: cars not within 6 m of the camera get 0x140355360(car,0,1), others 0x1403846b0; render-state slots 0x16=0, 0x25=3, global 0x146ce89d8=0; tail-jumps 0x140248690 (podium-crowd.layer). Mirror of 0x140362490. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_set_state_finished",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00",
+  "match": "0x140362c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140362c00",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_SetStateFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140362c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140362c00.c;xref:0x362b95",
+   "notes": "V4546 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_ModelInstance_SetTintColoursSrgb",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024a370",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14024a370.c;xref:0x14024023a,0x1402480e0,0x14025448d",
+  "notes": "Converts three packed colours param_2[0..2] (channels at bits 16/8/0) from sRGB to linear (0.04045, 12.92, ((c+0.055)/1.055)^2.4 via Ne_Crt_Powf) into vec4s, then for each node of the scene list (param_1+0x78, count [param_1+0xa0]+0x100) and for the node named param_3 (Game_Scene_FindNodeByName) calls 0x143d3d8e0(model+0x228, vec4s, 6, 4, -1, 0). Callers incl. Game_CameraActorEnable_SpawnScene. (lane owner review requested) Better name: Render_Scene_SetTintColoursSrgb (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.model_instance_set_tint_colour_srgb",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 00 00 00 C5 79 29 84 24 A0 00",
+  "match": "0x14024a370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14024a370",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelInstance_SetTintColoursSrgb"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14024a370",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14024a370.c;xref:0x14024023a",
+   "notes": "V7979 Render_ModelInstance_SetTintColoursSrgb: takes pointer to 3 packed colours (param_2[0..2]) plus name filter param_3, finds node via 0x140194930; not a single colour"
+  }
+ ],
+ "proofs": []
+}

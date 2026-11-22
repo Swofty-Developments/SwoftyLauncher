@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreDeformation_SetTyre",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465c950",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14465c950.c;pat:log-channel-DEFORMATION;xref:0x14465c7ca,0x14470face",
+  "notes": "(def,t): acts when wanted state +0x27c[t] != current +0x278[t]. 2 'burst': CreateTyreBody, particles 0x144109f80 (0x32), 0x14410c7d0, skinning id via 0x14465e480. 1 'puncture': CreateTyreBody. 0 'undamaged': body removed from physics world (0x1440cd3f0/0x1440cc840), skinning id -1. Posts msg 0x145c05180 {car idx,t,old,new} (inlined queue), current = wanted, logs 'Tyre %d set to %s.' Callers in 0x14465c610, 0x14470d760. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.tyre_deformation_set_tyre",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 80 3D ?? ?? ?? ?? 00",
+  "match": "0x14465c950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465c950",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreDeformation_SetTyre"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14465c950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465c950.c;xref:0x14465c7ca",
+   "notes": "V6730 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

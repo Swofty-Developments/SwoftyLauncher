@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_RenderGraph_CreateResourceDesc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdada0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdada0.c;xref:0x1401023da,0x14013d575,0x14013d615,0x14013d714",
+  "notes": "Texture twin of 0x143bda160: key = FNV-1a of texture object pointer param_3, map +0x388 (end +0x370); on miss copies the texture desc (+0x08..+0x78, flags +0x40), gets alloc info via 0x143bd9e40, appends a 0x180-byte resource entry to +0x28 and inserts the index; usage mask param_4. Callers incl. 0x143bc0c40, 0x143bc5250. (lane owner review requested) Better name: Render_RenderGraph_ImportTexture (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.render_graph_create_resource_desc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 49",
+  "match": "0x143bdada0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bdada0",
+  "kind": "func_start",
+  "names": [
+   "Render_RenderGraph_CreateResourceDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bdada0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bdada0.c;xref:0x1401023da",
+   "notes": "V7815 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

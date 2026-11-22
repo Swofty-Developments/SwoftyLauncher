@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_PostProcess_ComputeColorParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc6220",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc6220.c;xref:0x143bc1950,0x143bcb077,0x143bcb0c0,0x143decaa8",
+  "notes": "Evaluates an ACES-style segmented spline: Render_Tonemap_AcesRrtEvalCurve fills the knots, Ne_Crt_LogFloatAvx on input/knots, segment chosen by knot midpoints (0.5*(k_i+k_i+1)), cubic basis matrix at 0x146c3b3f0.., then Ne_Crt_Exp2f/Powf back to linear. Callers Ne_PostProcessXGenerator_Copy_Render, Render_Tonemap_ComputeCurveParams (2 sites), 0x143dec160. (lane owner review requested) Better name: Render_Tonemap_AcesSplineEvaluate (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.post_process_compute_color_params",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 B8 70 01 00 00 4C 89 F9 4C 89",
+  "match": "0x143bc1950",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143bc6220",
+  "kind": "func_start",
+  "names": [
+   "Render_PostProcess_ComputeColorParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143bc6220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc6220.c;xref:0x143bc1950",
+   "notes": "V8140 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

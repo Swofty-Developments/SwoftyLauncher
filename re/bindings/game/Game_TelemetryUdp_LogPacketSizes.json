@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryUdp_LogPacketSizes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14472a6e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14472a6e0.c;pat:log-channel-UDP-TELEMETRY;xref:0x145c02880",
+  "notes": "Slot 2 of vtable 0x145c02870 (only ref, cell 0x145c02880; after the string TelemetryOutputSystem). Reads config (Input.DBOXAppKey, broadcast/port, dbox, public), allocates the 0x17200-byte UDP output (vtable 0x145c029d0) and a second output (vtable 0x145c02470), adds them to the output list, clears packet buffers and logs the 'UDP Packet sizes' table. Old name was only its log. (lane owner review requested) Better name: Game_TelemetryOutputSystem_CreateOutputs (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.telemetry_udp_log_packet_sizes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 BC 24 30 01 00 00 C5 F8 29 B4 24 20 01 00 00 4C 89 C6 48 89 D7 48 89 CB",
+  "match": "0x14472a6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14472a6e0",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryUdp_LogPacketSizes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14472a6e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14472a6e0.c",
+   "notes": "V6616 18 KB function: reads VTE.enabled, DBOX keys, telemetry config (port, broadcast, sendRate, format 2024/2025, yourTelemetry, onlineNames, restricted/public) and logs packet sizes; better name Game_TelemetryUdp_InitFromConfig; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14472a6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14472a6e0.c",
+   "notes": "V7277 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

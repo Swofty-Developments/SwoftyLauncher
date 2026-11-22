@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetMarshalZoneMonitor_OnSessionRestart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14357f5c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14357f5c0.c;pat:log-message-cxx;xref:0x14584ab18",
+  "notes": "vt cell 0x14584ab18. Calls 0x14357ca30 and 0x14357e780(this); if marshal-zone object +0x11c8 exists: logs 'NetMarshalZoneMonitor::onSessionRestart()' (NETWORK), 0x143195ac0(obj), obj+0x60 = 1, obj+0x90 = QPC + 0x1461089f8, obj+0x98 = same when non-zero. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.net_marshal_zone_monitor_on_session_restart",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 48 8B B6 C8 11 00 00",
+  "match": "0x14357f5c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14357f5c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetMarshalZoneMonitor_OnSessionRestart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14357f5c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14357f5c0.c",
+   "notes": "V6086 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

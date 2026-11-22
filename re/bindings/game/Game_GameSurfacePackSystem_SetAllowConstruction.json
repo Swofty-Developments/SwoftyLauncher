@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GameSurfacePackSystem_SetAllowConstruction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142df4cf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142df4cf0.c;pat:log-message-method;xref:0x1457e49f0,0x1457e85a0,0x1457e87c0",
+  "notes": "Same slot in three vtables (cells 0x1457e49f0, 0x1457e85a0, 0x1457e87c0). Clears +0x1028; with the championship context (type 0x146063fb0) caches +0x5f8 at +0x1038 and, once (+0xee8), publishes 'loading' to queue 0x146c621e0, requests a BroadcastFull fade-out (FADE_REQUESTS log) when no content is pending, sets loading_location, flags 0x14604ed98 |= 0x40000, waits on [p1+0xe98]. When ready (+0x1021) and state +0x1020 == 2 sets the surface pack system [p1+0x1030]+0x180f5 = 1 (inlined setAllowConstruction, log '= %d'); otherwise posts 0x145623ce0 with +0x1020. Returns the not-ready flag. Renamed: the old name was only the inlined step. (lane owner review requested) Better name: Game_SessionLoad_PollAllowSurfaceConstruction (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.game_surface_pack_system_set_allow_construction",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE C6 81 28 10 00 00 00",
+  "match": "0x142df4cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142df4cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSurfacePackSystem_SetAllowConstruction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142df4cf0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142df4cf0.c",
+   "notes": "V5458 207-line function: fade-out request, loading_location, Story_GetCurrentEvent, session scan; setAllowConstruction log is one part; better Game_GameSurfacePackSystem_UpdateAllowConstruction"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142df4cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142df4cf0.c",
+   "notes": "V6898 207 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

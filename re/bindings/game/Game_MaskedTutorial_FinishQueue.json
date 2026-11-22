@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MaskedTutorial_FinishQueue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e6d7b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e6d7b0.c;pat:log-channel-ONBOARDING;xref:0x141f2f229,0x142e68955,0x142e68994,0x142e6d2ad,0x14c5bb5bf",
+  "notes": "MaskedTutorialSystem::finishQueue: +0x24 = 0, releases the help-prompt entity ([+0x150] +0xc30 list), 0x142e6df90(this,0), +0x2c=0, posts bus vt 0x1457f1690, frees current entries (+0xb0..+0xb8, stride 0x50) and name +0x80. Queue (+0x108 deque, count +0x120) empty: re-enables prompts (UI 'overridePromptEnablement(%d)', bus vt 0x1457324a0), callback +0x160/+0x168; else pops the front, shows it (0x142e699f0), posts vt 0x1457f16a0 {count}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.masked_tutorial_finish_queue",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC 38 04 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142e6d7b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e6d7b0",
+  "kind": "func_start",
+  "names": [
+   "Game_MaskedTutorial_FinishQueue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e6d7b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e6d7b0.c;xref:0x141f2f229",
+   "notes": "V5511 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

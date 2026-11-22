@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_Trophies_ParseAwardsJson",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143286ae0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143286ae0.c;xref:0x14328a252",
+  "notes": "(src, out shared_ptr, ctx): parses the JSON text src+0x28 (length src+0x20; allocator ctx+0x10) with 0x140b5e130; error -> logs JSON 'Unable to parse JSON in buffer, ParseErrorCode %d'. OK -> allocates one 0x30-byte record plus control block vt 0x14584eee0 (allocator 0x146129c00) and fills it with 0x1434e15c0(record, doc, ctx+0xc0, alloc); out = shared_ptr only when that returns true. Caller 0x14328a252. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.trophies_parse_awards_json",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 D6 48 8B",
+  "match": "0x143286ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143286ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_Trophies_ParseAwardsJson"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

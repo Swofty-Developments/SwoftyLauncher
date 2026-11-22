@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteDriverStatRating",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14375b090",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14375b090.c;pat:log-channel-STATEVENT;xref:0x14375b066",
+  "notes": "Providers this+8..+0x10; 2 entries DriverStatRating, DriverStatRating.IsUserDefined.%d(arg4 byte); val=raw arg3, type 3; returns AND. Caller 0x14375ae90. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_driver_stat_rating",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 02 00 00 C5 F8 29 B4 24 90 02 00 00 44 89 CB C5 F8 28 F2",
+  "match": "0x14375b090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14375b090",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteDriverStatRating"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14375b090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14375b090.c;xref:0x14375b066",
+   "notes": "V6208 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

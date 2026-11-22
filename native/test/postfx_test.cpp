@@ -1,4 +1,4 @@
-#include "postfx_logic.hpp"
+#include "core/render/postfx_logic.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -6,16 +6,16 @@
 #include <utility>
 #include <vector>
 
-using namespace postfx;
+using namespace render::postfx;
 
 static int failed;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                   \
-            failed++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            failed++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 // The placement gate the way postfx.cpp runs it, over game frames that rotate through `buffers` back buffers. Each
@@ -113,12 +113,13 @@ static unsigned rnd(unsigned f, unsigned k)
 // BackPlace: the picture's list makes the back buffer a render target, the closing list records its step barrier
 // before or after the picture's list is submitted (split step when it binds the back buffer), the closing list and
 // the HUD's list are submitted in either order, then Present. The closing list draws the rest of the picture first
-// when it binds the back buffer, so passes placed right after the picture's list are painted over.
-enum Ran : uint8_t { RAN_SPLIT, RAN_AFTER_PICTURE, RAN_AFTER_CLOSE, RAN_PRESENT };
+// when it binds the back buffer, so passes placed right after the picture's list are painted over. The HUD's list
+// draws the HUD and ends with the back buffer out of render target; hud_seen is whether the core saw it submitted.
+enum Ran : uint8_t { RAN_SPLIT, RAN_AFTER_PICTURE, RAN_AFTER_CLOSE, RAN_BEFORE_HUD, RAN_PRESENT };
 
 struct SplitFrame {
-    bool closing_recorded_first = false, bound = true, closing = true, direct = true, hud_first = false,
-         reset = false, may_defer = true;
+    bool closing_recorded_first = false, bound = true, closing = true, direct = true, hud_first = false, reset = false,
+         may_defer = true, hud_seen = true;
 };
 
 static std::vector<Ran> split_frame(BackPlace &p, unsigned now, const SplitFrame &s)
@@ -144,12 +145,19 @@ static std::vector<Ran> split_frame(BackPlace &p, unsigned now, const SplitFrame
         p.unplace();
         ran.pop_back();
     }
-    if (s.hud_first)
+    auto submit_hud = [&] {
+        if (!s.hud_seen)
+            return;
+        if (p.target_left(now, true))
+            ran.push_back(RAN_BEFORE_HUD);
         p.moved(false);
+    };
+    if (s.hud_first)
+        submit_hud();
     if (submitted && p.step_closed(now, s.direct))
         ran.push_back(RAN_AFTER_CLOSE);
     if (!s.hud_first)
-        p.moved(false);
+        submit_hud();
     if (p.presented(now))
         ran.push_back(RAN_PRESENT);
     return ran;
@@ -159,6 +167,87 @@ static bool shows(const std::vector<Ran> &ran, const SplitFrame &s)
 {
     return ran.size() == 1 && !(ran[0] == RAN_AFTER_PICTURE && s.closing && s.bound);
 }
+
+static bool over_the_hud(const std::vector<Ran> &ran)
+{
+    for (Ran r : ran)
+        if (r == RAN_PRESENT)
+            return true;
+    return false;
+}
+
+// Frames of one race through HudRead the way postfx.cpp drives it: reads(f) is whether the HUD's list of frame f
+// reads the finished picture, hud_first(f) whether that list is recorded before the list with the HUD-less step,
+// read_late(f) whether it is recorded only after the picture's list is submitted, open(f) whether the picture's list
+// ends with the HUD-less step still open, and hud_seen(f) whether the core sees the HUD's list take the back buffer
+// out of render target. The picture's submission places the passes or leaves them waiting (picture_wait); waiting
+// passes run before the HUD's list, or at Present without it. held is the 1.9.64 gate: the submission held off
+// while the read held. Per frame, how often the passes ran and where they ran last.
+enum ReadAt : uint8_t { AT_NONE, AT_STEP, AT_READ, AT_PICTURE, AT_BEFORE_HUD, AT_PRESENT };
+
+struct ReadSim {
+    bool (*reads)(unsigned f) = nullptr;
+    bool (*hud_first)(unsigned f) = nullptr;
+    bool (*read_late)(unsigned f) = nullptr;
+    bool (*open)(unsigned f) = nullptr;
+    bool (*hud_seen)(unsigned f) = nullptr;
+    bool game_frames = false, held = false;
+    unsigned frames = 400;
+    std::vector<unsigned> runs;
+    std::vector<bool> at_read;
+    std::vector<ReadAt> at;
+
+    void run()
+    {
+        HudRead latch;
+        runs.assign(frames, 0);
+        at_read.assign(frames, false);
+        at.assign(frames, AT_NONE);
+        for (unsigned f = 0; f < frames; f++) {
+            unsigned now = 100 + f;
+            BackPlace p;
+            auto ran = [&](ReadAt where) {
+                runs[f]++;
+                at[f] = where;
+                at_read[f] = at_read[f] || where == AT_READ;
+            };
+            p.drawn(now);
+            auto read = [&] {
+                if (!reads(f) || placed_lately(now, p.placed_at))
+                    return;
+                latch.read(now);
+                p.place(now);
+                ran(AT_READ);
+            };
+            auto step = [&] {
+                if (latch.holds(now) || !p.fresh)
+                    return;
+                p.place(now);
+                ran(AT_STEP);
+            };
+            bool late = read_late && read_late(f);
+            if (!late && hud_first && hud_first(f))
+                read();
+            step();
+            if (!late && !(hud_first && hud_first(f)))
+                read();
+            if (held ? !latch.holds(now) : !latch.read_in(now)) {
+                PictureWait w = picture_wait(open && open(f), !held && latch.latch(now), game_frames);
+                if (p.picture_submitted(now, w.open, w.may_defer) == END_BETWEEN)
+                    ran(AT_PICTURE);
+            }
+            if (late)
+                read();
+            if (!hud_seen || hud_seen(f)) {
+                if (p.target_left(now, true))
+                    ran(AT_BEFORE_HUD);
+                p.moved(false);
+            }
+            if (!game_frames && p.presented(now))
+                ran(AT_PRESENT);
+        }
+    }
+};
 
 int main()
 {
@@ -200,34 +289,171 @@ int main()
         }
     }
     {
-        // No list closes the step, or only a compute list does: the passes run at Present.
+        // No list closes the step, or only a compute list does: the passes run right before the HUD's list, under
+        // the HUD, where 1.9.52 ran them at Present, over it.
         BackPlace p;
         SplitFrame s;
         s.closing = false;
         auto ran = split_frame(p, 30, s);
-        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        CHECK(ran == std::vector<Ran>{RAN_BEFORE_HUD} && shows(ran, s) && !over_the_hud(ran));
         s = SplitFrame{};
         s.direct = false;
         ran = split_frame(p, 33, s);
-        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        CHECK(ran == std::vector<Ran>{RAN_BEFORE_HUD} && shows(ran, s) && !over_the_hud(ran));
     }
     {
-        // The HUD's list moved the back buffer out of render target before the closing list was submitted: not
-        // after the closing list, at Present.
+        // The HUD's list is submitted before the closing list: the passes run right before the HUD's list, and the
+        // closing list finds them placed.
         BackPlace p;
         SplitFrame s;
         s.bound = false;
         s.hud_first = true;
         auto ran = split_frame(p, 40, s);
-        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        CHECK(ran == std::vector<Ran>{RAN_BEFORE_HUD} && shows(ran, s) && !over_the_hud(ran));
     }
     {
-        // The closing list the passes were recorded into is reset unsubmitted: they run at Present.
+        // The closing list the passes were recorded into is reset unsubmitted: they run right before the HUD's list.
         BackPlace p;
         SplitFrame s;
         s.reset = true;
         auto ran = split_frame(p, 50, s);
-        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        CHECK(ran == std::vector<Ran>{RAN_BEFORE_HUD} && shows(ran, s) && !over_the_hud(ran));
+    }
+    {
+        // A frame whose HUD list the core never saw reaches Present with the passes waiting. They run there, over
+        // the HUD for that one frame, rather than not at all: skipping them changes the whole picture for a frame,
+        // running them changes only the HUD.
+        BackPlace p;
+        SplitFrame s;
+        s.closing = false;
+        s.hud_seen = false;
+        auto ran = split_frame(p, 53, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && over_the_hud(ran));
+    }
+    {
+        // The list that takes the back buffer out of render target is not asked twice, not after the passes ran in
+        // the closing list, not on a compute queue, and not once another list already took it out.
+        BackPlace p;
+        p.drawn(56);
+        CHECK(p.picture_submitted(56, true, true) == END_DEFER);
+        CHECK(!p.target_left(56, false) && p.waits(56));
+        CHECK(p.target_left(56, true) && !p.waits(56) && !p.target_left(56, true) && !p.presented(56));
+        p.drawn(59);
+        CHECK(p.picture_submitted(59, true, true) == END_DEFER);
+        p.moved(false);
+        CHECK(!p.target_left(59, true) && p.presented(59));
+        p.drawn(62);
+        p.place(62);
+        CHECK(p.picture_submitted(62, true, true) == END_NONE && !p.target_left(62, true));
+        BackPlace closed;
+        closed.drawn(65);
+        CHECK(closed.picture_submitted(65, false, true) == END_BETWEEN && !closed.target_left(65, true));
+    }
+    {
+        // After a pause the passes stay on. 1.9.52 held the HUD's read for 30 frames, so the picture went 30 frames
+        // without them after every pause, flashback and menu over the race; 1.9.64 went one frame without them (the
+        // latch), which now runs them before the HUD's list.
+        ReadSim sim;
+        sim.reads = [](unsigned f) { return f >= 100 && f < 200; };
+        for (int order = 0; order < 3; order++) {
+            sim.hud_first = order == 0   ? nullptr
+                            : order == 1 ? +[](unsigned) { return true; }
+                                         : +[](unsigned f) { return rnd(f, 7) % 2 == 0; };
+            for (bool held : {true, false}) {
+                sim.held = held;
+                sim.run();
+                unsigned without = 0, doubled = 0, left_the_read = 0;
+                bool taken = false;
+                for (unsigned f = 0; f < sim.frames; f++) {
+                    without += sim.runs[f] == 0;
+                    doubled += sim.runs[f] > 1;
+                    left_the_read += f < 200 && taken && !sim.at_read[f];
+                    taken |= sim.at_read[f];
+                }
+                // the list with the HUD-less step recorded first every frame never leaves the passes to the read
+                CHECK(taken == (order != 0));
+                CHECK(without == (taken && held ? 1u : 0u));
+                CHECK(sim.runs[200] == (taken && held ? 0u : 1u) && sim.runs[201] == 1);
+                CHECK(!taken || held || sim.at[200] == AT_BEFORE_HUD);
+                CHECK(doubled == 0);
+                // once the read runs the passes it stays the one place they run while the HUD reads every frame
+                CHECK(left_the_read == 0);
+            }
+        }
+    }
+    {
+        // A screen whose HUD reads the picture every other frame, or every tenth: no frame runs the passes twice or
+        // goes without them (1.9.64 left out every frame after a read without one).
+        for (unsigned every : {2u, 3u, 10u, 31u}) {
+            static unsigned period;
+            period = every;
+            ReadSim sim;
+            sim.reads = [](unsigned f) { return f % period == 0; };
+            for (bool first : {false, true}) {
+                sim.hud_first = first ? +[](unsigned) { return true; } : nullptr;
+                sim.run();
+                unsigned without = 0, doubled = 0;
+                for (unsigned f = 1; f < sim.frames; f++) {
+                    without += sim.runs[f] == 0;
+                    doubled += sim.runs[f] > 1;
+                }
+                CHECK(doubled == 0 && without == 0);
+            }
+        }
+        HudRead h;
+        CHECK(!h.holds(0) && !h.holds(5000) && !h.latch(0) && !h.read_in(0));
+        h.read(0u - 1);
+        CHECK(h.holds(0u - 1) && h.holds(0) && !h.holds(1));
+        CHECK(h.read_in(0u - 1) && !h.latch(0u - 1) && !h.read_in(0) && h.latch(0) && !h.latch(1));
+        CHECK(!picture_wait(false, false, false).open && !picture_wait(false, false, false).may_defer);
+        CHECK(picture_wait(true, false, false).open && picture_wait(true, false, false).may_defer);
+        CHECK(picture_wait(true, false, true).open && !picture_wait(true, false, true).may_defer);
+        for (bool step_open : {false, true})
+            for (bool game_frames : {false, true})
+                CHECK(picture_wait(step_open, true, game_frames).open && picture_wait(step_open, true, game_frames).may_defer);
+    }
+    {
+        // A race: the HUD reads the picture every frame but skips one now and then (12 times in two minutes of a
+        // real one). 1.9.64 left every such frame without the passes; now each runs them once, before the HUD's
+        // list, or at Present when the core does not see that list. Only while the game's own frames close the
+        // passes' frames (no Present to fall back on) does a frame whose HUD's list the core misses still go
+        // without them. Every order of recording, with the HUD's list recorded after the picture's submission too:
+        // never twice, and every other frame runs them where 1.9.64 did.
+        static auto skips = [](unsigned f) { return f > 2 && rnd(f, 3) % 150 == 0; };
+        ReadSim sim;
+        sim.frames = 3600;
+        sim.reads = [](unsigned f) { return !skips(f); };
+        unsigned skipped = 0;
+        for (unsigned f = 3; f < sim.frames; f++)
+            skipped += skips(f) && !skips(f - 1);
+        CHECK(skipped >= 12);
+        for (unsigned bits = 0; bits < 32; bits++) {
+            sim.hud_first = bits & 1 ? +[](unsigned) { return true; } : +[](unsigned f) { return rnd(f, 5) % 2 == 0; };
+            sim.read_late = bits & 2 ? +[](unsigned f) { return rnd(f, 11) % 3 == 0; } : nullptr;
+            sim.open = bits & 4 ? +[](unsigned f) { return rnd(f, 13) % 2 == 0; } : nullptr;
+            sim.hud_seen = bits & 8 ? +[](unsigned) { return false; } : nullptr;
+            sim.game_frames = bits & 16;
+            sim.held = true;
+            sim.run();
+            std::vector<unsigned> held_runs = sim.runs;
+            std::vector<ReadAt> held_at = sim.at;
+            sim.held = false;
+            sim.run();
+            unsigned held_without = 0, without = 0, doubled = 0, latched = 0, moved = 0, wrong_place = 0;
+            bool lost = sim.hud_seen && sim.game_frames;
+            ReadAt fallback = sim.hud_seen ? AT_PRESENT : AT_BEFORE_HUD;
+            for (unsigned f = 3; f < sim.frames; f++) {
+                held_without += held_runs[f] == 0;
+                without += sim.runs[f] == 0;
+                doubled += sim.runs[f] > 1 || held_runs[f] > 1;
+                bool latch = skips(f) && !skips(f - 1);
+                latched += latch && held_runs[f] == 0 && sim.runs[f] == 1;
+                wrong_place += latch && sim.runs[f] == 1 && sim.at[f] != fallback;
+                moved += !latch && (sim.runs[f] != held_runs[f] || sim.at[f] != held_at[f]);
+            }
+            CHECK(doubled == 0 && moved == 0 && held_without == skipped);
+            CHECK(lost ? without == skipped && latched == 0 : without == 0 && latched == skipped && wrong_place == 0);
+        }
     }
     {
         // A step that stayed open past its frame (no Present closed it) no longer waits, and a new use of the back
@@ -245,7 +471,7 @@ int main()
         // Every order of record and submit, with or without a closing list, over frames that rotate through
         // three back buffers: once a frame, and shown whenever the closing list repaints the picture.
         BackPlace backs[3];
-        unsigned off = 0, frames = 0;
+        unsigned off = 0, over = 0, frames = 0;
         for (unsigned f = 8; f < 8 + 3 * 64; f++) {
             unsigned bits = (f / 3) % 64;
             SplitFrame s;
@@ -257,9 +483,59 @@ int main()
             s.reset = bits & 32;
             auto ran = split_frame(backs[f % 3], f, s);
             off += !shows(ran, s);
+            over += over_the_hud(ran);
             frames++;
         }
-        CHECK(frames == 192 && off == 0);
+        // never at Present, over the HUD, while the core sees the HUD's list
+        CHECK(frames == 192 && off == 0 && over == 0);
+    }
+
+    {
+        // Why a frame went without the passes: the kill file, then the shader toggle key, then what stopped the
+        // place that tried, then the HUD's read holding the other places off, then whether there was a picture.
+        IdleFacts f;
+        CHECK(idle_reason(f) == IDLE_NO_PICTURE);
+        f.picture = true;
+        CHECK(idle_reason(f) == IDLE_UNPLACED);
+        f.hud_read = true;
+        CHECK(idle_reason(f) == IDLE_HUD_READ);
+        f.tried = IDLE_BUSY;
+        CHECK(idle_reason(f) == IDLE_BUSY);
+        f.tried = IDLE_VIEW;
+        CHECK(idle_reason(f) == IDLE_VIEW);
+        f.key_off = true;
+        CHECK(idle_reason(f) == IDLE_KEY);
+        f.killed = true;
+        CHECK(idle_reason(f) == IDLE_KILL);
+        CHECK(idle_of_passes(1u << IDLE_PASS_OFF) == IDLE_PASS_OFF && idle_of_passes(1u << IDLE_VIEW) == IDLE_VIEW);
+        CHECK(idle_of_passes(1u << IDLE_ADDON_KEY) == IDLE_ADDON_KEY && idle_of_passes(1u << IDLE_RULE) == IDLE_RULE);
+        CHECK(idle_of_passes(1u << IDLE_OPTION) == IDLE_OPTION && idle_of_passes(0) == IDLE_PASSES);
+        CHECK(idle_of_passes((1u << IDLE_PASS_OFF) | (1u << IDLE_VIEW)) == IDLE_PASSES);
+        for (unsigned i = IDLE_NONE + 1; i < IDLE_COUNT; i++)
+            CHECK(idle_text(Idle(i))[0] != 0);
+        CHECK(idle_text(IDLE_NONE)[0] == 0);
+    }
+    {
+        // One line when the passes stop and one when they run again, with the frames between and the reason they
+        // stopped for; nothing before their first run, which has its own line, and nothing while nothing changes.
+        OnOff o;
+        CHECK(o.frame(false, 1, IDLE_NO_PICTURE) == OnOff::SAME && o.frame(false, 2, IDLE_NO_PICTURE) == OnOff::SAME);
+        CHECK(o.frame(true, 3, IDLE_NONE) == OnOff::SAME && o.frame(true, 4, IDLE_NONE) == OnOff::SAME);
+        CHECK(o.frame(false, 5, IDLE_HUD_READ) == OnOff::STOPPED && o.off_at == 5 && o.why == IDLE_HUD_READ);
+        CHECK(o.frame(false, 6, IDLE_KEY) == OnOff::SAME && o.why == IDLE_HUD_READ);
+        CHECK(o.frame(true, 7, IDLE_NONE) == OnOff::AGAIN && 7 - o.off_at == 2);
+        CHECK(o.frame(true, 8, IDLE_NONE) == OnOff::SAME);
+        CHECK(o.frame(false, 9, IDLE_KEY) == OnOff::STOPPED && o.why == IDLE_KEY);
+    }
+    {
+        // The count line keeps coming for the whole session: every minute for the first half hour, then every
+        // five minutes, where 1.9.52 stopped after 30 lines.
+        CHECK(stat_window_ms(0) == 60000 && stat_window_ms(29) == 60000);
+        CHECK(stat_window_ms(30) == 300000 && stat_window_ms(5000) == 300000);
+        unsigned lines = 0;
+        for (uint64_t at = 0; at < 8ull * 3600 * 1000; at += stat_window_ms(lines))
+            lines++;
+        CHECK(lines == 30 + (8 * 60 - 30) / 5);
     }
 
     When any;
@@ -279,6 +555,13 @@ int main()
     When no_pause{0, flag_bit("paused")};
     CHECK(!ineligible(no_pause, UNKNOWN, PAUSED, false));
     CHECK(ineligible(no_pause, OTHER, PAUSED, true));
+
+    When trackside{view_bit("trackside"), 0};
+    When rear{view_bit("reverse_pod"), 0};
+    CHECK(!ineligible(trackside, TRACKSIDE, REPLAY, true));
+    CHECK(ineligible(trackside, REVERSE_POD, REPLAY, true));
+    CHECK(!ineligible(rear, REVERSE_POD, REPLAY, true));
+    CHECK(ineligible(rear, TRACKSIDE, REPLAY, true));
 
     CHECK(view_bit("nope") == 0 && flag_bit("nope") == 0 && view_bit("unknown") == 0);
     CHECK(flag_text(0) == "-" && flag_text(PAUSED | MENU) == "paused+menu");
@@ -380,8 +663,8 @@ int main()
 
     CHECK(presents_own_frames("libxess_fg.dll") && presents_own_frames("LibXeSS_FG.DLL"));
     CHECK(presents_own_frames("libxess_fg.dll (calls Present)") && presents_own_frames("C:\\game\\libxess_fg.dll"));
-    CHECK(!presents_own_frames("") && !presents_own_frames("amd_fidelityfx_dx12.dll") &&
-          !presents_own_frames("sl.dlss_g.dll") && !presents_own_frames("nvngx_dlssg.dll"));
+    CHECK(!presents_own_frames("") && !presents_own_frames("amd_fidelityfx_dx12.dll") && !presents_own_frames("sl.dlss_g.dll") &&
+          !presents_own_frames("nvngx_dlssg.dll"));
     CHECK(!presents_own_frames("libxess_fg.dll.bak") && !presents_own_frames("a non-direct present queue") &&
           !presents_own_frames("libxess.dll"));
 
@@ -427,12 +710,12 @@ int main()
         fg_on.at = [](unsigned f, unsigned k) { return rnd(f, k) % 6; };
         fg_on.game_clock = false;
         unsigned off = once_per_run(fg_on.run(), skipped, doubled);
-        std::printf("xess fg on, every Present1 closing the frame (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n",
-                    off, fg_on.frames - 8, skipped, doubled);
+        std::printf("xess fg on, every Present1 closing the frame (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n", off,
+                    fg_on.frames - 8, skipped, doubled);
         fg_on.menus = true;
         off = once_per_run(fg_on.run(), skipped, doubled);
-        std::printf("xess fg on in menus (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n", off,
-                    fg_on.frames - 8, skipped, doubled);
+        std::printf("xess fg on in menus (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n", off, fg_on.frames - 8,
+                    skipped, doubled);
         CHECK(off > 0 && doubled > 0);
         for (unsigned buffers : {3u, 4u})
             for (bool menus : {false, true}) {
@@ -480,7 +763,6 @@ int main()
     CHECK(!cramped.find(&many[2], false) && !cramped.full());
     CHECK(!cramped.find(&many[2], true) && cramped.full());
     CHECK(cramped.find(&many[0], false) && cramped.find(&many[1], false));
-
 
     static_assert(OPTIONS_AT == 8 && PARAMS_AT == 36 && CONSTANT_COUNT == 56 && PARAMS_AT + 16 <= CONSTANT_COUNT);
     float packed[SLOTS];
@@ -556,8 +838,7 @@ int main()
           apply.inputs[3] == IN_ORIGINAL && apply.inputs[4] == IN_PREVIOUS && apply.output == IN_NONE);
     CHECK(plan.passes[3].instance == 2 && plan.passes[3].output == 3 && plan.passes[4].inputs[0] == 3);
     CHECK(plan.uses_previous());
-    CHECK(pass_title("Realistic", "ambient_light", "wide", "apply") ==
-          "Realistic \xC2\xB7 ambient_light.wide \xC2\xB7 apply");
+    CHECK(pass_title("Realistic", "ambient_light", "wide", "apply") == "Realistic \xC2\xB7 ambient_light.wide \xC2\xB7 apply");
     CHECK(pass_title("R", "grain", "", "grain") == "R \xC2\xB7 grain \xC2\xB7 grain");
 
     ActiveSpec none;
@@ -637,6 +918,34 @@ int main()
     CHECK(store.is_listed() && store.size() == 1 && store.find(mine) && *store.find(mine) == "efgh");
     store.set(mine, nullptr, 0);
     CHECK(store.empty() && !store.find(mine));
+
+    {
+        // A frame generation swapchain: the HUD's list is submitted before the list that closes the step, so the
+        // passes wait for Present, and Present shows the swapchain's copy of the frame, never the game's back
+        // buffer. The passes run on the copy while it holds the waiting picture.
+        BackPlace p;
+        p.drawn(70);
+        CHECK(p.picture_submitted(70, true, true) == END_DEFER);
+        p.moved(false);
+        CHECK(!p.step_closed(70, true) && p.waits(70));
+        CHECK(shown_is_waiting(false, 0, 70, p.opened_at, true));
+        CHECK(p.presented(70) && !p.waits(70) && placed_lately(70, p.placed_at));
+        // frame generation on: a Present may show a generated frame or an older one
+        CHECK(!shown_is_waiting(true, 0, 70, 70, true));
+        // passes already recorded since the last Present: the shown frame may be the one that has them
+        CHECK(!shown_is_waiting(false, 1, 70, 70, true));
+        // the step opened in an earlier frame: its picture was shown by an earlier Present
+        CHECK(!shown_is_waiting(false, 0, 71, 70, true));
+        // a copy of another size or format would rebuild the passes' textures every frame
+        CHECK(!shown_is_waiting(false, 0, 70, 70, false));
+        // a core that saw the list taking the back buffer to the HUD runs the passes right before it, so nothing waits
+        // for Present and the copy is left alone
+        BackPlace q;
+        q.drawn(80);
+        CHECK(q.picture_submitted(80, true, true) == END_DEFER);
+        q.moved(true);
+        CHECK(q.target_left(80, true) && !q.waits(80) && !q.presented(80));
+    }
 
     if (failed)
         return 1;

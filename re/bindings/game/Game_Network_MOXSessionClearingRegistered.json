@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXSessionClearingRegistered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f3cb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430f3cb0.c;pat:log-channel-NETWORK;xref:0x1458140c0",
+  "notes": "NetworkSubsystem vtable 0x145814050 slot +0x70. Unsubscribes MessageSessionResultsFinalised (0x143988350), logs NETWORK onSessionExit, resets session/vehicle state, MOX/Session clears ProgressVehicleManager (0x1432625b0) and VehicleMechanicalManager (0x143242790), NETWORK-MATCHING log + vt+0xe8, re-posts pending entries (FUN_143218150), inlined setHaveResults(FALSE), setMyRaceStatus 0x143092b20 (3/5/0xd, onLoadingTeamHQ log), clears +0x4f2. (lane owner review requested) Better name: Game_NetworkSubsystem_OnSessionExit (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_mox_session_clearing_registered",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 49 89 CE",
+  "match": "0x1430f3cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f3cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXSessionClearingRegistered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f3cb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430f3cb0.c",
+   "notes": "V5401 better name Game_Network_OnSessionExit: 710 lines: onSessionExit/onLoadingTeamHQ handler clearing progress+mechanical vehicle managers, migration setHaveResults"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430f3cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f3cb0.c",
+   "notes": "V6975 710 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_TyreVisTailCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea2d86",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142ea2a90.c;xref:0x142ea2da4",
+  "notes": "In Sess_Tyre_ShowFittedSet 0x142ea2a90: mov rcx,r14; movzx edx,[rsp+0x2f]; movzx r8d,[rsp+0x3a]; add rsp,0x48; pops; jmp Car_Tyre_SetWearFactor (0x142ea2da4), the function's only exit, after the per-model visibility loops. r14, [rsp+0x2f] (dl) and [rsp+0x3a] (the 5th arg word) are stored in the prologue (0x142ea2aaa, 0x142ea2aa6, 0x142ea2ab5) and rsp does not move after sub rsp,0x48, so jumping here from site_Sess_TyreVisSlotLookup skips the visibility pass and runs the wear refit with the caller's args. The rip target of core's tyre slot guard; never hooked."
+ },
+ "signature": {
+  "id": "session.tyre_vis_tail_call",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 4C 89 F1 0F B6 54 24 2F",
+  "match": "0x142ea2d81",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea2d86",
+  "kind": "mid",
+  "expect": "4C 89 F1 0F B6 54 24 2F",
+  "names": [
+   "site_Sess_TyreVisTailCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "fix-sc",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/cars/tyre_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-tyre7",
+   "kind": "global",
+   "item": "0x142ea2d86",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x142ea2da4,0x142ea2aaa,0x142ea2aa6,0x142ea2ab5;pat:capstone-disasm",
+   "notes": "V2198 mov rcx,r14; movzx edx,[rsp+0x2f]; movzx r8d,[rsp+0x3a]; add rsp,0x48; 8 pops; jmp 0x142ea2300. rsp unchanged between sub 0x48 (2a9c) and 2aec (branch/rsp scan); r14,[rsp+0x2f],[rsp+0x3a] stored in prologue before 2aec; callee-saved restored from stack. Safe continue from 2aec. Not hooked"
+  }
+ ],
+ "proofs": []
+}

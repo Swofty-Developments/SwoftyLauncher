@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeCardTypeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417f831d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1417f8090.c;xref:0x1417f82ff,0x1417f831d;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "lea r8,[\"INVALID UPGRADE\"]: default case of the inlined upgrade type switch (cmp r14b,0x12 ; ja) in the upgrade card binder Career_Bind_UpgradeCard; the join formats lng_rnd_%s (r8) or the <dept>_<type> frame (r9). rnd-tyres sets r8 = its type suffix for 19..22 and jumps to the join"
+ },
+ "signature": {
+  "id": "career.upgrade_card_type_label",
+  "section": ".xtls",
+  "pattern": "4A 63 0C B0 48 01 C1 FF E1 4C 8D 05 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 05",
+  "match": "0x1417f8308",
+  "anchor": "0x15",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417f831d",
+  "kind": "mid",
+  "expect": "4C 8D 05 7B 5C 08 04",
+  "names": [
+   "site_Career_UpgradeCardTypeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_UpgradeCardTypeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417f8090.c;xref:0x1417f82fb,0x1417f82ff,0x1417f830f,0x1417f831d,0x1417f8324",
+   "notes": "V0042 cmp r14b,0x12 ; ja 0x1417f831d; 19-entry table 0x14571c3a8 cases 0..18 set r8 to snake suffix and reach 0x1417f83d2; default lea r8 'INVALID UPGRADE' ; jmp join; no case/branch lands inside window"
+  }
+ ],
+ "proofs": []
+}

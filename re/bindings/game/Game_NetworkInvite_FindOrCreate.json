@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkInvite_FindOrCreate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143163e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143163e90.c;xref:0x143163c36",
+  "notes": "Runs in invite state 5: either sets up a find task (alloc 0x78, result callback 0x143164c90 stored in it), logs 'Finding %s...' and shows network_hopper_searching, or builds a session-create description and logs 'Creating %s...' (creating_custom_lobby_msg). When NetSub+0x3c8 +0x6b4 is set it adds the own user's name (NetSub+0x390 vtbl+0x38) via call 0x1431641c0 to 0x14412a320. Caller 0x143163710. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.invite_manager_start_invite_matching",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 BD 16 00 00",
+  "match": "0x143163e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143163e90",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkInvite_FindOrCreate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_NetworkInvite_FindOrCreate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143163e90.c;xref:0x143163e90",
+   "notes": "V2626 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

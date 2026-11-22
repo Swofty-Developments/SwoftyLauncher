@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_RegisteringNetworkSafetyCarState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430cf160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430cf160.c;pat:log-channel-NETWORK;xref:0x14fe06329",
+  "notes": "Only ref: the lea at 0x14fe06329 in 0x14fe06200. (this, msg): returns for role +8 < 2; looks car id msg+0x10 up in the hash map this+0x40..+0x74 (0x20-byte entries); found: stores id, +0x18=1, state msg+0x22 at +0x1a and tail-jumps 0x1430cfd40; else logs '[SAFETY_CAR] registering network safety car(%d) state(%s).' and inserts it (0x143207b00/0x1432080a0). (lane owner review requested) Better name: Game_Network_RegisterNetworkSafetyCar (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_registering_network_safety_car_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 83 79 08 02",
+  "match": "0x1430cf160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430cf160",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_RegisteringNetworkSafetyCarState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430cf160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430cf160.c;xref:0x14fe0632b",
+   "notes": "V5369 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkContent_TotalDisconnectionRequested",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303a8d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14303a8d0.c;pat:log-channel-NETWORK-CONTENT;xref:0x14305820a,0x14306104d",
+  "notes": "Logs \"Total disconnection requested. Resetting internal state.\"; mask this+0x118 = 1, clears +0x120 and the host/own conn bytes, re-evaluates every content item (vtable+8) and logs its enabled/DISABLED state. (lane owner review requested) Better name: Game_NetworkContent_ResetOnDisconnect (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_content_total_disconnection_requested",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 2D",
+  "match": "0x14303a8d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303a8d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkContent_TotalDisconnectionRequested"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303a8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303a8d0.c;xref:0x142fd983e",
+   "notes": "V5438 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

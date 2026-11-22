@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_ReceivedCustomDriverMessageReplace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143133110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143133110.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x143131f5c,0x143132523,0x14257b7dd,0x14312f3b8",
+  "notes": "cxx=network::CustomDriverNetworkMessageHandler::handleCustomDriverMessageReplace(NeNetMessage&, NeNetConnectionID); its NETWORK-ENTRANTS logs pass that pretty name. Walks the player set (+0x40..+0x48, stride 0x58) for the message's player description, adds the new driver (addReplicatedPlayer inlined) and removes the old one, or only updates driver info. Callers 0x143131a10, 0x143131f70, 0x14257ae80; lea in 0x14312f230. (lane owner review requested) Better name: Game_NetworkEntrants_HandleCustomDriverMessageReplace (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_entrants_received_custom_driver_message_replace",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 07 00 00 44 89 C3",
+  "match": "0x143133110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143133110",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_ReceivedCustomDriverMessageReplace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143133110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143133110.c;xref:0x14257b7dd",
+   "notes": "V5874 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

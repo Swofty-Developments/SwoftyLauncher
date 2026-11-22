@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionRaceStatus_HandleRaceFinishedMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143092320",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143092320.c;pat:log-message-cxx;xref:0x1430554da",
+  "notes": "Only ref: lea 0x1430554da (in 0x143054470, message handler table). Own pretty-function string 0x14580fa40 'void ...GameSessionRaceStatus::handleRaceFinishedMessage(NeNetMessage &, NeNetConnectionID)'. When the session state p1+8 > 1 and my race status exists (0x143067c10): logs 'myRaceStatus: %s' (names 0x145f941a0) and, if the status is < 8 (race not finished), posts item 5 to the 'InterruptQueue' service (0x140799d20). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_race_status_handle_race_finished_message",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 83 79 08 02 0F 8C ?? ?? ?? ?? E8",
+  "match": "0x143092320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143092320",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionRaceStatus_HandleRaceFinishedMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143092320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143092320.c;xref:0x1430554dc",
+   "notes": "V5297 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ElasticSearchReporterModule_Report_Interaction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d5c20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406d5c20.c;pat:log-message-cxx;xref:0x1406d726d,0x140721083,0x1407b4fc5,0x1407bab85,0x140ac7b4f,0x140fdc5c5,0x140fdd8eb,0x140fdfc99,0x140fe28d8,0x141140e8c,0x14126d5d6,0x141434d21,0x141434fbf,0x14143b380,0x14143b510,0x14143b8ec,0x14143bb38,0x14143bc54,0x14143bef6,0x14143c2e4,0x14143ca41,0x14143cee1,0x14143d33d,0x14144be53,0x141bd11d8,0x141f107bd,0x14221604e,0x142bcc978,0x142bcc9ae,0x142bcce72,0x142d88324,0x142d8ab52,0x142d8c0f3,0x142d95ef4,0x142f344ca,0x142f7a452,0x143057a85,0x14305ede0,0x1430628e9,0x1430a62c2,0x1431c30a5,0x1436dc68e,0x1436ddd25,0x1485c27c2",
+  "notes": "report_Interaction(module, verb, noun): logs TELEMETRY 'ElasticSearchReporterModule::report_Interaction(verb=%s,noun=%s)'; refreshes [+0x20a58]+0x168 vcall +0x40; builds a 0xa0 event (0x1404c54d0, noun 0x1404c6980, verb 0x1404c6c50) and sends it via 0x140765b00(module, &ev, 0xff). Called from many UI sites (e.g. 0x1406d6360, 0x140720b20, 0x1407b4e90). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.elastic_search_reporter_module_report_interaction",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 4C 89 C3 48 89 D7 48 89 CE",
+  "match": "0x1406d5c20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d5c20",
+  "kind": "func_start",
+  "names": [
+   "Game_ElasticSearchReporterModule_Report_Interaction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406d5c20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406d5c20.c;xref:0x6d726d",
+   "notes": "V4754 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

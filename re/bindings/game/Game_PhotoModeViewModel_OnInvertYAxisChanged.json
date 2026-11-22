@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeViewModel_OnInvertYAxisChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d08780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d08780.c;pat:log-message-cxx;xref:0x141cefe1d",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. bool (value == 1) saved to 'lead_player.settings.photo_mode_cam_invert_y_axis'; on change also sets value +0x3f0 and this+0x428; camera (system+0x378)+0x170 = flag. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_view_model_on_invert_y_axis_changed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 83 7A 08 0A 0F 85 ?? ?? ?? ?? 48 89 CE 4C 8B 42 10",
+  "match": "0x141d08780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d08780",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeViewModel_OnInvertYAxisChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d08780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d08780.c;xref:0x141cefe1f",
+   "notes": "V5190 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

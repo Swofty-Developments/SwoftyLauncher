@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GamePlayerManager_AnyKeyCallbackForAddSecondaryPlayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434de7a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434de7a0.c;pat:log-message-cxx;xref:0x1434de66c,0x1434de7bc",
+  "notes": "Refs: lea at 0x1434de66c (in 0x1434de660, registration) and 0x1434de7bc (itself, passed to 0x1434df6e0 to re-arm). Returns if 0x1434df6e0 handles it or no lead player [p1+0x198]. Compares the pressed device p2 with the lead player's device; reads button state (0x1442da2e0 ..,5): cancel -> 0x1442aad70(p1+0x508) and UI sound play_ui_cancel; else, if device is new and 0x14411bcf0 accepts it, refreshes input maps and calls own vt+0x60(ok, second player [p1+0x1a0], p2), sound play_ui_confirm. Logs INPUT '...anyKeyCallbackForAddSecondaryPlayer - calling forceRefresh()', sets [p1+0x538]+0x72 = 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_player_manager_any_key_callback_for_add_secondary_player",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 4C 89 C0",
+  "match": "0x1434de7a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434de7a0",
+  "kind": "func_start",
+  "names": [
+   "Game_GamePlayerManager_AnyKeyCallbackForAddSecondaryPlayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434de7a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434de7a0.c",
+   "notes": "V6064 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

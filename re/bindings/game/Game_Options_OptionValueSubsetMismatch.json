@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Options_OptionValueSubsetMismatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a1a0b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a1a0b0.c;pat:log-channel-OPTIONS;xref:0x142910fe7,0x142a18611,0x142ab6358,0x142ad2f19,0x142ad327c,0x142ada2e6",
+  "notes": "Parses one value_subset JSON object: 'values' array strings XOR-decoded with key 0x145890978, option looked up by name in param_2+0x270 map; for enum options (type 1, values +0x80 stride 0x50) builds a 64-bit mask of matching value names, stores mask ^ -param_5 (invert flag) through 0x142ad89b0, result valid flag at param_1+0x38. Logs 'Failed to find option' / 'value subset mismatch' (OPTIONS). Called by 0x142ab60b0 and others listed. (lane owner review requested) Better name: Game_Options_ParseValueSubset (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.options_option_value_subset_mismatch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 04 00 00 4C 89 44 24 30",
+  "match": "0x142a1a0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a1a0b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Options_OptionValueSubsetMismatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a1a0b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a1a0b0.c;xref:0x142910fe7",
+   "notes": "V5163 Option value-subset lookup/validator returning a pointer (values, find failed + mismatch logs); callers FindOptionValueSubsetRange/LoadContextTags. Better: Game_Options_FindValueSubset"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142a1a0b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a1a0b0.c;xref:0x142910fe7",
+   "notes": "V7306 name fits; finding facts hold; 6 direct calls"
+  }
+ ],
+ "proofs": []
+}

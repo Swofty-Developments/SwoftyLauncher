@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Visual_UpdateHeatEffects",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14039f630",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14039f630.c;xref:0x14039dd5e,0x1403a6b28",
+  "notes": "(vis,dt): car = [[+0x1248]+0x58]+0x530; smooths +0x1be4 toward car+0x2574 (2*dt) and +0x1be8 toward car+0x2548/XOR(car+0x2518) (6*dt); temperature car+0x253c K -303.15 mapped (x-20)/90 and (x-35)/90; rpm car+0x2538*9.55414 normalised by a per-car rev range (table stride 0x6780, +0xce0/+0xce4); lerps 9 ramps +0x17bc..+0x19fc (stride 0x48). Also rpm ramps, not only heat. Callers in 0x14039aa80, 0x1403a66d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.visual_update_heat_effects",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 8B 81",
+  "match": "0x14039f630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14039f630",
+  "kind": "func_start",
+  "names": [
+   "Car_Visual_UpdateHeatEffects"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14039f630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14039f630.c;xref:0x14039dd5e",
+   "notes": "V3523 smooths +0x1be4 from car+0x2574 and +0x1be8 from +0x2548/rpm, temp +0x253c-273.15-30 into ramps; Car_Visual_UpdateRenderState caller seen"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_FacilityUpgradePurchasedFor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14073ce00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14073ce00.c;pat:log-channel-TELEMETRY;xref:0x1406e8398,0x140706c58",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e8398 (0x1406d8470), unregistered 0x140706c58. 0xd0-byte record: string msg+0x10 (log arg), msg+0x28, u32s msg+0xb0..+0xc0, optional 16-byte list msg+0xd0..+0xd8 (flag msg+0xe8) -> 0x98 sub-records. Tag 'my_team_facility_upgrade_purchased_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Facility Upgrade purchased for %s' (TELEMETRY). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_facility_upgrade_purchased_for",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 54 24 48 49 89 CE",
+  "match": "0x14073ce00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14073ce00",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_FacilityUpgradePurchasedFor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x14073ce00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14073ce00.c",
+   "notes": "V4212 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

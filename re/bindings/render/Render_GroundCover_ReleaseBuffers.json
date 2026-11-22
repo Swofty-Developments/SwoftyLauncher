@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_GroundCover_ReleaseBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ebe380",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ebe380.c;xref:0x143ebe356,0x143ebe35e",
+  "notes": "Destroys a sub-block of the ground-cover state: for each {allocator,object} pair from +0x478 down to +0x3a0 calls object vcall +8 (flag 0) then allocator vcall +0x38. Called for state+0x920 (0x143ebe356) and state+0x420 (0x143ebe35e) from Render_GroundCover_State_Destroy. The objects are owned sub-objects; that they are GPU buffers is not shown. (lane owner review requested) Better name: Render_GroundCover_StateBlock_Destroy (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.ground_cover_release_buffers",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B B9 78 04 00",
+  "match": "0x143ebe380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ebe380",
+  "kind": "func_start",
+  "names": [
+   "Render_GroundCover_ReleaseBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143ebe380",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ebe380.c;xref:0x143ebe356",
+   "notes": "V8358 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

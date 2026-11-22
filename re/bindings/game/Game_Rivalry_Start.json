@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rivalry_Start",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141249ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141249ce0.c;pat:log-channel-RIVALS;xref:0x14124fc13,0x141251e42,0x141251fd7",
+  "notes": "Full body read. Scans param_2 rivalry list [+0x18,+0x20) for type byte (+0x10)==param_4, returns if one exists; vtbl+0x38 check on participant id; looks up both drivers in roster (param_1+0x278)+0x1030 vtbl+0x1c8. Logs RIVALS 0x1456cd6e2 'Starting new rivalry with %s' 0x1456cfd9c; allocs 0x50-byte rivalry obj vtbl 0x1456cd890, appends via 0x1412bf650 to param_2+0x10; posts bus msgs 0x1456cfde0 and 0x1456cfdf0 via 0x1439876c0; sets score at param_2+0x50+type*4 from +0x6c0/+0x2a0/+0x920. Callers 0x14124fad0, 0x141250d40. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.rivalry_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 44 89 CB 48 89 D6",
+  "match": "0x141249ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141249ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rivalry_Start"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141249ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141249ce0.c;xref:0x14124fc13",
+   "notes": "V4702 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

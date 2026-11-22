@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HandleSessionDocumentMessageSkipPractice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143097ea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143097ea0.c;pat:log-message-method;xref:0x143095edb",
+  "notes": "Registered by the lea at 0x143095edb in 0x143095910. Logs '(%d)'; client only (role +8 > 1): if the practice session object is not finished (vt+0xf8) records an event (+0xc2, 0x48-byte entry at +0x3b0) on [NetSub+0x450], computes the new remaining time from msg+0x10/+0x14 (clamped, minimum 3 s), sets it (vt+0xe8) and logs '[CLIENT] practice session going into extra time'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_handle_session_document_message_skip_practice",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 D6 48 89 CF",
+  "match": "0x143097ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143097ea0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HandleSessionDocumentMessageSkipPractice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143097ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143097ea0.c;xref:0x143095edd",
+   "notes": "V5305 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

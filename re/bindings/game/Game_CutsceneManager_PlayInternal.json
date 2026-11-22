@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneManager_PlayInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140227db0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140227db0.c;pat:log-message-cxx;xref:0x140227d6c,0x140ac9e4f,0x140ac9f35,0x1428b4540,0x1428b4580,0x142c74b8c,0x142c74bcc,0x142d79b4a,0x142d79b8a,0x142d8a2b5,0x142d8a2f5,0x142d8b51e,0x142d8b55e,0x142df8535,0x142df8580",
+  "notes": "CutsceneManager::playInternal strings in body (CUTSCENE_MANAGER[_VERBOSE]). (mgr, shared script{p,ctrl}, params, name): NULL script -> 'play FAILED FOR %s'; idle -> vt+0x50(params)+vt+0xb8; not ready -> vt+0x1d8(1); not initialised/ready -> vt+0x268/0x270, sub-scripts, camera index params+0x170 clamped to 0 if out of range, vt+0x50; else play branch by +700; 0 cameras -> wait a frame, else Game_CutsceneManager_Update 0x1402262b0; logs ms. First caller Game_CutsceneManager_PlayShared 0x140227d10. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_manager_play_internal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 4D 89 CE",
+  "match": "0x140227db0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140227db0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneManager_PlayInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140227db0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140227db0.c",
+   "notes": "V4407 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

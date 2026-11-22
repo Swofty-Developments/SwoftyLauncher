@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Update_RnDDeptPropertyNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141812930",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Update(void *vm)",
+  "evidence": "decomp:re/decomp/141812930.c;xref:0x141c48222;xref:0x141c4ab4d;xref:0x141c5ebdb",
+  "notes": "myteam-g2: Sets S64 properties if changed (Ne_Property_SetUIDBRefIfChanged) from vm+0x30/0x50/0x58/0x68 values for the RnD dept view. UI only."
+ },
+ "signature": {
+  "id": "ui.update_rn_ddept_property_nodes",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 8B 41 50 48 8B 51 58",
+  "match": "0x141812930",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141812930",
+  "kind": "func_start",
+  "names": [
+   "Ui_Update_RnDDeptPropertyNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141812930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141812930.c;xref:0x141c48222",
+   "notes": "V9808 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

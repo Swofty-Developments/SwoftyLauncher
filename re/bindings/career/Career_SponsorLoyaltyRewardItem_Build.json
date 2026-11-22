@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorLoyaltyRewardItem_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416c4510",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, uint8_t *out",
+  "evidence": "decomp:re/decomp/1416c4510.c;xref:0x141a4a7af,0x142002e55,0x142005914,0x14200eebd",
+  "notes": "Switch on the unlock method (0x1418907c0(item +0xa4, ...)): sets the method title (lng_paddock_pass_title, lng_paddock_shop_title, lng_dlc, lng_racenet_item, lng_unlock_goals, lng_sponsor_loyalty_item_title) and per-method description/icon nodes (lng_sponsor_loyalty_unlock_desc, lng_racenet_item_desc, DLC names, cstm_paddock_shop icon, lng_locked_info_timer). Generic item unlock info, not only sponsor loyalty. (lane owner review requested) Better name: Career_Build_ItemUnlockMethodInfo (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.sponsor_loyalty_reward_item_build",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 C5 F8 29 B4 24 F0 02 00 00 49 89 D6 48 89 CE",
+  "match": "0x1416c4510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416c4510",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorLoyaltyRewardItem_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416c4510",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1416c4510.c;xref:0x141a4a7af;xref:0x142002e55",
+   "notes": "V9758 Generic reward/unlock item text builder (paddock pass, shop, DLC, racenet, unlock goals, sponsor loyalty title/desc); sponsor loyalty is only one branch."
+  }
+ ],
+ "proofs": []
+}

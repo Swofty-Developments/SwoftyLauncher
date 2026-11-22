@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_ModelBindingMap_Erase",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f0f3d0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f0f3d0.c;xref:0x143c488e4,0x143c4aa44",
+  "notes": "unordered_map erase(first, last): per node hashes the 8-byte key at node+0x10 (FNV-1a 64, mask [+0x40]), frees it via allocator [+8] vcall +0x38, size [+0x18]--, fixes bucket {first,last} pairs at [+0x28], relinks the list. Callers 0x143c488e4 (Render_Model_BuildPerInstanceBuffers), 0x143c4aa44 jmp (Game_Particles_ReleaseMeshModelBinding). Map identity taken from the callers; key is 8 bytes, not 24. (lane owner review requested) Better name: Render_ModelBindingMap_EraseRange (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.model_binding_map_erase",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 49 8B 40 08 48 C7 00 00 00 00 00 49 8B 10 48 85 D2 75 57 48 8B 43",
+  "match": "0x143c488e4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143f0f3d0",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelBindingMap_Erase"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143f0f3d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f0f3d0.c;xref:0x143c488e4",
+   "notes": "V8294 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

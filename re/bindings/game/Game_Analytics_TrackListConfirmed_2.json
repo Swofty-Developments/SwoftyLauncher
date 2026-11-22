@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_TrackListConfirmed_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140735640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140735640.c;pat:log-channel-TELEMETRY;xref:0x1406e5544,0x1406fec01",
+  "notes": "Old name wrong: emits race_session_start_grid_penalty_record per entry, only reuses log 'Track List Confirmed'. Bus handler: lea 0x1406e5544 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1406fec01 in unsubscribe-all 0x1406fd6c0. Allocs 0x98 record (ctor 0x140572190), copies msg fields, baseCtx by 0x14077bb90 'race_session_start_grid_penalty_record', pushed to static queue (guard 0x14604d410) under CS; logs TELEMETRY 'Track List Confirmed'. (lane owner review requested) Better name: Game_Analytics_RaceSessionStartGridPenalties (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_track_list_confirmed_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 48 8B 81 C0 09 02 00",
+  "match": "0x140735640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140735640",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_TrackListConfirmed_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140735640",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140735640.c",
+   "notes": "V4198 record is race_session_start_grid_penalty_record, log text is a copy of Track List Confirmed; better Game_Analytics_RaceSessionStartGridPenalty"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140735640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140735640.c",
+   "notes": "V7145 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

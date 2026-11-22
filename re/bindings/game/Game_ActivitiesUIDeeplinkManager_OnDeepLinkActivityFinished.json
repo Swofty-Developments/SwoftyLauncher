@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_OnDeepLinkActivityFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143862fe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143862fe0.c;str:s_ActivitiesUIDeeplinkManager_OnDeepLinkActivityFinished;xref:0x143860e2a,0x143861834",
+  "notes": "Bus handler (bound by lea in 0x143860d80, which subscribes via 0x143987810 and unsubscribes via 0x143988350). Unless PlayGo (+0x63) or trial (0x14078e1a0): if msg+0x10 type != 10 and equals the current activity +0x60 (or none) logs finished/abandoned (msg+0x11). Always resets +0x60 = 10 (none) and clears the presence string ((+0x30)+0x10f8)+0x18, then vcall +0x38. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_on_deep_link_activity_finished",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 79 63 00 74 69 80",
+  "match": "0x143862fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143862fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_OnDeepLinkActivityFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143862fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143862fe0.c;xref:0x143858722",
+   "notes": "V6330 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

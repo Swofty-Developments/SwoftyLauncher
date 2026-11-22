@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameDecalCustomisationSystem_ApplyEditorDecalState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142c6f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142c6f0.c;xref:0x14142d183,0x14142e1ef,0x14142f666,0x141ff0b83",
+  "notes": "Own bounds 0x14142c6f0..0x14142c851 (decomp merges tail target 0x141428e60). Finds decal node with id *p2 in vector p1+0x178..+0x180 (16-byte entries, node+0x20 = id), copies state p3 (+0x10..+0x66: type/slot, transform +0x30/+0x50, flags) into it; unless a matching entry (+0x18 byte, +0x1a u16) in [[p1+0x2a8]+0x260]+0x10.. has +0x48 set, makes scale x/z (+0x50/+0x58) positive; then 0x14142c860(p1), p1+0x168 = 1, tail-jump 0x141428e60(p1,node,1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_decal_customisation_system_apply_editor_decal_state",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B B9 78 01 00 00",
+  "match": "0x14142c6f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142c6f0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameDecalCustomisationSystem_ApplyEditorDecalState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14142c6f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14142c6f0.c;xref:0x14142e1ef",
+   "notes": "V8036 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

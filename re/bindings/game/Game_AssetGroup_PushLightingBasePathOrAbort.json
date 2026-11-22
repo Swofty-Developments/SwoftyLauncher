@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AssetGroup_PushLightingBasePathOrAbort",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a5a460",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a5a460.c;xref:0x1438c6eed",
+  "notes": "push_back (1.5x growth, allocator vec[0]) of Game_AssetGroupRegistry_FindOrCreateById(global 0x14628f510 id) into vector param_1 (+8 begin, +0x10 end, +0x18 cap); fatal path if the result is null. Only caller 0x1438c6ca0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.asset_group_push_lighting_base_path_or_abort",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 0D",
+  "match": "0x143a5a460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a5a460",
+  "kind": "func_start",
+  "names": [
+   "Game_AssetGroup_PushLightingBasePathOrAbort"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a5a460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a5a460.c;xref:0x1438c6eed",
+   "notes": "V7829 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

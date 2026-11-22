@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424726f0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424726f0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140c2d5f0,0x14175671c,0x1420633d0,0x14225c4be,0x14225d006",
+  "notes": "(entrants, key, record): kind 0 refused -> 5; team list [entrants+0x2c8+kind*0x10] (same as RemoveTeam) missing -> 1 (log text says 'driver'); field-by-field compare with the existing record; removes with 0x142472510, adds via 0x140cdbd40; fail -> 3; posts bus msg 0x14578d678; returns 0/2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 07 00 00 89 D7",
+  "match": "0x1424726f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424726f0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1424726f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424726f0.c;xref:0x140c2d5f0",
+   "notes": "V5058 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

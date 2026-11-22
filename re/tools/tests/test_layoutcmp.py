@@ -37,6 +37,11 @@ class Normalise(unittest.TestCase):
 @unittest.skipUnless(os.environ.get('SWOFTY_STEAM_EXE') and os.environ.get('SWOFTY_EA_DUMP'),
                      'set SWOFTY_STEAM_EXE and SWOFTY_EA_DUMP')
 class OnTheEaBuild(unittest.TestCase):
+    def setUp(self):
+        import bindverify
+        if not bindverify.is_kb_build(os.environ['SWOFTY_STEAM_EXE']):
+            self.skipTest('SWOFTY_STEAM_EXE is not the KB build')
+
     def run_tool(self, *fields):
         out = io.StringIO()
         args = ['--steam', os.environ['SWOFTY_STEAM_EXE'], '--other', os.environ['SWOFTY_EA_DUMP']]

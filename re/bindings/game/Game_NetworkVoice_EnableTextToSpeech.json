@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_EnableTextToSpeech",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403f6f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14403f6f0.c;pat:log-message-method;xref:0x145a4a228",
+  "notes": "Sets PlayFab text chat options; on failure logs '%s: Failed to set text options: %hs' with its own name enableTextToSpeech. Only reference is vtable cell 0x145a4a228. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_voice_enable_text_to_speech",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 00 0F 84 ?? ?? ?? ?? 80 BE 00 01 00 00 00 0F 84 ?? ?? ?? ?? 4C 8B B6 70 01 00 00 48 8D 4C 24 28 E8 ?? ?? ?? ?? 85 C0 74 04 89 C7 EB 20",
+  "match": "0x14403f6f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403f6f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_EnableTextToSpeech"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403f6f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403f6f0.c;xref:0x1484bd5cd",
+   "notes": "V6441 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Write_RnDPieTileCounts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f49bc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f49bc0.c;pat:cmp-cl-3-ja@0x141f49c23,cmp-ebx-3-ja@0x141f49c28;imm:0x220;kb:subsystems/rnd_ui.md#tile-counts;xref:0x141f4785c,0x141f4a4f1,0x141f4a94d",
+  "notes": "(this, query) For each dept code<4 and idx<=3: total = results in query (+0xc00 count) with +0x72 == code, fitted = those whose state byte ([+200]-8) == 2, percent = fitted/total; writes into handles at [this+0x670]+0x88/0xa8/...+idx*0x220. Callers: Career_Build_RnDPieOverview, 0x141f4a2e0, 0x141f4a760. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.write_rn_d_pie_tile_counts",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 18 00",
+  "match": "0x141f49bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f49bc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_RnDPieTileCounts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f49bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f49bc0.c;xref:0x141f15b02",
+   "notes": "V5237 Verified: type==code count, state==3 fitted, percent, slot handles +0x88/0xa8/0xc8/0xe8 stride 0x220, guards cmp cl,3 @0x141f49c23 and cmp ebx,3 @0x141f49c28"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141f49bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f49bc0.c;xref:0x141f4785c;xref:0x141f49c23;xref:0x141f49c28",
+   "notes": "V9202 Guards cmp cl,3 and cmp ebx,3 present; handle writes at [this+0x670]+0x88/0xa8/0xc8/0xe8 + idx*0x220 as claimed."
+  }
+ ],
+ "proofs": []
+}

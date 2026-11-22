@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_LeadPlayerConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140789270",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140789270.c;pat:log-channel--;xref:0x1456444a8",
+  "notes": "vtable 0x1456444a0 slot1. Reads hardware_settings_config (graphics_card/resolution, motion dbox+udp ip/port/sendRate/format, led_display), lead_player.settings head/eye_tracking, wooting device name; per group diffs vs snapshot, on change builds event, FUN_14077a240 with hud_customisation/settings_head_and_eye_tracking/settings_dbox_and_sli/settings_udp_telemetry/settings_wooting_keyboard, queues. (lane owner review requested) Better name: Game_Emit_HardwareSettingsChangeEvents (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_lead_player_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 94 24 F0 00 00 00",
+  "match": "0x140789270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140789270",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_LeadPlayerConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140789270",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140789270.c",
+   "notes": "V4286 reads far more than the 3 listed keys (hardware_settings_config, hud_customisation, led_display, UDP telemetry, wooting, dbox/sli); better Game_Read_PlayerSettingsConfig"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140789270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140789270.c",
+   "notes": "V7148 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

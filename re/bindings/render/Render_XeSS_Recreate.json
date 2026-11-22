@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_XeSS_Recreate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143dfb210",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143dfb210.c;xref:0x143dfb60e,0x143dfdf44",
+  "notes": "Releases handles +0xa0/+0xa8 via 0x1439d9cb0 on device 0x14618caa8; if a context is at +0xe0, fences the queue with label XeSS_Recreate (fence vcall +0x40 completed value, +0x48 set event, WaitForSingleObject INFINITE), calls libxess xessDestroyContext (thunk 0x14537f380); then xessD3D12CreateContext (thunk 0x14537f400) with [device+0x508] into +0xe0. Callers 0x143dfb60e (Render_XeSS_Evaluate), 0x143dfdf44 (in 0x143dfd720). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.xe_s_s_recreate",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CF 48 8B 81 A0",
+  "match": "0x143dfb210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143dfb210",
+  "kind": "func_start",
+  "names": [
+   "Render_XeSS_Recreate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143dfb210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143dfb210.c;xref:0x143dfb60e",
+   "notes": "V7933 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

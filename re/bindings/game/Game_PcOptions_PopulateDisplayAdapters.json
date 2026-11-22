@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PcOptions_PopulateDisplayAdapters",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c8f9d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c8f9d0.c;pat:log-message-method;xref:0x1457d4c48",
+  "notes": "Vtable slot (cell 0x1457d4c48). Saves the current adapter entry (index from vcall +0x80), clears adapter list (+0x1c8, entries 0xd8), CreateDXGIFactory (0x14537efd0, IID 0x1457d6af0), EnumAdapters (vt+0x38) until DXGI_ERROR_NOT_FOUND, GetDesc (vt+0x40), logs PC_OPTIONS line, skips vendor 0x1414 device 0x8c (Microsoft Basic Render), appends name/desc/vendor entries; for option 'resolution' sets +0xc0 index; rebuilds value list +0x80. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pc_options_populate_display_adapters",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 03 00 00 C5 F8 29 B4 24 70 03 00 00 4C 89 C3 48 89 CE",
+  "match": "0x142c8f9d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c8f9d0",
+  "kind": "func_start",
+  "names": [
+   "Game_PcOptions_PopulateDisplayAdapters"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c8f9d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c8f9d0.c",
+   "notes": "V5055 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Trace_WriteOutEXR",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a7e110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a7e110.c;pat:log-message-method;xref:0x142bd2a30,0x1444936d1",
+  "notes": "writeOutEXR(stream, pitch, pixels, w, h, format, alloc) (TRACE 'writeOutEXR malloc %dMiB'): 3-channel float EXR header; per pixel converts format '#' (0x143a85970), 'J' (11/11/10 float) or 'M' (10/10/10/2) into three float planes, inverse PQ (0.8359375/18.8515625/18.6875, x100) when HDR is on ([0x14618caa8]+0x70); encodes 0x143a79520, writes stream vt+0x48. Callers 0x142bd2a30, 0x1444936d1. (lane owner review requested) Better name: Game_Screenshot_WriteOutEXR (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.trace_write_out_exr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 C5 78 29 BC 24 E0 02 00 00 C5 78 29 B4 24 D0 02 00 00 C5 78 29 AC 24 C0 02 00 00 C5 78 29 A4 24 B0 02 00 00 C5 78 29 9C 24 A0 02 00 00 C5 78 29 94 24 90 02 00 00 C5 78 29 8C 24 80 02 00 00 C5 78 29 84 24 70 02 00 00 C5 F9 7F BC 24 60 02 00 00",
+  "match": "0x143a7e110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a7e110",
+  "kind": "func_start",
+  "names": [
+   "Game_Trace_WriteOutEXR"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a7e110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a7e110.c;xref:0x142bd2a30",
+   "notes": "V6443 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_ForEachUpgradeCardEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142569210",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_F1World_ForEachUpgradeCardEntry(void *self, void *set)",
+  "evidence": "decomp:re/decomp/142569210.c;xref:0x141aed772,0x141b92074,0x142564a2c",
+  "notes": "(this, set): over the bitmask hash set (+0x18 slots, +0x20 control, +0x28 count) calls 0x1425ae530([this+0x200], copy of this+0xc8 record with 64-byte string +0xe8, kind u8, id u32) per entry; stops at first false; clears the set; returns all-ok bool. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ui.f1_world_for_each_upgrade_card_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 D7 40 B6 01",
+  "match": "0x142569210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142569210",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_ForEachUpgradeCardEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142569210",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142569210.c",
+   "notes": "V10222 Iterates the bitmask hash set but the per-entry action is Game_Inventory_CanAfford(*(self+0x200)); returns false at the first entry that cannot be afforded, not a UI update."
+  }
+ ],
+ "proofs": []
+}

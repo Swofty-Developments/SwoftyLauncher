@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingHopper_OnMatchJoinComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307fbd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14307fbd0.c;pat:log-message-cxx;xref:0x143061327,0x143081a2d,0x143081c64,0x1430e3cad,0x14316680f",
+  "notes": "Logs NETWORK-SESSION 'GameSessionMatchingHopper::onMatchJoinComplete(%s, %s)' (success/failed p2, error name p3). Restarts the timer +0x140/+0x148, sets +0x159 once, clears +0xf0; if the join delegate (fn +0xf8, ctx +0x100) is set fills the result at +0x108 (session id +0x110..+0x126 from +0x28..+0x3e, ok +0x129 = p2, error +0x134 = p3), calls it and clears the delegate. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_hopper_on_match_join_complete",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 59",
+  "match": "0x14307fbd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307fbd0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingHopper_OnMatchJoinComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307fbd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307fbd0.c;xref:0x143061328",
+   "notes": "V5609 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

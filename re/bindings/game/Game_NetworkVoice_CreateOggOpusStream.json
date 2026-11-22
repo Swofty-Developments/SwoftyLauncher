@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_CreateOggOpusStream",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403b5e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14403b5e0.c;pat:log-message-method;xref:0x145a49ab8",
+  "notes": "Logs 'LOCAL createOggOpusStream: compress %d bytes of WAV data into an OggOpus stream.', uses ope_encoder_create_pull/ope_encoder_write and collects written pages ('page written', 'all done'). Only reference is the vtable cell 0x145a49ab8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_voice_create_ogg_opus_stream",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D3 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14403b5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403b5e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_CreateOggOpusStream"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403b5e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403b5e0.c",
+   "notes": "V6419 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

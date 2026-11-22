@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyrePerformanceRuleManager_OnSpectatorChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1415291c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1415291c0.c;str:s_TyrePerformanceRuleManager_OnSpectatorChanged;xref:0x1456ed280",
+  "notes": "game::TyrePerformanceRuleManager::onSpectatorChanged(vehicleInstance::Id) (own pretty-function string 0x1456ed455, channel AWS_TYRE_PERF). If this+0x714 != id: logs, this+0x710 = clamp(this+0x710, 10, 0x6e) - 10, this+0x714 = id. Always this+0x270 = id. Called through vtable cell 0x1456ed280. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_performance_rule_manager_on_spectator_changed",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 89 D3 48 89 CE 38 91 14 07 00",
+  "match": "0x1415291c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1415291c0",
+  "kind": "func_start",
+  "names": [
+   "Game_TyrePerformanceRuleManager_OnSpectatorChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1415291c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1415291c0.c",
+   "notes": "V4883 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

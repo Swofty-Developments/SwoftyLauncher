@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Http_CopyingFormattedDataSizeIntoHeader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144050130",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144050130.c;pat:log-channel-HTTP/V;xref:0x14404f3a2",
+  "notes": "(req, wchar*) WideCharToMultiByte(CP_UTF8) into a temp buffer from the req allocator, logs HTTP/V 'Copying formatted data %s size %d into header data', copies into header buffer req[5] if size <= req[6], else sets error 5 in the TLS error chain; frees temp. Caller 0x14404e260. (lane owner review requested) Better name: Game_HttpV_CopyWideHeaderDataUtf8 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.http_copying_formatted_data_size_into_header",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 85 D2",
+  "match": "0x144050130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144050130",
+  "kind": "func_start",
+  "names": [
+   "Game_Http_CopyingFormattedDataSizeIntoHeader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144050130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144050130.c;xref:0x14404f3a2",
+   "notes": "V6479 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

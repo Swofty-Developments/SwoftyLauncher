@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Progress_OnFormationLapComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f0c900",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f0c900.c;pat:log-message-method;xref:0x142d5ec4e",
+  "notes": "(this): for each vehicle in this+0x38..+0x40 that is local-controlled (or [..]+0x28 < 2 for index >= 32), reads Game_VehicleProgressSystem_GetLapProgress 0x1446046a0 and sends a net message (vtable 0x145800ec0, id 0xa00000006: vehicle, lap, progress lap, flag 1) via 0x14402e500(this+0x90,1,msg); logs PROGRESS 'onFormationLapComplete - Sending reset lap progress data message...'. Caller 0x142d5ec4e (0x142d5eb80). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.progress_on_formation_lap_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 8B 41 40",
+  "match": "0x142f0c900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f0c900",
+  "kind": "func_start",
+  "names": [
+   "Game_Progress_OnFormationLapComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f0c900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f0c900.c;xref:0x142d5ec4e",
+   "notes": "V5568 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

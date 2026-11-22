@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HostSendsOpenSeasonDocumentMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a5170",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430a5170.c;pat:log-channel-NETWORK;xref:0x14580fad8",
+  "notes": "Read in full (pdata 0x1430a5170-0x1430a5769; param_2==0 branch tail-jumps 0x14309d6a0, merged in decomp). Slot 1 of vtable 0x14580fad0, no direct calls. param_2==0: clears callbacks/state. Else: sets doc callback 0x14309e3a0, ProcessPending 0x14309ceb0, rebuild 0x143099350, OpenDocument 0x143067d40, new correlationId (CoCreateGuid) logged; logs 'Host sends open Season Document Message on role changed' and sends it via 0x14402e500. Better name: Game_GameSessionSeasonDocument_OnRoleChanged (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_host_sends_open_season_document_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE 48 8B 89 20 04 00 00",
+  "match": "0x1430a5170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a5170",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HostSendsOpenSeasonDocumentMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a5170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a5170.c",
+   "notes": "V5318 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

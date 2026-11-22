@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_SetHotloadFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ba1e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ba1e30.c;pat:log-channel-INSTANT_RACE;xref:0x1456779e0",
+  "notes": "Vt cell 0x1456779e0. If 0x1413ca0d0()+7 bit0: +0x89/+0x88/+0x8a=0 (logs 'Hotload Triggered flag set to %s', 'Use Real GP settings flag set to %s'); if the current save slot is the instant race one (flag 0x40) refreshes it (0x1429cec50) and selects a slot with flags&0x41==0 (0x1429d0b90). (lane owner review requested) Better name: Game_InstantRace_ClearFlagsRestoreSaveSlot (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.instant_race_set_hotload_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE E8 ?? ?? ?? ?? F6 40 07 01",
+  "match": "0x140ba1e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba1e30",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_SetHotloadFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ba1e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ba1e30.c",
+   "notes": "V4444 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

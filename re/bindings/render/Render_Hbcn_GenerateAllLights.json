@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Hbcn_GenerateAllLights",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d1e6a0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d1e6a0.c;xref:0x1445b3116",
+  "notes": "Hbcn all-lights generation (channel IBL): logs 'generate: Total lights %u' and loops the lights through Render_Hbcn_ComputeLightUpdateFlags (call 0x143d1ebad). Only caller Render_Hbcn_OnCompressRequest 0x1445b3116. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.hbcn_generate_all_lights",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 C5 78 29 AC 24",
+  "match": "0x143d1e6a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d1e6a0",
+  "kind": "func_start",
+  "names": [
+   "Render_Hbcn_GenerateAllLights"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d1e6a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d1e6a0.c;xref:0x1445b3116",
+   "notes": "V7901 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

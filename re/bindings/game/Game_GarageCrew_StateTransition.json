@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrew_StateTransition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14043e5a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14043e5a0.c;pat:log-channel-GARAGECREW;xref:0x145622fe8",
+  "notes": "StateTransition::processEvent(out,logic): with logic+0x90 set logs 'm_transitionComplete == true' and returns the logic+8 state; event 2 -> state 0xc (+0x28), 3 -> 6 (+0x08), 4 -> 7 (self), 5 -> 1 (self): logs setNextState, sets +0x48, +0x80, +0x90=1 and pops the event. Vtable cell 0x145622fe8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_crew_state_transition",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D6 48 89 CB 80 BA 90 00 00 00 00",
+  "match": "0x14043e5a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14043e5a0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrew_StateTransition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14043e5a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14043e5a0.c",
+   "notes": "V4674 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

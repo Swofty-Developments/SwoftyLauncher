@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Roll_UpgradePurchaseOutcome",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14351c490",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Roll_UpgradePurchaseOutcome(void * self,uint32_t a2,uint64_t a3)",
+  "evidence": "decomp:re/decomp/14351c490.c;xref:0x14351b6c8,0x14351b7e6",
+  "notes": "Gets instance via 0x14351b330 (on miss calls 0x14351ccb0 first). With Career_Get_TeamModifiers 0x1434fb4b0 (model+0xc90): sums kind-5 modifier floats for dept +0x72; if >0 sums kind-8 and success = rand*100 <= sum (log UPGRADES/R 'Random used for purchaseUpgrade'); else fail. Calls 0x1412414c0(model,team,inst,success,0,0); if it returns 0 calls 0x14351ccb0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.roll_upgrade_purchase_outcome",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC A0 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 4D 89 C6",
+  "match": "0x14351c490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14351c490",
+  "kind": "func_start",
+  "names": [
+   "Career_Roll_UpgradePurchaseOutcome"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x14351c490",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14351c490.c;xref:0x14351b6c8;str:\"purchaseUpgrade\";str:\"Random used for %s (randVal): %f\";str:\"UPGRADES/R\"",
+   "notes": "V8997 Sums modifier kind 5 (gate must be >0) then kind 8; rolls 0..100 and compares <= kind-8 sum, then FUN_1412414c0 applies. The rnd_upgrade_purchase_error string is not in this body (failure path calls FUN_14351ccb0), so that sub-claim is unproven."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14351c490",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14351c490.c;xref:0x14351b6c8",
+   "notes": "V10282 Core role right (kind 5 gate then kind 8 sum, roll 0..100, FUN_1412414c0 applies). The rnd_upgrade_purchase_error repost is not in this body; failure calls FUN_14351ccb0 instead."
+  }
+ ],
+ "proofs": []
+}

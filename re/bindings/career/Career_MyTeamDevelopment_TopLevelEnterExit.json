@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamDevelopment_TopLevelEnterExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c463c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/141c463c0.c;xref:0x14573e5d0",
+  "notes": "Message handler (vtable cell 0x14573e5d0) keyed by djb2 of *param_2: 0xe3f586e5 looks +0x140 up in a map and acts on the entry; 0x7c947676 ('back'): if tutorial my_team_entering_development_top_level is known, queues my_team_exiting_development_top_level (Game_MaskedTutorial_AddToQueue) and returns, else forwards 'back' to the parent (+0x28, 0x1442c0e20). (lane owner review requested) Better name: Career_MyTeamDevelopment_OnMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.my_team_development_top_level_enter_exit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC C8 00 00 00 48 8B 02",
+  "match": "0x141c463c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c463c0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamDevelopment_TopLevelEnterExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c463c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c463c0.c;xref:0x14573e5d0",
+   "notes": "V9962 Feeds my_team_entering/exiting_development_top_level into the masked tutorial queue (142e689c0) and a back event, i.e. tutorial triggers rather than plain events."
+  }
+ ],
+ "proofs": []
+}

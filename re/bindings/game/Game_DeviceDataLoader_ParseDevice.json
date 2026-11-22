@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DeviceDataLoader_ParseDevice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a6fc70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a6fc70.c;pat:log-channel-INPUT;xref:0x142a76c55,0x142a778c5",
+  "notes": "Parses buffer param_1[0x1d] (typeid/display/type), finds device entry by name param_1[0x1a]; display -> entry+0xb0; type wheel/pedals/pad/other -> entry+0xf4 = 1/2/0/3; sections Tooltips (Axis icon/is_button/localise -> map entry+0x28.., flag +0xf0), ForceFeedback (UndersteerEnhance +0x84, Strength/OnTrack/Rumblestrip/OffTrack/PitStop/Cutscene/WheelWeight +0x64..+0x7c as v/100 clamped 0..1, flag +0xf1), ActionMaps (0x143a8b310, flag +0xf2); result -> param_1+0xf8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.device_data_loader_parse_device",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 78 29 94 24 40 02 00 00 C5 78 29 8C 24 30 02 00 00 C5 78 29 84 24 20 02 00 00 C5 F8 29 BC 24 10 02 00 00 C5 F8 29 B4 24 00 02 00 00 49 89 CC 48 8D 05",
+  "match": "0x142a6fc70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a6fc70",
+  "kind": "func_start",
+  "names": [
+   "Game_DeviceDataLoader_ParseDevice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a6fc70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a6fc70.c;xref:0x142a76c55",
+   "notes": "V4954 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

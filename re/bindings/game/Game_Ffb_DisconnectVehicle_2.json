@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_DisconnectVehicle_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446fa740",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446fa740.c;pat:log-channel-FFB_DEBUG;xref:0x142884c67,0x14389b358,0x14d21c91a",
+  "notes": "(subsys,vehicleIdx byte). Repeats: finds a device controller whose +0x128 == vehicleIdx, calls vcall +0x28 (stop), stores result in TLS error slot, disconnects (0x1446f1730), logs 'Disconnected vehicle %d from device %s %d.'; returns 0 when none left. Callers in 0x142884a90, 0x14389a2b0, 0x14d21c840. Renamed from _2 (old base name moved to the all-vehicles variant). (lane owner review requested) Better name: Game_Ffb_DisconnectVehicle (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ffb_disconnect_vehicle_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 8B 71 50",
+  "match": "0x1446fa740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446fa740",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_DisconnectVehicle_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446fa740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446fa740.c;xref:0x142884c67",
+   "notes": "V6861 Disconnected vehicle log confirmed (second class copy)."
+  }
+ ],
+ "proofs": []
+}

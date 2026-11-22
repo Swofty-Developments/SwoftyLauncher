@@ -7,20 +7,18 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v xvfb-run >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable nixpkgs#xvfb-run -c "$SELF" "$@"
-fi
+NEEDS="zig wine xvfb-run"
+. "$(dirname "$SELF")/lib/env.sh"
 . ./game_lock.sh
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=$(realpath -m "${1:-$PWD/../build/save-sandbox-test}")
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game" "$OUT/runs" "$OUT/steam"
 mkdir -p "$OUT/game" "$OUT/runs" "$OUT/steam"
 status=0
-"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
+"${PIN[@]}" zig c++ -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \
     -o "$OUT/save_sandbox_test" save_sandbox_test.cpp
 "$OUT/save_sandbox_test" "$OUT/host-folder" || status=1
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness \
     -I../../packages/sdk/include -o "$OUT/save_sandbox_test.exe" save_sandbox_test.cpp
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_save_sandbox.c -lversion -luser32
 cp -r ../dist/. "$OUT/game/"
@@ -71,7 +69,16 @@ play() {
     env "$@" T_STEAM_DIR='Z:'"${OUT//\//\\}"'\steam\'"$name" SWOFTY_EARLY_STAGE=1 \
         timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" >"$OUT/$name.out" 2>&1 || code=$?
     grep -E '^(ok  |FAIL|ALL|SOME)' "$OUT/$name.out" | sed 's/^/      game: /'
-    if [[ $code == "$want" ]]; then echo "ok  : $name: the game exited with $want"; else echo "FAIL: $name: exit $code, want $want"; status=1; fi
+    if [[ $code == "$want" ]]; then
+        echo "ok  : $name: the game exited with $want"
+    else
+        echo "FAIL: $name: exit $code, want $want"
+        status=1
+        echo "      $name.out without its ok lines (last 40):"
+        grep -vE '^ok  ' "$OUT/$name.out" | tail -n 40 | sed 's/^/      out: /' || true
+        echo "      loader.log (last 30 lines):"
+        tail -n 30 "$LOG" 2>/dev/null | sed 's/^/      log: /' || true
+    fi
     cp "$LOG" "$OUT/$name.loader.log" 2>/dev/null || true
 }
 steam_untouched() {
@@ -207,24 +214,10 @@ doc = json.load(open(sys.argv[1]))
 doc['build']['distribution'] = 'EA app'
 json.dump(doc, open(sys.argv[2], 'w'))
 EOB
-SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcherea 0 T_EXPECT_NORMAL=1
+SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcherea 93
+check "launcher saves: the EA copy fails closed without a bound NeSaveSystem2Win vtable" "LAUNCHER SAVES FAILED: vt_Ne_SaveSystem2Win does not resolve"
+grep -q "the game's own start ran" "$OUT/launcherea.out" && { echo "FAIL: launcher EA device: the device started"; status=1; } || echo "ok  : launcher EA device: the device never started"
 cp "$OUT/bindings.steam.json" "$OUT/bindings.full.json"
-check "launcher saves: the EA copy keeps its own saves and says why" '\[saves\] launcher saves are off.*launcher saves are not available on the EA copy yet'
-none "launcher saves: the EA copy arms nothing" '\[saves\] (launcher saves armed|sandbox)'
-
-if grep -q 'constexpr bool EA_BACKEND = true' ../src/core/save_sandbox.cpp; then
-    python3 - "$OUT/bindings.steam.json" "$OUT/bindings.full.json" <<'EOB'
-import json, sys
-doc = json.load(open(sys.argv[1]))
-doc['build']['distribution'] = 'EA app'
-json.dump(doc, open(sys.argv[2], 'w'))
-EOB
-    SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play launcheread 93
-    cp "$OUT/bindings.steam.json" "$OUT/bindings.full.json"
-    check "launcher saves: on the EA copy a device that is not the EA build's fails closed" "LAUNCHER SAVES FAILED: the save device's vtable is not the EA build's NeSaveSystem2Win"
-    grep -q "the game's own start ran" "$OUT/launcheread.out" && { echo "FAIL: launcher EA device: the device started"; status=1; } || echo "ok  : launcher EA device: the device never started"
-    check "launcher saves: the EA copy wraps Start and Mount only" '\[saves\] launcher saves hooked: Ne_SaveSystem2Win_Start and Ne_SaveSystem2Win_Mount are wrapped'
-fi
 
 R=$(run_dir testwins)
 SETTINGS=$(launcher_settings default "$LS/saves/default/remote") play testwins 0 SWOFTY_TEST_RUN="$R" SWOFTY_TEST_TOKEN=$TOKEN T_LINGER_MS=1500

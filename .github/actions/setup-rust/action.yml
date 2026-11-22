@@ -1,0 +1,105 @@
+name: Set up Rust
+description: >
+  The toolchain rust-toolchain.toml pins, the Rust build cache under one shared key, and on Linux the system
+  libraries GPUI and the ads helper link against. Every Rust job in ci.yml and release-binaries.yml starts here.
+
+inputs:
+  # Only the test builds and the Windows installer are cached: the rest are off the critical path or build as
+  # quickly as they restore, and the repository's 10 GB of cache space holds main's caches with room for pull
+  # requests.
+  cache:
+    description: The cache's shared key, or empty for no Rust cache
+    default: ''
+  # A cache restored under its exact key is never saved again, so a pull request that changes no dependency
+  # uses main's cache and saves nothing. One that changes them, or runs before main has a cache under the
+  # current key, saves its own, which only that pull request's later runs can read.
+  save:
+    description: Save the cache at the end of the job when the restore was not an exact match
+    default: 'false'
+  system-libraries:
+    description: Install the GPUI, GTK and WebKitGTK development packages on Linux
+    default: 'true'
+  nextest:
+    description: Install cargo-nextest
+    default: 'false'
+
+outputs:
+  cache-hit:
+    description: Whether the Rust cache was restored under its exact key
+    value: ${{ steps.rust-cache.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    # Build and test times follow the runner's CPU model, which differs between runners of one label.
+    - name: Runner CPU
+      shell: bash
+      run: |
+        echo "$(nproc) CPUs:$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
+
+    - uses: actions-rust-lang/setup-rust-toolchain@v2
+      with:
+        cache: false
+
+    # rust-cache hashes every installed rustc and every CARGO*/RUST* variable into its key. A hosted image
+    # preinstalls the current stable and leaves CARGO_HOME unset, so without this a runner with a different
+    # toolchain or CARGO_HOME would save and look for different keys. The paths are the hosted runners' defaults.
+    - name: Match the hosted Rust environment
+      shell: bash
+      run: |
+        pinned=$(sed -n 's/^channel = "\(.*\)"/\1/p' rust-toolchain.toml)
+        rustup toolchain list --quiet | while read -r toolchain; do
+          case $toolchain in "$pinned"-*|"$pinned") ;; *) rustup toolchain uninstall "$toolchain" ;; esac
+        done
+        if [ "$RUNNER_OS" = Windows ]; then
+          echo 'CARGO_HOME=C:\Users\runneradmin\.cargo' >> "$GITHUB_ENV"
+          echo 'RUSTUP_HOME=C:\Users\runneradmin\.rustup' >> "$GITHUB_ENV"
+        else
+          echo "CARGO_HOME=/home/runner/.cargo" >> "$GITHUB_ENV"
+          echo "RUSTUP_HOME=/home/runner/.rustup" >> "$GITHUB_ENV"
+        fi
+
+    # Cargo unpacks every crate it builds from CARGO_HOME\registry\cache into registry\src, which rust-cache
+    # does not keep. On a hosted Windows runner CARGO_HOME is on C:, several times slower than the D: volume the
+    # job works on, so a junction puts those files on D:. CARGO_HOME, and with it rust-cache's key, stays as it is.
+    - name: Crate sources on the work volume
+      if: runner.os == 'Windows' && runner.environment == 'github-hosted'
+      shell: pwsh
+      run: |
+        $src = "$env:CARGO_HOME\registry\src"
+        if (Test-Path $src) { Remove-Item -Recurse -Force $src }
+        New-Item -ItemType Directory -Force "$env:CARGO_HOME\registry", "$env:RUNNER_TEMP\cargo-src" | Out-Null
+        New-Item -ItemType Junction -Path $src -Target "$env:RUNNER_TEMP\cargo-src" | Out-Null
+
+    # rust-cache 2.9.3 hashes the members' manifests but not the workspace root's, so a change to its
+    # [profile] or [patch] sections would restore the old builds under an exact match, rebuild them in every
+    # run and never save the result. Their hash goes into the shared key instead, since rust-cache ignores its
+    # `key` input when `shared-key` is set. Only those sections, without comments: the root's version bump in
+    # every release would empty the cache.
+    - name: Workspace profile hash
+      if: inputs.cache != ''
+      id: profiles
+      shell: bash
+      run: echo "hash=$(awk '/^\[/ { on = ($0 ~ /^\[(profile|patch)[.\]]/) } on && !/^[[:space:]]*(#|$)/' Cargo.toml | sha256sum | cut -c1-8)" >> "$GITHUB_OUTPUT"
+
+    # The key ends in a hash of the external crates in Cargo.lock, so a dependency change saves a new cache
+    # and restores the newest older one meanwhile; a release's version bump of the workspace crates does not.
+    - if: inputs.cache != ''
+      id: rust-cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: ${{ inputs.cache }}-${{ steps.profiles.outputs.hash }}
+        save-if: ${{ inputs.save }}
+
+    - name: System libraries
+      if: runner.os == 'Linux' && inputs.system-libraries == 'true'
+      shell: bash
+      run: |
+        "$GITHUB_ACTION_PATH/../../runners/apt-install.sh" pkg-config libfontconfig-dev libfreetype-dev \
+          libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libxcb1-dev libvulkan-dev \
+          libgtk-3-dev libwebkit2gtk-4.1-dev
+
+    - if: inputs.nextest == 'true'
+      uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-nextest

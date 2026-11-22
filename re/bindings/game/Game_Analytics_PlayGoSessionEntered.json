@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_PlayGoSessionEntered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140713050",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140713050.c;pat:log-channel-TELEMETRY;xref:0x1406d84b2,0x1406fd6e6",
+  "notes": "Session-enter telemetry: subscribes 0x14077d320 to network.DuckBandwidth (0x143987810), obj->this[0x414c]; sends SessionEntered recs (0x140774ac0); 0x14076aba0 es_report_on_session_enter; via 0x14077bb90: adaptive_ai_session_started, play_go_session_entered, customisation_loadout_on_session_start, race_weekend_session_driver_choices; clears +0x208bc. Better name: Game_Analytics_OnSessionEntered (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_play_go_session_entered",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 48 89 4C 24 30",
+  "match": "0x140713050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140713050",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_PlayGoSessionEntered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140713050",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140713050.c;xref:0x6d84b4",
+   "notes": "V4764 name and event correct; logged text is the bare event string (no 'EA analytics event: ' prefix exists in the binary)"
+  }
+ ],
+ "proofs": []
+}

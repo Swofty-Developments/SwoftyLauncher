@@ -1,0 +1,29 @@
+{
+ "schema": 1,
+ "note": "Bindings taken out of the addon API on purpose after their newest verify row became a partial or disagree. Keys are \"<func|global>:<name>\". mode deprecated keeps the binding exporting for one release, marked deprecated in the headers and in bindings.json; mode dropped stops exporting it and lists it in the \"dropped\" array of every bindings set. A binding is dropped without a deprecation release only when it crashes or corrupts state (harm: \"crash\" or \"corrupts state\"). since is the release the mode ships in, covers the V-id of the newest verify row (any newer row ends the entry), reason what is wrong with it, replacement an optional binding to use instead, and deprecated, on a dropped entry, the release that deprecated it. An entry for a renamed binding (binding.py rename) is keyed by its old name, covers the newest of the verify rows retired with the rename and names the new record as replacement; deprecated then exports the old name as an alias of the replacement. Only the repository owner approves a change to this file, and the release notes of each release list every entry whose since is that release.",
+ "entries": {
+  "func:Ne_Property_SetS64IfChanged": {
+   "mode": "dropped",
+   "since": "1.10.2",
+   "covers": "V100063",
+   "reason": "renamed: every caller sets a UIDBRef weak object reference through it and the compare is object identity, not a numeric S64 compare",
+   "replacement": "Ne_Property_SetUIDBRefIfChanged",
+   "deprecated": "1.10.0"
+  },
+  "func:Ne_Std_ThrowException": {
+   "mode": "dropped",
+   "since": "1.10.2",
+   "covers": "V100066",
+   "reason": "renamed: it is std::_Throw_bad_optional_access, which only raises std::bad_optional_access and ends the process in a fast fail",
+   "replacement": "Ne_Std_ThrowBadOptionalAccess",
+   "deprecated": "1.10.0"
+  },
+  "func:Game_PitStopActionObserver_SetTransitionSequence": {
+   "mode": "dropped",
+   "since": "1.10.2",
+   "covers": "V11611",
+   "reason": "its notes' exe claim is wrong: the only refuel strings are parts of the EnsureFuelLoad race objective names, and there is no fuelling string",
+   "deprecated": "1.10.0"
+  }
+ }
+}

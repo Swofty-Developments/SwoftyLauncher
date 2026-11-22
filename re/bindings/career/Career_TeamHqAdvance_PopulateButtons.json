@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_PopulateButtons",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c5900",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422c5900.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422bf83a,0x1422c0862,0x1422c1899,0x1422c4958,0x1422c52f8,0x1422c687f",
+  "notes": "Logs populating advance buttons; evaluates states 1a/1b/1c/2/3 from today's activities (Vm_TeamHqTimeline_IsCurrentDayBoolB, Career_Collect_ActivitiesByStage, day = [[this+0x6e0]+0x2b0]>>5 /0x2d); writes canAdvance byte [this+0x758]; hide_unready events; text lng_unscheduled_event/lng_timeline_event at [this+0x780]+0x280; 0x1422c86e0 timeline buttons; posts bus message. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_populate_buttons",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x1422c5900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c5900",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_PopulateButtons"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1422c5900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c5900.c;xref:0x1422bf83a",
+   "notes": "V5260 name/cxx or log string and body match; body size consistent with name"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1422c5900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c5900.c;str:\"    populating advance buttons, day: %d\";str:\"state 3\"",
+   "notes": "V9213 Name matches the TEAMHQ ADVANCE log strings I resolved in the decompile."
+  }
+ ],
+ "proofs": []
+}

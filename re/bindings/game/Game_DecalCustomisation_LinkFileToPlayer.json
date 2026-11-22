@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_LinkFileToPlayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414317f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414317f0.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x141435aee,0x141436c81",
+  "notes": "Body read in full. (tracker, player key param_2, vehicle param_3, file key param_4, decal type param_5, file name param_6): returns on empty name; copies the name into a shared string, looks the player up in m_fileTrackingMap (+8 hash map, 0x14146f980); existing entry: finds the type slot (logs 'Overwriting file name for type %s with file %s for player %s') or, for another decal list, logs 'Trying to link a file to player (%s) for a different decal list'; new entry: builds per-player maps (0x14146cc00 / 0x14146dd40) and inserts it; logs 'Added (%s) %s to m_fileTrackingMap'. Callers in 0x141435170. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decal_customisation_link_file_to_player",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 B4 24 80 01 00 00 48 8B 84 24 08 02 00 00",
+  "match": "0x1414317f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414317f0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_LinkFileToPlayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1414317f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414317f0.c;xref:0x141435aee",
+   "notes": "V4858 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

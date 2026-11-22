@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NeCheckEventChainUid_BroadcastCameraGetFocusObjectEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14454e8e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14454e8e0.c;pat:log-channel-NeCheckEventChainUid;xref:0x14454e87a",
+  "notes": "Input-pin handler stored by binder 0x14454e840 (lea 0x14454e87a). Maps viewport id (r8>>32) through hash map 0x146cc3ab8 to vp index, optional NeCheckEventChainUid log, copies the focus entity data of camera manager 0x146cc3ab0 (+0x80[vp] -> +8 -> +0x88, 16 bytes) to data pin this+0x18, fires output this+0x10 via 0x14400c680. Decomp polluted; disassembly read. (lane owner review requested) Better name: Game_EventNode_BroadcastCameraGetFocusObject_OnInput (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ne_check_event_chain_uid_broadcast_camera_get_focus_object_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D6 48 89 CF 48 8B 1D ?? ?? ?? ?? 48 85 DB",
+  "match": "0x14454e8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14454e8e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NeCheckEventChainUid_BroadcastCameraGetFocusObjectEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14454e8e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14454e8e0.c;xref:0x14454e87c",
+   "notes": "V6681 NeCheckEventChainUid is only the log channel; body is the BroadcastCameraGetFocusObject event node input handler (hash lookup of node then debug log). Better: Game_BroadcastCameraGetFocusObjectEventNode_OnInput"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14454e8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14454e8e0.c;xref:0x14454e87c",
+   "notes": "V7229 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

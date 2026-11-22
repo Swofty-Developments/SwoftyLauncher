@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackIr_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ab0800",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ab0800.c;pat:log-channel-HEADTRACKING;xref:0x143ab17dc,0x152283334",
+  "notes": "TrackIR (NaturalPoint) start through fn pointers: 0x146292158 NP_QueryVersion (logs version or error), 0x146292160 called with flags remapped from this+0xa8, 0x146292150 NP_RegisterProgramProfileID(this+0xac), 0x146292180 NP_StopCursor, 0x146292190 NP_StartDataTransmission; this+0xd2 = 1 only on success. Missing pointer -> result 4 logged. Callers 0x143ab17dc (in 0x143ab0cb0), 0x152283334. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.track_ir_init",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8B 05 ?? ?? ?? ?? 48 85 C0 74 74",
+  "match": "0x143ab0800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ab0800",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackIr_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143ab0800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ab0800.c;xref:0x143ab17dc",
+   "notes": "V6453 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingCustom_OnCustomSearchComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143076eb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143076eb0.c;pat:log-message-cxx;xref:0x143076db9,0x14307b83b,0x14307b905,0x14307bb14,0x1430e371a",
+  "notes": "Own pretty-function string 0x14580cd65 'onCustomSearchComplete(NEbool, NeNetSessionEnumerator *, NEbool)'. p2 ok, p3 enumerator (+0x18..+0x20), p4 isFinal. Restarts timer +0x60/+0x68, error 0x1e on failure ([[p1+8]+0x4d8]+0x34). Per session, skipping banned ids ('Ignoring %s'), decodes the attributes (0x1440813b0; Track, Session, Practice..Sprint2Race, Round, Damage, Weather, ..., Privacy) into a 0x1a0-byte result appended to p1+0x20..+0x30. When final calls and clears the search delegate +0x80/+0x88, 0x14307bb20, clears +0xb9. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_custom_on_custom_search_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 F8 29 B4 24 50 02 00 00 44 89 CF 4C 89 84 24 90 00 00 00",
+  "match": "0x143076eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143076eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingCustom_OnCustomSearchComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143076eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143076eb0.c;xref:0x143076dba",
+   "notes": "V5590 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

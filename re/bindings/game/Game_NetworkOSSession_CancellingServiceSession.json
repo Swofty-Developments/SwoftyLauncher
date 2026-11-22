@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_CancellingServiceSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430766c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430766c0.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x1430765da,0x1430ddb8f,0x1430f1670",
+  "notes": "Logs '[CANCEL] cancelling the service on session %s' (NO_ACTIVE_SESSION when none), releases the service objects and calls 0x1430fc720 (leave, at 0x14307677e). Callers 0x143076510, 0x1430dda70, 0x1430f15f0. (lane owner review requested) Better name: Game_NetworkOSSession_CancelService (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_os_session_cancelling_service_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 00 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430766c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430766c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_CancellingServiceSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430766c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430766c0.c;xref:0x1430765db",
+   "notes": "V5586 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

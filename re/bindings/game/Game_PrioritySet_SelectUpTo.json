@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PrioritySet_SelectUpTo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e8e170",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e8e170.c;xref:0x140bccbd6,0x140bccc1f,0x140bccc60,0x140bccce5,0x140bccd70,0x140bccdc7,0x140bcce26,0x141f330bf",
+  "notes": "(set,n): groups at +0x10 stride 0x28 (count +0xd8), items 0x6c bytes; while selected (bit3 of +9) type 1/2/3 items < n (bounded by item total): picks via 0x142e8e7d0(set,0x1457ef0fc,3), swaps type and bit2 with best unselected type-0x10 item of its group (avg of floats +0xc/+0x18/+0x24/+0x30), sets bit3; ends +0xe8 = 1. Callers 0x140bcc190 (Sess_TyreAllocation_OnSessionStart), 0x141f32500. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.priority_set_select_up_to",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 D7 48 89 CE 4C",
+  "match": "0x142e8e170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8e170",
+  "kind": "func_start",
+  "names": [
+   "Game_PrioritySet_SelectUpTo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e8e170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e8e170.c;xref:0x140bccbd6,0x140bccc1f",
+   "notes": "V3681 Counts items with type 1/2/3 and bit3 of +9, sets bit 8 progressively until n, sets +0xe8=1; callers OnSessionStart."
+  }
+ ],
+ "proofs": []
+}

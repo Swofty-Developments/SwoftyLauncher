@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeSystem_StopPhotoModeRender",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bcf0a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bcf0a0.c;pat:log-message-cxx;xref:0x142bce263,0x142bcf41a,0x142bd70b2,0x142bd72cd,0x142bd7de7,0x142bde624,0x148793a95",
+  "notes": "PhotoModeSystem::stopPhotoModeRender (own log string): clears +0x424/+0x3f8, +0x420 = 1.0, camera +0x1e0 = 0, sets replay speed (+0x238 +0x28/+0x2c) from start time +0x3e8 vs replay time, restores motion render (+0x2b8) state, logs PHOTO-MODE-MOTION. Callers listed. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_system_stop_photo_mode_render",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE C6 81 24 04 00 00 00",
+  "match": "0x142bcf0a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bcf0a0",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeSystem_StopPhotoModeRender"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bcf0a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bcf0a0.c;xref:0x142bce263",
+   "notes": "V5023 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

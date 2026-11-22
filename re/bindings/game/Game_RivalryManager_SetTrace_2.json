@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RivalryManager_SetTrace_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141261170",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141261170.c;str:s_Championship_Rivals_RivalryManager_SetTrace_2;xref:0x14124f74f,0x141254a32",
+  "notes": "TeamStatIdType instance of setTrace (pretty-function 0x1456d007c): same body as 0x141261010, global 0x145f93b94. Callers 0x14124f300, 0x141254150. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.rivalry_manager_set_trace_2",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B BE F8 0B 00 00 4C 8B B6 00",
+  "match": "0x14124f74f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141261170",
+  "kind": "func_start",
+  "names": [
+   "Game_RivalryManager_SetTrace_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x141261170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141261170.c;xref:0x14124f74f",
+   "notes": "V7333 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

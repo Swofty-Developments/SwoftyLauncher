@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeMotion_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bd6d10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bd6d10.c;pat:log-channel-PHOTO-MODE;xref:0x1457ccfc8",
+  "notes": "Per-frame slot (cell 0x1457ccfc8), returns when +0x394 == 0: smooths settings (+0x2d2c..+0x2d80 pairs, 0.15 lerp), TOD to +0x270 hours/min, on dirty +0x425 stops render (0x142bcf0a0) and arms shutter timer; after 1 s starts motion render (0x142bcf890); steps exposure frames (+0x3e0 < +0x2d8c); on take-photo +0x397 logs 'Take photo', builds '<docs>\\\\photos\\\\F1_25_photo_<time>' name; tracks input axes, toggles car visibility. Old name 'PhotoModeMotion' was the log channel. (lane owner review requested) Better name: Game_PhotoModeSystem_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.photo_mode_motion_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 B8 C0 1B 00 00",
+  "match": "0x142bd6d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bd6d10",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeMotion_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bd6d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bd6d10.c",
+   "notes": "V5029 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

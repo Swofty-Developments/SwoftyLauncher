@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_RemovePlayerReplicat",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431402a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431402a0.c;pat:log-message-cxx;xref:0x143141756",
+  "notes": "Read in full (this, desc): only when [this+0x10]+8 < 2; for every 0x60-byte player record of [this+0xd0]+0x230..+0x238 builds the key, hashes it (0x9e3779b9 mix, mask +0x80) into bucket list +0x68 and compares kind/ids; found -> posts VehicleCustomisationRemoveNetMessage 0x145824920 (0x7900000007) via 0x14402e500 (this+0x20, mode 1), logs 'Sent VehicleCustomisationRemoveNetMessage' and removePlayerVehicleCustomisationStatId 0x1431407d0(this, key, id node+0x70); not found -> 'Attempted to remove ... could not be found.'. Caller 0x143141710. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_remove_player_replicat",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 48 89 54 24 28",
+  "match": "0x1431402a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431402a0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_RemovePlayerReplicat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431402a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431402a0.c;xref:0x143141756",
+   "notes": "V5918 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

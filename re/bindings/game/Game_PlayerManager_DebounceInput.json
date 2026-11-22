@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerManager_DebounceInput",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434df6e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434df6e0.c;pat:log-channel-INPUT;xref:0x1434de7d8,0x1434df07c,0x1434df888",
+  "notes": "(this, input id*, callback): if *id is one of the four ids at 0x1460fb580..0x1460fb598, logs 'blacklisted input for reconnection or similar.' and re-arms: Game_InputModule_TakeSnapshot([this+0x538]), clears the callback vector, adds the callback (0x141e67270); returns that bool. Called by the three Game_GamePlayerManager_AnyKeyCallbackFor* functions. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.player_manager_debounce_input",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 02 48 3B 05",
+  "match": "0x1434df6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434df6e0",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerManager_DebounceInput"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434df6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434df6e0.c;xref:0x1434de7d8",
+   "notes": "V6066 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

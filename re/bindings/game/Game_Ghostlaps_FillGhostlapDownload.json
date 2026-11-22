@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ghostlaps_FillGhostlapDownload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f88450",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f88450.c;pat:log-message-method;xref:0x142f9c324",
+  "notes": "GHOSTLAPS fillGhostlapDownload(this, entry, a3, a4). Needs online user (vt+0x20==2); track name -> +0x348, sector index +0x370, user +0x2b0, path 'ghost/%s.GL' (from 'GL%s', track+3) -> +0x2b8, entry 0x40 bytes -> +0x300..+0x338, a3 +0x340, a4 +0x2f8, +0x2e0=3; returns 1. Caller 0x142f98320 then 0x142f88700 with completion 0x142f89530. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ghostlaps_fill_ghostlap_download",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC C8 00 00 00 4D 89 CE 44 89 C6",
+  "match": "0x142f88450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f88450",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghostlaps_FillGhostlapDownload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f88450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f88450.c;xref:0x142f9c324",
+   "notes": "V5685 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

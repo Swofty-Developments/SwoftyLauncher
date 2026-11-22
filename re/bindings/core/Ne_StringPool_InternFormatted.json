@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_StringPool_InternFormatted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140129660",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140129660.c;xref:0x14010585d,0x1401058ee,0x140106458",
+  "notes": "(out{ptr,hash}, fmt, ...): vsnprintf (0x14532e54c) into a stack buffer (max 255 chars, empty on error), FNV-1a 64 of the text, interns it in the global pool 0x146129740 (lazy init) via Ne_StringPool_InternByHash 0x14392a0c0; writes out[0]=pooled ptr, out[1]=hash, returns out. call sites (163 in Render_Gfx_BuildConfigObject 0x140104f70)."
+ },
+ "signature": {
+  "id": "core.string_pool_intern_cached_name",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 BC 24 90 01 00 00 4C 8B 26",
+  "match": "0x14010585d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140129660",
+  "kind": "func_start",
+  "names": [
+   "Ne_StringPool_InternFormatted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x140129660",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140129660.c;xref:0x14010585d",
+   "notes": "V7720 BetterName Ne_StringPool_InternFormatted: vsnprintf-style format of varargs (255 max), FNV-1a 64 hash, intern via function-static pool"
+  }
+ ],
+ "proofs": []
+}

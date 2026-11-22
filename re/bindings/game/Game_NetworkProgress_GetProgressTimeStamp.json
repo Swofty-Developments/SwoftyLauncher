@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkProgress_GetProgressTimeStamp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432e2560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432e2560.c;pat:log-message-method;xref:0x14582da38,0x145836d28",
+  "notes": "Writes the time stamp (+0xe0) of history record param_2 (ring index (param_2 + start) % capacity, 0xf0-byte records) to *param_3 and returns 1; on empty history or bad index logs 'getProgressTimeStamp() : progress index(%d) invalid. empty history.' and returns 0. Vtable cells 0x14582da38, 0x145836d28. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_progress_get_progress_time_stamp",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D6 8B 41 24",
+  "match": "0x1432e2560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432e2560",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkProgress_GetProgressTimeStamp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432e2560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432e2560.c",
+   "notes": "V5977 name and description match body; log string/pretty name present; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

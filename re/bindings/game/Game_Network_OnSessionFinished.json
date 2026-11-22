@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnSessionFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f3180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430f3180.c;pat:log-message-method;xref:0x142daa169",
+  "notes": "Caller 0x142daa070. Logs 'onSessionFinished', for role < 2 sends a message (0x14402e500), setMyRaceStatus 0x143092b20(.., 10), NETWORK-MATCHING log and matching object vt+0xb8, Game_Network_ReportNetworkStats (0x1430f332c); for session types 0xf..0x11 walks the results (0x140afe6a0) and entrants, then 0x143237100 / 0x1433199f0 / 0x143237270([this+0x4d0], ...). (lane owner review requested) Better name: Game_NetworkSubsystem_OnSessionFinished (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_on_session_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6A B8 00 01 00 00",
+  "match": "0x1430f3180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f3180",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnSessionFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f3180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f3180.c;xref:0x142daa169",
+   "notes": "V5394 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

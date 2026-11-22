@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_MaterialActorPool_FindByAltId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443ab380",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1443ab380.c;xref:0x1401e9895,0x154334717",
+  "notes": "Under EnterCriticalSection([this]) iterates all occupied map slots (bitmap words at [this+0x70], 24-byte entries, value at +0x10), then the lists [this+0xa0..0xa8] and [this+0xc0..0xc8], comparing the 128-bit id param_2 with the second id at [actor+8]+0x98; returns the actor or 0. Old note (returns first set bit) was wrong. Callers 0x1401e9895 (Game_SceneManager_BuildMaterialActorForScene), 0x154334717 (0x1543345d0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.material_actor_pool_acquire_first_free",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 09 FF 15 ?? ?? ?? ?? 48 83 7E 78",
+  "match": "0x1443ab380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443ab380",
+  "kind": "func_start",
+  "names": [
+   "Render_MaterialActorPool_FindByAltId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1443ab380",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1443ab380.c;xref:0x1401e9895",
+   "notes": "V7660 BetterName Render_MaterialActorPool_FindByAltId: compares 128-bit id at actor+0x98 across slot set and two vectors; not first-free"
+  }
+ ],
+ "proofs": []
+}

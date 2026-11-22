@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Pagination_PageEqualCurrentPage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417f00a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1417f00a0.c;pat:log-channel-PAGINATION;xref:0x141cb03f0",
+  "notes": "(pager, page): logs and returns when page == current (+0x20, flag +0x28) or page >= page count (ceil(+0x18 / +0x10)); else logs 'Page %u requested', sets current page and valid flag and tail-jumps (0x1417f01cb) into Game_Pagination_RequestCurrentView 0x1417f0220. Caller 0x141cb0260. (lane owner review requested) Better name: Game_Pagination_RequestPage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.pagination_page_equal_current_page",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 80 79 28 00",
+  "match": "0x1417f00a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417f00a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Pagination_PageEqualCurrentPage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1417f00a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1417f00a0.c;xref:0x1417f0092",
+   "notes": "V4900 Function is the pagination RequestPage logic (page outside total, page requested, span building, view requires requests, refresh fallbacks); page-equal log is one branch. Better: Game_Pagination_RequestPage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1417f00a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417f00a0.c;xref:0x1417f0092",
+   "notes": "V7228 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

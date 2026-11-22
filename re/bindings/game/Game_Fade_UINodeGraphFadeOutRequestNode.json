@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Fade_UINodeGraphFadeOutRequestNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143801e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143801e90.c;pat:log-channel-FADE;xref:0x1458777e0",
+  "notes": "Vtable cell 0x1458777e0. Event id param_2+8: fade-out ids (0x146103034/0x146103030) -> state +0x50=1, log 'UI node graph fade out request from node', 0x1437f0660 on +0x48; fade-in id 0x146103038 -> state 3, log fade in, clears reason bit0 of [+0x48]+0x7b8. Old name covered only the fade-out branch. (lane owner review requested) Better name: Game_FullScreenFade_OnUINodeGraphFadeRequest (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.fade_ui_node_graph_fade_out_request_node",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 4C 89 C7 48 89 D3",
+  "match": "0x143801e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143801e90",
+  "kind": "func_start",
+  "names": [
+   "Game_Fade_UINodeGraphFadeOutRequestNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143801e90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143801e90.c",
+   "notes": "V6259 handles both fade in and fade out node-graph requests (FADE_REQUESTS). Better Game_Fade_UINodeGraphFadeRequest; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143801e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143801e90.c",
+   "notes": "V7115 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

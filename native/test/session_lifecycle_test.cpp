@@ -1,7 +1,7 @@
-// Host-native unit test for the session end and unload ordering (native/src/core/session_lifecycle_logic.hpp).
-// Built and run by native/test/run_events_test.sh.
+// Host-native unit test for the session end and unload ordering (native/src/core/events/session_lifecycle_logic.hpp).
+// Built and run by native/test/run_tests.sh session_lifecycle.
 
-#include "session_lifecycle_logic.hpp"
+#include "core/events/session_lifecycle_logic.hpp"
 
 #include <cstdio>
 #include <string>

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_AddDriverHeadModelToAssetGroupPaths",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140234a20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140234a20.c;pat:log-message-cxx;xref:0x14023626f,0x1402363a5,0x14023ab4f,0x14023b061",
+  "notes": "(script, u32 driverStatId, bool alt): invalid id -> WARN 'invalid DriverStatId %s'. Needs a session ([[0x14604c2c8]+0xc0]+0x88]+0x260); driver = 0x1423dbcf0([0x14604c2c8]+0x290, &id); its head id (driver+8) invalid -> WARN 'invalid DriverHeadStatId::StatId'; else tail-jumps to AddHeadModelToAssetGroupPaths 0x140234b80(script, headId, alt) (the decomp merges that body). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_add_driver_head_model_to_asset_group_paths",
+  "section": ".xtls",
+  "pattern": "56 53 48 81 EC 88 00 00 00 89 54 24 2C",
+  "match": "0x140234a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140234a20",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_AddDriverHeadModelToAssetGroupPaths"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140234a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140234a20.c",
+   "notes": "V4436 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RideHeightConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446c9a50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446c9a50.c;pat:log-channel--;xref:0x145bfca90",
+  "notes": "Registers 21 debug channels on [[this+8]+0x148] via Car_Aero_RegisterDebugChannel(group, name, this, getter, min, max, flags): aero CL.A/front/rear, CD.A, Balance, Wake %, AeroHeight.front/rear; suspension rideHeight.*; damage fwing/rwing_damage; drs fail_at_distance/distance_travelled/fix_time. No config read. (lane owner review requested) Better name: Game_F1Aero_RegisterDebugChannels (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_ride_height_config",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 CE 48 8B 41 08",
+  "match": "0x1446c9a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446c9a50",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RideHeightConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446c9a50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446c9a50.c",
+   "notes": "V6826 Not a reader: registers 21 aero/suspension/damage tunable channels (CL.A, CD.A, Balance, Wake, rideHeight.*, AeroHeight.*, wing damage, DRS failure) via 0x1446c9f00; better name Car_Aero_RegisterDebugChannels. (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1446c9a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446c9a50.c",
+   "notes": "V7257 name fits, facts hold; prefix: finding suggests Car_Aero_, name fits; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

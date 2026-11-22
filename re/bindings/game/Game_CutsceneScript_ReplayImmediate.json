@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneScript_ReplayImmediate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140236f70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140236f70.c;pat:log-message-method;xref:0x140273e22,0x1455eaf80,0x1455eb720,0x1455ecef0,0x1455ed540,0x1455ee590,0x1455ee9a0,0x1455eed70",
+  "notes": "Logs CUTSCENE_SCRIPT_VERBOSE 'replayImmediate %p %s'; under CS this+0x118, if actor vector +0xb8..+0xc0 and float vector +0xd8..+0xe0 have equal counts, writes each float to actor+0x58/+0x5c and calls 0x14366b6c0(actor); then vcall +0x258, flags byte +0x538 = (b&0xf8)|1. 0x140273e22 is a jmp thunk; rest = script vtable cells (subset). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_script_replay_immediate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6E B8 56 01 00 00",
+  "match": "0x140236f70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140236f70",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneScript_ReplayImmediate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140236f70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140236f70.c",
+   "notes": "V4445 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

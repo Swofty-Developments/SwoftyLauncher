@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Dbox_Shutdown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144728560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144728560.c;pat:log-channel-DBOX;xref:0x1406cdbfa,0x1406cdcb0,0x144728684",
+  "notes": "If the DBOX open flag g 0x146ce86a4 is set: 0x144c83340 (close device) and 0x144c83300 (terminate API), logging DBOX 'Failed to close DBOX device. Result was %d' / 'Failed to terminate DBOX API. Result was %d' on non-zero results; clears the flag; returns 0. Callers 0x1406cdb80, 0x1406cdc30, 0x144728680. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.dbox_shutdown",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 00 0F 84 ?? ?? ?? ?? E8",
+  "match": "0x144728560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144728560",
+  "kind": "func_start",
+  "names": [
+   "Game_Dbox_Shutdown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144728560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144728560.c;xref:0x1406cdbfa",
+   "notes": "V6612 DBOX close device then terminate API with the two failure logs, clears init flag; ok"
+  }
+ ],
+ "proofs": []
+}

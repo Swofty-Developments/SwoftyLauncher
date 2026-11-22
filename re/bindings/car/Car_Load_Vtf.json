@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Load_Vtf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14475a250",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14475a250.c;xref:0x145c04c70",
+  "notes": "VTF resource loader (vtable slot 0x145c04c70). Allocates the 0x50-byte vehicle asset (vt_Car_VtfAsset 0x145c04a30): +0x10 parsed BXML document (0x78-byte object vt 0x145899c20, buffers sized from the TSMD stats fragment when present), +0x18 handling version, +0x20 resource id, +0x28.. section descriptor list. Handling version: Chassis/HandlingVersion string; contains 'pro' -> 100, else the number after an 8-char prefix ('handling2025') clamped to 2018..4048 minus 2017 (2025 -> 8), else 1. Then Car_Vtf_AddSection_Thunk x23 registers {name, factory} for Engine GearBox FuelTank FuelECU BrakeECU Chassis Steering CoreAero Differential SuspensionSystem Turbo WheelProxies ConvexHull F1Aero F1Assists F1Tuning F1Plank F1SuspensionDamage F1WingDamage F1BodyDamage F1TyreDamage EnergyRecoverySystem DebugSystem (factories Car_Create_<X>System). Runs once per vehicle asset load, not per car | #471 verifier wx-verify (2026-10-28, partial on the PR's L1 notes): wx-verify: HandlingVersion pro->100, handling20xx->atoi clamp 2018..4048 -2017, else 1; stored sysobj+0x18, copied to car+0x9f40"
+ },
+ "signature": {
+  "id": "car.load_vtf",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC F0 00 00 00 4C 89 CB 44 89 C7",
+  "match": "0x14475a250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14475a250",
+  "kind": "func_start",
+  "names": [
+   "Car_Load_Vtf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "func",
+   "item": "Car_Load_Vtf",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14475a250.c;xref:0x145c04c70;sig:car.load_vtf",
+   "notes": "V1320 Only ref is vtable slot 0x145c04c70. Allocs 0x50 from [p1+0xf8], vt 0x145c04a30, +8 alloc, +0x18 = p3 then handling version, +0x20 = [p2+8], +0x28 section vector; 0x78-byte doc vt 0x145899c20 sized from 'TSMD' (0x444d5354) stats; Chassis/HandlingVersion: 'pro' -> 100, else strtol after 8 chars clamped 0x7e2..0xfd0 minus 0x7e1, none -> 1. 23 AddSection calls in the claimed order; descriptors re-packed at stride 0x40 (name ptr +0x10, factory +0x38)."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "Car_Load_Vtf",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x14475a4e3,0x14475a54a,0x14475a577,0x1446296c8",
+   "notes": "V3892 wx-verify: HandlingVersion pro->100, handling20xx->atoi clamp 2018..4048 -2017, else 1; stored sysobj+0x18, copied to car+0x9f40"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14475a250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14475a250.c",
+   "notes": "V6633 HandlingVersion with pro/handling20 and section dispatch (Engine..DebugSystem) verified; no direct call (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

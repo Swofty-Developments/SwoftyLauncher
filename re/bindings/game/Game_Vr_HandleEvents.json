@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Vr_HandleEvents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ec600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ec600.c;pat:log-channel-VR;xref:0x144432716,0x1444327e6",
+  "notes": "Read in full: (vr, VREvent*) switch on type: 0x69 IPD -> +0x2918; 0x6f data 0x809 toggles +0x16c + interrupt count; 0x19c activity -> +0x2914; 0x1f6/0x1f7 overlay shown/hidden (0x1439ee9e0); 0x321 chaperone; 0x324 seated reset (+0x2910); 0x359/0x367 re-read scales, size (+0x16f), refresh +0x10; 0x584/0x585/900 presence +0x16d -> callback +0x180. One event per call. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vr_handle_events",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 D7",
+  "match": "0x1439ec600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ec600",
+  "kind": "func_start",
+  "names": [
+   "Game_Vr_HandleEvents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439ec600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ec600.c;xref:0x144432716",
+   "notes": "V6402 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

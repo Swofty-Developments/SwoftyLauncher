@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HandleGameDataSynchronisationMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140996e20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140996e20.c;pat:log-message-method;xref:0x1430595b0",
+  "notes": "Logs '%s: source: %d, matching context: %s, game mode: %d, cluster id: %I64d, additional id: %I64d' with method name 'handleGameDataSynchronisationMessage' (NETWORK). Only caller 0x143058640 (GameSessionManager::onIncomingData) at 0x1430595b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_handle_game_data_synchronisation_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 4C 89 C6 89 D3",
+  "match": "0x140996e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140996e20",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HandleGameDataSynchronisationMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140996e20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140996e20.c",
+   "notes": "V4345 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

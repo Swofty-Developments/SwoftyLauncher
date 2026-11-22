@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NeEadpErrorsDataServic_IgnoringExceptionReasonMicrosoft",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144009440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144009440.c;pat:log-channel-NeEadpErrorsDataService;xref:0x145a46d68",
+  "notes": "vt cell 0x145a46d68. (svc,info,phase): phase<2 reads the record (vslot +0x100 -> +0x830); ignores C++ exception 0xe06d7363 unless mode +0x2340 == 2, and when the TLS suspend flag is set (logs both reasons). Phase 1 not ignored: 'Caught exception', watchdog suspend bit 0x4000, user handler +0x12490(+0x12498,info) under CS +0x124a0, 'Leaving exception handler'. Phase 0: state calls on +0x40. (lane owner review requested) Better name: Game_NeEadpErrorsDataService_OnException (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ne_eadp_errors_data_servic_ignoring_exception_reason_microsoft",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 41 83 F8 01",
+  "match": "0x144009440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144009440",
+  "kind": "func_start",
+  "names": [
+   "Game_NeEadpErrorsDataServic_IgnoringExceptionReasonMicrosoft"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144009440",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144009440.c",
+   "notes": "V6367 partial: better name Game_NeEadpErrors_HandleException; exception handler (VC++ ignore, suspended, watchdog, user handler)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144009440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144009440.c",
+   "notes": "V7078 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

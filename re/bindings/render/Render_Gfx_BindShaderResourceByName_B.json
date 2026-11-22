@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_BindShaderResourceByName_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fe750",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439fe750.c;xref:0x143c2cf3a,0x143c2cfcc,0x143c2cff8",
+  "notes": "Decompiles identically to Render_Gfx_BindShaderResourceByName_A 0x1439fe5e0 (same FNV-1a lookup in [[this+0x20]+0x20]+0x678, same this+0xc0 / +0xc8 writes) and to 0x1439fe470; why the copies exist is not known. Callers Game_Rtt_CreateAssaoPass 0x143c2cda0, Game_Rtt_CreateCmaa2Bindings 0x143c3f6d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_bind_shader_resource_by_name_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 86 60 02 00 00 48 89 44 24",
+  "match": "0x143c2cf3a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1439fe750",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_BindShaderResourceByName_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1439fe750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fe750.c;xref:0x143c2cf3a",
+   "notes": "V8244 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

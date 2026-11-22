@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14246ec30",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14246ec30.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe90cf,0x141443509,0x1414459c9,0x1416e4893,0x1416e503b,0x1416e5e79",
+  "notes": "AddDriver for type 1 eUserDefined: array this+0x278; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Inserts via 0x140cdb2c0, then 0x1423dbcf0 lookup and bus msg 0x14578d658 {id, not-found flag} via 0x1439876c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_driver",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC F0 05 00 00 4C 89 C7 4C 8B B1 78 02 00 00",
+  "match": "0x14246ec30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14246ec30",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14246ec30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14246ec30.c;xref:0x140f05edf",
+   "notes": "V5280 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

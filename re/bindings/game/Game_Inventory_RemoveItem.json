@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Inventory_RemoveItem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a7ef40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a7ef40.c;pat:log-channel-INVENTORY;xref:0x14255cdbb,0x142567b56,0x142567da9,0x142569003,0x1425b78db",
+  "notes": "(inv, inventoryId*, itemId): inventory map lookup, item map at +0x60 (key int); item count (+8) > 1 -> count-1; else removes the item (release +0x10, free list +0x10, backward shift, +0x40 -1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.inventory_remove_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 18 01 00 00 44 89 C7",
+  "match": "0x142a7ef40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a7ef40",
+  "kind": "func_start",
+  "names": [
+   "Game_Inventory_RemoveItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a7ef40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a7ef40.c;xref:0x14255cdbb",
+   "notes": "V4981 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

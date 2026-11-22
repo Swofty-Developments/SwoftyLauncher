@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Handle_SequenceEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402333d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402333d0.c;xref:0x140242d4f,0x1402527d2,0x14025515b,0x14026172b,0x14026218b,0x1402626db,0x140262f1b,0x14026324b,0x14026357b,0x1402638ab,0x140266a05,0x14026879b,0x140344aab,0x14036307f,0x14037488b,0x141059996,0x1455eb1d8,0x1455f0f08,0x1455f1308,0x1455f1648,0x1455f61d8,0x1455f6568,0x1455f68f8,0x1455f6c88,0x1455f7618,0x1455f7a88,0x1455f7d98,0x1455f80a8,0x1455f8488,0x1455f8818,0x1455f8ba8,0x1455f8f18,0x1455f9298,0x1455f9618,0x1455f9998,0x1455f9d08,0x1455fa098,0x1455fa418,0x1455fa798,0x1455fab18,0x1455fae98,0x1455fb218,0x1455fb598,0x1455fb918,0x1455fbc98,0x1455fc018,0x1455fc398,0x1455fc718,0x1455fca98,0x1455fce18,0x1455fd198,0x1455fd518,0x1455fd898,0x1455fdc18,0x1455fdf98,0x1455fe318,0x1455fe698,0x1455fea18,0x1455fed98,0x1455ff118,0x1455ff498,0x1455ff818,0x1455ffb98,0x1455fff18,0x145600298,0x145600618,0x145600998,0x145600d18,0x145601098,0x145601418,0x145601798,0x145601b28,0x145601eb8,0x145602248,0x1456025c8,0x145602948,0x145602cc8,0x145603038,0x145603e78,0x1456041e8,0x145604558,0x1456048e8,0x145604c78,0x145605008,0x145605388,0x145605708,0x145605a88,0x145605e08,0x145606178,0x1456064e8,0x145606858,0x145606be8,0x145609218,0x1456095a8,0x145609938,0x145609cc8,0x14560a058,0x14560a3e8,0x14560a778,0x14560aae8,0x14560aeb8,0x14560b228,0x14560e678,0x14561a148,0x145684f58,0x145691e28,0x1456caf58,0x147b7f5fb",
+  "notes": "CUTSCENE_SCRIPT '[%p %s] fireEvent %s %.3fms'. Event name from table 0x14618ce08: SLOWMOSTART -> +0x544=0.75, SLOWMOSTOP -> 1.0, START -> vt+0x1a8 / vt+0x2e0, END -> scene stop or vt+0xe8, UNPAUSE_VIDEO_PLAYBACK -> video resume; then callback +0x308(+0x310) and Ne_Post_BusMessage 0x1439876c0. Shared slot of many cutscene script vtables. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.handle_sequence_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 C5 F8 28 F3",
+  "match": "0x1402333d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402333d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Handle_SequenceEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1402333d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1402333d0.c",
+   "notes": "V4434 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

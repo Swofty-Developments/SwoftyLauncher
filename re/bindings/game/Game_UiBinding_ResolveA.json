@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_UiBinding_ResolveA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14083d100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14083d100.c;xref:0x1407e1b3a,0x1407eb25e,0x14080ba46,0x140999cb4,0x140999db6,0x140c17c42,0x140d13205,0x141209d4e,0x14148959a,0x141489683,0x141489765,0x141489a6c",
+  "notes": "Read in full (alloc, path, ctx, value, int mode): no ctx/path -> static default 0x146048da0. Finds the node with 0x1442b1b60; existing node of value type 0x146ca5550 is returned (mode 1 also writes value via 0x140977b20). Missing: follows the parent alias chain (vcall +0x30, at most 0x62 hops), hashes the path (djb2 0x1505), allocates a 0x68-byte node (0x14083c570) and inserts it (0x1442b32b0 / 0x1442b3770); failure frees it and returns the default. Releases temp refs. Xref list truncated. Renamed: it creates missing nodes. (lane owner review requested) Better name: Game_UiBinding_FindOrCreateA (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_binding_resolve_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 50 C5 F8 11 74 24 58 48 C7 44 24 68 00 00 00 00 48 8B 00 48 89 44 24 58 48 85 C0 4C",
+  "match": "0x1407e1b3a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14083d100",
+  "kind": "func_start",
+  "names": [
+   "Game_UiBinding_ResolveA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x14083d100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14083d100.c;xref:0x14148959a,0x1414a82e0",
+   "notes": "V3441 binding resolve template: null ctx/path returns default 0x146048da0, lookup via FUN_1442b1b60; callers Sess_Bind_SessionCarsVm, Game_SessionHud_OnSessionEnter confirmed (44 refs)"
+  }
+ ],
+ "proofs": []
+}

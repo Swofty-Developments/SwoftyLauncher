@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineTaskBase_CreateErrorFromJSON",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143297080",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143297080.c;pat:log-message-cxx;xref:0x14582fd68",
+  "notes": "Returns if +0x4d8 == 0; ticks 32 sub-objects at +0x4e0 (vslot +0x18); takes the head request of the global F1os queue (Game_F1os_FindRequestId) and in state 5 logs 'HTTPRequest: service %s method: %s -> received result' / ERROR and payload, parses JSON (createErrorFromJSON inlined), then Game_F1os_StartTask. Old name was the inlined callee. Only ref: vtable cell 0x14582fd68. (lane owner review requested) Better name: Game_F1os_UpdateProcessHttpResponse (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.online_task_base_create_error_from_json",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 80 B9 D8 04 00 00 00",
+  "match": "0x143297080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143297080",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineTaskBase_CreateErrorFromJSON"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143297080",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143297080.c",
+   "notes": "V5877 Better name Game_F1os_HandleHttpRequestResult: 3.7KB HTTP result handler (received result/ERROR, payload log, JSON parse, error creation, StartTask); createErrorFromJSON pretty string is an inlined part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143297080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143297080.c",
+   "notes": "V7047 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

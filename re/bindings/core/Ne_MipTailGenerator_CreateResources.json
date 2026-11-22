@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_MipTailGenerator_CreateResources",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d33ad0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143d33ad0.c;xref:0x143d3a031,0x1526eefc3",
+  "notes": "cxx=NeMipTailGenerator::createResources; log channel MIPTAIL: 'NeMipTailGenerator::createResources: this %x m_forPlanarReflections %d m_currentTechnique %d'"
+ },
+ "signature": {
+  "id": "core.mip_tail_generator_create_resources",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 89 94 24 EC 00 00 00",
+  "match": "0x143d33ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d33ad0",
+  "kind": "func_start",
+  "names": [
+   "Ne_MipTailGenerator_CreateResources"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_MipTailGenerator_CreateResources",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d33ad0.c;xref:0x143d3a031",
+   "notes": "V2057 creates mip_tail shaders/UAV/SRV/RTV, convolve and stencil copy ctx; log ok"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SendingDepartmentEventMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb7210",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cb7210.c;pat:log-channel-NETWORK;xref:0x140cb69fa",
+  "notes": "Builds a message (vtables 0x14568a0d0 / 0x14568dc10, id 0xae) with param_2+8 and option byte param_2+0x10, sends it via 0x14402e500([this+0x300], 1, &msg), logs '[Department Events] Sending Department Event message with option: %d' (NETWORK). Only caller 0x140cb67a0 at 0x140cb69fa. (lane owner review requested) Better name: Game_Network_SendDepartmentEventMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_sending_department_event_message",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 48 89 D6 48 B8 AE 00 00 00 AE 00 00 00",
+  "match": "0x140cb7210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb7210",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SendingDepartmentEventMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cb7210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb7210.c;xref:0x140cb69fa",
+   "notes": "V4657 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

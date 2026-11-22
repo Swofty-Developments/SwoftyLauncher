@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WeeklyGp_EnterRace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1427668b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1427668b0.c;pat:log-channel-WEEKLY_GP;xref:0x14258e013",
+  "notes": "Read in full: 0x1432d2ef0; base payload (vt 0x145830b88) in request+0x10: option mask from [this+0x98]+0x238, u16 +0x68, value via +0x250, name; mode this+0x100: 1 -> payload +0x28 (0x1432d4810 +0x1c clamped 0..3), 2 -> +0x40, 3 -> +0x58 with one XOR-decoded id string per player ('EnterRace with player %s'); 0 derives 1/2/3 from session type; resets mode. (lane owner review requested) Better name: Game_WeeklyGp_BuildEnterRaceRequest (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.weekly_gp_enter_race",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 D7 48 89 4C 24 20 48 8B 89 98 00 00 00",
+  "match": "0x1427668b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1427668b0",
+  "kind": "func_start",
+  "names": [
+   "Game_WeeklyGp_EnterRace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1427668b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1427668b0.c;xref:0x14258e013",
+   "notes": "V5108 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

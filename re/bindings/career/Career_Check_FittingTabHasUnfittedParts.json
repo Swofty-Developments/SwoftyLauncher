@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_FittingTabHasUnfittedParts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197b310",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool (void *tab)",
+  "evidence": "decomp:re/decomp/14197b310.c;xref:0x14197b257,0x14197fc3b",
+  "notes": "Body read in full. Game mode [this+0x88]+0x260 (not root type 0x146129ca0): components 0x146063160 (upgrades) and 0x146060a08 (owner setup) via vt+0x10 on +0x1030; player team key from 0x1410d0c00(setup+0x348) into +0x370 (u16 +0x50: 14-bit id, 2-bit kind); finds the matching model in upgrades+0x298..+0x2a0 (+0xc key) and returns whether 0x143536fe0 with a fresh filter (0x108) yields a result. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.check_fitting_tab_has_unfitted_parts",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 0C 00 00 48 8B 81 88 00 00 00",
+  "match": "0x14197b310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197b310",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_FittingTabHasUnfittedParts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197b310",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14197b310.c;xref:0x14197b257",
+   "notes": "V9852 same pattern as the development check (owner record + FUN_143536fe0) but additionally matches an id in list at +0x298; fitting semantics unprovable from code alone"
+  }
+ ],
+ "proofs": []
+}

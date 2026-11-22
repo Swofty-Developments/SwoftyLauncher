@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_LoadGpuCrashMarkerShader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143cda2f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143cda2f0.c;xref:0x14010589f,0x14010592f",
+  "notes": "Constructor (vtable 0x145a3aee0 then 0x1459adee8): stores the name pair from *param_4, param_2, param_3, creates a bind layout (Render_Gfx2_BindLayout_Create, cb 0x143eee9c0), then MD5-hashes the lower-cased id eaid://shader_package/gpu_crash_producer/gpu_crash_marker.nefx2 to reference that package. Callers Render_Gfx_BuildConfigObject 0x14010589f, 0x14010592f (no RenderFrame call found). (lane owner review requested) Better name: Render_GpuCrashMarker_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx_load_gpu_crash_marker_shader",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 04 00 00 48 89",
+  "match": "0x143cda2f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143cda2f0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_LoadGpuCrashMarkerShader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143cda2f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143cda2f0.c;xref:0x14010589f",
+   "notes": "V8340 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

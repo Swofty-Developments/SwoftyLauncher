@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowCoordinator_SetPreloadState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143855af0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143855af0.c;pat:log-message-cxx;xref:0x142d47bfb,0x142d4d028,0x142d514f3,0x142d52b03,0x1436fb6ac,0x14370e69d,0x15115dd9a,0x15116c889",
+  "notes": "Logs FLOW/V setPreloadState CURRENT(+0x40) NEW(param_2) NEXT(+0x3c) LOADED(+0x44). Same state + same byte +0x48 -> calls callback param_3 and returns. Else stores state +0x3c, callback +0x70; state 0 queues unload tasks (0x1438fac00) for 0x2a entries of table 0x146103990 (stride 0xc8), states 2..7 load (0x1438fa8c0) per flag bytes; table 0x146105a10 type-4 tasks; ends with processNextPreload 0x143854570(this,0,0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.flow_coordinator_set_preload_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4C 89 C3 89 D7 48 89 CE",
+  "match": "0x143855af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143855af0",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowCoordinator_SetPreloadState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143855af0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143855af0.c;xref:0x142d47bfb",
+   "notes": "V6327 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_SyncPunctureState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e88840",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e88840.c;xref:0x142dfec08,0x142e92fa8,0x142ea2a13,0x142f73b8d,0x14f402a79",
+  "notes": "(set,veh): per wheel [veh+0x580]+0x70/+0x78/+0x80/+0x88: index i from wheel+0x2b4/+0x2b8, reset 0x1446b6d10(wheel+8,wheel,0x1002), wheel+0x88 = set+0xc+i*0xc, wheel+0x94 = set+0x10+i*0xc; punctured bool set+0x14+i*0xc vs bit1 of wheel+0x20 -> 0x14464e3a0 remove or 0x14464e200 add, then Car_Tyre_UpdateDeflation. set = 0x6c tyre-set record (Car_TyreSets_ReadSetEntry layout). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.tyre_sync_puncture_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 83 C6",
+  "match": "0x142e88840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e88840",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_SyncPunctureState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e88840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e88840.c;xref:0x142dfec08,0x142e92fa8,0x142ea2a13",
+   "notes": "V3675 Per wheel (+0x70,+0x78..) compares param+0x14+idx*0xc vs +0x20 bits, calls puncture add (14464e200)/remove (14464e3a0) on [[+0x10]+0xd8]+0x3f70; callers match."
+  }
+ ],
+ "proofs": []
+}

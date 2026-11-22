@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_Launch",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14585c0c0",
+  "type": "vtable[16]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;decomp:re/decomp/140841fe0.c;xref:0x14084206e",
+  "notes": "cxx=StateLaunch; 16 slots (next vtable at +0x80, lea 0x1436db18f). Slot 0 -> type record 0x146101fd8, +8=name set by static init 0x1437c1990 at 0x1437c253c. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436db620/0x1436dd020/0x1436ddca0. Ctor 0x140841fe0 (lea 0x14084206e; mov [rsi],rax)."
+ },
+ "signature": {
+  "id": "session.launch",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 C7 86 E0 0C 00 00",
+  "match": "0x14084206e",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14585c0c0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_Launch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14585c0c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x140842071",
+   "notes": "V7478 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

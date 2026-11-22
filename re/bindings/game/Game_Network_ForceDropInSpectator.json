@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ForceDropInSpectator",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323efc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14323efc0.c;pat:log-message-method;xref:0x142d6faba",
+  "notes": "Caller 0x142d6faa0. Host only (role +8 == 1 and race status 8): for each player-set entry that is a live spectator whose race status (hash map of [[+0x20]+0x3c0]+0xa8) is 8, finds the entrant attached to it, and if that vehicle is free and entitled (0x14078da40) builds a request, logs 'forceDropInSpectator: drop in player, vehicleIx' and AddDropInRequest 0x14323f450; then UpdateDropInRequests 0x14323e5b0; returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_force_drop_in_spectator",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 83 79 08 01",
+  "match": "0x14323efc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323efc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ForceDropInSpectator"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323efc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323efc0.c;xref:0x142d6faba",
+   "notes": "V6052 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

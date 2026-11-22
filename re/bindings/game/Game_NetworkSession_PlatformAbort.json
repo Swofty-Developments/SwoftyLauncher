@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_PlatformAbort",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143081060",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143081060.c;pat:log-message-method;xref:0x14580dad0",
+  "notes": "Hopper matching vtable cell; logs '%s().' with 'platformAbort', stamps QPC times at +0x5b8/+0x598 if unset and returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_session_platform_abort",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4C",
+  "match": "0x143081060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143081060",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_PlatformAbort"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143081060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143081060.c",
+   "notes": "V5672 name matches own log/pretty string and body; no broader behaviour found [vtable/indirect]"
+  }
+ ],
+ "proofs": []
+}

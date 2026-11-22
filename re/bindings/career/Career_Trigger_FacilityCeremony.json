@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Trigger_FacilityCeremony",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197f870",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/14197f870.c;xref:0x14197f856,0x1419807c6,0x141981486",
+  "notes": "Returns {1, name}: name = param_5 string, or param_5 + '_facility_ceremony' (Ne_String_CloneAppendCStr) when Career_Check_TopLevelUnlocked(param_2,param_3,param_4) is true. Raises no event itself. (lane owner review requested) Better name: Career_Resolve_FacilityCeremonyName (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.trigger_facility_ceremony",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 5C 24 70",
+  "match": "0x14197f870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197f870",
+  "kind": "func_start",
+  "names": [
+   "Career_Trigger_FacilityCeremony"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197f870",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14197f870.c;xref:0x14197f856",
+   "notes": "V9861 calls Career_Check_TopLevelUnlocked and, if true, appends the string _facility_ceremony to a name and returns it in a result struct; builds an event name rather than raising an event"
+  }
+ ],
+ "proofs": []
+}

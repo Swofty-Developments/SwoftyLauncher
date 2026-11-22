@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Championship_VirtualiseSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bd4bc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bd4bc0.c;pat:log-channel-GAME-CHAMPIONSHIP;xref:0x140bd441c,0x140bd4975,0x140bd4a14,0x140bd4b2c",
+  "notes": "Own log 'Virtualising Session %s'. If session info (vcall +0x98 of [+0x278]+0x1030): type 0 -> 0x1407bfd20; Game_VirtualSession_Simulate(+0x290, session, p3, mode +0x8c == 2, out list); on success and (types 0xf-0x11, Game.AlwaysVirtualiseSessionsIndividually, or championship checks) sets [[+0x298]+0xf0]+0x2e8 = 0x101 and calls champ vt+0x150/+0x160; frees the result list. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.championship_virtualise_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 4C 89 C3",
+  "match": "0x140bd4bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bd4bc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Championship_VirtualiseSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bd4bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bd4bc0.c",
+   "notes": "V4501 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

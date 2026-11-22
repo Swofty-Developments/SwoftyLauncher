@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_StartTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b3b20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432b3b20.c;pat:log-message-method;xref:0x143297e62,0x1432b49db,0x1432c2689",
+  "notes": "F1OS task manager startTask: logs '%s: Requested a task for service %s : method %s .' (method name 'startTask'); queues behind a running task ('%s : %s queued because the current task ... is now in progress') or sends ('HTTPRequest: ... sent args: %s', 'Request Length : %d, CRC : %s'). Callers 0x143297080, 0x1432b4440, 0x1432c2420, 0x1432c3190. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1os_start_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 00 02 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 D6",
+  "match": "0x1432b3b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b3b20",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_StartTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432b3b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432b3b20.c;xref:0x143297e63",
+   "notes": "V5882 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

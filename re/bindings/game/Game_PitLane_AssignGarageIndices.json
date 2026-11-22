@@ -1,0 +1,130 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_AssignGarageIndices",
+ "table": "functions",
+ "author": "re-bindings",
+ "row": {
+  "addr": "0x1434b5110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_PitLane_AssignGarageIndices(void *pit_lane_manager)",
+  "evidence": "decomp:re/decomp/1434b5110.c;decomp:own disasm 1.0.145 0x1434b7690 the same 450/450;xref:0x1434ca654;xref:0x1434cc5cb",
+  "notes": "engine-re 2026-11-17 track round C (static): called from Game_PitLane_GenerateSplines (call at 0x1434ca654) and tail-jumped to from 0x1434cc430 (jmp at 0x1434cc5cb); both pass [parent+0x48]. It reads only rcx (kept in rsi, 0x1434b5144) and sets no return value: the call site reloads rax at once (0x1434ca659) and 0x1434cc430 is reached only through its vtable slot 0x145843d88. It first replaces the 27 car records, allocating each new one (0x140 bytes, allocator mgr+0xae0, stored at mgr+0x938+i*0x10, +0x10a = i; +0 = 0, three 4x4 identity matrices at +0x10, +0x50 and +0x90 (rows 1.0f at 0x145381184 and the constants 0x1453829c0, 0x1453829d0, 0x1455d85b0), +0xd4 = 6, floats +0xe8 = 35.0f and +0xec = 22.22f (0x1434b526b), +0x110..+0x12f zeroed and then two 0x50-byte sub-objects stored at +0x118 and +0x128 with their allocators at +0x110 and +0x120; 0x1434b5200..0x1434b5493) before freeing the old one (0x1434b5179..0x1434b5616, a loop entered at 0x1434b51d9 with its tail before its head) and sets each record's +0 to the vehicle of [mgr+0xb00] whose [[v+0x58]+0xe8] is that index, or 0 (0x1434b561b..0x1434b56b3). Then it resets the pit lane garage index (car record +0xe0) of all 27 car records [mgr+0x938+id*0x10] to 0x7fffffff (0x1434b56bc..0x1434b5876), then per entrant (vector [[mgr+0xb70]+0x1d8..+0x1e0], stride 0x98, vehicle id +0x82, ids > 0x1a skipped at 0x1434b58e3): garage = 2 x team garage slot ([e+0x88]+0x28) + seat (e+0x90) when the track byte [[[mgr+0xb80]+0x1a8]+0x30]+0x60 (copied to mgr+0xc29, tested 0x1434b591a; its only other reader, Game_PitLane_MoveDownSpline at 0x1434beb6c, flips the sign of a float with mask 0x80000000 when it is 0) is set, else (2 x slot | 1) - seat (per V11203 polarity correction; H: garage order flag of the track); safety-car vehicles (list [mgr+0xb38]+0x30..+0x38) get 0x63 (99). Pit box = garage >> 1; garage 99 uses box 12 (Game_Pitlane_ApplyVehicleResetState 0x1434c03c0 maps 99 to box 12 too, then returns at 0x1434c0408 for any garage above 0x17, so it does nothing for 99) = the safety-car request [placement+0x738], which is type 7 slot 0 of the placement table placement+0x38+type*0x100+slot*8 that Sess_VehiclePlacementRequest_Register fills. raised by engine-re with --force 2026-11-17 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1434b7690, 450/450 equal, with +0x930, +0x938, +0xe0, +0xb70, +0x1d8, +0x1e0, +0x82, +0x88, +0x90, +0xb80, +0x1a8, +0xc29 and +0xb38 at the same instructions."
+ },
+ "signature": {
+  "id": "game.pit_lane_assign_garage_indices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE 48 8D 81 30 09 00 00",
+  "match": "0x1434b5110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434b5110",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_AssignGarageIndices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "re-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "trkps-verify",
+   "kind": "func",
+   "item": "Game_PitLane_AssignGarageIndices",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434b5110.c;xref:0x1434b591d",
+   "notes": "V11203 27 records +0xe0=0x7fffffff, stride 0x98, id byte +0x82 > 0x1a skipped, garage-99 via list mgr+0xb38 - all confirmed. CORRECTION: polarity inverted - at 0x1434b591a byte (mgr+0xc29 = [..+0x30]+0x60) SET -> 2*slot+seat; byte ZERO -> (2*slot|1)-seat."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_AssignGarageIndices",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434b5110-0x1434b59ab, 0x1434ca550-0x1434cb2fc, 0x1434cc430-0x1434cc5d0, 0x1434b59b0-0x1434b5ce2, 0x140388cf0-0x14038a000, 0x1434b4d30-0x1434b4f02, 0x1434b7520-0x1434b7cc0, 0x1434b8270-0x1434b83db, 1.0.145 0x1434b7690-0x1434b7f2b;xref:0x1434ca654,0x1434cc5cb,0x1434b56bc,0x1434b5876,0x1434b58e3,0x1434b590b,0x1434b5913,0x1434b591a,0x1434b58ae,0x1434b591f,0x1434b596a,0x1434b5c09,0x143687db9,0x1434b7601,0x1434b760a,0x1434b4db3",
+   "notes": "V20026 Blind: partial, derived before reading the notes. Code matches every offset claim: reset of +0xe0 to 0x7fffffff in 27 records [mgr+0x938+i*0x10] (0x1434b56bc..0x1434b5876); entrants [[mgr+0xb70]+0x1d8..0x1e0] (GarageSystem) stride 0x98, id +0x82, >0x1a skipped (0x1434b58e3); flag [[[mgr+0xb80]+0x1a8]+0x30]+0x60 copied to mgr+0xc29, tested 0x1434b591a; set 2G+s, clear (2G|1)-s; SC list [mgr+0xb38]+0x30 (SafetyCarVehicleSystem) gets 99. Box = g>>1, 99 -> 12 (0x1434b7601..0x1434b760a). Call sites cited +1 byte: E8 0x1434ca654, E9 tail jmp 0x1434cc5cb. Not in notes: records rebuilt and +0 linked to vehicles first. type 7 slot 0 not reached. 1.0.145 0x1434b7690 identical."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_AssignGarageIndices",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1434b5110-0x1434b59ab, 0x1434ca550-0x1434ca6a0, 0x1434cc430-0x1434cc5d0, 0x1434b4d30-0x1434b510e, 0x1434b7520-0x1434b7800, 0x1434b8270-0x1434b83db, 0x1434bd850-0x1434bd960, 0x1434d1260-0x1434d134e, 0x142f60c80-0x142f60f02, 1.0.145 0x1434b7690-0x1434b7f2b;xref:0x1434ca654,0x1434cc5cb,0x1434b51cc,0x1434b58e3,0x1434b5913,0x1434b596a,0x1434b7601,0x1434bd8d3,0x142f60d72",
+   "notes": "V20027 Blind: partial, derived before reading the notes. Own disasm matches every fact: callers 0x1434ca654 (in 0x1434ca550) and tail jmp 0x1434cc5cb, both rcx=[parent+0x48]; 27 records of 0x140 from [mgr+0xae0] vt+0x18 at mgr+0x938+i*16, +0x10a=i; +0 = vehicle with [[v+0x58]+0xe8]==i else 0; +0xe0=0x7fffffff x27; idx=2*[[e+0x88]+0x28]+[e+0x90] if [[[mgr+0xb80]+0x1a8]+0x30]+0x60 else (2X|1)-seat, flag to mgr+0xc29; [mgr+0xb38]+0x30 list gets 0x63; box=idx>>1, 0x63->12->[[mgr+8]+0x738] = type 7 slot 0 of +0x38+type*0x100+slot*8 (0x142f60d72); 1.0.145 0x1434b7690 450/450. Only miss: rebuild range 0x1434b51d9..0x1434b5616 omits the loop tail 0x1434b5183..0x1434b51d3 (old-record free, 27 bound); use 0x1434b5179..0x1434b5616."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_AssignGarageIndices",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434b5110-0x1434b59ab,0x1434b4d30-0x1434b510e,0x1434c03c0-0x1434c05f9,0x1434beb30-0x1434bed40,0x1434b59b0-0x1434b5cd0,0x142f60c80-0x142f60e80,0x142f625c4-0x142f62670,0x1436aa9a0-0x1436aaad6,1.0.145 0x1434b7690-0x1434b7f2b (450/450, 0 diffs);xref:0x1434ca654,0x1434cc5cb,0x1434b54a2,0x1434b58e3,0x1434b590e,0x1434b5913,0x1434b58ae,0x1434b596a,0x1434b4d77,0x1434b4da4,0x142f60d72",
+   "notes": "V20029 Blind: agree, derived before reading the notes. Own disasm 0x1434b5110-0x1434b59ab: callers 0x1434ca654 (call in 0x1434ca550) and 0x1434cc5cb (jmp), both rcx=[parent+0x48]. 27 slots mgr+0x930+i*0x10 {alloc,rec}; new 0x140 rec from [mgr+0xae0] (+0x10a=i, two 0x50 subobjects) stored before the old one is freed; +0 linked via [[v+0x58]+0xe8] else 0; +0xe0=0x7fffffff x27; idx = flag ? 2T+[e+0x90] : (2T|1)-[e+0x90], flag [[[[mgr+0xb80]+0x1a8]+0x30]+0x60] copied to mgr+0xc29; [mgr+0xb38] list gets 99. 0x1434b4d30: box=idx>>1, 99 or box 12 uses [[mgr+8]+0x738] = Register table +0x38+7*0x100 (mgr+8 by layout only). 1.0.145 0x1434b7690 450/450 identical."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Game_PitLane_AssignGarageIndices",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434b5110-0x1434b59ab,0x1434ca550-0x1434ca6c0,0x1434cc430-0x1434cc5d0,0x1434c03c0-0x1434c05b7,0x1434beb40-0x1434beb92,0x1434b4d30-0x1434b4f00,0x1434bd850-0x1434bd960,0x142f60c80-0x142f60e90,0x142f62580-0x142f62800,0x14028e3b0,1.0.145 0x1434b7690-0x1434b7f2b;xref:0x1434ca654,0x1434cc5cb,0x145843d88,0x1434ca659,0x1434beb6c,0x1434b5913,0x1434c0408,0x142f60d72,0x1434b4db3",
+   "notes": "V100002 Blind: agree, derived before reading the notes and proto. Own capstone 0x1434b5110-0x1434b59ab: 1 arg rcx (rsi); rax left = SC-loop end ptr, 0x1434ca659 reloads it; 0x1434cc430 only via vtable 0x145843d00+0x88 (sibling default = ret 0x14028e3b0). 27 records 0x140 B, init/sub-objects/alloc-before-free as stated; link loop bound = [mgr+0xb00]+0x28 vector count, not 27. Reset 0x7fffffff; garage = flag ? 2t+s : (2t|1)-s; flag copied to mgr+0xc29, sole reader 0x1434beb6c (xor -0.0). SC list [mgr+0xb38]+0x30 -> [[P+0x58]+0xe8] = 0x63, no id bound. Readers: box = 99 ? 12 : g>>1; box 12 (also g 24/25) -> [[mgr+8]+0x738], else <=31 -> +0x838+box*8; 0x1434c0408 jg ret. 1.0.145 0x1434b7690 450/450."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434b5110",
+    "target": "0x1434b5110"
+   },
+   "sigcheck": "passed",
+   "digest": "171b412553891b7a81b2437efe88967179f50b6eaf6179bb470ab9ed2ad6845d"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434b7690",
+    "target": "0x1434b7690"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "72e4c7ca4f3babad42bcccbdf7c40bf34b4c56414c0fe872e56261b37d736ab7"
+  }
+ ]
+}

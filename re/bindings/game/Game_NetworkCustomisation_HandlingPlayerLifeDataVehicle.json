@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkCustomisation_HandlingPlayerLifeDataVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14318d560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14318d560.c;pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION;xref:0x143184802",
+  "notes": "handleF1LifeDataVehicleSegmentedDecalsAdd (lea in 0x1431845e0): finds player by user id (0x144121bc0) in hash this+0xa0; inlined addPlayerLifeDataVehicleSegmentedDecals: list msg+0x68 (0x14313dbd0) appended (0x141106ea0) to player+0xfc0+msg[0x98]*0x120+msg[0x60]*0x370 (+0xd60 if -1) +0xe0, +0x108=msg+0x9c; posts 0x143218a60, maybe 0x143218e00. (lane owner review requested) Better name: Game_CustomisationRepl_HandleLifeDataVehicleDecalsAdd (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_customisation_handling_player_life_data_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 48 89 D7 48 89 CB",
+  "match": "0x14318d560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14318d560",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkCustomisation_HandlingPlayerLifeDataVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14318d560",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14318d560.c;xref:0x143184804",
+   "notes": "V5893 CustomisationReplicationManager_HandleF1LifeDataVehicleSegmentedDecalsAdd: handler plus addPlayerLifeDataVehicleSegmentedDecals"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14318d560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14318d560.c",
+   "notes": "V7014 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

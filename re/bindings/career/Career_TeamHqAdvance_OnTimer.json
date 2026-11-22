@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_OnTimer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c7570",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422c7570.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c537d,0x1422ca6d2",
+  "notes": "TeamHQAdvance VM timer handler (this = VM, AdvanceData at this+0x730). Logs TIMER ELAPSED / showing cards / stop occurred / READY TO ADVANCE [ONCE to match peer]; calls Career_TeamHqAdvance_Stopped/RequestStop(this+0x730), PopulateButtons, AdvanceOneDay, 0x1422c5670 (advance finished (peer)), StopAdvance, posts peer signals, tail-jumps SignalStart. Callers: OnCommandRaised (jmp), Career_TeamHqAdvanceVM_Update. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_on_timer",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7F B8 AA 00 00 00",
+  "match": "0x1422c7570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c7570",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_OnTimer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1422c7570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c7570.c;xref:0x1422c537d",
+   "notes": "V5261 name/cxx or log string and body match; body size consistent with name"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1422c7570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c7570.c;str:\"****** TIMER ELAPSED, day: %d\";str:\"    READY TO ADVANCE, day: %d\"",
+   "notes": "V9214 Name matches the TEAMHQ ADVANCE log strings I resolved in the decompile."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayFrame_RecordQuadMaker",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14471be60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14471be60.c;pat:log-message-cxx;xref:0x14471fefc,0x144721ae1",
+  "notes": "recordQuadMaker(frame, maker): if quad count byte +0xc < 0x7f appends a 0x88-byte record at +0x14: maker id +0x217d, wheel +0x2170, three packed coords (13-bit delta of maker+0x2110 - +0x2100 | pos*32 << 13), wheel data via 0x14471d320; then type code 0 into stream +0x46428 (count +4); else logs 'c_maxQuadsMade needs to be increased?'. Callers Render_Skidmarks_Update. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.replay_frame_record_quad_maker",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6E",
+  "match": "0x14471be60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14471be60",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayFrame_RecordQuadMaker"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14471be60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14471be60.c;xref:0x14471fefc",
+   "notes": "V6607 recordQuadMaker string+SKIDMARKS/REPLAY channel; stores quad into replay frame (cap 0x7f, c_maxQuadsMade overflow log); callers in Render_Skidmarks_Update"
+  }
+ ],
+ "proofs": []
+}

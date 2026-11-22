@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Fade_FullScreenFadeStartFadeOutCurveId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437efea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437efea0.c;pat:log-channel-FADE;xref:0x1515b4d07",
+  "notes": "Own log FADE '[this=%p] [master=%d] FullScreenFade::startFadeOut curveId=%u'. vcall +0xd0, state +0x50=1 (setState log), stores param_4 at +0x60/+0x68, then posts three render events (alpha from param_5 byte 3, RGB, curve param_3 or default +0x58) through [0x146ca5500] vcall +0x68. (lane owner review requested) Better name: Game_FullScreenFade_StartFadeOut (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.fade_full_screen_fade_start_fade_out_curve_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 BC 24 30 01 00 00 C5 F8 29 B4 24 20 01 00 00 4D 89 CE",
+  "match": "0x1437efea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437efea0",
+  "kind": "func_start",
+  "names": [
+   "Game_Fade_FullScreenFadeStartFadeOutCurveId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1437efea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437efea0.c",
+   "notes": "V6256 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

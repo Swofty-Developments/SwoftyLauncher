@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_CreateLocalDevice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144030710",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144030710.c;pat:log-channel-NETWORK-VOICE;xref:0x1430cc259",
+  "notes": "Logs '%s: STUB/MMSYSTEM/SONY VOICE/GAMECHAT2/PLAYFAB PARTY/BLAZE' with method createNetVoiceObject and builds the matching NeNetVoice backend: MMSystem path starts 'voice_chat_decompress_helper_%d' threads, PlayFab path (setupPlayFabPartyChat inlined) creates local device, chat control, connects network, sets audio in/out, TTS profiles. Called from 0x1430cc080. (lane owner review requested) Better name: Game_NetworkVoice_CreateNetVoiceObject (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_voice_create_local_device",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 03 00 00 C5 F8 29 B4 24 00 03 00 00 49 89 D5 48 8B 42 10",
+  "match": "0x144030710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144030710",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_CreateLocalDevice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144030710",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144030710.c;xref:0x1430cc259",
+   "notes": "V6397 partial: better name Game_NetworkVoice_CreateNetVoiceObject; factory selecting BLAZE/PlayFab/MMSYSTEM/GAMECHAT2/SONY/STUB voice impl, helper threads"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144030710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144030710.c;xref:0x1430cc259",
+   "notes": "V7085 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

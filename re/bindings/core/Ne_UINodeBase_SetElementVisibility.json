@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UINodeBase_SetElementVisibility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144247840",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/144247840.c;xref:0x14421c211,0x144239ff5,0x14423a615",
+  "notes": "cxx=NeUINodeBase::setElementVisibility; log channel UI_latency: '***** Frame:%I64u NeUINodeBase::setElementVisibility: %hs Node:%hs'"
+ },
+ "signature": {
+  "id": "core.ui_node_base_set_element_visibility",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 8B 69 30",
+  "match": "0x144247840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144247840",
+  "kind": "func_start",
+  "names": [
+   "Ne_UINodeBase_SetElementVisibility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_UINodeBase_SetElementVisibility",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144247840.c;xref:0x144247840",
+   "notes": "V2203 scans children for element component, logs, posts 0x18-byte visibility message"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ViewModel_SetEnabledLooping",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ceecc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141ceecc0.c;xref:0x141cec54c,0x141ced357,0x141ced369,0x141ced3f0,0x141ced402,0x141ced489,0x141ced49b,0x141cef6b7,0x141cf96d7,0x141cf9c33,0x141cf9c48,0x141cfbb18,0x141d00076,0x141d00088,0x141d05f8c,0x141d063b3,0x141d063e8,0x141d06550,0x141d06562,0x141d06572,0x141d07490,0x141d08656,0x141d08668,0x141d0867a,0x141d0868c,0x141d08704,0x141d08716,0x141d08728,0x141d0873a,0x141d08764",
+  "notes": "Read in full: (screen, path, enabled) resolves child node path under VM root [this+0x370] (djb2 hash 0x1505*33 via 0x1442b2bf0 unless the path holds # . / -like chars), then via 0x140975db0 sets bool 'is_enabled' = enabled and bool 'looping' = 0 (always false, not from the flag); releases refs. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.view_model_set_enabled_looping",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 49 89 D1",
+  "match": "0x141ceecc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ceecc0",
+  "kind": "func_start",
+  "names": [
+   "Game_ViewModel_SetEnabledLooping"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x141ceecc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ceecc0.c;xref:0x141cec54c",
+   "notes": "V7520 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

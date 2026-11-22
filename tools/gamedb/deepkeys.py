@@ -9,7 +9,7 @@ against the file's key set. Each level draws words from vocabularies:
   formats        identifiers F1_25.exe builds with printf, such as colour_%u_default,
                  each integer conversion expanded over 0..31
   catalog        path segments of tools/gamedb/catalog/keys.tsv.gz, names.txt,
-                 compositions.txt and packages/core/src/activation/row_keys.txt.gz
+                 compositions.txt and packages/core/src/games/f1_25/activation/row_keys.txt.gz
   containers     the catalog segments that are not a key's last segment
   labels         identifier values of the database's id records (row labels)
   table:<path>   the labels of a table's rows, such as table:car_setup.sliders.slider

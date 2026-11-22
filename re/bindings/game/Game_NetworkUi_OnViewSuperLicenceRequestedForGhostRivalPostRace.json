@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnViewSuperLicenceRequestedForGhostRivalPostRace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430acaa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430acaa0.c;pat:log-message-method;xref:0x1430ab289,0x1430df880",
+  "notes": "UI command handler lea'd in 0x1430aa810: logs 'onViewSuperLicenceRequestedForGhostRivalPostRace(%d)' and triggers 'enter_super_licence'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ui_on_view_super_licence_requested_for_ghost_rival_post_race",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4D",
+  "match": "0x1430acaa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430acaa0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnViewSuperLicenceRequestedForGhostRivalPostRace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430acaa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430acaa0.c;xref:0x1430ab28b",
+   "notes": "V5333 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

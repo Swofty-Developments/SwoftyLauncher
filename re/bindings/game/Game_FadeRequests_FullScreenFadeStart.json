@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FadeRequests_FullScreenFadeStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141e72110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141e72110.c;pat:log-channel-FADE_REQUESTS;xref:0x145752cd0",
+  "notes": "Vtable cell 0x145752cd0. Copies callback functor (param_2+0x38), logs RESULTS_CONTAINER 'Full Screen Fade start', stores it via 0x1417dfb80(owner+0x1138), then requests a fade out on fade manager [owner+0x298]: sets reason bit0 in +0x7b8, starts fade (+0x7bc..), callback 0x141d7efa0 via 0x140317be0; logs FADE_REQUESTS. (lane owner review requested) Better name: Game_ResultsContainer_FullScreenFadeStart (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.fade_requests_full_screen_fade_start",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 28 01 00 00 48 89 CE 48 C7 84 24 E0 00 00 00 00 00 00 00",
+  "match": "0x141e72110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e72110",
+  "kind": "func_start",
+  "names": [
+   "Game_FadeRequests_FullScreenFadeStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141e72110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141e72110.c",
+   "notes": "V5228 name/cxx or log string and body match; body size consistent with name (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

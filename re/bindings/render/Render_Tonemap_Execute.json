@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Tonemap_Execute",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bbec20",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bbec20.c;xref:0x143bae3ca,0x143d8d777",
+  "notes": "Tonemap pass chain with names PPXTonemap::BlendLUT/UpdateLUT/UpdateLUTDavinci/UpdateAcesLUT/UpdateAcesSdrLUT/ClearOutput/Tonemap, 'eaid://ego_package/LUTBlendResults', CBVignetteParams, FSQ; resolves views via 0x143bc0c40, adds pass nodes via 0x143bdd920 and CBParams via 0x143bc74c0. Callers 0x143bab0a0, Render_SceneView_SubmitCamera. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.tonemap_execute",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 05 00 00 4C 89 CB 48 89",
+  "match": "0x143bbec20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bbec20",
+  "kind": "func_start",
+  "names": [
+   "Render_Tonemap_Execute"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bbec20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bbec20.c;xref:0x143bae3ca",
+   "notes": "V7795 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

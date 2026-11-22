@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineTimeAdvancementCtrlComp_AllowTimeAdvancment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143705f60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143705f60.c;str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_AllowTimeA;xref:0x14585f930",
+  "notes": "Flow-state slot 8 (cell 0x14585f930) of vt_Sess_TeamHQTimeAdvance 0x14585f8f0: +0xc88 = 1; with an online session (0x14605b128, 0x14077c790) sets flag 0x2000 in 0x14604ed68 and runs inlined allowTimeAdvancment (time-advance comp 0x146060868 state 1 -> 2, log, posts message 6), +0xc88 = 0. Returns 1. (lane owner review requested) Better name: Game_StateTeamHQTimeAdvance_OnStateEnter (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.career_online_time_advancement_ctrl_comp_allow_time_advancment",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE C6 81 88 0C 00 00",
+  "match": "0x143705f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143705f60",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineTimeAdvancementCtrlComp_AllowTimeAdvancment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143705f60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143705f60.c",
+   "notes": "V6151 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

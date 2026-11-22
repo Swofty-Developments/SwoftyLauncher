@@ -1,0 +1,371 @@
+# The formats every guard source passes to swofty::log, in source order, pinned by hand; guard_lines_test reads them
+# from each source under native/src/core/guards and compares them with these. The adjacent string literals of a call
+# make one line; a format that is not a literal reads "(expr) <expression>". A source that logs has a section here:
+#
+#   [log career/activity_resume_guard.cpp]
+#   [career] activity resume guard off (SWOFTY_ACTIVITY_RESUME_GUARD=%s)
+#
+# A change to a guard's log text changes its section in the same commit.
+
+[log ai/ai_corner_guard.cpp]
+[ai] brake line: car %d has no brake line ahead inside the next corner on this track's AI line (a corner without a brake line, or incomplete corner starts and ends); it drives the line without corner data
+
+[log ai/ai_curves_guard.cpp]
+[ai] team curves: the player's vehicle is not in the entrants system's vehicle table (a saved Grand Prix from before its addon moved the vehicle ids); the AI builds with the first team's curves
+[ai] team curves guard: not hooked: %s%s
+
+[log ai/ai_ers_guard.cpp]
+[ai] ers corner: car record +0x%llx has no corner marker between the next corner's start and end lines on this track's AI line; its ERS decision skips that corner's bonus
+[ai] ers corner guard off: needs %s and %s, which this build does not resolve
+
+[log ai/ai_line_set_guard.cpp]
+[ai] vehicle slot %u has no AI line or tables of its own (its name is in none of the AI maps); %u of its pointers borrow another car's, %u have no donor, %u earlier cars backfilled; brake line settings %s%s
+
+[log career/activity_resume_guard.cpp]
+[career] activity resume: the championship has no race length fields (its track is not in the game mode's track list); the report keeps the default
+[career] activity resume guard: %s: the hook failed: %s
+[career] activity resume guard off (SWOFTY_ACTIVITY_RESUME_GUARD=%s)
+[career] activity resume guard: not hooked: %s%s%s
+[career] activity resume guard armed: a championship whose track is not in the game mode's track list no longer faults the activity report
+
+[log career/calendar_track_guard.cpp]
+[career] calendar track guard: the calendar of schedule component 0x%llx could not be read; left as it is
+[career] calendar track guard: none of the %zu round(s) has track data in this game; the calendar is left as it is
+[career] calendar: round %zu (event %u) is on track %u, which this game loaded no track data for (it is not in the game's content); the round is left out of the season
+[career] calendar track guard: the kept rounds could not be read; the calendar is left as it is
+[career] calendar: %zu of %zu round(s) kept; the season runs without the %zu round(s) on tracks the game has no track data for
+[career] calendar track guard off: %s is not found on this build
+
+[log career/myteam_vehicle_guard.cpp]
+[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s' from %s (%s), which is not in the game data (no entrants.vehicles row; the addon is off or gone); the base is skipped and the rest of the career loads. Turn %s back on, or if it is on, add that engine back in its settings, to bring this car back%s
+[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s', which is not in the game data (no entrants.vehicles row; the addon that adds it is off or gone); the base is skipped and the rest of the career loads. Turn that addon back on to bring this car back%s
+[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s', whose row index reads as missing; it is not a known addon's vehicle or its entrants.vehicles row is in the game data, so the game's own load runs for it
+
+[log career/myteam_vehicle_heal.cpp]
+[myteam] heal: the player's My Team car (custom vehicle %u) is missing from the save and no stock My Team car is loaded to rebuild it from (%s; entrants %p: stock table %p with %zu slots, My Team table %p with %zu slots); the career fails as before
+[myteam] heal: the stock My Team car '%s' to rebuild custom vehicle %u from is not readable (%s); the career fails as before
+[myteam] heal: rebuilding the player's My Team car (custom vehicle %u) from '%s' failed (%s returned %d, %s); the career fails as before
+[myteam] heal: the player's My Team car (custom vehicle %u) was missing from the save (launcher 1.9.21 dropped every My Team car on load, 1.9.22 the More Engine Suppliers ones, and the next save wrote the career without it); rebuilt it from the stock My Team car '%s' (%s season) %s so the career can be raced. The next save keeps it
+[myteam] vehicle heal off (SWOFTY_MYTEAM_VEHICLE_HEAL=%s)
+[myteam] vehicle heal off: needs %s, which this build does not resolve
+[myteam] vehicle heal: %s is not resolved on this build, so only the career load rebuilds a missing car
+[myteam] vehicle heal %s
+[myteam] heal: %s
+[myteam] heal: the player's My Team car (custom vehicle %u, '%s') has no base car (base %08x) and no stock car of that name is loaded to give it one (entrants %p: stock table %p with %zu slots)
+[myteam] heal: the player's My Team car (custom vehicle %u, '%s') had no base car or one that is not loaded (base %08x; launcher 1.9.25 rebuilt it from a stock car without one, or the car was made without one), which stops Team HQ loading; set its base to the stock '%s' (%08x) as the career loaded. The next save keeps it
+[myteam] heal: the career's %zu entrants include %zu on My Team cars (custom vehicle %s) as it loaded: %zu missing and rebuilt, %zu given a base car, the rest present
+
+[log career/myteam_vehicle_keep.cpp]
+[myteam] keep: My Team vehicle base (stat id %u) on '%s' can't be kept as a stock placeholder (%s); it is skipped as before
+[myteam] keep: the stock placeholder for '%s' was not stored where expected (car %p, handle %08x); the next save may drop it
+[myteam] keep: My Team car (custom vehicle %u) on '%s' (engine %u, base car %08x) has no vehicle row (its addon is off or gone); it loads as the stock '%s' (engine %u, base car %08x) so the career loads and its id stays taken, and saves keep the original '%s' entry
+[myteam] keep: the save writes My Team car (custom vehicle %u) as its original '%s' (engine %u, base car %08x), not the stock placeholder '%s'
+[myteam] vehicle keep off (SWOFTY_MYTEAM_VEHICLE_KEEP=%s): a car whose row is gone is skipped
+[myteam] vehicle keep off: needs %s, %s, %s and g_Game_Manager, which this build does not all resolve; a car whose row is gone is skipped
+[myteam] vehicle keep %s%s%s%s
+
+[log career/resume_gate_guard.cpp]
+[career] resume gate: %s
+[career] resume gate: the confirm was answered "%s"
+[career] resume gate: the confirm message did not show; the press-twice prompt is used
+[career] resume screen: %s: the view model's vtable slot 24 does not read; nothing was done
+[career] resume screen: %s: vtable slot 24 (base+0x%llx) is not PressSlot's code on this build; nothing was done
+[career] resume screen: %s: the screen is busy (vm+0x1380 = %u); nothing was done
+[career] resume screen: row %zu: the wizard data group was %s, set to %s (suffix %s)
+[career] resume screen: probe: card 0 slot id %llu rewritten to %llu; calling PressSlot (base+0x%llx) on vm %p
+[career] resume screen: probe: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads when the screen finishes its transition out)
+[career] resume screen: row %zu: not pressed: %s
+[career] resume screen: row %zu: not pressed: %s; the continue screen stays open and says to pick the career on it
+[career] resume screen: row %zu: calling PressSlot (base+0x%llx) on the %s continue screen, wizard data group %s
+[career] resume screen: row %zu: PressSlot returned; pending action vm+0x1368 = %u (2 means the career loads when the screen finishes its transition out)
+[career] resume screen: row %zu: the screen did not take the career (pending %u); it stays open
+[career] resume screen: row %zu: the confirm was answered "%s"
+[career] resume screen: row %zu: the confirm message did not show; Back is taken and nothing loads
+[career] resume screen: row %zu: slot id %llu is not one of the %zu cards the continue screen listed; the core's save slot list has it
+[career] resume screen: row %zu: card 0 slot id %llu rewritten to %llu on the %s continue screen
+[career] resume screen: row %zu: the Load Anyway / Back confirm could not be raised; Back is taken
+[career] resume screen: row %zu: asking Load Anyway / Back (%s)
+[career] resume gate: slot %u key %s: %s%s
+[career] resume gate off (SWOFTY_RESUME_GATE=%s)
+[career] resume gate off: needs %s and %s, which this build does not resolve
+[career] resume gate off: the resume cards' layout is not proven on this build
+[career] resume screen: the list screen is on and there is no SWOFTY_RESUME_LIST_PROBE slot id; the list screen is used, not the probe
+[career] resume screen: the direct slot load is not proven on this build; not probed
+[career] resume screen: probe armed: the first stock resume screen to open loads slot id %llu through card 0
+[career] resume screen: SWOFTY_RESUME_LIST=0: the list screen is off
+[career] resume screen: armed; Resume Career opens the list screen when the content select hooks are live
+[career] resume screen: not armed (the gate or the direct load is not available on this build)
+[career] resume gate %s; a career that needs add-ons this profile lacks asks before it loads (%s)
+
+[log career/rnd_suppliers_guard.cpp]
+[rnd] %s, vehicle %u (engine %s): %d team + %d supplier rows pass %d per tree (%d tree(s) of 384); each tree keeps %d rows with suppliers %s; left out of this team's trees: %s
+[rnd] %s: the team's own supplier rows do not all fit %d per tree; a supplier of engine %s stays out
+[rnd] %s: the team tree %s alone has %d rows, more than %d per tree; the game's R&D lists can still overflow
+[rnd] supplier budget off (SWOFTY_RND_SUPPLIER_GUARD=%s)
+[rnd] supplier budget off: Career_Add_TeamUpgrades or Career_Load_UpgradeTreeNodes did not resolve
+[rnd] supplier budget: the loader hook failed: %s
+[rnd] supplier budget: the model hook failed: %s
+[rnd] supplier budget armed: a team's R&D trees hold at most 384 / trees upgrade rows; past that only the team's own engine supplier's rows (then others while they fit) are loaded
+
+[log career/sequencer_records_guard.cpp]
+[career] events sequencer: the session's event record collects no matching record of the career event table (its track or calendar entry is missing); the team mate asset groups are left out
+[career] events sequencer: %s is not in the entrants system (%s); its driver morph assets are left out
+[career] events sequencer: %s (domain %u, stat id %u) is not in the entrants system: %s (%llu drivers); its driver morph assets are left out
+[career] recognition notification: the player's entrant record collects no matching record of the career event table (its track or calendar entry is missing); the notification is left without its names, team icon and perk values
+[career] %s off: needs %s and %s, which this build does not resolve
+[career] %s: the hook failed: %s
+[career] events sequencer record, team mate driver and player driver guards and the recognition record guard off (SWOFTY_SEQUENCER_RECORDS_GUARD=%s)
+[career] events sequencer record guard armed: a session whose event has no record in the career event table enters without the team mate asset groups instead of faulting
+[career] events sequencer team mate driver guard armed: a session whose team mate's driver is not in the entrants system enters without the team mate's driver morph assets instead of faulting
+[career] events sequencer player driver guard armed: a session whose player's own driver is not in the entrants system enters without the player's driver morph assets instead of faulting
+[career] recognition record guard armed: a recognition notification whose player record collects no matching record of the career event table is left unbuilt instead of faulting
+
+[log career/standings_drop.cpp]
+[career] dropped scores: best %u results count; %zu table session(s) recounted, %zu total(s) changed
+%s
+[career] dropped scores: not hooked: %s%s
+[career] dropped scores: the hook failed
+[career] dropped scores armed (hook at base+0x%llx), first rule set
+[career] dropped scores: data group %s %s
+
+[log career/standings_guard.cpp]
+[career] standings: round %u has no track data (track %u is off); skipped%s
+[career] standings: round %u has no track data; skipped%s
+[career] weekends: track %u has no track data; the round shows no track
+[guard] weekends: track id %u has no record (%s, record 0x%llx, node 0x%llx, %llu tracks); the round shows no track
+[career] weekends track guard off: site_Career_WeekendsTrackRecordLoad is not resolved in this build
+
+[log career/teamhq_track_guard.cpp]
+[career] teamhq: track %u has no track data; the event shows no track
+[career] teamhq: advance view model track %u has no track data; the event shows no track
+[career] teamhq: my team view model track %u has no track data; the event shows no track
+[career] teamhq track guard: %s: the hook failed: %s
+[career] teamhq track guard off (SWOFTY_TEAMHQ_TRACK_GUARD=%s)
+[career] teamhq track guard armed: a Team HQ event whose track has no track data shows no track instead of faulting
+[career] teamhq track guard: not hooked: %s%s%s%s
+
+[log cars/chassis_registry.cpp]
+[car] chassis registry holds %u bodies; registration #%d is skipped%s
+
+[log cars/ers_mode.cpp]
+[ers] car %u: ERS mode %d out of range; set to %d (Medium)%s%s%s
+
+[log cars/ers_newlap.cpp]
+[ers] vehicle_newlap for vehicle %u: participant %lld of %lld has no vehicle (entry 0x%llx, vehicle 0x%llx); skipped%s
+
+[log cars/tyre_curve_guard.cpp]
+[car] a tyre curve lookup got a key that is not a number, so it uses the curve's first point%s
+
+[log cars/tyre_slots.cpp]
+[tyres] slot guard (%s): vehicle %u's fitted option %u has no usable slot in its class's table (count %llu, options %s); refit skipped%s
+[tyres] slot guard (%s): vehicle %u's fitted option %u has no usable slot in its class's table (count %llu, options %s); slot %d %s with the compounds of option %u's slot%s
+
+[log engine/anim_clip_time_guard.cpp]
+[anim] an animation clip got a time that is not a finite number, so it shows the clip's first frame%s
+
+[log engine/anim_packet_time_guard.cpp]
+[anim] an animation packet (%s) got a time that is not a finite number from F1_25.exe+0x%llx, so it shows its first key%s
+
+[log engine/audio_queue.cpp]
+[audio] queue fix: the overflow queue at %p is not readable; requests pass through
+[audio] queue fix: moved %zu queued worker request(s) from slots 12-23 to slots 0-11 %s (%llu in all%s)%s
+[audio] queue fix: first worker request (worker %p, job type %u, %u worker(s)) runs through thunk %zu
+[audio] queue fix: no thunk left for worker %p; its requests pass through
+
+[log engine/heap_sizes.cpp]
+%s
+%s
+%s
+%s
+%s
+%s
+
+[log engine/placed_record.cpp]
+[gfx] placed records: heap %u reached %d of %d this frame (buffer '%s', flags 0x%llx, %llu bytes)
+[gfx] %s
+[gfx] PLACED RECORD OVERFLOW: heap %u took record %d of %d in one frame; the game writes it over the command list arrays (%s)
+[gfx] placed record counter: signature not found; high-water marks and guard off
+[gfx] placed record counter: hook failed: %s
+[gfx] placed record counter on (high-water marks per upload heap); guard %s
+
+[log engine/watchdog_grace.cpp]
+[core] boot watchdog grace declined: the game's shutdown flag is set (rdi low byte 0x%02x), the frame tick was silent %u ms
+[core] boot watchdog grace declined: the frame tick was silent %u ms, past the %u ms cap
+[core] boot watchdog grace declined: the frame tick was silent %u ms and the newest flow in %s has been there %llu ms (limit %llu ms)
+[core] boot watchdog grace declined: the frame tick was silent %u ms and no flow is in Entering (limit %llu ms) or Updating (limit %llu ms)
+[core] boot watchdog grace: the flow table stayed busy for %d ms, reading the lock-free snapshot
+[core] boot watchdog grace: the frame tick has been silent %u ms with flow "%s" in %s; the game's watchdog kill is held (up to %u ms)
+
+[log frontend/fe_tile_guard.cpp]
+[fe] tiles: entrant list %s is not in the game data; its tile is left without a list%s
+
+[log frontend/gp_continue_guard.cpp]
+[gp] %s%s
+[gp] continue F1 World car guard off (SWOFTY_GP_F1W_CHECK_GUARD=%s)
+[gp] continue F1 World car guard off: needs %s and %s, which this build does not resolve
+[gp] continue F1 World car guard %s
+[gp] continue F1 World car guard armed: Grand Prix Continue asks to go online only for a save on the F1 World car
+[gp] continue F1 World car guard armed on %s only (see the [core] lines)
+
+[log frontend/leaderboard_guard.cpp]
+[leaderboard] %s off (%s=%s)
+[leaderboard] Time Trial leaderboard view 0x%llx has no board for this track (online services off or no board listed); view skipped%s
+[leaderboard] Time Trial leaderboard model 0x%llx activated its tab%s with no child list model; tab activation skipped%s
+[leaderboard] Time Trial presenter 0x%llx has no board for this reference (online services off or no board listed); the game's %s log line skipped%s
+[leaderboard] %s%s
+[leaderboard] time trial leaderboard guard off: needs site_Game_TimeTrialLeaderboard_BoardRead and site_Game_TimeTrialLeaderboard_BoardsDone, which this build does not resolve
+[leaderboard] time trial leaderboard tab guard off: needs site_Sess_TimeTrialLeaderboard_TabChild and site_Sess_TimeTrialLeaderboard_TabDone, which this build does not resolve
+[leaderboard] time trial reference log guard off: needs site_Game_TimeTrial_SetReferenceLogBoard and site_Game_TimeTrial_SetReferenceLogDone, which this build does not resolve
+[leaderboard] time trial reference list guard off: needs site_Game_TimeTrial_SetReferenceListBoard and site_Game_TimeTrial_SetReferenceNoList, which this build does not resolve
+[leaderboard] time trial leaderboard guard %s
+[leaderboard] time trial leaderboard tab guard %s
+[leaderboard] time trial reference log guard %s
+[leaderboard] time trial reference list guard %s
+
+[log frontend/setup_vm_guard.cpp]
+[setups] the setup screen has no car yet; skipped
+[setups] car guard: %s: no jne after the compare
+[setups] car guard: %s: the hook failed: %s
+[setups] car guard off (SWOFTY_SETUP_VM_GUARD=%s)
+[setups] car guard armed at %u of %u sites: a setup screen with no car skips its differential range update instead of faulting
+[setups] car guard: not hooked
+
+[log frontend/theatre_list.cpp]
+[theatre] a saved item names an owner that is not in the current list, so it has no save slot%s
+[theatre] saved item %llu goes in row %llu, after an item that has no row%s
+[theatre] list guard off (SWOFTY_THEATRE_LIST_GUARD=%s)
+[theatre] list guard part off: needs %s and %s, which this build does not resolve
+[theatre] rows guard off: needs %s, which this build does not resolve
+[theatre] list guard: recent list %s, saved list %s, rows %s; a saved item whose owner is gone has no save slot and the next item takes its row
+
+[log frontend/tile_list_select_guard.cpp]
+[tile-list] tile %llu of %llu %s, so the list's selection skips it%s
+[tile-list] a tile %s, so the list's selection skips it%s
+[tile-list] the list %s, so it does not write its focused tile to its selection%s
+[tile-list] focused tile %llu of %llu (node 0x%llx, class 0x%llx) %s, so the list does not write it to its selection%s
+[tile-list] the focused tile (node 0x%llx, class 0x%llx) %s and is not among the list's tiles, so the list does not write it to its selection%s
+[tile-list] select guard off (SWOFTY_TILE_LIST_SELECT_GUARD=%s)
+[tile-list] select guard off: needs %s and %s, which this build does not resolve
+[tile-list] push guard off: needs %s, which this build does not resolve
+[tile-list] select guard %s; a tile with no components is skipped when a list moves its selection
+[tile-list] push guard %s; a focused tile with no components is not written to a list's selection
+
+[log garage/garage_crew.cpp]
+[garage] garage %u: team %u car #%u (driver %u) has no crew template in the session; its crew is not spawned, the car still races%s
+[garage] garage %u: team %u car #%u (driver %u) is the %s car of its garage; its crew is not spawned, the car still races%s
+[garage] garage %u has no cars with a crew template; its pit stops crew is not set up
+[garage] garage %u: team %u car #%u has no pit stops crew template; its pit stops crew is not set up, the car still races
+[garage] the garage crew scene is missing for this track (garage crew scene 0x%llx, vehicle scene 0x%llx, equipment scene 0x%llx); no garage crew is shown%s
+[garage] cutscene %s: team %u has no team record; showing no team
+[garage] cutscene team guard: %u of %u cutscene sites resolve with a no-team path on this build; the rest keep the game's lookup
+[garage] pit stops crew guard off: needs %s and %s, which this build does not resolve
+[garage] crew scene guard off: needs %s and %s, which this build does not resolve
+
+[log garage/garage_setup.cpp]
+[garage] a setup names an owner that is not in the garage list, so its row has no owner name%s
+
+[log garage/garage_slots.cpp]
+[garage] slots: a team at position %llu of the team order has no garage, the world has %llu; teams past the garage count get no garage slot, their cars still race
+
+[log garage/pit_box.cpp]
+[pit] guard: a car in the garage has pit box %d, which has no spline slot; it is not aligned%s
+[pit] race tyre change rule off (SWOFTY_RACE_TYRE_RULE=%s)
+[pit] race tyre change rule off: this build does not resolve %s
+[pit] box guard off (SWOFTY_PIT_BOX_GUARD=%s)
+[pit] box guard off: needs %s and %s, which this build does not resolve
+[pit] race tyre change rule %s
+[pit] box guard %s
+
+[log garage/pit_garage_state.cpp]
+[pit] garage state guard: a car with no garage (slot %llu at %s) left the pit lane's garage state alone
+[pit] garage state guard: %s: the hook failed: %s
+[pit] garage state guard off (SWOFTY_PIT_GARAGE_STATE_GUARD=%s)
+[pit] garage state guard armed at %u of %u stores: a car without a garage leaves the pit lane's garage state alone instead of faulting
+[pit] garage state guard: not hooked
+
+[log garage/pit_slots.cpp]
+[pit] guard: vehicle %u has no race slot, %s car in the pit strategy check; %s%s
+
+[log guard.cpp]
+%s
+%s
+%s
+%s
+%s
+%s
+%s
+%s
+
+[log session/estimate_laptime_guard.cpp]
+[session] a virtual session lap estimate has no tyre object for vehicle %u, so it returns the lap time unchanged%s
+
+[log session/marshal_lights_guard.cpp]
+[guard] +0x%llx null object skipped: the first marshal light is in no marshal light zone, so the zone walk erases it and ends at the start of the light list instead of reading before it%s
+
+[log session/quali_tyres_guard.cpp]
+[tyres] %s: option %u (%s) is qualifying only, refused in session %u%s
+[tyres] qualifying tyre hooks off (SWOFTY_QUALI_TYRES=%s)
+[tyres] qualifying tyre hooks off: needs %s, which this build does not resolve
+[tyres] qualifying tyre hooks off: this build resolves none of %s, %s, %s
+[tyres] qualifying tyre hooks: set usable %s, session tag check %s, set choice %s
+[tyres] %s%s
+
+[log session/race_retirement_guard.cpp]
+[race] retirement: car %u retired, but %s; its retirement message names no driver
+[race] retirement: car %u retired, but its entrant's driver is not in the entrants system (%s); its retirement message names no driver
+[race] retirement: car %u retired, but its entrant's driver (domain %u, stat id %u) is not in the entrants system: %s (%llu drivers); its retirement message names no driver
+[race] retirement driver guard off: needs %s, %s and %s, which this build does not resolve
+[race] retirement driver guard off: %s resolves 0x%llx past %s, not 0x%llx
+
+[log session/red_flag_recompute_guard.cpp]
+[session] a red flag strategy recompute has no race session record for a vehicle, so that vehicle is skipped%s
+
+[log session/replay_grid_guard.cpp]
+[replay] holder classes of the Steam build do not match; %zu classes found by scanning this build
+%s
+%s
+[replay] a recordable the recorder could not hold has no stored state; it keeps its current state instead of reading an empty one
+[replay] read guard: %s: the hook failed: %s
+[replay] read guard not hooked: %s%s
+[replay] read guard armed: a recordable with no stored state keeps its current state when a replay is read
+
+[log session/session_enter.cpp]
+[session] name hash decision took %llu us (memo %d hits, %d misses)
+[session] vehicle slot %u (hash %llx) is in no AI asset group; using %llx for its AI record%s
+
+[log session/team_slots.cpp]
+[teams] the game stored its first database team record (stat id %u); loaded team records can be reached
+
+[log session/teammate_pairs_guard.cpp]
+[strategy] team %u has %u cars; only its first two are paired for strategy, the others stay unpaired
+
+[log session/thrustmaster_lcd.cpp]
+[tmlcd] a sector entrant has no record, so the wheel LCD keeps its last team name%s
+
+[log tracks/gp_weekend_track_guard.cpp]
+[gp] %s
+[gp] weekend track guard: %s is not found on this build
+[gp] weekend track guard: %s: the hook failed: %s
+%s
+[gp] weekend track guard off: vt_Career_Weekend does not resolve on this build
+[gp] weekend track guard off: neither site is found on this build
+[gp] weekend track guard armed%s: a Grand Prix, Driver Career or My Team weekend whose track has no track data record races melbourne instead of %s
+
+[log tracks/track_acclim.cpp]
+[acclim] Track Acclimatisation programme 0x%llx has no targets at this track (targets 0x%llx); refresh skipped%s
+[acclim] Track Acclimatisation programme 0x%llx has no targets at this track (targets 0x%llx); penalty flag skipped%s
+
+[log tracks/track_list_guard.cpp]
+%s
+%s
+[saves] career calendar track list guard off (SWOFTY_TRACK_LIST_GUARD=%s); the custom_track_list count lines stay
+[saves] career calendar track list guard off: needs %s and %s, which this build does not resolve
+[saves] custom_track_list count lines off: needs %s or %s, which this build does not resolve
+[saves] career calendar track list guard %s
+[saves] custom_track_list count lines %s
+
+[log tracks/track_select.cpp]
+%s
+[tracks] track select guard off (SWOFTY_TRACK_GUARD=%s)
+[tracks] track select guard off: needs %s, which this build does not resolve
+[tracks] track select guard %s

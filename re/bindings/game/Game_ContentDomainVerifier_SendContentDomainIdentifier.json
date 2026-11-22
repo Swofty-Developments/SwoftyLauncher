@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ContentDomainVerifier_SendContentDomainIdentifier",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303c490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14303c490.c;pat:log-message-cxx;xref:0x14303b833,0x14305f513",
+  "notes": "Own log. Packet {1, len(domain), len(language), +0x128, +0x129, exeVersion [+0xf0]+0x60, domain, language} from config-dict indices [+0xf0]+8 and +0xc+lang*4, sent via [+0x108] vt+0 to peer param_2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.content_domain_verifier_send_content_domain_identifier",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 04 00 00 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14303c490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303c490",
+  "kind": "func_start",
+  "names": [
+   "Game_ContentDomainVerifier_SendContentDomainIdentifier"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303c490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303c490.c;xref:0x14303b834",
+   "notes": "V5442 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

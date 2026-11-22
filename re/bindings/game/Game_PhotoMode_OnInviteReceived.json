@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_OnInviteReceived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142da3e60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142da3e60.c;pat:log-channel-PHOTO-MODE;xref:0x1457e37f8,0x1457e38b8,0x1457e3958,0x1457e3cc8,0x1457e3dd8,0x1457e3e78",
+  "notes": "Message handler (this, out, msg): msg type +0x10 8/0xd sets photo-mode state [this+0xd60] to 4 (0x1445d5c40) unless state 5/8; type 10 in state 5 logs PHOTO-MODE 'Invite received: Close down photo mode' and Game_PhotoModeSystem_SetEnabled([this+0xdc0],0); when *out != [0x146cb2280]: fade request ('Replay'), [this+0xc88]+0x7b8 |= 0x20, Game_PhotoModeSystem_Disable([this+0xdc0]). Same slot in 6 vtables. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_on_invite_received",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C3 48 89 D6 48 89 CF E8 ?? ?? ?? ?? 8B 43 10 83 F8 08 0F 84",
+  "match": "0x142da3e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142da3e60",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_OnInviteReceived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142da3e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142da3e60.c",
+   "notes": "V5451 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

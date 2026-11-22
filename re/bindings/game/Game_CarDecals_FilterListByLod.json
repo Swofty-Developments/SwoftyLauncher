@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CarDecals_FilterListByLod",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141107420",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141107420.c;xref:0x1410f67f2,0x141107e69,0x14110807f,0x141ff7953,0x1420005d6",
+  "notes": "Builds a temp vector of 16-byte keys (vt 0x145613520) from entries +0xb8..+0xc0 (u32 +8) plus 0x78-byte entries +0x98..+0xa0 with level +4 <= cap +0x114 and enabled +0x18 (key +0x10), then returns only the FIRST key in param_2 (invalid 9/0xffff if empty) and frees the vector (allocator +0x90). Not a list filter. (lane owner review requested) Better name: Game_LevelCappedList_GetFirstKey (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.car_decals_filter_list_by_lod",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 54 24 38 49 89 CD",
+  "match": "0x141107420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141107420",
+  "kind": "func_start",
+  "names": [
+   "Game_CarDecals_FilterListByLod"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x141107420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141107420.c;xref:0x1420005d6",
+   "notes": "V8023 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

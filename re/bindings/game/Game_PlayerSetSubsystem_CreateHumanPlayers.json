@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerSetSubsystem_CreateHumanPlayers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14316a480",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14316a480.c;xref:0x14316a50d,0x14316a71d",
+  "notes": "cxx=PlayerSetSubsystem::createHumanPlayers; log channel PLAYERSET: 'PlayerSetSubsystem::createHumanPlayers(%d)'  looks up this game's own user's presence name in the name cache (NetSub+0x540, 0x140816b10, id from NetSub+0x390 vtbl+0x38), copies at most 127 bytes into a 128-byte buffer and sends it in message type 0xb (vtable 0x14581f730) to the connection ('sending presence name'): the name every peer adds through HandleUpdatePresenceNameMessage"
+ },
+ "signature": {
+  "id": "game.player_set_subsystem_create_human_players",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 4C 89 C6",
+  "match": "0x14316a480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14316a480",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerSetSubsystem_CreateHumanPlayers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14316a480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14316a480.c;xref:0x140998562",
+   "notes": "V5815 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

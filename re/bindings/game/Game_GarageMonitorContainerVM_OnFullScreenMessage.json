@@ -1,0 +1,79 @@
+{
+ "schema": 1,
+ "name": "Game_GarageMonitorContainerVM_OnFullScreenMessage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f79580",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_GarageMonitorContainerVM_OnFullScreenMessage(void *container, const void *msg)",
+  "evidence": "decomp:own capstone disasm 0x141f79580-0x141f79684 (re/tools/disx.py);xref:0x141f773e7,0x141f7885f,0x150764b81",
+  "notes": "Bus message handler of the garage monitor container view model (vt 0x145760b60): Game_GarageMonitorContainerVM_OnActivate stores {0x141f79580, this} in a 16-byte closure (lea at 0x141f773e4) and subscribes it to car_monitor_fullScreen (key 0x1457550a0) with Ne_Subscribe_BusMessage 0x141f773ff; Game_GarageMonitorContainerVM_OnDeactivate loads the address again at 0x141f7885c. Body (pdata 0x141f79580-0x141f79684) read in full: rcx = container; picks the fullscreen variant into +0x944 (1 by default; when the dword [[[c+0x928]+0x40]+0x1a8]+4 is 15..17 and (byte +7 of Ne_Get_FeatureFlags has bit 3, or that dword is 0x12 or 1..14), from table 0x14576ebf8 indexed by dword +4 of the player entry [[c+0x928]+0x90]+0x68+16*Sess_Get_PlayerVehicleIndex, index <= 0x10), then Ne_UiEvent_DispatchByName(c, 'enter_fullscreen_mode', {4,0,0}, 0) and releases the returned ref; returns 0. It does not call Game_GarageMonitorContainerVM_SetViewMode itself: the switch to view mode 1 comes later through the container's command handler (vt slot 10, 0x141f74b60). rdx (the message) is not read. The red-flag-pit addon hooks it only to learn the container pointer. Strings: car_monitor_fullScreen 0x1457550a0, enter_fullscreen_mode 0x145760ca2."
+ },
+ "signature": {
+  "id": "game.garage_monitor_container_vm_on_full_screen_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8B 81 28 09 00 00",
+  "match": "0x141f79580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f79580",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageMonitorContainerVM_OnFullScreenMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f79580",
+    "target": "0x141f79580"
+   },
+   "sigcheck": "passed",
+   "digest": "01c9f90eac701edc345e5793af32e85124be31339ad83ea11004bedd840f50cb"
+  },
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f7b180",
+    "target": "0x141f7b180"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fa05fab0a92fcb0f32fe0303d8e3c56337ad85efe493c2619fea1f894924a32e"
+  }
+ ]
+}

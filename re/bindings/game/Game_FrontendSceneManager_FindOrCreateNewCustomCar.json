@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_FindOrCreateNewCustomCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428ea4c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428ea4c0.c;pat:log-message-method;xref:0x14173855e,0x1417e74f6,0x141879fa9,0x141998373,0x141a58304,0x141a737ab,0x141bfd708,0x141bfef72,0x141bffe67,0x141c00075,0x141df1ddf,0x141f2976c,0x1421b16e4,0x1421ce29c,0x1425499bc,0x142549cb6,0x1427b210c,0x1427b2406,0x142ab048b,0x142ab078c,0x143878720,0x143879960,0x1438799e0,0x143879a90,0x14387aca0,0x14387b3e0,0x14c363d18",
+  "notes": "Logs '%s()' findOrCreateNewCustomCar (MANAGER/CAR). Linear search of vector this+0x6fd8..0x6fe0 (0x6990 B car comps) for u16 id at +0xb8 == p2: found -> return p2. Else logs 'Failed to find Car Component Id %u...' (if p2 != 0xffff), push_back new comp (vtable 0x1457b66b0, grow via allocator this+0x6fd0), id = global counter 0x145f94280++, copies this+0x40..0x58; returns the new id. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_find_or_create_new_custom_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 69 00 00 E8 ?? ?? ?? ?? 48 29 C4 89 D3 48 89 CE",
+  "match": "0x1428ea4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428ea4c0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_FindOrCreateNewCustomCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428ea4c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428ea4c0.c;xref:0x14173855e",
+   "notes": "V5145 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Options_ApplyNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440226c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440226c0.c;pat:log-message-cxx;xref:0x144021e0b,0x144022978",
+  "notes": "hardwareSettings::Options::applyNode (own log string). (optNode, xmlNode): finds child option by name (+0x70..+0x78, strncmp 0x1f) or creates it (0x14401b070); for each xml attribute (+0x50..+0x58) copies value (<=0x50 chars) into the attribute entry from 0x1440214f0 (+0x58, len +0x48), logs HARDWARE_SETTINGS; recurses on child nodes (+0x70..+0x78). Callers 0x1440217f0 and itself. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.options_apply_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 D6 49 89 CE",
+  "match": "0x1440226c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440226c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Options_ApplyNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x1440226c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440226c0.c;xref:0x144021e0b",
+   "notes": "V6378 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

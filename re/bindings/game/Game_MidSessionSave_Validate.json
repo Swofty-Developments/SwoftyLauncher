@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_MidSessionSave_Validate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fe10a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fe10a0.c;pat:log-channel-MidSessionDataSaveDataContainer;xref:0x14111ec38,0x142c13e0e,0x142c14551,0x142d725f8,0x1458008d8",
+  "notes": "Load side, not just validate. MidSessionDataSaveDataContainer: +0x218 null -> 'replay system not yet initalised' ret 0x58; 0x1439338e0 hash vs +0x210 +0x4b0..+0x4cf else 'Failed to validate checksum' ret 0x50. Reads jump_in_time (-> +0x218 +0x34), instant_replay_rewind_bound_time (+0x4c), streams[]: stream_name lookup in +0x218 +0x110, full_buffer/key_buffer (stream +0xc0/+0xd0) file_size/data/position (0x1439320e0, 0x142fdfb90); session_guid -> *(+0x210 +0x278)+0xf28. Posts bus msg 0x1458032d8 via 0x1439876c0. (lane owner review requested) Better name: Game_MidSessionSave_RestoreReplayBuffers (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.mid_session_save_validate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 D3",
+  "match": "0x142fe10a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fe10a0",
+  "kind": "func_start",
+  "names": [
+   "Game_MidSessionSave_Validate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fe10a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142fe10a0.c;xref:0x14111ec38",
+   "notes": "V5723 Deserialise + checksum validation of mid-session container (file_size/data/position); callers LoadMidSessionData; better Game_MidSessionSave_LoadAndValidate"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142fe10a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fe10a0.c;xref:0x14111ec38",
+   "notes": "V6931 618 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

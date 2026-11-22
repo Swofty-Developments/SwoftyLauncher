@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkData_GetInitialDataProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143061360",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143061360.c;pat:log-message-method;xref:0x143164806",
+  "notes": "Out params bytesReceived/initialDataSize (*param_2/*param_3 set to 0 first); only if transport state +0x4b4 == 2 and not host: looks up the own conn id in the map this+0xf8 and returns its received/size counters; logs \"%s: bytesReceived/initialDataSize\". (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_data_get_initial_data_progress",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C7 02 00 00 00 00",
+  "match": "0x143061360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143061360",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkData_GetInitialDataProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143061360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143061360.c;xref:0x143164807",
+   "notes": "V5513 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

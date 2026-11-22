@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_BuildRndUpgradeFinishedEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140777ff0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140777ff0.c;xref:0x14071e735,0x14071e9b8",
+  "notes": "(this, unique_ptr<RnDUpgradeFinishedRecord>): payload via 0x14058dca0, serialise 0x14077bb90(this, payload, 'rnd_upgrade_finished', 0xff), then moves the record into the static 'rnd_upgrade_finished' queue under CS (max 0x40). Callers 0x14071e470, 0x14071e810. (lane owner review requested) Better name: Game_Analytics_SubmitRndUpgradeFinishedEvent (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_build_rnd_upgrade_finished_event",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 5F B8 2C",
+  "match": "0x14071e735",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140777ff0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_BuildRndUpgradeFinishedEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x140777ff0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140777ff0.c;xref:0x14071e735",
+   "notes": "V8066 posts event rnd_upgrade_finished via 14077bb90; callers ok"
+  }
+ ],
+ "proofs": []
+}

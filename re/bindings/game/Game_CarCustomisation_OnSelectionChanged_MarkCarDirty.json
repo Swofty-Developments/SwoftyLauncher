@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_CarCustomisation_OnSelectionChanged_MarkCarDirty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142002c70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142002c70.c;xref:0x145764c10",
+  "notes": "Vfunc (cell 0x145764c10): base 0x141fd5900; unless +0x5b9, gets the selected entry (0x1417eea00 on +0x348 + +0x550*400); if it differs from cached +0xc60: car comp +0x290 (vt(+0x1d0)+0x28 ready) -> car +0x6b50 = 1 ('Setting Car [%u] Dirty') else logs 'Car not ready'; stores +0xc60, applies the entry (0x14188eca0) when entry+0x54, and for index 1 copies item data into +0xb38 (0x1416c4510). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.car_customisation_mark_car_dirty_on",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 48 89 CE 45",
+  "match": "0x142002c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142002c70",
+  "kind": "func_start",
+  "names": [
+   "Game_CarCustomisation_OnSelectionChanged_MarkCarDirty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

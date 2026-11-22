@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Trk_TrackData_AddRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e57740",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "uint64_t Trk_TrackData_AddRecord(void *records_vec, const uint8_t *record)",
+  "evidence": "decomp:re/decomp/142e57740.c;xref:0x142e55dfb,0x142e60ce6;kb:subsystems/tracks.md#stat-ids",
+  "notes": "TRACK_DATA record store (vector {allocator, begin, end, cap} of 16-byte {allocator, TrackDataRecord*} at TrackDataSystem+0x20), index = the record's statId byte (record+1). While the vector is shorter than statId it appends zeroed {0,0} entries (holes); at size == statId it allocates 0xd08, copy-constructs 0x142ee6710 and appends (returns -1); otherwise returns 0 when items[statId] already holds a record, else stores the new record there. Ids are u8, so the vector never exceeds 256; holes are null entries (R8)."
+ },
+ "signature": {
+  "id": "tracks.track_data_add_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 89 54 24 20",
+  "match": "0x142e57740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e57740",
+  "kind": "func_start",
+  "names": [
+   "Trk_TrackData_AddRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "trk-t5",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "func",
+   "item": "Trk_TrackData_AddRecord",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e57740.c;xref:0x142e55dfb,0x142e60ce6",
+   "notes": "V1630 Store semantics hold (fresh read-only decompile plus disassembly 0x142e57740..0x142e57aca): index = movzx r15d, byte [rdx+1] (statId); while count < statId it appends zeroed 16-byte {0,0} entries, growing by 1.5x (cap at vec+0x18 is an element count); at count == statId it allocates 0xd08 (align 0x10), copy-constructs with 0x142ee6710 and appends {allocator, record}; in range it returns 0 when items[statId].record (+8) is non-null, else allocates and stores. Both callers pass TrackDataSystem+0x20 (0x142e5b8e5 lea rcx,[rdi+0x20] before 0x142e4c640 -> 0x142e55dfb; 0x142e60cbb add rsi,0x20 before 0x142e60ce6). Correction: the append path does not return -1. It sets rax = -1, shl rax,4, mov rax,[rbp+rax+8] (0x142e57aa4..0x142e57aaf), i.e. returns the record pointer of the last item; so the function returns the stored TrackDataRecord* on success and 0 only when the slot is occupied (0x142e60850 returns that value: 0x142e60ceb mov rsi,rax ... mov rax,rsi)."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "sig",
+   "item": "tracks.track_data_add_record",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:tracks.track_data_add_record;decomp:re/decomp/142e57740.c",
+   "notes": "V1636 sigcheck.py --exe on build d873a1c8: hits=1 match=target=0x142e57740. Independent regex search of the 30-byte prologue pattern over .xtls: 1 hit, 0x142e57740."
+  }
+ ],
+ "proofs": []
+}

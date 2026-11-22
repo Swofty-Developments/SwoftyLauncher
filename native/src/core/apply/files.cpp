@@ -1,8 +1,9 @@
-#include "files.hpp"
-#include "files_api.hpp"
+#include "core/apply/files.hpp"
+#include "core/apply/files_api.hpp"
 
-#include "../registry/table.hpp"
-#include "../runtime.hpp"
+#include "core/registry/table.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/render/badges/badge_images.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -47,13 +48,14 @@ Router &router()
 
 }
 
-Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file,
-                 const std::string &registry, const std::string &id, const std::string &scope)
+Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file, const std::string &registry,
+                 const std::string &id, const std::string &scope)
 {
     std::lock_guard g(mu);
     Router &r = router();
     r.set_order(registry::store().order());
     Outcome o = r.redirect(game_path, addon, file, registry, id, scope);
+    badge_images::file_routes(r.active_routes());
     swofty::log("[registry] file: %s", o.line.c_str());
     if (!o.conflict.empty())
         swofty::log("[registry] %s", o.conflict.c_str());
@@ -66,6 +68,7 @@ std::vector<std::string> put_back(const std::string &scope)
     Router &r = router();
     r.set_order(registry::store().order());
     auto lines = r.put_back(scope);
+    badge_images::file_routes(r.active_routes());
     for (auto &l : lines)
         swofty::log("[registry] file: %s", l.c_str());
     return lines;
@@ -77,6 +80,7 @@ std::vector<std::string> withdraw(const std::string &addon, const std::string &r
     Router &r = router();
     r.set_order(registry::store().order());
     auto lines = r.withdraw(addon, registry, id);
+    badge_images::file_routes(r.active_routes());
     for (auto &l : lines)
         swofty::log("[registry] file: %s", l.c_str());
     return lines;

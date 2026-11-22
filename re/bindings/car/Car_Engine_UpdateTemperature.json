@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Engine_UpdateTemperature",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144689710",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_Engine_UpdateTemperature(void *engine, float dt)",
+  "evidence": "decomp:re/decomp/144689710.c;doc:re/db/subsystems/car.md;xref:0x1409d5c54,0x144688676",
+  "notes": "Gate car+0x130 bit6 and car+0x131 bit1. Engine temp +0x253c += dt*(heat - cooling)/(m*cp) (+0x310^+0x318 * +0x1100^+0x1108): heat = fuel rate [car+0x540]+0x108*1000*(+0x48^+0x50) minus power*+0x2538, times +0x10f0^+0x10f8 and [car+0x548]+0x160^+0x168, faded near the table top +0x8e0..+0x8e8; cooling = quadratic(|v|) (+0x1110..+0x1138) * (T - (ambient+273.15)) * +0x25ac * +0x1140^+0x1148 (* +0x25b0 when car+0x9f40 == 100). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.engine_update_temperature",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 8B 59 08 F6",
+  "match": "0x144689710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144689710",
+  "kind": "func_start",
+  "names": [
+   "Car_Engine_UpdateTemperature"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car2-verify",
+   "kind": "func",
+   "item": "Car_Engine_UpdateTemperature",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x144689754,0x1446897c1",
+   "notes": "V1680 car2-verify: [car+0x548]+0x160 XOR +0x168 read"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "car2-verify",
+   "kind": "func",
+   "item": "Car_Engine_UpdateTemperature",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x144689754,0x1446897c1",
+   "notes": "V3916 car2-verify: [car+0x548]+0x160 XOR +0x168 read"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144689710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144689710.c;xref:0x1409d5c56",
+   "notes": "V6753 +0x253c,+0x160,+0x25ac,+0x130/+0x131 gates verified"
+  }
+ ],
+ "proofs": []
+}

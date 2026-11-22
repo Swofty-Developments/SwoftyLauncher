@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameModeChampionship_Begin",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407b5c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407b5c40.c;pat:log-message-cxx;xref:0x1407b5a3d,0x140bc96ee,0x140bef164,0x14126beee,0x14309dd9c,0x14309e0b8,0x14309e29b,0x1485fd465,0x1486a0279",
+  "notes": "Status = progress object p1+0x1030 vt+0x78 (2 = done -> skip). Otherwise runs begin hooks of the listeners p1+0x12e8..+0x12f0 and of each sub-mode p1+0x1040.. (+0x4e8 lists): first-time/season/event start (0x1407b9e80..0x1407b9ef0), filters entrants p2 (or p1+0x2d8; stride 0x88, skip id 0x3fff) and starts the event via 0x140ae35a0([p1+0x1058],...), posts bus messages 0x14564afc0/0x14564afd0 and queues 0x14564afe0 work (Ne_Post_BusMessage). Finally writes 'done' (state==1) into UI node p1+0x13d8 and logs GAME 'GameModeChampionship::begin() completion status (%s)'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_mode_championship_begin",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 45 89 C4",
+  "match": "0x1407b5c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407b5c40",
+  "kind": "func_start",
+  "names": [
+   "Game_GameModeChampionship_Begin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407b5c40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407b5c40.c",
+   "notes": "V4301 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

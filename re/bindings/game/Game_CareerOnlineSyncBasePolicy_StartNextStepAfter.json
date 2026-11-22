@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineSyncBasePolicy_StartNextStepAfter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff8d90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ff8d90.c;str:s_Championship_CareerOnlineSynchroniserBasePolicy_StartNextStepAfterSync;xref:0x1456b5480,0x1456b5770,0x1456b5910",
+  "notes": "Policy slot +0x30 (vtables 0x1456b5450/0x1456b5740/0x1456b58e0): session [[sync+0x20]+0x4f8]+0x1030 vt+0xa8; no session, or a non-virtual session with a flagged entrant (+0x4b bit 0x10) or state 3 -> 'Starting saves operations', own slot +0x50; else 'Skipping saves operations because current session is Virtual', slot +0x58. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_online_sync_base_policy_start_next_step_after",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 41 08 48 8B 40",
+  "match": "0x140ff8d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff8d90",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineSyncBasePolicy_StartNextStepAfter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ff8d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff8d90.c",
+   "notes": "V4526 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

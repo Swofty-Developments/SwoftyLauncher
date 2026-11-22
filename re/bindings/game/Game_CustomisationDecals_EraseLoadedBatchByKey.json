@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_EraseLoadedBatchByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142b550",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142b550.c;xref:0x141427e5f",
+  "notes": "std::map erase(key) on a map {allocator p1[0], head p1[1], size p1[2]} with u16 key at node+0x20: equal_range by *p2, counts the range; whole tree in range -> 0x14146c470 frees all and resets head; else erases each node with red-black rebalancing, size--, drops the value ref (atomic dec value+0x24) and frees the node via allocator vt+0x38. Returns the erased count. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_find_loaded_batch_node",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 49 89 D0 48 89 CE 4C",
+  "match": "0x14142b550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142b550",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_EraseLoadedBatchByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14142b550",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14142b550.c;xref:0x141427e5f",
+   "notes": "V8034 Game_CustomisationDecals_EraseLoadedBatchByKey: equal_range on ushort key followed by erase loop; not a plain lower-bound lookup"
+  }
+ ],
+ "proofs": []
+}

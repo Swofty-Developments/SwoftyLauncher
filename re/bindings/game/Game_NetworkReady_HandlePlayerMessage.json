@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_HandlePlayerMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432266d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432266d0.c;pat:log-message-method;xref:0x14ff56328",
+  "notes": "Method name handlePlayerMessage: logs 'MESSAGE Player IX %d monitor %d ready %d at time ..., apocalypse time'; host updates m_currentPolicyType 'because of client ready monitor'. Handler stored by lea 0x14ff56328 in 0x14ff562b0 (.data1), next to HandleSuperMessage and HandleReadyMonitorMessage. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ready_handle_player_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 5E 00 00 00",
+  "match": "0x1432266d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432266d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_HandlePlayerMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1432266d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432266d0.c;xref:0x14bd9148a",
+   "notes": "V5958 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_UnloadAssetGroupsAndActors",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c7d520",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c7d520.c;pat:log-message-method;xref:0x140c7a66e",
+  "notes": "Logs 'unloadAssetGroupsAndActors'; clears +0x168/+0x1a0, unloads the resource manager's asset group handle ([+0x88]+0x10, 0x140229cf0 when +0x3b), calls [0x146076620+0x1090] vt+0x58, releases the handle (refcount +0x24), clears +0x3b and +0x7c. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_unload_asset_groups_and_actors",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 AD 00 00 00",
+  "match": "0x140c7d520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7d520",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_UnloadAssetGroupsAndActors"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c7d520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c7d520.c;xref:0x140c7a66e",
+   "notes": "V4618 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

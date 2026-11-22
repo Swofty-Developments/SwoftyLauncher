@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Garage_ReturnAllVehiclesToGarage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d7d120",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d7d120.c;pat:log-message-method;xref:0x1457e0d00",
+  "notes": "Renamed (was Game_Garage_ReturnAllVehiclesToGarage, an inlined part). Body read fully, vt cell 0x1457e0d00: posts bus msg 0x1457e63f8, per car 0x1519eb350(..,1,3); once (+0xdc0 bit1) sets '#ui_menu_data.frontend_transition_state' by mode: F1 World modes 1-4 (table 0x1457e7ac0), lobby type [[+0xcb8]+0x4d8]+0x28 +8: 1 'custom_lobby', 3 'event_mode', 6 'pro_leagues' (uidbTransitionString logs); then GARAGE returnAllVehiclesToGarage (0x142a3f330 per car) unless mode 0x12 / MyTeam; +0xc90 = 0x146cb2280. (lane owner review requested) Better name: Game_SessionEnd_SetFrontendTransition (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.garage_return_all_vehicles_to_garage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 48 89 CE 80 A1 C0 0D 00 00 FD",
+  "match": "0x142d7d120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d7d120",
+  "kind": "func_start",
+  "names": [
+   "Game_Garage_ReturnAllVehiclesToGarage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d7d120",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d7d120.c",
+   "notes": "V5409 472 lines: picks frontend_transition_state string per lobby type (custom_lobby/event_mode/pro_leagues/F1World) on session exit; better Game_Network_SetFrontendTransitionOnExit"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142d7d120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d7d120.c",
+   "notes": "V6893 472 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

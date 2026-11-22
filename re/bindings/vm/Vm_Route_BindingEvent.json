@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Route_BindingEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414bf420",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414bf420.c;pat:10-entry-jump-table;kb:subsystems/rnd_ui.md#pie;xref:0x1456e12c8,0x1456e6ce8,0x1456e9728,0x1456f7188",
+  "notes": "Vtable slot 11 (cell 0x1456e6ce8 = TabViewModel vt 0x1456e6c90+0x58, plus other VM vtables). switch ev: 0 -> +0x25c|=0x10, slot13; 1 -> slot14; 2 -> slot20 if byte +0x628&1, +0x25c&=~0x10, slot15; 3 -> +0x25c|=4, slot6; 4 -> +0x25c&=~4, slot7; 7/8/9 -> slots 19/20/21; others return. No direct calls. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "vm.route_binding_event",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 83 FA 09 77 2A 48 89 CE 89 D0 48",
+  "match": "0x1414bf420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414bf420",
+  "kind": "func_start",
+  "names": [
+   "Vm_Route_BindingEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1414bf420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414bf420.c",
+   "notes": "V4874 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXSeasonReceivedOnNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a5770",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430a5770.c;pat:log-channel-NETWORK;xref:0x14580fae8",
+  "notes": "Slot 3 (+0x18) of vtable 0x14580fad0. (this, connId): logs 'Received onNewConnection notification from %d'; as host logs 'Host sends open Season Document Message on new connection', sends it via 0x14402e500([[this+0x420]+0x3d0], 2, ...) and 0x1430a4b60(this, connId); else logs 'onNewConnection: sending SessionDocumentMessageClose' and sends that. (lane owner review requested) Better name: Game_GameSessionSeasonDocument_OnNewConnection (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_mox_season_received_on_new_connection",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 48 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4D B8 00 01 00 00",
+  "match": "0x1430a5770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a5770",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXSeasonReceivedOnNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a5770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a5770.c;xref:0x1430902e7",
+   "notes": "V5319 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

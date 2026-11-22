@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionManager_OnIncomingData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143058640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143058640.c;pat:log-message-cxx;xref:0x143056b56",
+  "notes": "GameSessionManager::onIncomingData (__FUNCSIG__ in '%s: add user into ban list, presence: %s'): 'Received data from connection %d, size = %d', then parses byte commands (session data requests, voice, BandwidthMessage, ComponentMessage, ContentDomainMessage, GameModeSyncMessage). Lea'd at 0x143056b56 in 0x143056b10; calls 0x140996e20 at 0x1430595b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_manager_on_incoming_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 05 00 00 88 94 24 87 00 00 00",
+  "match": "0x143058640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143058640",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionManager_OnIncomingData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143058640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143058640.c;xref:0x143056b59",
+   "notes": "V5487 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ProcessTransaction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c66a00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c66a00.c;pat:log-channel-BANK;xref:0x140c65197,0x140c651f7",
+  "notes": "BANK log. Walks pending transactions param_2+0x20..+0x28 (0x14 bytes, day +0xc); each one due today ([this+0x2d0]+0x2b0) is applied via 0x140c66c30, a message 0x1456899d8 is posted (0x1439876c0), logged and erased. Callers 0x140c65197, 0x140c651f7. (lane owner review requested) Better name: Career_Bank_ProcessDueTransactions (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.bank_process_transaction",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 66 44 89 44 24 32",
+  "match": "0x140c66a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c66a00",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ProcessTransaction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c66a00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c66a00.c;xref:0x140c65197,0x140c651f7",
+   "notes": "V4591 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140c66a00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c66a00.c",
+   "notes": "V9052 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

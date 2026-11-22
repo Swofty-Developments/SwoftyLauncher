@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_ResizeSwapchainBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439c9640",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439c9640.c;xref:0x1439c3937,0x1439f7493",
+  "notes": "Old swapchain +0xa50 vcall +0x50(0,0); creates a DXGI factory (0x14537f020), QI + vcall +0xe0 feature check -> [0x14618caa8]+0x3998; desc w param_4, h param_5, buffers [+0xa30], usage 0x30, flags 0x842; releases the old swapchain and creates a new one (factory +0x78 with window param_2, or alternative paths 0x14537f130/0x14537f160), then factory +0x40(param_2,2), swapchain +0xf8(2). Callers Initialise, NeWindowWinResizeBuffersImpl. (lane owner review requested) Better name: Render_Gfx2Device_CreateSwapchain (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_device_resize_swapchain_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 44 89 CD 44 89 C3 48 89 D7",
+  "match": "0x1439c9640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439c9640",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_ResizeSwapchainBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439c9640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439c9640.c;xref:0x1439c3937",
+   "notes": "V7755 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

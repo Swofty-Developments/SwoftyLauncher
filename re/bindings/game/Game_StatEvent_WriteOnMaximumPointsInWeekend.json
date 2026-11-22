@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteOnMaximumPointsInWeekend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143760580",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143760580.c;pat:log-channel-STATEVENT;xref:0x143748352",
+  "notes": "Providers this+8..+0x10; 1 entry OnMaximumPointsInWeekend val=(float)arg2 type 3. Caller 0x143747f40. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_on_maximum_points_in_weekend",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 48 8D 2D ?? ?? ?? ?? 75 61 B8 48 01 00 00 0F 1F 00 8B 4C 85 00 81 F9 7B 5A 97 B0 74 2E 85 C9 74 49 83 C0 0F 48 69 C8 43 43 66 5F 48 C1 E9 20 89 C2 29 CA D1 EA 01 CA C1 EA 08 69 CA 75 01 00 00 29 C8 3D 48 01 00 00 75 C8 EB 1F 4C 8B 46 10 4C 2B 46 08 49 C1 F8 03 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 44 24 68 48 C7 44 24 58 00 01 00 00 48 89 44 24 60 C6 44 24 68 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 50 48 8D 15 ?? ?? ?? ?? 4C 8D 05",
+  "match": "0x143760580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143760580",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteOnMaximumPointsInWeekend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143760580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143760580.c;xref:0x143748352",
+   "notes": "V6212 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

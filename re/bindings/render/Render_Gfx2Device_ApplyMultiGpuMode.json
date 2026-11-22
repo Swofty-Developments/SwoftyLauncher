@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_ApplyMultiGpuMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439c8d00",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439c8d00.c;xref:0x1439c38a8,0x1439fbd98",
+  "notes": "Unless 0x14618c698 is set and if +0xd1: for adapters +0xa40/+0xa48 enumerates outputs (vcall +0x38 until 0x887a0002), QI output, vcall +0xd8 desc: colour space 12 -> HDR byte +0x31b1+i, luminances +0x31c4/+0x31e4. If vendor +0x880 == 0x10de: per GPU display ids (0x140002560), HDR caps (0x1400027f0) -> +0x31b9, luminances, primaries /50000 into 0x146c3b450..480; errors logged on MULTI-GPU. (lane owner review requested) Better name: Render_Gfx2Device_QueryHdrDisplayCaps (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_device_apply_multi_gpu_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 03 00 00 C5 F8 29 BC 24 40 03 00 00 C5 F8 29 B4 24 30 03 00 00 80 3D",
+  "match": "0x1439c8d00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439c8d00",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_ApplyMultiGpuMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439c8d00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439c8d00.c;xref:0x1439c38a8",
+   "notes": "V7752 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

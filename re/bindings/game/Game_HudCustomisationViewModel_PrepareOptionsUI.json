@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HudCustomisationViewModel_PrepareOptionsUI",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c13460",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c13460.c;pat:log-message-cxx;xref:0x141c10c43,0x141c10c9c",
+  "notes": "HUD_CUSTOMISATION 'prepareOptionsUI - selectedEditableElementIndex=%d'. Element 0x141c13280(vm); if found: 0x141c137a0(vm+0x770, el+0xc), bool props +0xa78/+0xa98 = el+0xc, float props +0x878 = el+0x10*100 and +0x958 = el+0x14*100, bool +0xa58 = 0. Callers in 0x141c10810. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hud_customisation_view_model_prepare_options_ui",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x141c13460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c13460",
+  "kind": "func_start",
+  "names": [
+   "Game_HudCustomisationViewModel_PrepareOptionsUI"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c13460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c13460.c;xref:0x141c10c43",
+   "notes": "V4940 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

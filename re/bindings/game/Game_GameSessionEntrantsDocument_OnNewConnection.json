@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionEntrantsDocument_OnNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143118580",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143118580.c;pat:log-message-cxx;xref:0x145816858",
+  "notes": "Vtable cell 0x145816858. Logs NETWORK-ENTRANTS 'GameSessionEntrantsDocument::onNewConnection(%d).' (p2 byte). Only when the document state p1+8 == 1 (host): 0x1431099a0(p1,p2); then for every locked player desc p1+0xc0..+0xc8 sends a lock message (0x145824450, type 7, size 0x58) to the new connection via [p1+0x38] 0x14402e500; if p1+0xdc == 0 also sends EntrantsDocumentMessageClose (0x145824330) and logs it. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_entrants_document_on_new_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143118580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143118580",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionEntrantsDocument_OnNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143118580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143118580.c",
+   "notes": "V5818 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}

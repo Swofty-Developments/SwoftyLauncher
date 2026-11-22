@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkAttributes_FillAttribs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14407ddb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14407ddb0.c;pat:log-message-method;xref:0x145a529c8",
+  "notes": "Logs fillAttribs(count) of the attribute defs param_2+0x30..0x38 (0x30-byte defs); reads packed values from this+0x40 by def type (0/1 short, 2 int, 3 int64, else -1) and stores them through 0x14407da30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_attributes_fill_attribs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C6 48 89 D7 48 89 CB 48 8B 42 38",
+  "match": "0x14407ddb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14407ddb0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkAttributes_FillAttribs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14407ddb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14407ddb0.c",
+   "notes": "V6511 size=382; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

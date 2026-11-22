@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkFormationLAP_SetFromNetworkHostComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143617950",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143617950.c;pat:log-channel-NETWORK_FORMATION_LAP;xref:0x14325aa60,0x1436174fe",
+  "notes": "Logs '[FORMATION_LAP] setFromNetwork(%s, %s)' (on/not_on_formation_lap, completed/not_completed from this+0x51/+0x52). Compares local state (+0x40/+0x42) with the networked one, logs transitions, and when the host completed forces 'WaitResumeRace' / sends the 'ResumeRace' signal. Callers 0x143259e20, 0x1436174e0. (lane owner review requested) Better name: Game_NetworkFormationLap_SetFromNetwork (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_formation_lap_set_from_network_host_complete",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 31 FF 83 79 28 02",
+  "match": "0x143617950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143617950",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkFormationLAP_SetFromNetworkHostComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143617950",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143617950.c;xref:0x14325aa60",
+   "notes": "V6097 Generic formation-lap setFromNetwork state transition: 4 logs (host complete wait resume, [%s]-->[%s], force sending ResumeRace, force WaitResumeRace); not only host-complete. Better: Game_NetworkFormationLap_SetFromNetwork."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143617950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143617950.c;xref:0x14325aa60",
+   "notes": "V7084 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

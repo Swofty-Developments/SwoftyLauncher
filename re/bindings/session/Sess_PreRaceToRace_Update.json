@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_PreRaceToRace_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d862d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t * Sess_PreRaceToRace_Update(void *state, uint32_t *route)",
+  "evidence": "decomp:re/decomp/142d862d0.c;xref:0x1457e1398;doc:re/db/subsystems/session.md",
+  "notes": "SessionStatePreRaceToRace onUpdate (vtable slot ptr 0x1457e1398): writes g_Career_FlowLinkContinue (0x146cb2284, the word after g_Game_FlowLinkStay) to *route and returns route - the state always continues to the next flow state on its first update. Hooking it and writing g_Game_FlowLinkStay holds the field in PreRaceToRace. (used by vmknolle race-start) | warmup-static (agent warmup, unverified): FLL = [st+0xdb8] (init 0x142d85aa0) is only used for side effects; no route depends on it"
+ },
+ "signature": {
+  "id": "session.pre_race_to_race_update",
+  "section": ".xtls",
+  "pattern": "E9 2B 4A D6 0B 86 0F 8E A4 8E CC CC CC CC CC CC",
+  "match": "0x142d862d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d862d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_PreRaceToRace_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "func_start": "0x14eaead00"
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-a",
+   "kind": "func",
+   "item": "0x142d862d0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_a/decomp/142d862d0.c;xref:0x1457e1398",
+   "notes": "V1015 slot 9 of the state vtable at 0x1457e1350 (lea'd by ctor 0x14ef3a06f) whose name string 0x1457e1328='SessionStatePreRaceToRace'; body unconditionally writes route hash DAT_146cb2284 into *route and returns route -> immediate transition update; 2-arg proto ok (dt unused)"
+  }
+ ],
+ "proofs": []
+}

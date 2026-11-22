@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnLeaveSessionNotification",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ac600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430ac600.c;pat:log-message-method;xref:0x1430aad07,0x1430ac75c,0x1430df63d",
+  "notes": "UI command handler lea'd in 0x1430aa810; also called by OnInviteCancelled 0x1430ac6e0. Logs 'onLeaveSessionNotification', resets the VM sync point +0x268, championship save 0x143038620, Leave(Network,1,0,1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ui_on_leave_session_notification",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 70 01 00 00",
+  "match": "0x1430ac600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ac600",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnLeaveSessionNotification"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430ac600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ac600.c;xref:0x1430aad09",
+   "notes": "V5328 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

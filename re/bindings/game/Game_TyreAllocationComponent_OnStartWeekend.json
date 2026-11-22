@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreAllocationComponent_OnStartWeekend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bcad00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bcad00.c;pat:log-message-cxx;xref:0x14567a7d8",
+  "notes": "TyreAllocationComponent::onStartWeekend() (vtable cell 0x14567a7d8): 0x140bca760, 0x140bcaba0, copies the weekend driver list ([[this+0x278]+0x1030] vt+0x98, +0x288..+0x290), rebuilds this+0x2b0 (old allocations freed), creates one per driver without flag +0x4b & 0x20 via 0x140bcb260 (log 'Allocation for %04x'), marks all +0xe8 = 1, 0x142f46ac0(this+0x2d8), this+0x34c = byte +0xd8 of the 0x142e60e00 record. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_allocation_component_on_start_weekend",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140bcad00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bcad00",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreAllocationComponent_OnStartWeekend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bcad00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bcad00.c",
+   "notes": "V4487 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

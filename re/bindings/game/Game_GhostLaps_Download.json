@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_Download",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fa8010",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fa8010.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142fa09ca",
+  "notes": "Own string onRemoteStorageDownload; lea-registered in 0x142fa0320. param_4 {+0 ok,+4 status(2=no ghost),+8 data,+0x10 size}. Fail: +0x88=min(+0x88+2,10.0f), state +0x138=4 (not found) or 2. OK: needs presence, desc via 0x142f8a400, checks version, reset version, size 1..0xc800, stream size, user; desc ->+0x140..+0x1c8, state 1; data -> +0x278, +0x288=1, +0x66=1. Errors 0x5a/0x58/0x22/0x50. (lane owner review requested) Better name: Game_GhostLaps_OnRemoteStorageDownload (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ghost_laps_download",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 4C 89 CB",
+  "match": "0x142fa8010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa8010",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_Download"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fa8010",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142fa8010.c;xref:0x142fa09cc",
+   "notes": "V5706 Completion handler (fn name onRemoteStorageDownload); better Game_GhostLaps_OnRemoteStorageDownload"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142fa8010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fa8010.c;xref:0x142fa09cc",
+   "notes": "V6928 611 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

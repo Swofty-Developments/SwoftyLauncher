@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TOPLevelUI_CurrentCareerCompletedProgressSave",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141726e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141726e30.c;pat:log-channel-TOP_LEVEL_UI;xref:0x145703f58,0x145704098,0x1457041a8,0x1457042b8,0x145704398",
+  "notes": "vtable slot in 5 vtables. If career state (param_2+0x1030 vt+0x78)==2 and completed: logs and returns. Else picks the save slot (list +0x268) with highest u64 +200 not flagged, and writes VM session_data.track, .session, .team and .round (lng_round_name '%d'). Name was a log fragment. (lane owner review requested) Better name: Game_TOPLevelUI_PopulateLatestCareerSaveSessionData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.top_level_ui_current_career_completed_progress_save",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 04 00 00 C5 F8 29 B4 24 10 04 00 00 48 89 D7 48 89 CE",
+  "match": "0x141726e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141726e30",
+  "kind": "func_start",
+  "names": [
+   "Game_TOPLevelUI_CurrentCareerCompletedProgressSave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141726e30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141726e30.c",
+   "notes": "V4891 28 KB career-save resolution/populate (completed + no in-progress slot, load another slot, session_data/track/team/round name), log is two branches. Better: Game_TopLevelUI_ResolveCareerCompletedSave (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141726e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141726e30.c",
+   "notes": "V7222 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

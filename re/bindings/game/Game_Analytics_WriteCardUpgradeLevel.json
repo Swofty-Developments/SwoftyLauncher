@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_WriteCardUpgradeLevel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140401280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void FUN(void *card, void *json_writer)",
+  "evidence": "decomp:re/decomp/140401280.c;xref:0x14047efa1,0x140480dc8,0x140482a21,0x14049bfda",
+  "notes": "Writes a whole card sub-object (not only upgrade level): strings card_type/card_name/card_rarity rec+0x50/0x70/0x90, floats card_tech_level/current_wear/max_wear 0xb0-0xb8, int card_upgrade_level 0xbc, array card_mods (vec 0xc0: mod_description/mod_stat_id/mod_magnitude). (lane owner review requested) Better name: Game_Analytics_CardData_WriteJson (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_write_card_upgrade_level",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 D3 48 89 CF 48 83 79 68 10 72 06 4C 8B 47 50 EB 04 4C 8D 47 50 48 8D 15 ?? ?? ?? ?? 48 89 D9 E8 ?? ?? ?? ?? 48 83 BF 88 00 00 00 10",
+  "match": "0x140401280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140401280",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_WriteCardUpgradeLevel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140401280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140401280.c;str:\"card_upgrade_level\"",
+   "notes": "V9465 Writes a whole card record: card_type, card_name, card_rarity (+0x50/+0x70/+0x90), floats card_tech_level/current_wear/max_wear, int card_upgrade_level, card_mods list {mod_description, mod_stat_id, mod_magnitude}. Name CardUpgradeLevel is too narrow."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1Life_VisitDriverEnvironment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425439c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1425439c0.c;pat:log-channel-F1LifeSystem;xref:0x14254283f",
+  "notes": "Tail target of SetupScene case 2 (jmp 0x14254283f). Logs 'Visiting Another Drivers Environment UserId[%s]' (user id +0x19a0); if spawned (+0x19f0) finds the visited user's environment, calls 0x14254c030 and posts bus message 0x145794278, runs 0x142549d50/0x142547d80, and posts the environment description message when the user changed. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_life_visit_driver_environment",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 48 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1425439c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425439c0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1Life_VisitDriverEnvironment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1425439c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425439c0.c;xref:0x14254283f",
+   "notes": "V5099 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

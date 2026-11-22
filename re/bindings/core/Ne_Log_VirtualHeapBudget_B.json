@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Log_VirtualHeapBudget_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14396c4e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t (void *heap, int64_t a)",
+  "evidence": "decomp:re/decomp/14396c4e0.c;xref:0x14396c4c9;xref:0x14396d9fb;xref:0x14397d899",
+  "notes": "myteam-g1: Same virtual heap budget logger variant."
+ },
+ "signature": {
+  "id": "core.log_virtual_heap_budget_b",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00",
+  "match": "0x14396c4e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14396c4e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Log_VirtualHeapBudget_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14396c4e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14396c4e0.c;xref:0x14396c4c9",
+   "notes": "V10338 Same virtual heap logging variant."
+  }
+ ],
+ "proofs": []
+}

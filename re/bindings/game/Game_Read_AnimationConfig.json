@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_AnimationConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443ba3d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1443ba3d0.c;pat:log-channel--;xref:0x145a86be0",
+  "notes": "Read in full. Vt cell 0x145a86be0. Registers memory pools EGO_ANIMATION, EGO_ANIMATION_CLIPDATA, ..._PACKETDATA ... _MORPH (+0x10..+0x78, mirrored into globals 0x14627ce78.. / 0x146cb7a98); Animation.initialStringsCapacity (0x200), creates string table (vt 0x145a86fc0 'ACStringTable'), AnimClip resource handler (0x1443b5430), job queue 'animation_jobs' (logs default job policy), Animation.initialAnimPlayerCapacity / initialAnimArrayCapacity arrays; registers 3 type handlers via 0x143fa5890. Errors -> 0xc. Old name claimed a config read only. (lane owner review requested) Better name: Game_AnimationSystem_Initialise (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_animation_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 48 89 CE 48 8B 0D ?? ?? ?? ?? 48 8B 01 48 8D 15 ?? ?? ?? ?? FF 50 08 48 89 46 10",
+  "match": "0x1443ba3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443ba3d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_AnimationConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443ba3d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443ba3d0.c",
+   "notes": "V6586 better name Game_Animation_InitSystem: reads 3 Animation.* settings but also sets up EGO_ANIMATION pools, job policy and animation job group (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1443ba3d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443ba3d0.c",
+   "notes": "V7199 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

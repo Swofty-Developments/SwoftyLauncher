@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatching_ProcessorDoesnChangeStateAlready",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143088010",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143088010.c;pat:log-channel-NETWORK-MATCHING;xref:0x143088254,0x143087777,0x1430884ff,0x1430e4e82",
+  "notes": "Logs '? Processor doesn't change state - already %s' or 'Processor changes state from %s to %s' (names table 0x145823358); when different stores the state byte and restarts the timer +0x10/+0x18. Callers 0x143088100, 0x1430e0560; jumps from 0x143087650, 0x143088370. (lane owner review requested) Better name: Game_NetworkMatching_ProcessorChangeState (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_matching_processor_doesn_change_state_already",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 89 D3 48 89 CE 0F B6 01",
+  "match": "0x143088010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143088010",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatching_ProcessorDoesnChangeStateAlready"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143088010",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143088010.c;xref:0x143087778",
+   "notes": "V5636 MatchingProcessor state setter: logs already-%s or from/to, stores state byte, QPC timestamp (5 callers). Better: Game_MatchingProcessor_SetState"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143088010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143088010.c;xref:0x143087777",
+   "notes": "V6960 44 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

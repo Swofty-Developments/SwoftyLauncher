@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionEntrantsDocument_HandleEntrantsDocumentMessageLo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431132d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431132d0.c;pat:log-message-cxx;xref:0x1430d8df2",
+  "notes": "Only ref: lea at 0x1430d8df2 (in 0x1430d8a40, handler table). Logs NETWORK-ENTRANTS 'handleEntrantsDocumentMessageLockPlayerCommand(%d, %s) from conn %d'. Command p2+0x10: 2 = unlock (remove matching player desc from the locked list p1+0xc0..+0xc8, stride 0x50, match by id +0x48 / type 7 or 3 keys / 0x144121bc0; missing -> error 2), 1 = lock (append desc p2+0x20..+0x60 unless already present; vector growth 1.5x via allocator [p1+0xb8]), 0 = clear all. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_entrants_document_handle_entrants_document_message_lo",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? 44 89 C3",
+  "match": "0x1431132d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431132d0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionEntrantsDocument_HandleEntrantsDocumentMessageLo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431132d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431132d0.c;xref:0x1430d8df4",
+   "notes": "V5765 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

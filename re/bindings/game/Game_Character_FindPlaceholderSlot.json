@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Character_FindPlaceholderSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14080edc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14080edc0.c;xref:0x14080eb6d,0x14080eb95,0x14080ebbd,0x14080f63d,0x14080f665,0x14080f68d,0x14080f99d,0x14080f9c5,0x14080f9ed,0x140c1d257,0x140c1da00,0x140c1e1a0,0x141678431,0x14248b76e,0x14248b784,0x14248b7b3,0x1428a4495,0x1428a44c4,0x1428a44f3,0x14f36a0d5,0x14f36a0eb,0x14f36a101",
+  "notes": "(table, key, value): picks the slot whose key (+0x30) equals key, else the first empty one of 3 slots of 0x70 bytes (first int == 0); copies the 63-char key to +0x30, stores value as ref-string at +0x10, slot tag +0 = 9. Generic table, old name FindPlaceholderSlot hid the write. (lane owner review requested) Better name: Game_TextPlaceholders_SetString (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.character_find_placeholder_slot",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 BB E8 02 00 00 00 48 8D 05 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 4C 0F 44 C0 48 8D 15 ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 80 BB E8 02 00 00 00 48 8D 05 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 4C 0F 44 C0 48 8D 15 ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 48 C7 44 24 28 00 00 00 00 48 8B",
+  "match": "0x14080eb6d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14080edc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Character_FindPlaceholderSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x14080edc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14080edc0.c;xref:0x14080eb6d",
+   "notes": "V8209 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ModelProxy_SetTextureCacheHint",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401f3a10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401f3a10.c;xref:0x1401d0385,0x14039b08f,0x1403a6c25,0x1473ab7ff,0x1473ab852,0x147e2e942,0x14f83bad8",
+  "notes": "(proxy, hint): 1/2/4/8/0x10/0x20 -> flag 0x80/0x100/0x200/0x400/0x800/0x1000 in +0x12c (no-op if already set); logs NeModelProxy_Texture 'Set %s TEXTURE_CACHE_TIMEOUT_HINT_CUTSCENE_NOW/_NEXT/_SOON/_LONG/_RTT' (0x10 reuses the LONG text) and queues update 0x143d3ce20 once via +0x128. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.model_proxy_set_texture_cache_hint",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 FF CA 83 FA 1F 0F 87 ?? ?? ?? ?? 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 63 0C 90 48 01 C1 FF E1 F6 86 2C 01",
+  "match": "0x1401f3a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401f3a10",
+  "kind": "func_start",
+  "names": [
+   "Game_ModelProxy_SetTextureCacheHint"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1401f3a10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1401f3a10.c;xref:0x14039b08f",
+   "notes": "V3510 Acts on a single NeModelProxy_Texture (param_1 flags +0x12c, state +0x128), switch on hint bit sets flag and logs 'Set %s TEXTURE_CACHE_TIMEOUT_HINT_*'; no loop over model's texture proxies. Better name Ne_ModelProxyTexture_SetCacheTimeoutHint. Car_Visual_UpdateRenderState caller seen"
+  }
+ ],
+ "proofs": []
+}

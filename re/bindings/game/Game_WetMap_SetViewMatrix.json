@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WetMap_SetViewMatrix",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143be2070",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143be2070.c;xref:0x14478cf76,0x14478d06f,0x14478d16e,0x14478e7d2",
+  "notes": "Read in full: (camera, mat4*) stores the 4x4 matrix at camera+0xb0..+0xe8 and its full inverse (cofactor/determinant via shuffles, 1/det) at +0xf0..+0x12c. One matrix + inverse, not 4 copied matrices (input note). All static call sites are in WetMap code (0x14478c050, 0x14478e440), the object itself is a generic camera block. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.wet_map_set_view_projection",
+  "section": ".xtls",
+  "pattern": "48 83 EC 78 C5 78 29 64 24 60 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 F8 28 02 C5 F8 28 4A 10 C5 F8 28 52 20 C5 F8 28 5A 30 C5 F8 29 89 C0 00 00 00",
+  "match": "0x143be2070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143be2070",
+  "kind": "func_start",
+  "names": [
+   "Game_WetMap_SetViewMatrix"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143be2070",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143be2070.c;xref:0x14478cf76",
+   "notes": "V7827 Game_WetMap_SetViewMatrix: copies ONE 4x4 matrix (4 rows) to +0xb0..+0xef and derives more (inverse/shuffles to +0x100..0x128); not four matrices"
+  }
+ ],
+ "proofs": []
+}

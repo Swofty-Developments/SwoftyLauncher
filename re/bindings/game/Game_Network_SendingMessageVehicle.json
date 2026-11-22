@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SendingMessageVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435c3630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435c3630.c;pat:log-channel-NETWORK;xref:0x14584dc28",
+  "notes": "Builds a mask of locally owned vehicles (player set via g 0x146044988), then for each 0x14-byte entry in this+0x68..0x70 whose bit is set sends a ghosting message (vtable 0x14584ee60) via 0x14402e500 (transport this+0xa8) and logs \"[SAFETY_CAR_EMERGENCY_GHOSTING] sending Message\". (lane owner review requested) Better name: Game_Network_SafetyCarGhosting_SendMessages (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_sending_message_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 88 54 24 37",
+  "match": "0x1435c3630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435c3630",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SendingMessageVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1435c3630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435c3630.c",
+   "notes": "V6091 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

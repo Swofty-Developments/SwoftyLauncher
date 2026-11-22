@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SkinnedActorAnimationData_HandleResourceEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401f1c60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401f1c60.c;pat:log-message-cxx;xref:0x1401cfc42,0x1401f46e4",
+  "notes": "Resource-event callback (lea 0x1401cfc42 in Game_SkinnedActor_AddedForDeletion, lea 0x1401f46e4 in 0x1401f44f0). Under owner lock [this+0x40]+0x10: event 0 only logs eAdded; event 1 logs eRemoved, locks 0x14601e1a0, 0x1401f1ee0(this), clears owner slots pointing to this (+0x278/+0x2c8/+0x318/+0x368, ids -1, +0x2a0/+0x2f0/+0x340/+0x390 = 0). Other events: nothing (disasm; tail jmp is LeaveCriticalSection). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.skinned_actor_animation_data_handle_resource_event",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 CB 48 89 D7 48 89 CE",
+  "match": "0x1401f1c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401f1c60",
+  "kind": "func_start",
+  "names": [
+   "Game_SkinnedActorAnimationData_HandleResourceEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401f1c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401f1c60.c",
+   "notes": "V4388 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

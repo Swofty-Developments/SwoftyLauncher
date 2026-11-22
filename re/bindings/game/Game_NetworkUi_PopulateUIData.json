@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_PopulateUIData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14309ac00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14309ac00.c;pat:log-message-method;xref:0x143039707,0x143065988,0x143099408,0x14309d002",
+  "notes": "Logs 'populateUIData'; reads track info 0x14309e400 and writes settings.return_to_garage and #settings.current_settings.time_of_day.custom.* start_time/progression VM nodes. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ui_populate_ui_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D",
+  "match": "0x14309ac00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14309ac00",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_PopulateUIData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x14309ac00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14309ac00.c;xref:0x143039707",
+   "notes": "V5309 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

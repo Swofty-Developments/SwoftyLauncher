@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_RunUpdateJobsWait",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b00e70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b00e70.c;xref:0x143b0d955,0x143b0dcb0",
+  "notes": "Splits the emitter list mgr+0x87b638 (count +0x87b648) into jobs by particle budget mgr+0xa5b874 (emitter +0x110 counts), allocates 0x40-byte job records (allocator mgr+0xa5b740, template mgr+0x87b6b0..+0x87b6e0); single job runs inline via callback mgr+0xa5b848(+0xa5b850), else queued to mgr+0xa5b748 and waited on (event, 'WAIT:waitForFinish', deadlock WARN). Callers in 0x143b06d90. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.particles_run_update_jobs_wait",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 44 8B B1 48",
+  "match": "0x143b00e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b00e70",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_RunUpdateJobsWait"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b00e70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b00e70.c;xref:0x143b0d955",
+   "notes": "V7874 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

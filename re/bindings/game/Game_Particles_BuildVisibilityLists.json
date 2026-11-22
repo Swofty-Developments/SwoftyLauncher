@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_BuildVisibilityLists",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b11590",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b11590.c;xref:0x143b0d8f9,0x143b0dc5b",
+  "notes": "(mgr, outVec, pass): collects emitters of all effects (mgr+0x858e90..98, stride 0x180) whose def (+0x160) bit4 of +0xb98 == pass, with particles (+0xe4), layer +0x5c != -1 and def +0x512 bit1, max 5000; clears +0xe8; counting sort by layer (histogram sized by global 0x1464412c0+1), per-layer counts to mgr+0xa7d094; writes sorted emitter pointers into outVec (resized). Callers in 0x143b06d90. Old name 'visibility lists' was a guess. (lane owner review requested) Better name: Game_Particles_BuildLayerSortedEmitterList (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.particles_build_visibility_lists",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 10 01",
+  "match": "0x143b11590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b11590",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_BuildVisibilityLists"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b11590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b11590.c;xref:0x143b0d8f9",
+   "notes": "V7898 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

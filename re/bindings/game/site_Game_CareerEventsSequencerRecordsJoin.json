@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerEventsSequencerRecordsJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c72ee2",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c71e80.c;xref:0x140c72ed2,0x140c72ee2",
+  "notes": "mov rbp,[rsp+0x90] in Game_CareerEventsSequencer_Initialise: the join after the team mate asset group call, the target of the je at 0x140c72ed2 that the game takes when the collected vector's begin is 0 (test rdx,rdx), which skips the vector free through the allocator vtable +0x38. Everything from the join on (rbp reload, [rbx+0x5e2]=1, the addDriverAssetGroups log, the next vector query) reloads or rewrites its state; no code before the join (add rdx,0x50, 0x1423dbcf0, 0x140c808e0, the [rsp+0xa8] store) feeds it. Resume target of the sequencer record guard; not hooked or patched."
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_records_join",
+  "section": ".xtls",
+  "pattern": "48 8B 01 FF 50 38 48 8B AC 24 90 00 00 00",
+  "match": "0x140c72edc",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c72ee2",
+  "kind": "mid",
+  "expect": "48 8B AC 24",
+  "names": [
+   "site_Game_CareerEventsSequencerRecordsJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-03",
+    "by": "seqagree",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/sequencer_records_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-03",
+   "verifier": "seqagree",
+   "kind": "global",
+   "item": "0x140c72ee2",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c71e80.c;xref:0x140c72ed2,0x140c72ee2",
+   "notes": "V8654 own disasm: 0x140c72ebf..0x140c72ed2 reload begin, store it to [rsp+0xa8], test rdx,rdx / je 0x140c72ee2 skipping the vtable+0x38 free; so the join is the game's empty-vector path. Skipped by the jump: the load at 0x140c72ea0, add rdx,0x50, 0x1423dbcf0, 0x140c808e0, the [rsp+0xa8] store and the free (nothing allocated when begin is 0). No push/pop or rsp change in the block; rbx r14 r15 r13 are callee-saved across the skipped calls so identical; rbp is reloaded at the join; code after the join (0x140c72eea.. to the 0x1441207d0 call at 0x140c72fd3 and the vtable+0x38 out-param call at 0x140c73013) reads no [rsp+0xa0/0xa8] before writing it"
+  },
+  {
+   "date": "2026-11-03",
+   "verifier": "seqverify2",
+   "kind": "global",
+   "item": "0x140c72ee2",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c71e80.c;xref:0x140c72ed2,0x140c72ee2",
+   "notes": "V8657 seqverify2 independent: 0x140c72ed2 je 0x140c72ee2 after test rdx,rdx on reloaded begin is the game's own null-vector join; rbp is reloaded there from [rsp+0x90] (spilled at 0x140c728be) so the clobber of rbp at 0x140c72deb is undone; rsp identical on both paths; skipped 0x1423dbcf0, 0x140c808e0, [rsp+0xa8] store, allocator free (vtable+0x38, nothing allocated for begin 0) affect nothing later: code from 0x140c72eea rewrites rax/rcx/rdx/r8 before use, rdi is lea-reloaded, r12 reloaded at 0x140c73127; and 0x140c72d1f/d51/d61 already jump to 0x140c72eea skipping the same block"
+  }
+ ],
+ "proofs": []
+}

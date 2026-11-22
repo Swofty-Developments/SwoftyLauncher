@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteFreeTimeBetweenRaces",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14373d1b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14373d1b0.c;xref:0x1437269f6,0x14374a128",
+  "notes": "EventWriteFillAllFreeTimeBetweenRaces + FillNoFreeTimeBetweenRaces (career calendar activity). Iterates the registered StatisticDataProviders (skips disabled ones) and writes stat keys built from GameplayModeId/SectionId/DriverStatId/IsInTeamCareer etc. Addon: listen to these stat/achievement events (career/progression telemetry) or add own stat keys. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2506)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_free_time_between_races",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 48 8B 81 B0 00 00 00 48 8B 80 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B",
+  "match": "0x14373d1b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14373d1b0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteFreeTimeBetweenRaces"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_StatEvent_WriteFreeTimeBetweenRaces",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14373d1b0.c;xref:0x14373d1b0",
+   "notes": "V2506 FillAll/FillNoFreeTimeBetweenRaces"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ResultsContainer_CloseScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d7eb30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d7eb30.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141e71969,0x141e7271b",
+  "notes": "(c, callback): only with a screen open (+0x1070 != -1): wraps callback in a closure (vt 0x145752dc0, c) stored to +0x10b8, logs 'screen close start: %hs', fires 'vm_close_<screen>' via 0x144320950; always destroys the passed functor. Callers 0x141e717d0, 0x141e72550. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.results_container_close_screen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 00 00 00 48 89 D6 83 B9 70 10 00 00 FF",
+  "match": "0x141d7eb30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d7eb30",
+  "kind": "func_start",
+  "names": [
+   "Game_ResultsContainer_CloseScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d7eb30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d7eb30.c;xref:0x141e71969",
+   "notes": "V5209 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

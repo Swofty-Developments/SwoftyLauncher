@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SteamAPIJoinLobbySuccessfulLobbyID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144097ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144097ce0.c;pat:log-channel-NETWORK;xref:0x144097a2e",
+  "notes": "Steam lobby-enter call result: records an error entry in ring 0x146107900 on failure, else logs \"Join Lobby Successful -> Lobby ID: %lu\" and stores the lobby state. (lane owner review requested) Better name: Game_Network_Steam_OnLobbyEntered (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_steam_api_join_lobby_successful_lobby_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 44 89 C3 49 89 D6",
+  "match": "0x144097ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144097ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SteamAPIJoinLobbySuccessfulLobbyID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144097ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144097ce0.c;xref:0x144097a30",
+   "notes": "V6528 size=1096; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCareerTeamSelectViewModel_OnSelectedSameTeamDisplay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a690b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a690b0.c;str:s_DriverCareerTeamSelectViewModel_OnSelectedSameTeamDisplayMessage;xref:0x141a684d4,0x141a6943a",
+  "notes": "Dispatch handler lea'd at 0x141a684d4 (in 0x141a68080) and 0x141a6943a (in 0x141a69300). Logs its own pretty-function string 0x145729f5e (onSelectedSameTeamDisplayMessage), then shows UI message 'career_select_same_team_confirmation' (inline literal) via Game_UiMessage_DisplayMessage 0x1442d9bf0 on [vm+0x2b0]+0x10 (vcall +0x58) with callback 0x141a6add0, and drops the listener handle (0x1442aa980). Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_career_team_select_view_model_on_selected_same_team_display",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC F0 00 00 00 48 89 CE 80 3D",
+  "match": "0x141a690b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a690b0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCareerTeamSelectViewModel_OnSelectedSameTeamDisplay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a690b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a690b0.c;xref:0x141a684d6",
+   "notes": "V4929 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

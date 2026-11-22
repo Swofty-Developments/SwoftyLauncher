@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreSystem_InitialiseTyreCompounds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140238500",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140238500.c;pat:log-message-cxx;xref:0x140238c6f,0x14023a727,0x140275633,0x14036e9e0,0x14036eaa1,0x14036eb70,0x14036ec31,0x14036ed00,0x14036edc1,0x14036ee7f,0x14036f7b0,0x14036f871,0x14036f940,0x14036fa01,0x14036fad0,0x14036fb91,0x14036fc4f,0x14036fd83,0x140371810,0x1403718d1,0x14037198f,0x14755ae0f,0x147629953",
+  "notes": "Own log 'unbindVehicle %p %s %d' (CUTSCENE_SCRIPT_VERBOSE). For the vehicle id: component (0x146ce8a00) +0x100 |= 1; ghost (0x146ce8b00) logs OSQGHOST setIsInCutscene false, clears 4 wheel flags; 0x142e94950(e, 0) per tyre entry (hideAllParts), 0x142e96a20 on its entry (initialiseTyreCompounds warning when null), 0x142e93f50(tyreSys, id); restores a 0x30-byte transform, vt+0x98(1). (lane owner review requested) Better name: Game_CutsceneScript_UnbindVehicle (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.tyre_system_initialise_tyre_compounds",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D3 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140238500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140238500",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreSystem_InitialiseTyreCompounds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140238500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140238500.c",
+   "notes": "V4457 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

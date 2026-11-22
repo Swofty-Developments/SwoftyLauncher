@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameTransactionSystem_DispatchPurchaseRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e65590",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e65590.c;xref:0x142e653fb,0x142e659f5,0x142e669b7",
+  "notes": "Not a purchase dispatch: sets an int parameter on a popup request. (popup, key cstr, int value, p4, p5): allocates an int value object of value type 0x146129d40 (vt+8) with the params allocator, stores the value (vcall +0x40), inserts it under key into popup[1] (0x1442cbab0), notifies [popup[0]+0x378] vt+0x30 on success, frees the temp. Keys item_ID / selected_tier / selected_productId from 0x142e65060, 0x142e65740, 0x142e66770. (lane owner review requested) Better name: Game_PopupParams_SetInt (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.game_transaction_system_dispatch_purchase_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 44 24 44 48 8B 41 08 31 ED 48",
+  "match": "0x142e65590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e65590",
+  "kind": "func_start",
+  "names": [
+   "Game_GameTransactionSystem_DispatchPurchaseRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142e65590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e65590.c;xref:0x142e579a2",
+   "notes": "V7558 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

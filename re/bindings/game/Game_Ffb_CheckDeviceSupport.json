@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_CheckDeviceSupport",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446efd10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446efd10.c;pat:log-channel-ER_INPUT;xref:0x1446f81f0",
+  "notes": "Init of the Thrustmaster FFB controller (vtable 0x145bff820) built by 0x1446f7a20 for device type 0x146292218: stores device +0xd8, descriptor + djb2 hash; no FFB -> ER_INPUT 'does not support FFB' log, +0xe0=0; if vcall +0x40 and not yet set allocs 0x2b0 effect with vtable 0x145bfff10 (slots TM Start 0x1446f4700/Stop/Release/ConfigureEffects), stores +0xc8, +0xe0=1. Old name CheckDeviceSupport misleading. (lane owner review requested) Better name: Game_FfbThrustmaster_InitController (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ffb_check_device_support",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 4C 89 CF 48 89 D3",
+  "match": "0x1446efd10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446efd10",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_CheckDeviceSupport"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446efd10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446efd10.c;xref:0x1446f81f0",
+   "notes": "V6838 Same prologue as CreateDeviceController (device name copy, vcalls on device +0x28/+0x30/+0x40): a controller constructor/init for the generic path, not a predicate; better name Game_FfbController_InitGeneric."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1446efd10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446efd10.c;xref:0x143367580",
+   "notes": "V7258 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

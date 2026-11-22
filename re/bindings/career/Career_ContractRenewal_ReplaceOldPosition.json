@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_ReplaceOldPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d766b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d766b0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d765d6,0x140d7893e,0x140d7b122,0x1436c1fac",
+  "notes": "CONTRACT_RENEWAL logs: Add new driver/contract, Replace old (RESERVE) driver, Replace new drivers old position, Dont need to replace, Assign driver position; writes entrant data via 0x1407b72e0 (6x), reserve backfill 0x140d8ecd0, posts bus messages (0x1439876c0 x9). (lane owner review requested) Better name: Career_ContractRenewal_ApplyContractChanges (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_replace_old_position",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 0B 00 00 C5 F8 29 B4 24 F0 0A 00 00",
+  "match": "0x140d766b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d766b0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_ReplaceOldPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d766b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d766b0.c;xref:0x140d765d6,0x140d7893e",
+   "notes": "V4678 better name Career_ContractRenewal_ApplyDriverChanges: single-arg pass over teams emitting Add new driver/Replace old RESERVE/Replace old driver/Add new contract/Assign driver position, not just 'replace old position'"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140d766b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d766b0.c;xref:0x140d765d6",
+   "notes": "V7170 name fits; finding facts hold; 4 direct calls"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d766b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d766b0.c",
+   "notes": "V9067 Log text includes Add new driver / Replace old RESERVE driver / Replace old driver besides Dont need to replace old position, so it is a larger apply-contract-changes pass (48KB), not only ReplaceOldPosition."
+  }
+ ],
+ "proofs": []
+}

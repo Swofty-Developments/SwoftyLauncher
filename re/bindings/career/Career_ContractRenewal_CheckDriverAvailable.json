@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_CheckDriverAvailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d7da70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d7da70.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d7c46f,0x140d7cadb",
+  "notes": "CONTRACT_RENEWAL: logs 'Approaching BEST available driver that would be willing to join our team %s' / 'Couldnt find any appropriate drivers': filters drivers (fired/retired/cached contract/replaced logs), team requirements 0x140d7e8d0, rating band 0x140d7f0d0; returns an optional driver key in param_2. Callers in 0x140d7b530. (lane owner review requested) Better name: Career_ContractRenewal_FindBestAvailableDriver (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_check_driver_available",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 48 89 D7 49 89 CE",
+  "match": "0x140d7da70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d7da70",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_CheckDriverAvailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d7da70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d7da70.c;xref:0x140d7c46f,0x140d7cadb",
+   "notes": "V4684 better name Career_ContractRenewal_FindAvailableDriver: returns a chosen driver via out param, logs approaching BEST available driver/no appropriate drivers plus AVAILABLE/UNAVAILABLE reasons; not a plain availability check"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140d7da70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d7da70.c;xref:0x140d7c46f",
+   "notes": "V7171 name fits; finding facts hold; 2 direct calls"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d7da70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d7da70.c",
+   "notes": "V9071 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

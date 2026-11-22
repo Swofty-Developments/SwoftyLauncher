@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_SplitIncome",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c63eb0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c63eb0.c;pat:log-channel-BANK_BUDGET_VERBOSE;xref:0x140c6623a,0x140c66d5d",
+  "notes": "BANK_BUDGET_VERBOSE. Income param_2>0: first zeroes negative balances of the 5 byte-keyed budget categories (keys at 0x145683582, map entries 0x14, balance +4, via 0x140d45570), then splits the rest into parts per category and logs each assignment. Callers 0x140c6623a, 0x140c66d5d (jmp). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.bank_split_income",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 54 24 60",
+  "match": "0x140c63eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c63eb0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_SplitIncome"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c63eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c63eb0.c;xref:0x140c6623a,0x140c66d5d",
+   "notes": "V4588 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140c63eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c63eb0.c",
+   "notes": "V9051 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

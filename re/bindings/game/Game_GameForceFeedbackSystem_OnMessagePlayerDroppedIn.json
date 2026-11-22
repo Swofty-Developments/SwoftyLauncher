@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameForceFeedbackSystem_OnMessagePlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428847f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428847f0.c;pat:log-message-cxx;xref:0x14d20a101,0x14d210eb7",
+  "notes": "Refs: lea at 0x14d20a101 and 0x14d210eb7 (handler registration in protected sections). Logs NETWORK 'GameForceFeedbackSystem::onMessagePlayerDroppedIn(%d).' with player index byte msg p2+0x10; if that index is inside the player vector [p1[7]+0x30..+0x38] and the player's +0x20 is set, calls own vt+0x70 then vt+0x58. Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_force_feedback_system_on_message_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 72 B8 00 01 00 00",
+  "match": "0x1428847f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428847f0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameForceFeedbackSystem_OnMessagePlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428847f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428847f0.c;xref:0x14d20a103",
+   "notes": "V5111 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

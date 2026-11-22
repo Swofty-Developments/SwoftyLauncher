@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TOPLevelUI_InitialiseConnectHelperAfter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143820bd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143820bd0.c;pat:log-channel-TOP_LEVEL_UI;xref:0x14382028f,0x1438e790e",
+  "notes": "Bus handler (lea at 0x14382028f,0x1438e790e). If state +0x50 in {1,3,4} and msg+0x10: logs 'initialise connect helper after initial data... hasValidData=%s' from +0xe0; sets helper+0x80 = 0x143882d30() && hasValidData, +0x81 changed flag, state = 6 or 7. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.top_level_ui_initialise_connect_helper_after",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 8B 41 50",
+  "match": "0x143820bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143820bd0",
+  "kind": "func_start",
+  "names": [
+   "Game_TOPLevelUI_InitialiseConnectHelperAfter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143820bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143820bd0.c;xref:0x14019e747",
+   "notes": "V6299 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

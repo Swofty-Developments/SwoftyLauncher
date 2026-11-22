@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_Neos_SignalRParseInvocation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144446120",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144446120.c;xref:0x14444663e,0x144446c6f",
+  "notes": "Callers 0x14444663e, 0x144446c6f (in 0x144446600). Inits {mode +0, NeString hub +0x10 cap 0x40, NeString target +0x38 cap 0x40, NeString +0x68 cap 0xff, args ptr +0x60, valid +0x90}. Mode 2: 'target' -> +0x38, 'arguments' array -> +0x60. Classic: 'H' -> +0x10, 'M' -> +0x38, 'A' array -> +0x60. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.neos_signal_r_parse_invocation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 C7 48",
+  "match": "0x144446120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144446120",
+  "kind": "func_start",
+  "names": [
+   "Game_Neos_SignalRParseInvocation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

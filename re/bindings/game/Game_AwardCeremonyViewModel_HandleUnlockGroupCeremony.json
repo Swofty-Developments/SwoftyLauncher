@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AwardCeremonyViewModel_HandleUnlockGroupCeremony",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419ee670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1419ee670.c;str:s_AwardCeremonyViewModel_HandleUnlockGroupCeremony;xref:0x1419ec05e,0x1419ee4f8,0x1419ef1f0,0x1419ef5e6",
+  "notes": "AwardCeremonyViewModel::handleUnlockGroupCeremony: advances group vm+0xaf0 in vector vm+0x310 (stride 0x28); none left -> animated_close, returns 1; else title lng key by group type +0x20, list_entry_%d rows (icon, powerful_gear, should_show_completed), animated_open; empty group recurses. Callers 0x1419e9a40, 0x1419ee4a0 (jmp), self, 0x1419ef240. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.award_ceremony_view_model_handle_unlock_group_ceremony",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 CF 4C",
+  "match": "0x1419ee670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419ee670",
+  "kind": "func_start",
+  "names": [
+   "Game_AwardCeremonyViewModel_HandleUnlockGroupCeremony"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1419ee670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419ee670.c;xref:0x1419ec05e",
+   "notes": "V4923 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

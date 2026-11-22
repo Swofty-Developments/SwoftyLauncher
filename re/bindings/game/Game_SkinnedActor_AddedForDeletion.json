@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SkinnedActor_AddedForDeletion",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401cfb10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401cfb10.c;pat:log-message-cxx;xref:0x14737ef89,0x14737efa3,0x1455e5bb8",
+  "notes": "Vtable cell 0x1455e5bb8; also called at 0x14737ef89/0x14737efa3. Logs, sets +0x41 bit0; unless +0x1e0, releases the 20 audio slots in [[[0x14601db08]+0xb0]+0xa0]+3000 +0x48 owned by this (0x14450a0b0 + vcall +0x30), +0x1d8=0. Under lock 0x14601e1a0: each animation data in +0x3a0..+0x3a8: 0x1401f1ee0, log ~SkinnedActorAnimationData, unregisters its resource callback (HandleResourceEvent), frees it; frees global 0x14601e1d0 when empty. Then vcall +0x48 on each component +0x68..+0x70. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.skinned_actor_added_for_deletion",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 2D ?? ?? ?? ?? 75 5E B8 3C 01 00 00",
+  "match": "0x1401cfb10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401cfb10",
+  "kind": "func_start",
+  "names": [
+   "Game_SkinnedActor_AddedForDeletion"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401cfb10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401cfb10.c",
+   "notes": "V4372 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

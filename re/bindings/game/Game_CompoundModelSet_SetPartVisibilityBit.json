@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CompoundModelSet_SetPartVisibilityBit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3d320",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3d320.c;xref:0x1401cdd75,0x1401cde05,0x1401cde95,0x14037b72a,0x14037b743,0x14037b761,0x1403af27f,0x1403af2a0,0x1403af2c5,0x141b0523e,0x141b05250,0x141b05262,0x141b0654f,0x141b06561,0x141b06573,0x1428ab4a3,0x1428abaa2,0x142e834f1,0x142e87cca,0x14459768f,0x144598a9a,0x14459904d,0x144599627,0x14459a628,0x14459b377,0x14459b598,0x14737724b,0x14f3c6bab,0x14f48487a,0x14f484909,0x14f484987,0x14f484a0f",
+  "notes": "(model, bit, on): bit < node count [[+0xd0]+0x48]; sets/clears it in two bitfields at [+0xa0]+0x80 + [+0xa0]+0x96 * 2 and * 3; on change queues refresh 0x143d3ce20 and sets +0x12c |= 4. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.compound_model_set_set_part_visibility_bit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 44 89 C3 89",
+  "match": "0x143d3d320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3d320",
+  "kind": "func_start",
+  "names": [
+   "Game_CompoundModelSet_SetPartVisibilityBit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d3d320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3d320.c;xref:0x1401cdd75",
+   "notes": "V7912 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

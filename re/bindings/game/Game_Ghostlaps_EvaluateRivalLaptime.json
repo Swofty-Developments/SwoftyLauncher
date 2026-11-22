@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ghostlaps_EvaluateRivalLaptime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f89920",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f89920.c;pat:log-message-method;xref:0x142f86cf0",
+  "notes": "evaluateRivalLaptime(sys,myMs,out): needs vt checks on sys+0x608/+0x4c8, +0x61b bit6 and +0x4d8 bit30 clear; t = clamp((my-lo)/(hi-lo)), lo = +0x9d8 or +0x4d8, hi = +0x9dc or +0x618*1.12; out = max(+0x4d8, my*(1-(t*0.009+0.001))) capped at my; logs. Caller 0x142f869f0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ghostlaps_evaluate_rival_laptime",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C7 89 D6",
+  "match": "0x142f89920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f89920",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghostlaps_EvaluateRivalLaptime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f89920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f89920.c;xref:0x142f86cf0",
+   "notes": "V5727 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

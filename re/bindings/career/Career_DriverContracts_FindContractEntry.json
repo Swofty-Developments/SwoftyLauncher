@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContracts_FindContractEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140db7e30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool Find(void *comp, uint32_t *driver_key, uint16_t slot)",
+  "evidence": "decomp:re/decomp/140db7e30.c;xref:0x140aa1bd0,0x140aa1be0,0x140c580be,0x140d8dda9",
+  "notes": "On the contracts component: finds the entry for driver key *param_2 in the list +0x2a0..+0x2a8 (16-byte, record +8 key), day = record u16 +0x28 or the override from the Robin-Hood map (+0x6d8 mult, +0x6e0 slots, +0x6e8 ctrl, +0x6f8 mask, +0x708/+0x70c); if day <= param_3 returns the result of this->vt+0x268, else false. (lane owner review requested) Better name: Career_DriverContracts_HasEntryDueByDay (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.driver_contracts_find_contract_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 66 44 89 44 24 2E",
+  "match": "0x140db7e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db7e30",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContracts_FindContractEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140db7e30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140db7e30.c",
+   "notes": "V9552 Robin-Hood hash lookup (comp[0xdb] mult, shift +0x70c) confirmed, but it first scans a vector at comp[0x54..0x55] for the driver key and compares slot u16 against +0x28 of the entry."
+  }
+ ],
+ "proofs": []
+}

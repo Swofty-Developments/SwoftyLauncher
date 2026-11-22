@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldScreen_NavigateEp1_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b9adf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141b9adf0.c;xref:0x141b9aa25,0x145734100",
+  "notes": "UI command (vtable 0x145734100): entry point 1 (0x146066c74), builds a route string and pushes it via navigator +0x620 vcall +0x80. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2457)"
+ },
+ "signature": {
+  "id": "game.f1_world_screen_navigate_ep1_4",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8B 59 08 C7 05",
+  "match": "0x141b9adf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b9adf0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldScreen_NavigateEp1_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_F1WorldScreen_NavigateEp1_4",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b9adf0.c;xref:0x141b9adf0",
+   "notes": "V2457 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

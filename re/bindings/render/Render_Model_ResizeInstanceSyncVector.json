@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Model_ResizeInstanceSyncVector",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e83ef0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e83ef0.c;xref:0x143c49a43,0x143c49ad8",
+  "notes": "vector<Handle>::resize(n) for 16-byte handles {ptr 0, slot 0xffffffff}; layout [allocator, begin, end, capacity]. Shrink releases the tail with 0x1403118b0; grow reallocates (x1.5 or n) via allocator vcall +0x18, moves, default-inits new slots, frees old storage with vcall +0x38. Callers 0x143c49a43, 0x143c49ad8 in Render_Model_BuildPerInstanceBuffers. Old note (sync release loop +0x18/+0x38) was wrong. (lane owner review requested) Better name: Render_HandleVector_Resize (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.model_release_per_instance_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 41 08 4C 8B 61",
+  "match": "0x143e83ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e83ef0",
+  "kind": "func_start",
+  "names": [
+   "Render_Model_ResizeInstanceSyncVector"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143e83ef0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143e83ef0.c;xref:0x143c49a43",
+   "notes": "V8356 Render_Model_ResizeInstanceSyncVector: resizes 0x10-byte entry vector, releases removed entries via Ne_Sync_ReleaseWithErrorTrace"
+  }
+ ],
+ "proofs": []
+}

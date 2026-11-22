@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_TryingStartVoteWrongState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14308c000",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14308c000.c;pat:log-channel-NETWORK;xref:0x143090c7d,0x14580f510",
+  "notes": "Called from 0x14308f6c0 and slot 4 (+0x20) of vtable 0x14580f4f0. (this, params): in the idle state sets params+0x10 = now_us/1e6 + params+8 (endTime), copies the params into this+0x60..+0x79 and calls 0x14308c360(this, ...); otherwise logs 'startVote: Trying to start a vote in the wrong state' with the Param(endTime, optionsCount) text. (lane owner review requested) Better name: Game_NetworkVoting_StartVote (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_trying_start_vote_wrong_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 83 79 10 01 0F 85",
+  "match": "0x14308c000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14308c000",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_TryingStartVoteWrongState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x14308c000",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14308c000.c;xref:0x143090c7d",
+   "notes": "V5290 better name Game_NetworkVoting_StartVote: body is startVote (Param(endTime,optionsCount) log, state check); the wrong-state message is only an error branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x14308c000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14308c000.c;xref:0x143090c7d",
+   "notes": "V6962 96 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

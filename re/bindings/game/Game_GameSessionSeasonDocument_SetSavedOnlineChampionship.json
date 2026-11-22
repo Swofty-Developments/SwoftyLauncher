@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionSeasonDocument_SetSavedOnlineChampionship",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143039710",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143039710.c;pat:log-message-cxx;xref:0x140fea9ae,0x143038d2e",
+  "notes": "Logs NETWORK/F 'network::GameSessionSeasonDocument::setSavedOnlineChampionship(%s)' (name p2+0x248). Packs the championship (Game_GameSessionSeasonDocument_PackChampionship, 0x14303979c), writes header p1+0x80 and pack buffer [p1+0x618] into the saved-championship record p2 via 0x14322cfa0, then frees the buffer (+0x618/+0x610). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_season_document_set_saved_online_championship",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 73 B8 5B 01 00 00",
+  "match": "0x143039710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143039710",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionSeasonDocument_SetSavedOnlineChampionship"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143039710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143039710.c;xref:0x140fea9af",
+   "notes": "V5430 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

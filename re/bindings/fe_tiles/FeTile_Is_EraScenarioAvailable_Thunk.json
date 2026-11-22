@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "FeTile_Is_EraScenarioAvailable_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a6cfd0",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "uint8_t FeTile_Is_EraScenarioAvailable_Thunk(void *mode, const char *setup_mode, const char *entrant_list)",
+  "evidence": "decomp:re/decomp/141a6cfd0.c;decomp:re/decomp/141a6e980.c;decomp:re/decomp/142a224f0.c;xref:0x141a6ebfc,0x141a6ec19,0x141a6ec2f,0x141a6ec45,0x141a6ec5b,0x141a6ec77,0x141a6ec8d,0x141a6eca3,0x141a6ecb9,0x141a6ecd2,0x141a6ed0b",
+  "notes": "5-byte jmp thunk into .data1 body 0x14bd2f020, bound through its first call 0x141a6ebfc in FeTile_Build_EraTiles (all 11 calls are there). Returns 1 when mode (view model +0x670) has a game setup mode named setup_mode (vtable +0x1d0 of *(*(mode+0x88)+0x260) gives the setup-mode vector, name at *(*(gsm+0xd8)+0x10)) whose entrant setup modes list entrant_list (per entrant setup mode: names at *(*(e+0x130+8i)+0x28)+0x10, count e+0x230); the same lists the scenario parser 0x142a224f0 checks a game_setup.scenarios row against."
+ },
+ "signature": {
+  "id": "fe_tiles.is_era_scenario_available",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 88 44 24 56 4C 8D 35",
+  "match": "0x141a6ebfc",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141a6cfd0",
+  "kind": "call",
+  "names": [
+   "FeTile_Is_EraScenarioAvailable_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "classic-seasons",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/classic-seasons/native/src/era_tiles.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-seasons",
+   "kind": "func",
+   "item": "FeTile_Is_EraScenarioAvailable_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a6cfd0.c;decomp:re/decomp/141a6e980.c;xref:0x141a6ebfc,0x141a6ec19,0x141a6ec2f,0x141a6ec45,0x141a6ec5b,0x141a6ec77,0x141a6ec8d,0x141a6eca3,0x141a6ecb9,0x141a6ecd2,0x141a6ed0b;sig:fe_tiles.is_era_scenario_available",
+   "notes": "V1003 0x141a6cfd0 is e9 jmp 0x14bd2f020, and the thunk is the only rel32 ref to that body (the other .data1 hits are not call or jmp opcodes). The body returns 0 when mode, *(mode+0x88) or its +0x260 object is NULL. Otherwise it walks the vector [+8,+0x10) returned by vt+0x1d0 of that object. For each game setup mode g it strcmp's (0x14535d850) *(*(g+0xd8)+0x10) against setup_mode, then walks g's entrant setup modes at g+0x10 (count g+0x70). For each e it compares *(*(e+0x130+8i)+0x28)+0x10 for i < *(e+0x230) against entrant_list and returns 1 on the first match. All 11 calls are in FeTile_Build_EraTiles, with rcx = rbp = *(vm+0x670). The proto is right. I did not check the scenario-parser comparison (0x142a224f0). sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

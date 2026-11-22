@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_ReturnsTrueSessionNullptr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436f2830",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436f2830.c;pat:log-channel-NETWORK-READY/V;xref:0x14585dfd8",
+  "notes": "State function (vtable cell): evaluates 'canProgressToSession' (disconnected, red-flag restart, going to front end, isMinimumParticipartionRequiredForSession, >=2 players, host race status) and writes [0x146cb2284] or [0x146cb2280] to *param_2 by byte [this+0xcc8]. 'session is nullptr' is one log branch only. (lane owner review requested) Better name: Game_NetworkReadyState_UpdateCanProgressToSession (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ready_returns_true_session_nullptr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 D6 48 89 CF 48 8B 81 90 0C 00 00",
+  "match": "0x1436f2830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436f2830",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_ReturnsTrueSessionNullptr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436f2830",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436f2830.c",
+   "notes": "V6146 3487-byte canProgressToSession logic (disconnected, red flag, participation check, not enough players, host status); session-nullptr is one return. Better: Game_NetworkReady_CanProgressToSession. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1436f2830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436f2830.c",
+   "notes": "V7104 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

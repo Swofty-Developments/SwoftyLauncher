@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkJournal_HandleCreateEntryMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143148590",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143148590.c;pat:log-channel-NETWORK-JOURNAL;xref:0x14fe3e806",
+  "notes": "Logs 'handle create entry message' (NETWORK-JOURNAL) and tail jumps to Game_NetworkJournal_CreateEntry 0x1431491f0 with the payload msg+0x10; the decomp inlines that body. Handler stored by lea 0x14fe3e806 in 0x14fe3e6b0 (.data1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_journal_handle_create_entry_message",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D B8 AB 00 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 4B 81 FA 37 AC 73 69 74 30 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D AB 00 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 57 10",
+  "match": "0x143148590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143148590",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkJournal_HandleCreateEntryMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143148590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143148590.c;xref:0x14fe3e808",
+   "notes": "V5953 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

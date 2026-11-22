@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_StringPool_InternCStr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14392a050",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14392a050.c;xref:0x14018426a",
+  "notes": "FNV-1a 64 hash of a C string then Ne_StringPool_InternByHash; returns the 64-bit hash. Callers Game_CameraActor_ProcessPendingCameraChanges, Ne_CustomisationDecalRenderer_BakePasses."
+ },
+ "signature": {
+  "id": "core.string_pool_intern_c_str",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 D6 49 BB 25 23 22 84 E4 9C",
+  "match": "0x14392a050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14392a050",
+  "kind": "func_start",
+  "names": [
+   "Ne_StringPool_InternCStr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x14392a050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14392a050.c;xref:0x14018426a",
+   "notes": "V7632 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

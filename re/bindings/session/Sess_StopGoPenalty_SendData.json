@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_StopGoPenalty_SendData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435c6ef0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-STOP_GO_PENALTY_MESSAGE;decomp:re/decomp/1435c6ef0.c;xref:0x14584dff8",
+  "notes": "Log channel STOP_GO_PENALTY_MESSAGE: 'Sending Data for Vehicle %d'"
+ },
+ "signature": {
+  "id": "session.stop_go_penalty_send_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 48 8B 41 28 48 8B 49 30 48 39 C8 74 4C",
+  "match": "0x1435c6ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435c6ef0",
+  "kind": "func_start",
+  "names": [
+   "Sess_StopGoPenalty_SendData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_StopGoPenalty_SendData",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435c6ef0.c;xref:0x14584e0bf",
+   "notes": "V1939 strings match"
+  }
+ ],
+ "proofs": []
+}

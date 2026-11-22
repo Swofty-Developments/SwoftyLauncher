@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_ChooseOutcome",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb67a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cb67a0.c;pat:log-channel-DEPARTMENT_EVENTS;xref:0x145686dc0",
+  "notes": "DEPARTMENT_EVENTS: driver chose outcome: validates active department / instance / outcome index (logs each failure), eligibility 0x140cb0750, saves via 0x140cb3bd0 and 0x140cb3ea0, posts bus messages (0x1439876c0). Only ref: vtable slot ptr 0x145686dc0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.dept_event_choose_outcome",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 44 89 C7 48 89 D6 48 89 CB 48 8B 01 FF 90 68 02 00 00",
+  "match": "0x140cb67a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb67a0",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_ChooseOutcome"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cb67a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb67a0.c",
+   "notes": "V4654 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140cb67a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb67a0.c",
+   "notes": "V9063 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

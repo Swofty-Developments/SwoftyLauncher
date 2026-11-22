@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_EncodeFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444b16c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444b16c0.c;pat:log-channel-VIDEO_EXPORT;xref:0x145a93008",
+  "notes": "Read in full; only ref vtable cell 0x145a93008. Per-frame capture step: frame time from QPC (+0x288/+0x298, +0x40/+0x58); if +0x274 active runs state +0x2a0: 0 = init WebM via 0x1444b1f20 with staging texture +0x2d0[i] size (fail 'Failed to get initialise WebM file' -> 0x1444b0a10, state 3); 1 = warm-up wait; 2 = rotate 3 staging buffers (0x146cb7b90), map 0x1439dc210, RGB->I420 into encoder image, 0x1444b2c30, error 2 fires 'export_failed'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.video_export_encode_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 01 00 00 48 89 CE 48 8B 89 90 02 00 00",
+  "match": "0x1444b16c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444b16c0",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_EncodeFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1444b16c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444b16c0.c",
+   "notes": "V6667 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

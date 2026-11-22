@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIModule_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437e7b90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437e7b90.c;pat:log-message-cxx;xref:0x145875b38",
+  "notes": "UIModule::update (vtable cell 0x145875b38; own FADE strings). Fader +0x790 state 0 (faded in): callbacks +0x7a0; with fade reasons +0x7b8 logs 'starting fade out' -> 0x1437e8420(this, +0x7bc, +0x7c0, .., +0x7c8) (not while paused). State 2: callbacks +0x798; no reasons -> 'starting fade in', 0x1437f03f0(fader, +0x7c4), callbacks +0x7a8. 2.0 s QPC timer (+2000, +0x7e0) -> 0x14144d860(.., 0xe, 0x17). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ui_module_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 48 89 CE 48 8B 81 90 07 00 00",
+  "match": "0x1437e7b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437e7b90",
+  "kind": "func_start",
+  "names": [
+   "Game_UIModule_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1437e7b90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437e7b90.c",
+   "notes": "V6255 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -19,7 +19,7 @@
 // nine-slice, clip/transform/opacity stacks, safe area, UI scale) need a core that exports
 // SwoftyCoreOverlayVersion; v2() says whether it does. On an older core the shape calls fall back
 // to the nearest v1 call and the rest draw nothing. v3 calls (input, focus) need version 3; v3()
-// says whether the core has them.
+// says whether the core has them. load_image_rgba needs version 4; v4() says whether the core has it.
 
 namespace swofty::overlay {
 
@@ -60,6 +60,12 @@ inline const SwoftyOverlay *table3()
     return t && core_version() >= 3 ? t : nullptr;
 }
 
+inline const SwoftyOverlay *table4()
+{
+    auto t = table();
+    return t && core_version() >= 4 ? t : nullptr;
+}
+
 // A NUL-terminated copy of s in a per-thread buffer reused across calls; slot picks one of two buffers
 // for calls that pass two strings.
 inline const char *cstr(std::string_view s, int slot = 0)
@@ -95,6 +101,12 @@ inline bool v2()
 inline bool v3()
 {
     return detail::table3() != nullptr;
+}
+
+// The core implements load_image_rgba.
+inline bool v4()
+{
+    return detail::table4() != nullptr;
 }
 
 // Register a per-frame paint callback. The token identifies it for remove; pass nullptr to
@@ -166,6 +178,16 @@ inline Result load_image(std::string_view id, std::string_view file)
     if (!t)
         return Result::unavailable;
     return detail::result(t->load_image(detail::cstr(id), detail::cstr(file, 1)));
+}
+
+// Load a texture from straight RGBA8 pixels in memory, top row first, width*height*4 bytes; the core copies them.
+// Loading an id again replaces its pixels. unavailable on a core before overlay version 4.
+inline Result load_image_rgba(std::string_view id, uint32_t width, uint32_t height, const void *rgba)
+{
+    auto t = detail::table4();
+    if (!t)
+        return Result::unavailable;
+    return detail::result(t->load_image_rgba(detail::cstr(id), width, height, rgba));
 }
 
 // Draw a loaded texture into the rectangle, multiplied by the tint colour (0xffffffff for none).

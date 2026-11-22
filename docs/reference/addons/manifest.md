@@ -15,7 +15,7 @@ This manifest uses every field. Only `schema_version`, `id`, `name`, `version` a
 {
   // Identity
   "schema_version": 1,                               // always 1
-  "id": "yourname.my-addon",                         // lowercase, dotted, at least two parts
+  "id": "yourname.my-addon",                         // <namespace>.<name>, lowercase
   "name": "My Addon",                                // display name
   "version": "1.0.0",                                // semver
   "author": "Your Name",                             // display author
@@ -118,7 +118,8 @@ swofty: invalid manifest: yourname.my-addon: option ai_offset: a slider has at m
 ```
 
 - **`schema_version`** (integer): `1`.
-- **`id`** (string): a lowercase dotted id with at least two parts, each part `[a-z0-9_-]`, such as `author.my-addon`. The `swofty.` prefix is reserved. The `dbedit.` prefix is kept for addons the DB Editor saves, and the launcher refuses to install any other addon with it.
+- **`id`** (string): a lowercase dotted id with at least two parts, each part `[a-z0-9_-]`, such as `author.my-addon`. The first part is the namespace. The `swofty.` prefix is reserved. The `dbedit.` prefix is kept for addons the DB Editor saves, and the launcher refuses to install any other addon with it. The `imported-mod.` prefix is kept for imports ([The addon's id](/reference/mods/tracks#the-addon-s-id)), and the launcher refuses an Addon Browser download with it.
+  - On [publish.f1.swofty.net](./publishing#publish), a new addon's namespace must be yours: your Discord username (lowercase, without `.` and other characters outside `a-z0-9_-`), or a team or brand name you claim by publishing the first addon in it, up to 3 besides your username. Nobody else can publish new addons in a namespace you own. `swofty`, `mod`, `local`, `core`, `std` and `dbedit` take no new addons. Addons published before namespaces keep their ids, and new versions of them publish as before.
 - **`name`** (string): the display name.
 - **`version`** (string): semver, such as `1.0.0`.
 - **`author`** (string): the display author.
@@ -303,9 +304,9 @@ Careers that use its drivers won't load without it.
 | `binds` | Read by | A change applies |
 |---|---|---|
 | `native` | the [engine plugin](./native-plugins#settings), while the game runs | at once |
-| `db` | the build, through <span v-pre>`{{id}}`</span> and `when` in op files | after a rebuild |
+| `db` | the build, through <span v-pre>`{{id}}`</span> and `when` in op files and HUD files | after a rebuild |
 
-An op's `when` can also name addons: `"when": { "addon": "track.istanbul_park" }` keeps the op only while that addon is on, and a `when` at the top of an op file applies to the whole file. See [Database operations](/reference/ops/database#settings).
+An op's `when` can also name addons: `"when": { "addon": "track.istanbul_park" }` keeps the op only while that addon is on, and a `when` at the top of an op file applies to the whole file. See [Database operations](/reference/ops/database#settings). A HUD file takes a top-level `when` from launcher 1.10.14: [A HUD file behind a setting](/reference/ops/hud#a-hud-file-behind-a-setting).
 
 ### career_setup
 

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WeatherAndTimeOfDayComponent_DeserialiseSaveDataContainer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140be23c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140be23c0.c;pat:log-message-cxx;xref:0x14567b968",
+  "notes": "Vtable cell only ref. Reads save container keys via FUN_143931730: contains_general_data, rnd_seed (-> +0x2c4, logs WEATHER_SEED_EXTENDED 'WeatherAndTimeOfDayComponent::deserialiseSaveDataContainer Random seed deserialised %u'), tod_type/tod_quick/tod_p1_time..tod_ss_prog (+0x2c8..+0x2d9), tod_customised, w_type, w_quick (+0x2dc), w_p1_active.. w_ss_active (+0x2e0..+0x2ec), w_*_slots via FUN_140be2020, w_customised (+0x330); mirrors into #settings.current_settings.time_of_day/weather.* UI vars via FUN_1442b1540; type mismatch -> 0x58, missing key -> 0x57. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.weather_and_time_of_day_component_deserialise_save_data_container",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 4D 89 C6",
+  "match": "0x140be23c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140be23c0",
+  "kind": "func_start",
+  "names": [
+   "Game_WeatherAndTimeOfDayComponent_DeserialiseSaveDataContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140be23c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140be23c0.c",
+   "notes": "V4503 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

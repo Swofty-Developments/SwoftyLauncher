@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Inventory_ModifyCurrency",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425ae100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1425ae100.c;pat:log-channel-INVENTORY;xref:0x14255e060,0x1425654d3,0x1425a075d,0x142c5b74a",
+  "notes": "(inv, wallet, currency, delta): wallet hash map (+0x98..+0xcc) by id, currency map at wallet+0x60 (byte key); amount (+4) = clamp(old+delta, 0, 0x7fffffff); logs 'Modifying amount of currency %s by %d' / 'New amount: %d'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.inventory_modify_currency",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 18 01 00 00 44 89 CE",
+  "match": "0x1425ae100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425ae100",
+  "kind": "func_start",
+  "names": [
+   "Game_Inventory_ModifyCurrency"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1425ae100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425ae100.c;xref:0x14255e060",
+   "notes": "V5102 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

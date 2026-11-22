@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1CarSetupDataManagerBase_HandleNetMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c0fc80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c0fc80.c;pat:log-message-cxx;xref:0x145672ac8,0x14568d7f8,0x1457afd48,0x1457b0d68",
+  "notes": "Vtable slot. Logs ' F1CarSetupDataManagerBase::handleNetMessage()'; reads one 16-bit driver id, skips when no track is loaded ([this+0x18]+0x1a8 -> +0x30 null), finds or creates the binding (0x2048 bytes, 0x140c05ce0) and calls BindingDeserialize 0x140c0f4a0; error logs for empty buffer / failed deserialize. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_car_setup_data_manager_base_handle_net_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140c0fc80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c0fc80",
+  "kind": "func_start",
+  "names": [
+   "Game_F1CarSetupDataManagerBase_HandleNetMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c0fc80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c0fc80.c",
+   "notes": "V4573 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  }
+ ],
+ "proofs": []
+}

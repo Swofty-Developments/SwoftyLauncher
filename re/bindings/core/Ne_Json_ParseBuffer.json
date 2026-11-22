@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Ne_Json_ParseBuffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144435250",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144435250.c;xref:0x140796073",
+  "notes": "(doc*, allocator, buf {ptr,?,len}): inits the document (allocator +0x10/+0x18, stack cap 0x400 @+0x90, error @+0x98); if ptr and len non-zero parses via 0x140b5e130 into doc+0x48; success -> doc[0]=doc+0x48 (root), byte +8=1; failure logs 'Unable to parse JSON in buffer, ParseErrorCode %d', byte +8=0. Returns doc. Caller Game_Steam_ParsePriceOverview."
+ },
+ "signature": {
+  "id": "core.json_parse_buffer",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE 48 C7 01 00 00 00 00",
+  "match": "0x144435250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144435250",
+  "kind": "func_start",
+  "names": [
+   "Ne_Json_ParseBuffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

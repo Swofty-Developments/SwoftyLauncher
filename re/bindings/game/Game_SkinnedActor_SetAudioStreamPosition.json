@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SkinnedActor_SetAudioStreamPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401fb5b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401fb5b0.c;pat:log-message-cxx;xref:0x1455e1068,0x1455e1578,0x1455e1748,0x1455e35a8,0x1455e5b08,0x14560ba58,0x14561b688,0x14561c468,0x14561c648,0x14561ddf8,0x14561e2a8,0x14561e478,0x14561e6c8",
+  "notes": "Own strings 'SkinnedActor::setAudioStreamPosition - ...' (ACTOR_AUDIO). Needs flags +0x40 &0x20 and not &0xc0; layer id *param_2 vs 5 globals (0x146042c20..c40) with weights +0x2a0/+0x2f0/+0x340/+0x390 >= 0.8; then +0x1d0 = *param_3 and 0x1401f36a0. Else logs 'not weighted enough' or 'not visible, disabled or muted'. Refs: actor vtable cells. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.skinned_actor_set_audio_stream_position",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 C5 F8 28 F3",
+  "match": "0x1401fb5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401fb5b0",
+  "kind": "func_start",
+  "names": [
+   "Game_SkinnedActor_SetAudioStreamPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401fb5b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401fb5b0.c",
+   "notes": "V4394 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

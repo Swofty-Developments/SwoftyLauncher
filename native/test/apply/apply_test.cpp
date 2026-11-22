@@ -1,15 +1,19 @@
-#include "../../src/core/apply/database.hpp"
-#include "../../src/core/apply/facts.hpp"
-#include "../../src/core/apply/ids.hpp"
-#include "../../src/core/apply/room.hpp"
-#include "../../src/core/apply/scheduler.hpp"
-#include "../../src/core/registry/table.hpp"
+#include "core/apply/database.hpp"
+#include "core/apply/facts.hpp"
+#include "core/apply/ids.hpp"
+#include "core/apply/room.hpp"
+#include "core/apply/scheduler.hpp"
+#include "core/registry/table.hpp"
 
+#include <chrono>
+#include <condition_variable>
 #include <cstdio>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <vector>
 
@@ -148,8 +152,7 @@ void test_sizing()
         for (uint64_t under : {uint64_t(0), uint64_t(1), uint64_t(258), keys / 50}) {
             auto at = rm::target(file - under, 0, keys);
             uint64_t slots = rm::slots_for(at.want);
-            check(slots == (uint64_t(1) << 21) &&
-                      rm::left(slots, file - under) - rm::PROBE_RECORDS >= keys + keys / 50,
+            check(slots == (uint64_t(1) << 21) && rm::left(slots, file - under) - rm::PROBE_RECORDS >= keys + keys / 50,
                   "a plan of " + std::to_string(keys) + " keys " + std::to_string(under) +
                       " under the growth point sizes up and leaves room for a 2% undercount");
         }
@@ -168,9 +171,8 @@ void test_budget()
     auto b = rm::admit(100, {{"a", 40, 50}, {"b", 70, 70}, {"c", 60, 61}, {"d", 0, 5}});
     check(b.addons.size() == 4, "every addon gets a verdict");
     check(b.addons[0].admitted && !b.addons[1].admitted && b.addons[2].admitted && b.addons[3].admitted,
-          "whole addons are admitted in load order while each fits what is left: " +
-              std::to_string(b.addons[0].admitted) + std::to_string(b.addons[1].admitted) +
-              std::to_string(b.addons[2].admitted) + std::to_string(b.addons[3].admitted));
+          "whole addons are admitted in load order while each fits what is left: " + std::to_string(b.addons[0].admitted) +
+              std::to_string(b.addons[1].admitted) + std::to_string(b.addons[2].admitted) + std::to_string(b.addons[3].admitted));
     check(b.admitted_keys == 100 && b.refused_keys == 70 && b.asked_keys == 170, "the budget counts asked, admitted, refused");
     auto none = rm::admit(0, {{"a", 1, 1}, {"b", 0, 3}});
     check(!none.addons[0].admitted && none.addons[1].admitted, "an addon that only overwrites always fits");
@@ -179,8 +181,10 @@ void test_budget()
     check(fits.admitted_keys == 110 && fits.refused_keys == 0 && fits.addons[0].admitted && fits.addons[1].admitted &&
               fits.addons[2].admitted,
           "a boot whose rows fit is admitted whole");
-    std::vector<rm::AddonAsk> asks = {{"swofty.swofty-seasons-2015", 6783, 6800}, {"swofty.swofty-seasons-2023", 5263, 5300},
-                                      {"swofty.swofty-seasons-2024", 5036, 5062}, {"swofty.core", 0, 12}};
+    std::vector<rm::AddonAsk> asks = {{"swofty.swofty-seasons-2015", 6783, 6800},
+                                      {"swofty.swofty-seasons-2023", 5263, 5300},
+                                      {"swofty.swofty-seasons-2024", 5036, 5062},
+                                      {"swofty.core", 0, 12}};
     auto old_way = rm::admit(12000, asks);
     check(old_way.addons[0].admitted && !old_way.addons[1].admitted && old_way.addons[2].admitted && old_way.addons[3].admitted,
           "per addon, the room refuses one addon of a laid-out boot and applies the others around its rows");
@@ -257,8 +261,24 @@ void test_room_json()
           "the unavailable room line: " + rm::line(un));
 }
 
+void test_ids_reserved()
+{
+    ap::ids::Store s;
+    s.define_pool("team.identity", {{{502, 506}}});
+    std::string rows = R"({"rows":{"a.f1-1990/entrants.teams.team/mclaren":{"id":502,"from":"seeded"},)"
+                       R"("a.f1-1990/entrants.vehicles.vehicle/car":{"id":503,"from":"seeded"}},)"
+                       R"("profiles":{"p":{"rows":{"b.x/entrants.teams.team/t":{"id":503,"from":"moved"}}}}})";
+    check(s.reserve_json(rows), "row-ids.json parses");
+    check(s.reserved("team.identity", 502) && s.reserved("team.identity", 503), "team ids kept as rows are reserved");
+    check(!s.reserved("team.identity", 504) && !s.reserved("vehicle", 502), "other ids and tables are not");
+    auto a = s.allocate("team.identity", "x/a", "d");
+    check(a.id == 504, "the pool skips ids row-ids.json keeps");
+    check(!s.reserve_json("[1]"), "a file that is not an object is refused");
+}
+
 void test_ids()
 {
+    test_ids_reserved();
     ap::ids::Store s;
     s.define_pool("vehicle", {{{515, 517}}});
     auto a = s.allocate("vehicle", "x/a", "2026-10-28");
@@ -295,6 +315,56 @@ void test_ids()
     check(none.allocate("vehicle", "x/a", "d").id == -1, "no pool, no id");
 }
 
+void test_ids_ahead()
+{
+    ap::ids::Store live;
+    live.define_pool("vehicle", {{{515, 520}}});
+    live.allocate("vehicle", "x/a", "d");
+    uint64_t g = live.generation();
+    live.get("vehicle", "x/a");
+    live.dump();
+    live.dirty();
+    live.size();
+    check(live.generation() == g, "reading the stat-id store leaves its generation where it was");
+    live.allocate("vehicle", "x/a", "d");
+    check(live.generation() == g, "an allocation that keeps an id is a read too");
+    live.map_for_career("a career");
+    g = live.generation();
+    ap::ids::Store ahead(live);
+    check(ahead.generation() == g && ahead.dump() == live.dump() && ahead.dump().find("a career") != std::string::npos,
+          "a copy carries the contents, careers included, and the generation");
+    ahead.allocate("vehicle", "x/b", "d");
+    ahead.set_live("vehicle", {"x/a", "x/b"});
+    check(ahead.generation() != g && live.generation() == g && live.get("vehicle", "x/b").id == -1,
+          "work on the copy moves the copy's generation and leaves the store alone");
+    std::string made = ahead.dump();
+    check(live.commit(std::move(ahead), g) && live.dump() == made && live.get("vehicle", "x/b").id == 516,
+          "the copy is committed while the store has not moved since it was taken");
+    check(live.generation() != g, "and the commit moves the store's generation");
+    ap::ids::Store late(live);
+    uint64_t at = live.generation();
+    late.allocate("vehicle", "x/c", "d");
+    for (int change = 0; change < 4; change++) {
+        ap::ids::Store other(live);
+        uint64_t since = other.generation();
+        other.allocate("vehicle", "x/d", "d");
+        if (change == 0)
+            live.saved();
+        else if (change == 1)
+            live.allocate("vehicle", "x/e", "d");
+        else if (change == 2)
+            live.define_pool("track", {{{1, 2}}});
+        else
+            live.forget_career("none");
+        std::string kept = live.dump();
+        check(!live.commit(std::move(other), since) && live.dump() == kept && live.get("vehicle", "x/d").id == -1,
+              "a copy is not committed once the store moved after it was taken, and the store stays whole (change " +
+                  std::to_string(change) + ")");
+    }
+    check(!live.commit(std::move(late), at) && live.get("vehicle", "x/c").id == -1 && live.get("vehicle", "x/e").id >= 0,
+          "nor is an older copy, and the store keeps its own changes");
+}
+
 void test_database_ids()
 {
     const std::map<int64_t, std::string> db15{{508, "mercedes_2025"}, {509, "bdx_s5_car_mclaren_3"}, {510, "bdx_s5_car_ferrari"}};
@@ -312,8 +382,7 @@ void test_database_ids()
     s.pin("vehicle", "cs/mclaren", 511, "d", "cs17_mclaren");
     auto moved = s.pin("vehicle", "cs/ferrari", 509, "d", "cs17_ferrari");
     check(moved.id == 512 && moved.how == "moved",
-          "a pin on an id a database row holds takes the next free id, past another record's pin: " +
-              std::to_string(moved.id));
+          "a pin on an id a database row holds takes the next free id, past another record's pin: " + std::to_string(moved.id));
     check(moved.line == "[registry] ids: cs/ferrari pinned vehicle stat id 509 is held by bdx_s5_car_mclaren_3 from the "
                         "database; uses 512",
           "the move line: " + moved.line);
@@ -358,8 +427,7 @@ void test_database_ids()
     check(pl.load("{\"version\":1,\"ids\":{},\"careers\":{\"c1\":{\"vehicle.package\":{\"cs/gone\":1}}}}") &&
               pl.allocate("vehicle.package", "cs/new", "d").id == 1,
           "a package id only a career lists is free");
-    check(pl.adopt("c2", {{"vehicle.package", {{"cs/old", 2}}}}, "d").empty() &&
-              pl.dump().find("cs/old") == std::string::npos,
+    check(pl.adopt("c2", {{"vehicle.package", {{"cs/old", 2}}}}, "d").empty() && pl.dump().find("cs/old") == std::string::npos,
           "adopting a career keeps none of its package ids");
 
     ap::ids::Store k;
@@ -400,8 +468,8 @@ void test_scheduler()
     st.add_base("career.season", "y2017", Value::object({{"year", Value(2017)}}));
     st.add_base("t.content", "pkg", Value::object({{"n", Value(0)}}));
     std::string id;
-    st.add("mod.a", "content.package", "f1_2017",
-           Value::object({{"entrant_list", Value("cs_f1_2017")}, {"season", Value(2017)}}), &id);
+    st.add("mod.a", "content.package", "f1_2017", Value::object({{"entrant_list", Value("cs_f1_2017")}, {"season", Value(2017)}}),
+           &id);
     check(id == "mod.a/f1_2017", "the test package is added: " + id);
     reg::Change ch;
     ch.patch = Value::object({{"entrant_list", Value("cs_f1_2017_v10")}});
@@ -525,6 +593,10 @@ void test_scheduler()
               st.context().mode == "driver_career",
           "the career's context reaches the store");
     calls.clear();
+    check(!st.context().has_year && s.career_dated(2016) && st.context().has_year && st.context().year == 2016 && calls.empty(),
+          "a career loaded in a season that already started takes its year without running an applier");
+    check(!s.career_dated(2016) && !s.career_dated(0), "the same year again, or no year, changes nothing");
+    calls.clear();
     s.career_season(2017);
     check(st.context().has_year && st.context().year == 2017, "a season start sets the year");
     check(joined(calls) == "t.content.deactivate | t.content.activate -", "a season start re-applies content");
@@ -540,7 +612,8 @@ void test_scheduler()
     s.content_picked("f1_2025", "time_trial");
     check(st.context().mode == "driver_career" && !tt_on(), "a box press never overrides a loaded career's mode");
     s.session_load(ap::SessionFacts{"grand_prix", "practice", "practice_1", "game/imola"});
-    check(st.context().mode == "driver_career" && logged("[apply] facts: mode driver_career, session practice (practice_1), track game/imola"),
+    check(st.context().mode == "driver_career" &&
+              logged("[apply] facts: mode driver_career, session practice (practice_1), track game/imola"),
           "a career practice keeps the career's mode");
     calls.clear();
     s.career_unloaded();
@@ -549,6 +622,7 @@ void test_scheduler()
           "a career unload leaves the mode unknown");
     check(st.context().career.empty() && !st.context().has_year && st.context().content.empty(),
           "the career's context is cleared");
+    check(!s.career_dated(2018) && !st.context().has_year, "no career loaded: a year dates nothing");
     calls.clear();
     s.install_read();
     s.install_read();
@@ -562,18 +636,30 @@ void test_facts()
 {
     namespace f = swofty_core::apply::facts;
     const std::pair<const char *, const char *> modes[] = {
-        {"time_trial", "time_trial"},           {"solo_testing", "time_trial"},
-        {"grand_prix_23", "grand_prix"},        {"grand_prix_splitscreen", "split_screen"},
-        {"driver_career_26", "driver_career"},  {"driver_career_25", "driver_career"},
-        {"driver_career_24", "driver_career"},  {"career_23", "driver_career"},
-        {"my_team_career_26", "my_team"},       {"my_team_career_24", "my_team"},
-        {"story_mode", "story"},                {"story_mode_zenith", "story"},
-        {"event_mode", "f1_world"},             {"championships", "f1_world"},
-        {"rewind_event_mode", "f1_world"},      {"F1CG_solo_battles", "f1_world"},
-        {"career_25_online", "unknown"},        {"career_23_online", "unknown"},
-        {"challenge_career_25", "unknown"},     {"benchmark", "unknown"},
-        {"dev", "unknown"},                     {"", "unknown"},
-        {"grand_prix", "unknown"},              {"time_trial_x", "unknown"},
+        {"time_trial", "time_trial"},
+        {"solo_testing", "time_trial"},
+        {"grand_prix_23", "grand_prix"},
+        {"grand_prix_splitscreen", "split_screen"},
+        {"driver_career_26", "driver_career"},
+        {"driver_career_25", "driver_career"},
+        {"driver_career_24", "driver_career"},
+        {"career_23", "driver_career"},
+        {"my_team_career_26", "my_team"},
+        {"my_team_career_24", "my_team"},
+        {"story_mode", "story"},
+        {"story_mode_zenith", "story"},
+        {"event_mode", "f1_world"},
+        {"championships", "f1_world"},
+        {"rewind_event_mode", "f1_world"},
+        {"F1CG_solo_battles", "f1_world"},
+        {"career_25_online", "unknown"},
+        {"career_23_online", "unknown"},
+        {"challenge_career_25", "unknown"},
+        {"benchmark", "unknown"},
+        {"dev", "unknown"},
+        {"", "unknown"},
+        {"grand_prix", "unknown"},
+        {"time_trial_x", "unknown"},
     };
     for (auto &[label, want] : modes)
         check(f::mode_of(label) == want, std::string("game mode ") + label + " is " + want + ", got " + f::mode_of(label));
@@ -583,23 +669,31 @@ void test_facts()
 
     using K = f::ModeKind;
     const std::tuple<bool, bool, const char *, K> kinds[] = {
-        {true, true, "time_trial", K::time_trial}, {true, true, "my_team", K::career},       {true, true, "driver_career", K::career},
-        {true, true, "grand_prix", K::other},      {true, true, "split_screen", K::other},   {true, true, "story", K::other},
-        {true, true, "f1_world", K::other},        {true, true, "unknown", K::unknown},      {true, true, "", K::unknown},
-        {true, false, "time_trial", K::unknown},   {false, true, "time_trial", K::unknown},  {true, true, "something_new", K::unknown},
+        {true, true, "time_trial", K::time_trial},
+        {true, true, "my_team", K::career},
+        {true, true, "driver_career", K::career},
+        {true, true, "grand_prix", K::other},
+        {true, true, "split_screen", K::other},
+        {true, true, "story", K::other},
+        {true, true, "f1_world", K::other},
+        {true, true, "unknown", K::unknown},
+        {true, true, "", K::unknown},
+        {true, false, "time_trial", K::unknown},
+        {false, true, "time_trial", K::unknown},
+        {true, true, "something_new", K::unknown},
     };
     for (auto &[context, holder, mode, want] : kinds)
-        check(f::mode_kind(context, holder, mode) == want, std::string("mode kind of ") + mode + (context ? "" : " without a context") +
-                                                                (holder ? "" : " without a mode object") + " is " + f::mode_kind_name(want));
+        check(f::mode_kind(context, holder, mode) == want,
+              std::string("mode kind of ") + mode + (context ? "" : " without a context") +
+                  (holder ? "" : " without a mode object") + " is " + f::mode_kind_name(want));
     for (auto &[label, want] : modes)
         check(f::mode_kind(true, true, f::mode_of(label)) != K::other || std::string(want) != "unknown",
               std::string("an unlisted mode never counts as another mode: ") + label);
 
     auto is = [](uint32_t id, bool sprint, const char *type, const char *session) {
         f::Session s = f::session_of(id, sprint);
-        check(s.type == type && s.session == session,
-              "session id " + std::to_string(id) + (sprint ? " (sprint weekend)" : "") + " is " + type + "/" + session +
-                  ", got " + s.type + "/" + s.session);
+        check(s.type == type && s.session == session, "session id " + std::to_string(id) + (sprint ? " (sprint weekend)" : "") +
+                                                          " is " + type + "/" + session + ", got " + s.type + "/" + s.session);
     };
     is(1, false, "practice", "practice_1");
     is(2, false, "practice", "practice_2");
@@ -744,6 +838,283 @@ void test_file_route_boot()
     ap::clear_appliers();
 }
 
+struct Gate {
+    std::mutex mu;
+    std::condition_variable cv;
+    bool entered = false, open = false;
+
+    void enter()
+    {
+        std::unique_lock l(mu);
+        entered = true;
+        cv.notify_all();
+        cv.wait_for(l, std::chrono::seconds(10), [&] { return open; });
+    }
+    bool wait_entered()
+    {
+        std::unique_lock l(mu);
+        return cv.wait_for(l, std::chrono::seconds(10), [&] { return entered; });
+    }
+    void release()
+    {
+        {
+            std::lock_guard l(mu);
+            open = true;
+        }
+        cv.notify_all();
+    }
+};
+
+struct ReadKeys : ap::Applier {
+    std::string name;
+    bool may = true;
+    Gate *gate = nullptr;
+    std::thread::id counted_on;
+    int counted = 0, forgot = 0;
+
+    explicit ReadKeys(std::string n) : name(std::move(n)) {}
+    const char *registry() const override { return name.c_str(); }
+    reg::Applies applies() const override { return reg::Applies::boot; }
+    bool counts_off_thread() const override { return true; }
+    bool may_count(reg::Store &) override { return may; }
+    void forget_count() override { forgot++; }
+    std::size_t database_keys(reg::Store &st) override
+    {
+        counted_on = std::this_thread::get_id();
+        counted++;
+        if (gate)
+            gate->enter();
+        std::size_t n = 0;
+        for (auto &id : st.list(name, "")) {
+            reg::Record r = st.get(name, id);
+            if (r.status == reg::Status::ok && r.value["keys"].is_int())
+                n += std::size_t(r.value["keys"].as_int());
+        }
+        return n;
+    }
+};
+
+struct WriteKeys : ap::Applier {
+    std::string name;
+    std::size_t keys;
+    std::thread::id counted_on;
+
+    WriteKeys(std::string n, std::size_t k) : name(std::move(n)), keys(k) {}
+    const char *registry() const override { return name.c_str(); }
+    reg::Applies applies() const override { return reg::Applies::boot; }
+    std::size_t database_keys(reg::Store &st) override
+    {
+        counted_on = std::this_thread::get_id();
+        st.add_base(name, "made_while_counting", Value::object({{"keys", Value(0)}}));
+        return keys;
+    }
+};
+
+reg::Store &plan_store(bool layer)
+{
+    reg::reset_store();
+    reg::Store &st = reg::store();
+    st.set_order({"mod.a", "mod.b"});
+    declare(st, "t.rows", reg::Applies::boot);
+    declare(st, "t.made", reg::Applies::boot);
+    std::string id;
+    st.add("mod.a", "t.rows", "x", Value::object({{"keys", Value(5)}}), &id);
+    st.add("mod.b", "t.rows", "y", Value::object({{"keys", Value(7)}}), &id);
+    if (layer) {
+        reg::LayerSpec L;
+        L.addon = "mod.b";
+        L.registry = "t.rows";
+        L.id = "mod.a/x";
+        L.change.patch = Value::object({{"keys", Value(50)}});
+        uint32_t handle = 0;
+        st.layer(L, &handle);
+    }
+    st.end_register();
+    return st;
+}
+
+std::vector<std::string> plan_lines()
+{
+    std::vector<std::string> out;
+    for (auto &l : logs)
+        if (l.rfind("[apply] t.", 0) == 0 || l.rfind("[apply] boot plan:", 0) == 0)
+            out.push_back(l);
+    return out;
+}
+
+void test_plan_off_thread()
+{
+    std::thread::id main = std::this_thread::get_id();
+
+    reg::Store &a = plan_store(false);
+    ap::clear_appliers();
+    ap::make<ReadKeys>("t.rows");
+    ap::make<WriteKeys>("t.made", 2);
+    ap::Scheduler on(a);
+    on.set_log([](const std::string &l) { logs.push_back(l); });
+    logs.clear();
+    std::size_t here = on.plan_boot();
+    std::vector<std::string> here_lines = plan_lines();
+    bool here_work = on.boot_work();
+
+    reg::Store &b = plan_store(false);
+    ap::clear_appliers();
+    auto &rows = ap::make<ReadKeys>("t.rows");
+    auto &made = ap::make<WriteKeys>("t.made", 2);
+    Gate gate;
+    rows.gate = &gate;
+    ap::Scheduler off(b);
+    off.set_log([](const std::string &l) { logs.push_back(l); });
+    logs.clear();
+    off.start_plan(true);
+    check(gate.wait_entered() && made.counted_on == main && rows.counted_on != main,
+          "the applier that writes the store counts on the calling thread; the read-only one counts on a worker");
+    check(off.boot_may_work() && plan_lines().empty(),
+          "while the worker counts, the hook test already says the boot has work, and no plan line is logged yet");
+    gate.release();
+    std::size_t there = off.planned_keys();
+    check(there == here && here == 14 && off.boot_work() == here_work,
+          "the plan counted off the thread sums to what the plan on one thread counts (" + std::to_string(here) + ")");
+    check(plan_lines() == here_lines, "and it logs the same plan lines in the same order: " + joined(plan_lines()));
+    check(logged("ms: boot plan count off the thread (1)") && logged("ms: boot plan wait for the count off the thread") &&
+              logged("ms: boot plan counts on this thread (1)") && logged("ms: boot plan prepare (2)"),
+          "step lines for the prepare, the counts on this thread, the worker and the wait");
+    check(rows.counted == 1 && rows.forgot == 0 && !logged("counted again"), "an unchanged store is not counted again");
+
+    reg::Store &c = plan_store(true);
+    ap::clear_appliers();
+    auto &guarded = ap::make<ReadKeys>("t.rows");
+    ap::make<WriteKeys>("t.made", 0);
+    Gate held;
+    guarded.gate = &held;
+    ap::Scheduler moved(c);
+    moved.set_log([](const std::string &l) { logs.push_back(l); });
+    logs.clear();
+    moved.start_plan(true);
+    bool in_count = held.wait_entered();
+    int cleared = c.clear_layer("mod.b", "t.rows", "mod.a/x", reg::Scope::global);
+    held.release();
+    std::size_t recounted = moved.planned_keys();
+    check(in_count && cleared == SWOFTY_ASSET_OK && recounted == 12 && guarded.forgot == 1 && guarded.counted == 2 &&
+              guarded.counted_on == main &&
+              logged("[apply] boot plan: the registry changed after the count off the thread started; counted again on "
+                     "this thread"),
+          "a store write while the worker counts (a clear_layer after the register pass) is seen at the wait: the plan is "
+          "counted again on the waiting thread, over the changed store (" +
+              std::to_string(recounted) + ")");
+
+    reg::reset_store();
+    reg::Store &bare = reg::store();
+    declare(bare, "t.rows", reg::Applies::boot);
+    declare(bare, "t.made", reg::Applies::boot);
+    bare.end_register();
+    ap::clear_appliers();
+    auto &none = ap::make<ReadKeys>("t.rows");
+    none.may = false;
+    ap::make<WriteKeys>("t.made", 0);
+    ap::Scheduler idle(bare);
+    idle.set_log([](const std::string &l) { logs.push_back(l); });
+    logs.clear();
+    idle.start_plan(true);
+    check(!idle.boot_may_work() && none.counted == 1 && none.counted_on == main && !idle.boot_work() &&
+              logged("ms: boot plan counts on this thread, none can count a key (1)"),
+          "with no addon content and no applier that may count a key, the hook test says no boot work, and nothing "
+          "counts on a worker");
+
+    reg::reset_store();
+    reg::Store &older = reg::store();
+    declare(older, "t.rows", reg::Applies::boot);
+    declare(older, "t.made", reg::Applies::boot);
+    older.end_register();
+    ap::clear_appliers();
+    auto &quiet = ap::make<ReadKeys>("t.rows");
+    quiet.may = false;
+    ap::make<WriteKeys>("t.made", 3);
+    ap::Scheduler counted(older);
+    counted.start_plan(true);
+    check(counted.boot_may_work() && counted.boot_work() && counted.planned_keys() == 3 && quiet.counted_on == main,
+          "keys counted on this thread with no addon content (the tracks made for 1.5 in older-tracks.json) make the "
+          "hook test say boot work");
+
+    reg::reset_store();
+    reg::Store &stock = reg::store();
+    declare(stock, "t.rows", reg::Applies::boot);
+    declare(stock, "t.made", reg::Applies::boot);
+    stock.add_base("t.rows", "stock", Value::object({{"keys", Value(4)}}));
+    stock.end_register();
+    ap::clear_appliers();
+    auto &base = ap::make<ReadKeys>("t.rows");
+    Gate wait;
+    base.gate = &wait;
+    ap::make<WriteKeys>("t.made", 0);
+    ap::Scheduler maybe(stock);
+    maybe.start_plan(true);
+    bool counting = wait.wait_entered();
+    bool early = maybe.boot_may_work();
+    wait.release();
+    bool work = maybe.boot_work();
+    check(counting && early && work && maybe.planned_keys() == 4,
+          "an off-thread applier that may count makes the hook test say boot work before its count ends, even with no "
+          "addon content");
+
+    reg::Store &sync = plan_store(false);
+    ap::clear_appliers();
+    auto &first = ap::make<ReadKeys>("t.rows");
+    auto &second = ap::make<WriteKeys>("t.made", 2);
+    ap::Scheduler one(sync);
+    one.start_plan(false);
+    check(first.counted_on == main && second.counted_on == main && one.boot_may_work() && one.planned_keys() == 14,
+          "start_plan(false), the SWOFTY_PLAN_SYNC=1 path, counts every applier on the calling thread");
+    ap::clear_appliers();
+}
+
+struct SeesGeneration : ap::Applier {
+    ap::Scheduler *sched = nullptr;
+    bool change = false;
+    uint64_t seen = 0, store_at = 0;
+    const char *registry() const override { return "t.gen"; }
+    reg::Applies applies() const override { return reg::Applies::boot; }
+    void boot(reg::Store &st, ap::Report &) override
+    {
+        if (change)
+            st.add_base("t.gen", "late", Value::object());
+        seen = sched->boot_generation();
+        store_at = st.generation();
+    }
+};
+
+void test_boot_generation()
+{
+    const char *what[] = {"the boot's own publish, which changed nothing, is left out of the generation its appliers see",
+                          "a store change after the publish is not left out", "nor is a publish that changed the context"};
+    for (int k = 0; k < 3; k++) {
+        reg::reset_store();
+        reg::Store &st = reg::store();
+        declare(st, "t.gen", reg::Applies::boot);
+        st.end_register();
+        if (k == 2) {
+            reg::Context c = st.context();
+            c.career = "a career";
+            st.set_context(c);
+        }
+        ap::clear_appliers();
+        auto &a = ap::make<SeesGeneration>();
+        ap::Scheduler s(st);
+        a.sched = &s;
+        a.change = k == 1;
+        uint64_t before = st.generation();
+        s.run_boot();
+        bool ok = k == 0 ? a.seen == before && a.store_at == before + 1 : a.seen == a.store_at && a.seen != before;
+        check(ok, std::string(what[k]) + " (before " + std::to_string(before) + ", seen " + std::to_string(a.seen) + ", store " +
+                      std::to_string(a.store_at) + ")");
+        if (k == 0) {
+            st.add_base("t.gen", "after", Value::object());
+            check(s.boot_generation() == st.generation(), "once the store moves after the boot, it is the store's own");
+        }
+    }
+    ap::clear_appliers();
+}
+
 int main(int argc, char **argv)
 {
     std::string dir = argc > 1 ? argv[1] : ".";
@@ -751,11 +1122,14 @@ int main(int argc, char **argv)
     test_budget();
     test_room_json();
     test_ids();
+    test_ids_ahead();
     test_database_ids();
     test_scheduler();
     test_facts();
     test_stat_id_and_reports(dir);
     test_file_route_boot();
+    test_plan_off_thread();
+    test_boot_generation();
     std::printf("apply: %d check(s), %d failure(s)\n", checks, failures);
     return failures ? 1 : 0;
 }

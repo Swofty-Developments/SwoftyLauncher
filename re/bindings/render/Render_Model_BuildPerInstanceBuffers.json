@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Model_BuildPerInstanceBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c48600",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c48600.c;xref:0x143b135cd,0x143b2c2cb,0x143b35935,0x143d3a817,0x15256545a",
+  "notes": "Builds the NeRenderModelType constant buffer and per-instance SRV (strings NeRenderModelType_CB, NeRenderModelType.m_perInstanceSRV, 'resource overflow in %s, max is %d, falling back to non-compressed'); buffers via Render_Gfx2Buffer_Construct / Render_Gfx2Device_CreateResourceObject, names via Ne_StringPool_InternByHash, then Render_Model_BuildDrawPackets. Callers Game_Particles_BindMeshModel 0x143b135cd, 0x143b2c2cb, 0x143b35935, 0x143d3a817. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.model_build_per_instance_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 9A 00",
+  "match": "0x143c48600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c48600",
+  "kind": "func_start",
+  "names": [
+   "Render_Model_BuildPerInstanceBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c48600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c48600.c;xref:0x143b135cd",
+   "notes": "V7873 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

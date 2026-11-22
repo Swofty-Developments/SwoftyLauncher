@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GamePostProcessSystem_PostProcessDataDelegate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f814d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f814d0.c;pat:log-message-cxx;xref:0x14fae4c9e",
+  "notes": "Only ref: lea at 0x14fae4c9e (in 0x14fae4c90, delegate setup). Logs CROSSFADE '...postProcessDataDelegate - must run after RacingCameraArbitrator'. For view p3 fills post-process data p2: flags +0x2e0/+0x2e1, +0x15c, +0x2d4 (one-shot from p1+0x140+view*0x30), +0xc4; runs registered modifiers p1+0xe0.. for this view (vt+0); EV mode p2+0x98: 0 sunny/overcast, 1 lerp toward garage EV by distance to the nearest garage volume (smoothed 0x145f94758, teleport >5 m), 2 garage; blends +0x64/+0x68 toward +0x70; copies clamped DOF/exposure params +0x168..+0x1d0 into globals 0x145f96f94..0x145f978a8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_post_process_system_post_process_data_delegate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 44 89 C3",
+  "match": "0x142f814d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f814d0",
+  "kind": "func_start",
+  "names": [
+   "Game_GamePostProcessSystem_PostProcessDataDelegate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f814d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f814d0.c;xref:0x14fae4ca0",
+   "notes": "V5673 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

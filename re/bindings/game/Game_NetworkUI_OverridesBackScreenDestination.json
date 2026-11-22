@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUI_OverridesBackScreenDestination",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14328d0b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14328d0b0.c;pat:log-channel-NETWORK-UI;xref:0x14328c9cb,0x14328d053,0x14328d4fe,0x14328d57f",
+  "notes": "__FUNCTION__ 'network::MultiplayerTransitionViewModel::advance(const NeUIString &)': for 'back' may override the back destination (log) and set VMF1WorldEntryHelper entry point 4, then dispatches UI event 'advance'. (lane owner review requested) Better name: Game_MultiplayerTransitionViewModel_Advance (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ui_overrides_back_screen_destination",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 80 B9 28 03 00 00 00",
+  "match": "0x14328d0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14328d0b0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUI_OverridesBackScreenDestination"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14328d0b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14328d0b0.c;xref:0x14328c9cc",
+   "notes": "V5845 Better name Game_MultiplayerTransitionViewModel_Advance: function is MultiplayerTransitionViewModel::advance (pretty string) incl. back-screen destination override and VMF1WorldEntryHelper::setEntryPoint; override log is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14328d0b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14328d0b0.c;xref:0x14328c9cb",
+   "notes": "V7037 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

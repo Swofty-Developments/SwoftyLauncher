@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneParams_SetupSecondaryDriverDataFromDriverStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14022fe10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14022fe10.c;pat:log-message-method;xref:0x142d4cbcd,0x142d7922d,0x142d831c5,0x142d840b3,0x142d84114",
+  "notes": "(params, driverStatId u32): logs CUTSCENE_PARAMS 'setupSecondaryDriverDataFromDriverStatId(driverStatId %s) [%s]'; if id>>16 != 0x3fff stores it at params+0x46, finds the participant ([[...+0x260]+0x2e0..+0x2e8], stride 0x88, +0x50 u8/+0x52 u16) and sets params+0x16c = 0x142f34240([g 0x14601f5c8+0x98]+0x988, participant+0x82); returns 1, else 0. 0x142d831c5 is a tail jmp. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_params_setup_secondary_driver_data_from_driver_stat_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 89 D7 48 89 CE",
+  "match": "0x14022fe10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14022fe10",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneParams_SetupSecondaryDriverDataFromDriverStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14022fe10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14022fe10.c",
+   "notes": "V4432 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UI_SentTutorialBehaviourMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e699f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e699f0.c;pat:log-channel-UI;xref:0x142e6915b,0x142e6dcaf",
+  "notes": "Logs ONBOARDING 'Sent Tutorial to Behaviour Message: %s', posts bus msg 0x1457f16b0; optionally overridePromptEnablement(0) msg 0x1457324a0. Name -> +0x80. Per 'tutorialStep' i: 0x50-byte record {i, poi_element_id, voice_over, audio_to_face, skip_key (default 'Menu Accept'), component_path, message, messageType, message_timing, wait_for_input, show_skip_tooltip, keep_v2f_character_summoned} -> vector +0xb0, i -> +0xc8; may set +0x24/+0x2c and post 0x1457f1690. (lane owner review requested) Better name: Game_Onboarding_HandleTutorialBehaviourMsg (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_sent_tutorial_behaviour_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 04 00 00 48 89 D3",
+  "match": "0x142e699f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e699f0",
+  "kind": "func_start",
+  "names": [
+   "Game_UI_SentTutorialBehaviourMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e699f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e699f0.c;xref:0x142e6915b",
+   "notes": "V5509 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

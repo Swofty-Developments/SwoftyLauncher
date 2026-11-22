@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_CustomisationDecal_SetupCopyPass",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c744c0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c744c0.c;xref:0x143c7204c",
+  "notes": "Bump-allocates 0x50 bytes from the frame arena (cmpxchg +0x20, align 8, limit +0x10, base +0x18; Ne_FatalAbort on overflow) and fills two binding records g_scene (hash 0x36d5e02f47d618b9) and copySrc (hash 0xb93e2dec3287c932), names interned with Ne_StringPool_InternByHash, value 0xc0, index -1; returns the block. Caller Ne_CustomisationDecalRenderer_BakePasses 0x143c7204c. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.customisation_decal_setup_copy_pass",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 66 2E 0F 1F 84 00 00 00 00 00",
+  "match": "0x143c744c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c744c0",
+  "kind": "func_start",
+  "names": [
+   "Render_CustomisationDecal_SetupCopyPass"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c744c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c744c0.c;xref:0x143c7204c",
+   "notes": "V7887 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Bink_LoadSubtitles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f82d40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f82d40.c;pat:log-channel-AUDIO_BINK;xref:0x145a41a18",
+  "notes": "NeVideoDecoderBink vtable cell 0x145a41a18. Logs 'onOpen %s'; picks .bik/.bk2 -> BinkOpen (+0x118), BinkPause, frame buffers (+0x120, 0xc ENOMEM / 0x16 EINVAL); Y/cR/cB/A surfaces (eaid://video/Plane*), 'VideoResolve'; category 2025_cinematic/2025_recap/tutorials/track_map/ui_wipes/zenith FNV-1a at +0x4c8; BinkLoadSubtitles (AUDIO_BINK) -> +0x53d; external_bink_sfx/music/speech/motion at +0x28..+0x40. (lane owner review requested) Better name: Game_VideoDecoderBink_OnOpen (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.bink_load_subtitles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 07 00 00 C5 F8 29 BC 24 90 07 00 00 C5 F8 29 B4 24 80 07 00 00 49 89 D5",
+  "match": "0x143f82d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f82d40",
+  "kind": "func_start",
+  "names": [
+   "Game_Bink_LoadSubtitles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143f82d40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143f82d40.c",
+   "notes": "V6300 partial: better name Game_Bink_OnOpen; 17 KB open: plane surfaces, resolve generator, path filters, .bk2 load; subtitles only a part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143f82d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f82d40.c",
+   "notes": "V7058 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

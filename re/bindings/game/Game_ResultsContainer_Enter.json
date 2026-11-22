@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ResultsContainer_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d7e4a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d7e4a0.c;pat:log-channel-RESULTS_CONTAINER;xref:0x1457477a0,0x145748d50,0x14574ac20",
+  "notes": "Vtable slot (cells 0x1457477a0, 0x145748d50, 0x14574ac20). id = vcall +0x80; logs 'enter container: %hs' (screen name table 0x1457563d0, default 'results_race'); queues step 1 (lambda vt 0x145752bd0 {c}) and step 2 (vt 0x145752c00 {c, id}) via 0x141d7d7e0(c+0x1178). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.results_container_enter",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC A0 00 00 00 48 89 CE 48 8B 01",
+  "match": "0x141d7e4a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d7e4a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ResultsContainer_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d7e4a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d7e4a0.c",
+   "notes": "V5207 name/cxx or log string and body match; body size consistent with name (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

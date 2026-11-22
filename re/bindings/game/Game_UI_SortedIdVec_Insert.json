@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UI_SortedIdVec_Insert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428a7ed0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428a7ed0.c;xref:0x141cc1645,0x141df2e8f,0x141ea982b,0x141eaeff6,0x141ff30ab,0x141ffffd6,0x142002866",
+  "notes": "(this, id u64): 0x1449e2850 searches the u64 vector this+0x1d0..+0x1d8; only when it returns the end (id absent) the id is appended - in place with spare capacity (cap +0x1e0), else grow x1.5 via allocator this+0x1c8 (vt+0x18 / vt+0x38). Present ids are left alone; no sorting. Callers 0x141cc1645, 0x141df2e8f, 0x141ea982b, 0x141eaeff6, 0x141ff30ab, 0x141ffffd6, 0x142002866. (lane owner review requested) Better name: Game_UI_IdVec_AddUnique (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.u_i_sorted_id_vec_insert",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 89",
+  "match": "0x1428a7ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428a7ed0",
+  "kind": "func_start",
+  "names": [
+   "Game_UI_SortedIdVec_Insert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1428a7ed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428a7ed0.c;xref:0x141cc1645",
+   "notes": "V7535 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

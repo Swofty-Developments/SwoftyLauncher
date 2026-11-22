@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/runtime/hashing.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -30,7 +32,20 @@ struct Node {
     std::string tag;
     uint32_t version = 1;
     std::string raw;
+
+    Node() = default;
+    Node(const Node &);
+    Node(Node &&) noexcept;
+    Node &operator=(const Node &);
+    Node &operator=(Node &&) noexcept;
+    ~Node();
 };
+
+inline Node::Node(const Node &) = default;
+inline Node::Node(Node &&) noexcept = default;
+inline Node &Node::operator=(const Node &) = default;
+inline Node &Node::operator=(Node &&) noexcept = default;
+inline Node::~Node() = default;
 
 struct Data {
     std::string type;
@@ -40,13 +55,7 @@ struct Data {
     uint32_t count() const { return bpd ? uint32_t(raw.size() / bpd) : 0; }
 };
 
-inline uint32_t fnv1a32(const std::string &s)
-{
-    uint32_t h = 0x811C9DC5u;
-    for (unsigned char c : s)
-        h = (h ^ c) * 0x01000193u;
-    return h;
-}
+inline uint32_t fnv1a32(const std::string &s) { return ::runtime::fnv32(s); }
 
 inline uint32_t align_of(const std::string &t)
 {
@@ -134,7 +143,8 @@ public:
                 for (auto &it : node.items)
                     order.push_back(&it);
                 if (node.version == 1)
-                    std::stable_sort(order.begin(), order.end(), [](auto *x, auto *y) { return fnv1a32(x->first.value) < fnv1a32(y->first.value); });
+                    std::stable_sort(order.begin(), order.end(),
+                                     [](auto *x, auto *y) { return fnv1a32(x->first.value) < fnv1a32(y->first.value); });
                 for (size_t i = 0; i < order.size(); i++) {
                     put32(table + es * i, intern(order[i]->first));
                     if (node.version == 1)

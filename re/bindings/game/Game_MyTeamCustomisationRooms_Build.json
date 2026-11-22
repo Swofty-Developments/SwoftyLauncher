@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCustomisationRooms_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428d0020",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *f(void *self)",
+  "evidence": "decomp:re/decomp/1428d0020.c;xref:0x1428cfb50",
+  "notes": "(helper read) switch(param_2 u8 enum 1..0x30, default zeroes): fills 32-byte out with 3 refcounted name handles (0x1441974e0): +0 scene (AbstractScene/F1World/Story/TeamHQV2/Customisation/Shop/DriverHQ/F1CG, or param_3 for 3-7,11), +8 room (GenericRoom, MyTeamVehicleCustomisationRoom, HubA, Home, Lobby...), +0x10 shot (Main/Face/Map...), +0x18 type 0/2/3/5/6. Pure lookup; My Team only cases 5 and 7. (lane owner review requested) Better name: Game_FrontendScene_GetPresetDescription (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.my_team_customisation_rooms_build",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC A8 04 00 00 48 89 CE",
+  "match": "0x1428d0020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428d0020",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCustomisationRooms_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1428d0020",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1428d0020.c;str:\"MyTeamDriverCustomisationRoom\"",
+   "notes": "V10231 Scene/room config builder covering many rooms (AbstractScene, ShopRoom, TrackSelectRoom, TeamSelectRoom, TeamHQV2, F1World, Home, ...), not only the two My Team customisation rooms."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Puncture_Remove",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14464e3a0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14464e3a0.c;pat:log-channel-TYRE_DAMAGE_MONITOR;xref:0x142bdcf1e,0x142bdcfb6,0x142bdd051,0x142bdd0ec,0x142bdd322,0x142bdd3ed,0x142bdd4bb,0x142bdd57d,0x142e8892a,0x142e88a1a,0x142e88b0d,0x142e88c04,0x14324b98b,0x144656c92,0x144656e99,0x14470e1b1,0x154df972b,0x155371da0,0x155444248",
+  "notes": "(monitor, veh, tyre): under CS [+0x28]: if count +0x24: count--, erase matching {tyre, veh} from vector +8..+0x10 and log 'Removed puncture...'; when not found records a stack backtrace (ring 0x146107830) and logs. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.puncture_remove",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C7 89 D3",
+  "match": "0x14464e3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14464e3a0",
+  "kind": "func_start",
+  "names": [
+   "Car_Puncture_Remove"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14464e3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14464e3a0.c;xref:0x142bdcf1e",
+   "notes": "V6721 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

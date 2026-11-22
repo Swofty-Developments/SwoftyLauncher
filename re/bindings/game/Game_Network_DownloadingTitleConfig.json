@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_DownloadingTitleConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f5a10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430f5a10.c;pat:log-channel-NETWORK;xref:0x1430e69aa,0x1430e6a13",
+  "notes": "Callers in 0x1430e0560. (this, domain): copies the domain's config name (string pool 0x1460be900), frees the previous pending record this[0x10] (0x1430fa830) and allocates a new 0x58-byte one with that name, logs '[CONFIG] downloading title config (%s).', then starts the download through [[this]+0x528] vt+8 with completion callback 0x1430f5ec0 (lea 0x1430f5d87) and stores the task id at this+0x118. (lane owner review requested) Better name: Game_NetworkSubsystem_DownloadTitleConfig (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_downloading_title_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 00 00 00 48 85 D2",
+  "match": "0x1430f5a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f5a10",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_DownloadingTitleConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f5a10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f5a10.c;xref:0x1430e69aa",
+   "notes": "V5411 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -50,8 +50,12 @@ static_assert(sizeof(TeamRecord) == 0x768);
 inline constexpr address<"Team_Build_FanZoneStandings"> Team_Build_FanZoneStandings{}; // L2 experimental
 using Team_Insert_RecordByStatId_t = void *(void *slots, const uint32_t *record);
 inline constexpr fn<"Team_Insert_RecordByStatId", Team_Insert_RecordByStatId_t> Team_Insert_RecordByStatId{}; // L2 experimental
+using Team_Load_PitTimes_t = void(void *self);
+inline constexpr fn<"Team_Load_PitTimes", Team_Load_PitTimes_t> Team_Load_PitTimes{}; // L2 experimental
 inline constexpr call<"site_Team_LoadInsertCall"> site_Team_LoadInsertCall{}; // L2 experimental
 inline constexpr site<"site_Team_LoadInserted"> site_Team_LoadInserted{}; // L2 experimental
+inline constexpr site<"site_Team_RecognitionFirstRecord"> site_Team_RecognitionFirstRecord{}; // L2 experimental
+inline constexpr site<"site_Team_RecognitionRecordsExit"> site_Team_RecognitionRecordsExit{}; // L2 experimental
 inline constexpr site<"site_Team_SessionCarBadgeLabel"> site_Team_SessionCarBadgeLabel{}; // L2 experimental
 inline constexpr site<"site_Team_TimingPillBadgeLabel"> site_Team_TimingPillBadgeLabel{}; // L2 experimental
 

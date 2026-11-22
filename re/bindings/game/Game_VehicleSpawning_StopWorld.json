@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleSpawning_StopWorld",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3aef0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f3aef0.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x14f7ed81e",
+  "notes": "Read in full: (sys, stopReq) finds request by vehicle id, SetState(6), releases +0x68f8, clears a render flag via 0x143f9b3c0, builds instance name '%s_%d' (car/safety_car/showroom_car), copies stopReq to +0x6890..+0x68a0, logs 'Stopping world for vehicle %d', calls 0x14442cdf0(sys+0xc0, name, cb 0x142f3db30). Only static ref is a jmp in 0x14f7ed6a0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_spawning_stop_world",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 58 48 89 D7 48 89 CE 0F B6 12",
+  "match": "0x142f3aef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3aef0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleSpawning_StopWorld"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3aef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3aef0.c;xref:0x14f7ed81e",
+   "notes": "V5617 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Leaderboards_ReadPivotUserRequestLeaderboard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144026cd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144026cd0.c;pat:log-channel-LEADERBOARDS;xref:0x1430e6d36,0x1430e7c19",
+  "notes": "(mgr, user, def, pivot, max, .., delegate, out id): logs 'Read pivot user request...', max clamped to 100; errors 1/0x10 as the other queue calls. Queues a 0x298 request. Pivot == caller's id (user vcall +0x38) -> kind +0x28c = 1 (around user, count +0x178); else logs 'Leaderboard PivotUser request for presence who is not caller, getting just this user' and queues kind 3 with that one user id. Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.leaderboards_read_pivot_user_request_leaderboard",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 4D 89 CE 4D 89 C5",
+  "match": "0x144026cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144026cd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Leaderboards_ReadPivotUserRequestLeaderboard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144026cd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144026cd0.c;xref:0x1430e6d36",
+   "notes": "V6384 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

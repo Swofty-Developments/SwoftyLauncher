@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VirtualHelpPromptVisibilityToggle_SetPromptVisibility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419ce620",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1419ce620.c;pat:log-message-cxx;xref:0x141c4606d,0x141c46963,0x141c5abc3,0x141c5dcdd,0x141c611b3,0x141c709c3,0x141c71bad,0x141c71ee3,0x141fe5937,0x141fe8f52,0x141fec4f7,0x141feeda0,0x141ff5225,0x141ff8b58,0x14200ebf3,0x1422e57fa,0x1423146a7,0x142326695,0x142327a5e,0x14232fd9e,0x1423304de,0x142338ccf,0x142347f32,0x14234b2b1,0x1423548e9,0x1423d6db5,0x1423d7296,0x1423d93db,0x1423dd05e,0x1423e68ef,0x1423efdbd,0x1423f6bd3,0x1423fb341,0x1423fd6dc,0x1423ff1bf,0x14c6a29d8",
+  "notes": "Read in full: (this, visible) posts bus msg vt 0x145732490 {visible} (Ne_Post_BusMessage 0x1439876c0); if !visible or override byte *this == 0 also posts vt 0x1457324a0 {visible}; else (visible with override) only logs UI '...enablement overridden, prompt will not be enabled'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.virtual_help_prompt_visibility_toggle_set_prompt_visibility",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 38 89 D3 48 89 CE 48 8B 05",
+  "match": "0x1419ce620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419ce620",
+  "kind": "func_start",
+  "names": [
+   "Game_VirtualHelpPromptVisibilityToggle_SetPromptVisibility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1419ce620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419ce620.c;xref:0x141c4606d",
+   "notes": "V4919 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

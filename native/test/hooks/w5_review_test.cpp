@@ -1,6 +1,6 @@
-// Review checks for the W5 dispatch table (host test, same build as run_hooks_test.sh). Each check
+// Review checks for the W5 dispatch table (host test, same build as the hooks test). Each check
 // states what the spec or the SDK promises; a FAIL is a finding, not a broken test.
-#include "../../src/core/hooks/dispatch.hpp"
+#include "core/hooks/dispatch.hpp"
 
 #include <cstdio>
 #include <string>
@@ -33,7 +33,8 @@ static void live_on_unfired_events()
     int season = t.live("career.season.start", &v);
     expect(add != SWOFTY_ASSET_OK,
            "live(career.calendar.add_activity) is not ok on a core that never fires it (catalogue Fired::no); "
-           "hooks.md tells addons to fall back when live<AddActivity>() is false (got " + std::to_string(add) + ")");
+           "hooks.md tells addons to fall back when live<AddActivity>() is false (got " +
+               std::to_string(add) + ")");
     expect(season == SWOFTY_ASSET_OK,
            "live(career.season.start) is ok: the core fires it at a season's start (got " + std::to_string(season) + ")");
 }
@@ -76,7 +77,8 @@ static void load_order_is_attach_order()
     std::string got = calls.size() == 2 ? calls[0] + " " + calls[1] : "?";
     expect(got == "first second",
            "equal priority runs in load order even when the earlier addon attaches later (a deferred addon's "
-           "SWOFTY_ON_LOAD runs in a late pass); the Table has no load-order input, so it runs " + got);
+           "SWOFTY_ON_LOAD runs in a late pass); the Table has no load-order input, so it runs " +
+               got);
 }
 
 int main()

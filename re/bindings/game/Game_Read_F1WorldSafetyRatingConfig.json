@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_F1WorldSafetyRatingConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141515ba0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141515ba0.c;pat:log-channel--;xref:0x141515901",
+  "notes": "(this, positive): VM int 'user_attributes.incident_points.Value' (0x1456ec389) via 0x1442b1b60 on context this+0x280; threshold list f1_world.safety_rating.positive/negative_change_thresholds (0x1456ec3af/0x1456ec3e1) by FNV-1a in table 0x146cc4278; index = first threshold > points; if < 3 binds VM node from table 0x1456f93d0/0x1456f93e8 into this+0x2c0 (0x140977b20); returns this+0x2b8. Better name: Game_SafetyRatingVm_UpdateRatingTier (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_f1_world_safety_rating_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 89 D3 48 89 CE 48 8B 0D",
+  "match": "0x141515ba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141515ba0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_F1WorldSafetyRatingConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141515ba0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141515ba0.c;xref:0x141508377",
+   "notes": "V4881 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

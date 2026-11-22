@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_CareerSelectMyTeam_SetDriverIconActive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a0a630",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_CareerSelectMyTeam_SetDriverIconActive(void *self, uint32_t value)",
+  "evidence": "decomp:re/decomp/142a0a630.c;xref:0x141126d92;xref:0x141a11065;xref:0x141a1199b",
+  "notes": "myteam-g2: Stores value at self+0x2b0 and triggers the string-keyed update (my_team_driver_icon_active) on the career-select My Team screen. UI only."
+ },
+ "signature": {
+  "id": "ui.career_select_my_team_set_driver_icon_active",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 89 91 B0 02 00 00 48 8B B1 80 02 00 00",
+  "match": "0x142a0a630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a0a630",
+  "kind": "func_start",
+  "names": [
+   "Ui_CareerSelectMyTeam_SetDriverIconActive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142a0a630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a0a630.c",
+   "notes": "V10244 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

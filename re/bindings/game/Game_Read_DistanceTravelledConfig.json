@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_DistanceTravelledConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143761ec0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143761ec0.c;pat:log-channel--;xref:0x145860ab8",
+  "notes": "Vtable slot 25 (cell 0x145860ab8, vtable 0x1458609f0, no COL). pdata 0x143761ec0-0x143765880: one func, writers inlined, not polluted. Loops records this+0x30..+0x38 (stride 0x10), dt=*param_2; STATEVENT writers ParkInGridBox (+FormationLapCompleted), DistanceTravelled/InManualGear/InF1WCar (delta car+0xa8 vs rec+0x178, flush >=150), MetersDrifted, Punctures, TrackTime; then FUN_14371fe70 if this+0x91. (lane owner review requested) Better name: Game_StatEvents_UpdateParticipants (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_distance_travelled_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 15 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 BC 24 30 15 00 00",
+  "match": "0x143761ec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143761ec0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_DistanceTravelledConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143761ec0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143761ec0.c",
+   "notes": "V6217 14784-byte function writing 7 stat events (ParkInGridBox, DistanceTravelledInManualGear, InF1WCar, DistanceTravelled, MetersDrifted, Puncture, TrackTime), not a DistanceTravelled config read. Better name Game_StatEvent_WriteDistanceTravelledGroup; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143761ec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143761ec0.c",
+   "notes": "V7107 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

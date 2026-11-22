@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Parse_ModeChampionship",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407b2c60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407b2c60.c;xref:0x145646ac0",
+  "notes": "Mode parser (vtable cell 0x145646ac0). flying_lap/return_to_garage/simulation_allowed are OPTION lookups (this+0xf90 map) -> +0xe40/+0xe48/+0xe50, not JSON flags. JSON bools: terminal_damage +0xe39, Pause +0xe2c, SlowMo +0xe2d, Replay +0xe2e, FlashbackFromTerminal +0xe2f, MidSessionSim +0xe31, Checkpoints +0xe32 ... show_mode_intro_cutscene +0xe3a, usesChampionships +0x10c8; optionRestrictions -> +0x1018; event_list / ChampionshipSetupList -> map +0x1090. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.parse_mode_championship",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 0A 00 00 C5 F8 29 BC 24 D0 0A 00 00",
+  "match": "0x1407b2c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407b2c60",
+  "kind": "func_start",
+  "names": [
+   "Game_Parse_ModeChampionship"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407b2c60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1407b2c60.c",
+   "notes": "V4300 all 21 flag strings present, but ModeChampionship_N prefix and 29 modes not visible in this function; flags parser OK"
+  }
+ ],
+ "proofs": []
+}

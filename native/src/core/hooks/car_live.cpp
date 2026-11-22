@@ -1,32 +1,45 @@
-#include "../runtime.hpp"
+#include "core/runtime/loader/core_sets.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include <algorithm>
 #include <atomic>
 #include <cstring>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
-#include "../perf.hpp"
-#include "../registry/table.hpp"
-#include "car_live.hpp"
-#include "car_profile.hpp"
-#include "context.hpp"
-#include "core_events.hpp"
-#include "hooks.hpp"
-#include "player_facts.hpp"
-#include "../view_state.hpp"
-#include "session_points.hpp"
+#include "core/apply/content/appliers.hpp"
+#include "core/apply/content/race_fuel.hpp"
+#include "core/career/ops/tables.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/registry/table.hpp"
+#include "core/hooks/car_identity.hpp"
+#include "core/hooks/car_live.hpp"
+#include "core/hooks/car_proofs.hpp"
+#include "core/hooks/car_profile.hpp"
+#include "core/hooks/context.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/hooks/player_facts.hpp"
+#include "core/hooks/race_fuel_rules.hpp"
+#include "core/frontend/view_state.hpp"
+#include "core/hooks/session_points.hpp"
+#include "core/runtime/loader/core_rank.hpp"
+#include "core/live/entrant_ids.hpp"
 
 // The live car operations on the running game (car_live.hpp): g_Sess_VehicleTable and g_Sess_VehicleCount
 // resolve once the code is ready, memory reads and writes are checked (swofty::mem), writes run only on the
-// flow thread (the one that ticks on_frame), and nothing is handed over on an exe that isn't the KB build,
-// whose field offsets these are. car.built and car.reset are game points: the mid-hook on site_Car_LiveCarBuilt
-// and the detour on Car_Systems_Reset_Thunk sit there while an addon subscribes, and the events fire from the next
-// frame (car_live.hpp, Ops::take).
+// flow thread (the one that ticks on_frame), and nothing is handed over on an exe the car_proofs gates refuse
+// (runtime::car_layout::CAR_LIVE names the builds whose field offsets these are). car.built and car.reset are game
+// points: the mid-hook on site_Car_LiveCarBuilt and the detour on Car_Systems_Reset_Thunk sit there while an addon
+// subscribes, and the events fire from the next frame (car_live.hpp, Ops::take).
+
+extern "C" __declspec(dllexport) const SwoftyLive *SwoftyCoreLive(void);
 
 namespace swofty_core::hooks {
 namespace {
@@ -45,7 +58,17 @@ bool on_flow_thread()
 }
 
 std::unique_ptr<session_points::MidPoint> g_built, g_setup;
-std::unique_ptr<GamePoint> g_reset, g_replay, g_wing, g_hit, g_pit;
+std::unique_ptr<GamePoint> g_reset, g_replay, g_wing, g_hit, g_pit, g_pit_tyres;
+
+// Set to 0 by the pit stop tyres detour around the game's change; race_tyres_keep sets it to 1 when it keeps the set.
+thread_local int t_tyres_kept = -1;
+
+// Game_PitLane_ApplyPitstopTyres (void(mgr, u8 car)) is equal over the whole function on both 1.0.145 builds
+// (re/tools/sigport.py --witness; re/bindings/game/Game_PitLane_ApplyPitstopTyres.json V110006).
+namespace bp = runtime::build_proof;
+constexpr bp::Proof PIT_TYRES{"Game_PitLane_ApplyPitstopTyres (mgr, car)",
+                              bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145)};
+constexpr bp::Gate PIT_TYRES_POINT{"session.pit_stop.tyres", &PIT_TYRES};
 
 // The KB rows the live levers rest on. A row is ready once it has an independent agree verify row (re/PROTOCOL.md
 // section 5); the others stay off and log "<field> off: needs <row>". Flip a row here after the lead's verify agent
@@ -77,6 +100,7 @@ constexpr Row ROWS[] = {
     {"Car_Register_DetachablePart_Thunk", true},
     {"Car_FrontWing_OnCollision", true},
     {"Game_Pitlane_SetVehicleStatus", true},
+    {"Game_PitLane_ApplyPitstopTyres", true},
     {"Game_Get_ModelNodeId", true},
     {"PitStopInstance.car", false},
     {"Car_FuelEcu_SetMode_Thunk", true},
@@ -211,12 +235,10 @@ void d_wing_init(void *wing, char reset)
     g_wing->original<void>(wing, reset);
     uintptr_t car = 0;
     uint8_t id = 0;
-    if (reset || !mem::read(reinterpret_cast<uintptr_t>(wing) + WING_CAR, car) || !car ||
-        !mem::read(car + 0xe8, id))
+    if (reset || !mem::read(reinterpret_cast<uintptr_t>(wing) + WING_CAR, car) || !car || !mem::read(car + 0xe8, id))
         return;
-    events::car_parts_register(id, "", wing, [wing](const char *node, float at, bool debris) {
-        return add_part(wing, node, at, debris);
-    });
+    events::car_parts_register(id, "", wing,
+                               [wing](const char *node, float at, bool debris) { return add_part(wing, node, at, debris); });
 }
 
 void d_wing_hit(void *wing, void *contact)
@@ -249,6 +271,15 @@ void d_pit_status(void *lane, uint8_t vehicle, uint32_t status)
         events::session_pit_stop(vehicle, stops_after);
 }
 
+void d_pit_tyres(void *mgr, uint8_t vehicle)
+{
+    t_tyres_kept = 0;
+    g_pit_tyres->original<void>(mgr, vehicle);
+    bool kept = t_tyres_kept > 0;
+    t_tyres_kept = -1;
+    events::session_pit_stop_tyres(vehicle, kept);
+}
+
 std::string session_type()
 {
     auto facts = core().current();
@@ -265,6 +296,7 @@ std::vector<car_profile::Entry> profile_entries()
             continue;
         car_profile::Entry e;
         e.id = id;
+        e.owner = rec.owner.empty() ? id.substr(0, id.find('/')) : rec.owner;
         std::string why;
         if (!car_profile::parse(rec.value, e.profile, &why)) {
             swofty::log("[cars] car.profile %s skipped: %s", id.c_str(), why.c_str());
@@ -275,24 +307,207 @@ std::vector<car_profile::Entry> profile_entries()
     return out;
 }
 
-bool within(const car_profile::Entry &e)
+std::unordered_set<std::string> g_logged;
+
+std::map<std::string, car_profile::OwnerContent> g_owned;
+uint64_t g_owned_gen = ~uint64_t(0);
+
+const car_profile::OwnerContent &owned(const std::string &owner)
 {
-    if (e.profile.within.is_null())
-        return true;
-    swofty::json::Value arr = e.profile.within.is_array() ? e.profile.within : swofty::json::Value::array();
-    if (!e.profile.within.is_array())
-        arr.push_back(e.profile.within);
-    Selectors sel;
-    std::string why;
-    if (!Selectors::compile(swofty::json::dump(arr), sel, &why)) {
-        swofty::log("[cars] car.profile %s: within does not compile: %s", e.id.c_str(), why.c_str());
-        return false;
+    auto &store = swofty_core::registry::store();
+    uint64_t gen = store.generation();
+    if (gen != g_owned_gen) {
+        g_owned.clear();
+        g_owned_gen = gen;
     }
-    auto facts = core().current();
-    return facts && sel.match(*facts);
+    auto it = g_owned.find(owner);
+    if (it != g_owned.end())
+        return it->second;
+    car_profile::OwnerContent o;
+    if (!owner.empty()) {
+        o.boxes = !store.list("content.package", owner + "/").empty();
+        for (const char *registry : {"career.mode", "career.content"})
+            for (const std::string &id : store.list(registry, owner + "/")) {
+                auto rec = store.get(registry, id);
+                const swofty::json::Value &group = rec.value["data_group"];
+                if (rec.status == swofty_core::registry::Status::ok && group.is_string() && !group.as_string().empty())
+                    o.groups.emplace_back(group.as_string());
+            }
+    }
+    return g_owned[owner] = std::move(o);
 }
 
-std::unordered_set<std::string> g_logged;
+bool within(const car_profile::Entry &e)
+{
+    auto facts = core().current();
+    if (e.profile.within.is_null()) {
+        const auto &own = owned(e.owner);
+        if (own.any() && e.profile.scope == swofty::cars::ProfileScope::automatic && g_logged.insert("scope:" + e.id).second)
+            swofty::log("[cars] car.profile %s: no within, so it applies only in %s's own boxes and careers (\"scope\": "
+                        "\"global\" applies it everywhere)",
+                        e.id.c_str(), e.owner.c_str());
+        return car_profile::in_scope(e, own, facts.get());
+    }
+    if (!facts)
+        return false;
+    std::string why;
+    bool hit = car_profile::within_matches(e.profile, *facts, &why);
+    if (!why.empty() && g_logged.insert("compile:" + e.id).second)
+        swofty::log("[cars] car.profile %s: within does not compile: %s%s", e.id.c_str(), why.c_str(),
+                    car_profile::within_hint(why).c_str());
+    return hit;
+}
+
+namespace ids = swofty_core::live::entrant_ids;
+
+car_identity::Source registry_source()
+{
+    car_identity::Source s;
+    s.list = [](const char *registry) { return swofty_core::registry::store().list(registry, ""); };
+    s.get = [](const char *registry, const std::string &id) -> std::optional<swofty::json::Value> {
+        auto rec = swofty_core::registry::store().get(registry, id);
+        if (rec.status != swofty_core::registry::Status::ok)
+            return std::nullopt;
+        return rec.value;
+    };
+    s.row = [](const char *what, const std::string &label) { return career::ops::live::has_label(what, label); };
+    return s;
+}
+
+car_identity::Index &identity_index()
+{
+    static car_identity::Index index;
+    static uint64_t index_gen = ~uint64_t(0);
+    uint64_t gen = swofty_core::registry::store().generation();
+    if (gen != index_gen) {
+        index = car_identity::build(registry_source());
+        index_gen = gen;
+    }
+    return index;
+}
+
+// The refs each car answers to, read from its session entrant once per session and car object. A car whose entrant
+// isn't readable yet is read again at most once a second while a profile waits for it.
+struct Identity {
+    uint64_t epoch = 0, tried = 0, gen = 0;
+    uintptr_t car = 0;
+    bool known = false;
+    car_identity::Refs refs;
+};
+
+Identity g_identity[car_live::MAX_CARS];
+uint32_t g_waiting = 0;
+
+const car_identity::Refs *identity_of(uint32_t index, uintptr_t car)
+{
+    if (index >= car_live::MAX_CARS)
+        return nullptr;
+    auto facts = core().current();
+    uint64_t epoch = facts ? facts->epoch : 0, gen = swofty_core::registry::store().generation();
+    Identity &id = g_identity[index];
+    if (id.epoch != epoch || id.car != car || (id.known && id.gen != gen)) {
+        id = Identity{};
+        id.epoch = epoch;
+        id.car = car;
+    }
+    if (id.known)
+        return &id.refs;
+    uint64_t now = GetTickCount64();
+    if (id.tried && now - id.tried < 1000)
+        return nullptr;
+    id.tried = now;
+    ids::Ids e;
+    std::string why;
+    ids::Read r = ids::read_car(index, e, &why);
+    if (r == ids::Read::ok && !career::ops::live::labels()) {
+        r = ids::Read::not_ready;
+        why = "the game database's labels are not loaded";
+    }
+    if (r == ids::Read::no_entrant) {
+        if (g_logged.insert("no entrant:" + std::to_string(epoch) + ":" + std::to_string(index)).second)
+            swofty::log("[cars] car %u: no session entrant has this car's vehicle index (the safety car has none), so no "
+                        "car.profile team, vehicle or driver selector picks it",
+                        index);
+        id.refs = {};
+        id.known = true;
+        id.gen = gen;
+        return &id.refs;
+    }
+    if (r != ids::Read::ok) {
+        std::string once =
+            r == ids::Read::off ? "identity off:" + why : "identity:" + std::to_string(epoch) + ":" + std::to_string(index) + why;
+        if (g_logged.insert(once).second) {
+            if (r == ids::Read::off)
+                swofty::log("[cars] the cars' team, vehicle and driver are not read: %s; a car.profile that names them "
+                            "applies to no car",
+                            why.c_str());
+            else
+                swofty::log("[cars] car %u: its team, vehicle and driver are not read yet: %s", index, why.c_str());
+        }
+        return nullptr;
+    }
+    namespace rows = career::ops::live;
+    car_identity::Seen seen;
+    if (e.team_kind == ids::TEAM_TABLE && e.team != ids::NONE) {
+        seen.team = rows::team_label(e.team);
+        seen.worn = apply::content::worn_team(e.team);
+    }
+    if (e.vehicle != ids::NONE) {
+        seen.vehicle = rows::vehicle_label(e.vehicle);
+        seen.package = rows::vehicle_package_label(seen.vehicle);
+    }
+    if (e.driver_read && e.driver_domain == 0 && e.driver != ids::NONE)
+        seen.driver = rows::driver_label(e.driver);
+    static const std::vector<std::string> no_chain;
+    id.refs = car_identity::refs_of(seen, facts ? facts->chain : no_chain, identity_index(), registry_source());
+    id.known = true;
+    id.gen = gen;
+    std::string kind = e.team_kind == ids::MY_TEAM      ? " (a My Team car)"
+                       : e.team_kind != ids::TEAM_TABLE ? " (team table " + std::to_string(e.team_kind) + ")"
+                       : !e.driver_read                 ? " (the driver is not read on this build)"
+                                                        : "";
+    std::string line = car_identity::describe(id.refs) + kind;
+    if (g_logged.insert("car:" + std::to_string(epoch) + ":" + std::to_string(index) + ":" + line).second)
+        swofty::log("[cars] car %u: %s", index, line.c_str());
+    return &id.refs;
+}
+
+void check_names(const std::vector<car_profile::Entry> &entries)
+{
+    car_identity::Source src = registry_source();
+    car_identity::Index &ix = identity_index();
+    for (const auto &e : entries) {
+        if (!car_identity::needs(e.profile.cars))
+            continue;
+        for (const auto &line : car_identity::unknown(e.profile.cars, ix, src))
+            if (g_logged.insert("name:" + e.id + ":" + line).second)
+                swofty::log("[cars] car.profile %s: %s; that entry matches no car", e.id.c_str(), line.c_str());
+    }
+}
+
+std::vector<std::vector<std::string>> box_chains()
+{
+    std::vector<std::vector<std::string>> out;
+    auto &store = swofty_core::registry::store();
+    for (const std::string &id : store.list("content.package", "")) {
+        auto chain = store.chain("content.package", id);
+        if (chain.empty())
+            chain.push_back(id);
+        out.push_back(std::move(chain));
+    }
+    return out;
+}
+
+void check_within(const std::vector<car_profile::Entry> &entries)
+{
+    for (const auto &e : entries) {
+        if (!g_logged.insert("within:" + e.id).second)
+            continue;
+        std::string why = car_profile::unreachable(e.profile.within, box_chains);
+        if (!why.empty())
+            swofty::log("[cars] car.profile %s never matches: %s", e.id.c_str(), why.c_str());
+    }
+}
 
 car_profile::Memo g_profiled;
 
@@ -313,7 +528,8 @@ void apply_profiles(uint32_t index, bool force = false)
     static const uint32_t probe = perf::probe("core", "car_live profiles");
     perf::Scope scope(probe);
     uint32_t is_ai = 1;
-    Ops::op_car(index, nullptr, &is_ai);
+    void *handle = nullptr;
+    Ops::op_car(index, &handle, &is_ai);
     auto key = profile_key(is_ai != 0);
     if (force)
         g_profiled.forget(index);
@@ -321,11 +537,27 @@ void apply_profiles(uint32_t index, bool force = false)
         return;
     g_profiled.note(index, key);
     auto entries = profile_entries();
-    auto report = car_profile::Applier<Ops>::evaluate(entries, session_type(), within, index, is_ai != 0);
-    for (const auto &id : report.needs_identity)
-        if (g_logged.insert("identity:" + id).second)
-            swofty::log("[cars] car.profile %s skipped: its cars selector needs the car's vehicle, team or driver (T121)",
-                        id.c_str());
+    check_within(entries);
+    bool wants = std::any_of(entries.begin(), entries.end(),
+                             [](const car_profile::Entry &e) { return car_identity::needs(e.profile.cars); });
+    car_profile::Car car{index, is_ai != 0, nullptr};
+    if (wants) {
+        check_names(entries);
+        car.refs = identity_of(index, reinterpret_cast<uintptr_t>(handle));
+    }
+    auto report = car_profile::Applier<Ops>::evaluate(entries, session_type(), within, car);
+    if (index < 32)
+        g_waiting = report.waiting.empty() ? g_waiting & ~(1u << index) : g_waiting | (1u << index);
+    uint64_t epoch = core().current() ? core().current()->epoch : 0;
+    for (const auto &id : report.waiting)
+        if (g_logged.insert("waits:" + std::to_string(epoch) + ":" + id).second)
+            swofty::log("[cars] car.profile %s waits for car %u's team, vehicle and driver, and applies to it once they are "
+                        "read",
+                        id.c_str(), index);
+    for (const auto &why : report.misplaced)
+        if (g_logged.insert("misplaced:" + why).second)
+            swofty::log("[cars] car.profile %s refused: %s", why.substr(0, why.find(": ")).c_str(),
+                        why.substr(why.find(": ") + 2).c_str());
     for (const auto &why : report.refused)
         if (g_logged.insert("refused:" + why).second)
             swofty::log("[cars] car.profile layer refused: %s (the field is off or unknown)", why.c_str());
@@ -335,6 +567,35 @@ void apply_profiles(uint32_t index, bool force = false)
     if (report.matched && g_logged.insert("applied:" + std::to_string(index) + session_type()).second)
         swofty::log("[cars] car %u: %zu car.profile layer(s) from %zu profile(s) in a %s session", index, report.layers,
                     report.matched, session_type().c_str());
+    if (wants && g_logged.insert("picked:" + std::to_string(epoch) + ":" + std::to_string(index)).second) {
+        std::string picked;
+        for (const auto &id : report.applied)
+            for (const auto &e : entries)
+                if (e.id == id && car_identity::needs(e.profile.cars))
+                    picked += (picked.empty() ? "" : ", ") + id;
+        if (!picked.empty())
+            swofty::log("[cars] car %u: picked by its team, vehicle or driver: %s", index, picked.c_str());
+    }
+}
+
+void retry_waiting()
+{
+    if (!g_waiting)
+        return;
+    uint32_t n = 0;
+    if (Ops::op_count(&n) != SWOFTY_ASSET_OK)
+        return;
+    for (uint32_t i = 0; i < n && i < 32; i++) {
+        if (!(g_waiting & (1u << i)))
+            continue;
+        void *handle = nullptr;
+        if (Ops::op_car(i, &handle, nullptr) != SWOFTY_ASSET_OK) {
+            g_waiting &= ~(1u << i);
+            continue;
+        }
+        if (identity_of(i, reinterpret_cast<uintptr_t>(handle)))
+            apply_profiles(i, true);
+    }
 }
 
 uint64_t g_epoch = 0;
@@ -355,6 +616,65 @@ void sync_players()
     });
     if (seen)
         g_epoch = core().current()->epoch;
+}
+
+// A box's fuel rules (apply/content/race_fuel.hpp): the era picker hands over the pressed box's rules, and every frame
+// the plan reads each car's fuel and pit stop counter (the live snapshot) and writes the fuel it decides.
+std::mutex g_fuel_lock;
+apply::content::FuelRules g_fuel_rules;
+bool g_fuel_new = false;
+apply::content::FuelPlan g_fuel_plan;
+std::atomic<bool> g_tyres_kept{false};
+std::atomic<uint32_t> g_session_type{0}; // the live session type, read each frame while a box rule needs it
+
+void fuel_tick()
+{
+    apply::content::FuelRules rules;
+    {
+        std::lock_guard<std::mutex> g(g_fuel_lock);
+        if (g_fuel_new) {
+            g_fuel_new = false;
+            g_fuel_plan.reset();
+        }
+        if (!g_fuel_rules.any() && !g_fuel_rules.tyres_kept())
+            return;
+        rules = g_fuel_rules;
+    }
+    const SwoftyLive *live = SwoftyCoreLive();
+    SwoftyLiveSession ses{};
+    if (!live || live->session(&ses) != SWOFTY_ASSET_OK || !(ses.have & SWOFTY_LIVE_SHAVE_TYPE)) {
+        g_session_type.store(0, std::memory_order_relaxed);
+        return;
+    }
+    g_session_type.store(ses.type, std::memory_order_relaxed);
+    if (!rules.any())
+        return;
+    if (!apply::content::fuel_quali_session(ses.type) && !apply::content::fuel_race_session(ses.type))
+        return;
+    uint32_t n = 0;
+    if (Ops::op_count(&n) != SWOFTY_ASSET_OK || !n)
+        return;
+    n = std::min<uint32_t>(n, apply::content::FuelPlan::MAX);
+    apply::content::FuelCar cars[apply::content::FuelPlan::MAX];
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
+    for (uint32_t i = 0; i < n; i++) {
+        SwoftyLiveCar c{};
+        auto &f = cars[i];
+        if (live->car(i, &c) != SWOFTY_ASSET_OK || !(c.flags & SWOFTY_LIVE_CAR_RACER) ||
+            Ops::fuel_of(i, f.fuel, f.capacity) != SWOFTY_ASSET_OK)
+            continue;
+        f.present = true;
+        f.lap = c.lap;
+        f.pit_stops_ok = (c.have & SWOFTY_LIVE_HAVE_PIT_LANE) != 0;
+        f.pit_stops = c.pit_stops;
+    }
+    for (const auto &w : g_fuel_plan.tick(rules, ses.type, ses.generation, cars, n)) {
+        int r = Ops::op_set(w.car, nullptr, SWOFTY_CAR_FUEL_MASS, w.kg);
+        if (r != SWOFTY_ASSET_OK)
+            g_fuel_plan.failed(w.car);
+        swofty::log("[fuel] car %u: %s, %.1f -> %.1f kg%s", w.car, w.why, cars[w.car].fuel, w.kg,
+                    r == SWOFTY_ASSET_OK ? "" : " (not written yet)");
+    }
 }
 
 void frame(double, void *)
@@ -383,8 +703,8 @@ void frame(double, void *)
         Ops::unlock_tick();
         Ops::racecraft_tick();
     }
-    const view::State view_now = view::current();
-    const bool in_replay = view_now.valid && (view_now.flags & view::REPLAY);
+    const frontend::view::State view_now = frontend::view::current();
+    const bool in_replay = view_now.valid && (view_now.flags & frontend::view::REPLAY);
     if (Ops::resume_due(in_replay)) {
         uint32_t n = 0;
         if (Ops::op_count(&n) == SWOFTY_ASSET_OK) {
@@ -412,16 +732,29 @@ void frame(double, void *)
             Ops::apply_car(p.index);
         }
         switch (p.what) {
-        case Ops::What::built: events::car_built(car); break;
-        case Ops::What::reset: events::car_reset(car, false); break;
-        case Ops::What::replayed: events::car_upgrades_replayed(car, p.progress); break;
-        case Ops::What::setup: events::car_setup_applied(car); break;
-        case Ops::What::damage: events::car_damage(car, p.part, p.progress); break;
+        case Ops::What::built:
+            events::car_built(car);
+            break;
+        case Ops::What::reset:
+            events::car_reset(car, false);
+            break;
+        case Ops::What::replayed:
+            events::car_upgrades_replayed(car, p.progress);
+            break;
+        case Ops::What::setup:
+            events::car_setup_applied(car);
+            break;
+        case Ops::What::damage:
+            events::car_damage(car, p.part, p.progress);
+            break;
         }
     }
+    if (!in_replay)
+        retry_waiting();
     mem::Trust trust(runtime::HEAP_TRUST_MS);
     perf::Scope scope(flush_probe);
     Ops::flush();
+    fuel_tick();
 }
 
 void setup()
@@ -442,15 +775,19 @@ void setup()
     e.flow_thread = on_flow_thread;
     e.enabled = [] { return runtime::enabled("events", nullptr); };
     e.row_ready = row_ready;
-    if (!runtime::same_build()) {
-        swofty::log("[cars] live car operations off: the field offsets are the KB build's and this is not that build");
+    runtime::build_proof::Build build = runtime::running_build();
+    if (!runtime::proven(car_proofs::OPERATIONS)) {
+        runtime::build_proof::Exe exe = runtime::running_exe();
+        swofty::log("[cars] live car operations off: build %u (image 0x%x) has no checked car layouts", exe.pe_timestamp,
+                    exe.size_of_image);
     } else {
         e.table = swofty::api->resolve("g_Sess_VehicleTable");
         e.count = swofty::api->resolve("g_Sess_VehicleCount");
         if (!e.table || !e.count)
             swofty::log("[cars] live car operations off: g_Sess_VehicleTable or g_Sess_VehicleCount does not resolve");
         else
-            swofty::log("[cars] live car operations on: %zu fields", sizeof car_live::FIELDS / sizeof car_live::FIELDS[0]);
+            swofty::log("[cars] live car operations on (%s): %zu fields", car_proofs::log_name(build),
+                        sizeof car_live::FIELDS / sizeof car_live::FIELDS[0]);
         if (uintptr_t fn = swofty::api->resolve("Car_Engine_ComputeDerived_Thunk"))
             e.engine_derived = [fn](uintptr_t engine) {
                 reinterpret_cast<void (*)(void *)>(fn)(reinterpret_cast<void *>(engine));
@@ -477,15 +814,16 @@ void setup()
             if (f.needs && !row_ready(f.needs) && g_logged.insert(std::string("off:") + f.needs).second)
                 swofty::log("[cars] %s off: needs %s", f.name, f.needs);
         swofty::log("[session] session.pit_stop stationary time and tyre change off: needs PitStopInstance.car");
-        swofty::log("[cars] refit_tyres off: needs Car_Tyre_SetWearFactor, CarChassis.tyre_physics_group and the car to tyre component path");
+        swofty::log("[cars] refit_tyres off: needs Car_Tyre_SetWearFactor, CarChassis.tyre_physics_group and the car to tyre "
+                    "component path");
         if (uintptr_t fn = swofty::api->resolve("Car_FuelEcu_SetMode_Thunk"))
             e.fuel_set_mode = [fn](uintptr_t ecu, int mode) {
                 reinterpret_cast<void (*)(void *, int)>(fn)(reinterpret_cast<void *>(ecu), mode);
             };
         else
             swofty::log("[cars] fuel_ecu fields off: Car_FuelEcu_SetMode_Thunk does not resolve");
-        e.mode_avail = [] {
-            uintptr_t at = swofty::api->module_base() + 0x606ec28, ptr = 0;
+        e.mode_avail = [rva = runtime::car_layout::mode_avail_rva(build)] {
+            uintptr_t at = swofty::api->module_base() + rva, ptr = 0;
             return mem::read(at, ptr) && mem::object_like(ptr) ? ptr : uintptr_t(0);
         };
     }
@@ -500,35 +838,78 @@ void setup()
 
 }
 
+void race_fuel_rules(const apply::content::FuelRules &rules)
+{
+    std::lock_guard<std::mutex> g(g_fuel_lock);
+    if (rules.line == g_fuel_rules.line && rules.package == g_fuel_rules.package)
+        return;
+    g_fuel_rules = rules;
+    g_fuel_new = true;
+    g_tyres_kept.store(rules.tyres_kept(), std::memory_order_relaxed);
+    if (rules.any() || !rules.line.empty())
+        swofty::log("[fuel] %s", rules.line.empty() ? "the game's own fuel" : rules.line.c_str());
+}
+
+// The pit stop tyre change wrap (pit_box.cpp) asks whether to skip the change for this tyre component and call flag.
+bool race_tyres_keep(uintptr_t tyre_component, bool pit_stop_call)
+{
+    bool rule = g_tyres_kept.load(std::memory_order_relaxed);
+    uint32_t type = g_session_type.load(std::memory_order_relaxed);
+    if (!rule || !pit_stop_call)
+        return false;
+    auto read = [](uint64_t at, auto &out) { return swofty::mem::read(uintptr_t(at), out); };
+    bool witnessed = runtime::build_proof::proven_on(runtime::car_layout::PUNCTURES, runtime::running_build());
+    uint8_t punctured = witnessed ? apply::content::punctured_wheels(tyre_component, read) : 0;
+    uintptr_t physics = 0, car = 0;
+    uint8_t vehicle = 0xff;
+    if (swofty::mem::read(tyre_component + apply::content::TYRE_PHYSICS, physics) && physics &&
+        swofty::mem::read(physics + apply::content::PHYSICS_CAR, car) && car)
+        swofty::mem::read(car + car_live::CAR_VEHICLE_ID, vehicle);
+    auto pick = apply::content::race_tyre_change_pick(rule, type, pit_stop_call, punctured);
+    if (pick == apply::content::TyreChange::game)
+        return false;
+    if (pick == apply::content::TyreChange::punctured)
+        swofty::log("[tyres] vehicle %u pit stop in the race: tyres changed for a puncture (%s)", unsigned(vehicle),
+                    apply::content::wheel_names(punctured).c_str());
+    else
+        swofty::log("[tyres] vehicle %u pit stop in the race: tyres kept (box rule race_tyre_change false)%s", unsigned(vehicle),
+                    witnessed ? "" : "; this build has no witness for the puncture state, so a punctured tyre stays fitted");
+    if (pick == apply::content::TyreChange::kept && t_tyres_kept == 0)
+        t_tyres_kept = 1;
+    return pick == apply::content::TyreChange::kept;
+}
+
 void declare_car_points(Table &t)
 {
     g_built = std::make_unique<session_points::MidPoint>("car.built", "site_Car_LiveCarBuilt", &m_built, game_ops());
     t.declare_game("car.built", SWOFTY_POINT_NOTIFY, swofty::cars::events::Built::version, g_built.get());
-    g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset),
-                                          game_ops());
+    g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset), game_ops());
     t.declare_game("car.reset", SWOFTY_POINT_NOTIFY, swofty::cars::events::Reset::version, g_reset.get());
     g_replay = std::make_unique<GamePoint>("car.upgrades.replayed", "Car_Upgrades_ApplyToVehicle",
                                            reinterpret_cast<void *>(&d_replay), game_ops());
-    t.declare_game("car.upgrades.replayed", SWOFTY_POINT_NOTIFY, swofty::cars::events::UpgradesReplayed::version,
-                   g_replay.get());
+    t.declare_game("car.upgrades.replayed", SWOFTY_POINT_NOTIFY, swofty::cars::events::UpgradesReplayed::version, g_replay.get());
     g_wing = std::make_unique<GamePoint>("car.parts.register", "Car_FrontWing_Init", reinterpret_cast<void *>(&d_wing_init),
                                          game_ops());
     t.declare_game("car.parts.register", SWOFTY_POINT_NOTIFY, swofty::cars::events::PartsRegister::version, g_wing.get());
-    g_hit = std::make_unique<GamePoint>("car.damage", "Car_FrontWing_OnCollision", reinterpret_cast<void *>(&d_wing_hit),
-                                        game_ops());
+    g_hit =
+        std::make_unique<GamePoint>("car.damage", "Car_FrontWing_OnCollision", reinterpret_cast<void *>(&d_wing_hit), game_ops());
     t.declare_game("car.damage", SWOFTY_POINT_NOTIFY, swofty::cars::events::Damage::version, g_hit.get());
-    g_pit = std::make_unique<GamePoint>("session.pit", "Game_Pitlane_SetVehicleStatus",
-                                        reinterpret_cast<void *>(&d_pit_status), game_ops());
+    g_pit = std::make_unique<GamePoint>("session.pit", "Game_Pitlane_SetVehicleStatus", reinterpret_cast<void *>(&d_pit_status),
+                                        game_ops());
     t.declare_game("session.pit", SWOFTY_POINT_NOTIFY, swofty::sessions::events::Pit::version, g_pit.get());
     t.declare_game("session.pit_stop", SWOFTY_POINT_NOTIFY, swofty::sessions::events::PitStop::version, g_pit.get());
-    g_setup = std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup,
-                                                         game_ops());
+    g_pit_tyres = std::make_unique<GamePoint>("session.pit_stop.tyres", "Game_PitLane_ApplyPitstopTyres",
+                                              reinterpret_cast<void *>(&d_pit_tyres), game_ops());
+    t.declare_game("session.pit_stop.tyres", SWOFTY_POINT_NOTIFY, swofty::sessions::events::PitStopTyres::version,
+                   g_pit_tyres.get());
+    g_setup =
+        std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup, game_ops());
     t.declare_game("car.setup.applied", SWOFTY_POINT_NOTIFY, swofty::cars::events::SetupApplied::version, g_setup.get());
 }
 
 void arm_car_points()
 {
-    if (!runtime::same_build())
+    if (!runtime::holds(car_proofs::POINTS))
         return;
     g_built->keep(true);
     g_built->install(false, "the core");
@@ -541,6 +922,10 @@ void arm_car_points()
     if (row_ready("Game_Pitlane_SetVehicleStatus")) {
         g_pit->keep(true);
         g_pit->install(false, "the core");
+    }
+    if (row_ready("Game_PitLane_ApplyPitstopTyres") && runtime::holds(PIT_TYRES_POINT)) {
+        g_pit_tyres->keep(true);
+        g_pit_tyres->install(false, "the core");
     }
     if (row_ready("site_Car_SetupTuningApplied")) {
         g_setup->keep(true);
@@ -565,10 +950,7 @@ void engine_torque(SwoftyContext *c)
     });
 }
 
-void ai_system_built(SwoftyContext *c)
-{
-    swofty_core::hooks::Ops::racecraft_pushed(c->rbx);
-}
+void ai_system_built(SwoftyContext *c) { swofty_core::hooks::Ops::racecraft_pushed(c->rbx); }
 
 void ai_grip(SwoftyContext *c)
 {
@@ -579,10 +961,10 @@ void ai_grip(SwoftyContext *c)
 
 namespace runtime {
 
-std::vector<CoreMixins> car_levers_mixins()
+static std::vector<CoreMixins> car_levers_mixins()
 {
     std::vector<CoreMixins> out;
-    if (g_levers_offered || !code_ready() || !same_build())
+    if (g_levers_offered || !code_ready() || !holds(swofty_core::hooks::car_proofs::LEVERS))
         return out;
     g_levers_offered = true;
     std::vector<SwoftyMixin> mixins;
@@ -598,8 +980,8 @@ std::vector<CoreMixins> car_levers_mixins()
     for (const char *row : swofty_core::hooks::car_live::RACECRAFT_ROWS)
         racecraft_rows = racecraft_rows && swofty_core::hooks::row_ready(row);
     if (racecraft_rows && swofty::api->resolve("site_Ai_BuildSystem_RecordPushed"))
-        out.push_back({RACECRAFT,
-                       {{"site_Ai_BuildSystem_RecordPushed", SWOFTY_MIXIN_SITE, 50, (void *)&ai_system_built, nullptr}}});
+        out.push_back(
+            {RACECRAFT, {{"site_Ai_BuildSystem_RecordPushed", SWOFTY_MIXIN_SITE, 50, (void *)&ai_system_built, nullptr}}});
     else
         swofty::log("[ai] ai.<group>.<key> fields off: need AiSystem.records_begin, AiCarRecord.vehicle_index and "
                     "driver_config and site_Ai_BuildSystem_RecordPushed");
@@ -608,20 +990,18 @@ std::vector<CoreMixins> car_levers_mixins()
     return out;
 }
 
-void car_levers_commit()
+static void car_levers_commit()
 {
     if (g_levers_offered)
         swofty::log("[cars] car levers %s", core_mixins_active(LEVERS) ? "armed" : "did not install (see the [core] lines)");
 }
 
+static loader::FunctionSet car_levers_core_set{loader::CoreSetId::car_levers, car_levers_mixins, car_levers_commit};
+
 }
 
-extern "C" __declspec(dllexport) const SwoftyCarOps *SwoftyCoreCarOps(void)
-{
-    return &swofty_core::hooks::Ops::table;
-}
+extern "C" __declspec(dllexport) const SwoftyCarOps *SwoftyCoreCarOps(void) { return &swofty_core::hooks::Ops::table; }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("live car operations", swofty_core::hooks::setup);
-}
+SWOFTY_CORE_RANK(car_live)
+
+SWOFTY_ON_LOAD { runtime::when_code_ready("live car operations", swofty_core::hooks::setup); }

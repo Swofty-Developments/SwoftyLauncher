@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEmailContainers_SetupEmailContainerForDriverStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dd9630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140dd9630.c;str:s_Championship_CareerEmailContainers_SetupEmailContainerForDriverStatId;xref:0x140dd64da,0x140dd95bb,0x140dd95da",
+  "notes": "Finds the container (ptr vector param_1[7..8]) whose driver id (+0x20) equals *param_2; else allocates a 0x70-byte container (driver id +0x20, team id +0x24 = 0x3fff0000 none, owner param_1[3] +0x1468/+0x1470, day param_1[10]), push_back, logs 'added new container for driver %s' (CAREER_EMAIL_COMPONENT). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_email_containers_setup_email_container_for_driver_stat_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 78 48 89 D7 48 89 CB 48 8B 41 38 48 8B 49 40 48 39 C8 74 37 0F B7 57 02 44 0F B6 07 EB 0F 66 0F 1F 44 00 00 48 83 C0 08 48 39 C8 74 1E 48 8B 30 44 8B 4E 20",
+  "match": "0x140dd9630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dd9630",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEmailContainers_SetupEmailContainerForDriverStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140dd9630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dd9630.c;xref:0x140dd64da,0x140dd95bb",
+   "notes": "V4771 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_ChampionshipFormationLapComponent_OnRaceStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b808a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b808a0.c;str:s_Championship_ChampionshipFormationLapComponent_OnRaceStarted;xref:0x140b800e4,0x140b80e88",
+  "notes": "Own pretty-function log onRaceStarted; bound by lea 0x140b800e4/0x140b80e88. If save state +0x298 == 1: when [+0xa70]+0x40 == 0 applies 26 stored tyre records (+0x29c step 0x4c) via 0x140b816b0, optimal tyre temps (0x142f46370) when Sess_FormationLapLogic_IsActiveType0; non-immersive formation sets temps per car; then 0x140b81a90 for all 26 records. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.race_started",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 53",
+  "match": "0x140b808a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b808a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ChampionshipFormationLapComponent_OnRaceStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-18",
+    "by": "events",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/events/events.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140b808a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b808a0.c",
+   "notes": "V4431 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerInvitationalFlow_InvitationalEventSetupComponent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bb1900",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bb1900.c;pat:log-channel-CAREER_INVITATIONAL_FLOW;xref:0x140bb211a,0x141c32e49",
+  "notes": "AI difficulty: param_2 == -1 -> +1000 = -1 ('not overridden'), else +1000 = first table value whose threshold +4 >= param_2 for the event named +0x2a0 (logged). Then for that event: optional team/livery override via 0x14079f300, sets career entity +0xe10/+0xe18 and flag +0xe28 |= 2, posts two messages, finally 0x140baa900. (lane owner review requested) Better name: Game_InvitationalEventSetup_ApplyEventAndAiDifficulty (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.career_invitational_flow_invitational_event_setup_component",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 48 89 CE 83 FA FF",
+  "match": "0x140bb1900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bb1900",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerInvitationalFlow_InvitationalEventSetupComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bb1900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bb1900.c",
+   "notes": "V4452 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

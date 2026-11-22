@@ -1,0 +1,101 @@
+{
+ "schema": 1,
+ "name": "Car_Visual_UpdateAttachedAnimators",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14039ff50",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_Visual_UpdateAttachedAnimators(void *car_visual, float frac)",
+  "evidence": "decomp:re/decomp/14039ff50.c;xref:0x14039ddde,0x1403a677b",
+  "notes": "Not a tick. For two clip sets (list [[cv+0x5d8]+0x18] index cv+0x5e0, and [[cv+0x1390]] index cv+0x137c; skipped when the index is 0xffffffff or the entry is null) it asks every animator for its time range (vcall +0x20 -> start, end), takes min start / max end and writes cv+0x5d4 resp. cv+0x1384 = min + (max - min) * frac. frac is a normalised 0..1 position. Callers: Car_Visual_UpdateRenderState (0x14039ddde) and 0x1403a66d0 (0x1403a677b). Better name: Car_Visual_SetAnimatorsTimeFraction. Used by vmknolle dukati-lean."
+ },
+ "signature": {
+  "id": "car.visual_update_attached_animators",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 78 29 44 24 50 C5",
+  "match": "0x14039ff50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14039ff50",
+  "kind": "func_start",
+  "names": [
+   "Car_Visual_UpdateAttachedAnimators"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14039ff50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14039ff50.c;xref:0x14039ddde",
+   "notes": "V3525 does not tick animators: for two clip sets (+0x5d8/+0x5e0 and +0x1390/+0x137c) takes min/max range via vcall +0x20 and writes +0x5d4 / +0x1384 = lerp(min,max,param_2) (param_2 is a normalised pose, not dt); same pattern as Car_Anim_SetNormalisedPoses. Better name Car_Anim_SetNormalisedPose_Pair"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14039ff50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14039ff50.c;xref:0x14039ddde",
+   "notes": "V4000 does not tick animators: for two clip sets (+0x5d8/+0x5e0 and +0x1390/+0x137c) takes min/max range via vcall +0x20 and writes +0x5d4 / +0x1384 = lerp(min,max,param_2) (param_2 is a normalised pose, not dt); same pattern as Car_Anim_SetNormalisedPoses. Better name Car_Anim_SetNormalisedPose_Pair"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14039ff50",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/14039ff50.c;xref:0x14039ddde,0x1403a677b",
+   "notes": "V4066 not a tick: for each animator in two lists calls vtbl+0x20 to get min start/max end, then writes lerp (max-min)*param_2+min to +0x5d4 and +0x1384; param_2 is a fraction; better name Car_Visual_SetAnimatorsTimeFraction"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x14039ff50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14039ff50.c;xref:0x14039ddde",
+   "notes": "V7125 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14039ff50",
+    "target": "0x14039ff50"
+   },
+   "sigcheck": "passed",
+   "digest": "08051f13b120799d52970d6c981c53ce3a5dfbf82fe37692f766a5bd85ad371e"
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingHopperCommon_EvaluateGameInvite",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143086410",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143086410.c;pat:log-message-cxx;xref:0x143083ade,0x143085c66",
+  "notes": "Own pretty-function string 0x14580df9d 'NEbool ...HopperCommon::evaluateGameInvite()'. Candidates p1+0x7d8..+0x7e0 (0x130-byte entries, suitability float +0xf4): first a same-region candidate (+0xd8) under threshold +0x658, else the first candidate under +0x654 (other regions) is copied into the chosen game p1+0x6a0.. (name +0x6b8, attribs 0x14315fe50), erased from the list, invite target +0x668/+0x66c = 4, logs 'best game in my/other regions', telemetry 0x1407713b0. No match -> +0x698 = 1, +0x668 = 0x400000001, logs 'no game to join, creating my own game'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_hopper_common_evaluate_game_invite",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B B9 D8 07 00 00",
+  "match": "0x143086410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143086410",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingHopperCommon_EvaluateGameInvite"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143086410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143086410.c;xref:0x143083adf",
+   "notes": "V5630 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

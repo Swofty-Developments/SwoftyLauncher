@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_ContractRowNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416ddb60",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Bind(void *out, void *ctx, void *row)",
+  "evidence": "decomp:re/decomp/1416ddb60.c;xref:0x141874582,0x1418746cc,0x141c8811c,0x1420bb5e4,0x1422ee546,0x1422f5bfc,0x1422fbce5",
+  "notes": "Renamed (no contract/department data here): VM holder ctor: refs player_driver +0x0, other_driver +0x20, other_team_texture +0x40; strings/ints/floats player/other recognition (+0x60..+0x1a0, *_normalised floats), bool show_team_not_other_driver_info, two sub-structs via 0x1416dd9e0 (+0x1c0,+0x220), child 'perks' +0x280, next_perks_* fields to +0x380. Returns param_1. (lane owner review requested) Better name: Ui_Bind_RecognitionCompareVm (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "ui.bind_contract_row_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 4C 89 C7 48 89 54 24 58",
+  "match": "0x1416ddb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416ddb60",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_ContractRowNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416ddb60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1416ddb60.c;xref:0x141874582;xref:0x1418746cc",
+   "notes": "V9762 Binds a driver recognition comparison block (player_driver, other_driver, player/other recognition normalised values), not generic department/contract row."
+  }
+ ],
+ "proofs": []
+}

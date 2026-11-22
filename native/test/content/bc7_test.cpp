@@ -1,4 +1,4 @@
-#include "../../src/core/apply/content/logo_array.hpp"
+#include "core/apply/content/logo_array.hpp"
 
 #include <cstdio>
 #include <fstream>
@@ -40,22 +40,27 @@ int main(int argc, char **argv)
                     first = i / 16;
                 bad++;
             }
-        check(got.size() == want.size() && !bad, std::string(name) + ": " + std::to_string(want.size() / 16) + " blocks equal the Python bytes" +
-                                                      (bad ? " (" + std::to_string(bad) + " differ, first " + std::to_string(first) + ")" : ""));
+        check(got.size() == want.size() && !bad,
+              std::string(name) + ": " + std::to_string(want.size() / 16) + " blocks equal the Python bytes" +
+                  (bad ? " (" + std::to_string(bad) + " differ, first " + std::to_string(first) + ")" : ""));
     }
-    la::Stock stock{slurp(dir + "/stock_head.bin"), slurp(dir + "/stock_data.bin"), slurp(dir + "/stock_view.bin"), {"a", "b", "c"}};
+    la::Stock stock{
+        slurp(dir + "/stock_head.bin"), slurp(dir + "/stock_data.bin"), slurp(dir + "/stock_view.bin"), {"a", "b", "c"}};
     std::string slice = slurp(dir + "/shape64.bc7"), why;
     std::string backwards(slice.rbegin(), slice.rend());
     la::Shape shape;
-    check(la::shape_of(stock, shape, why) && shape.width == 64 && shape.height == 64 && shape.count == 3, "the synthetic stock array reads as 64x64 with 3 slices");
+    check(la::shape_of(stock, shape, why) && shape.width == 64 && shape.height == 64 && shape.count == 3,
+          "the synthetic stock array reads as 64x64 with 3 slices");
     la::Stock grown;
     bool ok = la::grow(stock, {{"d", slice}, {"e", backwards}}, grown, why);
     check(ok && grown.head == slurp(dir + "/grown_head.bin") && grown.data == slurp(dir + "/grown_data.bin") &&
               grown.view == slurp(dir + "/grown_view.bin"),
           "grown fragments equal the ones logos.py builds");
     check(ok && grown.names.size() == 5 && grown.names[3] == "d" && grown.names[4] == "e", "keys are appended in slice order");
-    check(!la::grow(stock, {{"b", slice}}, grown, why) && why.find("already lists b") != std::string::npos, "a listed key is refused");
-    check(!la::grow(stock, {{"x", slice.substr(1)}}, grown, why) && why.find("not 4096") != std::string::npos, "a slice of the wrong size is refused");
+    check(!la::grow(stock, {{"b", slice}}, grown, why) && why.find("already lists b") != std::string::npos,
+          "a listed key is refused");
+    check(!la::grow(stock, {{"x", slice.substr(1)}}, grown, why) && why.find("not 4096") != std::string::npos,
+          "a slice of the wrong size is refused");
     la::Stock bad = stock;
     bad.names.pop_back();
     check(!la::shape_of(bad, shape, why), "a key list that is not one name per slice is refused");
@@ -65,6 +70,7 @@ int main(int argc, char **argv)
     std::string raw = slurp(dir + "/shape64.rgba"), made;
     const uint8_t *px = reinterpret_cast<const uint8_t *>(raw.data()) + raw.find('\n') + 1;
     check(la::slice_from_rgba(shape, px, 64, 64, made, why) && made == slice, "an RGBA image becomes the slice logos.py encodes");
-    check(la::slice_from_rgba(shape, px, 32, 64, made, why) && made.size() == shape.slice_bytes(), "an image of another size is scaled to the slice");
+    check(la::slice_from_rgba(shape, px, 32, 64, made, why) && made.size() == shape.slice_bytes(),
+          "an image of another size is scaled to the slice");
     return failures ? 1 : 0;
 }

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Garage_SendVehicleStatusChange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4e8c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d4e8c0.c;pat:log-channel-GARAGE;xref:0x1457e4c50",
+  "notes": "Restart path (vtable cell 0x1457e4c50): resets timing state +0xdb0 (0x142cf2c80), session +0xdb8 (0x142cd5bb0), posts msg vt 0x1457e6e00, per vehicle posts MessageVehicleStatusChange (vt 0x14565bb68) logged '%s'='restartResultsStatus', CrowdSystem limitCrowdExcitement (0x1413ee2d0), 0x1430f2f40 outside session types 9/0xe. Old name came from the GARAGE log line only. (lane owner review requested) Better name: Game_Game_RestartResultsStatus (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.garage_send_vehicle_status_change",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 89 CE 48 8B 81 B8 0C 00 00",
+  "match": "0x142d4e8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d4e8c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Garage_SendVehicleStatusChange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d4e8c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d4e8c0.c",
+   "notes": "V5387 large vehicle-status/garage restart handler (iterates vehicles, crowd mood, status msg), not just the send; better Game_Garage_OnVehicleStatusChangeRestart"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142d4e8c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d4e8c0.c",
+   "notes": "V6891 143 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

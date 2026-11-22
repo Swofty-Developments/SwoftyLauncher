@@ -11,8 +11,7 @@ REPO=$(readlink -f ../..)
 OUT=${1:-${TMPDIR:-/tmp}/std-template-tests}
 mkdir -p "$OUT"
 export ZIG_GLOBAL_CACHE_DIR=${ZIG_GLOBAL_CACHE_DIR:-$OUT/zig-cache} ZIG_LOCAL_CACHE_DIR=${ZIG_LOCAL_CACHE_DIR:-$OUT/zig-cache}
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
-command -v taskset >/dev/null || PIN=()
+. "$REPO/native/tools/pin.sh"
 ENGINE=(store.cpp table.cpp validate.cpp schema.cpp engine.cpp older.cpp)
 ENGINE=("${ENGINE[@]/#/$REPO/native/src/core/registry/}")
 failed=0
@@ -22,7 +21,7 @@ for addon in */; do
         [ -f "$t" ] || continue
         name=$addon-$(basename "$t" .cpp)
         if ! "${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O1 -Wall -Wextra -Wno-nullability-completeness \
-            -Wno-missing-designated-field-initializers -Wno-ignored-attributes -Wno-cast-function-type-mismatch -fdeclspec -I"$REPO/packages/sdk/include" -I"$addon/native/src" \
+            -Wno-missing-designated-field-initializers -Wno-ignored-attributes -Wno-cast-function-type-mismatch -fdeclspec -I"$REPO/packages/sdk/include" -I"$REPO/native/src" -I"$addon/native/src" \
             -DSWOFTY_FAKE_CORE_ENGINE=swofty_registry_engine -o "$OUT/$name" "$t" "${ENGINE[@]}" 2>"$OUT/$name.log"; then
             cat "$OUT/$name.log"
             echo "FAIL  $name: it doesn't build"

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeam_MainMenu",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142403a60",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142403a60.c;xref:0x1457887a8",
+  "notes": "Screen vtable slot (cell 0x1457887a8, same layout as 0x145766348). Rebuilds this+0x280, this+0x290 (title my_team or selected entry name, callback 0x142404620), this+0x2a0 markdown_elements list; fires spawn_articles, posts bus msgs 0x145732490 and 0x1457324a0, resets article timer and hash map this+0x2b8..0x360, clears byte 0x146068901. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ui.my_team_main_menu",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 00",
+  "match": "0x142403a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142403a60",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeam_MainMenu"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142403a60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142403a60.c;str:\"markdown_elements\"",
+   "notes": "V10209 Strings my_team, markdown_elements, spawn_articles, list_entry_%d: looks like the My Team landing/articles list view rather than a generic main menu handler."
+  }
+ ],
+ "proofs": []
+}

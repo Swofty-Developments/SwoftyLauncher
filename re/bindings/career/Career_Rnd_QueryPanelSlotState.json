@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Rnd_QueryPanelSlotState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14352f8d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Rnd_QueryPanelSlotState(void *panel, uint32_t part_key, void *entry, uint8_t flag)",
+  "evidence": "decomp:re/decomp/14352f8d0.c;xref:0x141c52ee1,0x141c8f237,0x141c8f28b,0x143516b3d,0x143516c5c,0x1435175bf,0x143517c29",
+  "notes": "Body read fully. param_3 = upgrade instance: returns 0 if last state byte ([+0xc8]-8) == 4, state 3 with byte -7 == 1, or state 2 right after a state-4 entry. Mode byte this+8 0/1 -> 0x1435349a0(closure{this,param_3,param_2,param_4}); mode 2 and state 1 -> sum of floats +4 of kind-14 entries for dept byte param_3+0x72 (byte +3 set) in 0x1434fb4b0([this+0x18]), clamped 0..100; other modes 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.rnd_query_panel_slot_state",
+  "section": ".xtls",
+  "pattern": "53 48 81 EC A0 00 00 00 89 54 24 24",
+  "match": "0x14352f8d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352f8d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Rnd_QueryPanelSlotState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14352f8d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14352f8d0.c;xref:0x141c52ee1",
+   "notes": "V10292 State checks right (4 returns 0, 3 with flag returns 0), but the result is a 0..100 clamped percentage from modifier kind 0x0e (or FUN_1435349a0), not a panel-visibility decision."
+  }
+ ],
+ "proofs": []
+}

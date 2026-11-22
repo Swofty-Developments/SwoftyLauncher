@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Define_UpgradeDiscountTables",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1427d1350",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void Gdb_Define_UpgradeDiscountTables(uint64_t self,int64_t *a2)",
+  "evidence": "decomp:re/decomp/1427d1350.c;xref:0x1427d0d45",
+  "notes": "Binder for the F1OS online service response data (6452 lines): EventServiceData, InventoryServiceData, GoalsServiceData, RankedServiceData, BlueprintData, UpgradeDiscount_/DismantleBonus_CarPart/TeamMember, FanZoneServiceData, VotesServiceData and their columns. Only caller 0x1427d0550 (F1OS HTTP response / JSON parse). Better name: Gdb_Bind_F1OsServiceData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "gamedb.define_upgrade_discount_tables",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 D5 48 89 4C 24 40",
+  "match": "0x1427d1350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1427d1350",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Define_UpgradeDiscountTables"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1427d1350",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1427d1350.c;str:\"UpgradeDiscount_CarPart\"",
+   "notes": "V10227 Huge schema for F1 World service data (EventServiceData, InventoryServiceData, GoalsServiceData, RankedServiceData, BlueprintData, ...) which includes UpgradeDiscount tables; name too narrow."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Pagination_EvictedItemsCache",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141784ea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141784ea0.c;pat:log-channel-PAGINATION;xref:0x14570ace8",
+  "notes": "Vtable slot (cell 0x14570ace8). Under lock +0x50 walks the cached item map (rb-tree head +0xd0, size +0xd8), erases every item whose index (+0x20) is outside the view span param_2 {start, len}, destroys item data (0x1417d0760) and frees the node (allocator +0xc8 vcall +0x38); logs 'Evicted %u items from the cache' (PAGINATION). (lane owner review requested) Better name: Game_Pagination_EvictItemsOutsideView (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.pagination_evicted_items_cache",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 49 50",
+  "match": "0x141784ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141784ea0",
+  "kind": "func_start",
+  "names": [
+   "Game_Pagination_EvictedItemsCache"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141784ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141784ea0.c",
+   "notes": "V4893 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

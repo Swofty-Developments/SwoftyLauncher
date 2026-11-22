@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_AddingPendingCustomObjectThumbnail",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e37a00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e37a00.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x14187efc7,0x1419f28a5,0x1421cfc35,0x1421cfde8",
+  "notes": "Looks up existing entry by name (param_4) in robin-hood map +0x78/+0x80; if new: id=++(+0xa8), Game_Thumbnail_HashMap_Insert 0x142ee49a0 (+0x50), allocs 0x250 job (vt 0x1457ec230->0x1457ec9f0, copies param_2 desc), FindOrInsert 0x142ee45a0 into owner+0xc0 with callback 0x142e32310, logs THUMBNAIL_SYSTEM 'Adding pending custom object thumbnail generation for set ID %d', pushes id to owner+0xe0 vector. If exists and param_6: replaces j... (lane owner review requested) Better name: Game_ThumbnailSystem_AddPendingCustomObjectThumbnail (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.thumbnail_system_adding_pending_custom_object_thumbnail",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 44 89 C5 49 89 D5",
+  "match": "0x142e37a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e37a00",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_AddingPendingCustomObjectThumbnail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e37a00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e37a00.c;xref:0x14187efc7",
+   "notes": "V5481 handles both generation and REgeneration of custom object thumbnails (573 lines); better Game_ThumbnailSystem_AddPendingCustomObjectThumbnail"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142e37a00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e37a00.c;xref:0x14187efc7",
+   "notes": "V6902 573 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

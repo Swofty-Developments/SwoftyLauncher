@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_ActivityForDriverStage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141268490",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Find(void *mgr, char flag, uint16_t stage, uint8_t strict)",
+  "evidence": "decomp:re/decomp/141268490.c;xref:0x140a80ad7,0x140bf1aea,0x140bf2165,0x140bf25d5",
+  "notes": "Walks schedule entries +0x50..+0x58 (stride 0x10), type-checked as ScheduleEntryActivity (descriptor 0x146063fd0); for entries with day (ushort +10) > param_3 (or == when param_4) and activity id ((+0x10)+8) != -1, looks the activity up in the swiss table +0x20 (stride 0x18) and returns the entry if table 0x1456d0b43[type byte +0x10] == param_2; else 0. (lane owner review requested) Better name: Career_Schedule_Find_ActivityEntryAfterDay (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.find_activity_for_driver_stage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 8B 79 50 4C 8B 61 58 4D 39 E7 0F 84 ?? ?? ?? ?? 44 89 CB 44 89 C6 49 89 CE 88 54 24 27 4C 8D 2D ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? 48 8D 3D ?? ?? ?? ?? EB 28",
+  "match": "0x141268490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141268490",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_ActivityForDriverStage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141268490",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141268490.c;xref:0x140a80ad7;xref:0x140bf1aea",
+   "notes": "V9697 Near twin of 141243f60: kind byte matched at entry+0x10, stage compare is strictly greater unless the flag allows equal (not >= / == as claimed); driver id != -1 and swiss-table lookup match."
+  }
+ ],
+ "proofs": []
+}

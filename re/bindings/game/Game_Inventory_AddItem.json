@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Inventory_AddItem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a7e4a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a7e4a0.c;pat:log-channel-INVENTORY;xref:0x1425aec04,0x1425aefb8,0x1425af7b8,0x14279cbb7,0x14279ddef,0x142c5b2a5,0x142c5b4f9,0x142c5c035",
+  "notes": "Looks up inventory by key id (*param_2) in hash map this+0x40..0x74; item = shared ptr param_3; item id +0xc == 0x7fffffff -> assigns inv+0x60 counter (log New item, assigning ID) and inserts; existing id found -> amount at node item+8 +1 (saturates 0x7ffffffe+1); else inserts. Returns item id, 0x7fffffff when inventory missing. Old xref 0x1425aec05 corrected to instruction start 0x1425aec04. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.inventory_add_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 4C 89 C6 48 89 D3",
+  "match": "0x142a7e4a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a7e4a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Inventory_AddItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a7e4a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a7e4a0.c;xref:0x1425aec05",
+   "notes": "V4980 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

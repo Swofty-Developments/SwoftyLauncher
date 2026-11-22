@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_StreamedInstallConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14379eba0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14379eba0.c;pat:log-channel--;xref:0x14079da18",
+  "notes": "Ctor of 3 VM bindings: streamed_install.is_available (bool, default 1) at +0, install_progress_percentage (default 100) at +0x20, install_progress_fract (default 0) at +0x40; vtables 0x14565f670/0x1456604b8/0x145670ca8. (lane owner review requested) Better name: Game_StreamedInstall_BindVmProperties (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_streamed_install_config",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 D7 48 89 CE C6 44 24 37 01",
+  "match": "0x14379eba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14379eba0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_StreamedInstallConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14379eba0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14379eba0.c;xref:0x14079da18",
+   "notes": "V6278 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionConnectionQualityManager_GetCongestionStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143053a50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143053a50.c;pat:log-message-cxx;xref:0x1414e02c6,0x1414e0570",
+  "notes": "Own pretty-function string 0x14580a418 'CongestionStatus ...::getCongestionStatus(NeNetConnectionID)'. Robin-hood lookup of connection id p3 (hash x [p1+0x90], metadata [p1+0xa0], 2-byte slots [p1+0x98] = {id,status}); hit -> status byte; miss -> logs NETWORK-CONNECTION-QUALITY 'can't find connectionId: %d from the map!' and 0. Writes the result to *p2 and returns p2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_connection_quality_manager_get_congestion_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D6 48 89 C8 45 0F B6 C8",
+  "match": "0x143053a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143053a50",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionConnectionQualityManager_GetCongestionStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143053a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143053a50.c;xref:0x1414e02c7",
+   "notes": "V5474 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

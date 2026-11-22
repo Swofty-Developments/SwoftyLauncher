@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsViewModel_ApplyFilterUpdateChild_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ddf830",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141ddf830.c;xref:0x14574f0a8",
+  "notes": "Vtable cell 0x14574f0a8. Body only when child this[0x175] != 0 (vcall child+8 first). Inlined UIOptionsSystem::setSelectedFilter (global 0x14606aa34: 1 filter_advanced, 2 filter_expert, else filter_basic, searched in [this+0x630]+0x70..+0x78), 0x142adc6d0, vcall +0x118, 0x141da4670(this,child), 0x141da7170(child,0,0x8c7614db), UI event rebuilt_list (0x144320fe0). Same body as _C/_D except child slot and hash. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.settings_view_model_apply_filter_rebuild_list_b",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CE 48 8B 89 A8",
+  "match": "0x141ddf830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ddf830",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsViewModel_ApplyFilterUpdateChild_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstance_Unhide",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403846b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403846b0.c;pat:log-message-cxx;xref:0x140341f20,0x140355740,0x140356120,0x140362d50,0x140369a70,0x14036a5b0,0x140388bc0,0x14038e140,0x14038f030,0x14038f210,0x1403c67f0,0x147b43b40,0x147b473c0",
+  "notes": "GarageCrewInstance::unhide(inst): only when inst+0x132 bit1 set; clears it, activates extra world +0x210 (0x1444bcd80), shows models +0xc8/+0xd0/+0xe0/+0xf0 (0x140190110(.,1)), sets the render flag of [0x14601f5c8]+0xc8, updates anim players +0xf8/+0x100 (0x14366b6c0); the decomp tail for +0x108 is that callee merged in. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_unhide",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 0F B6 81 32 01 00 00",
+  "match": "0x1403846b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403846b0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstance_Unhide"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403846b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403846b0.c;xref:0x2ff628",
+   "notes": "V4572 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

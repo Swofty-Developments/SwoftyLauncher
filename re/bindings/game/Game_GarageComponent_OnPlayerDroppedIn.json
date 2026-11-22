@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageComponent_OnPlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a416c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a416c0.c;pat:log-message-cxx;xref:0x142a3f994,0x142a40a0f",
+  "notes": "GarageComponent::onPlayerDroppedIn(msg): msg+0x10 vehicle; updates 0x1424abb30 and GarageCrewModule 0x140388c10; finds the garage slot with the vehicle (sys+0x1f8..+0x200, slots +0x58/+0x68), skips when in Career Hub, sets slot+0x18 inGarage from table 0x1457c97b8 by pit state; local human in garage -> 0x142a3b7a0(sys,slot); else clears bit3 in 4 bytes of the [0x146cc3a80]+0x60 entry (stride 0x14). Handler (lea) in 0x142a3f710, 0x142a409b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_component_on_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142a416c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a416c0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageComponent_OnPlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a416c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a416c0.c;xref:0x142a3f996",
+   "notes": "V5169 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

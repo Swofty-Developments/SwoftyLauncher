@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_HandleVehicleCustomi",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143145060",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143145060.c;pat:log-message-cxx;xref:0x14313f17d",
+  "notes": "Read in full: logs 'VehicleSCustomisationIdAllocatedNetMessage recieved from connection id'; if [this+0x10]+8 > 1 and the local machine id (vcall +0x10) equals param_3: looks up the standard-slot customisation, replaces it (0x1431400c0), sends (0x143141520) and flushes (0x14313f270); this tail is shared with sendUpdatedVehicleCustomisationInfo. Registered by lea 0x14313f17d in 0x14313f030. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_handle_vehicle_customi",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 44 89 C3 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 72",
+  "match": "0x143145060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143145060",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_HandleVehicleCustomi"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143145060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143145060.c;xref:0x143136837",
+   "notes": "V5941 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TimingBoardInstance_PlaySequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403d6ff0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403d6ff0.c;pat:log-message-cxx;xref:0x1403d82ca,0x1403d82d5,0x1403d83a7,0x1403d83be,0x1403d83d6,0x1403d83e5,0x1403d83fe,0x1403d8416,0x1403d8425,0x1403d895d,0x1403d8b15,0x1403da310,0x1403db94d,0x1403db958",
+  "notes": "Under CS +0x2f8 builds '%s%02d' sequence name (index +0x2f0+1), releases old clip, rebinds BASE/OVERLAY node ids, starts sequence (0x143662b90/0x143660a60) into +0x10 and binds clips to models +0x20/+0x28 (Ne_SequenceClipInstance_BindOptional). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.timing_board_instance_play_sequence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 80 79 49 00",
+  "match": "0x1403d6ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403d6ff0",
+  "kind": "func_start",
+  "names": [
+   "Game_TimingBoardInstance_PlaySequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403d6ff0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403d6ff0.c;xref:0x3d82ca",
+   "notes": "V4668 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

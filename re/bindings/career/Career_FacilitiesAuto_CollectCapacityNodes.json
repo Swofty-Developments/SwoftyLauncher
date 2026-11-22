@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_FacilitiesAuto_CollectCapacityNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c67de0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int64_t Career_FacilitiesAuto_CollectCapacityNodes(void *comp, int64_t unused, uint32_t team_key)",
+  "evidence": "decomp:re/decomp/140c67de0.c;xref:0x140f81782,0x140f8266a",
+  "notes": "Finds team rec in comp+0x298..+0x2a0 (0x30 stride) with key +0x28 == param_3 (hi16 + low byte); walks nodes +0x10..+0x18 (0x1b0 stride); first node with +0x1a0 set: 0x140-byte optional from node+0x60 (0x140c66e20) copied to out (0x140ce4740, +0x48..+0xe0), out+0xe8=has-value; else out+0xe8=0. No summing. (lane owner review requested) Better name: Career_FacilitiesAuto_GetFirstTeamNodeValue (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.facilities_auto_collect_capacity_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 D6",
+  "match": "0x140c67de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c67de0",
+  "kind": "func_start",
+  "names": [
+   "Career_FacilitiesAuto_CollectCapacityNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c67de0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c67de0.c",
+   "notes": "V9504 Param 2 is the OUTPUT object (returned), not unused. It finds the team entry, uses bank map at +0x60/+0x1a0 and fills the out via FUN_140ce4740; capacity summing is not visible."
+  }
+ ],
+ "proofs": []
+}

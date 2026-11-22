@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_WriteLeaderboard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fa7190",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fa7190.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142fa1486",
+  "notes": "Callback 'onLeaderboardEntryWrite' (GHOSTLAP-TRACE '%s(#%d, %s, %s, %d ms)', success/failure). Fail: GHOSTLAPS 'leaderboard write failed.', debounce +0x90 (max 5), +0x8c=2^(n+2) 'Debounce: %d %+1.2fs'. OK: needs presence ('no active presence.'), compares user ids, reads UGC keys VehicleStatId/TeamStatId/VehicleCustomisationStatId/PerformanceState/CarSetup/DriverAssists/Sector1-3/GhostLap/Date into +0x230..+0x270; lap 0x4fffffff -> 'c... (lane owner review requested) Better name: Game_GhostLaps_OnLeaderboardEntryWrite (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ghost_laps_write_leaderboard",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 48 02 00 00 4C 89 CB",
+  "match": "0x142fa7190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa7190",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_WriteLeaderboard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fa7190",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142fa7190.c;xref:0x142fa1488",
+   "notes": "V5705 Completion handler (fn name onLeaderboardEntryWrite); better Game_GhostLaps_OnLeaderboardEntryWrite"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142fa7190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fa7190.c;xref:0x142fa1488",
+   "notes": "V6927 482 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

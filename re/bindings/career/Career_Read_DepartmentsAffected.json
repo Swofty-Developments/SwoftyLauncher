@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_DepartmentsAffected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143527a70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Read_DepartmentsAffected(void * self,uint64_t a2,void * a3)",
+  "evidence": "decomp:re/decomp/143527a70.c;xref:0x141247aa6",
+  "notes": "Save reader twin of 0x143527400: reads schedule[] {name, season_index, rumour_start_weekend, confirmation_weekend, departments_affected/department, types_affected/type} and adds each entry via 0x143527230. Called from load dispatcher 0x141247780. (lane owner review requested) Better name: Career_Read_DepartmentsAffectedSchedule (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.read_departments_affected",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 4D 89 C7 49 89 D6",
+  "match": "0x143527a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143527a70",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_DepartmentsAffected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143527a70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143527a70.c;xref:0x141247aa6",
+   "notes": "V10291 Reader of same schedule record incl. types_affected and rumour/confirmation weekends."
+  }
+ ],
+ "proofs": []
+}

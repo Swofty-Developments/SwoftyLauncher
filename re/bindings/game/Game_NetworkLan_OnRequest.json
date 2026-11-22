@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLan_OnRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14408f830",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14408f830.c;pat:log-message-method;xref:0x145a543f8",
+  "notes": "Body only logs 'onRequest received' (NETWORK-LAN) and returns. Only ref: vtable cell 0x145a543f8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_lan_on_request",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 65 B8 AF 00 00 00",
+  "match": "0x14408f830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14408f830",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLan_OnRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14408f830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14408f830.c",
+   "notes": "V6517 size=120; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

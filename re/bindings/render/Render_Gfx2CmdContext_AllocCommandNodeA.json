@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2CmdContext_AllocCommandNodeA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a06320",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a06320.c;xref:0x143b5a2b7,0x143c3b348,0x143c7f49c",
+  "notes": "For list type 0 or 2 gets the native list (wrapper vcall +0x18), reserves a node (Render_Gfx2CmdContext_ReserveNodeSlot on device+0x2bf0), stores label param_2 at node+0x18 and depth at +0x30, links it into the node chain (+0x28/+0x30), ++depth (+0x38), writes a breadcrumb (0x143a04230) and when timing is on calls native EndQuery (+0x1a8, type 2 TIMESTAMP, index node+0x24). Error 0xe without a native list. Callers Ne_Gfx2Renderer_RecordCommandNodes 0x143b5a210, 0x143c3afd0. (lane owner review requested) Better name: Render_Gfx2CmdContext_BeginGpuMarker (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_resource_get_native_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 CF 48 8B 49 60 48",
+  "match": "0x143a06320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a06320",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2CmdContext_AllocCommandNodeA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a06320",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a06320.c;xref:0x143b5a2b7",
+   "notes": "V7812 better name Render_Gfx2CmdContext_AllocCommandNodeA: operates on cmd context at +0x60 (vcall +8 state, +0x18 get native), allocates a list node (+0x28/+0x30 linked list), calls 0x143a04230 and vcall +0x1a8; sets error 0xe on failure; allocates a node not just resolves native"
+  }
+ ],
+ "proofs": []
+}

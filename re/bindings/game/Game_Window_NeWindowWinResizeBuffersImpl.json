@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Window_NeWindowWinResizeBuffersImpl",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439f6c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439f6c40.c;pat:log-channel-WINDOW;xref:0x14589c8d8",
+  "notes": "Read in full; ref vt cell. If resize pending (+0x2a1): callback +0x858; if swap chain size (vcall +0x60) != requested +0x288/+0x28c: device idle, ResizeBuffers via 0x1439f9fc0 (fallback 0x1439f9ff0); on change logs 'updating m_settings.width/height...', +0x238/+0x23c, 0x1439c8810, 0x1439f11c0, UpdateAspectRatio 0x1439f14f0, UI size nodes; callback +0x868. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.window_ne_window_win_resize_buffers_impl",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 CE 80 B9 A3 02 00 00 00",
+  "match": "0x1439f6c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439f6c40",
+  "kind": "func_start",
+  "names": [
+   "Game_Window_NeWindowWinResizeBuffersImpl"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439f6c40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439f6c40.c",
+   "notes": "V6407 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

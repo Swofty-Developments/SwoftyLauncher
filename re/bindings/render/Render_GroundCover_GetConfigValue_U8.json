@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_GroundCover_GetConfigValue_U8",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144468330",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144468330.c;xref:0x144467328,0x14446734d,0x1444676df,0x14446771b",
+  "notes": "Rename: typed property get. Looks property param_3 up in the sources [*this]+0xf0, +0xe8, +0xe0 (vcall +8), status 0x57 when absent; compares the value type id (vcall +0x10) with the bool type descriptor 0x146129dc0, copies 1 byte from vcall +0x30 to *param_4 (status 0), else status 0x16 and error trace. Callers in Render_GroundCoverCascade_Load (0x144467200). (lane owner review requested) Better name: Render_GroundCover_GetPropertyBool (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.ground_cover_resolve_asset_ref_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B BC 24 90 00 00 00 4C 8D 8E 3D",
+  "match": "0x144467328",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144468330",
+  "kind": "func_start",
+  "names": [
+   "Render_GroundCover_GetConfigValue_U8"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x144468330",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144468330.c;xref:0x1400cca77",
+   "notes": "V8173 Better name Render_GroundCover_GetConfigValue_U8: reads 1-byte typed config value (type id 146129dc0) by key hash via resolvers +0xf0/+0xe8/+0xe0, errors 0x57 missing and 0x16 type mismatch; not an asset"
+  }
+ ],
+ "proofs": []
+}

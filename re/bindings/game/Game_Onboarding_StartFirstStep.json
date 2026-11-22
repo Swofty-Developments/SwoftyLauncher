@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Onboarding_StartFirstStep",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143847cc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143847cc0.c;pat:log-channel-ONBOARDING;xref:0x143847640,0x143849ec5,0x14384c5b8",
+  "notes": "ONBOARDING 'StartFirstStep Intro'; 0x143848690; returns if VM bool +0x218 true; if +0x2a8 && !+0x2a9 ('Wait for Dismissal') installs speech-VO delegates on +0x298 (+0x40 0x14384c190, +0x60 0x14384c420, +0x50 0x14384c2e0), sets +0x2ab. Else VO delegates on +0x290 audio, 'Checks Passed', setStepState -> SummoningCharacter (+0x280=8, +0x2a9 from VM +0x178) or ReplacingSummonedCharacter (+0x280=10, bus post 0x1439876c0); else 0x14384a3b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.onboarding_start_first_step",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143847cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143847cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Onboarding_StartFirstStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143847cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143847cc0.c;xref:0x143847640",
+   "notes": "V6309 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_CreateTrackConstantsAndPuddleBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447889a0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447889a0.c;xref:0x140109cf5",
+  "notes": "Constructor-style creator (base ctor 0x143b5ad80) of per-track GPU resources: ConstantsTODBuffer (g_trackConstants), eaid://ego_package/PuddleBuffer (g_puddleIndicesUAV), PuddleBufferCounter (g_puddleIndicesCounterUAV), trackInfoModelAnimData / trackInfoModelCarData SRVs, g_screenSpaceHeatHazeNormalMap, screen_space_rtv / world_space_rtv; Render_Gfx2_BindLayout_Create, Render_Gfx2_RegisterResourceNotify. Caller 0x140109cf5 in Render_Gfx_BuildConfigObject. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_create_track_constants_and_puddle_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 79 7F BC 24",
+  "match": "0x1447889a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447889a0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_CreateTrackConstantsAndPuddleBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1447889a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447889a0.c;xref:0x140109cf5",
+   "notes": "V8402 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

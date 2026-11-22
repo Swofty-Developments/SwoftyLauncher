@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RenderDriverNameViewModel_BuildDriverProperties",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d7b5f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d7b5f0.c;xref:0x141d7d497,0x141d7d4b7",
+  "notes": "(out, parent): under parent node [parent+8] creates six VM property handles into out (0x20 bytes each): is_valid (Vm_Set_Bool), name (Vm_Set_String), nationality (Vm_Set_NodeRef), car_number (Vm_Set_Int), car_number_formatted (Vm_Set_String), driver (Vm_Set_NodeRef). Callers 0x141d7cff0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.render_driver_name_view_model_build_driver_properties",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 D7 48 89 CE C6 44 24 30 00 48 8B 42 08",
+  "match": "0x141d7b5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d7b5f0",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderDriverNameViewModel_BuildDriverProperties"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x141d7b5f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d7b5f0.c;xref:0x141d7d497",
+   "notes": "V8461 pushes is_valid, name, nationality, car_number, car_number_formatted, driver properties; callers PushBackResourceGroup"
+  }
+ ],
+ "proofs": []
+}

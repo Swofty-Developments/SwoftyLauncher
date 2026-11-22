@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OsMetrics_CreateRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b6e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432b6e30.c;pat:log-message-method;xref:0x1432b6e0b,0x14330422f,0x143304333,0x1433045d4,0x14336a187,0x150072ee4",
+  "notes": "(mgr, name, url): allocates a 0x138-byte metrics record (ctor 0x1404f9ab0), sets name (0x1404fb630) and URL (0x1404fb900), wraps it in a node {id = mgr+0x58, timestamp} and inserts it into the id hash map (+0x20 seed, +0x28 slots, +0x30 control, +0x40 mask; grow 0x1433420a0); logs 'createRecord %d: %s, %s' (OS_METRICS) and increments next id +0x58. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.os_metrics_create_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 4D 89 C5 49 89 D7",
+  "match": "0x1432b6e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b6e30",
+  "kind": "func_start",
+  "names": [
+   "Game_OsMetrics_CreateRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432b6e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432b6e30.c;xref:0x1432b6e0c",
+   "notes": "V5891 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

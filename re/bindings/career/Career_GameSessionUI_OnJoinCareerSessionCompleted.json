@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_GameSessionUI_OnJoinCareerSessionCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b2710",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430b2710.c;pat:log-message-cxx;xref:0x1430ad68b",
+  "notes": "__FUNCTION__ GameSessionUI::onJoinCareerSessionCompleted(NEbool, NeNetError, NEbool); logs success/error; on retry calls joinCareerSession again with network_career_searching, on failure shows popup with completion 0x1430adf50; CareerSearch. Ref: lea in onCareerSessionRequested. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.game_session_ui_on_join_career_session_completed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 44 89 CB 44 89 C7 89 D5",
+  "match": "0x1430b2710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b2710",
+  "kind": "func_start",
+  "names": [
+   "Career_GameSessionUI_OnJoinCareerSessionCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b2710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b2710.c;xref:0x1415aa044",
+   "notes": "V5350 name/log strings and body consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1430b2710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b2710.c;str:\"%s: success: %d, error code: %d\"",
+   "notes": "V9224 onJoinCareerSessionCompleted cxx string and the success/error format present."
+  }
+ ],
+ "proofs": []
+}

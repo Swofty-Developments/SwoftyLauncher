@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeMotion_Enable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bdaa20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bdaa20.c;pat:log-channel-PHOTO-MODE-MOTION;xref:0x142bda7bd",
+  "notes": "Asset-group load callback from Game_PhotoModeSystem_SetEnabled (lea 0x142bda7bd): posts 'photo_mode_data_ready', arms motion render +0x2b8, overrides global +0x490 (saved +0x3fb0), snapshots per-car tyre/wheel list +0x3b8 and transforms, reads vsync / frameRateLimiterEnabled (+0x3d3/+0x3d4), logs 'Photo mode enabled', active +0x394 = 1, posts bus message 0x1457d3f30, clears pending +0x395. (lane owner review requested) Better name: Game_PhotoModeSystem_Enable (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.photo_mode_motion_enable",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 78 29 B4 24 10 02 00 00",
+  "match": "0x142bdaa20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bdaa20",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeMotion_Enable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bdaa20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bdaa20.c;xref:0x142bda7bf",
+   "notes": "V5030 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

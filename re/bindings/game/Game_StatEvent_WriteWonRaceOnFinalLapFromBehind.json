@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteWonRaceOnFinalLapFromBehind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14376d0b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14376d0b0.c;pat:log-channel-STATEVENT;xref:0x143792d2b",
+  "notes": "Direct writer (stat, info): 5 WonRaceOnFinalLapFromBehind[.GameplayModeId/.DriverStatId/.SectionId combos] keys value 1.0. Caller 0x143790310. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_won_race_on_final_lap_from_behind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 06 00 00 48 89 D7",
+  "match": "0x14376d0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14376d0b0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteWonRaceOnFinalLapFromBehind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14376d0b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14376d0b0.c;xref:0x143792d2b",
+   "notes": "V6230 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

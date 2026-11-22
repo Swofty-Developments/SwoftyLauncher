@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MarshalPlacement_OnAdd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403d1af0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403d1af0.c;xref:0x14561ea78",
+  "notes": "Script node onAdd (cell 0x14561ea78). String property 'Group' (error 0x57 if missing); +0x34 = group != 'grid'. Slot = global counter 0x1460463d0++ -> +0x30; allocates a 0xb0 'RaceMarshalInstance' record: owner(+0x38)+0x28[slot] = this, +0x428[slot] = record, registered with [owner+0x848] vcall +8 (cb 0x1403d2ed0). Copies the entity transform (table +0xf0 stride 0x70, or +0x90), +0xa2 = is grid, +0xa4 = 0x14022abc0 team value (default 2), +0xa6 = 0x100. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.marshal_placement_on_add",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 89 D7 48 89 CE 48 8B 59 10",
+  "match": "0x1403d1af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403d1af0",
+  "kind": "func_start",
+  "names": [
+   "Game_MarshalPlacement_OnAdd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403d1af0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1403d1af0.c",
+   "notes": "V4662 alloc 0xb0 into sys+0x428[idx], counter 0x1460463d0 confirmed; +0x34 flag = result of string compare vs 'grid' (then 'normal' result ignored), not 'normal or not'; type hash not verified; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

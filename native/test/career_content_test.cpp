@@ -1,15 +1,15 @@
 // Host unit test for the career content logic (career_content_logic.hpp): the descriptor check, the
 // save-slot data group walk over a fake career (championship list, CareerSetupComponent, entrant
 // list names), the car group pick and the database requirements against a fake database shaped
-// like the 1990 content's. run_events_test.sh builds and runs it.
-#include "../src/core/career_content_logic.hpp"
+// like the 1990 content's. native/test/run_tests.sh career_content builds and runs it.
+#include "core/career/career_content_logic.hpp"
 
 #include <cstdio>
 #include <map>
 #include <string>
 #include <vector>
 
-namespace content = runtime::content;
+namespace content = career::content;
 
 static int fails;
 
@@ -40,15 +40,9 @@ static void *fake_setup(void *, void *user)
     return f->has_component ? f->component.data() : nullptr;
 }
 
-static int fake_index(void *, void *user)
-{
-    return static_cast<Fake *>(user)->index;
-}
+static int fake_index(void *, void *user) { return static_cast<Fake *>(user)->index; }
 
-static bool fake_readable(const void *p, size_t, void *)
-{
-    return p != nullptr;
-}
+static bool fake_readable(const void *p, size_t, void *) { return p != nullptr; }
 
 static void build(Fake &f, const std::vector<std::string> &names, uint8_t index)
 {
@@ -100,8 +94,10 @@ static void stock_db()
 {
     texts.clear(), ints.clear(), lists.clear();
     ints["game_modes._ModeChampionship_instancecount_"] = 3;
+    texts["game_modes.ModeChampionship_0._metadata_"] = "driver_career_25";
     texts["game_modes.ModeChampionship_0.save_data.name"] = "driver_career_24";
     ints["game_modes.ModeChampionship_0.statId"] = 28;
+    texts["game_modes.ModeChampionship_1._metadata_"] = "driver_career_26";
     texts["game_modes.ModeChampionship_1.save_data.name"] = "driver_career_26";
     ints["game_modes.ModeChampionship_1.statId"] = 78;
     texts["game_modes.ModeChampionship_2.save_data_0.name"] = "driver_career_1990";
@@ -165,7 +161,8 @@ int main()
         expect(!content::check(d, none).empty(), "check: an unknown career bit is refused");
     }
     {
-        expect(content::career_of(SWOFTY_CAREER_DRIVER) == content::CAREER_DRIVER, "career: a Driver Career pick is Driver Career");
+        expect(content::career_of(SWOFTY_CAREER_DRIVER) == content::CAREER_DRIVER,
+               "career: a Driver Career pick is Driver Career");
         expect(content::career_of(SWOFTY_CAREER_MY_TEAM) == content::CAREER_MY_TEAM, "career: a My Team pick is My Team");
         expect(content::career_of(0) == content::CAREER_DRIVER, "career: no pick yet is Driver Career");
         expect(content::stock_command(content::ADDON_SELECT_PRESSED) == content::SELECT_PRESSED,
@@ -177,14 +174,14 @@ int main()
     {
         const uintptr_t select = 0x145738430, showroom = 0x1457390a0;
         const char *career[] = {"career_default_content", "career_dlc_content"};
-        const char *cars[] = {"showroom_f1_DLC", "showroom_f1", "showroom_f2_next", "showroom_f2",
-                              "showroom_player_cars_dlc", "showroom_player_cars", nullptr};
+        const char *cars[] = {
+            "showroom_f1_DLC",      "showroom_f1", "showroom_f2_next", "showroom_f2", "showroom_player_cars_dlc",
+            "showroom_player_cars", nullptr};
         expect(content::content_select(select, select, career, 2), "select: the content select view model's list");
         expect(content::content_select(select, select, nullptr, 0),
                "select: the content select view model's list before its tiles are read");
         expect(!content::content_select(showroom, select, cars, 7), "select: the showroom's car tiles are left alone");
-        expect(!content::content_select(0, select, cars, 7),
-               "select: car tiles with no view model found are left alone");
+        expect(!content::content_select(0, select, cars, 7), "select: car tiles with no view model found are left alone");
         expect(content::content_select(0, select, career, 2),
                "select: the stock career tiles with no view model found are the content select");
         expect(!content::content_select(0, 0, nullptr, 0), "select: no vtable bound and no tiles is left alone");
@@ -224,22 +221,19 @@ int main()
         l = content::loaded_list(f.source.data(), 148, a);
         expect(l.list && content::loaded_why(d, 148, l).empty(), "loaded: the last slot passes");
         l = content::loaded_list(f.source.data(), 149, a);
-        expect(l.known && !l.list && content::loaded_why(d, 149, l).find("past the 149 entrant list slots") !=
-                                         std::string::npos,
+        expect(l.known && !l.list && content::loaded_why(d, 149, l).find("past the 149 entrant list slots") != std::string::npos,
                "loaded: an id equal to the slot count is refused");
         l = content::loaded_list(f.source.data(), -1, a);
         expect(l.known && !l.list && !content::loaded_why(d, -1, l).empty(), "loaded: a negative id is refused");
         put(f.groups, 50 * content::GROUP_STRIDE + content::GROUP_AT, (void *)nullptr);
         l = content::loaded_list(f.source.data(), 50, a);
-        expect(l.known && !l.list &&
-                   content::loaded_why(d, 50, l).find("loaded no list at that id") != std::string::npos,
+        expect(l.known && !l.list && content::loaded_why(d, 50, l).find("loaded no list at that id") != std::string::npos,
                "loaded: an id whose slot holds no list is refused");
         build(f, std::vector<std::string>(105, "f1_other"), 0);
         d.data_group = "f1_career_porsche25";
         l = content::loaded_list(f.source.data(), 240, a);
         expect(l.known && l.slots == 105 && !l.list &&
-                   content::loaded_why(d, 240, l).find("stat_id 240, past the 105 entrant list slots") !=
-                       std::string::npos,
+                   content::loaded_why(d, 240, l).find("stat_id 240, past the 105 entrant list slots") != std::string::npos,
                "loaded: stat_id 240 with 105 loaded slots is refused (the 1.9.15 tile press crash)");
         put(f.source, content::GROUPS_END, f.groups.data());
         l = content::loaded_list(f.source.data(), 3, a);
@@ -263,6 +257,24 @@ int main()
         expect(p.kind == content::Pick::fallback && p.id == 0x00000011, "pick: the 2025 model takes the first non-dlc group");
         p = content::pick(nullptr, nullptr, 2, content::MODEL_2026);
         expect(p.kind == content::Pick::none && p.id == content::NO_CONTENT, "pick: no entries selects no content");
+        auto of = [&](const std::string &group, const content::Desc *d) {
+            content::Cars c = content::cars_of(group, d);
+            return c.known ? content::pick(b, en, c.car_group, c.model) : content::Pick{};
+        };
+        expect(of("f1_career_2025", nullptr).id == 0x00000011,
+               "cars_of: a 2025 career selects the 2025 tile's group, the first non-dlc one");
+        expect(of("f1_career_2026", nullptr).id == 0x00010022,
+               "cars_of: a 2026 career selects the 2026 tile's group, the first dlc one");
+        content::Desc d = desc1990();
+        d.car_group = 2;
+        expect(of("f1_career_1990", &d).id == 0x00020033, "cars_of: a content career selects its content's car_group");
+        d.car_group = -1;
+        expect(of("f1_career_1990", &d).id == 0x00010022,
+               "cars_of: a content without car_group selects what its model tile selects");
+        expect(!content::cars_of("f1_career_1990", nullptr).known && of("f1_career_1990", nullptr).id == content::NO_CONTENT,
+               "cars_of: a group no tile writes selects nothing");
+        expect(!content::cars_of("f1_career_2025x", &d).known, "cars_of: a content whose data group differs is not used");
+        expect(!content::cars_of("", nullptr).known, "cars_of: an empty group selects nothing");
     }
     {
         stock_db();
@@ -273,17 +285,32 @@ int main()
         content::Desc d = desc1990();
         d.mode = "driver_career_1991";
         r = content::requirements(d, db);
-        expect(!r.ok && r.why.find("ModeChampionship") != std::string::npos, "requirements: a missing mode row fails the requirements");
+        expect(!r.ok && r.why.find("ModeChampionship") != std::string::npos,
+               "requirements: a missing mode row fails the requirements");
         d = desc1990();
         d.data_group = "f1_career_1991";
         r = content::requirements(d, db);
-        expect(!r.ok && r.why.find("entrant_lists") != std::string::npos, "requirements: a missing entrant list fails the requirements");
+        expect(!r.ok && r.why.find("entrant_lists") != std::string::npos,
+               "requirements: a missing entrant list fails the requirements");
         d.data_group = "f1_career_huge";
         r = content::requirements(d, db);
-        expect(!r.ok && r.why.find("below 256") != std::string::npos, "requirements: a stat_id past a byte fails the requirements");
+        expect(!r.ok && r.why.find("below 256") != std::string::npos,
+               "requirements: a stat_id past a byte fails the requirements");
         texts.erase("content_sets.content_set_1.official_entrant_list_1.name");
         r = content::requirements(desc1990(), db);
-        expect(!r.ok && r.why.find("F1CAREER_90") != std::string::npos, "requirements: no F1CAREER_<suffix> list fails the requirements");
+        expect(!r.ok && r.why.find("F1CAREER_90") != std::string::npos,
+               "requirements: no F1CAREER_<suffix> list fails the requirements");
+        stock_db();
+        expect(content::mode_stat_id(db, "driver_career_25") == 28,
+               "mode: the stock 2025 container driver_career_25 resolves its row's statId 28 (save_data.name driver_career_24)");
+        expect(content::mode_stat_id(db, "driver_career_26") == 78, "mode: driver_career_26 resolves statId 78");
+        expect(content::mode_stat_id(db, "driver_career_1990") == 81, "mode: a row with no label matches by save_data_0.name");
+        expect(content::mode_stat_id(db, "driver_career_24") == 28, "mode: a save_data.name still matches its row");
+        expect(content::mode_stat_id(db, "driver_career_23") == -1 && content::mode_stat_id(db, "") == -1,
+               "mode: an unknown or empty container resolves nothing");
+        texts["game_modes.ModeChampionship_2._metadata_"] = "driver_career_24";
+        expect(content::mode_stat_id(db, "driver_career_24") == 81,
+               "mode: a row named after the container wins over a save_data.name");
         stock_db();
         texts.erase("content_sets.content_set_1.official_entrant_list_3.name");
         r = content::requirements(desc1990(), db);

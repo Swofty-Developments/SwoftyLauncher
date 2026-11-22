@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_DataConnectionAllDataReliableSize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144034250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144034250.c;pat:log-channel-NETWORK-VOICE;xref:0x14305c5ac",
+  "notes": "Voice manager update: queries communication privileges ('%s: result = %d, communication allowed = %d' as updateCommunicationPrivileges), sends headset/mute status (Game_NetworkVoice_SendHeadsetStatus, _SendMuteStatus), serialises outgoing voice data per connection ('** %s data to connection %d ...') and logs per-second sent/received bytes. Called from Gdb_Unk_14305c1f0. (lane owner review requested) Better name: Game_NetworkVoice_ManagerUpdate (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_voice_data_connection_all_data_reliable_size",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 05 00 00 C5 F9 29 BC 24 60 05 00 00",
+  "match": "0x144034250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144034250",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_DataConnectionAllDataReliableSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144034250",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144034250.c;xref:0x14305c5ac",
+   "notes": "V6400 partial: better name Game_NetworkVoice_SendVoiceData; 6 KB send of voice data to connection(s) with privilege refresh; not just a log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144034250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144034250.c;xref:0x14305c5ac",
+   "notes": "V7087 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

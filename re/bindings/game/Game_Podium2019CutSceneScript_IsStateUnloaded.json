@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_IsStateUnloaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140357fd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140357fd0.c;pat:log-message-cxx;xref:0x14036340a,0x1455f71a0,0x145603250,0x1456035e0,0x145603980",
+  "notes": "Logs Podium2019/PodiumBase isStateUnloaded; returns Game_CutsceneManager_AreAssetGroupsUnloaded([this+0x48], this+0x38) && state this+0x40 == 10. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_is_state_unloaded",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 60 B8 4C 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 85 D2 74 4B 81 FA 8C DE 03 08 74 30 83 C0 17 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 4C 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 4E 48 48 8D 7E 38 48 89 FA E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140357fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140357fd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_IsStateUnloaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140357fd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140357fd0.c",
+   "notes": "V4497 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

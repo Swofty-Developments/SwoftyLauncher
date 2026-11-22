@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailTask_DriverThumbnailDespawningDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e3efe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e3efe0.c;pat:log-channel-THUMBNAIL_TASK;xref:0x1457ecac0",
+  "notes": "vtable cell 0x1457ecac0. Logs despawn, clears driver handle +0x550 (clears flag +0xf1 in entity map) and frees spawned asset group +0x560 (0x1409a6f20). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.thumbnail_task_driver_thumbnail_despawning_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 71 B8 E2 00 00 00",
+  "match": "0x142e3efe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e3efe0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailTask_DriverThumbnailDespawningDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e3efe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e3efe0.c",
+   "notes": "V5489 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

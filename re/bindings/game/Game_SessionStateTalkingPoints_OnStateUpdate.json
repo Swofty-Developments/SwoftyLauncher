@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateTalkingPoints_OnStateUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d95b90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d95b90.c;pat:log-message-cxx;xref:0x1457e2d08",
+  "notes": "Vtable cell 0x1457e2d08. Suspended (+0xea3) -> logs \"%s: suspended, return eLinkNone\". Else counts down +0xeac, registers fade callbacks (0x1437f07c0, 0x142d961d0), advances the sequence [+0xe88], fires \"CutsceneSkipped\" with Pre/PostSessionTalkingPoints, logs fade completion; returns link 0x996c4495 / 0x9b3bfc35 / 0x7c9b1ec4 or none. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_state_talking_points_on_state_update",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D6 80 B9 A3 0E 00 00 00",
+  "match": "0x142d95b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d95b90",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateTalkingPoints_OnStateUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d95b90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d95b90.c",
+   "notes": "V5431 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-17",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d95b90",
+    "target": "0x142d95b90"
+   },
+   "sigcheck": "passed",
+   "digest": "e0c1fb26d67be7372ea62425dadd5b1f4a400bca1593374dd048b0af2d44b0e0"
+  }
+ ]
+}

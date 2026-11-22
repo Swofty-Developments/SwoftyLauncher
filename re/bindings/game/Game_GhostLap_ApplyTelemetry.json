@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLap_ApplyTelemetry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f8ac70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f8ac70.c;pat:log-channel-GHOSTLAP;xref:0x1407e2ab9,0x1407e2c2e,0x141484d45",
+  "notes": "readTelemetryHeader(out,stream,ctx) per its log name: ReadAndValidate 0x142f8a730, reads an 8-byte field, requires >= 0x6c bytes and reads 0x6c bytes into out, clamps out+0x20 to <=1, sets out+0x60 bit0 from header flag 0x40; returns 1. Callers 0x1407e2140 (two), 0x141484d00. (lane owner review requested) Better name: Game_GhostLap_ReadTelemetryHeader (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ghost_lap_apply_telemetry",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC E0 00 00 00 4C 89 C3 48 89 D6",
+  "match": "0x142f8ac70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8ac70",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLap_ApplyTelemetry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f8ac70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f8ac70.c;xref:0x1407e2ab9",
+   "notes": "V5690 Own function-name string is readTelemetryHeader (reads header, validates, applies); better Game_GhostLap_ReadTelemetryHeader"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f8ac70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f8ac70.c;xref:0x1407e2ab9",
+   "notes": "V6925 120 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

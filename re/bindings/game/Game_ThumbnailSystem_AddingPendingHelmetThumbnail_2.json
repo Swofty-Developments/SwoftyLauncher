@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_AddingPendingHelmetThumbnail_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e36d60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e36d60.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x14203920f,0x142e35460,0x142e3789b",
+  "notes": "Helmet REgeneration: clears VM bool, builds request via Game_Thumbnails_ConstructHelmetRequest, finds existing set, calls old callback(1), allocates new 0x240 helmet task, replaces, callback 0x142e32310, queues id; sets +0xac on failure. (lane owner review requested) Better name: Game_ThumbnailSystem_RegenerateHelmetThumbnail (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.thumbnail_system_adding_pending_helmet_thumbnail_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 4C 89 CF 4C 89 C3 48 89 CE",
+  "match": "0x142e36d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e36d60",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_AddingPendingHelmetThumbnail_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e36d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e36d60.c;xref:0x14203920f",
+   "notes": "V5480 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateReadyMonitor_EnterReadyMonitor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436e9ca0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436e9ca0.c;str:s_StateReadyMonitor_EnterReadyMonitor;xref:0x1436e9c0b,0x1436ea47b",
+  "notes": "enterReadyMonitor: denies entry (logs) while clock not synchronised, host not back in lobby or host-spectator waiting; picks monitor type into +0xc90 (5/6/9/0xb/0x10/0x12 by session kind), then for each eligible connection calls 0x143223e10(ready, connIdx, type, ...). Callers 0x1436e9680, 0x1436ea400. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.state_ready_monitor_enter_ready_monitor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8B 81 88 0C",
+  "match": "0x1436e9ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436e9ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_StateReadyMonitor_EnterReadyMonitor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436e9ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436e9ca0.c;xref:0x1436e9c0b",
+   "notes": "V6142 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

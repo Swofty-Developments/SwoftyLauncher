@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnSessionStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f2f40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430f2f40.c;pat:log-message-method;xref:0x142d4ecef,0x1436f0998",
+  "notes": "Callers 0x142d4e8c0, 0x1436f0820. Logs 'onSessionStarted', setMyRaceStatus 0x143092b20([this+0x3c0]+0xa8, 8), NETWORK-MATCHING log and matching object vt+0xb0, then 0x1433199f0 and 0x143237270([this+0x4d0], 100). (lane owner review requested) Better name: Game_NetworkSubsystem_OnSessionStarted (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_on_session_started",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 00 01 00 00",
+  "match": "0x1430f2f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f2f40",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnSessionStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f2f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f2f40.c;xref:0x142d4ecef",
+   "notes": "V5393 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

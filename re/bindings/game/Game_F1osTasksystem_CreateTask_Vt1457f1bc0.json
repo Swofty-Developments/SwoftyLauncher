@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_CreateTask_Vt1457f1bc0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e67830",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e67830.c;xref:0x142e677f4",
+  "notes": "Allocates a 0x168 task: base ctor 0x1432c1ee0, vtable 0x1457f1ce0, sub-objects (vtables 0x14583d290 / 0x14583d2b0) with allocator pointers at +0x148/+0x158 and object pointers at +0x150/+0x160, final vtable 0x1457f1bc0; holder vtable 0x1457f1ea0; logs 'Allocated new task %s', adds via 0x1432dd060. Only caller 0x142e67670 (Game_GameTransactionSystem_RequestPurchaseTier) at 0x142e677f4. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_create_task_vt1457f1bc0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 74 24 58 48 85 F6 74 1D F0 FF 4E 08 75 17 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 09 48 8B 06 48 89 F1 FF 50 08 90 48 83 C4 60 5B 5F 5E C3 CC CC CC",
+  "match": "0x142e677f4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142e67830",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_CreateTask_Vt1457f1bc0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cs3-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_CreateTask_Vt1457f1bc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e67830.c;xref:0x142e677f4",
+   "notes": "V3345 Sub-object ptrs are at +0x150 and +0x160 (allocator/holder at +0x148/+0x158), not objects at +0x148/+0x158; rest holds (0x168, vtables, AddTask, log). Name is vtable-only; keep"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "cs3-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_CreateTask_Vt1457f1bc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e67830.c;xref:0x142e677f4",
+   "notes": "V3974 Sub-object ptrs are at +0x150 and +0x160 (allocator/holder at +0x148/+0x158), not objects at +0x148/+0x158; rest holds (0x168, vtables, AddTask, log). Name is vtable-only; keep"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142e67830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e67830.c;xref:0x142e677f4",
+   "notes": "V4163 Allocs 0x168, base ctor Game_OnlineSubsystemTaskOnServiceBase_Ctor 0x1432c1ee0, intermediate vt 0x1457f1ce0, sub-objects vt 0x14583d290/0x14583d2b0 (allocators at +0x148/+0x158, objects at +0x150/+0x160 per correction), final vt 0x1457f1bc0, holder vt 0x1457f1ea0, 'Allocated new task %s' F1OS-TASKSYSTEM, AddTask 0x1432dd060; call site in RequestPurchaseTier (0x142e477a4 ref is a false positive)"
+  }
+ ],
+ "proofs": []
+}

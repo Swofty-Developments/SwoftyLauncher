@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SaveBlobCurve_Serialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144507ab0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Serialise(void *blob, void *dst, void *writer)",
+  "evidence": "decomp:re/decomp/144507ab0.c;xref:0x140c6f7f1;xref:0x140f75fd3;xref:0x140f78201",
+  "notes": "myteam-g2: Writer twin of Career_SaveBlobCurve_Deserialise: emits blob+0xc,+0x18,+0x1c,+0x20 then the (u32,u32) pair list (blob+0x70..0x78) into a stack buffer (<=0x101 words, heap otherwise) and writes it. Used by Bank_WriteBudgetData, Renown and Workforce save."
+ },
+ "signature": {
+  "id": "career.save_blob_curve_serialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 C5 78 29 84 24 A0 04 00 00 C5 F8 29 BC 24 90 04 00 00 C5 F8 29 B4 24 80 04 00 00 4C 89 44 24 28",
+  "match": "0x144507ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144507ab0",
+  "kind": "func_start",
+  "names": [
+   "Career_SaveBlobCurve_Serialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x144507ab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144507ab0.c;xref:0x140c6f7f1",
+   "notes": "V10363 Writer twin; calls blob writer 143931c90."
+  }
+ ],
+ "proofs": []
+}

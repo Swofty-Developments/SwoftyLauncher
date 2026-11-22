@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_RivalryCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140747ac0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140747ac0.c;pat:log-channel-TELEMETRY;xref:0x1406eb9f4,0x140707996",
+  "notes": "Bus handler: lea 0x1406eb9f4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x140707996 in unsubscribe-all 0x1406fd6c0. Allocs 0xb8 record (ctor 0x14057da90), copies msg fields, baseCtx by 0x14077bb90 'rivalry_completed_record', pushed to static queue (guard 0x14604de60) under CS; logs TELEMETRY 'Rivalry completed'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_rivalry_completed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 D3 48 89 CE",
+  "match": "0x140747ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140747ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_RivalryCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140747ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140747ac0.c",
+   "notes": "V4232 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

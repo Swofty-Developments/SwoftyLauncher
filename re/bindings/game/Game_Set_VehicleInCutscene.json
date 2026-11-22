@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Set_VehicleInCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140239cf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140239cf0.c;imm:0x7c97c1e9;xref:0x140239c2c,0x140274c97,0x14037019e,0x1455eb1f0,0x1456caf70",
+  "notes": "Virtual in the cutscene script vtables (cells 0x1455eb1f0, 0x1456caf70 and more in between). For vehicle index param_3: binds each scene part of param_2 (0x140382200, bones F1Car_AnimBone/F2Car_AnimBone), logs OSQGHOST \"setIsInCutscene %p %s\", sets vehicle+0x9f0a and the 4 wheel flags +0x164, restores the rest transform of node \"halo\", rebinds wheels 0..3 (0x142e83130/0x142e87870); then copies or scales by 0.001 (param_6) model node [+0x10b8] and vcall +0x98(param_7). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.set_vehicle_in_cutscene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 78 29 9C 24 C0 00 00 00 C5 78 29 94 24 B0 00 00 00 C5 78 29 8C 24 A0 00 00 00 C5 78 29 84 24 90 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 49 89 D6 48 85 D2",
+  "match": "0x140239cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140239cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_Set_VehicleInCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140239cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140239cf0.c",
+   "notes": "V4458 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

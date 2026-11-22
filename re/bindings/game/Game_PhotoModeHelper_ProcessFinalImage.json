@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeHelper_ProcessFinalImage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bce8c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bce8c0.c;pat:log-channel-PHOTO-MODE;xref:0x142bce24d",
+  "notes": "PhotoModeHelperModule::processFinalImageThreadFunc (own log string; thread func, lea in 0x142bcdec0): dispatches on capture type +0xb0: 0/1 -> CreateNormalPhoto, 2/3 and 4/5 -> Create3dPhoto, 6 -> super resolution (tiles +0x1268 x +0x126c, progress +0x12d4, 'Creating the super resolution photo took'), then 0x142bcf220(mod,0) and clears +0x12c4/+0x12d4/+0x12d0. (lane owner review requested) Better name: Game_PhotoModeHelperModule_ProcessFinalImageThread (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.photo_mode_helper_process_final_image",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 BC 24 D0 00 00 00 C5 F8 29 B4 24 C0 00 00 00 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142bce8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bce8c0",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeHelper_ProcessFinalImage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bce8c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bce8c0.c;xref:0x142bce24f",
+   "notes": "V5022 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

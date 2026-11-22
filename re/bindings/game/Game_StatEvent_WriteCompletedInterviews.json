@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteCompletedInterviews",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143782960",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143782960.c;pat:log-channel-STATEVENT;xref:0x143782119,0x1437831f6",
+  "notes": "STATEVENT sub-writer: keys via 0x1401009f0 + djb2, providers this+8..+0x10 vcall +0x18 (enabled) / +0x30 (write). Handler (lea 0x143782119 / 0x1437831f6): only when msg+0x18 == 5; 3 keys CompletedInterviews, .GameplayModeId.%d, .GameplayModeId.%d.IsInTeamCareer.%d from context +0x140/+0x168, providers [ctx]+0x70. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_completed_interviews",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 03 00 00 80 7A 18 05",
+  "match": "0x143782960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143782960",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteCompletedInterviews"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143782960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143782960.c;xref:0x14378211b",
+   "notes": "V6250 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

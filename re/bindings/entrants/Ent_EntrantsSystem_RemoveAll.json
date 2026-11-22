@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_RemoveAll",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14245f590",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14245f590.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140ba27de,0x141a78355,0x141a78539,0x141a78bea,0x141b0950e,0x141b0fd89,0x141b184b9,0x141b1fa9e,0x141bec5d8,0x141f284e5,0x14245d625,0x14256d759,0x14276c01e,0x1429356f4,0x142936864,0x143121236",
+  "notes": "Renamed: clears the kind-2 (eNetworkReplicated) lists: drivers +0x288, driver cust +0x2b8, teams +0x2e8, vehicles +0x348, vehicle cust +0x3a8, badges +0x3d8 and +0x378 (entries with +0x490 count); posts bus msgs 0x14578dfe0/0x14578e038/0x14578e070 with kind byte 2 via Ne_Post_BusMessage; logs '%s drivers removed' etc with 'eNetworkReplicated'. Team customisations (+0x318) not cleared. (lane owner review requested) Better name: Ent_EntrantsSystem_RemoveAllNetworkReplicated (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "entrants.entrants_system_remove_all",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 48 89 CE 48 8B B9 88 02 00 00",
+  "match": "0x14245f590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14245f590",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_RemoveAll"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14245f590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14245f590.c;xref:0x140ba27de",
+   "notes": "V5276 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

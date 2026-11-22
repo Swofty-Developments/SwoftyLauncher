@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayHud_SetActive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c048b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c048b0.c;xref:0x142d9d80d,0x142d9ed81,0x142da18c5,0x142da2805,0x142da2929,0x142da2a66,0x142da2db0,0x142da66c8,0x142da675c,0x142da69f3",
+  "notes": "(hud, active): when changed (or false) pushes the bool to UI node +0x3b0 (Vm_NodeSet_Bool, type 0x146129dc0), stores +0x130, clears +0x134..+0x138. When inactive: Ne_VmNode_SetFloat(+0x370, 0), and if +0x98: 0x14453f620([+0xb8], +0x84, +0x7c) when +0x7d, clears bit +0x7e in [+0xa0]+0x54 when +0x7f, +0x98 = 0. Callers Sess_ViewInstantReplay_Update, Game_SessionStateViewReplay_OnStateEnter, 0x142d9ec50, 0x142da1280, 0x142da6680. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.replay_hud_set_active",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 89 D3 48 89 CE 88 54 24 23 38 91 30",
+  "match": "0x142c048b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c048b0",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayHud_SetActive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142c048b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c048b0.c;xref:0x142da2805,0x142d9d80d",
+   "notes": "V3429 if changed sets +0x130, pushes bool to prop +0x3b0 (type 0x146129dc0) via 0x140973e20; inactive resets +0x370 prop and clears input bit in [+0xa0]+0x54; caller Sess_ViewInstantReplay_Update (+others)"
+  }
+ ],
+ "proofs": []
+}

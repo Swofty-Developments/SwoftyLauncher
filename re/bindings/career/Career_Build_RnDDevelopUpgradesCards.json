@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDDevelopUpgradesCards",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c486b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Build_RnDDevelopUpgradesCards(void * self)",
+  "evidence": "decomp:re/decomp/141c486b0.c;xref:0x141c47c7d;xref:0x141c4c0da",
+  "notes": "myteam-g1: Builds the develop_upgrades_card / develop_upgrades_card_empty tiles per department (lng_rnd_dept_%s, lng_rnd_development_boosted); reads Career_Get_TeamModifiers for the boosted label. Falls back to error_department."
+ },
+ "signature": {
+  "id": "career.build_rn_ddevelop_upgrades_cards",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 1A 00 00",
+  "match": "0x141c486b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c486b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDDevelopUpgradesCards"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c486b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c486b0.c;xref:0x141c47c7d;xref:0x141c4c0da",
+   "notes": "V9964 Builds develop_upgrades_card(_empty) per department with lng_rnd_dept_%s, development boosted/delayed/in_progress, error_department fallback."
+  }
+ ],
+ "proofs": []
+}

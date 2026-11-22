@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_DisconnectVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f9f90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f9f90.c;pat:log-channel-FFB_DEBUG;xref:0x145c007d0",
+  "notes": "Vtable cell 0x145c007d0 (FFB subsystem). Calls 0x1446f9c40, then for every device controller (+0x50..0x58) disconnects its vehicle (0x1446f1730) and logs 'Disconnected vehicle %d from device %s %d.' (FFB_DEBUG); under CS +0x1d8 resets plugins (0x1446f0e00), enables plugin id 'frontend' (+0x54=1) and disables plugin id 'car' (+0x54=0). Renamed: acts on all vehicles. (lane owner review requested) Better name: Game_Ffb_DisconnectAllVehicles (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ffb_disconnect_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE E8 ?? ?? ?? ?? 48 8B 5E 50",
+  "match": "0x1446f9f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f9f90",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_DisconnectVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f9f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f9f90.c",
+   "notes": "V6860 Disconnected vehicle log confirmed; twin of _2. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

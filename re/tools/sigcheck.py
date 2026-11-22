@@ -52,6 +52,9 @@ class Image:
         self.secs = [(s.Name.rstrip(b'\0').decode(), s.VirtualAddress, max(s.Misc_VirtualSize, s.SizeOfRawData), s.PointerToRawData, s.SizeOfRawData) for s in pe.sections]
         self.data = np.memmap(path, dtype=np.uint8, mode='r')
         self.ts = pe.FILE_HEADER.TimeDateStamp
+        exception = pe.OPTIONAL_HEADER.DATA_DIRECTORY[3]
+        self._exception_rva, self._exception_size = exception.VirtualAddress, exception.Size
+        pe.close()
         self._sec_bytes = {}
         self._pdata = None
 
@@ -85,8 +88,10 @@ class Image:
     def pdata(self):
         if self._pdata is None:
             import numpy as np
-            n, va, vs, ro, rs = self.sec('.srdata') or self.sec('.pdata')
-            raw = bytes(self.data[ro:ro + rs])
+            # Steam overlays can shuffle section names. Unwind metadata is identified by the PE directory,
+            # not a section label (the current .srdata is unrelated and only 512 bytes).
+            raw = self.read(self.base + self._exception_rva, self._exception_size) if self._exception_rva else b''
+            raw = raw or b''
             raw = raw[:len(raw) - len(raw) % 12]
             arr = np.frombuffer(raw, dtype=np.uint32).reshape(-1, 3)
             arr = arr[(arr[:, 0] != 0) & (arr[:, 1] > arr[:, 0])]
@@ -120,12 +125,15 @@ def to_regex(pat):
 
 
 def find_all(img, section, pat, limit=50):
+    """Every match, overlapping ones included, the way the core's scan counts them."""
     va, b = img.section_bytes(section)
-    hits = []
-    for m in to_regex(pat).finditer(b):
-        hits.append(img.base + va + m.start())
-        if len(hits) >= limit:
+    rx, hits, pos = to_regex(pat), [], 0
+    while len(hits) < limit:
+        m = rx.search(b, pos)
+        if not m:
             break
+        hits.append(img.base + va + m.start())
+        pos = m.start() + 1
     return hits
 
 
@@ -185,18 +193,18 @@ def resolve(img, match, sig):
 
 
 def load_kb_names():
+    import kb
     names = {}
-    for t in ('functions.tsv', 'globals.tsv'):
-        p = os.path.join(DB, t)
-        if not os.path.exists(p):
-            continue
-        for ln, line in enumerate(open(p), 1):
-            if ln == 1:
-                continue
-            c = line.rstrip('\n').split('\t')
-            if len(c) > 2:
-                names[c[1]] = (int(c[0], 16), c[2] if t == 'functions.tsv' else c[5])
+    for t in ('functions', 'globals'):
+        for r in kb.read_table(t)[0]:
+            names[r['name']] = (int(r['addr'], 16), r['sig'])
     return names
+
+
+def verified_here(sig, kb_build):
+    made_on = sig.get('made_on')
+    return any(v.get('build', '') and (kb_build.startswith(v['build']) or v['build'] == made_on)
+               for v in sig.get('verified') or ())
 
 
 def check(img, sig, kb_build, names, same_build):
@@ -261,7 +269,7 @@ def check(img, sig, kb_build, names, same_build):
         errs.append(f'unknown kind {kind!r}')
     if not sig.get('verified'):
         errs.append('no verified[] entry')
-    elif not any(v.get('build', '') and kb_build.startswith(v['build']) for v in sig['verified']):
+    elif not verified_here(sig, kb_build):
         errs.append(f'verified[] has no entry for the KB build {kb_build[:16]}')
     if same_build:
         for n in sig.get('names', []):
@@ -345,7 +353,8 @@ def main():
     ap.add_argument('--json', action='store_true')
     ap.add_argument('--sigs', default=None, help='check this signatures file instead of re/db/signatures.json')
     a = ap.parse_args()
-    doc = json.load(open(a.sigs or os.path.join(DB, 'signatures.json')))
+    import kb
+    doc = json.load(open(a.sigs)) if a.sigs else kb.load_signatures()
     kb_build = doc['build']['sha256']
     exe = a.exe or DEFAULT_EXE
     img = Image(exe)

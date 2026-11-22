@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "g_Live_SectorEnds",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146ce6660",
+  "type": "float[22]",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/142cfd6c0.c;decomp:re/decomp/141484fb0.c;xref:0x142cfd6c0,0x141485237,0x1414bab6f,0x1414bc77f;xref:0x141485234",
+  "notes": "sector end distances in metres. Sector of lap_m (0-based) = first i with min(max(lap_m,0),track_length) <= ends[i], else count-1 (the UDP builder rule; Halo reports it 1-based). Count is g_Live_SectorCount; g_Game_TrackLength 0x146ce66b8 follows the 22 slots"
+ },
+ "signature": {
+  "id": "live.sector_ends",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? 31 C9 0F 1F 00 C5 FA 10 0A",
+  "match": "0x141485234",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146ce6660",
+  "kind": "data",
+  "names": [
+   "g_Live_SectorEnds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "g_Live_SectorEnds",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cfd6c0.c;decomp:re/decomp/1446034b0.c;xref:0x142cfde14,0x142cfdda4",
+   "notes": "V8785 own disx SyncLapData: lap_m = total - (progress_lap+delta)*track_length clamped to [0,len]; 0x142cfde14 lea rdx,[0x146ce6660]; loop vucomiss ends[i] >= lap_m -> sector i, i++ until i == count, else count-1 (min 0): exactly the KB rule. 22 slots: next global 0x146ce66b8 (g_Game_TrackLength) is 0x58 after. Second independent reader Game_Progress_ClampToSingleLap 0x1446034b0 uses the same ends/count. 50 referencing sites; writer not looked for"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.sector_ends",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.sector_ends;xref:0x141485234",
+   "notes": "V8910 sigcheck hits=1; anchor lea rdx,[0x14148523b+0x5861425]=0x146ce6660 feeds vucomiss loop over floats (stride 4) = g_Live_SectorEnds"
+  }
+ ],
+ "proofs": []
+}

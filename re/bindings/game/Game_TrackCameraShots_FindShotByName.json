@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackCameraShots_FindShotByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445db910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445db910.c;xref:0x142c4de18",
+  "notes": "(shots, group, shot): copies group (<= 31 chars) into a 32-byte inline string and finds it with 0x1445e4d60(shots+8, key) in the pointer array shots+0x30 (end +0x38); then copies shot (<= 15 chars, zero-padded) into a 16-byte key and looks it up with 0x1445e4e90(group+0x38, key) in group+0x60 (end +0x68). Returns entry+0x10, null when either is missing. Caller 0x142c4de18. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.track_camera_shots_parse_shot_names",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 4C 89 C6 48 89 CF 48 83 C1",
+  "match": "0x1445db910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445db910",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackCameraShots_FindShotByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1445db910",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1445db910.c;xref:0x142c4de18",
+   "notes": "V7687 BetterName Game_TrackCameraShots_FindShotByName: builds SSO copy of name then hash-map lookup (this+0x38/+0x60), returns entry+0x10"
+  }
+ ],
+ "proofs": []
+}

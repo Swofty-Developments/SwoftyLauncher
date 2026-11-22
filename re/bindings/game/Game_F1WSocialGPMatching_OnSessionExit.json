@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WSocialGPMatching_OnSessionExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431584e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431584e0.c;pat:log-message-cxx;xref:0x14581cdc8",
+  "notes": "Own pretty-function 'virtual void network::F1WSocialGPMatching::onSessionExit()'. If session +0x80 exists, exit type ([this+0x10]+0x40)+0x1fc is 1 or 4 and 0x1407c13f0 false: reads '#ui_menu_data.frontend_transition_state'; sets it to 'custom_lobby' when the lobby has >1 members and +0x333 set, else 'f1_world' plus 0x1430605c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_w_social_gp_matching_on_session_exit",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 83 B9 80 00 00 00 00",
+  "match": "0x1431584e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431584e0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WSocialGPMatching_OnSessionExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431584e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431584e0.c;xref:0x143148cb7",
+   "notes": "V5986 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

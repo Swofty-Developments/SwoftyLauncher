@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CheckPrivilegeTask_ShowPopupMessageGeneratedFromTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143371320",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143371320.c;str:s_OnlineSystems_Tasks_CheckPrivilegeTask_ShowPopupMessageGeneratedFromTa;xref:0x143370ab1,0x14345043d,0x14345071d",
+  "notes": "Own pretty-function log. Handler +0x168 vt+8 (fallback +0x178) builds the popup text for privilege param_2, then 0x143370ff0(this, text, callback Game_CheckPrivilegeTask_CallPrivilegeCheckCallback, param_2). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.check_privilege_task_show_popup_message_generated_from_task",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 18 01 00 00 89 D6 48 89 CF 80 3D",
+  "match": "0x143371320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143371320",
+  "kind": "func_start",
+  "names": [
+   "Game_CheckPrivilegeTask_ShowPopupMessageGeneratedFromTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143371320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143371320.c;xref:0x143370ab2",
+   "notes": "V6003 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

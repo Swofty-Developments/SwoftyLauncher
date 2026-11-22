@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_Set_SessionDefaultFuelErs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f43b30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Set_SessionDefaultFuelErs(void *sys)",
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/142f43b30.c;xref:0x142f41894,0x142f43556",
+  "notes": "Bus handler for 'player_dropped_in': lea 0x142f41894 in 0x142f41610 (subscribe), lea 0x142f43556 in Game_VehicleSystem_Terminate (unsubscribe). If msg ushort +0x10 > 0xff, low byte indexes [g 0x146096578]+0x30; controller [entry+0x20] vfunc +0x18 -> u32 +8 and +0 = 3 for session type 5..14 or 18, 1 for 15..17 (type [[this+0x78]+0x1a8]+4). Returns 0. Better name: Sess_PlayerDroppedIn_SetDefaultFuelErs (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "session.set_session_default_fuel_ers",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 0F B7 42 10 48 3D 00 01 00 00",
+  "match": "0x142f43b30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f43b30",
+  "kind": "func_start",
+  "names": [
+   "Sess_Set_SessionDefaultFuelErs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Sess_Set_SessionDefaultFuelErs",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x142f43b7b,0x142f43bbb",
+   "notes": "V1692 aaa-verify: 3 for 5..14 and 18, 1 for 15..17, none for 0..4/19; 'Controls' object name not provable"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Sess_Set_SessionDefaultFuelErs",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x142f43b7b,0x142f43bbb",
+   "notes": "V1893 aaa-verify: 3 for 5..14 and 18, 1 for 15..17, none for 0..4/19; 'Controls' object name not provable"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_Set_SessionDefaultFuelErs",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f43b30.c;xref:0x142f43b30",
+   "notes": "V1913 not a loop: handles one vehicle (byte of msg+0x10, only if ushort>0xff) via table at DAT_146096578+0x30; session type=[[+0x78]+0x1a8]+4; mask 0x7fe0 (5..14)->3, 15..17->1, 18->3 confirmed; writes +8 then +0"
+  }
+ ],
+ "proofs": []
+}

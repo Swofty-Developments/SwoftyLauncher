@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Flags_PlayZoneFlagEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14357bd00",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14357bd00.c;xref:0x14356dcdd,0x14356f8d6",
+  "notes": "Per flag zone table (entries 0x1c8, order from 0x14584a96d): for the zone matching param_3 plays/stops the configured flag event names (+0x10 / +0xa8 strings) through event service [this+0x9e8] (0x142a4cc50); param_4 = 0 start, 1 stop, 2 restart. Callers: Sess_Flags_UpdateYellowReasons."
+ },
+ "signature": {
+  "id": "session.flags_play_zone_flag_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 44 89 C3 48 89",
+  "match": "0x14357bd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14357bd00",
+  "kind": "func_start",
+  "names": [
+   "Sess_Flags_PlayZoneFlagEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x14357bd00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14357bd00.c;xref:0x14356dcdd,0x14356f8d6",
+   "notes": "V3786 4-entry zone order table 0x14584a96d, zone stride 0x1c8, event name strings at +0x10/+0xa8/+0x140 played through service [this+0x9e8] (142a4cc50) with param_4 = 0/1/2 modes."
+  }
+ ],
+ "proofs": []
+}

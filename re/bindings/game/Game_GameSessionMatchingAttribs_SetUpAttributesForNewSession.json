@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingAttribs_SetUpAttributesForNewSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14306dc50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14306dc50.c;pat:log-message-cxx;xref:0x143072545,0x14307f0ab,0x143080111,0x143150f68,0x143159ce6,0x14315c9ab,0x143162d72",
+  "notes": "Own pretty-function string 0x14580be00 'NeNetSessionAttribs *...::setUpAttributesForNewSession(const CoreValues &)'. Clears the attrib list p1+0xa8, copies CoreValues p2 (cluster ids, flags) to +0xac8..+0xae4, 0x143069c40(p1,1), then sets via 0x14407dbe0(p1+0xa8,p1+0x40,name,value): DeveloperCode, MatchingContext, LobbyMaxPlayers (by context type 0..7), Region, SessionToken, ScenarioStatId, usingDLC, AutoTestUID, GameState=2, MatchingClusterID/Ext (logged), race count range +0xb38/+0xb3c (updateRaceCount), Skill=0 and QuickMatch=0 if defined. Returns p1+0xa8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_attribs_set_up_attributes_for_new_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CB 48 8B 41 18",
+  "match": "0x14306dc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14306dc50",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingAttribs_SetUpAttributesForNewSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14306dc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14306dc50.c;xref:0x1430651bf",
+   "notes": "V5552 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

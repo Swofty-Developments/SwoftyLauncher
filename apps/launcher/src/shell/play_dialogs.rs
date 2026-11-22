@@ -1,43 +1,18 @@
-use crate::game::{self};
-use crate::notices::{Notification, Notify};
-use crate::scale::px;
-use crate::theme::palette;
+use crate::services::game::{self};
+use crate::shell::notices::{Notification, Notify};
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 use gpui_kit::component::WindowExt;
-use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
-use swofty_core::process::stop_game_in;
+use swofty_core::platform::process::stop_game_in;
 
 use super::Shell;
-use super::dialogs::offline_terms;
+use super::launch_alerts::offline_terms;
 use swofty_i18n::tr;
 
 impl Shell {
     /// First launch: the offline play terms, shown as a dialog on Play.
     /// Accepting records consent and launches; declining changes nothing.
-    pub(super) fn confirm_missing_rows(&mut self, text: String, window: &mut Window, cx: &mut Context<Self>) {
-        let shell = cx.entity().downgrade();
-        window.open_alert_dialog(cx, move |alert, _, _| {
-            let shell = shell.clone();
-            alert
-                .width(px(520.))
-                .title(tr("Careers that need addons"))
-                .description(text.clone())
-                .ok_text(tr("Play anyway"))
-                .ok_variant(ButtonVariant::Danger)
-                .show_cancel(true)
-                .on_ok(move |_, window, cx| {
-                    window.close_dialog(cx);
-                    shell
-                        .update(cx, |s, cx| {
-                            s.play_anyway = true;
-                            s.play(window, cx);
-                        })
-                        .ok();
-                    false
-                })
-        });
-    }
-
     pub(crate) fn confirm_offline_play(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let shell = cx.entity().downgrade();
         let store = self.store.clone();
@@ -52,7 +27,7 @@ impl Shell {
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
                     if let Err(e) = swofty_core::offline::record_accept(&store.root) {
-                        crate::app_log::action("accept offline play").failed(&e);
+                        crate::app::app_log::action("accept offline play").failed(&e);
                         window.notify(Notification::error(e.to_string()), cx);
                         return false;
                     }
@@ -64,27 +39,27 @@ impl Shell {
     }
 
     pub(crate) fn restore_game_folder(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(install) = self.install.clone() else {
+        let Some(install) = self.game.install.clone() else {
             return;
         };
         let store = self.store.clone();
-        self.notice = None;
-        self.blocked = None;
-        self.game_edited = None;
-        self.restoring = true;
+        self.launching.notice = None;
+        self.game.blocked = None;
+        self.launching.game_edited = None;
+        self.launching.restoring = true;
         cx.spawn_in(window, async move |this, cx| {
             let result = cx
                 .background_executor()
                 .spawn(async move { game::restore(&store, install.dir) })
                 .await;
             this.update_in(cx, |s, window, cx| {
-                s.restoring = false;
+                s.launching.restoring = false;
                 match result {
                     Ok(text) => {
                         window.notify(Notification::success(text).title(tr("Game folder restored")), cx)
                     }
                     Err(e) => {
-                        crate::app_log::action("restore the game folder").failed(&e);
+                        crate::app::app_log::action("restore the game folder").failed(&e);
                         window.notify(Notification::error(e).title(tr("Restore failed")), cx)
                     }
                 }
@@ -111,16 +86,16 @@ impl Shell {
                 .cancel_text(tr("Keep building"))
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
-                    match swofty_core::busy::request_cancel(&data) {
+                    match swofty_core::game_folder::busy::request_cancel(&data) {
                         Ok(()) => {
                             this.update(cx, |s, cx| {
-                                s.cancelling = true;
+                                s.launching.cancelling = true;
                                 cx.notify();
                             })
                             .ok();
                         }
                         Err(e) => {
-                            crate::app_log::action("cancel the build").failed(&e);
+                            crate::app::app_log::action("cancel the build").failed(&e);
                             window.notify(Notification::error(e.to_string()), cx)
                         }
                     }
@@ -130,7 +105,7 @@ impl Shell {
     }
 
     pub(crate) fn confirm_stop(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return;
         };
         let data = self.store.root.clone();
@@ -144,7 +119,7 @@ impl Shell {
                 .on_ok(move |_, window, cx| {
                     swofty_core::session::request_stop(&data);
                     if let Err(e) = stop_game_in(&dir) {
-                        crate::app_log::action("stop f1 25").failed(&e);
+                        crate::app::app_log::action("stop f1 25").failed(&e);
                         window.notify(Notification::error(e.to_string()), cx);
                     }
                     true

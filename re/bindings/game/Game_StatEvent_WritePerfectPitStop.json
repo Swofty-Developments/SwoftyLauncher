@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WritePerfectPitStop",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143775da0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143775da0.c;pat:log-channel-STATEVENT;xref:0x151322884",
+  "notes": "Providers this+8..+0x10; 2 entries 1.0 type 0: PerfectPitStop, .HadPerfectParkInGridBox.%d(arg2). Caller 0x1513226d0. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_perfect_pit_stop",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 89 D3",
+  "match": "0x143775da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143775da0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WritePerfectPitStop"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143775da0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143775da0.c;xref:0x14c2f3967",
+   "notes": "V6243 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

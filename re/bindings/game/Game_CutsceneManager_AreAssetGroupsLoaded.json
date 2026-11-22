@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneManager_AreAssetGroupsLoaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14022a110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14022a110.c;pat:log-message-cxx;xref:0x140239640,0x140252288,0x140252596,0x1402639c5,0x140263a4f,0x140269400,0x140269750,0x140269b20,0x140269f80,0x14026a2d0,0x14026a650,0x14026a9d0,0x14026b530,0x14026b880,0x14026bc00,0x14026bf50,0x140273fc4,0x140273fd8,0x1402745d4,0x1402745e8",
+  "notes": "(mgr, sharedRef *batch): under CriticalSection *mgr, 0x1402291f0 refresh, then per asset group of the batch checks the tracked entries mgr[0x17..0x18] (0x20 stride) for this batch: byte +0x18 loading / +0x1a unloading / +0x1b unloaded -> 0 with the matching 'LOADING/UNLOADING/UNLOADED -> FALSE' log, +0x19 loaded -> 'LOADED -> TRUE'; no entry -> 'NOT FOUND -> FALSE'. Returns 1 only when every group is loaded. Used by PollAssetsLoaded and many cutscene scripts. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_manager_are_asset_groups_loaded",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 48 89 D7 48 89 CE 48 8B 09",
+  "match": "0x14022a110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14022a110",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneManager_AreAssetGroupsLoaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14022a110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14022a110.c",
+   "notes": "V4421 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

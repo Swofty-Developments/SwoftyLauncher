@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteDriverCarAndBadgeEdited",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143761b20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143761b20.c;pat:log-channel-STATEVENT;xref:0x151210467",
+  "notes": "STATEVENT sub-writer: keys via 0x1401009f0 + djb2, providers this+8..+0x10 vcall +0x18 (enabled) / +0x30 (write). (list, car, driver, badge): 3 keys DriverCarAndBadgeEdited.CarEdited.%d, .DriverEdited.%d, .BadgeEdited.%d, 1.0. Caller 0x151210467. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_driver_car_and_badge_edited",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 03 00 00 45 89 CC",
+  "match": "0x143761b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143761b20",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteDriverCarAndBadgeEdited"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143761b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143761b20.c;xref:0x151210467",
+   "notes": "V6216 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

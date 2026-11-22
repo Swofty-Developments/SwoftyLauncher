@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "g_Ne_InlineStrVtable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145612ea8",
+  "type": "vtable[4]",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14172c840.c;xref:0x140153dd7,0x14016301f,0x1401781a6,0x140178df1,0x1401a6074,0x1401a948f,0x1401aa280,0x1401b0c23",
+  "notes": "Vtable (4 code slots 0x14030eb40, 0x14030ebf0, 0x1402acc90, 0x1402acd60) of the inline name string objects built on the stack, 1431 lea sites; e.g. 0x14172c840 builds one at rsp+0x28 with the characters written inline at +0x20 for Game_GameModes_IndexByName. Better name: vt_Ne_InlineStr (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.ne_inline_str_vtable",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 8B 4B 58 48 8B",
+  "match": "0x14172c8a3",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145612ea8",
+  "kind": "data",
+  "names": [
+   "g_Ne_InlineStrVtable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "room-headless",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

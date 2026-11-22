@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_ReleaseMeshModelBinding",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c4a8e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c4a8e0.c;xref:0x143b134ee,0x143b40880,0x152562b6e,0x152562bbc,0x152562cbe,0x1526f39e9",
+  "notes": "Teardown (obj, allocator): sub *obj: if +0x20 == 0 the u16 count +0x4e handles at +0x18 go to Render_Gfx2Device_DestroyAndTrackResource_4ac8 0x1439dbea0(global 0x14618caa8), else +0x20 freed; frees +0x18 and sub; obj[6] 0x1439da200, obj[5] 0x1439da070 (deferred release); destroys vector obj[10..0xb] (0x1403118b0); clears FNV-1a hash map obj[0xe..0x16] (tail 0x143f0f4e0). Counterpart of Game_Particles_BindMeshModel 0x143b133f0 (caller). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.particles_release_mesh_model_binding",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 39",
+  "match": "0x143c4a8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c4a8e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_ReleaseMeshModelBinding"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c4a8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c4a8e0.c;xref:0x143b134ee",
+   "notes": "V7877 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NeUgc_DownloadItemCallbackResultResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144158a00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144158a00.c;pat:log-channel-NeUgc;xref:0x15313d365",
+  "notes": "Steam DownloadItemResult callback (lea 0x15313d365). Acts only in state 0xd with appID == SteamUtils app id (0x146129760 vslot +0x20) and publishedFileId == +0x58: m_eResult 1 -> state 0xf (DownloadItem_Success); else logs unhandled result, +0x408 = 1, state 0x10 (DownloadItem_Failed); result 9 also pushes error 0x58. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ne_ugc_download_item_callback_result_result",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5B B8 EF 00 00 00",
+  "match": "0x144158a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144158a00",
+  "kind": "func_start",
+  "names": [
+   "Game_NeUgc_DownloadItemCallbackResultResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144158a00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144158a00.c;xref:0x15313d367",
+   "notes": "V6558 size=1012; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

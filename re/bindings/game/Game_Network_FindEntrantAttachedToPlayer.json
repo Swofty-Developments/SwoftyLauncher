@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_FindEntrantAttachedToPlayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143240cb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143240cb0.c;pat:log-message-method;xref:0x14323fed8,0x142e18a78",
+  "notes": "Callers FindEntrantToDropIn 0x14323fcb0 and 0x142e18650. (this, player): returns the first entrant of [[this+0x20]+0x4f8]+0x2e0..+0x2e8 (0x88 stride) whose identity matches the player (Sess_Match_EntrantIdentity_Thunk), else 0; logs NETWORK/V 'findEntrantAttachedToPlayer: player, driver' (driver text '%s %u' from +0x50/+0x52 or nullptr). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_find_entrant_attached_to_player",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 48 8B 41 20",
+  "match": "0x143240cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143240cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_FindEntrantAttachedToPlayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143240cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143240cb0.c;xref:0x142e18a79",
+   "notes": "V5744 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorDirector_RequestDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e19950",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(SpectatorDirector*, uint32_t driver)",
+  "evidence": "decomp:re/decomp/142e19950.c;xref:0x142f35060,0x14f2efe11,0x14f2f1767",
+  "notes": "(dir, u8 car); only when dir+0xd1 set and dir+0xd2 clear. If car is the current camera target: flag 0x40 in g 0x146cc3a80 lists and 0x142a890d0(dir+0x98, dir+0x120); clears the matching slot [[dir+0x30]+0x80][dir+0x140] and bit 8 of [dir+0x30]+0x54. If dir+0xd6 == car: dir+0xdc = 0x142e19bd0(dir,car,1,0) (next driver) and Sess_SpectatorDirector_Update 0x142e18dd0. Callers ghost-fade 0x142f35060 and two .data1 bodies. Better name: Sess_SpectatorDirector_SkipDriver (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "session.spectator_director_request_driver",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 80 B9 D1 00 00 00 00",
+  "match": "0x142e19950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e19950",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorDirector_RequestDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "func",
+   "item": "0x142e19950",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/142e19950.c;xref:0x142f35060,0x14f2efe11,0x14f2f1767",
+   "notes": "V1535 The KB description (stores the requested driver when it differs from the current one) is wrong. Disassembly of the tail (0x142e19b61): cmp [dir+0xd6],bl; jne skip -> it stores [dir+0xdc]=FUN_142e19bd0(dir,driver,1,0) and calls Update ONLY when the argument equals the current driver, and the stored value is the next eligible driver in race order, not the argument. For any other driver it only does fade bookkeeping. Callers are a ghost-fade check (0x142f35060, when the car's alpha falls to a threshold) and two .data1 message thunks (type 5, driver byte at msg+0x10): i.e. it is 'this driver is no longer watchable, advance if it is the one being followed'. It cannot implement follow(car). The HUD next/previous commands store the byte directly: 0x141c24c63 and 0x141c26725 write [dir+0xdc] after requiring entrant state byte [+0x18]&0xfe==2, and 0x142e18c3e (SetActive) does the same for the first driver."
+  }
+ ],
+ "proofs": []
+}

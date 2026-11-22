@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_RequestUnregisterAIEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143115c50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143115c50.c;pat:log-message-method;xref:0x141ddb1b6,0x141ddfbd6,0x14256df96",
+  "notes": "Logs requestUnregisterAIEntrant(name); host only, document open (this+0xdc), param_2+0x4b bit 4 clear: finds the entrant (Sess_Match_EntrantIdentity_Thunk), checks it is not held by a player in the player set (user id match) and unregisters it (0x14310ecb0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_entrants_request_unregister_ai_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC F8 00 00 00 48 89 D7 48 89 CE",
+  "match": "0x143115c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143115c50",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_RequestUnregisterAIEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143115c50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143115c50.c;xref:0x141ddb1b6",
+   "notes": "V5800 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

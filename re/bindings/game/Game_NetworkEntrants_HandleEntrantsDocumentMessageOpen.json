@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_HandleEntrantsDocumentMessageOpen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431153a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431153a0.c;pat:log-message-method;xref:0x1430d8b40",
+  "notes": "Logs handleEntrantsDocumentMessageOpen(conn) and sets the document-open flag this+0xdc = 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_entrants_handle_entrants_document_message_open",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6A B8 63 00 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 81 FA 33 86 9E 86 74 32 85 D2 74 4C 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C1 41 29 D1 41 D1 E9 41 01 D1 41 C1 E9 08 41 69 D1 75 01 00 00 29 D0 83 F8 63 75 C5 EB 1E 45 0F B6 C8 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? C6 86 DC 00 00 00 01",
+  "match": "0x1431153a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431153a0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_HandleEntrantsDocumentMessageOpen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431153a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431153a0.c;xref:0x1430d8b42",
+   "notes": "V5783 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

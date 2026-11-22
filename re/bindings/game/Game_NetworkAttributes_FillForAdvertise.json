@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkAttributes_FillForAdvertise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14407df30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14407df30.c;pat:log-message-method;xref:0x144087920,0x144089958",
+  "notes": "Body read in full. Grows/clears slot buffer +0x20, logs 'fillForAdvertise(%d attrib defs)'; maps each param_4 entry (stride 0x10) to a value from param_3 (stride 0x18); for each attribute def (param_2+0x30, stride 0x30; skipped when +0x10 and def+0x2c set) writes its value into buffer +0x40 as 1/2/4/8 bytes by def+0x20, logging 'Attribute %s(%d) is missing a value.' / 'has value %d.'; appends marker 0xde000001. Callers in 0x144085e20, 0x144089620. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_attributes_fill_for_advertise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4D 89 CF 4C 89 C7 48 89 CE",
+  "match": "0x14407df30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14407df30",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkAttributes_FillForAdvertise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14407df30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14407df30.c;xref:0x144087920",
+   "notes": "V6512 size=2102; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

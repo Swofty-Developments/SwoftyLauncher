@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteF1SeasonStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143719970",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143719970.c;pat:log-channel-STATEVENT;xref:0x151207804",
+  "notes": "Providers this+8..+0x10; 7 entries: F1SeasonsStarted, .DriverStatId(+0x18), .GameplayModeId(+8), F1SeasonsStartedUnique.GameplayModeId (type 3), .GameplayModeId.DriverStatId, CurrentSeasonTeamStatId=(float)ctx+0x10 type 3, CurrentSeasonDriverStatId=(float)ctx+0x18 type 3. Caller 0x151207790. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_f1_season_started",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 08 00 00 48 89 D7",
+  "match": "0x143719970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143719970",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteF1SeasonStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143719970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143719970.c",
+   "notes": "V6157 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

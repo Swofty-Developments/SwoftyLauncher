@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Game_HandleApplicationResumeFromSuspended",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407fd310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407fd310.c;pat:log-message-method;xref:0x1407f778a",
+  "notes": "handleApplicationResumeFromSuspended(game): logs GAME; looks up components 0x1460bed80 and 0x146079b70 in the game+0x30 registry and calls 0x1430ef280 / 0x142a83850, clears [[0x14601f5c8]+0xc0]+0x1b8, sends 2 to [[game+0x100]+0xa0]+0xca0 (0x140b4de60), posts bus msg vt 0x14564b640. Handler registration (lea) in 0x1407f7320. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_handle_application_resume_from_suspended",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 5F 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 85 D2 74 52 81 FA CB 88 7C 7C 74 30 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 5F 01 00 00 75 C3 EB 1A 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 7E 30 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28",
+  "match": "0x1407fd310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407fd310",
+  "kind": "func_start",
+  "names": [
+   "Game_Game_HandleApplicationResumeFromSuspended"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407fd310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407fd310.c",
+   "notes": "V4318 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

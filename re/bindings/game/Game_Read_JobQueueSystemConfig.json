@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_JobQueueSystemConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443c8d70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1443c8d70.c;pat:log-channel--;xref:0x1443c080d",
+  "notes": "Allocator EGO_JOB_QUEUE_SYSTEM alloc 0x120 -> global 0x146ca5c30 (CS, CreateEventW). Reads cpu/processors/processorStride/processorBinding, JobQueueSystem.* settings (0x143a42f10/0x143a43240/0x143a43b90), Audio.audio_thread_affinity_mask, GetLogicalProcessorInformationEx; computes affinity masks; init 0x143ac1e10; 0x143ac3620 creates sync_queue/render_queue/update_queue/module_gen_queue -> [rcx+0x38/0x40/0x48/0x50]; POLICY/APPLICATION Jobs: logs. (lane owner review requested) Better name: Game_JobQueueSystem_Init_FromConfig (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_job_queue_system_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 CE",
+  "match": "0x1443c8d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443c8d70",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_JobQueueSystemConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443c8d70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443c8d70.c;xref:0x1443c080d",
+   "notes": "V6591 better name Game_JobQueueSystem_Init: builds CPU topology (GetLogicalProcessorInformationEx), job policies and sync/render/update/module_gen queues, not just a config read"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1443c8d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443c8d70.c;xref:0x1443c080d",
+   "notes": "V7203 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Is_RnDPlayerControlled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14351c050",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Is_RnDPlayerControlled(int64_t *self,uint64_t a2)",
+  "evidence": "decomp:re/decomp/14351c050.c;xref:0x14351b621;xref:0x14351b83e",
+  "notes": "myteam-g1: Checks if the upgrade/department entry (id match in list at +0x2e0..0x2e8, flag bit 0x10) is under rnd_player_control; also pulls the global clock."
+ },
+ "signature": {
+  "id": "career.is_rn_dplayer_controlled",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 89 D0",
+  "match": "0x14351c050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14351c050",
+  "kind": "func_start",
+  "names": [
+   "Career_Is_RnDPlayerControlled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14351c050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14351c050.c;xref:0x14351b621",
+   "notes": "V10281 Finds queue entry (stride 0x88 at +0x2e0) by id, tests flag 0x10 and the rnd_player_control tweakable; returns bool."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkInvite_HostConnectionInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143164c90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143164c90.c;pat:log-channel-NETWORK-INVITE;xref:0x1431643c5",
+  "notes": "Find-result callback stored by Game_NetworkInvite_FindOrCreate (lea 0x1431643c5). In state 5 with empty host connection info (param_3+8/+0x10 == 0) logs 'Host(%s) invalid connection info.' and fails (InviteManager::fail inlined from 0x143161f50); else logs 'Joining %s.' and joins, 'join %s failed (result = %d)' on error. Own-user name added via call 0x14316500d to 0x14412a320. (lane owner review requested) Better name: Game_NetworkInvite_OnFindHostComplete (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_invite_host_connection_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 01 00 00 83 79 18 05",
+  "match": "0x143164c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143164c90",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkInvite_HostConnectionInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143164c90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143164c90.c;xref:0x1431643c7",
+   "notes": "V5797 InviteManager_JoinHost: 14KB: joins host session (network_joining_session UI, onJoinCompleted, fail); invalid connection info is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143164c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143164c90.c",
+   "notes": "V7005 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

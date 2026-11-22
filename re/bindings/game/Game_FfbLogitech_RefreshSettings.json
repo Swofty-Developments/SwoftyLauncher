@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbLogitech_RefreshSettings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142884fe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142884fe0.c;pat:log-channel-FFB_DEBUG;xref:0x142884baf,0x142884d7c,0x1504a739a",
+  "notes": "Runs when this+0x88 (m_refreshSettings) set: for both vehicle slots (+0x140 +0x1c0/0x1c8) sets device +0x88=1 (FFB_DEBUG notifyRefreshSettings log), writes clamped settings record (+0x5c4..+0x5dc, 0..1, first 0..1.5), pushes trueforce value +0x5f0*24/1.5 to +0x40->+0x90 (LOGITECH log), then clears this+0x88. Callers incl. Game_GameForceFeedbackSystem_UpdateFFBDeviceChanges. Renamed: generic FFB system method; only the trueforce push is Logitech. (lane owner review requested) Better name: Game_GameForceFeedbackSystem_RefreshSettings (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ffb_logitech_refresh_settings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 C5 78 29 BC 24 C0 02 00 00 C5 78 29 B4 24 B0 02 00 00 C5 78 29 AC 24 A0 02 00 00 C5 78 29 A4 24 90 02 00 00 C5 78 29 9C 24 80 02 00 00 C5 78 29 94 24 70 02 00 00 C5 78 29 8C 24 60 02 00 00 C5 78 29 84 24 50 02 00 00 C5 F8 29 BC 24 40 02 00 00 C5 F8 29 B4 24 30 02 00 00 80 B9 88 00 00 00 00",
+  "match": "0x142884fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142884fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbLogitech_RefreshSettings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142884fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142884fe0.c;xref:0x142884baf",
+   "notes": "V5113 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

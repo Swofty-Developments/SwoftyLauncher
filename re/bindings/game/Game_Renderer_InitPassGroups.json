@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Renderer_InitPassGroups",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b1c320",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b1c320.c;xref:0x14015eb05,0x143b180f6,0x143b337b4",
+  "notes": "Body read in full: a teardown, not an init. Sets +0xf0cca, frees pass entries in lists [+0xb8] and [+0xa8], the hash maps +0x90 and +0x98 (each entry via the five pass-group map destructors 0x143b46e50/46fe0/47170/47300/47490), slot lists +0x10..+0x78, generators +0xf0d00/+0xf0d10 (under the +0xf1130 critical section), views +0xf0ec0..+0xf0ed0, render targets +0xf0dd8..+0xf0eb8 (0x143993770 release, 0x143c20160), textures +0xf0e88..+0xf0e98 (0x1439da070), then the remaining lists; sets +0xf0fb4=1. Callers 0x14015d720, 0x143b17b70 (CreateRenderPasses), 0x143b337a0. Renamed from InitPassGroups. (lane owner review requested) Better name: Game_Renderer_ReleasePassResources (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.renderer_init_pass_groups",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE C6 81 CA",
+  "match": "0x143b1c320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b1c320",
+  "kind": "func_start",
+  "names": [
+   "Game_Renderer_InitPassGroups"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b1c320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b1c320.c;xref:0x14015eb05",
+   "notes": "V7906 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

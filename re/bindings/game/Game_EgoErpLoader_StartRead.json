@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_StartRead",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a6b870",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a6b870.c;pat:log-message-method;xref:0x143a68d77,0x152155efa",
+  "notes": "(loader, read state rs, ERPInfo, flag): resets rs (rs[0]=info, times, info+0x38 = now); file path from the hashed-name table [0x14628f690] (+0x208.., pool +0x1c0/+0x1d8) or 0x143a5b5e0; logs 'startRead - read \"%s\"'; next ring buffer (+0x28..+0x30, idx +0x1c) -> rs[2]; open+read 0x143f37750([+0x98], path, buf+0x10, 0, size buf+0x18, 2) -> rs[1]. Callers 0x143a68490, 0x152155c70. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_start_read",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 44 89 CD",
+  "match": "0x143a6b870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a6b870",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_StartRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a6b870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a6b870.c;xref:0x143a68d77",
+   "notes": "V6438 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

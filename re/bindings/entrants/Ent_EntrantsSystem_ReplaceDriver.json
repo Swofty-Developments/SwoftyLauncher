@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14246e3a0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14246e3a0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x141443186,0x14201f7de,0x14201fd8d,0x142034b33,0x14203c834,0x14203cdcc,0x14203f9b2,0x14204003c,0x14208b971,0x142571b1e,0x142572985,0x14257b6d7,0x14276e517,0x1429361eb,0x142936449,0x142936656,0x142ea8ee4,0x14310be3e,0x14312f802,0x143133545,0x143136441,0x143137ed8,0x143139cac,0x143139e39",
+  "notes": "(entrants, u32 key, record, force): kind 0 refused unless force -> 5; list [entrants+0x268+kind*0x10] missing -> 1; skip if Ent_Get_Driver_Thunk (0x1423dbcf0) record equals (0x14246eb40); else remove 0x14246e1c0, copy record (names, 0x310 tail) and add 0x140cdb2c0; fail -> 3; else posts bus msg 0x14578d658 and returns 0 (existed) / 2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 05 00 00 4D 89 C7",
+  "match": "0x14246e3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14246e3a0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14246e3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14246e3a0.c;xref:0x141443186",
+   "notes": "V5279 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantReplicationManager_OnPlayerSetEntryDiscarded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143121410",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143121410.c;pat:log-message-cxx;xref:0x1458173e8",
+  "notes": "Virtual (this = secondary base, object at this-0x18; vtable cell 0x1458173e8): only when entry != 0 and [this-0x10] < 2; logs NETWORK-ENTRANTS '%s: discarded player: %s'; copies the PlayerDescription (+0x18..+0x58); if its flags +0x58 have bit 0x10000000 and RemovePlayerReplicatedDataInternal(this-0x18, desc, 0) succeeds, records it via 0x143211020(this+0x48). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.entrant_replication_manager_on_player_set_entry_discarded",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x143121410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143121410",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantReplicationManager_OnPlayerSetEntryDiscarded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143121410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143121410.c",
+   "notes": "V5827 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}

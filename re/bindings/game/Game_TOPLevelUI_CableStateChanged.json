@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TOPLevelUI_CableStateChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143884d10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143884d10.c;pat:log-channel-TOP_LEVEL_UI;xref:0x143881fca",
+  "notes": "Bus handler (lea at 0x143881fca in registrar 0x143881f90): logs 'Cable State Changed[%d]' with msg+0x10 and sets +0x82=1. Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.top_level_ui_cable_state_changed",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 7A 00 00 00",
+  "match": "0x143884d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143884d10",
+  "kind": "func_start",
+  "names": [
+   "Game_TOPLevelUI_CableStateChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143884d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143884d10.c;xref:0x143881fcb",
+   "notes": "V6359 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

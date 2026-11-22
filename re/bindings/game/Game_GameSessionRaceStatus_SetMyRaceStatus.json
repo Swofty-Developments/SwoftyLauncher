@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionRaceStatus_SetMyRaceStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143092b20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143092b20.c;pat:log-message-cxx;xref:0x142d527b5,0x142df9d95,0x142dfa135,0x1430eb165,0x1430f1bd3,0x1430f2487,0x1430f2e32,0x1430f2fcc,0x1430f3276,0x1430f3a0a,0x1430f3a9c,0x1430f3bec,0x1430f4e5a,0x1436d8f2e,0x1436d91dc,0x1436e4c05,0x1437018ef",
+  "notes": "Own bounds 0x143092b20..0x143092ea6 (decomp merges the tail target 0x143092eb0 = reportNetworkStats/resetNetworkStats). Own pretty-function string 0x14580f985 'void ...::setMyRaceStatus(ERaceStatus)'. Logs status p2, calls session [[p1+0x20]+0xd8]+0x148 slot from table 0x145827028, lobby flag [..+0x3a0] vt+0x20, stores the status (0x1430929f0) and +0x78 = 1, sets own done flag (status 8) or peer progress (status+1)/9 at peer+0x120, posts 0x145823658 (0x143202da0); statuses 2/4/6 tail-jump to the stats report. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_race_status_set_my_race_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143092b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143092b20",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionRaceStatus_SetMyRaceStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143092b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143092b20.c;xref:0x142d527b5",
+   "notes": "V5298 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

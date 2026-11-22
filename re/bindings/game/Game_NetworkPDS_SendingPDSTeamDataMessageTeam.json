@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkPDS_SendingPDSTeamDataMessageTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411f2610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1411f2610.c;pat:log-channel-NETWORK-PDS/V;xref:0x1411f25fd,0x1411f2a04,0x1411f2ce0,0x1411f2ff1",
+  "notes": "Sends the PDS team data message via 0x14402e500 (session at this+0x450, mode 2 - (param_3 == 0)) and logs '%s: sending PDS Team Data Message for Team: %s' with the id formatted '%s %u' from *param_2 (top 2 bits kind, low 14 bits id). Callers 0x1411f2510, 0x1411f2790, 0x1411f2a80, 0x1411f2eb0, 0x1411f35e0, 0x1411f7c90. (lane owner review requested) Better name: Game_NetworkPDS_SendTeamDataMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_pds_sending_pds_team_data_message_team",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC E0 00 00 00 48 89 D6 48 B8 D7 00 00 00 D7 00 00 00",
+  "match": "0x1411f2610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411f2610",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkPDS_SendingPDSTeamDataMessageTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1411f2610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411f2610.c;xref:0x1411f25fd",
+   "notes": "V4661 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

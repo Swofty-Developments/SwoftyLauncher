@@ -78,7 +78,7 @@ SWOFTY_ADDON()
 [characters] setup: character refs armed, voices armed
 [characters] character list built from 00000003257FD9C8 (119 rows, group '')
 [characters] career loaded: active group 'f1_career_1990'
-[characters] strings: cleared 0, set 1858 for 'f1_career_1990' (0 failed)
+[characters] strings: cleared 0, set 1858 for 'f1_career_1990' (0 failed) in 6.2 ms
 [characters] career loaded; character list rebuilt (1 stand-in ref(s))
 ```
 
@@ -176,7 +176,7 @@ A group's strings are set through the [string overrides](./strings) when the gro
 
 ```text
 [characters] 1858 string(s) in 11 language(s) for careers of 'f1_career_1990'
-[characters] strings: cleared 0, set 1858 for 'f1_career_1990' (0 failed)
+[characters] strings: cleared 0, set 1858 for 'f1_career_1990' (0 failed) in 6.2 ms
 ```
 
 ## clear and refresh

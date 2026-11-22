@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SendUpdateMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325c4f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14325c4f0.c;pat:log-message-method;xref:0x14325c765,0x14ffc3f95",
+  "notes": "If this+0x68 set, loops channels: builds a locator update message (vtable 0x145836630) with channel, locationType/Hash from param_3[ch], logs sendUpdateMessage and sends via 0x14402e500 (transport this+0x70, reliable flag from param_2). param_4 = one channel or 0xffffffff for all. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_send_update_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 80 79 68 00",
+  "match": "0x14325c4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325c4f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SendUpdateMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325c4f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325c4f0.c;xref:0x14325c766",
+   "notes": "V5791 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

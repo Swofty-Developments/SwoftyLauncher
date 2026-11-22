@@ -284,6 +284,24 @@ static_assert(offsetof(CurvePoint, x) == 0x0);
 static_assert(offsetof(CurvePoint, y) == 0x4);
 static_assert(sizeof(CurvePoint) == 0x8);
 
+struct DriverAcademiesComponent {
+    uint8_t _pad_0x0[0x298];
+    void *academies_begin; // L2 experimental
+    void *academies_end; // L2 experimental
+    uint8_t _pad_0x2a8[0x20];
+    void *driver_academy_entries; // L2 experimental
+};
+static_assert(offsetof(DriverAcademiesComponent, academies_begin) == 0x298);
+static_assert(offsetof(DriverAcademiesComponent, academies_end) == 0x2a0);
+static_assert(offsetof(DriverAcademiesComponent, driver_academy_entries) == 0x2c8);
+
+struct DriverAcademyMapSlot {
+    uint64_t index; // L2 experimental
+    uint32_t status; // L2 experimental
+};
+static_assert(offsetof(DriverAcademyMapSlot, index) == 0x0);
+static_assert(offsetof(DriverAcademyMapSlot, status) == 0x8);
+
 struct DriverCareerContractOwner {
     uint8_t _pad_0x0[0x298];
     void *contracts_begin; // L2 experimental
@@ -540,7 +558,10 @@ struct F1SeasonStandings {
     uint8_t _pad_0x8[0x18];
     StandingsRound *points_begin; // L2 experimental
     StandingsRound *points_end; // L2 experimental
-    uint8_t _pad_0x30[0x78];
+    uint8_t _pad_0x30[0x10];
+    StandingsRound *table_begin; // L2 experimental
+    StandingsRound *table_end; // L2 experimental
+    uint8_t _pad_0x50[0x58];
     StandingsPoints *extra_points_begin; // L2 experimental
     StandingsPoints *extra_points_end; // L2 experimental
     uint8_t _pad_0xb8[0x18];
@@ -550,6 +571,8 @@ struct F1SeasonStandings {
 static_assert(offsetof(F1SeasonStandings, vtable) == 0x0);
 static_assert(offsetof(F1SeasonStandings, points_begin) == 0x20);
 static_assert(offsetof(F1SeasonStandings, points_end) == 0x28);
+static_assert(offsetof(F1SeasonStandings, table_begin) == 0x40);
+static_assert(offsetof(F1SeasonStandings, table_end) == 0x48);
 static_assert(offsetof(F1SeasonStandings, extra_points_begin) == 0xa8);
 static_assert(offsetof(F1SeasonStandings, extra_points_end) == 0xb0);
 static_assert(offsetof(F1SeasonStandings, results_begin) == 0xd0);
@@ -684,6 +707,22 @@ static_assert(offsetof(ResourcePointsComponent, wallet_entity) == 0x4a8);
 static_assert(offsetof(ResourcePointsComponent, wallet_mode) == 0x4b0);
 static_assert(offsetof(ResourcePointsComponent, driver_wallets) == 0x4b8);
 static_assert(offsetof(ResourcePointsComponent, team_wallets) == 0x528);
+
+struct RivalManager {
+    uint8_t _pad_0x0[0x18];
+    void *current_rivalries_begin; // L2 experimental
+    void *current_rivalries_end; // L2 experimental
+};
+static_assert(offsetof(RivalManager, current_rivalries_begin) == 0x18);
+static_assert(offsetof(RivalManager, current_rivalries_end) == 0x20);
+
+struct RivalManagerComponent {
+    uint8_t _pad_0x0[0xbd8];
+    void *managers_begin; // L2 experimental
+    void *managers_end; // L2 experimental
+};
+static_assert(offsetof(RivalManagerComponent, managers_begin) == 0xbd8);
+static_assert(offsetof(RivalManagerComponent, managers_end) == 0xbe0);
 
 struct Season {
     void **vtable; // L2 experimental
@@ -833,6 +872,14 @@ static_assert(offsetof(StandingsSession, records_begin) == 0x8);
 static_assert(offsetof(StandingsSession, records_end) == 0x10);
 static_assert(offsetof(StandingsSession, session_id) == 0x20);
 static_assert(sizeof(StandingsSession) == 0x28);
+
+struct StandingsTableEntry {
+    uint32_t key; // L2 experimental
+    int32_t total; // L2 experimental
+};
+static_assert(offsetof(StandingsTableEntry, key) == 0x0);
+static_assert(offsetof(StandingsTableEntry, total) == 0x4);
+static_assert(sizeof(StandingsTableEntry) == 0x8);
 
 struct StatInfo {
     uint8_t _pad_0x0[0x8];
@@ -988,11 +1035,15 @@ using Career_Add_SeasonWeekend_t = uint64_t(void *season, void *weekend);
 inline constexpr fn<"Career_Add_SeasonWeekend", Career_Add_SeasonWeekend_t> Career_Add_SeasonWeekend{}; // L2 experimental
 using Career_Add_TeamModifier_t = void(void *list, uint32_t key, float value);
 inline constexpr fn<"Career_Add_TeamModifier", Career_Add_TeamModifier_t> Career_Add_TeamModifier{}; // L2 experimental
+using Career_Add_TrackSetToSeason_t = void(void *doc, uint32_t index, const char *track_set_name);
+inline constexpr fn<"Career_Add_TrackSetToSeason", Career_Add_TrackSetToSeason_t> Career_Add_TrackSetToSeason{}; // L2 experimental
 using Career_Adjust_RpDriverWallet_t = void(void *wallets, uint32_t driver_key, int32_t delta);
 inline constexpr fn<"Career_Adjust_RpDriverWallet", Career_Adjust_RpDriverWallet_t> Career_Adjust_RpDriverWallet{}; // L2 experimental
 using Career_Adjust_RpTeamWallet_t = void(void *wallets, uint32_t team_key, int32_t delta);
 inline constexpr fn<"Career_Adjust_RpTeamWallet", Career_Adjust_RpTeamWallet_t> Career_Adjust_RpTeamWallet{}; // L2 experimental
 inline constexpr address<"Career_Apply_RnDChallengerIconsLayout"> Career_Apply_RnDChallengerIconsLayout{}; // L2 experimental
+using Career_Auction_ResolveAiOffer_t = void(void *self, void *teams, uint32_t a3, void *a4, bool a5, bool a6);
+inline constexpr fn<"Career_Auction_ResolveAiOffer", Career_Auction_ResolveAiOffer_t> Career_Auction_ResolveAiOffer{}; // L2 experimental
 inline constexpr address<"Career_Bank_ApplyTransactionToBalance"> Career_Bank_ApplyTransactionToBalance{}; // L2 experimental
 using Career_Bank_CollectLedgerEntriesInRange_t = void *(void *bank, void *out_vec, uint32_t team_key, uint32_t time_from, uint32_t time_to);
 inline constexpr fn<"Career_Bank_CollectLedgerEntriesInRange", Career_Bank_CollectLedgerEntriesInRange_t> Career_Bank_CollectLedgerEntriesInRange{}; // L2 experimental
@@ -1154,6 +1205,8 @@ inline constexpr fn<"Career_ContractOutro_OnExit", Career_ContractOutro_OnExit_t
 using Career_ContractOutro_OnUpdate_t = uint32_t *(void *state, uint32_t *link);
 inline constexpr fn<"Career_ContractOutro_OnUpdate", Career_ContractOutro_OnUpdate_t> Career_ContractOutro_OnUpdate{}; // L2 experimental
 inline constexpr address<"Career_ContractPerksVM_OnActivate"> Career_ContractPerksVM_OnActivate{}; // L2 experimental
+using Career_ContractRenewal_AiApproach_t = void(void *sys, const uint32_t *driver_key);
+inline constexpr fn<"Career_ContractRenewal_AiApproach", Career_ContractRenewal_AiApproach_t> Career_ContractRenewal_AiApproach{}; // L2 experimental
 using Career_ContractRenewal_AllSlotsMeetMinimum_t = uint64_t(void *comp);
 inline constexpr fn<"Career_ContractRenewal_AllSlotsMeetMinimum", Career_ContractRenewal_AllSlotsMeetMinimum_t> Career_ContractRenewal_AllSlotsMeetMinimum{}; // L2 experimental
 inline constexpr address<"Career_ContractRenewal_Deserialise"> Career_ContractRenewal_Deserialise{}; // L2 experimental
@@ -1201,6 +1254,8 @@ inline constexpr fn<"Career_Deserialise_ClaimedFlag", Career_Deserialise_Claimed
 using Career_Despawn_UpgradeList_A_t = void(void *self);
 inline constexpr fn<"Career_Despawn_UpgradeList_A", Career_Despawn_UpgradeList_A_t> Career_Despawn_UpgradeList_A{}; // L2 experimental
 inline constexpr address<"Career_DevelopmentPerksVM_BuildAcclaim"> Career_DevelopmentPerksVM_BuildAcclaim{}; // L2 experimental
+using Career_DriverAcademies_MapFindOrAdd_t = void(void *map, DriverAcademyMapSlot *slot, const uint16_t *key);
+inline constexpr fn<"Career_DriverAcademies_MapFindOrAdd", Career_DriverAcademies_MapFindOrAdd_t> Career_DriverAcademies_MapFindOrAdd{}; // L2 experimental
 using Career_DriverContractEvent_Destroy_t = void(void **ev);
 inline constexpr fn<"Career_DriverContractEvent_Destroy", Career_DriverContractEvent_Destroy_t> Career_DriverContractEvent_Destroy{}; // L2 experimental
 inline constexpr address<"Career_DriverContractsMyTeam_AddPendingEntry"> Career_DriverContractsMyTeam_AddPendingEntry{}; // L2 experimental
@@ -1724,6 +1779,7 @@ inline constexpr data<"k_Career_CareerTimeComponentDesc", void *> k_Career_Caree
 inline constexpr data<"k_Career_ChampionshipComponentDesc", void *> k_Career_ChampionshipComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Career_ChampionshipDesc", void *> k_Career_ChampionshipDesc{}; // L2 experimental
 inline constexpr data<"k_Career_CostCapComponentDesc", void *> k_Career_CostCapComponentDesc{}; // L2 experimental
+inline constexpr data<"k_Career_DriverAcademiesComponentDesc", void *> k_Career_DriverAcademiesComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Career_DriverCareerContractsManagerComponentDesc", void *> k_Career_DriverCareerContractsManagerComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Career_DriverCareerPlayerDriverStatisticsComponentDesc", void *> k_Career_DriverCareerPlayerDriverStatisticsComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Career_DriverContractsMyTeamComponentDesc", void *> k_Career_DriverContractsMyTeamComponentDesc{}; // L2 experimental
@@ -1736,6 +1792,7 @@ inline constexpr data<"k_Career_MyTeamStatsComponentDesc", void *> k_Career_MyTe
 inline constexpr data<"k_Career_OwnerPerksComponentDesc", void *> k_Career_OwnerPerksComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Career_OwnerSetupComponentDesc", void *> k_Career_OwnerSetupComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Career_ResourcePointsComponentDesc", void *> k_Career_ResourcePointsComponentDesc{}; // L2 experimental
+inline constexpr data<"k_Career_RivalManagerComponentDesc", void *> k_Career_RivalManagerComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Career_RnDCardColourTable", uint32_t[6]> k_Career_RnDCardColourTable{}; // L2 experimental
 inline constexpr data<"k_Career_RnDDeptColourTable", uint32_t[6]> k_Career_RnDDeptColourTable{}; // L2 experimental
 inline constexpr data<"k_Career_RnDErrorDeptName", char[17]> k_Career_RnDErrorDeptName{}; // L2 experimental

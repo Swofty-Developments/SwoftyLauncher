@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MigrateSessionHost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144099410",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144099410.c;pat:log-message-method;xref:0x145a54a40",
+  "notes": "Host migration: logs migrateSessionHost \"leaving lobby\", \"creating new lobby\", \"waiting...\"; leaves the old lobby, requests a new one and registers Game_Network_OnLobbyMigratedHost as call result (lea 0x144099d6d). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_migrate_session_host",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4C 89 C7 48 89 D3",
+  "match": "0x144099410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144099410",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MigrateSessionHost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144099410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144099410.c",
+   "notes": "V6531 size=2721; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineDocumentComp_InternalSerialiseAndCalculateHash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fd0990",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fd0990.c;str:s_Championship_CareerOnlineDocumentComponent_InternalSerialiseAndCalcula;xref:0x140fcdbfd,0x140fce0c2,0x140fcfdba",
+  "notes": "Own string 'CareerOnlineDocumentComponent::internalSerialiseAndCalculateHash'. Walks component tree @+0x358, serialises each (vtbl+0x10) into buffer sized max*1.1; 'Game.CareerSync.DumpComponents(Verbose)' dumps CAREER_DEBUG 'syncinghost_/syncingclient_' .xml ('save_%s','buffer_data','size','base64'); FNV-1a hash per key into map @+0x2c8; sends 1100-byte chunks via FUN_14402e500. All code in pdata bounds (old 'merged tails' note wrong). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_online_document_comp_internal_serialise_and_calculate_hash",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 12 00",
+  "match": "0x140fd0990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fd0990",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineDocumentComp_InternalSerialiseAndCalculateHash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fd0990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fd0990.c;xref:0x140fcdbfd,0x140fce0c2",
+   "notes": "V4817 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

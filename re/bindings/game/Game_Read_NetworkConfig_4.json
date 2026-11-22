@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_NetworkConfig_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436e7dc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436e7dc0.c;pat:log-channel--;xref:0x150fe78c4,0x14585cf88,0x14585de48",
+  "notes": "Body read in full. (state, params): 0x1436af0f0 reset, then parses the key/value list param_2+8..+0x10 (stride 0x10): checkskipprerace -> +0xcb5, apply_message_queue_delay -> +0xf0d, policy (lobby/allplayersready/redflagsync/automatic/allor30seconds/sessionstart/racestart and variants) -> +0xc90 and flags +0xcb0..+0xcb3, spectatorSkip/spectatorReady -> +0xcb6/+0xcb4, career_sync_point_type (FNV-1a) -> +0xf1b, silent -> +0xf14, apocalypseTimerEnabled/apocalypseTime -> +0xf0e/+0xf10; then binds network.current_session.* / hopper_data countdown VM properties into +0xce0..+0xee0. Refs: call 0x150fe78c4 (protector stub), vt cells 0x14585cf88, 0x14585de48. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_network_config_4",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 D7 48 89 CE E8",
+  "match": "0x1436e7dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436e7dc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_NetworkConfig_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436e7dc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436e7dc0.c",
+   "notes": "V6140 Function (6330 bytes) first parses ready-monitor policy table (allplayersready, redflagsync, sessionstart, apocalypseTime...) then binds ~20 network.current_session.* VM nodes with defaults (get-or-create), not just reading config keys. Better: Game_ReadyMonitor_InitPolicyAndBindSessionNodes. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1436e7dc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436e7dc0.c;xref:0x150fe78c4",
+   "notes": "V7099 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

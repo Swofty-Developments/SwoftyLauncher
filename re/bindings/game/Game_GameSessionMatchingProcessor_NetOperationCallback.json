@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingProcessor_NetOperationCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143088270",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143088270.c;pat:log-message-cxx;xref:0x143088181,0x1430e4929",
+  "notes": "Own bounds 0x143088270..0x143088367 (decomp merges the tail target 0x1430647a0 = GameSessionManager::enter). Own pretty-function string 0x14580e587 'void ...GameSessionMatchingProcessor::netOperationCallback(NEbool, NeNetError)'. Refs: lea 0x143088181 and 0x1430e4929. Sets done +0x5a = 1; failure -> error p3 into +0x5c and return. Success -> +0x5c = 0, compares local vs host id ([[p1+0x28]+0xd8] vt+0x18 / vt+0x10), logs NETWORK-MATCHING 'Process completed as Host/Client.' and tail-jumps to 0x1430647a0 (session enter). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_processor_net_operation_callback",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE C6 41 5A 01",
+  "match": "0x143088270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143088270",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingProcessor_NetOperationCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143088270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143088270.c;xref:0x143088184",
+   "notes": "V5638 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

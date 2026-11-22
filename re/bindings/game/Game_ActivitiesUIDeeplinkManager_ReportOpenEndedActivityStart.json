@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_ReportOpenEndedActivityStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438667a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438667a0.c;str:s_ActivitiesUIDeeplinkManager_ReportOpenEndedActivityStart;xref:0x14587e4b8",
+  "notes": "Body 0x1438667a0-0x143866b96 read (decomp merges tail-jump targets 0x143866ba0, 0x143866d50, 0x143867280, 0x1438673a0, 0x1438674c0, 0x1438675e0, 0x14386a240). Resolves the game mode (RTTI): story (component 0x146063fb0) -> 'act_N_chapter_%d' activity; career -> '%s_%s_weekend_%d' / 'career_%s_%s' with F2 short/medium/full; online 0x14077c790 -> mp_ranked/unranked/collaborative/leagues_match; split-screen branch logs 'start activity %s' and starts 'mp_splitscreen_match' (0x144134d70). Blocked in Trial/PlayGo (logs). Only ref vt cell 0x14587e4b8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_report_open_ended_activity_start",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 41 28 48 8B 80 88 00",
+  "match": "0x1438667a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438667a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_ReportOpenEndedActivityStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438667a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438667a0.c",
+   "notes": "V6344 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

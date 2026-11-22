@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Renderer_PassMapDestroySubtree_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b44640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b44640.c;xref:0x143b1bf45,0x143b1cb79,0x143b4155b,0x143b43ccb,0x143b43ce8,0x143b43f7d,0x143b4419b,0x143b44670",
+  "notes": "Byte-identical twin of 0x143b452e0 (chunk-chain free of pooled list B, 0xf0 nodes). (lane owner review requested) Better name: Game_Renderer_SlotListB_FreeChunkChain (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.renderer_pass_map_destroy_subtree_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 06 4C 89 F1 48 89 DA FF 50 38 48 89 BE 08 0D 0F 00",
+  "match": "0x143b1bf45",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b44640",
+  "kind": "func_start",
+  "names": [
+   "Game_Renderer_PassMapDestroySubtree_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143b44640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b44640.c;xref:0x143b1bf45",
+   "notes": "V8132 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_InitDescriptorHeap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fdb30",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439fdb30.c;xref:0x1439c3e9c,0x1439c3f54,0x1439c4004",
+  "notes": "Initialises a descriptor-heap wrapper: stores param_2/heap (+0/+8), heap GetDesc (vcall +0x40), device GetDescriptorHandleIncrementSize (+0x78) into +0x1c, CPU start (+0x48) into +0x20 and, when the heap is shader-visible (flags 1), GPU start (+0x50) into +0x28 and byte +0x118; under CS sets up a sub-allocator (0x1439e6a50) of param_4 * increment bytes. Called from Render_Gfx2Device_Initialise 0x1439bc2e0. (lane owner review requested) Better name: Render_Gfx2DescriptorHeap_Init (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_device_init_upload_ring",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 44 89 CB",
+  "match": "0x1439fdb30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439fdb30",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_InitDescriptorHeap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439fdb30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439fdb30.c;xref:0x1439c3e9c",
+   "notes": "V7792 better name Render_Gfx2Device_InitDescriptorHeap: vcalls +0x78 (increment size) and +0x48/+0x50 (CPU/GPU heap start) show a descriptor heap wrapper; slot stride +0x1c = increment size; details (+0x19..+0x1c, sub-allocator 0x1439e6a50) match but not an upload ring"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_GameModule_OnSessionEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14080c300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14080c300.c;str:s_GameModule_OnSessionEnter;xref:0x142d5bbc1,0x1436f6b1c,0x150f54951",
+  "notes": "Own pretty-function string 0x145648d18 'neon::NEerrno game::GameModule::onSessionEnter()' (GAME_MODULE). Sets +0x215, loads '<track>_podium_lights.layer' (0x14080db60), clears flag bit 2 of +0x214, [p1+0x80]+0x3f90 = 1, +0x1a1 = 0, SessionExit (p1+0x1fc) = eNONE via 0x142c76810 (FLOW log), registers p1+0x220 as global 0x146ce72b0, runs vt+0x50/+0x58/+0x60 of each subsystem in [p1+0x18]+8..+0x10, 0x14080c8f0, resets POLY entries, [+0xf8] per-car arrays (+0xd78.. per vehicle up to 27), per-player 0x1434d40a0. Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 38 02 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14080c300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14080c300",
+  "kind": "func_start",
+  "names": [
+   "Game_GameModule_OnSessionEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-18",
+    "by": "events",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/events/events.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x14080c300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14080c300.c",
+   "notes": "V4323 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

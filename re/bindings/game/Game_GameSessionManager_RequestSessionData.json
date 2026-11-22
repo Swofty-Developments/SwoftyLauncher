@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionManager_RequestSessionData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143061670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143061670.c;pat:log-message-cxx;xref:0x140bb4957,0x14305c04d",
+  "notes": "Logs 'GameSessionManager::requestSessionData()' (NETWORK-DATA) and requests the session data from the host. Callers 0x140bb4800 (0x140bb4957), 0x14305af60 (0x14305c04d). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_manager_request_session_data",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC C8 00 00 00 C5 79 7F B4 24 B0 00 00 00",
+  "match": "0x143061670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143061670",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionManager_RequestSessionData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143061670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143061670.c;xref:0x140bb4958",
+   "notes": "V5515 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

@@ -129,8 +129,22 @@ inline constexpr address<"Ne_ActorManager_InsertEntryNode"> Ne_ActorManager_Inse
 inline constexpr address<"Ne_ActorManager_RegisterEntry"> Ne_ActorManager_RegisterEntry{}; // L2 experimental
 inline constexpr address<"Ne_ActorSceneDataResourceFactory_DestroyResource"> Ne_ActorSceneDataResourceFactory_DestroyResource{}; // L2 experimental
 inline constexpr address<"Ne_ActorSceneDataResource_DestroyScenes"> Ne_ActorSceneDataResource_DestroyScenes{}; // L2 experimental
+using Ne_AnimClipPlayer_Sample_Thunk_t = void(void *player, float time);
+inline constexpr fn<"Ne_AnimClipPlayer_Sample_Thunk", Ne_AnimClipPlayer_Sample_Thunk_t> Ne_AnimClipPlayer_Sample_Thunk{}; // L2 experimental
 inline constexpr address<"Ne_AnimClipResourceFactory_CreateResource"> Ne_AnimClipResourceFactory_CreateResource{}; // L2 experimental, NeAnimClipResourceFactory::createResource
 inline constexpr address<"Ne_AnimLayer_ApplyChannels"> Ne_AnimLayer_ApplyChannels{}; // L2 experimental
+using Ne_AnimPacketB1_Sample_t = void(void *packet, void *binding, float time, void *out);
+inline constexpr fn<"Ne_AnimPacketB1_Sample", Ne_AnimPacketB1_Sample_t> Ne_AnimPacketB1_Sample{}; // L2 experimental
+using Ne_AnimPacketB4_Sample_t = void(void *packet, void *binding, float time, void *out);
+inline constexpr fn<"Ne_AnimPacketB4_Sample", Ne_AnimPacketB4_Sample_t> Ne_AnimPacketB4_Sample{}; // L2 experimental
+using Ne_AnimPacketL1_Sample_t = void(void *packet, void *binding, float time, void *out);
+inline constexpr fn<"Ne_AnimPacketL1_Sample", Ne_AnimPacketL1_Sample_t> Ne_AnimPacketL1_Sample{}; // L2 experimental
+using Ne_AnimPacketL3_SampleTrack_t = void(void *packet, void *track, uint32_t index, float time, void *out);
+inline constexpr fn<"Ne_AnimPacketL3_SampleTrack", Ne_AnimPacketL3_SampleTrack_t> Ne_AnimPacketL3_SampleTrack{}; // L2 experimental
+using Ne_AnimPacketL4_SampleTrack_t = void(void *packet, void *track, uint32_t index, float time, void *out);
+inline constexpr fn<"Ne_AnimPacketL4_SampleTrack", Ne_AnimPacketL4_SampleTrack_t> Ne_AnimPacketL4_SampleTrack{}; // L2 experimental
+using Ne_AnimPacketS4_SampleTrack_t = void(void *packet, void *track, uint32_t index, float time, void *out);
+inline constexpr fn<"Ne_AnimPacketS4_SampleTrack", Ne_AnimPacketS4_SampleTrack_t> Ne_AnimPacketS4_SampleTrack{}; // L2 experimental
 inline constexpr address<"Ne_AnimSetResourceFactory_CreateResource"> Ne_AnimSetResourceFactory_CreateResource{}; // L2 experimental, NeAnimSetResource::NeAnimSetResource
 inline constexpr address<"Ne_Application2_OnFocusChanged"> Ne_Application2_OnFocusChanged{}; // L2 experimental, NeApplication2::onFocusChanged
 inline constexpr address<"Ne_Application2_OnVisibilityChanged"> Ne_Application2_OnVisibilityChanged{}; // L2 experimental, NeApplication2::onVisibilityChanged
@@ -684,8 +698,6 @@ inline constexpr address<"Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestC
 inline constexpr address<"Ne_PresenceNameResolverEADP_UpdateToResolveList"> Ne_PresenceNameResolverEADP_UpdateToResolveList{}; // L2 experimental, neon::NePresenceNameResolverEADP::updateToResolveList
 inline constexpr address<"Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda"> Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda{}; // L2 experimental, neon::NePresenceNameResolverEADP::updateToResolveList
 inline constexpr address<"Ne_PresenceNameResolverEADP_VectorGrow"> Ne_PresenceNameResolverEADP_VectorGrow{}; // L2 experimental
-using Ne_PresenceNameResolverFixed_AddName_t = void(void *resolver, const void *user, const char *name);
-inline constexpr fn<"Ne_PresenceNameResolverFixed_AddName", Ne_PresenceNameResolverFixed_AddName_t> Ne_PresenceNameResolverFixed_AddName{}; // L2 experimental, neon::NePresenceNameResolverFixed::addName
 inline constexpr address<"Ne_PresenceNameResolverFixed_InsertName"> Ne_PresenceNameResolverFixed_InsertName{}; // L2 experimental
 inline constexpr address<"Ne_PresenceNameResolverFixed_MapFatalStub"> Ne_PresenceNameResolverFixed_MapFatalStub{}; // L2 experimental
 inline constexpr address<"Ne_PresenceNameResolverFixed_StartResolving"> Ne_PresenceNameResolverFixed_StartResolving{}; // L2 experimental, neon::NePresenceNameResolverFixed::startResolving
@@ -694,7 +706,7 @@ inline constexpr address<"Ne_PresenceQueue_VectorPush"> Ne_PresenceQueue_VectorP
 inline constexpr address<"Ne_Presence_OnSubscribeResult"> Ne_Presence_OnSubscribeResult{}; // L2 experimental
 inline constexpr address<"Ne_Property_ResolveBindingChain"> Ne_Property_ResolveBindingChain{}; // L2 experimental
 inline constexpr address<"Ne_Property_SetS32IfChanged"> Ne_Property_SetS32IfChanged{}; // L2 experimental
-inline constexpr address<"Ne_Property_SetS64IfChanged"> Ne_Property_SetS64IfChanged{}; // L2 experimental
+inline constexpr address<"Ne_Property_SetUIDBRefIfChanged"> Ne_Property_SetUIDBRefIfChanged{}; // L2 experimental
 inline constexpr address<"Ne_PtrList_RemoveLocked"> Ne_PtrList_RemoveLocked{}; // L2 experimental
 inline constexpr address<"Ne_Queue_EnqueueEventRecord"> Ne_Queue_EnqueueEventRecord{}; // L2 experimental
 inline constexpr address<"Ne_RbTree_EraseSubtree"> Ne_RbTree_EraseSubtree{}; // L2 experimental
@@ -715,7 +727,6 @@ inline constexpr address<"Ne_RenderViewParams_InitDefaults"> Ne_RenderViewParams
 inline constexpr address<"Ne_ReplayBuffer_GetOldestValidPosition"> Ne_ReplayBuffer_GetOldestValidPosition{}; // L2 experimental
 inline constexpr address<"Ne_ReplayRecordable_ReadFrom"> Ne_ReplayRecordable_ReadFrom{}; // L2 experimental
 inline constexpr address<"Ne_ReplaySystem_ForceReset"> Ne_ReplaySystem_ForceReset{}; // L2 experimental
-inline constexpr address<"Ne_ReplaySystem_ResetSlot24"> Ne_ReplaySystem_ResetSlot24{}; // L2 experimental
 inline constexpr address<"Ne_Replay_SetState"> Ne_Replay_SetState{}; // L2 experimental
 inline constexpr address<"Ne_ResourceHandle_Init"> Ne_ResourceHandle_Init{}; // L2 experimental
 inline constexpr address<"Ne_ResourceMgr_ReleaseIfOwned"> Ne_ResourceMgr_ReleaseIfOwned{}; // L2 experimental
@@ -787,7 +798,7 @@ inline constexpr address<"Ne_SequenceClipInstance_BindOptional"> Ne_SequenceClip
 inline constexpr address<"Ne_SequenceInstance_Construct"> Ne_SequenceInstance_Construct{}; // L2 experimental
 inline constexpr address<"Ne_SequenceResource_CreateResource"> Ne_SequenceResource_CreateResource{}; // L2 experimental, NeSequenceResource::createResource
 inline constexpr address<"Ne_Sequence_Deserialize"> Ne_Sequence_Deserialize{}; // L2 experimental, NeSequence::setName
-using Ne_Set_FixedString_t = void(void *dst, const char *src);
+using Ne_Set_FixedString_t = void *(void *dst, const char *src);
 inline constexpr fn<"Ne_Set_FixedString", Ne_Set_FixedString_t> Ne_Set_FixedString{}; // L2 experimental
 inline constexpr address<"Ne_Settings_BindNamedEntries"> Ne_Settings_BindNamedEntries{}; // L2 experimental
 inline constexpr address<"Ne_SharedPtr_CopyAssign"> Ne_SharedPtr_CopyAssign{}; // L2 experimental
@@ -817,8 +828,8 @@ inline constexpr address<"Ne_Std_FatalExceptionTerminate"> Ne_Std_FatalException
 inline constexpr address<"Ne_Std_ThrowArraySubscript"> Ne_Std_ThrowArraySubscript{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowBadArrayNewLength"> Ne_Std_ThrowBadArrayNewLength{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowBadFunctionCall"> Ne_Std_ThrowBadFunctionCall{}; // L2 experimental
+inline constexpr address<"Ne_Std_ThrowBadOptionalAccess"> Ne_Std_ThrowBadOptionalAccess{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowDequeTooLong"> Ne_Std_ThrowDequeTooLong{}; // L2 experimental
-inline constexpr address<"Ne_Std_ThrowException"> Ne_Std_ThrowException{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowExceptionNoReturn"> Ne_Std_ThrowExceptionNoReturn{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowInvalidBitsetPosition"> Ne_Std_ThrowInvalidBitsetPosition{}; // L2 experimental
 inline constexpr address<"Ne_Std_ThrowMapSetTooLong"> Ne_Std_ThrowMapSetTooLong{}; // L2 experimental

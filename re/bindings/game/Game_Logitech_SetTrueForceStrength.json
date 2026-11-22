@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Logitech_SetTrueForceStrength",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fc63b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fc63b0.c;pat:log-message-method;xref:0x145a44778",
+  "notes": "Virtual (cell 0x145a44778). (this, strength): if device +0xe78 is set calls 0x1449f5870(0x145f717b0, 0, strength, 0) and logs LOGITECH 'setTrueForceStrength(%.3f)'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.logitech_set_true_force_strength",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 C5 F8 29 74 24 20 48 83 B9 78 0E 00 00 00",
+  "match": "0x143fc63b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fc63b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Logitech_SetTrueForceStrength"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fc63b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fc63b0.c",
+   "notes": "V6320 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

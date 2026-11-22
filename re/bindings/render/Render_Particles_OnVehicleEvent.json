@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_OnVehicleEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14463da30",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14463da30.c;pat:log-channel-PARTICLES;xref:0x14463ce49",
+  "notes": "Rename (per-frame update, not an event handler): callback stored by Game_RacingVehicles_Initialise (lea 0x14463ce49, written to [obj+0xd8]+0x58/+0x60). Takes dt from *param_2, accumulates +0x384, flips the frame buffer index (1 - [ctx+0x87b650]); on rewind kills emitters per vehicle via 0x144704b30 and clears the 0xf70 frame block; logs tyre burst, unknown surface %s, KILL EFFECTS at start of fast rew (PARTICLES); calls 0x144705d80 and 0x1444721b0. (lane owner review requested) Better name: Render_Particles_UpdateVehicleEffects (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.particles_on_vehicle_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 C5 78 29 BC 24 20 02 00 00 C5 78 29 B4 24 10 02 00 00 C5 78 29 AC 24 00 02 00 00 C5 78 29 A4 24 F0 01 00 00 C5 78 29 9C 24 E0 01 00 00 C5 78 29 94 24 D0 01 00 00 C5 78 29 8C 24 C0 01 00 00 C5 78 29 84 24 B0 01 00 00 C5 F8 29 BC 24 A0 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 83 B9 50 03 00 00 00",
+  "match": "0x14463da30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14463da30",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_OnVehicleEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14463da30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14463da30.c;xref:0x14463ce4b",
+   "notes": "V6717 0x3add body is the per-vehicle particle update (kill effects on rewind, updt VPM, unknown surface, f_tyre_explode); tyre burst is one branch; registered by Game_RacingVehicles_Initialise. Better: Render_Particles_UpdateVehicleEffects"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14463da30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14463da30.c;xref:0x14463ce4b",
+   "notes": "V7241 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HttpV_ProcessHeaders",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144050490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144050490.c;pat:log-message-method;xref:0x14404f3aa",
+  "notes": "HTTP/V processHeaders: copies header buf (this[5], len this[6]), splits at CRLF; status code after ' ' of line 1 -> this+0x48; lines with ':' -> name/value via 0x1408531a0 into this+8. If status not 1xx/204/304: Transfer-Encoding flags (chunked/compress/deflate/gzip/identity) -> +0x50, Content-Encoding (+br) -> +0x54, Content-Length -> +0x58 when +0x50&0x10; 'Connection: close' -> +0x5c. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.http_v_process_headers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 49 89 CC",
+  "match": "0x144050490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144050490",
+  "kind": "func_start",
+  "names": [
+   "Game_HttpV_ProcessHeaders"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144050490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144050490.c;xref:0x14404f3aa",
+   "notes": "V6480 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

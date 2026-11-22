@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UI_TileSetIndex_Evaluate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418df680",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1418df680.c;xref:0x1418db259,0x1418db540,0x1418df84c,0x1418dfdfb,0x1418dfe4a,0x1418dfed3,0x1418dffdc,0x1418e02a3,0x141d1e7cb,0x141d1ed32,0x141d20e62",
+  "notes": "(tile): walks the node chain from [tile+0xbe8]+8 upward (at most 0x62 steps), builds a lookup on the resulting node (0x1442bba60) and reads property 'tile_set_index' (0x1457160b4) via 0x144252eb0; returns its u32 when the value type matches 0x146129d40, else -1. Releases the temporary handle (0x1442b3d70). (lane owner review requested) Better name: Game_UI_GetTileSetIndex (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.u_i_tile_set_index_evaluate",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 8B 81 E8 0B 00 00",
+  "match": "0x1418df680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418df680",
+  "kind": "func_start",
+  "names": [
+   "Game_UI_TileSetIndex_Evaluate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1418df680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418df680.c;xref:0x1418dfed3",
+   "notes": "V8054 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

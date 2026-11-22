@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gvdb.hpp"
+#include "core/apply/content/gvdb.hpp"
 
 #include <swofty/json.hpp>
 
@@ -31,6 +31,7 @@ using Value = swofty::json::Value;
 struct Rec {
     int tag = -1;
     std::string text;
+    bool operator==(const Rec &) const = default;
 };
 
 using Base = std::function<std::optional<Rec>(uint64_t key)>;
@@ -43,7 +44,7 @@ struct Write {
     bool fresh = false;
 };
 
-#include "row_keys.inc"
+#include "core/apply/content/row_keys.inc"
 
 class Keys {
 public:
@@ -115,10 +116,7 @@ inline std::string shape_of(std::string_view path)
     return out;
 }
 
-inline std::string count_path(const std::string &table, const std::string &row)
-{
-    return table + "._" + row + "_instancecount_";
-}
+inline std::string count_path(const std::string &table, const std::string &row) { return table + "._" + row + "_instancecount_"; }
 
 inline std::optional<int64_t> parse_int(std::string_view s)
 {
@@ -224,18 +222,24 @@ public:
             std::string table = have ? base : std::string(name), row = have ? std::string(name) : std::string();
             std::size_t hits = 0;
             std::string hit;
-            auto count = row.empty() ? std::nullopt : instance_count(table, row);
-            for (int64_t idx = 0; idx < (count ? *count : 4096); idx++) {
-                std::string cand = row.empty() ? table + std::to_string(idx) : table + "." + row + "_" + std::to_string(idx);
-                if (!has(cand + "._metadata_")) {
-                    if (!count)
-                        break;
-                    continue;
-                }
-                auto v = text(cand + "." + field);
-                if (v && *v == want) {
-                    hits++;
-                    hit = cand;
+            if (selectors_on_ && !row.empty()) {
+                const FieldIndex &m = matches(table, row, field);
+                if (auto it = m.rows_of.find(want); it != m.rows_of.end() && !it->second.empty())
+                    hits = it->second.size(), hit = table + "." + row + "_" + std::to_string(*it->second.rbegin());
+            } else {
+                auto count = row.empty() ? std::nullopt : instance_count(table, row);
+                for (int64_t idx = 0; idx < (count ? *count : 4096); idx++) {
+                    std::string cand = row.empty() ? table + std::to_string(idx) : table + "." + row + "_" + std::to_string(idx);
+                    if (!has(cand + "._metadata_")) {
+                        if (!count)
+                            break;
+                        continue;
+                    }
+                    auto v = text(cand + "." + field);
+                    if (v && *v == want) {
+                        hits++;
+                        hit = cand;
+                    }
                 }
             }
             if (hits != 1)
@@ -280,11 +284,24 @@ public:
         return {};
     }
 
+    // While on, a [field=value] selector into a table's rows is answered from that table's field values, read by one
+    // pass over its rows and kept up to date by every write (update_selectors); the answer is the one the pass per
+    // selector gives. The caller turns it on only while nothing changes the Base under the engine.
+    void index_selectors(bool on)
+    {
+        selectors_on_ = on;
+        selectors_.clear();
+    }
+
+    std::size_t selector_builds() const { return selector_builds_; }
+
     // Everything written since mark() can be taken back with rollback(mark).
     std::size_t mark() const { return undo_.size(); }
 
     void rollback(std::size_t to)
     {
+        if (undo_.size() > to)
+            selectors_.clear();
         while (undo_.size() > to) {
             Undo u = std::move(undo_.back());
             undo_.pop_back();
@@ -317,6 +334,7 @@ public:
         for (std::size_t i = 0; i < out_.size(); i++)
             index_[out_[i].key] = i;
         undo_.clear();
+        selectors_.clear();
         return n;
     }
 
@@ -337,6 +355,23 @@ public:
     }
 
     void put_text(const std::string &path, int tag, std::string text) { write(make(path, tag, std::move(text))); }
+
+    // The names of a comma list field, as list-append and list-remove read it.
+    static std::vector<std::string> items(std::string_view text)
+    {
+        std::vector<std::string> out;
+        std::size_t at = 0;
+        while (at <= text.size()) {
+            std::size_t end = text.find(',', at);
+            if (end == std::string_view::npos)
+                end = text.size();
+            std::string item = trim(text.substr(at, end - at));
+            if (!item.empty())
+                out.push_back(std::move(item));
+            at = end + 1;
+        }
+        return out;
+    }
 
 private:
     struct Undo {
@@ -360,7 +395,162 @@ private:
         return std::string(s);
     }
 
+    struct FieldIndex {
+        std::unordered_map<std::string, std::set<int64_t>> rows_of;
+        std::unordered_map<int64_t, std::string> value_of;
+    };
+
+    // A table's rows are the indexes under its instance count that hold _metadata_, or, with no count, the run of
+    // rows from 0 that hold it.
+    struct TableIndex {
+        std::string table, row;
+        std::optional<int64_t> count;
+        int64_t run = 0;
+        std::unordered_map<std::string, FieldIndex> fields;
+    };
+
+    // Every value of `field` in the rows of table.row and the rows holding it, by the same pass the selector makes.
+    const FieldIndex &matches(const std::string &table, const std::string &row, const std::string &field) const
+    {
+        auto [at, made] = selectors_.try_emplace(table + "." + row);
+        TableIndex &t = at->second;
+        if (made) {
+            t.table = table;
+            t.row = row;
+            t.count = instance_count(table, row);
+        }
+        if (auto it = t.fields.find(field); it != t.fields.end())
+            return it->second;
+        selector_builds_++;
+        FieldIndex &m = t.fields[field];
+        std::string stem = table + "." + row + "_";
+        if (t.count)
+            for (int64_t idx = 0; idx < *t.count; idx++) {
+                std::string cand = stem + std::to_string(idx);
+                if (!has(cand + "._metadata_"))
+                    continue;
+                if (auto v = text(cand + "." + field))
+                    index_value(m, idx, std::move(*v));
+            }
+        else {
+            int64_t idx = 0;
+            for (; idx < 4096; idx++) {
+                std::string cand = stem + std::to_string(idx);
+                if (!has(cand + "._metadata_"))
+                    break;
+                if (auto v = text(cand + "." + field))
+                    index_value(m, idx, std::move(*v));
+            }
+            t.run = idx;
+        }
+        return m;
+    }
+
+    static void index_value(FieldIndex &m, int64_t idx, std::string v)
+    {
+        m.rows_of[v].insert(idx);
+        m.value_of.emplace(idx, std::move(v));
+    }
+
+    static void unindex_value(FieldIndex &m, int64_t idx)
+    {
+        auto it = m.value_of.find(idx);
+        if (it == m.value_of.end())
+            return;
+        auto rows = m.rows_of.find(it->second);
+        rows->second.erase(idx);
+        if (rows->second.empty())
+            m.rows_of.erase(rows);
+        m.value_of.erase(it);
+    }
+
+    bool selector_row(const TableIndex &t, int64_t idx) const
+    {
+        if (!t.count)
+            return idx < t.run;
+        return idx < *t.count && has(t.table + "." + t.row + "_" + std::to_string(idx) + "._metadata_");
+    }
+
+    void reindex_row(TableIndex &t, int64_t idx)
+    {
+        bool in = selector_row(t, idx);
+        std::string cand = t.table + "." + t.row + "_" + std::to_string(idx) + ".";
+        for (auto &[field, m] : t.fields) {
+            unindex_value(m, idx);
+            if (in)
+                if (auto v = text(cand + field))
+                    index_value(m, idx, std::move(*v));
+        }
+    }
+
+    // Brings the kept field values up to date after a write to `path`. A table's values for a field are read from its
+    // instance count and its rows' _metadata_ and field keys: t._r_instancecount_ and t.r_3._metadata_ change which rows
+    // of t.r count, and t.r_3.f changes only f of row 3; the segments after an indexed row are its field (t.r_3.p_1.w is
+    // field p_1.w of t.r and field w of t.r_3.p). A table with no instance count has its kept values dropped instead
+    // when its rows change, since its rows run until the first one without _metadata_.
+    void update_selectors(const std::string &path)
+    {
+        constexpr std::string_view COUNT = "_instancecount_";
+        for (std::size_t at = 0; at <= path.size();) {
+            std::size_t end = path.find('.', at);
+            if (end == std::string::npos)
+                end = path.size();
+            std::string_view seg = std::string_view(path).substr(at, end - at);
+            std::string_view field = end < path.size() ? std::string_view(path).substr(end + 1) : std::string_view();
+            auto us = seg.rfind('_');
+            if (seg.size() > COUNT.size() + 1 && seg[0] == '_' && seg.substr(seg.size() - COUNT.size()) == COUNT) {
+                auto it = selectors_.find(path.substr(0, at) + std::string(seg.substr(1, seg.size() - 1 - COUNT.size())));
+                if (it != selectors_.end()) {
+                    TableIndex &t = it->second;
+                    std::optional<int64_t> now = instance_count(t.table, t.row);
+                    int64_t lo = t.count && now ? std::min(*now, *t.count) : 0;
+                    int64_t hi = t.count && now ? std::max(*now, *t.count) : 0;
+                    if (!field.empty() || !t.count || !now || hi - lo > 4096)
+                        selectors_.erase(it);
+                    else if (lo != hi) {
+                        t.count = now;
+                        for (int64_t idx = lo; idx < hi; idx++)
+                            reindex_row(t, idx);
+                    }
+                }
+            } else if (us != std::string_view::npos && us + 1 < seg.size() &&
+                       seg.find_first_not_of("0123456789", us + 1) == std::string_view::npos) {
+                auto it = selectors_.find(path.substr(0, at) + std::string(seg.substr(0, us)));
+                if (it != selectors_.end()) {
+                    TableIndex &t = it->second;
+                    std::string digits(seg.substr(us + 1));
+                    int64_t idx = digits.size() <= 9 ? std::strtoll(digits.c_str(), nullptr, 10) : -1;
+                    if (field.empty() || idx < 0 || std::to_string(idx) != digits)
+                        selectors_.erase(it);
+                    else if (field == "_metadata_") {
+                        if (!t.count)
+                            selectors_.erase(it);
+                        else
+                            reindex_row(t, idx);
+                    } else if (auto f = t.fields.find(std::string(field)); f != t.fields.end()) {
+                        unindex_value(f->second, idx);
+                        if (selector_row(t, idx))
+                            if (auto v = text(t.table + "." + t.row + "_" + digits + "." + std::string(field)))
+                                index_value(f->second, idx, std::move(*v));
+                    }
+                }
+            }
+            at = end + 1;
+        }
+    }
+
     void write(Write w)
+    {
+        if (selectors_.empty()) {
+            store(std::move(w));
+            return;
+        }
+        std::string path = w.path;
+        store(std::move(w));
+        update_selectors(path);
+    }
+
+    void store(Write w)
     {
         auto it = index_.find(w.key);
         if (it != index_.end()) {
@@ -421,22 +611,6 @@ private:
         return {};
     }
 
-    static std::vector<std::string> items(std::string_view text)
-    {
-        std::vector<std::string> out;
-        std::size_t at = 0;
-        while (at <= text.size()) {
-            std::size_t end = text.find(',', at);
-            if (end == std::string_view::npos)
-                end = text.size();
-            std::string item = trim(text.substr(at, end - at));
-            if (!item.empty())
-                out.push_back(std::move(item));
-            at = end + 1;
-        }
-        return out;
-    }
-
     std::string list(const Value &op, bool append, std::vector<Write> &w) const
     {
         std::string select(op["select"].as_string()), field(op["field"].as_string());
@@ -471,7 +645,12 @@ private:
             return key + ": value must be hex bytes";
         std::string text;
         for (std::size_t i = 0; i < hex.size(); i += 2) {
-            auto nib = [](char c) { return c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : c >= 'A' && c <= 'F' ? c - 'A' + 10 : -1; };
+            auto nib = [](char c) {
+                return c >= '0' && c <= '9'   ? c - '0'
+                       : c >= 'a' && c <= 'f' ? c - 'a' + 10
+                       : c >= 'A' && c <= 'F' ? c - 'A' + 10
+                                              : -1;
+            };
             int a = nib(hex[i]), b = nib(hex[i + 1]);
             if (a < 0 || b < 0)
                 return key + ": value must be hex bytes";
@@ -492,8 +671,7 @@ private:
         std::string r = from.substr(table.size() + 1);
         r = r.substr(0, r.find_first_of(".["));
         auto us = r.rfind('_');
-        if (us != std::string::npos && us + 1 < r.size() &&
-            r.find_first_not_of("0123456789", us + 1) == std::string::npos)
+        if (us != std::string::npos && us + 1 < r.size() && r.find_first_not_of("0123456789", us + 1) == std::string::npos)
             r = r.substr(0, us);
         return r;
     }
@@ -531,8 +709,8 @@ private:
                     rows++;
             }
             for (int64_t i = 0; i < rows; i++)
-                walk(container + "." + word + "_" + std::to_string(i), rel + head + word + "_" + std::to_string(i) + ".",
-                     keys, uncatalogued);
+                walk(container + "." + word + "_" + std::to_string(i), rel + head + word + "_" + std::to_string(i) + ".", keys,
+                     uncatalogued);
         }
     }
 
@@ -601,8 +779,8 @@ private:
                     if (r.path == dst + ".stat_id") {
                         std::string old = r.text;
                         r.text = std::to_string(*unique.rbegin() + 1);
-                        lines.push_back("add-row " + dst + " (from " + from + "): stat_id " + r.text +
-                                        " (the source's is " + old + ")");
+                        lines.push_back("add-row " + dst + " (from " + from + "): stat_id " + r.text + " (the source's is " +
+                                        old + ")");
                     }
         }
         auto cnt = get(gvdb::fnv64(count_path(*table, row)));
@@ -619,6 +797,9 @@ private:
     std::unordered_map<uint64_t, std::size_t> index_;
     std::vector<Write> out_;
     std::vector<Undo> undo_;
+    bool selectors_on_ = false;
+    mutable std::unordered_map<std::string, TableIndex> selectors_;
+    mutable std::size_t selector_builds_ = 0;
 };
 
 }

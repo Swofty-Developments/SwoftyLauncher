@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_CreateServiceForEditorNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141427e80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141427e80.c;xref:0x14142c149,0x14142c4eb,0x141fef6f6",
+  "notes": "(system, u32 arg): looks up the decal service of key byte system+0x1ac in the robin-hood map [system+0x2b0] (+0x60 mul, +0x68/+0x70/+0x80/+0x90/+0x94); only for service type byte 5: vehicle customisation 0x14246dcb0([system+0x258], id system+0x1a8); if present calls Game_DecalGeneration_CreateService 0x141428060(system, &sp, 1, editor list system+0x170, livery colours (when cust+0x38), key byte, arg) and drops the returned shared_ptr. No 'create when missing' check. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_find_service_for_editor_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 89 D7 48 89 CE",
+  "match": "0x141427e80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141427e80",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_CreateServiceForEditorNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x141427e80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141427e80.c;xref:0x14142c149",
+   "notes": "V8031 Game_CustomisationDecals_CreateServiceForEditorNode: creates service (0x141428060) only when the entry is found with type 5; returns without creating when missing"
+  }
+ ],
+ "proofs": []
+}

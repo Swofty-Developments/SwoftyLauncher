@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Find_NodeByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144343aa0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void **Find(void *vm, void **name)",
+  "evidence": "decomp:re/decomp/144343aa0.c;xref:0x141a58f19,0x141c45894,0x141c71464,0x1420847f4,0x14208bd45,0x142186254,0x14218e7c4,0x142195358,0x142195d53,0x1421973fb,0x14219f364,0x1421a52f4,0x1421c5284,0x1421c725e,0x14223df74,0x14229d2e4,0x1422b0664,0x14234eda9,0x1423543c6,0x1423dc863,0x142403564,0x14416458a,0x144253972",
+  "notes": "Red-black tree find: header=self+8, node+0x19 = isnil, key = interned string at node+0x20 (hash u32 at +0, chars at +9), hash equality shortcut else 0x14535d850 compare; returns matching node or header (end). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ui.find_node_by_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D7 4C 8B 71 08",
+  "match": "0x144343aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144343aa0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Find_NodeByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x144343aa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144343aa0.c;xref:0x141a58f19",
+   "notes": "V10357 It is a red-black tree (std::map-style) find keyed by strcmp of a name, returning the node or end, rather than a linear scan."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TeamHQMyTeamCareerViewModel_LockViewState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142331b90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142331b90.c;str:s_TeamHQMyTeamCareerViewModel_LockViewState;xref:0x142329c23,0x14232c412,0x14232ca99,0x142330be1,0x142331639,0x142331823,0x142332ccf,0x1423330ba,0x1423331ec,0x142333d80,0x142335c94,0x1423361c7",
+  "notes": "Logs 'populating advance buttons, day', computes canAdvance from activity records (+0x3d8), sets 4 VM bools on +0x400 (+0x68,+0x108,+0x1a8,+0x248) and +0x2c8, logs lockViewState(populating timeline buttons) locked/unlocked, posts 0x1457825f8/0x145782628 and 0x1457825e8 with result. (lane owner review requested) Better name: Game_TeamHQMyTeamCareerViewModel_PopulateAdvanceButtons (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.team_h_q_my_team_career_view_model_lock_view_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 35",
+  "match": "0x142331b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142331b90",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamHQMyTeamCareerViewModel_LockViewState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142331b90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142331b90.c;xref:0x142329c23",
+   "notes": "V5267 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

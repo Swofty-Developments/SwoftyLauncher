@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationReplicationManager_HandleF1LifeDataRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14318c8c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14318c8c0.c;pat:log-message-cxx;xref:0x14318460e",
+  "notes": "Pretty-function 0x1458222f4 = handleF1LifeDataRequest; registered by lea at 0x14318460e. Needs state p1+8 >= 2 and [p1+0x50]; takes the local PlayerDescription ([[[0x14604c2c8]+0x140]+0x198]+0x1c0 vt+0x38); if the request (msg+0x18..) names it: builds local F1LifeData (0x14252ae70, 0x142537320 [p1+0x50]), UpdatePlayerLifeData, sends a reply (vt 0x145825110, 0x14402e500 on [p1+0x38], flag p3), 0x1431872e0, logs 'handled!'; else 'was not for the lead player'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_replication_manager_handle_f1_life_data_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 B8 90 30 00 00",
+  "match": "0x14318c8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14318c8c0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationReplicationManager_HandleF1LifeDataRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14318c8c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14318c8c0.c;xref:0x143184610",
+   "notes": "V5889 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

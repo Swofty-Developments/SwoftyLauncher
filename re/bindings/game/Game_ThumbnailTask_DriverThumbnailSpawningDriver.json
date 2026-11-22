@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailTask_DriverThumbnailSpawningDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e3dfa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e3dfa0.c;pat:log-channel-THUMBNAIL_TASK;xref:0x1457eca90",
+  "notes": "vtable cell 0x1457eca90. Builds asset group list from param_2 ids: resolves character package (male/female by head), Game_Character_ExpandPackagePlaceholders, Game_AssetGroupRegistry_LookupById (fatal if missing), spawns via 0x1409a6930 into +0x558/+0x560, logs handle. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.thumbnail_task_driver_thumbnail_spawning_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 48 89 D3 48 89 CE 48 8B 41 18",
+  "match": "0x142e3dfa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e3dfa0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailTask_DriverThumbnailSpawningDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e3dfa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e3dfa0.c;xref:0x142c44eb7",
+   "notes": "V5488 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

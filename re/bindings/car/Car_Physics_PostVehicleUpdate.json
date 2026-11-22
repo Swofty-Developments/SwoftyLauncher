@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Physics_PostVehicleUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144642ab0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144642ab0.c;xref:0x1552dacfb,0x144643af9",
+  "notes": "Physics-world hook 6 of 6 ('postPhysicsVehicleUpdate'): parallelForEach over the vehicles with job 0x14476ae00 -> 0x144642e20 per car, after the rigid-body advance; waits on 'WAIT:parallelForEach'"
+ },
+ "signature": {
+  "id": "car.physics_post_vehicle_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 54 24 58 48 89 CF",
+  "match": "0x144642ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144642ab0",
+  "kind": "func_start",
+  "names": [
+   "Car_Physics_PostVehicleUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "func",
+   "item": "Car_Physics_PostVehicleUpdate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144642ab0.c;decomp:re/decomp/1552dac30.c;xref:0x1552dacfb,0x144643af9;sig:car.physics_post_vehicle_update",
+   "notes": "V1323 Registered 6th; counter loop over the vehicle count running 0x144642e20(owner) per index, parallel via [owner+0x140] vt+0x10 with job 0x14476ae00 named 'postPhysicsVehicleUpdate' (0x145bf7ec7), then FUN_143ac0100 'WAIT:parallelForEach'; afterwards per-car [car+0x148] record work."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144642ab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144642ab0.c;xref:0x144643af8",
+   "notes": "V6718 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

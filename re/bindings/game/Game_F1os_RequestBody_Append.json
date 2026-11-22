@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_RequestBody_Append",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14443fd40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14443fd40.c;xref:0x140825155,0x140835f72,0x140b16fd9",
+  "notes": "Copies byte span param_2 {ptr,len} into a 0x20-byte node (allocator this+0x58), wraps it in a shared_ptr (ctrl vtable 0x1457a6e40), builds field record id 0 named param_3 (0x1444404b0), appends its form-data header (0x144440020), adds the data size to total +0x30, pushes the record into vector +8 (0x1444f3c60). Callers Game_F1os_OnStart_* e.g. 0x140825155. (lane owner review requested) Better name: Game_F1os_Multipart_AppendBinaryPart (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.f1os_request_body_append",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 00 00 00 C5 F8 29 BC",
+  "match": "0x14443fd40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14443fd40",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_RequestBody_Append"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14443fd40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14443fd40.c;xref:0x140825155",
+   "notes": "V7673 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

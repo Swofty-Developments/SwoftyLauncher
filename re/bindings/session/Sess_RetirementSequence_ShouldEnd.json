@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RetirementSequence_ShouldEnd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d8b080",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d8b080.c;xref:0x142d8a9e7,0x142d8ac16",
+  "notes": "(state) -> bool: false while state machine +0xdf0 vtbl+0x188 busy; for online/replay modes checks 0x14077c790 and pause/ready flags at +0xcb0 (+0xf0 obj +0x2c8/+0x2d0, +0xf8, +0x180), else mode byte +0xe35. Caller: Sess_RetirementSequence_Update."
+ },
+ "signature": {
+  "id": "session.retirement_sequence_should_end",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 89 F0 0D 00",
+  "match": "0x142d8b080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d8b080",
+  "kind": "func_start",
+  "names": [
+   "Sess_RetirementSequence_ShouldEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d8b080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d8b080.c;xref:0x142d8a9e7",
+   "notes": "V3713 false while [state+0xdf0] vtbl+0x188 busy; online/replay branch via 0x14077c790, flags +0xcb0 -> +0xf0 obj +0x2c8/+0x2d0, +0xf8, +0x180; else mode byte +0xe35; caller Sess_RetirementSequence_Update"
+  }
+ ],
+ "proofs": []
+}

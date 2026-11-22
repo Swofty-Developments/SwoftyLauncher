@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Game_DriverCareerDriverSelectViewModel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457298a0",
+  "type": "vtable[22]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1415df0b0.c;decomp:re/decomp/141a5adc0.c;decomp:re/decomp/141a5df70.c;xref:0x1415df79a",
+  "notes": "DriverCareerDriverSelectViewModel (driver_career_driver_select, Choose Driver), registered by 0x1415df0b0 (vtable written after the lea at 0x1415df79a): slot 10 command handler 0x141a5df70 (driver confirm, open_team_select / open_confirm_selections), slot 13 populate 0x141a5adc0 (formats F1CAREER_/F2CAREER_/ICONS_ + wizard +0x150 suffix, looks them up in entrants +0x688, reads entrant lists from +0x560; needs the slot's game mode ([[vm+0x448]+0x88]+0x260) to be of type 0x14604ec60 and its +0xe18 set, else no drivers), slot 15 0x141a5de20, slot 17 0x141a5a6e0. Raised by wizard-1990"
+ },
+ "signature": {
+  "id": "game.driver_career_driver_select_view_model",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 49 89 06 48 8D 05 ?? ?? ?? ?? 49 89 86 60 02 00 00 4D 89 BE 68 02 00 00 4D 89 BE 70 02 00 00",
+  "match": "0x1415df79a",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457298a0",
+  "kind": "data",
+  "names": [
+   "vt_Game_DriverCareerDriverSelectViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "progressive-wizvis",
+   "kind": "global",
+   "item": "vt_Game_DriverCareerDriverSelectViewModel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a5adc0.c;decomp:re/decomp/141a5df70.c;decomp:re/decomp/141a5f2d0.c;xref:0x1415df79a,0x1415df7a1,0x145677d26,0x145677d32,0x1457272af",
+   "notes": "V1053 linear disasm 0x1415df770..0x1415df7d0: lea rax,[rip+0x414a0ff] at 0x1415df79a = 0x1457298a0 stored to [r14] right after the driver_career_driver_select registration's base ctor, second vtable 0x145729920 at +0x260; table dump: slot 10 0x141a5df70 (fires open_team_select / open_confirm_selections), slot 13 0x141a5adc0 (formats F1CAREER_%s 0x145677d26, F2CAREER_%s 0x145677d32, ICONS_%s 0x1457272af with [vm+0x438]+0x150, looks them up in [vm+0x440]+0x688 and collects each list's driver keys through 0x141a5f2d0), slot 15 0x141a5de20, slot 17 0x141a5a6e0; slot 22 is string data, so 22 slots; sigcheck passes"
+  }
+ ],
+ "proofs": []
+}

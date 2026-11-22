@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryUdp_Prepare2024",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144731660",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144731660.c;xref:0x144731269,0x144738113",
+  "notes": "Builds the packetFormat 2024 (0x7e8) packets from car and session state (Car_F1Aero_GetFront/RearRideHeight, raycasts, atan2 angles). Called from Game_TelemetryOutputUDPUpdateable_Update and Game_TelemetryUdp_HandleEvent ('SEND' with format index [[this+0xe0]+0xc] == 0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.telemetry_udp_prepare2024",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 78 29 94 24 80 01 00 00",
+  "match": "0x144731660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144731660",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryUdp_Prepare2024"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144731660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144731660.c;xref:0x144731269",
+   "notes": "V6618 packetFormat 0x7e8 (2024) header stores throughout; format 0 branch of Update and FlushFormat"
+  }
+ ],
+ "proofs": []
+}

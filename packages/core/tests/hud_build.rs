@@ -6,15 +6,19 @@ use std::path::{Path, PathBuf};
 
 use swofty_addon::asset::{AssetOp, Root};
 use swofty_addon::ops::ErpOp;
-use swofty_core::baseline::Identity;
 use swofty_core::build::{GVDB, build};
-use swofty_core::hud::{self, GameStock, dials};
+use swofty_core::game_folder::baseline::Identity;
+use swofty_core::hud::{self, GameStock, Stock, dials};
 use swofty_core::install::Game;
 use swofty_core::store::Store;
-use swofty_core::ui::node::{NodeExt, ObjExt, clone_node, edit, find_path, root_obj};
+use swofty_core::ui::node::{
+    CHILDREN, NodeExt, ObjExt, clone_node, edit, find_path, fix_ids, group_node, hidden, node_at_mut,
+    root_obj,
+};
 use swofty_formats::erp::{Erp, ErpFile};
 use swofty_formats::gvdb::Gvdb;
 use swofty_formats::pkg::Pkg;
+use swofty_formats::uipre::{KEY_VISIBLE, Uipre, element_id};
 
 const FLOW_RACE: &str = "2025_asset_groups/ui_package/flow_race.erp";
 const MARKER: &str = "planked_brake_panel";
@@ -66,7 +70,7 @@ struct Fixture {
     root: PathBuf,
     store: Store,
     game: Game,
-    _pin: swofty_core::builtin::LoaderPin,
+    _pin: swofty_core::addons::builtin::LoaderPin,
 }
 
 impl Fixture {
@@ -76,7 +80,7 @@ impl Fixture {
         let dir = root.join("game");
         write(&dir.join("F1_25.exe"), "exe");
         std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
-        std::fs::write(dir.join(GVDB), Gvdb { records: Vec::new() }.to_bytes()).unwrap();
+        std::fs::write(dir.join(GVDB), Gvdb::new(Vec::new()).to_bytes()).unwrap();
         let originals = GameStock::with_baseline(real, &Store::open_default().root).unwrap();
         let ui = |rel: &str| format!("2025_asset_groups/ui_package/{rel}");
         let mut rels: Vec<String> = swofty_core::ui::ERPS
@@ -108,7 +112,7 @@ impl Fixture {
             store: Store::new(root.join("data")),
             root,
             game,
-            _pin: swofty_core::builtin::LoaderPin::to(loader),
+            _pin: swofty_core::addons::builtin::LoaderPin::to(loader),
         }
     }
 
@@ -788,4 +792,293 @@ fn a_variants_decision_placed_adds_and_root_y_compose_for_its_dial_only() {
         );
     }
     std::fs::remove_dir_all(dir).ok();
+}
+
+/// A record that keeps the 2026 dial's stock parts and hides the f2 dial's behind its variant's
+/// switch: the f2 template binds every `v_stock_<part>` to NOT the switch, the f1_26 dial has no
+/// stock node and its parts sit where the stock scene has them.
+#[test]
+fn a_variants_own_stock_mode_hides_its_dials_parts_behind_the_switch_only() {
+    let Some(game) = real() else { return };
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let dir = std::env::temp_dir().join(format!("swofty-hud-vstock-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    png(&dir.join("art/base.png"), 64, 28);
+    png(&dir.join("art/lit.png"), 16, 8);
+    let leaf = "view_model_data.hud_vs_on";
+    let mut rec = record();
+    rec["stock"] = "keep".into();
+    rec["variants"] = serde_json::json!({
+        "f2": { "dial": "f2", "stock": "hide", "switch": { "view_model": leaf, "default": false } }
+    });
+    let input = hud::Input {
+        addon: "one.vstock".into(),
+        key: "dial".into(),
+        dir: dir.clone(),
+        record: hud::model::HudElement::parse(&rec).unwrap(),
+    };
+    let out = hud::compose(&stock, &[input]).unwrap();
+    let pfx = "one_vstock_dial";
+    let archive =
+        |file: &str| Erp::parse(&out.archives.iter().find(|a| a.file == file).unwrap().bytes).unwrap();
+    let scene = archive("hud_scene.erp");
+    let tmpl = archive("hud_template.erp");
+    let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
+    let visible = |path: &str| {
+        let n = swofty_core::ui::node::node_at(&t.root, &find_path(&t.root, path).unwrap()).unwrap();
+        n.props().unwrap().get("visible").unwrap().clone()
+    };
+    let text =
+        |n: Option<&swofty_formats::pkg::Node>| n.and_then(|v| v.as_val()).map(|v| format!("{:?}", v.value));
+    let part_y = |dial: hud::model::Dial, stock_scene: bool, part: &str| {
+        let f = dials::facts(dial);
+        let bytes = if stock_scene {
+            stock.read(dials::STOCK_ERP, f.scene).unwrap().remove(0)
+        } else {
+            scene.find(f.scene).unwrap().fragments[0].data().unwrap()
+        };
+        let p = Pkg::parse(&bytes).unwrap();
+        let root = swofty_core::ui::idf::scenes(&p).unwrap()[0]
+            .o()
+            .unwrap()
+            .at("scene")
+            .unwrap();
+        swofty_core::ui::idf::position(swofty_core::ui::idf::find(root, part).unwrap())
+    };
+
+    let f2 = dials::facts(hud::model::Dial::F2);
+    let ctl = format!("{}.{pfx}_ctl", f2.race_parent);
+    let root = visible(&format!("{ctl}.v_{pfx}"));
+    let root = root.as_obj().unwrap();
+    assert!(
+        text(root.get("dbentry")).unwrap().contains("hud_vs_on"),
+        "{root:?}"
+    );
+    assert!(
+        root.get("dbentrynegate").is_none(),
+        "the root shows while the switch is on"
+    );
+    for part in dials::STOCK_KIDS {
+        let v = visible(&format!("{ctl}.v_stock_{part}"));
+        let v = v.as_obj().unwrap();
+        assert!(
+            text(v.get("dbentry")).unwrap().contains("hud_vs_on"),
+            "{part}: {v:?}"
+        );
+        assert!(
+            v.get("dbentrynegate").is_some(),
+            "{part}: shown while the switch is off"
+        );
+        assert_eq!(
+            part_y(hud::model::Dial::F2, false, part),
+            part_y(hud::model::Dial::F2, true, part),
+            "{part}: hidden, not parked"
+        );
+    }
+
+    let f126 = dials::facts(hud::model::Dial::F126);
+    let ctl = format!("{}.{pfx}_ctl", f126.race_parent);
+    assert!(find_path(&t.root, &ctl).is_ok(), "{ctl}");
+    for part in dials::STOCK_KIDS {
+        assert!(
+            find_path(&t.root, &format!("{ctl}.v_stock_{part}")).is_err(),
+            "{part}: the f1_26 base keeps its stock part"
+        );
+        assert_eq!(
+            part_y(hud::model::Dial::F126, false, part),
+            part_y(hud::model::Dial::F126, true, part),
+            "{part}: the f1_26 base does not park"
+        );
+    }
+    std::fs::remove_dir_all(dir).ok();
+}
+
+/// A dial record that carries the switch itself (schema 1.4): the f1_25 template binds its root to
+/// the leaf with the switch's `default`, every `v_stock_<part>` to NOT the leaf with the inverse,
+/// and a variant without a switch of its own inherits the record's.
+#[test]
+fn a_record_level_switch_scopes_the_dial_and_gives_the_stock_parts_back_by_default() {
+    let Some(game) = real() else { return };
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let dir = std::env::temp_dir().join(format!("swofty-hud-rswitch-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    png(&dir.join("art/base.png"), 64, 28);
+    png(&dir.join("art/lit.png"), 16, 8);
+    let leaf = "view_model_data.hud_rs_on";
+    let mut rec = record();
+    rec["dial"] = "f1_25".into();
+    rec["stock"] = "hide".into();
+    rec["switch"] = serde_json::json!({ "view_model": leaf, "default": false });
+    rec["variants"] = serde_json::json!({ "f2": { "dial": "f2" } });
+    let input = hud::Input {
+        addon: "one.rswitch".into(),
+        key: "dial".into(),
+        dir: dir.clone(),
+        record: hud::model::HudElement::parse(&rec).unwrap(),
+    };
+    let out = hud::compose(&stock, &[input]).unwrap();
+    let pfx = "one_rswitch_dial";
+    let tmpl = Erp::parse(
+        &out.archives
+            .iter()
+            .find(|a| a.file == "hud_template.erp")
+            .unwrap()
+            .bytes,
+    )
+    .unwrap();
+    let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
+    let visible = |path: &str| {
+        let n = swofty_core::ui::node::node_at(&t.root, &find_path(&t.root, path).unwrap()).unwrap();
+        n.props().unwrap().get("visible").unwrap().clone()
+    };
+    let text =
+        |n: Option<&swofty_formats::pkg::Node>| n.and_then(|v| v.as_val()).map(|v| format!("{:?}", v.value));
+    let flag = |n: Option<&swofty_formats::pkg::Node>| {
+        n.and_then(|v| v.as_val())
+            .map(|v| format!("{:?}", v.value).contains("[1]"))
+    };
+
+    for dial in [hud::model::Dial::F125, hud::model::Dial::F2] {
+        let f = dials::facts(dial);
+        let ctl = format!("{}.{pfx}_ctl", f.race_parent);
+        let root = visible(&format!("{ctl}.v_{pfx}"));
+        let root = root.as_obj().unwrap();
+        assert!(
+            text(root.get("dbentry")).unwrap().contains("hud_rs_on"),
+            "{dial:?}: {root:?}"
+        );
+        assert!(
+            root.get("dbentrynegate").is_none(),
+            "{dial:?}: the root shows while the leaf is on"
+        );
+        assert!(
+            flag(root.get("value")) == Some(false),
+            "{dial:?}: the root starts hidden with the switch default false: {root:?}"
+        );
+        for part in dials::STOCK_KIDS {
+            let v = visible(&format!("{ctl}.v_stock_{part}"));
+            let v = v.as_obj().unwrap();
+            assert!(
+                text(v.get("dbentry")).unwrap().contains("hud_rs_on"),
+                "{dial:?} {part}: {v:?}"
+            );
+            assert!(
+                v.get("dbentrynegate").is_some(),
+                "{dial:?} {part}: shown while the leaf is off"
+            );
+            assert!(
+                flag(v.get("value")) == Some(true),
+                "{dial:?} {part}: the stock part starts shown: {v:?}"
+            );
+        }
+    }
+    std::fs::remove_dir_all(dir).ok();
+}
+
+const STANDINGS: &str = "hud_track_position.osd_visibility_option.track_position";
+
+fn screen_record() -> serde_json::Value {
+    serde_json::json!({
+        "screen": "standings",
+        "show": { "view_model": "view_model_data.hud_t_show" },
+        "elements": [
+            { "kind": "text", "id": "lap", "style": "OSD_24_bold", "align": "left", "box": 40,
+              "cap_height": 9.5, "at": [10, 14], "value": { "view_model": "view_model_data.hud_t_lap" } }
+        ],
+        "editor": { "preview": { "view_model_data.hud_t_lap": "10" } }
+    })
+}
+
+impl Fixture {
+    fn screen_addon(&self, id: &str) {
+        let hud = serde_json::json!({ "hud.element": { "tower": screen_record() } });
+        self.install(
+            id,
+            serde_json::json!({ "operations": { "hud": ["hud.json"] } }),
+            vec![("hud.json", hud.to_string().into_bytes())],
+        );
+    }
+
+    fn replacing(&self, id: &str, real: &Path, resource: &str, change: &dyn Fn(Vec<u8>) -> Vec<u8>) {
+        let originals = GameStock::with_baseline(real, &Store::open_default().root).unwrap();
+        let stock = ErpFile::open(&originals.original(FLOW_RACE)).unwrap();
+        let res = stock.erp.find(resource).unwrap();
+        let bytes = stock.load(res).unwrap().fragments[0].data().unwrap();
+        let ops = serde_json::json!({ "schema_version": 1, "ops": [
+            { "op": "erp.replace-resource", "erp": FLOW_RACE, "resource": resource, "source": "copy.bin" }
+        ] });
+        self.install(
+            id,
+            serde_json::json!({ "operations": { "assets": ["ops.json"] } }),
+            vec![
+                ("ops.json", ops.to_string().into_bytes()),
+                ("copy.bin", change(bytes)),
+            ],
+        );
+    }
+}
+
+#[test]
+fn a_board_another_addon_hides_in_the_editor_preview_still_takes_a_screen_record() {
+    let Some(game) = real() else { return };
+    let f = Fixture::new("preview-hidden", &game);
+    f.replacing("a.preview", &game, hud::screens::STACKED_UIPRE, &|bytes| {
+        let mut p = Uipre::parse(&bytes).unwrap();
+        p.set_visible(hud::screens::STACKED_MASK, false).unwrap();
+        p.to_bytes().unwrap()
+    });
+    f.screen_addon("s.tower");
+    let built = build(&f.store, "default", &f.game).unwrap();
+    assert!(
+        built
+            .lines
+            .iter()
+            .any(|l| l.contains("a.preview") && l.contains("on top of that change")),
+        "{:#?}",
+        built.lines
+    );
+    let archive = f
+        .store
+        .addon_cache_dir("s.tower")
+        .join("hud/hud_screen_scene.erp");
+    let erp = Erp::parse(&std::fs::read(archive).unwrap()).unwrap();
+    let res = erp.find(hud::screens::STACKED_UIPRE).unwrap();
+    let p = Uipre::parse(&res.fragments[0].data().unwrap()).unwrap();
+    let mask = element_id(hud::screens::STACKED_MASK);
+    assert_eq!(p.element_ids().iter().filter(|i| **i == mask).count(), 1);
+    assert_eq!(p.setters(mask).len(), 1);
+    assert!(
+        p.setter_at(&["s_tower_host", "s_tower_pv"], KEY_VISIBLE)
+            .is_some()
+    );
+}
+
+#[test]
+fn another_addons_own_tower_on_the_board_stops_the_build_naming_both() {
+    let Some(game) = real() else { return };
+    let f = Fixture::new("two-towers", &game);
+    f.replacing("b.tower", &game, dials::TEMPLATE, &|bytes| {
+        edit(&bytes, |p| {
+            let at = find_path(&p.root, STANDINGS)?;
+            let target = node_at_mut(&mut p.root, &at)?;
+            let mut grp = group_node("tt_ctl", vec![], &[], vec![hidden("tt_mask", &["mask"])]);
+            fix_ids(&mut grp, Some(STANDINGS));
+            target.slot_mut(CHILDREN)?.push(grp);
+            Ok(())
+        })
+        .unwrap()
+    });
+    f.screen_addon("s.tower");
+    let err = build(&f.store, "default", &f.game).unwrap_err().to_string();
+    assert!(
+        err.contains(
+            "the HUD elements do not compose: b.tower and s.tower both replace the Track Position list"
+        ),
+        "{err}"
+    );
+    assert!(
+        err.contains("turn b.tower or s.tower off in this profile"),
+        "{err}"
+    );
+    assert!(err.contains(&format!("{STANDINGS}.tt_ctl.tt_mask")), "{err}");
 }

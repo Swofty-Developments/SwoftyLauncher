@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomDriverNetMsg_CreateDriverInfoFromNameInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14312fd30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14312fd30.c;xref:0x14310b43d,0x14312f7f0,0x14313087a,0x14313127b,0x143133533,0x143134f9d,0x14313642f,0x143138533,0x143139c9b,0x143139e27,0x1431bfc70",
+  "notes": "Pretty-function string 0x1458196a5 = createNewDriverInfo(const game::DriverNameInfo&, const game::DriverInfo&). Out p2 takes +0..+0x18 and the 0x310 block (+0x2a8) from DriverInfo p4, the four name strings / initials / +0x2a0/+0x2a4 from DriverNameInfo p3 (+0x18..+0x28c), then sets the initials string +0x290 to localised lng_name_initials_default ([p1+0x30] vt+0x18). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_driver_network_message_handler_create_new_driver_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 89 CE 4C 89 C3 48 89 D6 48 89 4C",
+  "match": "0x14312fd30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14312fd30",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomDriverNetMsg_CreateDriverInfoFromNameInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x14312fd30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14312fd30.c;xref:0x14310b43d",
+   "notes": "V4178 Log string is createNewDriverInfo(const game::DriverNameInfo &, const game::DriverInfo &) on NETWORK-ENTRANTS, default initials lng_name_initials_default (the lead '(PlayerDescription)' is superseded by the d6 correction); many callers in CustomDriverNetworkMessageHandler / NetworkEntrants"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SessionPracticeProgrammesConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142944640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142944640.c;pat:log-channel--;xref:0x14295f489,0x14295fa73,0x14295fc4a,0x14295fe99,0x142960069,0x14296038d,0x14296056b",
+  "notes": "Ctor (this,owner,name): vtables 0x1457b1f40/0x1457b2150 at +0/+8, owner +0x10, name copied to +0x58; binds via [0x146ca54f8] 'session.number_of_laps' (->+0x258), 'session.practice_programmes.topPill'/'bottomPill' (->+0x280/+0x2a0); once-only statics 0x146076050.. resolve '#overrides.osd.race_flags.pp_icon'/_fail/_pass/_perfect. Returns this. Sites all in 0x14295f370. Old name misleading. (lane owner review requested) Better name: Game_SessionPracticeProgrammesWidget_Ctor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_session_practice_programmes_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 CE 48 8D 05",
+  "match": "0x142944640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142944640",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SessionPracticeProgrammesConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142944640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142944640.c;xref:0x14295f489",
+   "notes": "V5159 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

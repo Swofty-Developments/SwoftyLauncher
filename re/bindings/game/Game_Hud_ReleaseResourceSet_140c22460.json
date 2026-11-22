@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Hud_ReleaseResourceSet_140c22460",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c22460",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c22460.c;xref:0x140c21b4d,0x141476ab6,0x1414a2f8c,0x1414a3201,0x1414d27a5,0x141524151,0x141524194,0x14152c35a,0x1415cbd0c,0x14167d484,0x14167fb55,0x1416b9993,0x1416e2601,0x141822be7,0x141828606,0x141837b61,0x141845582,0x141869819,0x14186f9e8,0x141877ea5,0x141892191,0x1418967f7,0x1418cdb5c,0x1418fae91,0x141902427,0x14190d225,0x14190eff0,0x141961f6d,0x141964284,0x1419a7abe,0x1419ac0c3,0x1419b772e,0x1419d2e43,0x1419d302b,0x1419d85cc,0x141a19493,0x141a3bf61,0x141a59e1a,0x141bbb833,0x141bbdf53,0x141cb7434,0x141d53cfd,0x141eb658d,0x141f1ef28,0x141f22ed0,0x141f3be03,0x141fa3e7b,0x141fbf1c3,0x1420d3992,0x1421b960a,0x1421c180a,0x1422c175e,0x142343715,0x1423b0ac8,0x1423b0b4f,0x1423ec42e,0x1423ec827,0x1424bc86d,0x1424cbc3d,0x1424cbd2d,0x1424cbe1d,0x1424f62e3,0x1424f64ce,0x1424f660e,0x1424f6a61,0x1424f6ac7,0x1424f6b15,0x14385c27b,0x14385c3a8,0x14cbd019d",
+  "notes": "Destructor of 16 resource handles (stride 0x20, vt 0x145612e48) from +0x1e0 down to +0: unlinks each holder and releases it via 0x1442b3d70(0x146ca54f8). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hud_release_resource_set_140c22460",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 43 8B 94 2C A0 00 00 00 83 FA FF",
+  "match": "0x140c21b4d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140c22460",
+  "kind": "func_start",
+  "names": [
+   "Game_Hud_ReleaseResourceSet_140c22460"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x140c22460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c22460.c;xref:0x140c21b4d",
+   "notes": "V8211 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

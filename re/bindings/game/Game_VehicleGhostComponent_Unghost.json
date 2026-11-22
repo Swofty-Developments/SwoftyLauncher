@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleGhostComponent_Unghost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1c000",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f1c000.c;str:s_VehicleGhostComponent_Unghost;xref:0x142afde21,0x142afde48,0x142afdffd,0x142bdc1c4,0x142c1fc91,0x142c21460,0x142d686a5,0x142d96d5a,0x142daa6f0,0x142daa716,0x142f1db3d,0x142f1db47",
+  "notes": "Read in full (comp, reason): if bit reason is set in comp+0x518: 0x142f1bd50, log 'UNGHOSTED REASON(%s)' with pretty name game::VehicleGhostComponent::unghost, clears the bit, recomputes byte +0x684 from masks +0x4d0..+0x4e8 (or 1 when vehicle+0x130 bit4). Xref list truncated. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_ghost_component_unghost",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 0F B6 FA BB 01 00 00 00 89 F9 48 D3 E3 48 8B 86 18 05 00 00 48 0F A3 F8 0F 83",
+  "match": "0x142f1c000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1c000",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleGhostComponent_Unghost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f1c000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1c000.c;xref:0x142afde21",
+   "notes": "V5599 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatchingRankedDivisisons_CreateSessionSearchQuery",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315c6b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315c6b0.c;pat:log-message-cxx;xref:0x14581d930",
+  "notes": "cxx=network::NetworkMatchingRankedDivisisons::createSessionSearchQuery(NeNetSessionQuery*&) const (virtual). Builds the query via 0x1430711b0 and logs setMatchSearchParams '{ Safety rating: %s, race length: %d }' (NETWORK-SESSION). Only ref: vtable cell 0x14581d930. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_matching_ranked_divisisons_create_session_search_query",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 73 B8 EF 00 00 00",
+  "match": "0x14315c6b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315c6b0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatchingRankedDivisisons_CreateSessionSearchQuery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14315c6b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315c6b0.c",
+   "notes": "V5754 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

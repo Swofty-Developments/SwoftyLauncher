@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineSubsystemTaskBase_AbortTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b16b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432b16b0.c;str:s_OnlineSubsystemTaskBase_AbortTask;xref:0x14142e97e,0x14172c1df,0x141739c2f,0x141a776ff,0x141b196f0,0x141fe7821",
+  "notes": "Logs F1OS-TASKSYSTEM '%s() for %s' with game::OnlineSubsystemTaskBase::abortTask, records F1OS/ERROR 'eTaskAborted - Task Aborted by user' and stops the task (Game_OnlineSubsystemTaskBase_StopTask). Called from Game_LeaderboardReader_Destroy, Game_F1WorldActivityContainer_OnExit, Game_DecalCustomisation_SwapAssetGroup and others (see xref). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_subsystem_task_base_abort_task",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 0F",
+  "match": "0x1432b16b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b16b0",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineSubsystemTaskBase_AbortTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432b16b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432b16b0.c;xref:0x14142e97f",
+   "notes": "V5880 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_RemovingDriverPlayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143133c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143133c40.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x1431320b1,0x14257a2ed,0x1431bf542",
+  "notes": "cxx=network::CustomDriverNetworkMessageHandler::removeCustomDriver(const PlayerDescription&) (pretty name in its logs: removing driver / isDocumentOpen / driverStatId / no matching stat id / result); postRemoveCustomDriverMessage is inlined at the end. Callers 0x143131f70, 0x142579c10, tail jump from 0x1431bf4a0. (lane owner review requested) Better name: Game_NetworkEntrants_RemoveCustomDriver (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_entrants_removing_driver_player",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143133c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143133c40",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_RemovingDriverPlayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143133c40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143133c40.c;xref:0x14257a2ed",
+   "notes": "V5876 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

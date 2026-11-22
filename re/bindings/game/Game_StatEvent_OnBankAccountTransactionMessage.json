@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_OnBankAccountTransactionMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143737790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_StatEvent_OnBankAccountTransactionMessage(void *owner, void *msg)",
+  "evidence": "decomp:re/decomp/143737790.c;xref:0x143724834,0x143749ded",
+  "notes": "STATEVENT bus handler (lea 0x143724834 in 0x143720bc0, 0x143749ded in 0x143749390). InitCommon event; type byte msg+0x14 in mask 0x7bdffefe, stat id table 0x1458740cc[type-1]; amount msg+0x18; flow msg+0x25 (1 +1, 0 0, else -1); kind msg+0x28 (2 +1, 1 0, else -1). Kind 2: 0x140c68e20 + 0x143760c40 day sums; kind != 1: ledger 0x140c68c90 sums income/expense (entry+0x11 0/1). Then Game_StatEvent_WriteCareerCashTransactions(this+0x48,evt,|amount|,statId,flow,kind,|expense|,income). No bank writes. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_on_bank_account_transaction_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 D7 48 89 CE 48 8B 81 B0 00 00 00",
+  "match": "0x143737790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143737790",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_OnBankAccountTransactionMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x143737790",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143737790.c;xref:0x143724834;xref:0x143749ded",
+   "notes": "V9010 Role right: type byte msg+0x14 against mask 0x7bdffefe, id via table 0x1458740cc, amount msg+0x18, sums income/expense (ledger entry byte +0x11 = 0/1) and calls FUN_143760ca0 = Game_StatEvent_WriteCareerCashTransactions; no bank writes. Field labels are shaky: msg+0x28 is a kind selector (1 = sum ledger via FUN_140c68c90, 2 = day stat via FUN_143760c40), not just a valid flag; msg+0x25 is turned into a tri-state sign (1 -> +1, 0 -> 0, else -1) while the 68310 handler treats the same byte as the notify flag."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143737790",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143737790.c;xref:0x143724834",
+   "notes": "V10316 Role right: mask 0x7bdffefe on msg+0x14, table 1458740cc, writes via 143760ca0. msg+0x28 is a kind selector (1/2), not a valid flag."
+  }
+ ],
+ "proofs": []
+}

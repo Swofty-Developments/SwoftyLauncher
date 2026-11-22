@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsControlsScreenViewModel_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d9f6d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d9f6d0.c;str:s_SettingsControlsScreenViewModel_OnCommandRaised;xref:0x14574cb90,0x141da17f7",
+  "notes": "Vtable slot 0x14574cb90; thunk 0x141da17f0 (rcx-=0x268) jmps here. pdata 141d9f6d0-141da03a2 switches on command hash *param_2: settings_home sets +0x8ba, cat_controls compare, renamed_/duplicated_control_scheme via scheme store +0x15b slots 0x38/0x30, downloading_control_scheme_msg; logs own pretty-function string 0x14574cd45. Unmatched hashes tail-jmp 0x141da11d0 (decomp merged it and other tail targets). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.settings_controls_screen_view_model_on_command_raised",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 28 01 00 00 48",
+  "match": "0x141d9f6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d9f6d0",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsControlsScreenViewModel_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d9f6d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d9f6d0.c;xref:0x141da17f7",
+   "notes": "V5216 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

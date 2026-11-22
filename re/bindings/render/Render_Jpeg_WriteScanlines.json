@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_WriteScanlines",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d46c8",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d46c8.c;xref:0x14379cf8c,0x144bd90fb",
+  "notes": "libjpeg jpeg_write_scanlines(cinfo, scanlines, num_lines): error 0x15 unless state 0x65, warning 0x7e when next_scanline >= image_height, progress hook, master pass_startup when call_pass_startup ([0x3c]+0x18), clamps to remaining rows, main controller process_data ([0x3d] vcall +8), next_scanline += rows. Callers 0x14379cf8c (0x14379c250), 0x144bd90fb (0x144bd9065). Old xref 0x1435142da not found. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.jpeg_write_scanlines",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 83 79 24 65 41",
+  "match": "0x1449d46c8",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d46c8",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_WriteScanlines"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1449d46c8",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449d46c8.c;xref:0x1435142da",
+   "notes": "V7711 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

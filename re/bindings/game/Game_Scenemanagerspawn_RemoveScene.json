@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Scenemanagerspawn_RemoveScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018ef80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14018ef80.c;pat:log-message-method;xref:0x14018ef0b,0x14018ef4b,0x14026ee54,0x14026eff1,0x140293077,0x140381687,0x14038169b,0x1403816af,0x1403816c3,0x14038171b,0x1403d0cfb,0x1403d2e65,0x1403d6203,0x14042e9c3,0x14042e9d2,0x14042e9e1,0x14042e9f0,0x14042e9ff,0x14042ea0e,0x14042ea1d,0x14042ea2c,0x14042ea3b,0x14042ea4a,0x14042ea59,0x14042ea68,0x14042ea77,0x14042ea86,0x14042ea95,0x14042eaa4,0x14042eab3,0x14042eac2,0x14042ead1,0x14042eae0,0x14042eaef,0x14042eafe,0x14042eb0d,0x14042eb1c,0x14042eb2b,0x14042eb3a,0x14042eb49,0x14042fe53,0x140c75600,0x140c7c982,0x140c7c9b2,0x140c7c9e2,0x140c7ca12,0x140c7ca42,0x140c7ca72,0x140c7d850,0x140c7d884,0x140c7d8b8,0x140c7d8ec,0x140c7d920,0x140c7d957,0x140c7da35,0x140c7da69,0x141213408,0x14288df30,0x14288df83,0x14288e08c,0x14289610a,0x14289612c,0x14289aedd,0x14289af34,0x14289afec,0x1428a6303,0x1476bd8de,0x147d281b8,0x147d3e197,0x147e4736a,0x147e59b34,0x147ed7ac8,0x147edc3e6,0x147edc3f2,0x14d1aad22,0x14d1ba6fd",
+  "notes": "Logs SceneManagerSpawn_Verbose \"removeScene %p -> %p [%s]\"; runs the destroy callback +200(+0xd0); clears per-part data of the part arrays +0x68..+0x90 (counts [+0xa0]+0xf0..+0x118), destroys them (vcalls, 0x1401812e0/0x1401811d0/0x140181610 on manager 0x14601d4c8), queues +0x80/+0x88 entries to manager vectors +0x830/+0x870 under spinlock +0x5c4, frees the arrays, decrements [[+0xa0]] and frees param_2 via [param_1+200] vcall +0x38. Name casing fixed. (lane owner review requested) Better name: Game_SceneManagerSpawn_RemoveScene (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.scenemanagerspawn_remove_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 85 D2 74 6E",
+  "match": "0x14018ef80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018ef80",
+  "kind": "func_start",
+  "names": [
+   "Game_Scenemanagerspawn_RemoveScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14018ef80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14018ef80.c",
+   "notes": "V4320 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

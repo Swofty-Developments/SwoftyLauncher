@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_CECreate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b2190",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430b2190.c;pat:log-message-method;xref:0x14258d47c",
+  "notes": "Caller 0x14258d060. If 0x1430af1a0() is false: 0x1430af5a0([this+8]+0x220), stores the 16-byte arg at +0x448; with no pending ops at [[this+8]+0x3f0] and the account check ([this+0x4a8] vt+0x130) passing shows session_list_create_collaborative_event_lobby_msg (0x1430b00a0, button_2_enabled), failing it shows network_invite_join_error_banned and logs 'CECreate failed : Banned'; pending ops show network_create_custom_cancel_hopper (DisplayMessage 0x143062630). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ce_create",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 C3 48 89 D7 48 89 CE E8",
+  "match": "0x1430b2190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b2190",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_CECreate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b2190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b2190.c;xref:0x14258d47c",
+   "notes": "V5348 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

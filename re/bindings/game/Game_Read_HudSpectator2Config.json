@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_Read_HudSpectator2Config",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c1e530",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c1e530.c;pat:log-channel--;xref:0x141496fb3",
+  "notes": "Not a config reader: constructor of the 'hud_spectator_2' view model (base init + 0x1442bf450 register, vtables 0x14573ca20/0x14573caa0), then allocates and pushes child VMs into vector +0x2f0..+0x300: 'hud_spectator_2.content.bottom_right' (0x1414e0b80), .driver_list_panel, .spectator_menu_panel, .focused_driver_panel, 'content.tyre_performance' (0x141529000), 'content.pit_strategy' (0x141518e70); returns this. Caller 0x141496fb3 in 0x14148a320. (lane owner review requested) Better name: Game_HudSpectator2_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_hud_spectator2_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4C 89 C3 48 89 D7",
+  "match": "0x141c1e530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c1e530",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_HudSpectator2Config"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

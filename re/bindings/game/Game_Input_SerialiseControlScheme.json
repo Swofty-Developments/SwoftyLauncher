@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Input_SerialiseControlScheme",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a69440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a69440.c;pat:log-channel-INPUT;xref:0x1457bb740",
+  "notes": "Serialise, vt cell 0x1457bb740: node 'control_schemes', child per custom scheme (+0x1a/+0x1b) via 0x142a61bb0 (on error logs 'Failed to serialise control scheme id=%d name=\"%s\"' and drops the child); then 'control_schemes_player_index_%d' per player entry (+0x218 stride 0x50) with scheme ids; returns an error code. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.input_serialise_control_scheme",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 49 89 D6 49 89 CF",
+  "match": "0x142a69440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a69440",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_SerialiseControlScheme"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a69440",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a69440.c",
+   "notes": "V4949 serialises whole control_schemes list + control_schemes_player_index into save container (Failed-to-serialise is one branch); better Game_GameControlSchemeManager_SerialiseSaveDataContainer (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142a69440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a69440.c",
+   "notes": "V6875 255 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

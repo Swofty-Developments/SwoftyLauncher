@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_SkinningDict_FindBone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b35af0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b35af0.c;xref:0x143b1f3a1,0x14465cc40,0x14465e2ef,0x14465e38d",
+  "notes": "Maps name id *param_2 to its hash via the name table (lock 0x14618ce18, entries 0x10 at [0x14618ce08]+8), robin_hood lookup (info bytes +0x20, 0x18-byte entries at +0x18); on miss logs 'The skinning dictionary does not contain \"%s\".' (PARAMETER_STUDIO), repeats the lookup and throws 'key not found'. Callers incl. Car_TyreDeformation_SetTyre/CreateTyreBody. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.skinning_dict_find_bone",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 48 8D 0D",
+  "match": "0x143b35af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b35af0",
+  "kind": "func_start",
+  "names": [
+   "Render_SkinningDict_FindBone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x143b35af0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b35af0.c;xref:0x14465cc40",
+   "notes": "V6784 Lock 0x14618ce18, PARAMETER_STUDIO log and key not found confirmed."
+  }
+ ],
+ "proofs": []
+}

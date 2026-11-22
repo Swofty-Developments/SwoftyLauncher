@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_GatherSlotHandles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f10870",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f10870.c;xref:0x141f0aa52,0x141f1005d",
+  "notes": "Read in full: (arg, ctx) for slot 0..0x1d: if 0x1444a7290(slot,ctx): handle = 0x1444a56f0(slot, 0x1444a7040(arg,slot,ctx)) stored in a zeroed 0x130-byte payload, then a command (type 0x146c39770) is allocated on global 0x146c621e0 (vcall +0x18/+0x20), filled with mask 1<<slot + payload (memcpy 0x130) and submitted (+0x30). Not a gather-and-return. (lane owner review requested) Better name: Game_VideoExport_PushSlotHandleCommands (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.video_export_gather_slot_handles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 48 89 D6 89 CF",
+  "match": "0x141f10870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f10870",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_GatherSlotHandles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x141f10870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f10870.c;xref:0x141f0aa52",
+   "notes": "V7526 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_FoundValidSessionServerRetrying",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143073ca0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143073ca0.c;pat:log-channel-NETWORK-SESSION;xref:0x1430709fd,0x143074eb3",
+  "notes": "__FUNCTION__ 'GameSessionMatchingCareer::onGetSessionsComplete'; lea'd as callback in onCareerSearchComplete 0x14306f770. On success logs 'found a valid session on the server, retrying' and setupRetryJoinSession, else notifyJoinCareerSessionResult(0,0x1e,0). (lane owner review requested) Better name: Game_GameSessionMatchingCareer_OnGetSessionsComplete (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_session_found_valid_session_server_retrying",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 4C 89 CB 4C 89 C7 89 D5",
+  "match": "0x143073ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143073ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_FoundValidSessionServerRetrying"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143073ca0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143073ca0.c;xref:0x143070a00",
+   "notes": "V5572 GameSessionMatchingCareer::onGetSessionsComplete (fail/END, found valid session retry, setupRetryJoinSession). Better: Career_GameSessionMatchingCareer_OnGetSessionsComplete"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143073ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143073ca0.c;xref:0x1430709ff",
+   "notes": "V6950 130 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

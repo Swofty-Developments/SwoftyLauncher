@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_CollectDriverEventsForTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8c8f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractRenewal_CollectDriverEventsForTeam(void *comp, uint32_t team_key)",
+  "evidence": "decomp:re/decomp/140d8c8f0.c;xref:0x140d8c158,0x140d8c228,0x140d8c32a,0x140d8c3b8,0x140d8c5d6,0x140d8d7ea,0x140d8e658,0x140d8e833,0x140d8fc28,0x140d94988,0x140d955a2,0x140d96628,0x140d9777e,0x140d97e1e,0x140d9909a,0x140d99288,0x140d99328,0x140d993c8,0x140d996a9,0x140d997b6,0x140d9b3ba,0x140d9b458,0x140d9c508,0x140d9d26a,0x140d9d308,0x1436bf9ca",
+  "notes": "Body read fully. Collects rows (stride 0x88) of [this+0x278]+0x2e0..+0x2e8 whose team key matches param_2 (+0x58 byte, +0x5a short); none -> 1. For rows with +0x81 set: notes seat +0x80 0/1 present and counts list this+0x308..+0x310 u16 entries (v>>14 == +0x50, v&0x3fff == +0x52) when seat < 2. Returns count != 0 or seat 0 / seat 1 missing. Better name: Career_ContractRenewal_TeamHasOpenRaceSeat (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.contract_renewal_collect_driver_events_for_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 79 7F B4 24 D0 00 00 00 C5 79 7F AC 24 C0 00 00 00 C5 79 7F A4 24 B0 00 00 00 C5 79 7F 9C 24 A0 00 00 00 C5 79 7F 94 24 90 00 00 00 C5 79 7F 8C 24 80 00 00 00",
+  "match": "0x140d8c8f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8c8f0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_CollectDriverEventsForTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d8c8f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d8c8f0.c",
+   "notes": "V9539 Matches the collect/filter logic, but the entries are 0x88 bytes apart (team key at +0x58/+0x5a), not 0x58-byte records."
+  }
+ ],
+ "proofs": []
+}

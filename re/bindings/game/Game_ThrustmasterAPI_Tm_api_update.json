@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThrustmasterAPI_Tm_api_update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143aaa2e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143aaa2e0.c;pat:log-message-cxx;xref:0x1458a7808",
+  "notes": "Vtable slot (cell 0x1458a7808). If dirty flag +0x28: tm_api_get_device_count, per device tm_api_get_device_info into 0x648 rec (logs 'THRUSTMASTER' VID/PID/name/serial), keeps VID 0x44F devices; new ones -> 0xa10 obj (vtbl 0x1458a6dc0), tm_api_open_device, map +0x58, callback +0x18(1); gone ones callback(0)+free. Then tm_api_update: status 1/2 (ARRIVED/DEPARTED) set +0x28; then device vfunc +0x18(param_2). (lane owner review requested) Better name: Game_ThrustmasterAPI_Update_DeviceList (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.thrustmaster_api_tm_api_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 07 00 00 C5 78 29 84 24 00 07 00 00 C5 F9 7F BC 24 F0 06 00 00",
+  "match": "0x143aaa2e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143aaa2e0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThrustmasterAPI_Tm_api_update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143aaa2e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143aaa2e0.c",
+   "notes": "V6450 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_ComputeUpscaleRenderScale",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401408f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401408f0.c;xref:0x14014147f,0x140145788,0x14016df0f,0x1401708e1",
+  "notes": "Out float[4]: [1]=1, [2]=param_4, [3] clamp term. Output size from display profile [0x14618caa8]+0x1d40/+0x1d78 (+0x20/+0x24). Scale [0] = render/output width from upscaler param_2 (0x143c8e6c0) or param_3 (0x143dfb340, mode values 0.4/0.5/0.58/0.66), else fixed quality ratios (0.6667, 0.8333, 0.5 above 3840 px) or table 0x145613828. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_build_named_resource_view_table",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 4C 89 C7 48 89 CE",
+  "match": "0x1401408f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401408f0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_ComputeUpscaleRenderScale"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1401408f0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1401408f0.c;xref:0x14014147f",
+   "notes": "V8431 not a view table: computes render/upscale scale factors (0.6667/0.8333/0.5, 0.5/scale) from quality mode globals into float[4]; better name Render_Gfx_ComputeUpscaleRenderScale"
+  }
+ ],
+ "proofs": []
+}

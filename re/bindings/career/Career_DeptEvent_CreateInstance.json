@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_CreateInstance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb1bd0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cb1bd0.c;pat:log-channel-DEPARTMENT_EVENTS;xref:0x140cafec0,0x140cb15c2,0x140cb1baf",
+  "notes": "Clears instance outcomes (param_3+0x78..+0x80, 0xd0 stride) and fills one per outcome template of param_2+8..+0x10 via 0x140cb1d30; on failure logs 'generation failed as instance data could not be created' and returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.dept_event_create_instance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 4C 89 C7",
+  "match": "0x140cb1bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb1bd0",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_CreateInstance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cb1bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb1bd0.c;xref:0x140c92b45,0x140cafec0",
+   "notes": "V4645 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140cb1bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb1bd0.c",
+   "notes": "V9060 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

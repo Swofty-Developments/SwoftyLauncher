@@ -20,8 +20,7 @@ SWOFTY_ON_LOAD
 {
     auto one = things.get(things["t.register/one"]);
     auto extra = things.get(things["wine.data/extra"]);
-    swofty::log("[t_register] on_load: t.register/one n=%d, wine.data/extra n=%d", one ? one->n : -1,
-                extra ? extra->n : -1);
+    swofty::log("[t_register] on_load: t.register/one n=%d, wine.data/extra n=%d", one ? one->n : -1, extra ? extra->n : -1);
 }
 
 SWOFTY_ADDON()

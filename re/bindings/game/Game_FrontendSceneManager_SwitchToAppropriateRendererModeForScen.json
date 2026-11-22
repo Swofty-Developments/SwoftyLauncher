@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_SwitchToAppropriateRendererModeForScen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428cf660",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428cf660.c;pat:log-message-method;xref:0x1428c91ad,0x1428cda57",
+  "notes": "(mgr). Logs '%s()' switchToAppropriateRendererModeForScene; if a video for key +0x71d0 is active in [+0x68]+0x50 map logs 'Failed to switch renderer mode; a video is active' and returns. Else if scene component set (+0x1c8) logs 'Setting renderer mode from scene setup.' and copies the mode name ([+0x1b8]+0x28, 32 chars) into render param ([+0x40]+0x11a8)+8 via 0x146c621e0; else logs 'Renderer mode not switch back'. Callers in 0x1428c9060. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_switch_to_appropriate_renderer_mode_for_scen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 71 B8 BD 00 00 00",
+  "match": "0x1428cf660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428cf660",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_SwitchToAppropriateRendererModeForScen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428cf660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428cf660.c;xref:0x1428c91ad",
+   "notes": "V5133 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

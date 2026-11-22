@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleGhostComponent_Ghost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1be60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f1be60.c;str:s_VehicleGhostComponent_Ghost;xref:0x1407c38e6,0x14293c18b,0x14293c195,0x142941415,0x142afe1b8,0x142bdc860,0x142c2159a,0x142d67c6a,0x142d9580a,0x142daa6ca,0x142f1de56,0x142f1e0a5",
+  "notes": "Read in full (comp, reason): returns if bit reason is already set in comp+0x518 or masked by +0x530; calls 0x142f1bd50, logs 'GHOSTED REASON(%s)' with pretty name game::VehicleGhostComponent::ghost (GAME_GHOST), sets the bit in +0x518, updates vehicle+0x130 bits 4/5 from 0x142f1cb00, recomputes byte +0x684 from masks +0x4d0..+0x4e8. 0x1407c38e6 is a jmp. Xref list truncated. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_ghost_component_ghost",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 0F B6 FA BB 01 00 00 00 89 F9 48 D3 E3 48 8B 86 18 05 00 00 48 0F A3 F8 0F 82",
+  "match": "0x142f1be60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1be60",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleGhostComponent_Ghost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f1be60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1be60.c;xref:0x1407c38e6",
+   "notes": "V5598 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

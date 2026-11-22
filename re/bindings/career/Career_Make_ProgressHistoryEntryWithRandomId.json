@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Make_ProgressHistoryEntryWithRandomId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197b940",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Make(void *out, void *src, void *p3)",
+  "evidence": "decomp:re/decomp/14197b940.c;xref:0x14197b861,0x14197fa83,0x141f3f2d0",
+  "notes": "Out = 3 x u32 0x3fff0000. Game mode [param_2+0x88]+0x260 (class chain check vs 0x146129ca0/ca8); list via mode+0x1030 vcall +0x1c8; id from 0x1441207d0 or global [[0x14604c2c8]+0x140]+0x198 ->+0x1c0 vcall +0x38; finds matching list entry (0x1431146d0); component 0x14605c1d8; 0x142458560 contracts: first two driver keys (+0x50) not in set +0x850.. -> out[0], out[1]; out[2] = entry+0x58. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.make_progress_history_entry_with_random_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 CE 48 B8 00 00 FF 3F 00 00 FF 3F",
+  "match": "0x14197b940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197b940",
+  "kind": "func_start",
+  "names": [
+   "Career_Make_ProgressHistoryEntryWithRandomId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197b940",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14197b940.c;xref:0x14197b861",
+   "notes": "V9854 returns an id-like struct (default 0x3fff) found in the player team collection via FUN_142458560 with a random id block; not clearly a progress-history entry"
+  }
+ ],
+ "proofs": []
+}

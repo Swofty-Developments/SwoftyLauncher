@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Input_DisableConflictingScheme",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a5d050",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a5d050.c;pat:log-channel-INPUT;xref:0x142a5d00a,0x142a5f02e,0x142a61700,0x142a617e0,0x142a6ad65,0x142a6e857,0x142af2890,0x14da295cb",
+  "notes": "(input, playerDevices, schemeId*): for each device of the player finds custom schemes using it (+0x168 list, per-player slots +0xd0/+0xd8, +0xc0); for an active conflicting scheme (0x142a59560) logs INPUT 'Disable control scheme \"%s\" for player %d, it's conflicting with \"%s\"' and disables it (0x142a5e9a0); may re-enable via 0x142a5e2d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.input_disable_conflicting_scheme",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 44 24 60",
+  "match": "0x142a5d050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a5d050",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_DisableConflictingScheme"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a5d050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a5d050.c;xref:0x142a5d00a",
+   "notes": "V5178 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

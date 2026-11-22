@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_ColoursConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416bbbc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1416bbbc0.c;pat:log-channel--;xref:0x141a4b567,0x142000dab,0x14200366f,0x14200f470,0x14202e2d6,0x142036a06,0x14204bee1,0x14206f014,0x14206f65a,0x14206fccd,0x142081dd7,0x14208e2ba,0x14225f4e3",
+  "notes": "(this, path): binds VM float nodes colours.current_colour_group.colour_h/_s/_l under path into this+0xd0/+0x1b8/+0x2a0 (0x14420ea40, 0x1441f10d0), gets/creates the path node (Vm_GetOrCreate_ChildNode) into this+0x10 and +0xa0, sets bool 'show_paint_finishes' = false (Vm_Set_Bool) into this+0x428, releases path. VM bindings, not a DB read. Callers in UI view models 0x141a4b080..0x14225e7f0. (lane owner review requested) Better name: Game_ColoursVm_BindColourGroupNodes (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_colours_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D6 48 89 CF 48 8D 99 D0 00 00 00",
+  "match": "0x1416bbbc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416bbbc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_ColoursConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1416bbbc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416bbbc0.c;xref:0x141a4b567",
+   "notes": "V4890 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

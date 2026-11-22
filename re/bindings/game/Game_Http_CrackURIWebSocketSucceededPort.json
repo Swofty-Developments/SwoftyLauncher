@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Http_CrackURIWebSocketSucceededPort",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144051df0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144051df0.c;pat:log-channel-HTTP/V;xref:0x145a4d640",
+  "notes": "HTTP/V crackURI, vtable 0x145a4d620 slot +0x20. URL this+0x38: 'WS' prefix -> parser 0x14443d7a0, default port 80/443, port->+0x21e0, host->+0x2190, path(+query, '%s?%s%s')->+0x21b8, secure -> [+0x21e8]+0xa8 and +0x20=2, logs 'crackURI() for web socket succeeded', ret 1. Else WinHttpCrackUrl: port, host, path+extra; ret ok. (lane owner review requested) Better name: Game_HttpV_CrackURI (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.http_crack_uri_web_socket_succeeded_port",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 48 89 CE 48 8B 51 38",
+  "match": "0x144051df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144051df0",
+  "kind": "func_start",
+  "names": [
+   "Game_Http_CrackURIWebSocketSucceededPort"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144051df0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144051df0.c",
+   "notes": "V6482 partial: better name Game_Http_CrackUri; crackURI (web socket log is one branch)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144051df0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144051df0.c",
+   "notes": "V7123 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_ObjectPostCreation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3dc90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f3dc90.c;pat:log-message-method;xref:0x142f3c1fd",
+  "notes": "Renamed: logs on VEHICLE_SPAWNING_SYSTEM; registered by lea at 0x142f3c1fd in Game_VehicleSpawning_Begin. For F1Car/F1SafetyCar/F1ShowRoomCar templates: logs 'objectPostCreation for vehicle %d ...', request rec (map sys+0x60..) +0x68b0 = object; with decals (req+0x6818/+0x6850) and component 0x146079940 creates Game_DecalGeneration_CreateService([sys+0xd0], req+0x67e0 list, livery req+0x6830) into rec+0x68f8; else 'has decals but no decal component'. (lane owner review requested) Better name: Game_VehicleSpawningSystem_ObjectPostCreation (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.customisation_decals_object_post_creation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 4D 85 C0",
+  "match": "0x142f3dc90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3dc90",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_ObjectPostCreation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3dc90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f3dc90.c;xref:0x142f3c1ff",
+   "notes": "V5620 Wrong channel/prefix: logs are VEHICLE_SPAWNING_SYSTEM (CUSTOMISATION_DECALS only one inner log); it is the spawning post-creation callback attaching decal generation service; better Game_VehicleSpawning_ObjectPostCreation"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f3dc90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3dc90.c;xref:0x142f3c1ff",
+   "notes": "V6915 241 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

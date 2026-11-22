@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_AddFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444b0b70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444b0b70.c;pat:log-channel-VIDEO_EXPORT;xref:0x142bcf440,0x1444b0a9d",
+  "notes": "Read in full: flush loop - SendFrame 0x1444b6340(this+8, NULL img, -1, vec) until no packets; each packet: log 'Finalise [%d], counter...', builds a frame (0x144c7a210/0x144c7a350 from pkt+8/+0x10, keyframe = pkt+0x24 bit0, ts = counter +0x290 * 1e9/fps +0x25c), adds it to segment [this+0x270] via 0x144c80000 ('Cannot add video frame'); then logs 'Processed %d frames' and finalizes the segment 0x144c804e0. Not a per-frame add. (lane owner review requested) Better name: Game_VideoExport_Finalise (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.video_export_add_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 CE B8 00 CA 9A 3B",
+  "match": "0x1444b0b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444b0b70",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_AddFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1444b0b70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444b0b70.c;xref:0x142bcf440",
+   "notes": "V6666 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

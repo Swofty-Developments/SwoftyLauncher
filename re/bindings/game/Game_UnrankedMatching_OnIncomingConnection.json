@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UnrankedMatching_OnIncomingConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315f400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315f400.c;pat:log-message-cxx;xref:0x14581de30",
+  "notes": "Read in full: finds the current event (id from [this+0x10]+1000 +0xadc/+0xae4) in list [this+0x40]+0x70 (0xa0-byte records); returns 0 if none or if enough time is left. If no active phase or phase 2 and the time before start is < [..+0x3c8]+0x580: logs 'event session is about to start, tell the player session is full' and returns 4; other phases log 'event session has started ...' and return 4. Vtable cell 0x14581de30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.unranked_matching_on_incoming_connection",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 C5 F9 29 7C 24 40 C5 F9 29 74 24 30 48 89 CF",
+  "match": "0x14315f400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315f400",
+  "kind": "func_start",
+  "names": [
+   "Game_UnrankedMatching_OnIncomingConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14315f400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315f400.c",
+   "notes": "V5770 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

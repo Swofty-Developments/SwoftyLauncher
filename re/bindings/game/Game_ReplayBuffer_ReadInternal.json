@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayBuffer_ReadInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445c5e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445c5e30.c;pat:log-message-cxx;xref:0x145befd00,0x145befe90",
+  "notes": "ReplayBuffer vtable slot (cells 0x145befd00/0x145befe90), judged by disassembly (decomp merges tail target 0x1445c5d30). (dst, size, flags): decompressed mode (+0x51 && +0x12): memcpy from buffer +0x58 at cursor +0x68 bounded by +0x70, else 0x22. Paged: if page offset+size fits page size-8 tail-jmp 0x1445c5d30; else reads to page end, the 8-byte page trailer, then tail-jmps for the rest; logs 'failed to read data from paged buffer.' (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.replay_buffer_read_internal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 44 89 CB",
+  "match": "0x1445c5e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445c5e30",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayBuffer_ReadInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445c5e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445c5e30.c",
+   "notes": "V6691 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

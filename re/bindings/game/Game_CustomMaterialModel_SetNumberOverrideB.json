@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CustomMaterialModel_SetNumberOverrideB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a90bd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a90bd0.c;xref:0x142a90441,0x142a904f6",
+  "notes": "Identical to 0x142a90740 with its own statics and flags 0x400 instead of 0x10; called after ReleaseOverrideMaterial in CreateOverrideMaterial. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_material_model_set_number_override_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 54",
+  "match": "0x142a90441",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142a90bd0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomMaterialModel_SetNumberOverrideB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x142a90bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a90bd0.c;xref:0x142a90441",
+   "notes": "V8096 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

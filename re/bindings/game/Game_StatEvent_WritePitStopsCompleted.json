@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WritePitStopsCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14378cad0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14378cad0.c;pat:log-channel-STATEVENT;xref:0x14378c289,0x14378d61f",
+  "notes": "Providers (this+8)->+0x70 ->+8..+0x10; if +0x172 set and msg+0x10 == player car +0x173: 8 entries 1.0 PitStopsCompleted (.GameplayModeId/.IsInTeamCareer/.SectionId/.F1WEventMode combos), then bumps an xor-encoded counter (flag 0x40000000). PitStopComplete: subscribe 0x14378c289, unsubscribe 0x14378d61f. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_pit_stops_completed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 09 00 00 48 8B 79 08",
+  "match": "0x14378cad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14378cad0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WritePitStopsCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14378cad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14378cad0.c;xref:0x14378c28b",
+   "notes": "V6264 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

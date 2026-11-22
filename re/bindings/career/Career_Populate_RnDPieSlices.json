@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Populate_RnDPieSlices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f48030",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f48030.c;kb:subsystems/rnd_ui.md#pie;xref:0x141f47825,0x141f4a915",
+  "notes": "Called by Career_Build_RnDPieOverview and callback 0x141f4a760. Loops dept codes (code<4 guard), inline colours aero 0xffeead00 etc., lng_rnd_dept_%s / _overview_description, shutdown/regulation texts; slot = [this+0x670]+0x80+idx*0x220; temp via 0x14180b660, Career_MoveAssign_RnDPieSlot, destroy temp; Career_Get_TeamModifiers(.., [this+0x67c]); highlight clamp 3 < byte 0x145f93c08. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.populate_rn_d_pie_slices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 03 00 00 C5 F8 29 BC 24",
+  "match": "0x141f48030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f48030",
+  "kind": "func_start",
+  "names": [
+   "Career_Populate_RnDPieSlices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f48030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f47825",
+   "notes": "V5236 Verified cmp r14d,3 @0x141f48218, cmp r13d,4 @0x141f4821e, jump table @0x141f48231, colours inline, BuildPieSlot @0x141f484bd"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141f48030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48218;xref:0x141f4821e;xref:0x141f484c8;xref:0x141f4858e",
+   "notes": "V9201 Guards cmp r14d,3 and cmp r13d,4, colour 0xffeead00 at 0x141f4858e, imul 0x220 slot stride, move-assign call at 0x141f484c8 and destructor-like call at 0x141f484d0 all present."
+  }
+ ],
+ "proofs": []
+}

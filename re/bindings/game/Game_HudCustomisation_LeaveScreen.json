@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_HudCustomisation_LeaveScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c10810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c10810.c;pat:log-channel-HUD_CUSTOMISATION;xref:0x14573be20",
+  "notes": "Vt cell 0x14573be20. Event switch on hash *(u32*)*param_2: 0xbc8ddf10 leave discarding changes (+0x5e8 -> +0x640); 0x28166c05 leave + saveHudConfigSet (graphics_card resolution width/height -> +0x688/+0x68c, FUN_14388dfc0/14388e6f0); 0xd5ff4a13 show_options; 0x15f81268 #hud.invalid_elements. Tail jmps 0x141c11530/0x144535f80/0x144536090 (merged in decomp, disasm-checked). (lane owner review requested) Better name: Game_HudCustomisation_OnEvent (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.hud_customisation_leave_screen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 22 B3 EB 0A",
+  "match": "0x141c10810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c10810",
+  "kind": "func_start",
+  "names": [
+   "Game_HudCustomisation_LeaveScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c10810",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c10810.c",
+   "notes": "V4939 40 KB command dispatch of HUD customisation VM (leave+discard / save, show_options -> PrepareOptionsUI, filter, hardware settings); Leave is one branch. Better: Game_HudCustomisationViewModel_OnCommandRaised (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141c10810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c10810.c",
+   "notes": "V7253 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

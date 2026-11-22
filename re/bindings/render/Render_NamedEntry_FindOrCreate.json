@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_NamedEntry_FindOrCreate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440214f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440214f0.c;xref:0x142b720c9,0x142b727a9,0x142b72e19,0x142c8d49b",
+  "notes": "Rename: linear search of the pointer vector [this+0x50..0x58] comparing the name at entry+0x18 with Ne_Crt_Strnicmp (max 0x1f); on miss allocates a 0xa8-byte entry from allocator [this+0x40] (vtbl 0x145a47a20, name string cap 0x20, second string cap 0x50 at +0x48) and appends it (grow x1.5 via allocator [this+0x48]). Callers pass section names next to hardware_settings_config: 0x142b720c9 (motion, dbox), 0x142b727a9 (led_display), 0x142c8d49b (bloom, godRays). (lane owner review requested) Better name: Render_HwSettingsConfig_FindOrAddNode (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.named_entry_find_or_create",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 4C 8B 71",
+  "match": "0x1440214f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440214f0",
+  "kind": "func_start",
+  "names": [
+   "Render_NamedEntry_FindOrCreate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1440214f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440214f0.c;xref:0x142b720c9",
+   "notes": "V7601 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

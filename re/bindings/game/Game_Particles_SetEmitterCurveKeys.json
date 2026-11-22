@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_SetEmitterCurveKeys",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143aede50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143aede50.c;xref:0x143af26e9,0x143b13cfc,0x143b13ebf",
+  "notes": "(curve, times, values, count, scale): count -> +0x134, scale -> +0x130, copies key times to +0xd0 and values to +0xa0, precomputes per-key tangent factors (+0x30/+0x34 pairs) and inverse segment lengths (+0x100..) used by Game_Particles_EvalLifeCurve. Callers 0x143aef1b0, 0x143b13710. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.particles_set_emitter_curve_keys",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 FA 10",
+  "match": "0x143aede50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143aede50",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_SetEmitterCurveKeys"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143aede50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143aede50.c;xref:0x143af26e9",
+   "notes": "V7847 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

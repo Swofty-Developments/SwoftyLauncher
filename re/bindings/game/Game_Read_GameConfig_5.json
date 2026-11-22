@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameConfig_5",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3a5d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f3a5d0.c;pat:log-channel--;xref:0x1457f7bb0",
+  "notes": "Vehicle spawning system init (vt cell 0x1457f7bb0): services 0x146cb8278 -> +0xb8, 0x146cb8018 -> +0xc0, registry systems 0x1460967a8 -> +0xc8, 0x146064d10 -> +0xd0; Game.VehicleSpawning.EnableMemorySnapshots -> bool +0xe8, VehicleTimeout -> int +0xec, MaxConcurrentSpawns -> u64 +0xf0 (current values as defaults); error 0x16 when a dependency is missing. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_game_config_5",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 D3 48 89 CE 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 86 B8 00 00 00",
+  "match": "0x142f3a5d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3a5d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameConfig_5"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3a5d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3a5d0.c",
+   "notes": "V5616 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

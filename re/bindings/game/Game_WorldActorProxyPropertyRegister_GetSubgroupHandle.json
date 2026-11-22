@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WorldActorProxyPropertyRegister_GetSubgroupHandle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402027f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402027f0.c;pat:log-message-cxx;xref:0x1455f5e38",
+  "notes": "Read in full; only ref vtable cell 0x1455f5e38. Stub: logs 'WorldActorProxyPropertyRegister::getSubgroupHandle %s' (name param_4) and returns a null handle (*out = 0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.world_actor_proxy_property_register_get_subgroup_handle",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 D6 80 3D ?? ?? ?? ?? 01 75 64 B8 16 01 00 00",
+  "match": "0x1402027f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402027f0",
+  "kind": "func_start",
+  "names": [
+   "Game_WorldActorProxyPropertyRegister_GetSubgroupHandle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1402027f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1402027f0.c",
+   "notes": "V4395 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCar_ReadDeploymentFrequency",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14362e290",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14362e290.c;xref:0x1508fcbb3,0x145853040",
+  "notes": "rules.safety_car.logic.conditions.deployment_frequency.<race length>.{max_deployments_allowed,min_deployment_lap,min_deployment_time}; race lengths 3_laps,5_laps,25/35/50/100_percent,10_laps,15_laps (table 0x145858410). DB: max SC 0/0/3/3/2/3/5/8. sb-verify-b correction: table 0x145858410 has 10 race lengths: 3_laps,5_laps,25_percent,35_percent,50_percent,100_percent,10_laps,15_laps,20_laps,9_laps"
+ },
+ "signature": {
+  "id": "session.safety_car_read_deployment_frequency",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC C0 00 00 00 48 89 CE 48 BA FC A2 18 91 80 B8 EA 46",
+  "match": "0x14362e290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14362e290",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCar_ReadDeploymentFrequency"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_SafetyCar_ReadDeploymentFrequency",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14362e290.c;xref:0x14362e290",
+   "notes": "V1837 keys ok; table 0x145858410 has 10 entries (index<10): 3_laps,5_laps,25/35/50/100_percent,10_laps,15_laps,20_laps,9_laps - claim lists 8"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_SafetyCar_ReadDeploymentFrequency",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14362e290.c;xref:0x14362e290",
+   "notes": "V3950 keys ok; table 0x145858410 has 10 entries (index<10): 3_laps,5_laps,25/35/50/100_percent,10_laps,15_laps,20_laps,9_laps - claim lists 8"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14362e290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14362e290.c",
+   "notes": "V4048 table 0x145858410 verified (3_laps,5_laps,25/35/50/100_percent,10_laps,15_laps,20_laps,9_laps); deployment_frequency.%s.ma/.mi strings; DB values not checked (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

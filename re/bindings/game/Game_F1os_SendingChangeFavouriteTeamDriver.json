@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_SendingChangeFavouriteTeamDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142742670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142742670.c;pat:log-channel-F1OS;xref:0x14170cc47,0x1421b004e",
+  "notes": "Logs 'sending a change for favourite team %d and driver %d' (F1OS) and issues the F1W-OS update request (state check 'eBlock'). Callers 0x14170c8c0 (0x14170cc47), 0x1421affc0 (0x1421b004e). (lane owner review requested) Better name: Game_F1os_SendFavouriteTeamAndDriver (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.f1os_sending_change_favourite_team_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 C5 F8 29 B4 24 20 02 00 00 4C 89 C7 48 89 D6 49 89 CF",
+  "match": "0x142742670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142742670",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_SendingChangeFavouriteTeamDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142742670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142742670.c;xref:0x14170cc47",
+   "notes": "V5106 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

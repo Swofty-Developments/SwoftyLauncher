@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbPad_SetMotors",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a9c4a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a9c4a0.c;pat:log-channel-FFB_PLUGIN;xref:0x143aa9df1",
+  "notes": "(pad,_,_,leftTrig,rightTrig,setMotors). If param_6: logs 'leftMotor rightMotor' (FFB_PLUGIN), clamps xmm1/xmm2 0..1 to 0..255 bytes and sends via 0x14491dfd0(handle +0x80). If pad type +0x98 == 2: builds trigger-effect block (mode 1/3 per trigger from param_4/param_5 bytes) and sends via 0x14491daf0 after 0x14491dbb0. Caller 0x143aa9cc0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_pad_set_motors",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC C8 00 00 00 C5 F8 29 BC 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 4C 89 CF",
+  "match": "0x143a9c4a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a9c4a0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbPad_SetMotors"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a9c4a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a9c4a0.c;xref:0x143aa9df1",
+   "notes": "V6444 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

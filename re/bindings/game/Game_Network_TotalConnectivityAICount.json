@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_TotalConnectivityAICount",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323a930",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14323a930.c;pat:log-channel-NETWORK;xref:0x14323a905,0x1436f9239",
+  "notes": "Callers 0x14323a8c0, 0x1436f8340. Logs 'distributeAIDrivers', refreshes UpdateAuthorityManagerConnectivity on [[this+0x40]+0x3c0]; sums the per-peer connectivity bytes this+0xc0..+0xff, logs 'Total connectivity %d, AI count %d' (vector +0xa8, 0x58 stride), assigns each AI entry an owning peer (byte +0x50, logs 'Set %s from %d to %d', 0x14316c280); with a game-mode flag runs inlined distributeAIDriversByTeam (hash map). (lane owner review requested) Better name: Game_Network_DistributeAIDrivers (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_total_connectivity_ai_count",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14323a930",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323a930",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_TotalConnectivityAICount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323a930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14323a930.c;xref:0x14323a905",
+   "notes": "V6037 Network_DistributeAIDrivers: distributeAIDrivers/ByTeam 22KB; connectivity/AI count log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14323a930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323a930.c;xref:0x14323a905",
+   "notes": "V7023 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

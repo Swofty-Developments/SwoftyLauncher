@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SurfacePackSystem_OnSessionEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437a54a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437a54a0.c;pat:log-channel-GameSurfacePackSystem;xref:0x1458729c8",
+  "notes": "Asserts bus +0x68; clears +0x184e0, +0x180f5; if source assets loaded (b1=b2=2) logs and sets +0x180f2 unload request; for each vehicle in session list (+0x28 ->+0x28) finds two components, maps livery key via 32-slot table +0x18180 (miss=31), writes slot to comp+0xe3c and re-sets 0x1c node matrices. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.surface_pack_system_on_session_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 05",
+  "match": "0x1437a54a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437a54a0",
+  "kind": "func_start",
+  "names": [
+   "Game_SurfacePackSystem_OnSessionEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x1437a54a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437a54a0.c",
+   "notes": "V6293 name/string, size and caller verified; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

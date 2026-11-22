@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsUI_ExitingViewUpdatingFilterLevel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141da11d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141da11d0.c;pat:log-channel-OPTIONS-UI;xref:0x141d9fad2,0x141daf08f,0x141daf813,0x141dd00a5,0x141ddb0a3,0x141ddfcf6,0x141de3857,0x141de98a6,0x1457520d0",
+  "notes": "Renamed (was Game_OptionsUI_ExitingViewUpdatingFilterLevel, a log fragment). Body read fully: switch on command hash [*param_2]: 0x73ecfeb0 sets +0x8b4 and posts 'back_pressed' (vt+0x50) once; 0x8b5b6cb -> vt+0x108; 0xe379aeaa -> vt+0x110; 0x912a5ece posts 'open' (pending +0xa10) or 'race_style_selected' to [+0x620] vt+0x80, else vt+0x140; 0x9d20ff39/0x9fe65ec6 ignored (OPTIONS-UI log) while +0x8ba or property [+0x990] set, else select entry by djb2 hash +0x8bc/+0x8c0, global 0x14606a9d8 = 1/2, vt+0x120. (lane owner review requested) Better name: Game_OptionsUI_HandleCommand (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.options_ui_exiting_view_updating_filter_level",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D A9 AE 79 E3",
+  "match": "0x141da11d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141da11d0",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsUI_ExitingViewUpdatingFilterLevel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141da11d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141da11d0.c;xref:0x141d35995",
+   "notes": "V5217 391-line command dispatcher (hash switch back_pressed/open/race_style_selected); the ignored-command log is only one branch. Better Game_OptionsUI_OnCommandRaised_Base"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141da11d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141da11d0.c;xref:0x141d9fad2",
+   "notes": "V7266 name fits; finding facts hold; 9 direct calls"
+  }
+ ],
+ "proofs": []
+}

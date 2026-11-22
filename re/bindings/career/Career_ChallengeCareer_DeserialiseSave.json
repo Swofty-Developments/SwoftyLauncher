@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ChallengeCareer_DeserialiseSave",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c90f80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c90f80.c;pat:log-channel-CHALLENGE_CAREER;xref:0x14173b79d",
+  "notes": "CHALLENGE_CAREER. If the save data (param_2+0xb0) has content, decodes via 0x140c911d0/0x140c91360 (log 'failed to deserialise the career save base 64' on error); then 0x1429d2240 and Game_SaveSlotManager_LoadSlot 0x1429d42f0([this+0x2b0], this+0x2c0, ...); on success marks the matching slot record +0x18c=1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.challenge_career_deserialise_save",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 48 C7 44 24 48 00 00 00 00 48 8B 97 B0 00 00 00",
+  "match": "0x140c90f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c90f80",
+  "kind": "func_start",
+  "names": [
+   "Career_ChallengeCareer_DeserialiseSave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c90f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c90f80.c;xref:0x14173b79d",
+   "notes": "V4630 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140c90f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c90f80.c",
+   "notes": "V9055 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

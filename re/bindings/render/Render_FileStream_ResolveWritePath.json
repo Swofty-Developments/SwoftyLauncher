@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_FileStream_ResolveWritePath",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439997d0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439997d0.c;xref:0x143998eaa,0x14399990d",
+  "notes": "mkdir -p: GetFileAttributesA; existing dir/reparse point (0x410) -> 0, existing file -> error 1; else copies the path up to the last backslash (0x14532a9bc), recurses on the parent, then CreateDirectoryA; failure -> error 1 in TLS list/ring. Callers 0x143998b80 and itself. (lane owner review requested) Better name: Render_FileStream_CreateDirectoryRecursive (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.file_stream_resolve_write_path",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 50 01 00 00 48 89 CF FF 15",
+  "match": "0x1439997d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439997d0",
+  "kind": "func_start",
+  "names": [
+   "Render_FileStream_ResolveWritePath"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439997d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439997d0.c;xref:0x143998eaa",
+   "notes": "V8493 GetFileAttributesA + 14532a9bc separator search (0x5c) path helper; callers OpenWrite + self"
+  }
+ ],
+ "proofs": []
+}

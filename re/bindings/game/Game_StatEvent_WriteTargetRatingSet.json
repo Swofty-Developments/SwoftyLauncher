@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteTargetRatingSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143748360",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143748360.c;pat:log-channel-STATEVENT;xref:0x14372bda4,0x14374a983",
+  "notes": "Bus handler (this,msg) subscribed for \"MessageDriverContractChanged\" in 0x143720bc0 (Ne_Subscribe_BusMessage), unsubscribed in 0x143749390; context via 0x14371fe70; providers this+0x50..+0x58. When the contract driver (msg+0x10/+0x12) is the player and the rating values msg+0x5c/+0x60 qualify (count >2), writes \"TargetRatingSet\" value 1.0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_target_rating_set",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 48 89 D3 48 89 CE 8B 4A 5C",
+  "match": "0x143748360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143748360",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteTargetRatingSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143748360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143748360.c;xref:0x14372bda6",
+   "notes": "V6201 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

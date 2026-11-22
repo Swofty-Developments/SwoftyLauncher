@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingProcessor_SearchCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143087780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143087780.c;pat:log-message-cxx;xref:0x14308772a",
+  "notes": "Only ref: lea 0x14308772a (in 0x143087650). Logs 'GameSessionMatchingProcessor::searchCallback(%s)' (p2). Failure -> +0x59 = 1. No context ([[p1+0x28]+0x4d8]+0x28) or no enumerator p3 -> logs and ignores. Else for each session (p3+0x18..+0x20) skips banned ones (ctx +0xb0 list, 'is banned'), scores it via context vt+0x28 and inserts {priority, session ref} sorted by descending priority into vector p1+0x40..+0x50 (stride 0x18, allocator [p1+0x38]). If final (p4) logs the list ('Search found %zu sessions'), sets +0x58 = 1 and the search timer +0x60. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_processor_search_callback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 44 88 4C 24 2F",
+  "match": "0x143087780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143087780",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingProcessor_SearchCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143087780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143087780.c;xref:0x14308772d",
+   "notes": "V5634 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

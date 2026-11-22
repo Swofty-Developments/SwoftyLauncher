@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_TyreDamageConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465eeb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14465eeb0.c;pat:log-channel--;xref:0x145bf8ec0",
+  "notes": "If 0x145faa608 (Game.VehicleDamage.tyres, written by 0x14463a800) is set: adds tweakables tyre_damage.rear.left/rear.right/front.left via Game_Tweakables_FindOrAddDamageGroup and front.right (group damage, 0..1) via ConstructNamedEntry/VectorEmplaceNamedEntry on [[this+8]+0x148]. (lane owner review requested) Better name: Game_TyreDamage_RegisterTweakables (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_tyre_damage_config",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 80 3D ?? ?? ?? ?? 00 74 78 48 89 CE",
+  "match": "0x14465eeb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465eeb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_TyreDamageConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14465eeb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14465eeb0.c",
+   "notes": "V6731 0x8f body registers 4 tyre_damage.* entries through 0x14465ef40 with callbacks; no settings read. Better: Game_Register_TyreDamageTweakables (vtable/indirect; no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14465eeb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465eeb0.c",
+   "notes": "V7245 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

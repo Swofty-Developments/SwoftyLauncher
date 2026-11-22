@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyres_ResetStateByFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b1fb0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b1fb0.c;xref:0x15543f466,0x15543f476,0x15543f489,0x15543f49c",
+  "notes": "(w,car,flags): 0x1446b6d10 reset; w+0x138 = 0. flags&4: 0x200 -> w+0xf0 = 1.0, w+0x108 = w+0x110; 0x400 -> w+0xe8/+0xec = ambient+273.15; 0x1000 -> w+0xf4 = 0; [w]+0x9f40 == 100 -> geometry terms w+0x118..+0x12c from XOR values of [w+0xe0], else w+0x118 = 1.5, +0x124 = 0.146. 0x200 clears contact state; 0x1 resets +0x1f0, random phase on 0x4000 (LCG car+0x178), 0x1446b9d40. All calls in 0x15543f450. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.tyres_reset_state_by_flags",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 44 89 C7",
+  "match": "0x1446b1fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b1fb0",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyres_ResetStateByFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446b1fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b1fb0.c;xref:0x15543f466",
+   "notes": "V3704 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

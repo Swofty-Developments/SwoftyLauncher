@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Inventory_CanAfford",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425ae530",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1425ae530.c;pat:log-channel-INVENTORY;xref:0x141ab06d2,0x14255d836,0x142569310",
+  "notes": "(inv, wallet, currency, required) -> bool: logs INVENTORY 'Accessing wallet [%s]', have = 0x1425ada80(inv, wallet copy, currency), logs '--Can afford currency: %s - %s (req: %d, have: %d)', returns have >= required. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.inventory_can_afford",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 28 01 00 00 44 89 CE 44 89 C3",
+  "match": "0x1425ae530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425ae530",
+  "kind": "func_start",
+  "names": [
+   "Game_Inventory_CanAfford"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1425ae530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425ae530.c;xref:0x141ab06d2",
+   "notes": "V5103 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CarSetupVm_UpdateDiffHighSpeedRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c1d750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c1d750.c;xref:0x140c1b938,0x140c1cbd6,0x140c1edaf,0x140c1eec3",
+  "notes": "Formats the high-speed diff value ('%.1f' of [[[+0x268]+0x28]+0x590]+0x2a0) with min/max from the handling block (vt+0x38: +0x30/+0x34) into 'lng_cs_diff_range_high_speed (... lng_unit_kph)' on node +0x12a0, bool +0x12c0. Twin of 0x140c1def0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.car_setup_vm_update_diff_high_speed_range",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 4C 8D AE",
+  "match": "0x140c1cbd6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140c1d750",
+  "kind": "func_start",
+  "names": [
+   "Game_CarSetupVm_UpdateDiffHighSpeedRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140c1d750",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c1d750.c;xref:0x140c1edaf",
+   "notes": "V3450 Printf %.1f + lng_cs_diff_range_high_speed/lng_unit_kph confirmed, caller Car_Setup_OnValueChanged ok; but fb callers are in pdata functions 0x140c1b1a0, 0x140c1c9f0, 0x140c1edd0 - none starts at Game_CarSetupVm_ShowParcFerme 0x140c1bf00 (site 0x140c1cbd6 lies in its address span, attribution unconfirmed)"
+  }
+ ],
+ "proofs": []
+}

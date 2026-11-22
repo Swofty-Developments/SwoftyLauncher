@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_BadgeReplicationManager_RemovePlayerReplicatedData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14312a530",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14312a530.c;pat:log-message-cxx;xref:0x14312b165,0x1431bddb4",
+  "notes": "removePlayerReplicatedData(desc): host only; finds the player entry and calls 0x143129ac0 with its packed id; not found -> log. Callers 0x14312b130, jmp 0x1431bddb4. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.badge_replication_manager_remove_player_replicated_data",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 47 48 A9 00 00 00 10 75 05 48",
+  "match": "0x14312b165",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14312a530",
+  "kind": "func_start",
+  "names": [
+   "Game_BadgeReplicationManager_RemovePlayerReplicatedData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14312a530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14312a530.c;xref:0x14312b165",
+   "notes": "V7352 log string and RemovePackedPlayerBadgeStatId callee confirmed"
+  }
+ ],
+ "proofs": []
+}

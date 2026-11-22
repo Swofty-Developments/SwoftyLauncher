@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Resolve_RnDDepartmentLabel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c70d20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint8_t * Career_Resolve_RnDDepartmentLabel(void * self)",
+  "evidence": "decomp:re/decomp/141c70d20.c;xref:0x141c70cf8,0x141c70d0e",
+  "notes": "Builds an args map {VariantToOpen: dept name} (dept byte +0x358 < 4 -> table 0x145755e58, else error_department; Ne_Map_FindOrInsertSlot_StringKey) and dispatches 'back' with it to the parent (+0x28, 0x1442c0e20). Called twice from 0x141c70b00. (lane owner review requested) Better name: Career_RnD_BackToDepartment (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.resolve_rn_ddepartment_label",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 48 89 CE 48 8B 81 40 03 00 00",
+  "match": "0x141c70d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c70d20",
+  "kind": "func_start",
+  "names": [
+   "Career_Resolve_RnDDepartmentLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c70d20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c70d20.c;xref:0x141c70cf8;xref:0x141c70d0e",
+   "notes": "V9985 Maps department index (+0x358) to a name, stores it in a map as VariantToOpen and fires a back event; label resolution is only a step."
+  }
+ ],
+ "proofs": []
+}

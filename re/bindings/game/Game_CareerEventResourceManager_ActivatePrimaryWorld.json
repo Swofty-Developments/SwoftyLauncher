@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventResourceManager_ActivatePrimaryWorld",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c7d310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c7d310.c;pat:log-message-cxx;xref:0x140c7a666",
+  "notes": "Logs 'CareerEventResourceManager::activatePrimaryWorld'; under CS [[0x14601db08+0x60]+0x9d0] activates the primary world ([[0x14601f5c8+0x20]+0xf0]+0xe8 via 0x1444bcd80, layer 'podium-crowd.layer') and the 'primary_livery' world; then logs notifyCrowdDataReady and writes the world ids (+0x70/+0x78) to render resource 0x1464d2520 slot 7. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_event_resource_manager_activate_primary_world",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140c7d310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7d310",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventResourceManager_ActivatePrimaryWorld"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c7d310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c7d310.c;xref:0x140c7a666",
+   "notes": "V4615 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

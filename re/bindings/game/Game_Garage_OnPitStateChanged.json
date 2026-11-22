@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Garage_OnPitStateChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a39b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a39b80.c;pat:log-message-method;xref:0x142a3ff63,0x142a40b01",
+  "notes": "onPitStateChanged(slot,msg): for the local human garage car (vehicle msg+0x10): next state +0x18 0xe with current +0x14 0xd -> 0x142a3a300; next 8, or 9 in race sessions 15..17 when 0x142cd2390 and current != 8 -> 0x142a39dd0. Handler (lea) in 0x142a3f710, 0x142a409b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_on_pit_state_changed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 D3 48 89 CE 0F B6 4A 10",
+  "match": "0x142a39b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a39b80",
+  "kind": "func_start",
+  "names": [
+   "Game_Garage_OnPitStateChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a39b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a39b80.c;xref:0x142a3ff65",
+   "notes": "V5165 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

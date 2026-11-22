@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_AddAudioMotionController",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14451de90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14451de90.c;pat:log-channel-FFB_DEBUG;xref:0x1446efcb0,0x1446f0c4b,0x15050d740",
+  "notes": "(mgr,controller*). Non-null: under CS mgr+0x168 inserts controller into hash set mgr+0x58 (0x14452fdc0, grow 0x1445303f0 on full), logs 'Called addAudioMotionController %s' with controller vcall +8 name (FFB_DEBUG). Callers in 0x1446ef680, 0x1446f04c0, 0x15050d5c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_add_audio_motion_controller",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D7 48 89 CE 48 8B 89 68 01 00 00",
+  "match": "0x14451de90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14451de90",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_AddAudioMotionController"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14451de90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14451de90.c;xref:0x1446efcb0",
+   "notes": "V6674 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

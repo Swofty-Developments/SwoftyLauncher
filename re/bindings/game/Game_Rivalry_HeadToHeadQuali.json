@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rivalry_HeadToHeadQuali",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412631f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1412631f0.c;pat:log-channel-RIVALS;xref:0x1456cd680",
+  "notes": "Vtable slot (cell 0x1456cd680). Logs 'Head to head data for %s ...' for Driver (+0x80..+0xb0) and Rival (+0xb8..+0xe8) when stat id +0x78/+0x7a equals the driver trace. For rival record *param_2: our quali position [+0xa8] vs rival [+0xe0] (default 0x1c): increments beaten-rival +0x28 or rival-beat-us +0x3c, updates best positions +0x20/+0x34; logs both. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.rivalry_head_to_head_quali",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC A0 00 00 00 48 89 D7 48 89 CE 0F B7 41 7A",
+  "match": "0x1412631f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412631f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rivalry_HeadToHeadQuali"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1412631f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412631f0.c",
+   "notes": "V4717 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

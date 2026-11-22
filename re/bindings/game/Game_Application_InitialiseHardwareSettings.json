@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Application_InitialiseHardwareSettings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443c4fa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1443c4fa0.c;pat:log-message-cxx;xref:0x1443c07d5",
+  "notes": "Application::initialiseHardwareSettings: creates hardware_settings_config/info/options/restrictions; args -benchmark <f> (benchmark/%s, else example_benchmark.xml), -safemode (safe_mode=option_on), -applyOOTB, -windowed (displayMode 0); OOTB reset on applyOOTB=true or changed CPU; dlss unsupported -> taa; rating = min(system,cpu,gpu) or Testing.OverrideGraphicsPreset -> detail_preset_ultralow..ultra/ultra_pt; copies GPU info to [0x145f96d68]+0x55d. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.application_initialise_hardware_settings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 04 00 00 49 89 D4",
+  "match": "0x1443c4fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443c4fa0",
+  "kind": "func_start",
+  "names": [
+   "Game_Application_InitialiseHardwareSettings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443c4fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443c4fa0.c;xref:0x1443c07d5",
+   "notes": "V6590 size=15535; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

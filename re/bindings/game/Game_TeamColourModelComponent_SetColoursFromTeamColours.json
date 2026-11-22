@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TeamColourModelComponent_SetColoursFromTeamColours",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142aa1db0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142aa1db0.c;pat:log-message-cxx;xref:0x142514ba1,0x142514cf1,0x142514e11,0x142515036,0x14251541e,0x14251559b,0x142a9ebfc,0x14db9efc0",
+  "notes": "Converts 3 packed RGB u32 (param_2[0..2]) from sRGB to linear (x/12.92 or ((x+0.055)/1.055)^2.4), builds 3 float4 + white row and calls Game_TeamColourModelComponent_SetColours. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.team_colour_model_component_set_colours_from_team_colours",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 C5 78 29 84 24 80 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 48 89 D7",
+  "match": "0x142aa1db0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142aa1db0",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamColourModelComponent_SetColoursFromTeamColours"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142aa1db0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142aa1db0.c;xref:0x142514ba1",
+   "notes": "V4997 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineRole_OnConnectionLeft",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409985b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1409985b0.c;pat:log-channel-PLAYERSET;xref:0x145658670",
+  "notes": "Logs PLAYERSET 'MOX/Role: onSessionConnectionLeft(%d)' and removes the connection's players. Only reference: vtable cell 0x145658670 (after OnConnectionArrived 0x145658668). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_role_on_connection_left",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6F B8 6D 01 00 00",
+  "match": "0x1409985b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409985b0",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineRole_OnConnectionLeft"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409985b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409985b0.c",
+   "notes": "V4355 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

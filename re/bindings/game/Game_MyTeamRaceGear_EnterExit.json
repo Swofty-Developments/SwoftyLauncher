@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamRaceGear_EnterExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142061e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142061e90.c;xref:0x145767040",
+  "notes": "Event handler on *param_2 id. 0x8cf3cd82: tail jmp 0x142e689c0(this+0x2b0,'my_team_entering_race_gear'); 0x493fe92b: 0x142e689c0 'my_team_exiting_race_gear' then 0x1442c0e20 'advance_overview'; 0xea5525b5/0x778c6e17 'show_header'; 0x70d928ee posts bus msg (0x1439876c0); 0x2b0357a: state 0..0xb (profile_forename_entry_v2, nav_anim_off, TeamHQExteriorWalk 0x1428e2a90). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.my_team_race_gear_enter_exit",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC 38 08 00 00 48 8B 02",
+  "match": "0x142061e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142061e90",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamRaceGear_EnterExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142061e90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142061e90.c;xref:0x145767040",
+   "notes": "V10038 Does the race-gear enter/exit events but also a first-name entry (profile_forename_entry, output_firstname) and tutorial queueing; broader than claimed."
+  }
+ ],
+ "proofs": []
+}

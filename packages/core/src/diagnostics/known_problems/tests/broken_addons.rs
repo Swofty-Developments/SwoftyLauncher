@@ -1,0 +1,810 @@
+use super::*;
+
+const AGGRESSIVE_AI_HEAP: [&str; 7] = [
+    "F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4",
+    "F1_25.exe+0x395fa23 .xtls Ne_ReportMemoryError+0x343",
+    "F1_25.exe+0x39658d8 .xtls fn base+0x39657d0+0x108",
+    "F1_25.exe+0x39640e3 .xtls Ne_Heap_DeallocateNonSmall+0x163",
+    "F1_25.exe+0x3963f5f .xtls Ne_Heap_Free+0xdf",
+    "F1_25.exe+0x67c1f2 .xtls fn base+0x67bf30+0x2c2",
+    "F1_25.exe+0x8303f43 .data1 fn base+0x8303f00+0x43",
+];
+
+const AGGRESSIVE_AI_HEAP_EA: [&str; 7] = [
+    "F1_25.exe+0x3905334 .rdata fn base+0x3905330+0x4",
+    "F1_25.exe+0x394cab3 .rdata fn base+0x394c770+0x343",
+    "F1_25.exe+0x3952968 .rdata fn base+0x3952860+0x108",
+    "F1_25.exe+0x3951173 .rdata fn base+0x3951010+0x163",
+    "F1_25.exe+0x3950fef .rdata fn base+0x3950f10+0xdf",
+    "F1_25.exe+0x67cc02 .rdata fn base+0x67c940+0x2c2",
+    "F1_25.exe+0x80a5f03 .xcode fn base+0x80a5ec0+0x43",
+];
+
+fn frames_log(frames: &[&str]) -> String {
+    let at = frames[0];
+    let mut log = format!(
+        "2026-11-15 13:13:10.664 [2668] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 2668, 2607 s after load, at {at}\n\
+             2026-11-15 13:13:10.664 [2668] [crash]   reading 0x8\n\
+             2026-11-15 13:13:10.666 [2668] [crash]   stack:\n"
+    );
+    for (i, frame) in frames.iter().enumerate() {
+        log.push_str(&format!(
+            "2026-11-15 13:13:10.666 [2668] [crash]   #{i:<2} {frame}\n"
+        ));
+    }
+    log.push_str(&format!(
+            "2026-11-15 13:13:10.667 [2668] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at {at} reached the top-level filter; passing it to the game's filter\n"
+        ));
+    log
+}
+
+fn aggressive_ai_on(loader: &str, version: &str) -> Evidence {
+    let mut e = with_names(
+        ev(loader, &[]),
+        &[(AGGRESSIVE_AI, "F1 25 + 26 Aggressive AI (Alternate)")],
+    );
+    e.versions.insert(AGGRESSIVE_AI.to_owned(), version.to_owned());
+    e
+}
+
+#[test]
+fn a_session_load_crash_on_aggressive_ai_alternate_3_0_0_names_it() {
+    let faces: [&[&str]; 10] = [
+        &AGGRESSIVE_AI_HEAP,
+        &[
+            "F1_25.exe+0x67c959 .xtls fn base+0x67c680+0x2d9",
+            "F1_25.exe+0x8303f69 .data1 fn base+0x8303f00+0x69",
+        ],
+        &[
+            "F1_25.exe+0x67b49b .xtls fn base+0x67b3f0+0xab",
+            "F1_25.exe+0x8308ef7 .data1 fn base+0x8308d50+0x1a7",
+        ],
+        &[
+            "F1_25.exe+0x67b952 .xtls fn base+0x67b3f0+0x562",
+            "F1_25.exe+0x8014c5c .data1 fn base+0x8014a90+0x1cc",
+        ],
+        &[
+            "F1_25.exe+0x67b9aa .xtls fn base+0x67b3f0+0x5ba",
+            "F1_25.exe+0x8014c5c .data1 fn base+0x8014a90+0x1cc",
+        ],
+        &[
+            "0x1c4096c0 (no module)",
+            "F1_25.exe+0x67b4a1 .xtls fn base+0x67b3f0+0xb1",
+            "F1_25.exe+0x8014c5c .data1 fn base+0x8014a90+0x1cc",
+        ],
+        &AGGRESSIVE_AI_HEAP_EA,
+        &[
+            "F1_25.exe+0x67d369 .rdata fn base+0x67d090+0x2d9",
+            "F1_25.exe+0x80a5f29 .xcode fn base+0x80a5ec0+0x69",
+        ],
+        &[
+            "F1_25.exe+0x67beab .rdata fn base+0x67be00+0xab",
+            "F1_25.exe+0x7e84a49 .xcode fn base+0x7e84870+0x1d9",
+        ],
+        &[
+            "F1_25.exe+0x67c3ba .rdata fn base+0x67be00+0x5ba",
+            "F1_25.exe+0x7e84a49 .xcode fn base+0x7e84870+0x1d9",
+        ],
+    ];
+    for face in faces {
+        let d = diagnose(&aggressive_ai_on(&frames_log(face), "3.0.0"));
+        assert_eq!(d.map(|d| d.id), Some("aggressive_ai_alternate"), "{face:?}");
+    }
+    let split = frames_log(faces[4]).replace(
+            "2026-11-15 13:13:10.666 [2668] [crash]   stack:\n",
+            "2026-11-15 13:13:10.666 [9540] [crash] writing a crash report: unhandled ACCESS_VIOLATION (0xc0000005)\n",
+        );
+    let d = diagnose(&aggressive_ai_on(&split, "3.0.0"));
+    assert_eq!(d.map(|d| d.id), Some("aggressive_ai_alternate"));
+    let d = diagnose(&aggressive_ai_on(&frames_log(&AGGRESSIVE_AI_HEAP), "3.0.0")).unwrap();
+    assert_eq!(
+        d.title,
+        "F1 25 + 26 Aggressive AI (Alternate) 3.0.0 crashed F1 25 while a session loaded"
+    );
+    assert!(d.what.contains("has been taken down"), "{}", d.what);
+    assert!(
+        d.steps[0].contains("install it again from the Addon Browser"),
+        "{}",
+        d.steps[0]
+    );
+    assert_eq!(
+        d.steps[1],
+        "Or turn off F1 25 + 26 Aggressive AI (Alternate) in your profile."
+    );
+}
+
+#[test]
+fn the_aggressive_ai_alternate_crash_is_read_from_the_crash_report() {
+    let mut e = aggressive_ai_on(
+        "2026-11-15 20:38:35.219 [9112] [crash] Ne heap error 0x16 (fatal) on thread 9112: Failed to find address 0000000399450C30 in the allocated list; heap 000000006CB5F0B0 'RACE', capacity 10485760, used 2440304\n",
+        "3.0.0",
+    );
+    e.report = Some(
+            "reason       fatal Ne heap error 0x16 in heap 'RACE': Failed to find address 0000000399450C30 in the allocated list\n\
+             == Stack (unwound with the modules' exception data)\n  \
+             #0  00007ffe3e9d6f94 rsp=000000006f2ff290  swofty_core.dll+0xd6f94 .text fn +0xd6990+0x604\n  \
+             #1  00007ffe3e9d68db rsp=000000006f2ff990  swofty_core.dll+0xd68db .text fn +0xd68b0+0x2b\n  \
+             #2  00000001439658d8 rsp=000000006f2ff9e0  F1_25.exe+0x39658d8 .xtls fn base+0x39657d0+0x108\n  \
+             #3  00000001439640e3 rsp=000000006f2ffad0  F1_25.exe+0x39640e3 .xtls Ne_Heap_DeallocateNonSmall+0x163\n  \
+             #4  0000000143963f5f rsp=000000006f2ffb70  F1_25.exe+0x3963f5f .xtls Ne_Heap_Free+0xdf\n  \
+             #5  000000014067c1f2 rsp=000000006f2ffbc0  F1_25.exe+0x67c1f2 .xtls fn base+0x67bf30+0x2c2\n  \
+             #6  0000000148303f43 rsp=000000006f2ffc60  F1_25.exe+0x8303f43 .data1 fn base+0x8303f00+0x43\n"
+                .to_owned(),
+        );
+    assert_eq!(diagnose(&e).map(|d| d.id), Some("aggressive_ai_alternate"));
+}
+
+fn skip_cutscenes_on(loader: &str, version: &str, build: (u64, u32)) -> Evidence {
+    let mut e = with_names(ev(loader, &[]), &[(SKIP_CUTSCENES, "Skip Cutscenes")]);
+    e.versions.insert(SKIP_CUTSCENES.to_owned(), version.to_owned());
+    e.enabled = vec![SKIP_CUTSCENES.to_owned()];
+    e.game_build = Some(build);
+    e
+}
+
+#[test]
+fn skip_cutscenes_up_to_1_9_4_on_1_0_145_is_named() {
+    let log = "2026-11-15 13:13:00.000 [1] [loader] vtable not found (Sess_SessionStateIntroCameras_OnEnter 142D6DE80)\n\
+                   2026-11-15 13:13:40.000 [2] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at skip_cutscenes.dll+0x23f4 reached the top-level filter; passing it to the game's filter\n";
+    for version in ["1.9.4", "1.0.0", "1.9.3"] {
+        let d = diagnose(&skip_cutscenes_on(
+            log,
+            version,
+            crate::build_support::BUILD_1_0_145,
+        ))
+        .unwrap();
+        assert_eq!(d.id, "skip_cutscenes_1_0_145", "{version}");
+    }
+    let d = diagnose(&skip_cutscenes_on(
+        log,
+        "1.9.4",
+        crate::build_support::BUILD_1_0_145,
+    ))
+    .unwrap();
+    assert_eq!(
+        d.what,
+        "Skip Cutscenes (up to 1.9.4) crashes the game on F1 25 version 1.0.145 within a minute of loading."
+    );
+    assert_eq!(
+        d.steps,
+        ["Turn it off on the Addons page until its author releases an update."]
+    );
+}
+
+#[test]
+fn skip_cutscenes_is_not_named_on_other_versions_builds_or_when_off() {
+    let log = "2026-11-15 13:13:00.000 [1] [loader] vtable not found (Sess_SessionStateIntroCameras_OnEnter 142D6DE80)\n";
+    let on = crate::build_support::BUILD_1_0_145;
+    assert_eq!(diagnose(&skip_cutscenes_on(log, "1.9.5", on)), None);
+    assert_eq!(
+        diagnose(&skip_cutscenes_on(log, "1.9.4", (408_063_872, 1_789_118_616))),
+        None
+    );
+    let mut off = skip_cutscenes_on(log, "1.9.4", on);
+    off.enabled.clear();
+    assert_eq!(diagnose(&off), None);
+}
+
+#[test]
+fn other_aggressive_ai_alternate_versions_and_crashes_are_not_named() {
+    let heap = frames_log(&AGGRESSIVE_AI_HEAP);
+    for version in ["2.0.1", "3.0.1", "3.1.0", "13.0.0"] {
+        assert_eq!(diagnose(&aggressive_ai_on(&heap, version)), None, "{version}");
+    }
+    let mut off = aggressive_ai_on(&heap, "3.0.0");
+    off.enabled.clear();
+    assert_eq!(diagnose(&off), None);
+    assert_eq!(diagnose(&ev(&heap, &[])), None);
+    let unrelated = frames_log(&[
+        "F1_25.exe+0x2e57efb .xtls fn base+0x2e57e90+0x6b",
+        "F1_25.exe+0x445b18c .xtls fn base+0x445aea0+0x2ec",
+    ]);
+    assert_eq!(diagnose(&aggressive_ai_on(&unrelated, "3.0.0")), None);
+    let deep: Vec<&str> =
+        std::iter::repeat_n("F1_25.exe+0x445b18c .xtls fn base+0x445aea0+0x2ec", NEAR_FRAMES)
+            .chain(["F1_25.exe+0x67c1f2 .xtls fn base+0x67bf30+0x2c2"])
+            .collect();
+    assert_eq!(diagnose(&aggressive_ai_on(&frames_log(&deep), "3.0.0")), None);
+}
+
+fn pitlane_log(kept: &str, mode: &str, address: &str) -> String {
+    format!(
+            "2026-10-27 19:26:15.735 [30872] [pitlane] your car: flags 0 -> 0x1, mode 0 -> 1
+2026-10-27 19:26:15.741 [30872] [pitlane] pit lane: control kept (7 this session){kept}
+2026-10-27 19:26:15.761 [30872] [pitlane] your car: flags 0x1 -> 0, mode 1 -> {mode}
+2026-10-27 19:26:15.767 [12860] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 12860, 2079 s after load, at F1_25.exe+{address} .xtls fn base+0x389a120+0xb7
+2026-10-27 19:26:15.767 [12860] [crash]   reading 0x2d3bf4f40
+2026-10-27 19:26:15.767 [12860] [crash]   stack:
+2026-10-27 19:26:15.767 [12860] [crash]   #0  F1_25.exe+{address} .xtls fn base+0x389a120+0xb7
+2026-10-27 19:26:15.767 [12860] [crash]   #1  F1_25.exe+0x445b18c .xtls fn base+0x445aea0+0x2ec
+2026-10-27 19:26:15.768 [12860] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+{address} .xtls fn base+0x389a120+0xb7 reached the top-level filter; passing it to the game's filter
+"
+        )
+}
+
+#[test]
+fn a_crash_as_manual_pit_lane_takes_the_car_names_it() {
+    let e = with_names(
+        ev(&pitlane_log("", "1474065524", "0x389a1d7"), &[]),
+        &[("kizi.pitlane", "Manual Pit Lane")],
+    );
+    let d = diagnose(&e).unwrap();
+    assert_eq!(d.id, "pitlane_garage");
+    assert_eq!(d.title, "Manual Pit Lane crashed F1 25 in the pit lane");
+    assert!(d.what.contains("Return to Garage or a flashback"), "{}", d.what);
+    assert_eq!(
+        d.steps[0],
+        "Turn off Manual Pit Lane in your profile until its author fixes this crash."
+    );
+    let older_game = pitlane_log("", "1159247034", "0x38873a7");
+    assert_eq!(diagnose(&ev(&older_game, &[])).unwrap().id, "pitlane_garage");
+    let kept_only = pitlane_log("", "0", "0x389a1d7");
+    assert_eq!(diagnose(&ev(&kept_only, &[])).unwrap().id, "pitlane_garage");
+    let ai_kept = pitlane_log(
+        " - another flag is set too, so the AI keeps the car for now",
+        "0",
+        "0x389a1d7",
+    );
+    assert_eq!(diagnose(&ev(&ai_kept, &[])), None);
+    assert_eq!(diagnose(&ev(&pitlane_log("", "0", "0x1234567"), &[])), None);
+    let later = pitlane_log("", "1474065524", "0x389a1d7").replace("19:26:15.7", "19:26:19.7");
+    let later = later.replacen("19:26:19.7", "19:26:15.7", 3);
+    assert_eq!(diagnose(&ev(&later, &[])), None);
+}
+
+const LONG_BEACH: (&str, &str) = ("ashton.lbcgp", "Long Beach Grand Prix");
+
+fn unloaded_ai_line_log(facts: &str, frames: [&str; 4], read: &str) -> String {
+    let mut log = facts.to_owned();
+    log.push_str(&format!(
+        "2026-11-20 08:57:24.980 [156284] [career] flow \"StateSession\" None -> Entering
+2026-11-20 08:57:24.999 [155696] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 155696, 381 s after load, at {at}
+2026-11-20 08:57:24.999 [155696] [crash]   {read}
+2026-11-20 08:57:24.999 [206324] [driver-momentum] game database: 313 driver(s), 243 with ratings, read in the background in 3 ms
+2026-11-20 08:57:24.999 [155696] [crash]   rax=00000001354fe5d0 rbx=00000001354fd784 rcx=0000000000000000 rdx=0000000000000010
+2026-11-20 08:57:25.000 [155696] [crash]   code: 80 B9 88 00 00 00 00 C5 F8 28 F1 48 8B 41 20 48
+2026-11-20 08:57:25.000 [155696] [crash]   stack:
+",
+        at = frames[0]
+    ));
+    for (i, frame) in frames.iter().enumerate() {
+        log.push_str(&format!(
+            "2026-11-20 08:57:25.000 [155696] [crash]   #{i:<2} {frame}\n"
+        ));
+    }
+    log.push_str(&format!(
+        "2026-11-20 08:57:25.001 [155696] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at {} reached the top-level filter; passing it to the game's filter\n",
+        frames[0]
+    ));
+    log
+}
+
+const STEAM_145_FRAMES: [&str; 4] = [
+    "F1_25.exe+0x679e34 .tls$ fn base+0x679e10+0x24",
+    "F1_25.exe+0x60cdeb .tls$ fn base+0x60cdb0+0x3b",
+    "F1_25.exe+0x6015c0 .tls$ fn base+0x5ff790+0x1e30",
+    "F1_25.exe+0x80c599 .tls$ fn base+0x80c350+0x249",
+];
+
+const KB_FRAMES: [&str; 4] = [
+    "F1_25.exe+0x679df4 .xtls Game_TrackSpline_EvalFrameAtDistance+0x24",
+    "F1_25.exe+0x60cdab .xtls Ai_SplineCursor_PlaceAtDistance+0x3b",
+    "F1_25.exe+0x601580 .xtls Sess_Build_AiSystem+0x1e30",
+    "F1_25.exe+0x80c549 .xtls Game_GameModule_OnSessionEnter+0x249",
+];
+
+const LONG_BEACH_FACTS: &str = "2026-11-20 08:57:09.340 [205708] [apply] facts: mode grand_prix, session race, track ashton.lbcgp/lbeach\n";
+
+fn tracks_on(loader: &str, tracks: &[(&str, &str)]) -> Evidence {
+    let mut e = with_names(ev(loader, &[]), tracks);
+    e.tracks = tracks.iter().map(|(id, _)| (*id).to_owned()).collect();
+    e
+}
+
+#[test]
+fn a_crash_placing_ai_cars_on_an_unloaded_racing_line_names_the_sessions_track() {
+    let log = unloaded_ai_line_log(LONG_BEACH_FACTS, STEAM_145_FRAMES, "reading 0x88");
+    let e = tracks_on(&log, &[("mod.sochi", "Sochi"), LONG_BEACH]);
+    let d = diagnose(&e).unwrap();
+    assert_eq!(d.id, "track_ai_data_unloaded");
+    assert_eq!(
+        d.title,
+        "Long Beach Grand Prix's AI data crashed F1 25 as the session started"
+    );
+    assert_eq!(
+        d.what,
+        "F1 25 crashed as the session on Long Beach Grand Prix started, while it put the AI cars on the racing line. \
+         The game could not load Long Beach Grand Prix's AI data, so the track had no racing line to put them on."
+    );
+    assert_eq!(
+        d.steps,
+        [
+            "Turn Long Beach Grand Prix off in your profile, and set any race weekend that uses it back to another \
+             track.",
+            "Ask its author to fix the AI data: a corner start can't be at gate 0, the first gate of the lap, and every \
+             brake line, corner end, retire line and link has to point at a gate the track has.",
+        ]
+    );
+    let kb = unloaded_ai_line_log(LONG_BEACH_FACTS, KB_FRAMES, "reading 0x88");
+    assert_eq!(diagnose(&tracks_on(&kb, &[LONG_BEACH])).unwrap(), d);
+}
+
+#[test]
+fn an_unloaded_racing_line_crash_without_the_sessions_track_names_the_tracks_on() {
+    let log = unloaded_ai_line_log("", STEAM_145_FRAMES, "reading 0x88");
+    let one = diagnose(&tracks_on(&log, &[LONG_BEACH])).unwrap();
+    assert_eq!(
+        one.title,
+        "Long Beach Grand Prix's AI data crashed F1 25 as the session started"
+    );
+    let two = diagnose(&tracks_on(&log, &[("mod.sochi", "Sochi"), LONG_BEACH])).unwrap();
+    assert_eq!(
+        two.title,
+        "A track's AI data crashed F1 25 as the session started"
+    );
+    assert_eq!(
+        two.steps[0],
+        "Turn off the track you raced on (Sochi and Long Beach Grand Prix are on in your profile), and set any race \
+         weekend that uses it back to another track."
+    );
+    let stock =
+        "2026-11-20 08:57:09.340 [205708] [apply] facts: mode grand_prix, session race, track game/monza\n";
+    let stock = unloaded_ai_line_log(stock, STEAM_145_FRAMES, "reading 0x88");
+    assert_eq!(
+        diagnose(&tracks_on(&stock, &[])).unwrap().steps[0],
+        "Race on another track, or turn off the addon that changes this track's AI data."
+    );
+}
+
+#[test]
+fn only_the_unloaded_racing_line_fault_is_named_for_it() {
+    let other_read = unloaded_ai_line_log(LONG_BEACH_FACTS, STEAM_145_FRAMES, "reading 0x90");
+    assert_eq!(diagnose(&tracks_on(&other_read, &[LONG_BEACH])), None);
+    let mut other_caller = STEAM_145_FRAMES;
+    other_caller[1] = "F1_25.exe+0x625d54 .tls$ fn base+0x624e60+0xef4";
+    let other_caller = unloaded_ai_line_log(LONG_BEACH_FACTS, other_caller, "reading 0x88");
+    assert_eq!(diagnose(&tracks_on(&other_caller, &[LONG_BEACH])), None);
+    let mixed = [
+        KB_FRAMES[0],
+        STEAM_145_FRAMES[1],
+        STEAM_145_FRAMES[2],
+        STEAM_145_FRAMES[3],
+    ];
+    let mixed = unloaded_ai_line_log(LONG_BEACH_FACTS, mixed, "reading 0x88");
+    assert_eq!(diagnose(&tracks_on(&mixed, &[LONG_BEACH])), None);
+}
+
+const LAGUNA_SECA: (&str, &str) = ("ashton.lagsec", "Laguna Seca Grand Prix");
+
+const LAGUNA_SECA_FACTS: &str = "2026-11-20 22:21:56.157 [16872] [apply] facts: mode driver_career, session practice (practice_1), track ashton.lagsec/lagsec\n";
+
+const MARSHAL_LIGHTS_STEAM: [&str; 3] = [
+    "F1_25.exe+0x2c794d2 .tls$ fn base+0x2c79330+0x1a2",
+    "F1_25.exe+0xe17978d .trace fn base+0xe179740+0x4d",
+    "F1_25.exe+0x80c599 .tls$ fn base+0x80c350+0x249",
+];
+
+fn marshal_lights_log(facts: &str, frames: &[&str]) -> String {
+    let mut log = facts.to_owned();
+    log.push_str(&format!(
+        "2026-11-20 23:14:38.536 [26752] [career] flow \"StateSession\" None -> Entering
+2026-11-20 23:14:38.726 [ 4012] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 4012, 4787 s after load, at {at}
+2026-11-20 23:14:38.726 [ 4012] [crash]   writing 0x34
+2026-11-20 23:14:38.726 [ 4012] [crash]   rsi=000000000788d1e0 rdi=000000000787b720 rbp=0000000027735a20 rsp=000000007de9ec40
+2026-11-20 23:14:38.728 [ 4012] [crash]   code: C5 FA 11 78 34 4C 3B 6E 68 0F 84 F7 02 00 00 49
+2026-11-20 23:14:38.728 [ 4012] [crash]   stack:
+",
+        at = frames[0]
+    ));
+    for (i, frame) in frames.iter().enumerate() {
+        log.push_str(&format!(
+            "2026-11-20 23:14:38.728 [ 4012] [crash]   #{i:<2} {frame}\n"
+        ));
+    }
+    log.push_str(&format!(
+        "2026-11-20 23:14:38.733 [ 4012] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at {} reached the top-level filter; passing it to the game's filter\n",
+        frames[0]
+    ));
+    log
+}
+
+#[test]
+fn a_crash_matching_marshal_lights_to_their_zones_names_the_sessions_track() {
+    let log = marshal_lights_log(LAGUNA_SECA_FACTS, &MARSHAL_LIGHTS_STEAM);
+    let d = diagnose(&tracks_on(
+        &log,
+        &[("ashton.roadam", "Road America"), LAGUNA_SECA],
+    ))
+    .unwrap();
+    assert_eq!(d.id, "track_marshal_lights");
+    assert_eq!(
+        d.title,
+        "Laguna Seca Grand Prix's marshal lights crashed F1 25 as the session started"
+    );
+    assert_eq!(
+        d.what,
+        "F1 25 crashed as the session on Laguna Seca Grand Prix started, while it matched the track's marshal lights \
+         to its marshal light zones. Laguna Seca Grand Prix has marshal lights outside every marshal light zone, and \
+         the game's own code crashes on them."
+    );
+    assert_eq!(
+        d.steps,
+        [
+            "Turn Laguna Seca Grand Prix off in your profile, and set any race weekend that uses it back to another \
+             track.",
+            "Ask its author to give the track a marshal light zone (marshal_light_zone in its track markup) for every \
+             part of the lap that has marshal lights.",
+        ]
+    );
+    for fault in [
+        "F1_25.exe+0x2c76f42 .xtls Sess_MarshalLights_AssignToZones+0x1a2",
+        "F1_25.exe+0x2c6ac92 .rdata fn base+0x2c6aaf0+0x1a2",
+        "F1_25.exe+0x2c6d222 .rdata fn base+0x2c6d080+0x1a2",
+    ] {
+        let other_build = marshal_lights_log(LAGUNA_SECA_FACTS, &[fault, MARSHAL_LIGHTS_STEAM[1]]);
+        assert_eq!(
+            diagnose(&tracks_on(&other_build, &[LAGUNA_SECA])).unwrap(),
+            d,
+            "{fault}"
+        );
+    }
+}
+
+#[test]
+fn a_marshal_lights_crash_without_the_sessions_track_names_the_tracks_on() {
+    let log = marshal_lights_log("", &MARSHAL_LIGHTS_STEAM);
+    let one = diagnose(&tracks_on(&log, &[LAGUNA_SECA])).unwrap();
+    assert_eq!(
+        one.title,
+        "Laguna Seca Grand Prix's marshal lights crashed F1 25 as the session started"
+    );
+    let two = diagnose(&tracks_on(
+        &log,
+        &[("ashton.roadam", "Road America"), LAGUNA_SECA],
+    ))
+    .unwrap();
+    assert_eq!(
+        two.title,
+        "A track's marshal lights crashed F1 25 as the session started"
+    );
+    assert_eq!(
+        two.steps[0],
+        "Turn off the track you raced on (Road America and Laguna Seca Grand Prix are on in your profile), and set \
+         any race weekend that uses it back to another track."
+    );
+    let stock =
+        "2026-11-20 22:21:56.157 [16872] [apply] facts: mode grand_prix, session race, track game/suzuka\n";
+    let stock = marshal_lights_log(stock, &MARSHAL_LIGHTS_STEAM);
+    assert_eq!(
+        diagnose(&tracks_on(&stock, &[])).unwrap().steps[0],
+        "Race on another track, or turn off the addon that changes this track's marshal lights."
+    );
+}
+
+#[test]
+fn only_a_fault_at_the_marshal_light_store_is_named_for_it() {
+    let near = marshal_lights_log(
+        LAGUNA_SECA_FACTS,
+        &[
+            "F1_25.exe+0x2c794d7 .tls$ fn base+0x2c79330+0x1a7",
+            MARSHAL_LIGHTS_STEAM[1],
+        ],
+    );
+    assert_eq!(diagnose(&tracks_on(&near, &[LAGUNA_SECA])), None);
+    let other_module = marshal_lights_log(
+        LAGUNA_SECA_FACTS,
+        &["kizi_ai_tweaks.dll+0x2c794d2", MARSHAL_LIGHTS_STEAM[1]],
+    );
+    assert_eq!(diagnose(&tracks_on(&other_module, &[LAGUNA_SECA])), None);
+}
+
+const TYRE_CURVE_STEAM: [&str; 3] = [
+    "F1_25.exe+0x2e7e5ec .tls$ fn base+0x2e7e530+0xbc",
+    "F1_25.exe+0xf5d41d6 .trace fn base+0xf5d3eb0+0x326",
+    "F1_25.exe+0x1187bde .tls$ fn base+0x1187970+0x26e",
+];
+
+const TYRE_CURVE_FAULTS: [&str; 12] = [
+    "F1_25.exe+0x2e7e5ec .tls$ fn base+0x2e7e530+0xbc",
+    "F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54",
+    "F1_25.exe+0x2e7ec21 .tls$ fn base+0x2e7eb80+0xa1",
+    "F1_25.exe+0x2e7c05c .xtls Car_Tyre_SampleCurveSet2KeyLerp+0xbc",
+    "F1_25.exe+0x2e7c464 .xtls Car_Tyre_Curve2D_SampleByBinarySearchY+0x54",
+    "F1_25.exe+0x2e7c691 .xtls Car_Tyre_SampleWearCurve2DAlt+0xa1",
+    "F1_25.exe+0x2e6fc5c .rdata fn base+0x2e6fba0+0xbc",
+    "F1_25.exe+0x2e70064 .rdata fn base+0x2e70010+0x54",
+    "F1_25.exe+0x2e70291 .rdata fn base+0x2e701f0+0xa1",
+    "F1_25.exe+0x2e721ec .rdata fn base+0x2e72130+0xbc",
+    "F1_25.exe+0x2e725f4 .arch fn base+0x2e725a0+0x54",
+    "F1_25.exe+0x2e72821 .rdata fn base+0x2e72780+0xa1",
+];
+
+const ANIM_CLIP_STEAM: [&str; 4] = [
+    "F1_25.exe+0x3a3d54b .tls$ fn base+0x3a3d470+0xdb",
+    "F1_25.exe+0x3a3d690 .tls$ fn base+0x3a3d600+0x90",
+    "F1_25.exe+0x7c36c8a .trace fn base+0x7c36b40+0x14a",
+    "F1_25.exe+0x7c2f80a .trace fn base+0x7c2f720+0xea",
+];
+
+const ANIM_CLIP_UI_STEAM: [&str; 3] = [
+    "F1_25.exe+0x3a3bfaa .tls$ fn base+0x3a3bd80+0x22a",
+    "F1_25.exe+0x41fb7f6 .tls$ fn base+0x41fb320+0x4d6",
+    "F1_25.exe+0x41deb52 .tls$ fn base+0x41dd740+0x1412",
+];
+
+const ANIM_CLIP_FAULTS: [&str; 24] = [
+    "F1_25.exe+0x3a3d54b .tls$ fn base+0x3a3d470+0xdb",
+    "F1_25.exe+0x3a3e1a2 .tls$ fn base+0x3a3e0d0+0xd2",
+    "F1_25.exe+0x3a3e5ff .tls$ fn base+0x3a3e500+0xff",
+    "F1_25.exe+0x3a3af7b .xtls fn base+0x3a3aea0+0xdb",
+    "F1_25.exe+0x3a3bbd2 .xtls fn base+0x3a3bb00+0xd2",
+    "F1_25.exe+0x3a3c02f .xtls fn base+0x3a3bf30+0xff",
+    "F1_25.exe+0x3a27f9b .rdata fn base+0x3a27ec0+0xdb",
+    "F1_25.exe+0x3a28bf2 .rdata fn base+0x3a28b20+0xd2",
+    "F1_25.exe+0x3a2904f .rdata fn base+0x3a28f50+0xff",
+    "F1_25.exe+0x3a2a56b .arch fn base+0x3a2a490+0xdb",
+    "F1_25.exe+0x3a2b1c2 .arch fn base+0x3a2b0f0+0xd2",
+    "F1_25.exe+0x3a2b61f .arch fn base+0x3a2b520+0xff",
+    "F1_25.exe+0x3a3bfaa .tls$ fn base+0x3a3bd80+0x22a",
+    "F1_25.exe+0x3a3c5da .tls$ fn base+0x3a3c3c0+0x21a",
+    "F1_25.exe+0x3a3cc48 .tls$ fn base+0x3a3caf0+0x158",
+    "F1_25.exe+0x3a399da .xtls fn base+0x3a397b0+0x22a",
+    "F1_25.exe+0x3a3a00a .xtls fn base+0x3a39df0+0x21a",
+    "F1_25.exe+0x3a3a678 .xtls fn base+0x3a3a520+0x158",
+    "F1_25.exe+0x3a269fa .rdata fn base+0x3a267d0+0x22a",
+    "F1_25.exe+0x3a2702a .rdata fn base+0x3a26e10+0x21a",
+    "F1_25.exe+0x3a27698 .rdata fn base+0x3a27540+0x158",
+    "F1_25.exe+0x3a28fca .arch fn base+0x3a28da0+0x22a",
+    "F1_25.exe+0x3a295fa .arch fn base+0x3a293e0+0x21a",
+    "F1_25.exe+0x3a29c68 .arch fn base+0x3a29b10+0x158",
+];
+
+fn td_wheel_off_line(at: &str) -> String {
+    format!(
+        "2026-11-15 {at} [11132] [td-probe] suspension: your car FR wheel torn off: the game's damage 0.00 -> 1.02 \
+         (detach limit 1.00), state now 0x600\n"
+    )
+}
+
+fn td_on(loader: &str) -> Evidence {
+    with_names(ev(loader, &[]), &[(TERMINAL_DAMAGE, "Terminal Damage")])
+}
+
+#[test]
+fn a_tyre_curve_crash_just_after_terminal_damage_tore_a_wheel_off_names_it() {
+    let log = td_wheel_off_line("13:13:10.623") + &frames_log(&TYRE_CURVE_STEAM);
+    let d = diagnose(&td_on(&log)).unwrap();
+    assert_eq!(d.id, "terminal_damage_wheel_off");
+    assert_eq!(
+        d.title,
+        "F1 25 crashed right after Terminal Damage tore a wheel off your car"
+    );
+    assert_eq!(
+        d.what,
+        "Terminal Damage's experimental suspension damage tore a wheel off your car, and F1 25 crashed a moment \
+         later in its own tyre wear estimate for that car."
+    );
+    assert_eq!(
+        d.steps,
+        [
+            "On the Addons page, turn off Suspension damage from hits (experimental) and Suspension damage for AI cars \
+          (experimental) in Terminal Damage's options, or turn Terminal Damage off, then press Play."
+        ]
+    );
+    assert_eq!(diagnose(&ev(&log, &[])).unwrap(), d);
+    for fault in TYRE_CURVE_FAULTS {
+        let log = td_wheel_off_line("13:13:10.623") + &frames_log(&[fault, TYRE_CURVE_STEAM[1]]);
+        assert_eq!(
+            diagnose(&td_on(&log)).map(|d| d.id),
+            Some("terminal_damage_wheel_off"),
+            "{fault}"
+        );
+    }
+}
+
+#[test]
+fn a_tyre_curve_crash_without_a_wheel_torn_off_just_before_is_the_games_own() {
+    let generic = |log: &str| {
+        let d = diagnose(&td_on(log)).unwrap();
+        assert_eq!(d.id, "tyre_curve_nan", "{log}");
+        d
+    };
+    let d = generic(&frames_log(&TYRE_CURVE_STEAM));
+    assert_eq!(d.title, "F1 25 crashed in its own tyre wear estimate");
+    assert_eq!(
+        d.what,
+        "F1 25's own tyre wear estimate for a car hit an invalid number, and the game crashed. This is a fault in \
+         the game, and no setting of yours fixes it."
+    );
+    assert_eq!(
+        d.steps,
+        ["Press Send Logs in the launcher so this reaches the developers."]
+    );
+    generic(&(td_wheel_off_line("13:13:07.664") + &frames_log(&TYRE_CURVE_STEAM)));
+    generic(&(td_wheel_off_line("13:13:09.664") + &frames_log(&TYRE_CURVE_STEAM)));
+    generic(&(frames_log(&TYRE_CURVE_STEAM) + &td_wheel_off_line("13:13:10.900")));
+    for fault in TYRE_CURVE_FAULTS {
+        generic(&frames_log(&[fault, TYRE_CURVE_STEAM[1]]));
+    }
+}
+
+#[test]
+fn a_tyre_curve_crash_the_game_closed_on_without_the_top_level_filter_is_named() {
+    let unhandled = frames_log(&[
+        TYRE_CURVE_STEAM[0],
+        "F1_25.exe+0x2f6f119 .tls$ fn base+0x2f6ee70+0x2a9",
+        "F1_25.exe+0x3989d2c .tls$ fn base+0x3989c50+0xdc",
+        "race_broadcast.dll+0x3956",
+    ]);
+    let first_chance: String = unhandled
+        .lines()
+        .filter(|l| !l.contains("[crash] unhandled "))
+        .map(|l| format!("{l}\n"))
+        .collect();
+    let mut e = ev(&first_chance, &[]);
+    e.code = Some(0xc000_0005);
+    assert_eq!(diagnose(&e).map(|d| d.id), Some("tyre_curve_nan"));
+}
+
+const TYRE_CURVE_KEYFRAME: &str = "\
+2026-11-20 19:35:57.273 [ 8952] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 8952, 4114 s after load, at F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+2026-11-20 19:35:57.274 [ 8952] [crash]   reading 0xffffffffffffffff
+2026-11-20 19:35:57.274 [ 8952] [crash]   rax=000000000000000a rbx=000000000000000b rcx=00000001439660e0 rdx=0000000000000014
+2026-11-20 19:35:57.274 [ 8952] [crash]   rsi=0000000145898620 rdi=0000000011f0b340 rbp=0000000000000000 rsp=000000007a09ef40
+2026-11-20 19:35:57.274 [ 8952] [crash]   r8 =00000001439660e0 r9 =0000000000000032 r10=9462e2e900012d75 r11=0000000011f0b640
+2026-11-20 19:35:57.274 [ 8952] [crash]   r12=000000000000000b r13=0000000000000003 r14=0000000335f8eb10 r15=000000007a09f05c
+2026-11-20 19:35:57.275 [ 8952] [crash]   code: C4 C1 78 2E 4A 04 72 E4 48 F7 D0 48 01 D0 4A 8D
+2026-11-20 19:35:57.348 [ 8952] [crash]   stack:
+2026-11-20 19:35:57.349 [ 8952] [crash]   #0  F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+2026-11-20 19:35:57.349 [ 8952] [crash]   #1  F1_25.exe+0x2e7e61e .tls$ fn base+0x2e7e530+0xee
+2026-11-20 19:35:57.349 [ 8952] [crash]   #2  F1_25.exe+0x2f6f119 .tls$ fn base+0x2f6ee70+0x2a9
+2026-11-20 19:35:57.349 [ 8952] [crash]   #3  F1_25.exe+0x2f6ddfb .tls$ fn base+0x2f6d700+0x6fb
+2026-11-20 19:35:57.349 [ 8952] [crash]   #4  F1_25.exe+0x2f69113 .tls$ fn base+0x2f68280+0xe93
+2026-11-20 19:35:57.350 [ 8952] [crash]   #5  F1_25.exe+0x302d369 .tls$ fn base+0x302d300+0x69
+2026-11-20 19:35:57.350 [ 8952] [crash]   #6  F1_25.exe+0x3ac3203 .tls$ fn base+0x3ac2d80+0x483
+2026-11-20 19:35:57.350 [ 8952] [crash]   #7  F1_25.exe+0x3ac7583 .tls$ fn base+0x3ac7020+0x563
+2026-11-20 19:35:57.350 [ 8952] [crash]   #8  F1_25.exe+0x39206fa .tls$ fn base+0x3920480+0x27a
+2026-11-20 19:35:57.368 [ 8952] [crash]   #9  KERNEL32.DLL+0x2dda7
+2026-11-20 19:35:57.369 [ 8952] [crash]   #10 ntdll.dll+0xc9c5c
+2026-11-20 19:35:57.373 [ 8952] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54 reached the top-level filter; passing it to the game's filter
+";
+
+const TYRE_CURVE_KEYFRAME_REPORT: &str = "\
+reason       unhandled ACCESS_VIOLATION (0xc0000005) reading 0xffffffffffffffff at F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+== Exception
+  ACCESS_VIOLATION (0xc0000005), flags 0x0, at F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+  parameter 0: 0x0
+  parameter 1: 0xffffffffffffffff
+  reading 0xffffffffffffffff: not a valid address
+
+== Stack (unwound with the modules' exception data)
+  #0  0000000142e7e9f4 rsp=000000007a09ef40  F1_25.exe+0x2e7e9f4 .tls$ fn base+0x2e7e9a0+0x54
+  #1  0000000142e7e61e rsp=000000007a09ef70  F1_25.exe+0x2e7e61e .tls$ fn base+0x2e7e530+0xee
+  #2  0000000142f6f119 rsp=000000007a09f030  F1_25.exe+0x2f6f119 .tls$ fn base+0x2f6ee70+0x2a9
+  #3  0000000142f6ddfb rsp=000000007a09f0f0  F1_25.exe+0x2f6ddfb .tls$ fn base+0x2f6d700+0x6fb
+";
+
+#[test]
+fn a_tyre_curve_crash_in_the_keyframe_search_is_named() {
+    assert_eq!(
+        diagnose(&ev(TYRE_CURVE_KEYFRAME, &[])).map(|d| d.id),
+        Some("tyre_curve_nan")
+    );
+    let mut e = ev("", &[]);
+    e.report = Some(TYRE_CURVE_KEYFRAME_REPORT.to_owned());
+    assert_eq!(diagnose(&e).map(|d| d.id), Some("tyre_curve_nan"));
+}
+
+#[test]
+fn only_a_fault_at_the_tyre_curve_read_is_named_for_it() {
+    let deeper = frames_log(&[
+        "F1_25.exe+0x2e7e2f4 .tls$ fn base+0x2e7e2e0+0x14",
+        TYRE_CURVE_STEAM[0],
+        TYRE_CURVE_STEAM[2],
+    ]);
+    let wheel_off = td_wheel_off_line("13:13:10.623");
+    assert_eq!(diagnose(&td_on(&(wheel_off.clone() + &deeper))), None);
+    let other_module = frames_log(&["race_broadcast.dll+0x2e7e5ec", TYRE_CURVE_STEAM[1]]);
+    assert_eq!(diagnose(&td_on(&(wheel_off.clone() + &other_module))), None);
+    let near = frames_log(&[
+        "F1_25.exe+0x2e7e5ed .tls$ fn base+0x2e7e530+0xbd",
+        TYRE_CURVE_STEAM[1],
+    ]);
+    assert_eq!(diagnose(&td_on(&(wheel_off + &near))), None);
+}
+
+#[test]
+fn a_keyframe_sampler_crash_is_the_games_own() {
+    let generic = |log: &str| {
+        let d = diagnose(&td_on(log)).unwrap();
+        assert_eq!(d.id, "anim_clip_nan", "{log}");
+        d
+    };
+    let d = generic(&frames_log(&ANIM_CLIP_STEAM));
+    assert_eq!(d.title, "F1 25 crashed in its own animation code");
+    assert_eq!(
+        d.what,
+        "F1 25's own animation code hit an invalid number, and the game crashed. This is a fault in the game, and \
+         no setting of yours fixes it."
+    );
+    assert_eq!(
+        d.steps,
+        ["Press Send Logs in the launcher so this reaches the developers."]
+    );
+    assert_eq!(diagnose(&ev(&frames_log(&ANIM_CLIP_STEAM), &[])).unwrap(), d);
+    assert_eq!(diagnose(&ev(&frames_log(&ANIM_CLIP_UI_STEAM), &[])).unwrap(), d);
+    generic(&(td_wheel_off_line("13:13:00.664") + &frames_log(&ANIM_CLIP_STEAM)));
+    generic(&(td_wheel_off_line("13:12:58.100") + &frames_log(&ANIM_CLIP_UI_STEAM)));
+    generic(&(frames_log(&ANIM_CLIP_UI_STEAM) + &td_wheel_off_line("13:13:10.900")));
+    for fault in ANIM_CLIP_FAULTS {
+        generic(&frames_log(&[fault, ANIM_CLIP_STEAM[1]]));
+    }
+}
+
+#[test]
+fn only_a_fault_at_the_keyframe_sampler_read_is_named_for_it() {
+    let deeper = frames_log(&[
+        "F1_25.exe+0x7c36b55 .trace fn base+0x7c36b40+0x15",
+        ANIM_CLIP_STEAM[0],
+        ANIM_CLIP_STEAM[1],
+    ]);
+    assert_eq!(diagnose(&ev(&deeper, &[])), None);
+    let other_module = frames_log(&["race_broadcast.dll+0x3a3d54b", ANIM_CLIP_STEAM[1]]);
+    assert_eq!(diagnose(&ev(&other_module, &[])), None);
+    let near = frames_log(&[
+        "F1_25.exe+0x3a3d54c .tls$ fn base+0x3a3d470+0xdc",
+        ANIM_CLIP_STEAM[1],
+    ]);
+    assert_eq!(diagnose(&ev(&near, &[])), None);
+    let near_ui = frames_log(&[
+        "F1_25.exe+0x3a3bfab .tls$ fn base+0x3a3bd80+0x22b",
+        ANIM_CLIP_UI_STEAM[1],
+    ]);
+    assert_eq!(diagnose(&ev(&near_ui, &[])), None);
+}
+
+#[test]
+fn a_keyframe_sampler_crash_shortly_after_terminal_damage_tore_a_wheel_off_says_so() {
+    let named = |log: &str| {
+        let d = diagnose(&td_on(log)).unwrap();
+        assert_eq!(d.id, "terminal_damage_wheel_off_anim", "{log}");
+        d
+    };
+    let d = named(&(td_wheel_off_line("13:13:05.837") + &frames_log(&ANIM_CLIP_UI_STEAM)));
+    assert_eq!(
+        d.title,
+        "F1 25 crashed in its own animation code after Terminal Damage tore a wheel off your car"
+    );
+    assert_eq!(
+        d.what,
+        "Terminal Damage's experimental suspension damage tore a wheel off your car, and shortly after F1 25's own \
+         animation code hit an invalid number and the game crashed. The fault is in the game's code."
+    );
+    assert_eq!(
+        d.steps,
+        [
+            "Press Send Logs in the launcher so this reaches the developers.",
+            "If it happens again, turn off Suspension damage from hits (experimental) and Suspension damage for AI \
+             cars (experimental) in Terminal Damage's options on the Addons page, then press Play.",
+        ]
+    );
+    assert_eq!(
+        named(&(td_wheel_off_line("13:13:10.621") + &frames_log(&ANIM_CLIP_UI_STEAM))),
+        d
+    );
+    named(&(td_wheel_off_line("13:13:01.000") + &frames_log(&ANIM_CLIP_STEAM)));
+    for fault in ANIM_CLIP_FAULTS {
+        named(&(td_wheel_off_line("13:13:08.000") + &frames_log(&[fault, ANIM_CLIP_UI_STEAM[1]])));
+    }
+    let unnamed = diagnose(&ev(
+        &(td_wheel_off_line("13:13:05.837") + &frames_log(&ANIM_CLIP_UI_STEAM)),
+        &[],
+    ))
+    .unwrap();
+    assert_eq!(unnamed, d);
+    let tyre = diagnose(&td_on(
+        &(td_wheel_off_line("13:13:05.837") + &frames_log(&TYRE_CURVE_STEAM)),
+    ))
+    .unwrap();
+    assert_eq!(tyre.id, "tyre_curve_nan");
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteOnlineLaunch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436ddca0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436ddca0.c;pat:log-channel-STATEVENT;xref:0x14585c110",
+  "notes": "Not a plain writer: StateLaunch vtable slot (cell 0x14585c110 = vtable 0x14585c0c0 +0x50, lea at 0x14084206e). Logs 'launchGameMode', reads lobby settings (formation_lap, safety_car_frequency, ai_strength, corner_cutting_mode, parc_ferme_rules, simulation_collisions_enabled), writes 14 OnlineLaunch.* entries via stat mgr this+0xca0, logs NETWORK 'State launch exited.', returns 1. (lane owner review requested) Better name: Game_Network_StateLaunch_Exit (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.stat_event_write_online_launch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 CE",
+  "match": "0x1436ddca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436ddca0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteOnlineLaunch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436ddca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436ddca0.c",
+   "notes": "V6137 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

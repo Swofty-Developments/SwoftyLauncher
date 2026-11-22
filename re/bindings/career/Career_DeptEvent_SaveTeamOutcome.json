@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_SaveTeamOutcome",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb3bd0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cb3bd0.c;pat:log-channel-DEPARTMENT_EVENTS;xref:0x140cb3a69,0x140cb6f4b",
+  "notes": "DEPARTMENT_EVENTS: stores the team's chosen outcome index into the team data (schedule 0x140cb0e30, 0x140d5e280); logs 'Team (%s) Chose outcome Index' or the failure text. Callers Simulate (0x140cb3a69), ChooseOutcome (0x140cb6f4b). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.dept_event_save_team_outcome",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 90 00 00 00 4C 89 CE",
+  "match": "0x140cb3bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb3bd0",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_SaveTeamOutcome"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cb3bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb3bd0.c;xref:0x140cb3a69,0x140cb6f4b",
+   "notes": "V4651 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140cb3bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb3bd0.c",
+   "notes": "V9062 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

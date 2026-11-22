@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FeVehicleProxyActor_RequestDelete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c3690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403c3690.c;pat:log-message-method;xref:0x14561deb8",
+  "notes": "Vtable slot 5 of 0x14561de90. Logs 'requestDelete %p' and ACTOR_SET_BINDING 'SkinnedActor::requestDelete %p', calls 0x140180e10(actor manager 0x14601d4c8, this), then tail-jumps 0x1401810c0, which appends this to the manager's pending-delete vector (+0x730) under spinlock +0x5c4. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.fe_vehicle_proxy_actor_request_delete",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 0A 01 00 00",
+  "match": "0x1403c3690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c3690",
+  "kind": "func_start",
+  "names": [
+   "Game_FeVehicleProxyActor_RequestDelete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403c3690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403c3690.c",
+   "notes": "V4647 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

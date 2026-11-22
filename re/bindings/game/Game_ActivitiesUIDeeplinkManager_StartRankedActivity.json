@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_StartRankedActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143864a20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143864a20.c;str:s_ActivitiesUIDeeplinkManager_StartRankedActivity;xref:0x143862ee1",
+  "notes": "PlayGo (+0x63)/trial (0x14078e1a0) gate, then prepares online (0x143083570/0x1430ed330 by lobby state (+0x30)+0x130/+0xd8), frontend_transition_state = ranked_templates, +0x61 = 1, presence mp_ranked_match, logs '%s: called'. Caller OnDeepLinkActivityStarted (type 3). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_start_ranked_activity",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 89 F9",
+  "match": "0x143862ee1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143864a20",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_StartRankedActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x143864a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143864a20.c;xref:0x143862ee1",
+   "notes": "V7407 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

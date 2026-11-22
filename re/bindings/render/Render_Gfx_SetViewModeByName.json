@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_SetViewModeByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140152640",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140152640.c;xref:0x14014db48,0x14014db7d",
+  "notes": "UI-state callback (from param_2, to param_3): strcmp against in_race, garage, loading, fullscreen_hub, main, in_race_uiblur; bumps +0xbf4 of views at this+0xc20/+0xc28/+0xc30, float +0x640 (3.0 garage, else 5.0), byte +0xa5be23 of a scene sub-object on loading, +0xc0c, +0x8f9, [+0x98]+0x44f80. Installed by lea 0x14014db48 as fn [obj+0xd8]/ctx [obj+0xe0], called once at 0x14014db7d. (lane owner review requested) Better name: Render_Gfx_OnUiStateChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx_set_view_mode_by_name",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 4C 89 C7 48 89 D3",
+  "match": "0x140152640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140152640",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_SetViewModeByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140152640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140152640.c;xref:0x14014db7d",
+   "notes": "V7955 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

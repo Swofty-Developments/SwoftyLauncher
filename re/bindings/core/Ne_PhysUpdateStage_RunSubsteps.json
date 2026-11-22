@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysUpdateStage_RunSubsteps",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c7970",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440c7970.c;xref:0x14445b1d5",
+  "notes": "From frame dt (param_2) computes the substep count from the rate window (stage+0x10 min, +0x14 max, +0x18 max substeps): n=min(ceil(max/dt),limit); runs n-1 substeps (0x1440c7710, plus 0x1440c64e0/0x1440c65e0 when stage+0x69) then starts the last step (world+0xcf4=dt, 0x1441054e0, state 1). Substep limits are in the update-stage struct. Caller Game_PhysicsUpdateStage_Update."
+ },
+ "signature": {
+  "id": "core.phys_update_stage_run_substeps",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 C5 F8 2E 0D",
+  "match": "0x1440c7970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c7970",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysUpdateStage_RunSubsteps"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1440c7970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c7970.c;xref:0x14445b1d5",
+   "notes": "V7605 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

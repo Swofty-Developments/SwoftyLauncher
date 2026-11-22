@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_FacilityStatsTextureNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419bbc70",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Bind(void *out, void *facility_data)",
+  "evidence": "decomp:re/decomp/1419bbc70.c;xref:0x1419bdf13,0x1422e3f87",
+  "notes": "Renamed: holder ctor: string 'state_emb' [0], ref 'icon_bg' [4], ref 'bg' [8] under the given node; sets state_emb='green', bg -> '#overrides.team_hq.popup_bgs.money', icon_bg -> '#overrides.team_hq.popup_icon_bgs.money'. Returns param_1. No facility/stat data. (lane owner review requested) Better name: Ui_Bind_MoneyPopupIconNode (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "ui.bind_facility_stats_texture_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 D3 48 89 CE 48 8B 42 08",
+  "match": "0x1419bbc70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419bbc70",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_FacilityStatsTextureNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419bbc70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1419bbc70.c;xref:0x1409bbc69",
+   "notes": "V9898 binds a popup node set (state_emb, icon_bg, popup_bgs.money overrides), not clearly facility stats texture"
+  }
+ ],
+ "proofs": []
+}

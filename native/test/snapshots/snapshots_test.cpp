@@ -1,26 +1,30 @@
-// Host test for career snapshots (native/src/core/snapshots/): the swofty_registry entry's format and
+// Host test for career snapshots (native/src/core/career/snapshots/): the swofty_registry entry's format and
 // bag envelope, freezes and reads through the registry store, budgets, unknown majors and items kept
 // byte for byte, migration through an adapter, a career from before 1.6, Freeze::at_creation, corrupt
 // input, and the entry spliced into a profile save's containers block with the save splice's own
 // logic; the season clock (clock.hpp): the year of a season index from the career.season records, the
 // owner-only career::report_season, career.created after a new-career route, career.season.start once per
-// career and year, and the dry save default. --generate DIR writes the fixture entries of packages/sdk/std/fixtures; --fixtures DIR checks
+// career and year, and the dry save default; a report made off the flow thread (career/ops/report_queue.hpp),
+// queued and run at the next flow tick, before the session loads. --generate DIR writes the fixture entries of packages/sdk/std/fixtures; --fixtures DIR checks
 // every fixture there loads and reads as its .json says. run_snapshots_test.sh builds and runs it.
-#include "../../src/core/save_splice_logic.hpp"
-#include "../../src/core/snapshots/clock.hpp"
-#include "../../src/core/snapshots/snapshots.hpp"
+#include "core/career/ops/report_queue.hpp"
+#include "core/career/save_splice_logic.hpp"
+#include "core/career/snapshots/clock.hpp"
+#include "core/career/snapshots/snapshots.hpp"
+#include "core/career/snapshots/bag.hpp"
 
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <random>
 #include <sstream>
+#include <thread>
 
-namespace snap = swofty_core::snapshots;
-namespace fmt = swofty_core::snapshots::format;
+namespace snap = career::snapshots;
+namespace fmt = career::snapshots::format;
 namespace reg = swofty_core::registry;
-namespace sp = runtime::save_splice;
-namespace sn = swofty_core::snapshots::seasons;
+namespace sp = career::save_splice;
+namespace sn = career::snapshots::seasons;
 using swofty::json::Value;
 
 static int fails;
@@ -49,8 +53,7 @@ static Value parse(const std::string &s)
     return v;
 }
 
-static void declare(reg::Store &st, const std::string &name, bool snapshot, int budget = 65536,
-                    const char *version = "1.0")
+static void declare(reg::Store &st, const std::string &name, bool snapshot, int budget = 65536, const char *version = "1.0")
 {
     Value schema = parse(R"({"type":"object"})");
     schema["x-version"] = Value(std::string(version));
@@ -78,8 +81,7 @@ static void world(reg::Store &st, const char *season_version = "1.0")
                      std::to_string(y - 1930) + "}"),
                nullptr);
     }
-    st.add("other.mode", "career.season", "2016",
-           parse(R"({"data_group":"f1_career_other","year":2016,"teams":[]})"), nullptr);
+    st.add("other.mode", "career.season", "2016", parse(R"({"data_group":"f1_career_other","year":2016,"teams":[]})"), nullptr);
     st.add("tails.whatif", "tails.whatif.presets", "classic", parse(R"({"name":"classic","start_year":2016})"), nullptr);
     st.add("game", "vehicle", "redbull", parse(R"({"livery":"stock"})"), nullptr);
 }
@@ -146,9 +148,8 @@ static void format_tests()
     std::string why;
     expect(fmt::decode(a, back, why) == fmt::Decoded::ok, "an entry decodes");
     expect(back.encode() == a, "an entry round-trips byte for byte");
-    expect(back.careers.size() == 1 && back.careers[0].id == "dc-0000002a" &&
-               back.careers[0].idmap == e.careers[0].idmap && back.careers[0].seasons[0].frozen[0].registry ==
-                                                                  "career.season",
+    expect(back.careers.size() == 1 && back.careers[0].id == "dc-0000002a" && back.careers[0].idmap == e.careers[0].idmap &&
+               back.careers[0].seasons[0].frozen[0].registry == "career.season",
            "the round trip keeps the career id, its stat-id map and its season snapshot");
 
     fmt::Entry u = sample_entry();
@@ -167,8 +168,7 @@ static void format_tests()
            "unknown items at every level and an unknown registry of major 9 are written back byte for byte");
 
     fmt::Bytes body, payload;
-    expect(fmt::bag_body(a, body) && fmt::parse_bag(body, payload, why) && payload == a,
-           "the bag envelope carries the payload");
+    expect(fmt::bag_body(a, body) && fmt::parse_bag(body, payload, why) && payload == a, "the bag envelope carries the payload");
     expect(body.size() >= 16 && body[0] == 1 && body[8] == 2, "the envelope has the codec header and its entry count");
 
     std::string big(200000, 'x');
@@ -225,8 +225,10 @@ static void freeze_tests()
 
     book.season_start(2016, career_ctx());
     expect(logged("career season 2016 starts in dc-1"), "the season start logs its snapshot");
-    layer(st, "tails.whatif", "career.season", "swofty.progressive/2016", R"({"teams":[{"slot":1,"seats":["game/z","game/b"]}]})");
-    layer(st, "tails.whatif", "career.season", "swofty.progressive/2017", R"({"teams":[{"slot":1,"seats":["game/y","game/b"]}]})");
+    layer(st, "tails.whatif", "career.season", "swofty.progressive/2016",
+          R"({"teams":[{"slot":1,"seats":["game/z","game/b"]}]})");
+    layer(st, "tails.whatif", "career.season", "swofty.progressive/2017",
+          R"({"teams":[{"slot":1,"seats":["game/y","game/b"]}]})");
     layer(st, "tails.whatif", "career.driver_ratings", "swofty.progressive/2016/game/a", R"({"pace":1})");
     layer(st, "tails.whatif", "tails.whatif.presets", "tails.whatif/classic", R"({"start_year":1990})");
     expect(seat(st, 2016) == "game/a", "a change to a frozen season does not reach the career");
@@ -275,7 +277,8 @@ static void freeze_tests()
     expect(pace(st, 2016) == 86, "and its 2016 ratings");
     reload.season_start(2017, career_ctx());
     expect(seat(st, 2017) == "game/y", "a career advanced to 2017 gets the change made before 2017 started");
-    layer(st, "tails.whatif", "career.season", "swofty.progressive/2017", R"({"teams":[{"slot":1,"seats":["game/q","game/b"]}]})");
+    layer(st, "tails.whatif", "career.season", "swofty.progressive/2017",
+          R"({"teams":[{"slot":1,"seats":["game/q","game/b"]}]})");
     expect(seat(st, 2017) == "game/y", "and keeps it once 2017 is frozen");
     reload.season_start(2017, career_ctx());
     expect(logged("already frozen"), "a second season start for a frozen season keeps it");
@@ -390,8 +393,8 @@ static void budget_tests()
     st.add("tails", "tails.tiny", "a", parse(R"({"year":2016,"blob":")" + noise(400) + R"("})"), nullptr);
     declare(st, "tails.big", true, 1 << 20);
     for (int y = 2016; y <= 2018; y++)
-        st.add("tails", "tails.big", std::to_string(y), parse(R"({"year":)" + std::to_string(y) + R"(,"blob":")" + noise(130000) + R"("})"),
-               nullptr);
+        st.add("tails", "tails.big", std::to_string(y),
+               parse(R"({"year":)" + std::to_string(y) + R"(,"blob":")" + noise(130000) + R"("})"), nullptr);
     snap::Book book(st, [](const std::string &s) { logs.push_back(s); });
     st.set_snapshot_source(book.source());
     book.loaded(nullptr);
@@ -437,8 +440,7 @@ static void creation_tests()
     expect(book.saving(body), "the created career is due at the next save");
 }
 
-static void add_season(reg::Store &st, const std::string &addon, const std::string &key, const std::string &group,
-                       int year)
+static void add_season(reg::Store &st, const std::string &addon, const std::string &key, const std::string &group, int year)
 {
     st.add(addon, "career.season", key,
            parse(R"({"data_group":")" + group + R"(","year":)" + std::to_string(year) + R"(,"teams":[]})"), nullptr);
@@ -490,6 +492,26 @@ static void year_map_tests()
     sn::YearMap none = sn::year_map(st, "f1_career_2026");
     expect(none.why.find("no career.season record has data group f1_career_2026") != std::string::npos,
            "a data group without records has no years");
+
+    // career.season 1.1: year packs register their seasons with no data group; a career mode takes them as variants.
+    for (int y = 2008; y <= 2012; y++)
+        st.add("mod.season-" + std::to_string(y), "career.season", std::to_string(y),
+               parse(R"({"year":)" + std::to_string(y) + R"(,"teams":[]})"), nullptr);
+    st.add("mod.season-2016", "career.season", "2016", parse(R"({"data_group":"","year":2016,"teams":[]})"), nullptr);
+    sn::YearMap pg_packs = sn::year_map(st, "f1_career_progressive");
+    expect(pg_packs.why.empty() && pg_packs.years.size() == 11,
+           "a pack's season with no data group, or an empty one, adds no year to a career: " + pg_packs.why);
+    for (int y = 2008; y <= 2012; y++) {
+        reg::Change ch;
+        ch.patch = parse(R"({"data_group":"f1_career_decades"})");
+        std::string id;
+        st.variant("mod.decades", "career.season", std::to_string(y), "mod.season-" + std::to_string(y) + "/" + std::to_string(y),
+                   ch, &id);
+    }
+    sn::YearMap decades = sn::year_map(st, "f1_career_decades");
+    expect(decades.why.empty() && decades.years.size() == 5 && sn::year_at(decades, 0, why) == 2008 &&
+               sn::year_at(decades, 4, why) == 2012,
+           "the career's variants of the five pack seasons map 2008-2012: " + decades.why);
 }
 
 static void clock_tests()
@@ -523,7 +545,8 @@ static void clock_tests()
     expect(!m.fire, "the next Team HQ of the same season fires nothing");
     s.index = 1;
     m = clock.hub(s, stock);
-    expect(!m.fire && said(m, "past the 1 career.season record(s)"), "a season past the records fires nothing");
+    expect(!m.fire && !m.dated && said(m, "past the 1 career.season record(s)"),
+           "a season past the records fires nothing and dates nothing");
     m = clock.hub(s, stock);
     expect(!m.fire && m.lines.empty(), "and says so once");
 
@@ -555,11 +578,13 @@ static void clock_tests()
         expect(!m.fire, "and only once");
         r = fresh.report("swofty.progressive", committed, 2016, pg, m);
         expect(r == sn::Report::ok && !m.fire && said(m, "already started"), "the owner's retry afterwards starts nothing again");
+        expect(m.dated && m.year == 2016 && m.index == 0, "and still dates the career: its year is 2016");
         fresh.rename("f1_career_progressive_save:new1", "f1_career_progressive_save:7");
         sn::Season slot = committed;
         slot.career = "f1_career_progressive_save:7";
         r = fresh.report("swofty.progressive", slot, 2016, pg, m);
-        expect(r == sn::Report::ok && !m.fire && said(m, "already started"), "the slot id learnt at the first save keeps the season started");
+        expect(r == sn::Report::ok && !m.fire && said(m, "already started"),
+               "the slot id learnt at the first save keeps the season started");
         sn::Clock other;
         r = other.report("tails.whatif", none, 2016, pg, m);
         expect(!other.queued(), "only the owner's report is queued");
@@ -574,9 +599,9 @@ static void clock_tests()
     r = clock.report("swofty.progressive", p, 1900, pg, m);
     expect(r == sn::Report::invalid, "a year out of range is invalid");
     r = clock.report("swofty.progressive", p, 2016, pg, m);
-    expect(r == sn::Report::ok && m.fire && m.year == 2016 && m.index == 0, "the owner's report starts its season");
+    expect(r == sn::Report::ok && m.fire && m.dated && m.year == 2016 && m.index == 0, "the owner's report starts its season");
     m = clock.hub(p, pg);
-    expect(!m.fire && m.lines.empty(), "the Team HQ after the report adds nothing");
+    expect(!m.fire && !m.dated && m.lines.empty(), "the Team HQ after the report adds nothing");
     r = clock.report("swofty.progressive", p, 2016, pg, m);
     expect(r == sn::Report::ok && !m.fire && said(m, "already started"), "once per career and year");
     p.index = 1;
@@ -605,6 +630,9 @@ static void clock_tests()
     sn::YearMap three = sn::year_map(bs, "f1_career_progressive");
     m = next.hub(sn::Season{"dc-7", "f1_career_progressive", "", 0, true, ""}, three);
     expect(!m.fire && said(m, "already started"), "a season the saved entry froze does not start again next session");
+    expect(m.dated && m.year == 2016 && m.index == 0, "but dates the resumed career: its season is 2016");
+    m = next.hub(sn::Season{"dc-7", "f1_career_progressive", "", 0, true, ""}, three);
+    expect(!m.fire && m.dated && m.year == 2016 && m.lines.empty(), "every Team HQ of that season dates it, saying it once");
     m = next.hub(sn::Season{"dc-7", "f1_career_progressive", "", 1, true, ""}, three);
     expect(m.fire && m.year == 2017, "the next season does");
     book.career_created("dc-8", fmt::Freeze::at_creation, career_ctx());
@@ -622,6 +650,111 @@ static void clock_tests()
            "a new entry adds its body and its 20-byte root child head");
     expect(sn::entry_growth(15, 900, true, 1000) == -100, "a smaller entry over a loaded one adds less than nothing");
     expect(!sn::SAVE_BY_DEFAULT, "the entry is not written by default");
+}
+
+static void queued_report_tests()
+{
+    namespace rq = career::ops::reports;
+    const std::string owner = "swofty.swofty-seasons-progressive", group = "f1_career_sw_progressive";
+    const std::string career = "driver_career_sw_progressive:7d8bffb65642b0ea";
+    reg::Store st;
+    st.set_log([](const std::string &) {});
+    declare(st, "career.season", true);
+    for (int y = 2010; y <= 2026; y++)
+        add_season(st, owner, std::to_string(y), group, y);
+    sn::YearMap map = sn::year_map(st, group);
+
+    sn::Clock clock;
+    clock.set_started([&](const std::string &c, int y) { return c == career && y == 2010; });
+    int scope_year = 0;
+    bool season_started = false;
+    sn::Moment last;
+    auto run = [&](const std::string &caller, int year, int index) {
+        sn::Report r = clock.report(caller, sn::Season{career, group, owner, index, true, ""}, year, map, last);
+        if (last.fire)
+            season_started = true;
+        if (last.dated)
+            scope_year = last.year;
+        return r == sn::Report::ok ? 0 : r == sn::Report::late ? 1 : r == sn::Report::refused ? 5 : 3;
+    };
+
+    rq::Queue q;
+    expect(!q.pending() && rq::drain(q, career, run).empty(), "queued reports: an empty queue runs nothing");
+    rq::Queued made;
+    std::thread loaded([&] {
+        made = rq::Queued{owner, career, 2010, 0, 15076};
+        q.put(made);
+    });
+    loaded.join();
+    expect(q.pending(), "queued reports: a report from the career.loaded handler's thread is queued");
+    expect(rq::queued_line(made) ==
+               "[career-ops] report_season(2010, 0) from swofty.swofty-seasons-progressive: called off the flow thread "
+               "(thread 15076); queued, the next flow tick runs it",
+           "queued reports: the queue line names the report and its thread");
+    expect(scope_year == 0, "queued reports: until the next flow tick the career's year is not known");
+
+    auto ran = rq::drain(q, career, run);
+    expect(ran.size() == 1 && !ran[0].dropped && ran[0].result == 0, "queued reports: the next flow tick runs the report: ok");
+    expect(said(last, "ok, 2010 already started in career " + career) && last.dated && !last.fire && !season_started,
+           "queued reports: a resumed season dates the career without a second career.season.start");
+    expect(scope_year == 2010, "queued reports: the session that loads after the tick runs in 2010");
+    expect(rq::ran_line(ran[0], "ok") ==
+               "[career-ops] report_season(2010, 0) from swofty.swofty-seasons-progressive, queued off the flow thread: run "
+               "at the flow tick: ok",
+           "queued reports: the run line gives the core's answer");
+    expect(!q.pending() && rq::drain(q, career, run).empty(), "queued reports: a report runs once");
+
+    std::thread next([&] { q.put(rq::Queued{owner, career, 2011, 1, 7}); });
+    next.join();
+    ran = rq::drain(q, career, run);
+    expect(ran.size() == 1 && ran[0].result == 0 && season_started && scope_year == 2011,
+           "queued reports: a new season reported off the flow thread starts at the next flow tick");
+
+    q.put(rq::Queued{owner, career, 2012, 2, 7});
+    q.put(rq::Queued{owner, career, 2013, 3, 7});
+    ran = rq::drain(q, career, run);
+    expect(ran.size() == 1 && ran[0].report.year == 2013 && scope_year == 2013, "queued reports: a caller's latest report wins");
+
+    int runs = 0;
+    auto count = [&](const std::string &, int, int) { return ++runs, 0; };
+    q.put(rq::Queued{owner, "driver_career_sw_progressive:0001", 2010, 0, 7});
+    ran = rq::drain(q, career, count);
+    expect(ran.size() == 1 && ran[0].dropped && runs == 0, "queued reports: a report for a career no longer loaded is dropped");
+    expect(rq::ran_line(ran[0], "ok").find("dropped, that career is no longer loaded") != std::string::npos,
+           "queued reports: and the log says so");
+    q.put(rq::Queued{owner, "", 2010, 0, 7});
+    ran = rq::drain(q, career, count);
+    expect(ran.size() == 1 && !ran[0].dropped && runs == 1, "queued reports: a report made before the career had an id runs");
+
+    bool room = true;
+    for (size_t i = 0; i < rq::Queue::MAX; i++)
+        room = q.put(rq::Queued{"addon." + std::to_string(i), career, 2010, 0, 7}) && room;
+    expect(room, "queued reports: room for one report from each of 8 callers");
+    rq::Queued extra{"addon.extra", career, 2010, 0, 7};
+    expect(!q.put(extra) && rq::full_line(extra).find("late: 8 other callers' reports are already queued") != std::string::npos,
+           "queued reports: a full queue answers late");
+    expect(q.put(rq::Queued{"addon.0", career, 2011, 1, 7}), "queued reports: a queued caller still replaces its report");
+    expect(rq::drain(q, career, count).size() == rq::Queue::MAX, "queued reports: every queued caller runs");
+
+    std::vector<int> latest(4, 0);
+    std::vector<std::thread> threads;
+    for (int t = 0; t < 4; t++)
+        threads.emplace_back([&, t] {
+            for (int y = 1950; y <= 2100; y++)
+                q.put(rq::Queued{"addon." + std::to_string(t), career, y, 0, uint32_t(t)});
+        });
+    auto record = [&](const std::string &caller, int year, int) {
+        int t = caller.back() - '0';
+        if (year > latest[t])
+            latest[t] = year;
+        return 0;
+    };
+    for (int i = 0; i < 200; i++)
+        rq::drain(q, career, record);
+    for (auto &t : threads)
+        t.join();
+    rq::drain(q, career, record);
+    expect(latest == std::vector<int>(4, 2100) && !q.pending(), "queued reports: reports from four threads at once all arrive");
 }
 
 static void career_id_tests()
@@ -878,20 +1011,20 @@ static int generate(const std::filesystem::path &dir)
     book.saving(body);
     std::filesystem::create_directories(dir);
     write_file(dir / "1.6.0-per-season.bin", std::string(body.begin(), body.end()));
-    Value expect_doc = Value::object(
-        {{"career", Value("dc-0000002a")},
-         {"data_group", Value("f1_career_progressive")},
-         {"layer", Value::object({{"registry", Value("career.season")},
-                                  {"id", Value("swofty.progressive/2016")},
-                                  {"patch", parse(R"({"teams":[{"slot":1,"seats":["game/z","game/b"]}]})")}})},
-         {"reads", Value::array({Value::object({{"registry", Value("career.season")},
+    Value expect_doc =
+        Value::object({{"career", Value("dc-0000002a")},
+                       {"data_group", Value("f1_career_progressive")},
+                       {"layer", Value::object({{"registry", Value("career.season")},
                                                 {"id", Value("swofty.progressive/2016")},
-                                                {"pointer", Value("/teams/0/seats/0")},
-                                                {"value", Value("game/a")}}),
-                                 Value::object({{"registry", Value("career.driver_ratings")},
-                                                {"id", Value("swofty.progressive/2017/game/a")},
-                                                {"pointer", Value("/pace")},
-                                                {"value", Value(int64_t(87))}})})}});
+                                                {"patch", parse(R"({"teams":[{"slot":1,"seats":["game/z","game/b"]}]})")}})},
+                       {"reads", Value::array({Value::object({{"registry", Value("career.season")},
+                                                              {"id", Value("swofty.progressive/2016")},
+                                                              {"pointer", Value("/teams/0/seats/0")},
+                                                              {"value", Value("game/a")}}),
+                                               Value::object({{"registry", Value("career.driver_ratings")},
+                                                              {"id", Value("swofty.progressive/2017/game/a")},
+                                                              {"pointer", Value("/pace")},
+                                                              {"value", Value(int64_t(87))}})})}});
     write_file(dir / "1.6.0-per-season.json", swofty::json::dump(expect_doc, 1) + "\n");
     printf("wrote %s (%zu bytes)\n", (dir / "1.6.0-per-season.bin").string().c_str(), body.size());
     return 0;
@@ -975,6 +1108,7 @@ int main(int argc, char **argv)
     creation_tests();
     year_map_tests();
     clock_tests();
+    queued_report_tests();
     career_id_tests();
     fuzz_tests();
     splice_tests();

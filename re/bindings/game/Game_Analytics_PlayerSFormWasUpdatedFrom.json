@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_PlayerSFormWasUpdatedFrom",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407425f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407425f0.c;pat:log-channel-TELEMETRY;xref:0x1406ea0c4,0x1407076cd",
+  "notes": "Bus handler: lea 0x1406ea0c4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1407076cd in unsubscribe-all 0x1406fd6c0. Allocs 0x68 record (ctor 0x140531fb0), copies msg fields, baseCtx by 0x14077bb90 'player_form_changed_record', pushed to static queue (guard 0x14604dde8) under CS; logs TELEMETRY 'Player's Form was updated from %d to %d'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_player_s_form_was_updated_from",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 D6 48 89 CF 48 8B 81 58 0A 02 00 48 8B 88 70 01 00 00 48 85 C9 74 0D F0 FF 41 08 48 8B 98 70 01 00 00 EB 02 31 DB 48 8B 88 68 01 00 00 48 8B 01 FF 50 40 48 85 DB 74 1D F0 FF 4B 08 75 17 48 8B 03 48 89 D9 FF 10 F0 FF 4B 0C 75 09 48 8B 03 48 89 D9 FF 50 08 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 8B 01 48 C7 44 24 20 10 00 00 00 48 8D 15 ?? ?? ?? ?? 41 B9 68 00 00 00 45 31 C0 FF 50 10 48 89 C3 48 8D 54 24 28 48 89 C1 E8 ?? ?? ?? ?? 8B 46 14",
+  "match": "0x1407425f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407425f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_PlayerSFormWasUpdatedFrom"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407425f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407425f0.c",
+   "notes": "V4224 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

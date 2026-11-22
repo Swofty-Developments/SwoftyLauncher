@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Hbcn_GetLightRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d1dd20",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d1dd20.c;xref:0x143d1e645,0x143d1ebad",
+  "notes": "Under the critical section of [+0xb0] reads light record param_3 (stride 0x1e0, flags +0x98/+0xa8), ANDs its mask with the masks of the four resources +0x210..+0x228 (if active +0x6c), logs 'generate: light %u/%u update=%u slot=%u' (channel IBL), stores the mask at record+0xad, returns two bools (mask>1, mask&1). Callers Render_Hbcn_GenerateSingleLight 0x143d1e645, Render_Hbcn_GenerateAllLights 0x143d1ebad. (lane owner review requested) Better name: Render_Hbcn_ComputeLightUpdateFlags (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.hbcn_get_light_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 10 02 00 00 44 89 C3",
+  "match": "0x143d1dd20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d1dd20",
+  "kind": "func_start",
+  "names": [
+   "Render_Hbcn_GetLightRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143d1dd20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d1dd20.c;xref:0x143d1e645",
+   "notes": "V8343 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

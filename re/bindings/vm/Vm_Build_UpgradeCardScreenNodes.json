@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Build_UpgradeCardScreenNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141aeefb0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Build_UpgradeCardScreenNodes(void *screen)",
+  "evidence": "decomp:re/decomp/141aeefb0.c;xref:0x141ae7e6b,0x141aeb6cf,0x141b914dc,0x141b9170c",
+  "notes": "Sub-VM vm+0x330: resolves selected handles +0xb48/+0xb88, finds the matching card in +0xd08..+0xd10 (or +0xda8); clears list; if the card's +0x130 value (Vm_Get_NodeValueAsString, FNV-1a lowercase) is one of 6 hashes it is pinned first as 'entry_%I64u' (0x140d2b290, list +0xd28); other cards go to a vector sorted by 0x141b92310 (comparator by vm+0x11d4) and are appended; 0x141af3c80 selects the match or first entry. (lane owner review requested) Better name: Vm_Rebuild_UpgradeCardList (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "vm.build_upgrade_card_screen_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 49 89 CD 48 8D 81 30 03 00 00",
+  "match": "0x141aeefb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141aeefb0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Build_UpgradeCardScreenNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141aeefb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141aeefb0.c;xref:0x141ae7e6b;xref:0x141aeb6cf",
+   "notes": "V9938 Builds card entry nodes (entry_%I64u via snprintf, registry node links) for the F1 World card list; calls to the list helper are minimal and the facility attribution is unprovable."
+  }
+ ],
+ "proofs": []
+}

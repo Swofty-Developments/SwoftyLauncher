@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_RenderGraph_BuildCBParamsDescriptor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc74c0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc74c0.c;xref:0x143bab71b,0x143bafbb0,0x143bbf3a3",
+  "notes": "Same as Render_FrameArena_AllocCBParams but 0x410 bytes: 16-aligned arena bump allocation (Ne_FatalAbort on overflow), memcpy from param_3, 'CBParams' interned, binding added via 0x143bdcfb0. Callers 0x143bab0a0, Render_Tonemap_SetupEyeAdaptation, Render_Tonemap_Execute. (lane owner review requested) Better name: Render_FrameArena_AllocCBParams410 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.render_graph_build_c_b_params_descriptor",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC A8 01 00 00 4D 89 C1 48 89 D6 48 89 CF 66 66 2E 0F 1F 84 00 00 00 00 00 8B 47 20 8D 48 0F 83 E1 F0 8D 91 10",
+  "match": "0x143bc74c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bc74c0",
+  "kind": "func_start",
+  "names": [
+   "Render_RenderGraph_BuildCBParamsDescriptor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143bc74c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc74c0.c;xref:0x143b82f0b",
+   "notes": "V8322 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

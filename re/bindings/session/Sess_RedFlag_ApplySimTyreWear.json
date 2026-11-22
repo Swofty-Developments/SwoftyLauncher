@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlag_ApplySimTyreWear",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6af90",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f6af90.c;xref:0x142f662d3,0x142f666ab,0x142f66b8a,0x142f671d0,0x142f67398,0x142f67718",
+  "notes": "Callers Sess_RedFlag_SimulateUnlapLaps x3 and Sess_VirtualSession_SimulateEntrantStep x3 (not red-flag only). Current tyre set ([this+0x20]+0x9c68/+0x9c98): shifts wear +0xc/+0x18/+0x24/+0x30 so the max equals this+0xb58, clamped 0..1. Then [[this+0x10]+0x58]+0x540 +0x100 = clamp(this+0xb60 - (...), 0, +0x98^+0xa0), clears bit 0 of +0x10c; if this+0xb74==1 and car this+0xb24 < 0x1b increments a counter +0x14. Better name: Sess_VirtualEntrant_ApplySimTyreWear (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "session.red_flag_apply_sim_tyre_wear",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 8B 41 20 48",
+  "match": "0x142f6af90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6af90",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlag_ApplySimTyreWear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f6af90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f6af90.c;xref:0x142f662d3,0x142f671d0",
+   "notes": "V3750 Tyre-wear shift (4 values +0xc/+0x18/+0x24/+0x30, worst -> +0xb58, clamp 0..1) correct, but it also clamps/writes a car energy/fuel value ([car+0x540]+0x100, from +0xb60) and increments a per-car counter when mode==1; name covers only tyre wear."
+  }
+ ],
+ "proofs": []
+}

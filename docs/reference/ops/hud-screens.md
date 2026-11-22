@@ -97,6 +97,8 @@ hud_track_position.osd_visibility_option.track_position
     host_n        <prefix>_host     visible <- show, default false
       v_cap       pill_rotation_anim   visible = false  (the cap's own graphics)
       v_pv        <prefix>_pv          visible = false  (the editor copy)
+      o_<other>   <other>              visible = false  (each other screen record's root)
+      o_<other>_pv  <other>_pv         visible = false  (and its editor copy)
       root_n      <prefix>            visible = true   (replay: <- show_drivers_list; spectator: <- show_left_side)
       h_trial     <prefix>_trial       visible = false  (also.<screen>.hide, this screen only)
       v_r00       <prefix>_r00         visible <- hud_tt_r00_on
@@ -112,14 +114,81 @@ hud_track_position.osd_visibility_option.track_position
     <prefix>_sn1  v_<prefix>  visible = false   (the stock cap instance never shows the elements)
 ```
 
+`also.<the record's own screen>` takes only `hide`: those elements stay off the record's own screen
+(for one record that shows a short list on the HUD and the long one on the replay screen).
+
 `isHidden` on a scene element does not hide it in game, so every static hide here is a template node:
 `hidden: true` on an element, `also.<screen>.hide`, the cap's graphics and the editor copy.
+
+All screen records grow the one cap scene, so every `<prefix>_host` instance holds every record's
+root and editor copy. With two or more screen records (from one addon or several), each record's
+`host_n` gets an `o_<other>` and an `o_<other>_pv` node per other record, so one record's elements
+never draw inside another's host; the `.uipre` hides the same two elements inside each host for the
+HUD editor. These are childless template nodes: `2 x (records - 1)` per record and screen, one walk
+slot each, plus one child-list slot on `host_n` for every eight more children. The host scene itself
+does not grow. The build lists the count per record and screen.
+
+Every screen record also adds its own host instance to the board, so a board holds the cap scene
+once per record plus the stock one: `(1 + records) x (cap + every record)` walk slots. A family of
+addons that each must work alone (a season per addon, say) can carry one shared record instead of
+one each: when several addons bring a record with the same key, the same explicit `prefix`, equal
+fields and the same bytes in every sprite, the build composes it once, from the first addon in the
+load order, and prints `<prefix>: <addon> brings the same record <key> as <first>; composed once`
+for the others. Records that share a prefix and differ in anything still stop the build.
 
 Masks on the other screens are layout chains into the stock instances: replay `driver_table > Scene
 Root` and `session_timer > Scene Root`; spectator `spectator_mode_2 > driver_position_table >
 transition` and `spectator_mode_2 > session_timer > Scene Root`. Every binding is typed against the
 stock template of its screen (a wrong tag crashes the game when the screen opens), and the stock
 nodes are left byte for byte as they were.
+
+### Several records on one screen
+
+Each mask is one `visible` binding on a stock element, and two bindings on one element fight: the
+record composed last wins, so the stock board shows while the other record is on. With two or more
+records on a screen, the first record by prefix keeps the stock chains. Each later record wraps the
+masked element in a null of its own, `<prefix>_w_<element>`, and its masks bind that null:
+
+| screen | mask | the later record's wrapper | in |
+|---|---|---|---|
+| `standings` | `mask` | `<prefix>_w_mask` | `driver_position_table_stacked.idf` |
+| `replay` | `driver_table > Scene Root` | `<prefix>_w_driver_table` | `theatre/replay_highlights.idf` |
+| `replay` | `session_timer > Scene Root` | `<prefix>_w_session_timer` | `theatre/replay_highlights.idf` |
+| `spectator` | `… > transition` | `spectator_mode_2 > driver_position_table > <prefix>_w_transition` | `spectator_mode/spec_driver_position_table.idf` |
+| `spectator` | `… > session_timer > Scene Root` | `spectator_mode_2 > <prefix>_w_session_timer` | `screens/spectator_mode_2.idf` |
+
+A third record's null goes inside the second's, as for `stock_nodes`. Every record's mask hides the
+board while its own `show` leaf is true, and the board shows only while every leaf is false. The
+composer writes these scenes only with two or more records on the screen. A screen spelled out
+names each mask's scene in `mask_scenes`; without it, the wrappers go into the instance scene.
+
+The host instances need nothing of this: each record shows its own `<prefix>_host`, and `o_<other>`
+hides the other records' roots inside it.
+
+### How big a board can grow
+
+The game walks a screen's UI tree as one flat list of 16-byte slots with 16-bit child indices, so one
+tree holds at most 65,536 slots. A board holds the host scene once for the stock cap and once per
+screen record on the screen, and every host instance holds every record's root and editor copy:
+
+```text
+board      = (1 + records on the screen) x host scene slots
+race tree  = board + about 17,500 slots of the rest of the race HUD
+HUD editor = 3 x board + 816
+```
+
+SWOFTY 2010, SWOFTY 2011 and TV Timing Tower on the standings make a 14,101-slot host scene, a
+56,404-slot board and a race tree of about 73,904 slots. The build stops before the game starts,
+naming every addon with a record on the screen and the ones whose removal alone brings the tree
+inside the limit:
+
+```text
+the HUD elements do not compose: SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for the game: about 73904 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn SWOFTY 2010, SWOFTY 2011 or TV Timing Tower off in this profile (the board holds the 14101-slot host scene 4 times)
+```
+
+A board whose HUD editor tree passes the limit builds with a warning line: the game can close when
+HUD customisation opens. The build lists each record's nodes, walk slots and walk stack (256 at
+most), and each screen's board and tree.
 
 ## The three presets
 
@@ -130,7 +199,9 @@ nodes are left byte for byte as they were.
 | root follows | — | `#replay_flow.replays_and_highlights.show_drivers_list` | `show_left_side` |
 | stock read from | flow_race.erp | flow_replay.erp | flow_race.erp |
 
-`spectator_mode_2.idf` itself is left stock: another addon replaces it, and the later wins.
+`spectator_mode_2.idf` itself is left stock while one record is on the spectator screen: another
+addon replaces it, and the later wins. With two or more, the composer writes it for the second
+record's `session_timer` wrapper.
 
 ## A screen spelled out
 
@@ -146,6 +217,7 @@ For a screen the core does not know, `screen` takes the same struct the presets 
   "instance": { "in": "eaid://ui_package/art/osd/screens/my_screen.idf", "clone": "some_xref",
                 "under": "elements_null", "at": { "of": "session_timer" }, "scale": 0.78, "retarget": true },
   "masks": [["some_xref", "Scene Root"]],
+  "mask_scenes": ["eaid://ui_package/art/osd/screens/my_screen.idf"],  // the scene of each mask's element
   "root_switch": "show_left_side",
   "erps": { "scene": ["2025_asset_groups/ui_package/flow_frontend.erp"],
             "template": ["2025_asset_groups/ui_package/screens/my_screen.erp"] },
@@ -195,10 +267,20 @@ and `lockup` each have a stock group over them, so a `visible` of ours on them d
 The composer writes the scene again with a new null `<prefix>_w_<element>` in each wrapped
 element's place in its parent's children, the element inside it: every stock name stays, the
 drawing order stays, the lookup grows by the wrappers, and the stock nodes still find their parts
-by name. The group then hides the wrappers (`v_w_<element>`, `visible <- NOT while` like the rest).
-One record wraps a scene; a second record wrapping the same scene is refused. The flag box
+by name. The wrapper is a copy of one of the scene's plain nulls, with no art of its own. The group
+then hides the wrappers (`v_w_<element>`, `visible <- NOT while` like the rest). The flag box
 (`boundless` in `race_condition_flag_message.idf`, under
 `hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message`) needs no wrap.
+
+Several records can hide parts of one scene, such as two season HUDs that each show with their own
+cars. The composer takes the records in the order of their prefixes, and writes each scene once:
+
+- **A scene an earlier record wrapped:** the later record's null goes inside the earlier one,
+  around the element: `s10_tower_w_lap_bg.s11_tower_w_lap_bg.lap_bg`.
+- **A part an earlier record already hides:** it moves to the later record's `wrap`. Two
+  `visible` bindings on one element fight, as they do with a stock node.
+
+Each record's group then shows and hides only its own parts and wrappers.
 
 ## The session clock
 
@@ -301,10 +383,15 @@ The HUD customisation menu draws the standings table with no template running, s
 root never shows there. The composer builds a second copy of the elements, `<prefix>_pv`, from
 `editor.preview` (keyed by the substituted leaf names, as for a dial) with a top-level `repeat` cut to
 `editor.rows` copies, and writes the table's `.uipre` with nested setters under the host instance:
-`mask` hidden at the top level; inside `<prefix>_host` the cap's `pill_rotation_anim` and `<prefix>`
-hidden, `<prefix>_pv` shown and each copy's text filled. In game `host_n` holds a static `v_pv` node
+`mask` hidden at the top level; inside `<prefix>_host` the cap's `pill_rotation_anim`, `<prefix>` and
+every other screen record's root and copy hidden, `<prefix>_pv` shown and each copy's text filled. In game `host_n` holds a static `v_pv` node
 and the stock cap instance's `bottom_cap` template node gets static hides of both roots, so the copy
 never draws outside the editor. `unit` elements and `tint` bindings are left out of the copy.
+
+The `.uipre` starts from the copy other addons' archive changes leave. A setter that copy already has
+with the same value (`mask` hidden by another addon's own copy) is kept once; one with another value
+stops the build and names both addons. Another addon's own tower on the same board stops it too:
+[when another addon claims the same part](/reference/ops/hud#when-another-addon-claims-the-same-part).
 
 ```jsonc
 "editor": {

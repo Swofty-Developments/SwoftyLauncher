@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_TeamHQAdvanceViewModel_SetOnlineCareerReady",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c5670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422c5670.c;str:s_TeamHQAdvanceViewModel_SetOnlineCareerReady;xref:0x1422c46e2,0x1422c4931,0x1422c5013,0x1422c52e4,0x1422c7c2b,0x1422c7cd6,0x1422c819e,0x1422c843c,0x1422c9a6e,0x1422cb349,0x1422cbb06,0x1422cd4d4,0x1422cdc4e",
+  "notes": "setOnlineCareerReady: Game_NetworkReady_ValidPlayerCorrectState(+0x6d8,1), sets bit 0x10 in static ready flags (0x14604ed68) and state 3->1, posts 0x1457825f8 with 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.team_h_q_advance_view_model_set_online_career_ready",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 8E F0 06 00 00 E8 ?? ?? ?? ?? 48 89 F1 48 81 C4 B8",
+  "match": "0x1422c4931",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1422c5670",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamHQAdvanceViewModel_SetOnlineCareerReady"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1422c5670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c5670.c;xref:0x1422c46e2",
+   "notes": "V7341 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

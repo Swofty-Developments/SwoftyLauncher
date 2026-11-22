@@ -9,15 +9,9 @@
 using swofty::game::Action;
 using swofty::game::HomeItem;
 
-SWOFTY_WRAP(FeTile_Route_CareerItem, Action *, HomeItem *item, Action *out)
-{
-    return orig(item, out);
-}
+SWOFTY_WRAP(FeTile_Route_CareerItem, Action *, HomeItem *item, Action *out) { return orig(item, out); }
 
-SWOFTY_WRAP(Game_SpeechSystem_PostLine, void, void *speech, void *line, uint8_t retrigger)
-{
-    orig(speech, line, retrigger);
-}
+SWOFTY_WRAP(Game_SpeechSystem_PostLine, void, void *speech, void *line, uint8_t retrigger) { orig(speech, line, retrigger); }
 
 SWOFTY_WRAP(Game_DriverSelectHeader_SetTabState, void, void *header, uint64_t tab, uint8_t visible, uint8_t enabled)
 {

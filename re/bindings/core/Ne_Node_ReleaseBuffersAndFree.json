@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Node_ReleaseBuffersAndFree",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b90e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432b90e0.c;xref:0x140829e05,0x14082a022,0x140839603",
+  "notes": "(alloc*, node): null-safe; node[0] = allocator: clears node[4..5] when node[5]!=0, frees every non-null entry of the pointer array node[2] (count node[3]) and the array, frees buffer node[1] (all via node[0] vt+0x38), zeroes the fields, then frees node via alloc vt+0x38 (tail jump). No list unlink. call sites (Game_F1os_OnResult_* ...)."
+ },
+ "signature": {
+  "id": "core.intrusive_node_unlink_and_free",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 85 D2 74 66",
+  "match": "0x1432b90e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b90e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Node_ReleaseBuffersAndFree"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1432b90e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1432b90e0.c;xref:0x140829e05",
+   "notes": "V7579 not a list unlink: clears +0x20..0x30, releases buffer array at +0x10 (count +0x18) and frees node via allocator vcall +0x38 ; better name Ne_Node_ReleaseBuffersAndFree"
+  }
+ ],
+ "proofs": []
+}

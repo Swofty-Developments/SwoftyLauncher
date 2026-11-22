@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_OnScenarioLoaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141cfe090",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141cfe090.c;pat:log-channel-PHOTO-MODE;xref:0x141ceffc4",
+  "notes": "Body 0x141cfe090-0x141cfe392 read (decomp merges tail-jump target 0x141d05010). Logs PHOTO-MODE 'Scenario loaded', then pushes scenario record param_2 into photo-mode options: time_of_day (+0x70 rounded to 5), colour_grade (+0x54), +0x50..+0x74, +0x30/+0x34, FOV from +0x2c, roll from +0x28, +0x48, dof_fstop index nearest +0x38, shutter_speed index nearest +0x44 (tail call 0x141d05010). Only ref: lea 0x141ceffc4 in 0x141cef700. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_on_scenario_loaded",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 64",
+  "match": "0x141cfe090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141cfe090",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_OnScenarioLoaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141cfe090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141cfe090.c;xref:0x140ef4f8c",
+   "notes": "V4968 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

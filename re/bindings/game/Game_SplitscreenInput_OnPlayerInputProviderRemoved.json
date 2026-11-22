@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SplitscreenInput_OnPlayerInputProviderRemoved",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a6a990",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a6a990.c;pat:log-message-method;xref:0x1434d7823",
+  "notes": "Called at 0x1434d7823 (in 0x1434d7340). Logs SPLITSCREEN_INPUT 'onPlayerInputProviderRemoved %d, %s' (provider id param_2+0x18); ref-count guard +0x210 with deferred callbacks +0x1f8..+0x200; 0x142a59670/0x142a598c0/0x142a5b910; per player +0x1a8..+0x1b0 removes the provider id from list +0x148..+0x150 when device param_3+0x30 is bound to it, +0xb8 = list non-empty, 0x1441144a0; ends with 0x142a5d050. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.splitscreen_input_on_player_input_provider_removed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4D 89 C4 48 89 D7",
+  "match": "0x142a6a990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a6a990",
+  "kind": "func_start",
+  "names": [
+   "Game_SplitscreenInput_OnPlayerInputProviderRemoved"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a6a990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a6a990.c;xref:0x1434d7823",
+   "notes": "V4951 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

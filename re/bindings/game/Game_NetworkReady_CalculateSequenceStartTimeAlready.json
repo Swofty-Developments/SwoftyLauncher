@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_CalculateSequenceStartTimeAlready",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cf4820",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cf4820.c;pat:log-channel-NETWORK-READY;xref:0x142cf47f1,0x14e763086",
+  "notes": "Logs '- calculateSequenceStartTime(%llu) - ...': no players to sync, not all ready, ALL READY (PROXY / authoritative), sequence starts, already set time; walks the relevant-player bit set before setting the start time. Callers Game_NetworkReady_SetRelevantSet 0x142cf3cb0, jump from 0x14e762f30. (lane owner review requested) Better name: Game_NetworkReady_CalculateSequenceStartTime (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ready_calculate_sequence_start_time_already",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 83 79 30 00 0F 84 ?? ?? ?? ?? 48 89 CF 80 79 71 00",
+  "match": "0x142cf4820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cf4820",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_CalculateSequenceStartTimeAlready"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142cf4820",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cf4820.c;xref:0x142cf47f1",
+   "notes": "V5083 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

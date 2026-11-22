@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CompressedSave_OnReadResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14364bb50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14364bb50.c;pat:log-channel-CompressedSaveDataSerialiser decomp:re/decomp/14364bb50.c;xref:0x145855760",
+  "notes": "Vtable cell 0x145855760 (result hashed 'onFilesRead'). Needs result 0, mode +0x254 == 1 and state 2, else logs and error 0x58 / state 4. Checks file name '<+0x4f8>.com' (case-insensitive), header u32[0] <= 5 (else 0x5a, state 5) and u32[2] == 4 (else 0x59); heap from Game_CompressedSave_GetTempHeaps by [+8]+0, SAVE_PROPERTY_BAG_TEMP pool, Ne_BagCodec_ReadBag (raw, then decompressing 0x14568e190), 0x14364c6f0, Ne_Bag_Clear; state 6 on success. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.compressed_save_on_read_result",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 B8 D0 11 00 00 E8",
+  "match": "0x14364bb50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14364bb50",
+  "kind": "func_start",
+  "names": [
+   "Game_CompressedSave_OnReadResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v2",
+   "kind": "func",
+   "item": "Game_CompressedSave_OnReadResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364bb50.c;decomp:re/decomp/14395eb80.c;decomp:re/decomp/14395f5c0.c;decomp:re/decomp/14395f6e0.c;xref:0x14364c57c,0x14364c607,0x14395ec13",
+   "notes": "V1479 Load overflow: the pool's allocator Ne_TempPool_Alloc reports error 0xc through Ne_TempPool_ReportError, which is fatal (Ne_FatalAbort) when pool+0x80 bit 0 is set. That bit is serialiser+0x512 (pool name block +0x20 at 0x14364c55x; the init copies it at .data1 0x151e53ac8), and the profile's save jobs set it to 1 (Game_CompressedSave_Construct_Thunk notes). So a profile load that outgrows the largest free block is fatal heap error 0xc; the 25 MB mid-session builder 0x14365a320 passes 0 and only gets 0xc back."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14364bb50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364bb50.c",
+   "notes": "V6101 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

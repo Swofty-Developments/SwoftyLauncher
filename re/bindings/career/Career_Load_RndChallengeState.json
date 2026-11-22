@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_RndChallengeState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14122e7e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int FUN(void *state, void *reader, void *ctx)",
+  "evidence": "decomp:re/decomp/14122e7e0.c;xref:0x1456cc538",
+  "notes": "myteam-g1: Deserializer counterpart: reads removed_upgrades_due_to_balancing_out_the_field and rnd_challenges / upgrade_hash_name from save data."
+ },
+ "signature": {
+  "id": "career.load_rnd_challenge_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 0C 00 00 49 89 D6",
+  "match": "0x14122e7e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14122e7e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_RndChallengeState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14122e7e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14122e7e0.c;xref:0x1456cc538",
+   "notes": "V9688 Same fields as the saver; reader."
+  }
+ ],
+ "proofs": []
+}

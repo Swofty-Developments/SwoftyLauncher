@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OptionsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d97750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d97750.c;pat:log-channel--;xref:0x14574c388",
+  "notes": "Vtable slot. options_tex_path -> +0x8e8; queues textures for 42 category names (table 0x14574c7d0) + options.o_category(_f2), OPTIONS-UI log. Creates settings_home_screen/save_load/select_track/select_ai_vehicle/select_ai_driver pages in +0x288; subscribes MessageModeChanged (0x141d9a8d0), MessageGameSetupModeChanged (0x141d9aab0); binds settings_filter/category. (lane owner review requested) Better name: Game_OptionsUi_InitTabsAndTextures (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_options_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 CE 48 8B 89 A0 08 00 00",
+  "match": "0x141d97750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d97750",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OptionsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d97750",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141d97750.c;xref:0x141d96f73",
+   "notes": "V5212 Keys o_category/show_report_code are only part of a 1541-line OPTIONS-UI screen setup (dynamic texture loading, settings_home/save_load/select tabs, Message handlers, tooltips). Better Game_OptionsUI_OnScreenActivated"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141d97750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d97750.c",
+   "notes": "V7265 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

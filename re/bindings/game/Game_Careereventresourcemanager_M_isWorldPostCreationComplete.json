@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Careereventresourcemanager_M_isWorldPostCreationComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cd70b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cd70b0.c;pat:log-message-method;xref:0x1456847a0",
+  "notes": "Destructor (cell 0x1456847a0, param_2 = delete flag): resets vtable 0x1456841a0, unregisters from per-slot table 0x14605a9e0, clears flags, 0x140c7d670, unloads the asset group handle +0x10, logs the m_isWorld* states ('~CareerEventResourceManager') when +0x80 > 0xffffff and releases worlds +0x48, frees vectors; deletes itself via the global allocator when param_2. (lane owner review requested) Better name: Game_CareerEventResourceManager_Dtor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.careereventresourcemanager_m_is_world_post_creation_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 4C 63 B9 C4 05 00 00",
+  "match": "0x140cd70b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cd70b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Careereventresourcemanager_M_isWorldPostCreationComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cd70b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140cd70b0.c",
+   "notes": "V4675 better name Game_CareerEventResourceManager_Destructor: logs '~CareerEventResourceManager' with the m_is* flags, takes delete flag, vtable slot 0x1456847a0: it is the destructor, not an m_isWorldPostCreationComplete accessor"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140cd70b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cd70b0.c",
+   "notes": "V7166 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

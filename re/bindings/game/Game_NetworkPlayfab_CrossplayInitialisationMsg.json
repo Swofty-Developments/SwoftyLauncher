@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkPlayfab_CrossplayInitialisationMsg",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440b7030",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440b7030.c;pat:log-channel-NETWORK-PLAYFAB;xref:0x145a589f0",
+  "notes": "Lambda operator() in ne_net_playfab_module.cpp: sets the NeNetPlayFabModule state to NE_PLAYFAB_STATE_NOT_CONNECTED (changeState inlined), logs 'Crossplay initialisation failed [%d] with error: [%s], and msg: [%s]' and copies the message into the global buffer 0x146c9fd98. Only ref: cell 0x145a589f0. (lane owner review requested) Better name: Game_NetworkPlayfab_OnCrossplayInitFailed (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_playfab_crossplay_initialisation_msg",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC F8 00 00 00 48 89 D6 48 8B 79 08",
+  "match": "0x1440b7030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440b7030",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkPlayfab_CrossplayInitialisationMsg"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440b7030",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440b7030.c",
+   "notes": "V6544 better name Game_NetworkPlayfab_CrossplayInitCallback: operator() callback: changeState NOT_CONNECTED plus crossplay init failure handling (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1440b7030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440b7030.c",
+   "notes": "V7158 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

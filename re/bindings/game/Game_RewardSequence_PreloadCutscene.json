@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RewardSequence_PreloadCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c75060",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c75060.c;xref:0x142d865b1,0x142d86677,0x142d8a67b",
+  "notes": "(seq): when not playing (+0x61 == 0), loading enabled (+0x62), name [+0x10] non-empty, state +0x58 != 0 and no handle (+0x68): builds a cutscene load request (asset id +0x5c via 0x14022d670) and submits it to [0x14601f5c8]+0xc0 (0x140227400); stores the shared handle +0x68/+0x70 (old released), handle vcall +0x1d8(1), +0x58 = 2; clears +0x62. Callers Game_SessionStatePreloadRewardSequence_OnStateEnter, 0x142d86620, Sess_RetirementSequence_Update. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.reward_sequence_preload_cutscene",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 28 03 00 00 C5 F8 29 B4 24 10 03",
+  "match": "0x142c75060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c75060",
+  "kind": "func_start",
+  "names": [
+   "Game_RewardSequence_PreloadCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142c75060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c75060.c;xref:0x142d865b1,0x142d8a67b",
+   "notes": "V3484 +0x61==0, +0x62, name [+0x10], +0x58!=0, no handle +0x68; asset type +0x5c via 0x14022d670, submit via [0x14601f5c8]+0xc0 / 0x140227400, handle +0x68/+0x70, +0x58=2, +0x62=0; callers ok"
+  }
+ ],
+ "proofs": []
+}

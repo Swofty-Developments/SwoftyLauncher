@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_Starting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403622c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403622c0.c;pat:log-message-cxx;xref:0x140368bf9,0x1455f7310,0x1456033c0,0x145603750,0x145603af0",
+  "notes": "Logs, Game_PodiumBaseCutSceneScript_Starting, 0x1402338b0, BindToVehicleWithResultInRace for this+0x900/+0x908/+0x910 (positions 0..2), Monaco barrier hidden, posts bus message 0x145621798; track 'las_vegas' and time of day (vfunc +0x238 -> +0x110 -> +0x26c8) > 1.6580628 sets world render-state bool 0x23 = 0; time <= 1.6580628 (any track) sets 0x145f979c8 = 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_starting",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 4C 01 00 00",
+  "match": "0x1403622c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403622c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_Starting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403622c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403622c0.c;xref:0x368bf9",
+   "notes": "V4539 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

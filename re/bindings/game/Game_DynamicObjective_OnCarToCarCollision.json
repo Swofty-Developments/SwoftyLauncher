@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DynamicObjective_OnCarToCarCollision",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141193310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141193310.c;pat:log-channel-DYNAMIC_OBJECTIVES;xref:0x141192f04,0x1411934b6",
+  "notes": "Handler of AvoidCarCollisions objective: if state +0x18==1, flag +0x68 set, msg+0x18 == own vehicle id +0x44 and msg position +0x40 differs from last stored +0x90: count +0xa0++, store position, log 'onCarToCarCollision found new collision...' (impulse msg+0x10, depth +0x14); if count - baseline +0x7c > limit +0x78 calls vcall +0x38. Returns 0. Fn ptr taken by lea in 0x141192c80, 0x141193460. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.dynamic_objective_on_car_to_car_collision",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 80 79 18 01 0F 85 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x141193310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141193310",
+  "kind": "func_start",
+  "names": [
+   "Game_DynamicObjective_OnCarToCarCollision"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141193310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141193310.c;xref:0x141192f06",
+   "notes": "V4649 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

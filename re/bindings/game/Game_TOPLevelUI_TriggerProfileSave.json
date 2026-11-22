@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TOPLevelUI_TriggerProfileSave",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff7cf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ff7cf0.c;pat:log-channel-TOP_LEVEL_UI;xref:0x142d5070b,0x1436b087b",
+  "notes": "CareerOnlineSynchroniser::update state machine on +0x40: 1 setupCurrentPolicy/internalStart (policy objects 0x1456b5450/58e0/5740), 2/4 start client/host sync (Game_Datasync_StartingSyncAs), 3/5 wait sync, 6 'Trigger Profile Save' (Game_SaveMgr_RequestProfileSave_Thunk), 8 Game.Career.Online.EnableSaving -> save to Online Services, 9 wait, 10 resetAfterSynchronisation. Toggles busy spinner 0. (lane owner review requested) Better name: Game_CareerOnlineSynchroniser_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.top_level_ui_trigger_profile_save",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 CE 0F B6 41 40",
+  "match": "0x140ff7cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff7cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_TOPLevelUI_TriggerProfileSave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ff7cf0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ff7cf0.c;xref:0x142d5070b",
+   "notes": "V4523 is the CareerOnlineSynchroniser state machine (update/internalStart/setupCurrentPolicy/startClient|HostSync, Trigger Profile Save is one branch); better Game_CareerOnlineSynchroniser_Update"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140ff7cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff7cf0.c;xref:0x142d5070b",
+   "notes": "V7178 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

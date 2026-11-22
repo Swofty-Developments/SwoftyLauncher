@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneComponentCar_SetCarNumber",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428e9c00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428e9c00.c;str:s_FrontendSceneComponentCar_SetCarNumber;xref:0x141cc0cd3",
+  "notes": "(mgr,car,number); inlined ComponentCar::setCarNumber (pretty-fn 0x1457aca92). If car component ready (vcall +0x28): log 'Changing Car [%u] Number', call 0x1428b2d70 (FrontendSceneCarManager setCarNumber) on [comp+0x98]+0xe10, store number byte at desc+0x67f9 (+0x67fa flag); else write into pending entry (manager map +0x70b8 keyed by ushort id comp+0xb8) or create one via 0x1428e5d60. (lane owner review requested) Better name: Game_FrontendSceneComponentManager_SetCarNumber (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.frontend_scene_component_car_set_car_number",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 B8 58 A3 01 00 E8 ?? ?? ?? ?? 48 29 C4 44 89",
+  "match": "0x1428e9c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428e9c00",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneComponentCar_SetCarNumber"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428e9c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428e9c00.c;xref:0x141cc0cd3",
+   "notes": "V5144 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

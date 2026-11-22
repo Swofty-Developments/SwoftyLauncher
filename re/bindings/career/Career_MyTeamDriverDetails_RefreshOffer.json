@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamDriverDetails_RefreshOffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142348430",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *screen)",
+  "evidence": "decomp:re/decomp/142348430.c;xref:0x142348171;xref:0x14234a623",
+  "notes": "myteam-g2: 1000-line refresh of the My Team driver details/contract offer view: re-evaluates the offer with FUN_140dbb690 and FUN_140dbe410, binds stat widgets (+0x438..+0x9e0), sets VM string/bool nodes, reads Game_Read_OverridesTeamHqConfig_4 and dispatches UI events. Called by OnSendContractPressed and DriverDetails_BuildScreen. UI only."
+ },
+ "signature": {
+  "id": "career.my_team_driver_details_refresh_offer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 48 89 CE 48 C7 44 24 48 00 00 00 00",
+  "match": "0x142348430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142348430",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamDriverDetails_RefreshOffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142348430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142348430.c",
+   "notes": "V10155 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

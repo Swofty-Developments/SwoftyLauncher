@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_TypedArray2_LogStats_8db0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fa8db0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fa8db0.c;xref:0x145a42e50",
+  "notes": "Typed value array (2-byte elements, vt 0x145a42e10, type desc 0x146129e68) memory stats trace. Reference only."
+ },
+ "signature": {
+  "id": "core.typed_array2_log_stats_8db0",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 80 00 00 00 48 8D 15 ?? ?? ?? ?? 44 8B 04 82 45 85 C0 74 77 41 81 F8",
+  "match": "0x143fa8db0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fa8db0",
+  "kind": "func_start",
+  "names": [
+   "Ne_TypedArray2_LogStats_8db0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Ne_TypedArray2_LogStats_8db0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fa8db0.c;xref:0x143fa8db0",
+   "notes": "V2908 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

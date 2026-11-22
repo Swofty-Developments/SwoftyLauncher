@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TalkingPoints_PlayMusic",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a23890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140a23890.c;xref:0x142d95864",
+  "notes": "By session type at +0xd98->+4 plays audio event play_music_talking_points_p1..p3, q1..q3, sq1..sq3, or for 0xf-0x11 _r / _s (s when race status byte in 6..8 range check) via audio vtable+0x10. Caller Sess_StateTalkingPoints_OnStateEnter. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.talking_points_play_music",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 8B 81 98 0D 00 00",
+  "match": "0x140a23890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a23890",
+  "kind": "func_start",
+  "names": [
+   "Game_TalkingPoints_PlayMusic"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140a23890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a23890.c;xref:0x142d95864",
+   "notes": "V3835 switch on [this+0xd98]+4 selects play_music_talking_points_p1..p3,q1..q3,sq1..sq3,s,r and posts to [[this+0xc60]+0xe0]; caller Sess_StateTalkingPoints_OnStateEnter seen"
+  }
+ ],
+ "proofs": []
+}

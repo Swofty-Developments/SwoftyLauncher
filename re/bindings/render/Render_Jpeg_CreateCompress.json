@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_CreateCompress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d3d20",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d3d20.c;xref:0x14379cf1b,0x144bd8ff9",
+  "notes": "libjpeg jpeg_CreateCompress(cinfo, version, structsize): error 0xd if version != 0x50 (libjpeg 8), 0x16 if structsize != 0x238; memset keeping err/client_data, jinit_memory_mgr (0x1449d55c8), clears table pointers, input_gamma 1.0, block_size 8, natural_order 0x14539a7e0, lim_Se 63, global_state 100. Callers 0x14379cf1b (0x14379c250 Game_ThumbnailSystem_WritingOutJpegTookMicroseconds), 0x144bd8ff9 (0x144bd8ea0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.jpeg_create_compress",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 83 61 08 00 49 8B D8 48",
+  "match": "0x1449d3d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d3d20",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_CreateCompress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1449d3d20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449d3d20.c;xref:0x14379cf1b",
+   "notes": "V7706 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

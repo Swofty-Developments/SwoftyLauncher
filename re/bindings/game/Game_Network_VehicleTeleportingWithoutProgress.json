@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_VehicleTeleportingWithoutProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143260210",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143260210.c;pat:log-channel-NETWORK/V;xref:0x14325e5e4,0x1432e2851",
+  "notes": "Handler: vehicle index msg+0x10 (<0x1b) -> progress entry this+0xf8[i]; if entry flag +0x7c bit 2 set, logs \"Vehicle %d teleporting without progress\" (NETWORK/V) and increments entry+0xc2. (lane owner review requested) Better name: Game_Network_OnVehicleTeleportMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_vehicle_teleporting_without_progress",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 0F B6 7A 10 48 83 FF 1A",
+  "match": "0x143260210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143260210",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_VehicleTeleportingWithoutProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143260210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143260210.c;xref:0x14325e5e7",
+   "notes": "V5813 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

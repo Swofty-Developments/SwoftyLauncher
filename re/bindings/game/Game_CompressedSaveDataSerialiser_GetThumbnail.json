@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CompressedSaveDataSerialiser_GetThumbnail",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14364d440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14364d440.c;pat:log-message-cxx;xref:0x145855790",
+  "notes": "Vtable cell 0x145855790. Body only logs '...::getThumbnail' and returns. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.compressed_save_data_serialiser_get_thumbnail",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 6E B8 C2 00 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 80 00 00 00 00 8B 14 81 85 D2 74 54 81 FA 5E CF F7 12 74 30 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D C2 00 00 00 75 C3 EB 1C FF 15 ?? ?? ?? ?? 41 89 C0 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 90 48 83 C4 28 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 48 83 EC 28",
+  "match": "0x14364d440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14364d440",
+  "kind": "func_start",
+  "names": [
+   "Game_CompressedSaveDataSerialiser_GetThumbnail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14364d440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364d440.c",
+   "notes": "V6103 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

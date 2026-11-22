@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_EADPConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fcd060",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fcd060.c;pat:log-channel--;xref:0x145a44c98",
+  "notes": "EADP component init (vt cell 0x145a44c98): service 0x146cb8278 -> +0x1f8 (error 0x16 if missing), 0x146c9fee0 -> +0x208; EADP.logLevel (dbg 2, info 4, verbose 1, warn 8, err 0x10, fatal 0x20, else 0xff) -> +0x128, EADP.friendCacheEnabled -> +0x129, EADP.blockListCacheEnabled -> +0x12a; EGO_APPLICATION allocator +0x120/+0x158, wrapper +0x160, 0x20-byte object +0x228. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_eadp_config",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 48 01 00 00 48 89 D7 48 89 CE 48 8B 02",
+  "match": "0x143fcd060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fcd060",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_EADPConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fcd060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fcd060.c",
+   "notes": "V6323 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

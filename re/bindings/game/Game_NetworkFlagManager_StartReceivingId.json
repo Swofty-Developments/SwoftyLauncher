@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkFlagManager_StartReceivingId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143580f20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143580f20.c;pat:log-channel-NETWORK-FLAG-MANAGER;xref:0x143568556",
+  "notes": "NETWORK-FLAG-MANAGER handler: logs 'START Receiving from id %u' with the sender id byte msg+0x10; for id < 0x1b unpacks a bitmask (msg+0x14) and values (array msg+0x40, count msg+0x38) into a 0x84-byte per-id record at this+0xdb8+id*0x84. Handler stored by lea 0x143568556 in 0x143568260. (lane owner review requested) Better name: Game_NetworkFlagManager_HandleStartReceivingMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_flag_manager_start_receiving_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143580f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143580f20",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkFlagManager_StartReceivingId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143580f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143580f20.c",
+   "notes": "V6087 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

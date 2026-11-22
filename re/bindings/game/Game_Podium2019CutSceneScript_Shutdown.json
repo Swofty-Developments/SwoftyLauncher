@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_Shutdown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140358180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140358180.c;pat:log-message-cxx;xref:0x1455f7240,0x1456032f0,0x145603680,0x145603a20",
+  "notes": "Logs, 0x1402338b0, vfunc +0x1d0, releases bind slots this+0x600..+0x838 (0x140238500), vfuncs +0x138/+0x1a8/+0xe8/+0xe0, state this+0x40 -> shutting down, frees handles this+0x5e8/+0x5ea, vfunc +0x270(1) and (2), 0x14018edd0(this+0x50), shutdownExtraWorld this+0x550 (0x14442cdf0), vfunc +0x218. Slot in 4 vtables. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_shutdown",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 4C 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 85 D2 74 4B 81 FA 8C DE 03 08 74 30 83 C0 17 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 4C 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 5F B8 4C 01 00 00 48 8D 0D ?? ?? ?? ?? 90 8B 14 81 85 D2 74 4B 81 FA 8C DE 03 08 74 30 83 C0 17 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 4C 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 F1 48 83 C4 20",
+  "match": "0x140358180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140358180",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_Shutdown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140358180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140358180.c",
+   "notes": "V4502 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

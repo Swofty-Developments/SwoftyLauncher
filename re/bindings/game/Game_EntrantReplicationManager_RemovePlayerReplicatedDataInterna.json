@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantReplicationManager_RemovePlayerReplicatedDataInterna",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143121640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143121640.c;pat:log-message-cxx;xref:0x142576233,0x1430ee241,0x1431192ed,0x143121504",
+  "notes": "(mgr, PlayerDescription*, NEbool force): logs '%s: player: %s'. Without force: refuses (returns 0) when [[+0x28]+0x4f8] exists and 0x1431221d0 says busy, or the player is still in its participant list +0x2e0..+0x2e8 (0x1431146d0, stride 0x88). Otherwise logs '%s: allow to remove player replicated data: %s', calls listener vcall +8(desc) for each of +0x48..+0x50 and returns 1. Callers 0x142576180, 0x1430edda0, 0x143118ec0, 0x143121410. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.entrant_replication_manager_remove_player_replicated_data_interna",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 78 44 89 C3 48 89 D6 48 89 CF",
+  "match": "0x143121640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143121640",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantReplicationManager_RemovePlayerReplicatedDataInterna"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143121640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143121640.c;xref:0x142576233",
+   "notes": "V5829 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

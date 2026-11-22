@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_InsertRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414333d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414333d0.c;xref:0x141432e6f,0x14143441a",
+  "notes": "vector<shared_ptr<T>> range insert: vector {allocator p1[0], begin p1[1], end p1[2], cap p1[3]}, inserts copies of [p4,p5) (strong count +8 incremented) before position p3; reallocates with max(1.5x cap, needed) when full (moves old elements, releases them, frees old block via vt+0x38), else shifts the tail in place; returns the iterator to the first inserted element in *p2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_insert_range",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 6C 24 50 4D 85 ED 0F 84 ?? ?? ?? ?? F0 41 FF 4D 08 0F 85 ?? ?? ?? ?? 49 8B 45 00 4C 89 E9 FF 10 F0 41 FF 4D 0C 0F 85 ?? ?? ?? ?? 49 8B 45 00 4C 89 E9 FF 50 08 E9 ?? ?? ?? ?? 48 8B 44",
+  "match": "0x141432e6f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1414333d0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_InsertRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1414333d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414333d0.c;xref:0x141432e6f",
+   "notes": "V8074 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

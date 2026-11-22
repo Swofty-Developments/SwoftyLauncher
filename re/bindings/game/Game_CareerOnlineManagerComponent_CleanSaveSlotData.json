@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineManagerComponent_CleanSaveSlotData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fe5900",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fe5900.c;str:s_Championship_CareerOnlineManagerComponent_CleanSaveSlotData;xref:0x140fd7da9,0x14100a1e8",
+  "notes": "For save slot param_2: reads the slot's driver, driver-customisation, vehicle-customisation and badge ids (0x141443610/0x1414018c0/0x1414017c0/0x141443700) and deletes each that differs from the current one (CUSTOMISATION logs, clears matching globals 0x146066bd8..). Then deletes the slot (0x1429d2240) if the slot manager (+0x2f0 list +0x268..+0x270) has it, else posts message 0x1456bc980. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_online_manager_component_clean_save_slot_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 D6 48 89 CF 4C 8B A9",
+  "match": "0x140fe5900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fe5900",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineManagerComponent_CleanSaveSlotData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fe5900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fe5900.c;xref:0x140fd7da9,0x14100a1e8",
+   "notes": "V4838 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

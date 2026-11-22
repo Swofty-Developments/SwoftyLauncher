@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeedStream_SetStreamPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c31e10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c31e10.c;pat:log-message-cxx;xref:0x142c2b271,0x142c2b33d,0x142c2b52e,0x142c2b5c4,0x142c2b99d,0x142c2bf53,0x142c2d5b7,0x142c2e19e,0x142c313f5,0x142c31558,0x142c31a52,0x142c324fc,0x142c36c45",
+  "notes": "Own log 'F1DataFeedStream::setStreamPosition'. Sets position +0xa8; if outside the loaded block (+0xb0, block size +0x2d8) seeks file +200 to the block start and reads one block into a new buffer (+0x98, size +0xa0), logs 'Accessing disc' time; returns 0 ok, 5 or 0x2d on errors. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_data_feed_stream_set_stream_position",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142c31e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c31e10",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeedStream_SetStreamPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c31e10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c31e10.c;xref:0x142c2b271",
+   "notes": "V5047 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

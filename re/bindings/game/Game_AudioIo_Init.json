@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AudioIo_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fb9f80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fb9f80.c;pat:log-channel-AUDIO_IO;xref:0x145a43bd8",
+  "notes": "AudioIo init (vtable cell 0x145a43bd8): stores device io+0x380 (null -> vt+0x40), max concurrent ops = device vt+0x10 -> io+0x388 (logged), grows the request pool (0x143fca220); 0x14391dde0, GetSystemInfo, Suspend/SetThreadAffinityMask/Resume, then tail-jumps to 0x14391da30 (decomp merges that tail; thread proc 0x143fba180). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.audio_io_init",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 48 89 CE 48 89 91 80 03 00 00",
+  "match": "0x143fb9f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fb9f80",
+  "kind": "func_start",
+  "names": [
+   "Game_AudioIo_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fb9f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fb9f80.c",
+   "notes": "V6311 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

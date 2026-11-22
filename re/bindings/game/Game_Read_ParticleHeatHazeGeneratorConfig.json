@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_ParticleHeatHazeGeneratorConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d5f8b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d5f8b0.c;pat:log-channel--;xref:0x143d65354",
+  "notes": "Renamed (was Game_Read_ParticleHeatHazeGeneratorConfig). Body read fully: constructor, vtable 0x1459b2fc0, stores ctor args, creates GPU resources under [0x14618caa8] lock: heatHazeTileDirtyBuffer/TileDirtyCoordsBuffer/TileBlurCmdBuf/tileCullCBuffer/tileBlurCBuffer/heathazeConstsCBuffer -> +0x80..+0xa8, trackHeatHazeCBuffer -> +0x110; contexts ParticleHeatHazeGenerator.Blur/TileCull/TileBlur/THHContextSetup -> +0x40/+0x48/+0x50/+0xf0; shader screen_processing/track_heat_haze/p0 -> +0xf8 with fullScreenTex. (lane owner review requested) Better name: Game_ParticleHeatHazeGenerator_Ctor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_particle_heat_haze_generator_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 02 00 00 C5 F8 29 BC 24 90 02 00 00",
+  "match": "0x143d5f8b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d5f8b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_ParticleHeatHazeGeneratorConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143d5f8b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143d5f8b0.c;xref:0x143d65354",
+   "notes": "V6287 partial: better name Game_ParticleHeatHaze_CreateGenerator; constructor: creates 5 buffers/cbuffers, 4 context setups and the heat-haze material, not just reading keys"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143d5f8b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d5f8b0.c;xref:0x143d65354",
+   "notes": "V7051 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

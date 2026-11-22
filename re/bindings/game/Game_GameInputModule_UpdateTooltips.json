@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameInputModule_UpdateTooltips",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a79e70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a79e70.c;pat:log-message-cxx;xref:0x142a78353,0x142a784c5,0x142a7bf44,0x1434df21e,0x1434e0dbc,0x15050d700",
+  "notes": "Logs INPUT 'GameInputModule::updateTooltips - tooltipsDeviceTypeId=\"%s\"' ([p1+0xd0]). Players block [[p1+0x48]+0x140] slots +0x1c0/+0x1c8: if p2 null picks the device whose +0x30 == 0x1462921b0. For player 0 finds the device with type [p1+0xd0], player 1 type [p1+0xd8], and calls 0x142a794c0 for the four action sets gameplay_actions (+0x78), menu_actions (+0x80, flag when type is the default), mfd_custom_actions (+0x88), udp_custom_actions (+0x90) with player index 0/1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_input_module_update_tooltips",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142a79e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a79e70",
+  "kind": "func_start",
+  "names": [
+   "Game_GameInputModule_UpdateTooltips"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a79e70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a79e70.c;xref:0x142a78353",
+   "notes": "V4967 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

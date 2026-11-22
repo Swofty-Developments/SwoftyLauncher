@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetReliableAsyncSocket_OnMessageDecrypted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144046320",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetReliableAsyncSocket_OnMessageDecrypted;xref:0x144046503;decomp:re/decomp/144046320.c",
+  "notes": "cxx=neon::NeNetReliableAsyncSocket::onMessageDecrypted; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_reliable_async_socket_on_message_decrypted",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 C5 F8 29 B4 24 D0 01 00 00 4C 89 CB 4D",
+  "match": "0x144046320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144046320",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetReliableAsyncSocket_OnMessageDecrypted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_NetReliableAsyncSocket_OnMessageDecrypted",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144046320.c;xref:0x144046320",
+   "notes": "V2026 inbound plaintext: parses addr, logs packet length/from addr, handlePacket; connect packet creates channel set active; reliable packet handling; setState logs"
+  }
+ ],
+ "proofs": []
+}

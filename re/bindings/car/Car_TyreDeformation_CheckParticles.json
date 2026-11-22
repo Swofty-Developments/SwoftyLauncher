@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_TyreDeformation_CheckParticles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14470bd80",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14470bd80.c;pat:log-channel-DEFORMATION;doc:re/research/fuel_mix_five.md#sites;xref:0x142f509bc",
+  "notes": "Log channel DEFORMATION ('Particles have NOT YET been allocated...', '50 physics particles'). engine-re 2026-11-20 (static): also packs fuel_mode (+0x128, bits 4..5 at 0x14470c3f1..0x14470c3ff) and CarErs ers_mode +0x1a68 (0x14470c41a..0x14470c430), likely the snapshot writer paired with Car_State_Read_Snapshot 0x14470d760 (HYPOTHESIS). Only caller 0x142f509bc in 0x142f50960. Calls ComputeContactFrame at 0x14470d5e0."
+ },
+ "signature": {
+  "id": "car.tyre_deformation_check_particles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 79 7F BC 24 B0 01 00 00 C5 79 7F B4 24 A0 01 00 00",
+  "match": "0x14470bd80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14470bd80",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreDeformation_CheckParticles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14470bd80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14470bd80.c;xref:0x142f509bc",
+   "notes": "V6870 Logs sit at line 1065/1083 of a 1170-line function that does the full per-tyre particle update (matrices to quats, memset, ComputeContactFrame); better name Car_TyreDeformation_UpdateParticles."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14470bd80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14470bd80.c;xref:0x142f509bc",
+   "notes": "V7264 name fits, facts hold"
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "fuel5-verify",
+   "kind": "func",
+   "item": "0x14470bd80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x14470c3ea-0x14470c3ff;pat:disasm-0x14470c41a-0x14470c430;xref:0x142f509bd",
+   "notes": "V12405 blind re-derivation (own capstone disasm, no write-up read): fuel_mode shl 4 and 0x30 into rsp+0x99, ers_mode &7 into rsp+0x9a; single caller in 0x142f50960, next to 0x142f50a00 which calls 0x14470d760"
+  }
+ ],
+ "proofs": []
+}

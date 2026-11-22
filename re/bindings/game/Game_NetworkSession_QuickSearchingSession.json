@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_QuickSearchingSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143081160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143081160.c;pat:log-channel-NETWORK-SESSION;xref:0x14580dab0",
+  "notes": "Hopper state update (vtable cell): findGame/quickfindGame via SearchForSessions 0x144064f50 with callback 0x143083c40, joinGame via 0x1440638b0 with callback 0x1430837c0, createGame via 0x144062230, changeState logs (StateSearching/StateError/StateJoinRequested). Quick search is one branch. (lane owner review requested) Better name: Game_GameSessionMatchingHopperCommon_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_session_quick_searching_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 F9 29 B4 24 10 02 00 00",
+  "match": "0x143081160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143081160",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_QuickSearchingSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143081160",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143081160.c",
+   "notes": "V5676 951 lines HopperCommon state machine: findGame/quickfindGame/joinGame/createGame/updateSearch/updateJoin + changeState; quick-search log is one branch. Better: Game_GameSessionMatchingHopperCommon_Update [vtable/indirect]"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143081160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143081160.c",
+   "notes": "V6956 951 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

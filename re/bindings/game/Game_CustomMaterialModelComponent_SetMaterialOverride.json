@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomMaterialModelComponent_SetMaterialOverride",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a8f790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a8f790.c;pat:log-message-cxx;xref:0x142a9bc39,0x142a9bc55,0x142a9bc71,0x142a9bc8d,0x142a9bca9,0x142a9bcea,0x142a9bd09,0x142a9bd28,0x142a9bded,0x142a9c152,0x142a9c16e,0x142a9c19a,0x142a9c1b1,0x142a9c1c8,0x14db41e34,0x14db41e4e,0x14db41e68,0x14db41e82,0x14db41e9c,0x14db41eb6",
+  "notes": "(comp, material name, slot name <= 15 chars, quiet, checkExists): removes the 0x20-byte entry of that slot (16-byte name at +0x10) from the array comp+0xe0 (count +0x2a0), builds the material ref 0x143c18e80(name); with checkExists and no resource (0x143993660) logs '[ART ISSUE] ... doesn't exist' unless quiet; else appends {ref, slot} and count++ (ART_WARN log). Callers 0x142a9b470, 0x14db41d40. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_material_model_component_set_material_override",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 48 89 D6 48 89 CF C6 44 24 40 00",
+  "match": "0x142a8f790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a8f790",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomMaterialModelComponent_SetMaterialOverride"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a8f790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a8f790.c;xref:0x142a9bc39",
+   "notes": "V4984 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

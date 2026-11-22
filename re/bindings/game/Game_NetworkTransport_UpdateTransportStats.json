@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_UpdateTransportStats",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14404ac50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14404ac50.c;pat:log-message-method;xref:0x1440775f8,0x1440791ef",
+  "notes": "Logs method string 'updateTransportStats'; under the lock at +0x30 copies each channel's stat block into the map at +0x1f8. Called from ReportTransportStats 0x1440775c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_transport_update_transport_stats",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 70",
+  "match": "0x14404ac50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14404ac50",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_UpdateTransportStats"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14404ac50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14404ac50.c;xref:0x1440775f8",
+   "notes": "V6475 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

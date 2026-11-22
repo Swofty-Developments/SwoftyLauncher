@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_VmBinding_ClearTargetDirty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bc5b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442bc5b0.c;xref:0x140828501,0x140972e27,0x140973e68,0x140977b66,0x140b3c71d",
+  "notes": "Counterpart of 0x1442bc390: only when flags @+0x60 have 4 and 2 set; resolves the target the same way and removes the same kind-specific callback via 0x14422fde0 (jmp to .data1 0x1534b2580: finds {fn,ctx} in target +0x40..+0x48, erases it or marks it removed + flag 8 while iterating); clears flag 4. Same property-setter callers. Better name: Ne_VmBinding_UnsubscribeFromTarget (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.vm_binding_clear_target_dirty",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 0F B6 41 60 F6 D0 A8 06 0F 85",
+  "match": "0x1442bc5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bc5b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_VmBinding_ClearTargetDirty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1442bc5b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1442bc5b0.c;xref:0x140828501",
+   "notes": "V8391 condition inverted: acts when (flags&6)!=6"
+  }
+ ],
+ "proofs": []
+}

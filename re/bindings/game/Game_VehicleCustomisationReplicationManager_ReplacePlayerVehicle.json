@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_ReplacePlayerVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431400c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431400c0.c;pat:log-message-cxx;xref:0x143142f81,0x14314521d,0x1431454f7,0x1431462e8,0x143146864,0x1431c365e",
+  "notes": "Read in full (this, key, packed id, customisation): logs 'Attempting to replace vehicle customisation info for id', copies the customisation and calls 0x142477900(store this+0x28, id as stat<<16|kind); result not in {0,2,4} -> logs 'Attempt to replace ... unsuccessful!'; then 0x143141420(this, key, id). Callers 0x143142e80, 0x143145140, 0x143145350, 0x143146160, 0x1431466f0, 0x1431c35b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_replace_player_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 4D 89 CE 44 89 C6 48 89 D7 48 89 CB 41 0F B7 C8 89 F0 25 FF 3F 00 00 C1 E9 0E 80 3D ?? ?? ?? ?? 01 44 0F B7 E9",
+  "match": "0x1431400c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431400c0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_ReplacePlayerVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431400c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431400c0.c;xref:0x143142f81",
+   "notes": "V5914 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

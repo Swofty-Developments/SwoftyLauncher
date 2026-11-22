@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_RequestEntry_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444404b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444404b0.c;xref:0x1432b691d,0x14443ff70",
+  "notes": "Constructs the 0x40-byte field record: +0 u32 param_4, +8/+0x10 shared_ptr copied from param_3 (atomic inc; param_3 released at the end), +0x18 string object (allocator param_2, inline buffer +0x38) from C string param_5. Same layout 0x1444f3c60 pushes and 0x140826200 copies. Callers 0x14443fd40 (0x14443ff70), 0x1432b67a0 (0x1432b691d). (lane owner review requested) Better name: Game_F1os_RequestField_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.f1os_request_body_reserve_append",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C7 48 89 CE 4C",
+  "match": "0x1444404b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444404b0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_RequestEntry_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1444404b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1444404b0.c;xref:0x1432b691d",
+   "notes": "V8395 Game_F1os_RequestEntry_Construct: constructor storing id, shared_ptr copy and SSO string; not just reserve+copy"
+  }
+ ],
+ "proofs": []
+}

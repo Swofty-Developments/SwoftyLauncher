@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ESystemMessageID_ConnectionLeft",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406b390",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14406b390.c;pat:log-message-method;xref:0x152f10692",
+  "notes": "Fn ptr stored with this as delegate in 0x152f105c0, passed to vcall +0x68 of obj at this+0x110. Updates conn last-recv time (list stride 0x58, id +0x4c); non-system msg -> delegate [5]/[6]. Else reads type from bit buffer, logs handleSystemMessage, switch: 0 Hello (version vs +0x704, ServerHelloResponse), 1-5 (5 ConnectionLeft: 0x144070890, vcall +0xd8, cb [7]/[8]), 6 KeepAlive->ACK, 7 KeepAliveACK rtt, 10-13, 15. (lane owner review requested) Better name: Game_Network_NetSystemCommon_HandleSystemMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_e_system_message_id_connection_left",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 07 00 00 C5 F8 29 B4 24 40 07 00 00 F7 81 B0 04 00 00 FD FF FF FF",
+  "match": "0x14406b390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406b390",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ESystemMessageID_ConnectionLeft"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14406b390",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14406b390.c;xref:0x152f10694",
+   "notes": "V6495 partial: better name Game_Network_HandleSystemMessage; 13 KB handleSystemMessage switch (Hello, ConnectionLeft, ...)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14406b390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406b390.c;xref:0x152f10694",
+   "notes": "V7142 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

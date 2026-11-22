@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSystem_OnRequestProgressMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f07750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f07750.c;pat:log-message-cxx;xref:0x14f608bd0",
+  "notes": "Read in full (this, msg, conn): logs onRequestProgressMessage(connId); if this+0x11a set, for every locally owned vehicle (owner table check as in HandleProgressMessage) builds message 0x145800ec0 (0xa00000006) with vehicle, lap and progress lap from 0x1446046a0 (xor-masked) and sends it to msg+0x10 (mode 2) via 0x14402e500 on this+0x90, logging 'RequestSessionData(%d) - Sending new lap progress'. lea ref 0x14f608bd0 (.data1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_system_on_request_progress_message",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 71",
+  "match": "0x142f07750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f07750",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSystem_OnRequestProgressMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142f07750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f07750.c;xref:0x142ef75c7",
+   "notes": "V5570 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

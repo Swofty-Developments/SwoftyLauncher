@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Read_RewardsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141011690",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141011690.c;pat:log-channel--;xref:0x14100ff53,0x141017136,0x141017411",
+  "notes": "Clears the vector this+0x2f0..+0x2f8 (0x10 stride, shared ptrs), resolves the local team key into this+0x478 if +0x47a is unset, then iterates game-DB array 'career.owner_perks.specialisations' (OwnerPerkSpecialisation): per entry a 0x88 object with display_name, description, stewardship/engineering/commercial_percentage and reward sets rewards.tier_1..tier_5 (0x140f8b360 + 0x14101a100). (lane owner review requested) Better name: Career_Read_OwnerPerkSpecialisations (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.read_rewards_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 06 00 00 C5 F8 29 BC 24 B0 06 00 00 C5 F8 29 B4 24 A0 06 00 00",
+  "match": "0x141011690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141011690",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_RewardsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141011690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141011690.c;xref:0x14100ff52",
+   "notes": "V4568 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141011690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141011690.c;str:\"Reads settings/game DB keys: rewards.tier_1, rewards.tier_2,\"",
+   "notes": "V9139 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

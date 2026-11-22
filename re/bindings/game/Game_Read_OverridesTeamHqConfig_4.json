@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesTeamHqConfig_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419c51a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1419c51a0.c;pat:log-channel--;xref:0x14168205a,0x142344894,0x142344973,0x14234915a,0x1423d605f",
+  "notes": "Fills a sponsor-contract offer card VM (rcx). Offer = r8 if param_4 and [r8+0x50] set, else rdx. Ints at offer+0x28/+0x38/+0x30/+0x34 go through Ui_Format_ResourcePointsAmountText to widgets +0x68/+0x88/+0x148/+0xa8/+0xc8; clause type byte offer+0x28 indexes lng_performance_clause_* table 0x145736560 (type 4 = ordinal via 0x1441e7290); risk float offer+0x44 *100 -> risk_state_01..05; header lng_contract_current_offer(_out_of_window)/lng_contracts_inflight, or accepted path lng_contract_header_success/lng_offer_accepted (param_5); caches offer at +0x1c0 (+0x210 flag). (lane owner review requested) Better name: Game_SponsorContract_PopulateOfferCard (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_overrides_team_hq_config_4",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 D3 48 89 CF",
+  "match": "0x1419c51a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419c51a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesTeamHqConfig_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1419c51a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1419c51a0.c;xref:0x14168205a",
+   "notes": "V4917 38-55 KB sponsor contract overlay/offer builder (risk_status_overlay + lng_contract_current_offer, header success, offer accepted), not just a key read. Better: Game_Build_TeamHq...Cards (subsystem Game_Build_*)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1419c51a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419c51a0.c;xref:0x14168205a",
+   "notes": "V7235 name fits; finding facts hold; 5 direct calls"
+  }
+ ],
+ "proofs": []
+}

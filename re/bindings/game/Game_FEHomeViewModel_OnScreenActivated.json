@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FEHomeViewModel_OnScreenActivated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bb17f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141bb17f0.c;str:s_FEHomeViewModel_OnScreenActivated;xref:0x145738ac8",
+  "notes": "Pretty-function 0x145738b30 'virtual void game::FEHomeViewModel::onScreenActivated()' (TOP_LEVEL_UI). Sets m_currentState this+0x380 (enum names table 0x145751670: eNormal/eBeta/eStreamInstall/ePreview/eDemo/eTrial/ePQITest/eVTE/eMovie) from config flags, override via 'UI.overrideMainMenuState' (FNV hash switch); sets show_tutorial_prompt, contextual_decision, offline_description, story_logo, news, customisation_item_lost popup (then FUN_142542680), ui_menu_data.show_user_name, beta_panel_visible; posts bus msg via 0x1439876c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f_e_home_view_model_on_screen_activated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 CE 48 8D B9 68 02",
+  "match": "0x141bb17f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bb17f0",
+  "kind": "func_start",
+  "names": [
+   "Game_FEHomeViewModel_OnScreenActivated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141bb17f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141bb17f0.c",
+   "notes": "V4937 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

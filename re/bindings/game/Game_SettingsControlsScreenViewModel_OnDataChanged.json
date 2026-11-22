@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsControlsScreenViewModel_OnDataChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d9f240",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d9f240.c;str:s_SettingsControlsScreenViewModel_OnDataChanged;xref:0x141d9eaa1,0x141da8e70,0x14c25e312",
+  "notes": "Handler registered by lea at 0x141d9eaa1, 0x141da8e70, 0x14c25e312. Same busy checks as deviceConnectionStatusChanged plus +0xba0 (ugc refresh, logged); scans the scheme list [+0xaf8]+0x130 for unusable schemes; then either vcall +0x138 (reload) or pushes true to +0x9d0 and calls Game_SettingsTabbingBaseViewModel_UpdateFilterLevel (0x141d9ca70). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.settings_controls_screen_view_model_on_data_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 83 3D",
+  "match": "0x141d9f240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d9f240",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsControlsScreenViewModel_OnDataChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d9f240",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d9f240.c;xref:0x141d9eaa3",
+   "notes": "V5215 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

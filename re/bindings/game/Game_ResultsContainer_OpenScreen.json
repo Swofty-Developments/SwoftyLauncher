@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ResultsContainer_OpenScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d7e950",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d7e950.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141e71688,0x141e71cfe",
+  "notes": "(c, id, callback): only when no screen is open (+0x1070 == -1): +0x1070 = id, copies callback to +0x1078 (0x1417dfb80), builds 'vm_open_%hs' (Ne_Format_String, screen name table 0x1457563d0), logs 'screen open start: %hs', fires it via 0x144320950; always destroys the passed functor. Callers 0x141e714d0, 0x141e71ab0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.results_container_open_screen",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 4C 89 C6 83 B9 70 10 00 00 FF",
+  "match": "0x141d7e950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d7e950",
+  "kind": "func_start",
+  "names": [
+   "Game_ResultsContainer_OpenScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d7e950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d7e950.c;xref:0x141e71688",
+   "notes": "V5208 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

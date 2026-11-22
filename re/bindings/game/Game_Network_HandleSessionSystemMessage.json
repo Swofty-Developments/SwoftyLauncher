@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HandleSessionSystemMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ce43a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ce43a0.c;pat:log-message-method;xref:0x142cd9096",
+  "notes": "Logs '%s: Received result data for %d, lap time is : %.3f, status is %s - ASSIGNED' or '... - STORED' with method name 'handleSessionSystemMessage' (NETWORK). Fn ptr lea'd at 0x142cd9096 in 0x142cd84b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_handle_session_system_message",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D6 0F B6 42 10",
+  "match": "0x142ce43a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ce43a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HandleSessionSystemMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ce43a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ce43a0.c;xref:0x142cd9098",
+   "notes": "V5063 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

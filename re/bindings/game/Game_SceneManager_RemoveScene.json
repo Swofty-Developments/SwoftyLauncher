@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SceneManager_RemoveScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018df40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14018df40.c;xref:0x14025505e,0x14026799e,0x141213285,0x14121545a,0x142895d88,0x142895ea8,0x142896f18,0x1428a6184,0x1428b7eb0,0x1428e050c,0x1428e0e19,0x14d1ba679",
+  "notes": "Under critical section [+200]: swap-removes scene param_2 from the list +0x28..+0x30 and from the list +0x68..+0x70; for each list where it is missing, records error 2 with a return address in the error ring 0x146107830. Callers include Game_CutSceneScript_EnableCamerasChainFirstNextScene (0x14026799e) and Game_FrontendSceneComponentDriver_SetAnimOverlay (0x1428e050c). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.scene_manager_remove_scene",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 89 C8 00 00 00 FF 15 ?? ?? ?? ?? 48 85 FF 0F 84 ?? ?? ?? ?? 48 8B 46 28 48 8B 4E",
+  "match": "0x14018df40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018df40",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneManager_RemoveScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14018df40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14018df40.c;xref:0x14026799e",
+   "notes": "V7965 also removes from second list +0x68"
+  }
+ ],
+ "proofs": []
+}

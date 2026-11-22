@@ -1,9 +1,12 @@
-#include "tt_blocked_logic.hpp"
+// Host unit test for the Time Trial block (core/frontend/tt_blocked_logic.hpp): reading swofty\tt.json, when Time Trial
+// is blocked, the refused container command and the popup gates. native/test/run_tests.sh tt_blocked builds and runs
+// it.
+#include "core/frontend/tt_blocked_logic.hpp"
 
 #include <cstdio>
 #include <string>
 
-namespace b = runtime::tt_blocked;
+namespace b = frontend::tt_blocked;
 
 static int failed = 0;
 static void expect(bool ok, const char *what)
@@ -16,7 +19,8 @@ static void expect(bool ok, const char *what)
 int main()
 {
     b::Session s = b::parse(R"({"tt_boards":true,"tt_nonce":"n","tt_blocked":{"reason":"couldn't reach the server"}})");
-    expect(s.boards && s.blocked && s.reason == "couldn't reach the server" && !b::placed(s), "tt_blocked object is read with its reason");
+    expect(s.boards && s.blocked && s.reason == "couldn't reach the server" && !b::placed(s),
+           "tt_blocked object is read with its reason");
     expect(b::why_blocked(s, true) == b::Why::not_placed, "tt_blocked blocks even when a module is loaded");
 
     s = b::parse(R"({"tt_blocked":{"reason":"timeout"}})");
@@ -55,8 +59,8 @@ int main()
 
     expect(b::blocks_command("time_trial"), "the container's time_trial command is refused");
     expect(!b::blocks_command("solo_gp") && !b::blocks_command("grand_prix_new") && !b::blocks_command("grand_prix_resume") &&
-               !b::blocks_command("back") && !b::blocks_command("ss_game_mode_select") && !b::blocks_command("entrant_list_selected") &&
-               !b::blocks_command(""),
+               !b::blocks_command("back") && !b::blocks_command("ss_game_mode_select") &&
+               !b::blocks_command("entrant_list_selected") && !b::blocks_command(""),
            "other container commands pass");
 
     b::PopupGate p;
@@ -71,7 +75,8 @@ int main()
     expect(!e.step(false) && e.step(true), "leaving and entering again shows it again");
 
     expect(std::string(b::TITLE) == "Time Trial is unavailable", "the popup title");
-    expect(std::string(b::BODY).find("turn off Time Trial boards") != std::string::npos, "the popup says how to play without the boards");
+    expect(std::string(b::BODY).find("turn off Time Trial boards") != std::string::npos,
+           "the popup says how to play without the boards");
 
     std::printf("%s\n", failed ? "FAILED" : "all ok");
     return failed ? 1 : 0;

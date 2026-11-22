@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RendererGfxConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc2ff0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc2ff0.c;pat:log-channel--;xref:0x1458be978",
+  "notes": "Takes up to 10 shader resources from vector (+0x28)+8, allocs 0xf0 holder; builds histogram (clear_histogram), DOF autofocus (autoFocusDistanceReadbackBuffer), motion blur (Renderer.Gfx.MotionBlur.* via 0x143a43b90/0x143a44090, apply_*taps), bloom (bloomSCurveTex, bloom_gauss_cs_*), lens flares (LensFlaresVB, 0x143bc9370) and two 0x320 objs (0x143bc5fb0); ref-counted wrapper stored at +0x30/+0x38. (lane owner review requested) Better name: Game_PostFx_CreateEffectPasses (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_renderer_gfx_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 C5 F8 29 BC 24 B0 02 00 00 C5 F8 29 B4 24 A0 02 00 00 49 89 CF",
+  "match": "0x143bc2ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bc2ff0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RendererGfxConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143bc2ff0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bc2ff0.c",
+   "notes": "V6467 0x1b32 body builds post-fx shaders/buffers (motion blur velocity, bloom, lens streaks/flares) and reads 4 MotionBlur keys. Better Render_PostFx_CreateMotionBloomLensFlare; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143bc2ff0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc2ff0.c",
+   "notes": "V7049 name fits, facts hold; prefix: finding suggests Render_PostFx_, name Game_PostFx_ otherwise fits; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

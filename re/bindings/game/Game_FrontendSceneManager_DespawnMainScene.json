@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_DespawnMainScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428d9a90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428d9a90.c;pat:log-message-method;xref:0x140c833b6,0x140c92ac7,0x140d9d8ac,0x141057d60,0x141a23b94,0x14205cab8,0x1422672da,0x142daef91,0x1436b1324,0x1436b1907,0x1436d3e03,0x1436d55df,0x1436d6025,0x1436d84a9,0x1436da9fd,0x143711fae,0x151092f02,0x15118bd52",
+  "notes": "Logs '%s()' despawnMainScene (FRONTEND_SCENE_MANAGER). If [this+0x40]+0x1048/0x1049 set: clears pending maps +0x7068/+0x70b8/+0x7108 and lists +0x7160/+0x71a8/+0x7178, calls 0x1428daa30 on main scene +0x6b60, every driver (+0x6fb8, 0x450), main car +0x1d0, cars (+0x6fd8, 0x6990), objects (+0x6ff8, 0x130); logs preventer count, clears +0x1049/+0x104b. Always releases scene handles +0x140..0x198. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_despawn_main_scene",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 BD 00 00 00",
+  "match": "0x1428d9a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428d9a90",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_DespawnMainScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428d9a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428d9a90.c;xref:0x140c833b6",
+   "notes": "V5137 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

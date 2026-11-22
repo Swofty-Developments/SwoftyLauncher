@@ -19,6 +19,7 @@ Each guide builds one real addon from an empty folder, with the finished code, t
 - **[A year pack](/make/year-pack)**: a whole 2008 season box, with its cars, teams, drivers, rules and career data.
 - **[A career mode](/make/career)**: a career that runs 2008 to 2012 on year packs, changing the grid at each season break.
 - **[A HUD element](/make/hud-element)**: a dial in the race HUD with a speed text, a gear text, an RPM sweep and an ERS bar, driven by the game's values and the live state.
+- **[A startup video](/make/startup-video)**: your own intro instead of the Swofty one that SwoftyMod plays, with its own subtitle line.
 
 ## Bring a system the game doesn't have
 

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_UiDataConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141262be0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141262be0.c;pat:log-channel--;xref:0x14124c24b,0x14124d59a,0x14124ddaa,0x14124ef20",
+  "notes": "GDB row (param_1) -> struct param_2: ui_data.base_colour [0], mid_colour [1], top_colour [2], intensity_lng_string +0x10, emb_override +0x18, panel_background +0x20, large_panel_background +0x28, large_panel_base_background +0x30 (XOR-decoded strings, key 0x145890978). (lane owner review requested) Better name: Game_Read_UiDataStyleRow (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_ui_data_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 48 8D 15 ?? ?? ?? ?? 45 31 C0 E8 ?? ?? ?? ?? 48 8B 00 8B 40 08 89 06",
+  "match": "0x141262be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141262be0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_UiDataConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141262be0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141262be0.c;xref:0x14124c24b",
+   "notes": "V4714 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

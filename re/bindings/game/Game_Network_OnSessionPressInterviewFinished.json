@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnSessionPressInterviewFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142df9cd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142df9cd0.c;pat:log-message-method;xref:0x1457e8b90",
+  "notes": "Slot 8 (+0x40, onStateEnter) of vtable 0x1457e8b50 (name SessionStatePressInterviewFinishWeekend precedes). Body = inlined NetworkSubsystem::onSessionPressInterviewFinished: NetSub=[this+0xcb8]; logs the method with the matching context ([[NetSub+0x4d8]+0x28]+8 when +0x38 set) and calls 0x143092b20 (GameSessionRaceStatus::setMyRaceStatus, see 0x1430f3940) with ([NetSub+0x3c0]+0xa8, 0xb); returns 1. (lane owner review requested) Better name: Game_SessionStatePressInterviewFinishWeekend_OnStateEnter (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_on_session_press_interview_finished",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B B1 B8 0C 00 00",
+  "match": "0x142df9cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142df9cd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnSessionPressInterviewFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142df9cd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142df9cd0.c",
+   "notes": "V5461 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

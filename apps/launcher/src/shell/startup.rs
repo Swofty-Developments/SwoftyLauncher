@@ -1,47 +1,47 @@
-use crate::game::{self};
-use crate::library::Library;
-use crate::notices::{Notification, Notify};
-use crate::play_checks;
+use crate::features::browser::Browser;
+use crate::services::game::{self};
+use crate::services::library::Library;
+use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 use swofty_core::store::Store;
 
+use super::account::Account;
 use super::{Page, Seen, Shell};
 use swofty_i18n::tr;
 
 pub(crate) struct Prepared {
     store: Store,
     library: Library,
-    news: crate::news::News,
+    news: crate::features::news::News,
     config: swofty_core::session::Config,
     seen: Seen,
 }
 
 impl Prepared {
     pub(crate) fn load() -> Self {
-        crate::app_log::step("opening the store");
-        swofty_core::store::set_warning_sink(crate::app_log::note);
+        crate::app::app_log::step("opening the store");
+        swofty_core::store::set_warning_sink(crate::app::app_log::note);
         let store = Store::open_default().with_builtins(swofty_builtins::all());
         let migrated = store.migrate();
-        crate::app_log::step("store migrated");
-        swofty_core::multiplayer::diag::open(&store.root);
-        swofty_core::usage::launcher_heartbeats(store.root.clone());
+        crate::app::app_log::step("store migrated");
+        swofty_core::online::server::usage::launcher_heartbeats(store.root.clone());
         let seen = Seen::read(&store);
-        crate::app_log::step("loading the library");
+        crate::app::app_log::step("loading the library");
         let mut library = Library::load(&store);
-        crate::app_log::step("library loaded");
+        crate::app::app_log::step("library loaded");
         match migrated {
             Ok(notes) => notes.iter().for_each(|n| {
                 eprintln!("swofty-launcher: {n}");
-                crate::app_log::note(n);
+                crate::app::app_log::note(n);
             }),
             Err(e) => library.error = Some(e.to_string()),
         }
         let config = store.config();
-        let news = crate::news::News::load(&store.root);
-        crate::app_log::step("settings and news read");
+        let news = crate::features::news::News::load(&store.root);
+        crate::app::app_log::step("settings and news read");
         Self {
             store,
             library,
@@ -55,6 +55,17 @@ impl Prepared {
 /// How often the signed-in account is checked, so a role given or taken away shows soon.
 const ACCOUNT_CHECK: Duration = Duration::from_secs(10);
 
+/// The subscriptions and background loops that live as long as the shell.
+pub(crate) struct Background {
+    _shaders_events: Subscription,
+    _window_moved: Subscription,
+    _console_closed: Subscription,
+    _poll: Task<()>,
+    _live: Task<()>,
+    _updates: Task<()>,
+    _catalog: Task<()>,
+}
+
 impl Shell {
     pub fn new(prepared: Prepared, window: &mut Window, cx: &mut Context<Self>) -> Self {
         let Prepared {
@@ -65,144 +76,127 @@ impl Shell {
             seen,
         } = prepared;
         swofty_i18n::set_language(config.language.as_deref());
-        let vr_profiles = config.vr_profiles;
-        let start_store = config.launch.start_store;
-        let ui_mode = config.ui_mode;
-        let developer_mode = config.developer;
-        let clear_old_session_logs = config.clear_old_session_logs;
-        let time_trial_boards = config.time_trial_boards;
-        let time_trial_ingame = config.time_trial_ingame;
-        let home_video = config.home_video;
-        let update_check = config.updates.check;
+        let scaling = crate::shell::ui_mode::Scaling::new(&config, window, cx);
+        let prefs = crate::shell::prefs::Prefs::from_config(&config);
         Self::guard_close(window, cx);
-        Self::recover_in_background(&store, clear_old_session_logs, cx);
+        Self::recover_in_background(&store, prefs.clear_old_session_logs, cx);
         let poll = Self::poll_game(window, cx);
         Self::rediscover_periodically(cx);
         let live = Self::poll_live(cx);
-        let updates = Self::watch_updates(cx);
+        let updates = crate::features::update::Updates::watch(cx);
         let shell = cx.weak_entity();
         let console_closed = cx.on_window_closed(move |cx, id| {
             shell.update(cx, |s, cx| s.console_closed(id, cx)).ok();
         });
-        let browser = crate::browser::Browser::new(&store.root, window, cx);
-        let shaders = cx.new(|cx| crate::shaders::ShadersView::new(store.clone(), window, cx));
+        let browser = Browser::new(&store.root, window, cx);
+        let shaders = cx.new(|cx| crate::features::shaders::ShadersView::new(store.clone(), window, cx));
         let shaders_events = cx.subscribe(&shaders, Self::shaders_event);
-        let catalog = Self::watch_catalog(cx);
+        let catalog = Browser::watch(cx);
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
         let root = store.root.clone();
+        let mut ads = crate::features::ads::Ads::start(window, &root);
+        if let Some(note) = ads.take_notice() {
+            window.notify(note, cx);
+        }
+        let window_moved = cx.observe_window_bounds(window, |this, _, _| this.ads.moved());
         let mut shell = Self {
             library,
             store,
-            page: Page::News,
-            nav: None,
-            popover: None,
             popup_timer: false,
-            notch_beside: false,
-            avatar: crate::avatar::load(&root),
-            avatar_link: None,
             root_focus: cx.focus_handle(),
-            profiles_open: true,
-            layout_width: 1440.,
-            online: crate::online::Online::new(&root),
-            open_addon: None,
-            install: None,
-            copies: Vec::new(),
-            missing_copies: Vec::new(),
-            detected: false,
-            rediscover: true,
-            processes: Vec::new(),
-            owners: Vec::new(),
-            session: None,
-            mp,
-            mp_busy: false,
-            ban: None,
-            mp_toasts: Vec::new(),
-            mp_page: crate::multiplayer::Multiplayer::new(window, cx),
-            crash: None,
-            crash_view: None,
-            crash_open: false,
-            dismissed: None,
-            steam_saves_once: false,
-            launch: None,
-            notice: None,
-            play_anyway: false,
-            play_pending: play_checks::Pending::default(),
-            blocked: None,
-            game_edited: None,
+            online: crate::features::online::Online::new(&root),
+            rooms: crate::features::multiplayer::Multiplayer::new(window, cx),
             seen,
-            restoring: false,
-            build: None,
-            cancelling: false,
             sliders: HashMap::new(),
             requests: None,
             console: None,
             developer: Default::default(),
-            views: HashMap::new(),
-            views_profile: String::new(),
-            view_gen: 0,
-            view_gens: HashMap::new(),
-            busy: HashSet::new(),
-            open_row: None,
-            progress: None,
-            tasks: None,
-            moving: None,
-            found_data: None,
-            dropping: false,
-            vr_profiles,
-            start_store,
-            ui_mode,
-            onboarding: None,
-            developer_mode,
-            clear_old_session_logs,
-            time_trial_boards,
-            time_trial_ingame,
-            home_video,
+            consent_check: false,
             reload_generation: 0,
             slow_logged: false,
-            update_check,
-            updates: crate::update::Updates::new(),
+            updates: crate::features::update::Updates::started(),
             blocks: crate::blocks::Blocks::default(),
-            content_width: 900.,
-            short: false,
-            ticking: false,
             painted: Instant::now(),
-            dock: crate::download_dock::Dock::default(),
-            dock_wake: false,
-            live_n: 0,
-            highlight: None,
-            addons: crate::addons::AddonsPage::new(window, cx),
-            saves: crate::career_saves::SavesPage::default(),
-            tt: crate::time_trial::TtPage::default(),
-            support: crate::support::SupportPage::default(),
-            db: crate::db::Db::new(cx),
+            dock: crate::shell::download_dock::Dock::default(),
+            addons: crate::features::addons::AddonsPage::new(window, cx),
+            saves: crate::features::career_saves::SavesPage::default(),
+            tt: crate::features::time_trial::TtPage::default(),
+            store_page: crate::features::store::StorePage::default(),
+            db: crate::features::db::Db::new(cx),
             news,
             news_scroll: Default::default(),
             browser,
             shaders,
-            _shaders_events: shaders_events,
             tools: Default::default(),
             settings: Default::default(),
-            _console_closed: console_closed,
-            _poll: poll,
-            _live: live,
-            _updates: updates,
-            _catalog: catalog,
+            ads,
+            game: crate::shell::probe::GameWatch::new(),
+            launching: crate::shell::play::Launching::default(),
+            account: crate::shell::account::Account {
+                session: mp,
+                busy: false,
+                ban: None,
+                toasts: Vec::new(),
+                avatar: crate::services::avatar::load(&root),
+                avatar_link: None,
+            },
+            prefs,
+            addon_views: crate::features::sections::AddonViews::default(),
+            scaling,
+            crashes: crate::dialogs::crash::Crashes::default(),
+            layout: crate::shell::render::Layout {
+                window_width: 1440.,
+                content_width: 900.,
+                short: false,
+            },
+            _background: crate::shell::startup::Background {
+                _shaders_events: shaders_events,
+                _window_moved: window_moved,
+                _console_closed: console_closed,
+                _poll: poll,
+                _live: live,
+                _updates: updates,
+                _catalog: catalog,
+            },
+            overlays: super::overlays::Overlays::default(),
+            navigation: crate::shell::nav::Navigation {
+                page: Page::News,
+                cursor: None,
+                popover: None,
+                profiles_open: true,
+                open_addon: None,
+                highlight: None,
+            },
         };
-        shell.refresh_views(cx);
+        crate::features::sections::AddonViews::refresh(&mut shell, cx);
+        shell.follow_online_access(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {
             Ok("saves") => shell.open_page(Page::Careers, cx),
             Ok("shaders") => shell.open_page(Page::Shaders, cx),
             Ok("addons") => shell.open_page(Page::Addons, cx),
             Ok("online") => shell.open_page(Page::Online, cx),
+            Ok("multiplayer") => shell.open_page(Page::Multiplayer, cx),
+            Ok("time-trial" | "timetrial") => shell.open_page(Page::Online, cx),
             Ok("browser") => shell.open_page(Page::Browser, cx),
             Ok("settings") => shell.open_page(Page::Settings, cx),
-            Ok("support") => shell.open_page(Page::Support, cx),
+            Ok("donate" | "store" | "support") => shell.open_page(Page::Store, cx),
             Ok("moderation") => shell.open_page(Page::Moderation, cx),
+            Ok(page) if page.starts_with("section:") => {
+                let section = page.trim_start_matches("section:");
+                if let Some(i) = shell
+                    .library
+                    .sections
+                    .iter()
+                    .position(|s| format!("{}/{}", s.addon, s.spec.id) == section)
+                {
+                    shell.open_page(Page::Section(i), cx);
+                }
+            }
             _ => {}
         }
         if cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_NOTICES").is_some() {
-            cx.update_global(|n: &mut crate::notices::Notices, _| {
+            cx.update_global(|n: &mut crate::shell::notices::Notices, _| {
                 let now = std::time::Instant::now();
                 n.add(
                     Notification::success(swofty_i18n::tr("Updated Project Halo 0.1.2"))
@@ -221,9 +215,9 @@ impl Shell {
                 );
             });
         }
-        shell.fetch_news(cx);
-        shell.sync_catalog_updates();
-        shell.fetch_catalog(cx);
+        crate::features::news::News::fetch(&mut shell, cx);
+        shell.browser.sync_updates(&shell.library);
+        Browser::fetch_catalog(&mut shell, cx);
         shell.db_profile_changed(cx);
         Self::warn_if_elevated(window, cx);
         shell
@@ -275,7 +269,7 @@ impl Shell {
                 }
                 game::vault_at_start(&stale);
                 if clear_old_session_logs {
-                    crate::settings::clear_logs_at_start(&stale.root);
+                    crate::features::settings::clear_logs_at_start(&stale.root);
                 }
             })
             .detach();
@@ -286,7 +280,7 @@ impl Shell {
             loop {
                 let Ok((store, rediscover, seen, profile, banner_due, saves_open)) =
                     this.update(cx, |s, _| {
-                        let r = std::mem::take(&mut s.rediscover);
+                        let r = s.game.take_rediscover();
                         let profile = s.library.profile.name.clone();
                         let due = r || s.saves.banner_profile != profile || game::banner_stale();
                         (
@@ -295,7 +289,7 @@ impl Shell {
                             s.requests,
                             profile,
                             due,
-                            s.page == Page::Careers,
+                            s.navigation.page == Page::Careers,
                         )
                     })
                 else {
@@ -322,7 +316,7 @@ impl Shell {
         let rediscover = cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(Duration::from_secs(10)).await;
-                if this.update(cx, |s, _| s.rediscover = true).is_err() {
+                if this.update(cx, |s, _| s.game.rediscover = true).is_err() {
                     break;
                 }
             }
@@ -334,37 +328,49 @@ impl Shell {
         cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(Duration::from_millis(250)).await;
-                if this.update(cx, |s, cx| s.live_poll(cx)).is_err() {
+                if this
+                    .update(cx, |s, cx| {
+                        crate::features::sections::AddonViews::live_poll(s, cx)
+                    })
+                    .is_err()
+                {
                     break;
                 }
             }
         })
     }
 
-    fn start_account(store: &Store, cx: &mut Context<Self>) -> Option<swofty_core::mpauth::Session> {
-        let mp = swofty_core::mpauth::load(&store.root);
+    fn start_account(
+        store: &Store,
+        cx: &mut Context<Self>,
+    ) -> Option<swofty_core::online::server::sign_in::Session> {
+        let mp = swofty_core::online::server::sign_in::load(&store.root);
         if let Some(current) = mp.clone() {
             let dir = store.root.clone();
+            if current.allowed {
+                swofty_core::online::multiplayer::client::load_in_background(&dir, &current.token);
+            }
             cx.spawn(async move |this, cx| {
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &current) })
+                    .spawn(
+                        async move { swofty_core::online::server::sign_in::refresh_checked(&dir, &current) },
+                    )
                     .await;
                 this.update(cx, |s, cx| {
-                    let allowed = s.mp.as_ref().is_some_and(|m| m.allowed);
-                    s.mp_apply_check(refreshed, allowed, cx);
-                    s.sync_avatar(cx);
+                    let allowed = s.account.session.as_ref().is_some_and(|m| m.allowed);
+                    Account::apply_check(s, refreshed, allowed, cx);
                 })
                 .ok();
                 let data = this
                     .update(cx, |s, _| {
-                        (s.store.clone(), s.install.as_ref().map(|i| i.dir.clone()))
+                        (s.store.clone(), s.game.install.as_ref().map(|i| i.dir.clone()))
                     })
                     .ok();
                 if let Some((store, game)) = data {
                     cx.background_executor()
                         .spawn(async move {
-                            swofty_core::timetrial::upload::flush(
+                            swofty_core::online::timetrial::upload::flush(
                                 &store.root,
                                 game.as_deref(),
                                 &store.config(),
@@ -375,31 +381,7 @@ impl Shell {
             })
             .detach();
         }
-        let mp_poll = cx.spawn(async move |this, cx| {
-            loop {
-                cx.background_executor().timer(ACCOUNT_CHECK).await;
-                let current =
-                    match this.update(cx, |s, _| s.mp.clone().map(|sess| (s.store.root.clone(), sess))) {
-                        Ok(c) => c,
-                        Err(_) => break,
-                    };
-                let Some((dir, session)) = current else {
-                    continue;
-                };
-                let was_allowed = session.allowed;
-                let refreshed = cx
-                    .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &session) })
-                    .await;
-                if this
-                    .update(cx, |s, cx| s.mp_apply_check(refreshed, was_allowed, cx))
-                    .is_err()
-                {
-                    break;
-                }
-            }
-        });
-        mp_poll.detach();
+        Account::keep_checked(ACCOUNT_CHECK, cx).detach();
         mp
     }
 
@@ -408,7 +390,7 @@ impl Shell {
             cx.spawn_in(window, async move |_, cx| {
                 let elevated = cx
                     .background_executor()
-                    .spawn(async { swofty_core::compat::elevated() })
+                    .spawn(async { swofty_core::platform::run_as_admin::elevated() })
                     .await;
                 if elevated {
                     let note = Notification::warning(

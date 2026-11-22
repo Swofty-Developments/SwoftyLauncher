@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreAllocationComponent_Serialize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bd1290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bd1290.c;pat:log-message-cxx;xref:0x14567a9b0",
+  "notes": "TyreAllocationComponent::serialize(index, bitstream) (vtable cell 0x14567a9b0): optional debug tag 3 (stream+0x29), writes an 8-bit version 0; index < (this+0x28 - this+0x20)/0x10 -> logs 'serialize(%s) v%03d', writes the 16-bit driver key (14-bit stat id | 2-bit type << 14) and the allocation via 0x142e8da20; else writes 0x3fff (none). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_allocation_component_serialize",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 4C 89 C6 89 D3",
+  "match": "0x140bd1290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bd1290",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreAllocationComponent_Serialize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bd1290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bd1290.c",
+   "notes": "V4495 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_MakeTrophySeq03",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14035e150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14035e150.c;pat:log-message-cxx;xref:0x14036737d,0x140375f99",
+  "notes": "Logs; location 'pod_pl'/'test', TV screens, champagne bottles, scene 'trophySeq03', trophies 1,2,0, drivers in slots +0x840/+0x848/+0x850 with nodes 'driver_placed_first'+team suffix (0x14036fe30), 'driver_placed_second', 'driver_placed_third', ShiftSceneTimingsByName 'podium_trophy_seq03'; monaco flag hides 'trophySeq03delegate01'/'delegate02', binds. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_make_trophy_seq03",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? EB 12 48 89 F1 E8 ?? ?? ?? ?? EB 08 48 89 F1 E8 ?? ?? ?? ?? 48 8B 86",
+  "match": "0x14036737d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14035e150",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_MakeTrophySeq03"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14035e150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14035e150.c;xref:0x14036737d",
+   "notes": "V7313 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

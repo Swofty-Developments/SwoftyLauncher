@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Parse_UpgradeCostTweakables",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143540a40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Parse_UpgradeCostTweakables(uint8_t (*self)",
+  "evidence": "decomp:re/decomp/143540a40.c;xref:0x14122ff4e,0x1434f6631,0x1434fae31,0x143539d59",
+  "notes": "Reads the R&D tweakables row ('%s.%s'): minor/major/ultimate upgrade cost, cost_to_develop, num_days_to_research/develop, cost_increase_per_upgrade, research/development time and cost percentages, failure/delay chances, rush_*, dual_development_*, max_simultaneous_developments/research, secret_upgrades_viewable_level, practice_programme_points_percentage, high_inflation, research_delay_*. Callers incl. Career_Init_TeamModifiers 0x1434f9770, Career_Load_UpgradeRows 0x143539bc0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.parse_upgrade_cost_tweakables",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 70 0A 00 00 C5 F8 29 B4 24 60 0A 00 00",
+  "match": "0x143540a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143540a40",
+  "kind": "func_start",
+  "names": [
+   "Career_Parse_UpgradeCostTweakables"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x143540a40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143540a40.c;xref:0x14122ff4e;str:\"cost_increase_per_upgrade\";str:\"major_upgrade_cost\";str:\"minor_upgrade_cost\";str:\"ultimate_upgrade_cost\"",
+   "notes": "V8996 Parses the listed names but also many more (ultimate_*, rush_*, development/research/dual percentages, max_simultaneous_*). The 100.0 default (0x42c80000) is only set for four struct slots at init, not for the cost fields."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143540a40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143540a40.c;xref:0x14122ff4e",
+   "notes": "V10301 Parses cost/day tweakables for minor/major/ultimate plus rush, research, development percentages; claim lists a subset, and the 100.0 default claim is unsupported."
+  }
+ ],
+ "proofs": []
+}

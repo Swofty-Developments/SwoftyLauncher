@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TimeAttackGates_BuildGates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429a25e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1429a25e0.c;xref:0x14299b516,0x14299c4fc,0x142d168b2,0x142d16e5a,0x142d1eeac,0x142d3c843",
+  "notes": "Resets gates (0x1429abaf0/0x1429abf50), resizes gate vector +0x10 to param_2, creates gate models (Game_TimeAttackGates_CreateGateModel, preset min(param_4,4) of 0x38-byte table 0x145f94290) hidden, plus 3 extra models (0x145f94300) at +0xe0/+0x100/+0x120. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.time_attack_gates_build_gates",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CB 4C 89 C7 89 D5",
+  "match": "0x1429a25e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429a25e0",
+  "kind": "func_start",
+  "names": [
+   "Game_TimeAttackGates_BuildGates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1429a25e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429a25e0.c;xref:0x142d16e5a,0x142d3c843,0x142d1eeac",
+   "notes": "V3404 calls 0x1429ab800=Game_TimeAttackGates_CreateGateModel, grows 16-byte record vector at +0x10..+0x18 and copies records; callers AverageSpeedRuleset_PlaceVehiclesAndGates, PursuitRuleset_Reset_2, FixupOnFinalLapStatusDefault"
+  }
+ ],
+ "proofs": []
+}

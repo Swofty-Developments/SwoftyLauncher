@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomLivery_SetPaintFinish",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a9a910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a9a910.c;pat:log-channel-CUSTOM_LIVERY_MODEL;xref:0x14db487f5,0x14db48892",
+  "notes": "(comp, out, u8 finish[4]): for each of the 4 colour slots looks up finish id finish[i] in the unordered_map [p1+0x40] (FNV-1a of the byte; missing -> throw 'invalid unordered_map<K, T> key'); entry+0x18 float (base roughness) -> out+0xbc/+0xcc/+0xdc/+0xec (w of the colour float4s), metallic float4 out+0xf0/+0x100/+0x110/+0x120 = clamp01(slot colour xyz + [[p1+0x40]+0x80]), w = entry+0x1c byte3/255; logs 'Setting paint finish' per slot. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_livery_set_paint_finish",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE",
+  "match": "0x142a9a910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a9a910",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomLivery_SetPaintFinish"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a9a910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a9a910.c;xref:0x14db487f5",
+   "notes": "V4993 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

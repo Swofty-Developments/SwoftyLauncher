@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_ShopItem_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419df170",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t (void *vm)",
+  "evidence": "decomp:re/decomp/1419df170.c;xref:0x1419dd6fe",
+  "notes": "myteam-g1: Binds a shop item: item_name, cost, cost_icon_path, type_icon_path, rarity_icon_path, texture, item_type. Store UI, matched only through shared transaction_queue strings."
+ },
+ "signature": {
+  "id": "ui.shop_item_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 C5 F8 29 B4 24 E0 01 00 00 48 89 CE 48 8D B9 30 06 00 00",
+  "match": "0x1419df170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419df170",
+  "kind": "func_start",
+  "names": [
+   "Ui_ShopItem_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419df170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419df170.c;xref:0x1419dd6fe",
+   "notes": "V9911 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

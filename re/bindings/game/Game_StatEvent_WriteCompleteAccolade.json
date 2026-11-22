@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteCompleteAccolade",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14375ba00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14375ba00.c;pat:log-channel-STATEVENT;xref:0x14375b9e5,0x14375dc15",
+  "notes": "STATEVENT sub-writer: keys via 0x1401009f0 + djb2, providers this+8..+0x10 vcall +0x18 (enabled) / +0x30 (write). 2 keys CompleteAccolade and .GameplayModeId.%d (evt+8); returns the AND of provider writes. Callers 0x14375b9e5, 0x14375dc15. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_complete_accolade",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 90 48 81 C4 D0 00 00 00 5B 5F 5E 41 5C 41 5D 41 5E 41 5F C3 CC CC 41 57 41 56 41 55 41 54 56 57 55 53 48",
+  "match": "0x14375b9e5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14375ba00",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteCompleteAccolade"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14375ba00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14375ba00.c;xref:0x14375b9e5",
+   "notes": "V7373 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_MultiSubMaterialFactory_BuildSubList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c196f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c196f0.c;xref:0x14019d4a5,0x142a903b1",
+  "notes": "Logs 'NeMultiSubMaterialResourceFactory' / 'createCombinedMaterialAsync hash=%016I64x' (channel 0x70850656), then posts render plugin message 3 (0x1050 bytes) via 0x146c621e0 (vcall +0x20 on connection [this+8], commit +0x30) with two 16-byte keys and fourteen 0x128-byte slot records. Callers Game_Material_SetPerSlotOverride 0x14019d4a5, Game_CustomMaterialModelComponent_CreateOverrideMaterial 0x142a903b1. (lane owner review requested) Better name: Render_MultiSubMaterialFactory_CreateCombinedAsync (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.multi_sub_material_factory_build_sub_list",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 7B 40 48 8B 0D",
+  "match": "0x14019d4a5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143c196f0",
+  "kind": "func_start",
+  "names": [
+   "Render_MultiSubMaterialFactory_BuildSubList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143c196f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c196f0.c;xref:0x14019d4a5",
+   "notes": "V8146 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

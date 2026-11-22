@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_MemoryTrackerConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443c49b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1443c49b0.c;pat:log-channel--;xref:0x1443c0791",
+  "notes": "Reads engine settings store 0x14604e8d8: TraceFile.enable, MemoryTracker.MemoryMetricsPools.CsvFile.writePoolsPerFrame/writePerFrameStride(1)/writeMemoryMapPerFrame/writeMemoryMapStride(100000), TraceFile.enable; warns if pool EGO_MEMORY_METRICS missing; if writePoolsPerFrame, loops CsvFile.poolName%d until the string read fails. Values stay in locals in the decomp. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_memory_tracker_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 8B 05",
+  "match": "0x1443c49b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443c49b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_MemoryTrackerConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443c49b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443c49b0.c;xref:0x1443c0791",
+   "notes": "V6589 size=1369; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

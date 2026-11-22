@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTraffic_QueuedPacketSizeConnectionId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406f280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14406f280.c;pat:log-channel-NETWORK-TRAFFIC;xref:0x14406f225,0x144070604,0x1440735fa,0x144079e99,0x14407ac82,0x14407b509,0x14407b8dd,0x14407c68c,0x14407cf5d",
+  "notes": "Args (ctx, connId u8, reliability, data, size, system). reliability!=0: inline handleSendToConnection on [*ctx] (system [+0x110] vcall +0x40); ok -> stats 0x14405bc80, refresh conn timestamp (list stride 0x58, id +0x4c), NETWORK-DATA/V log; fail -> error log. Unreliable: hash map conn -> throttle; none -> 0xe; idle -> 0x14406f800 direct send; else under CS appends packet to queue (system ? +0x58 : +0x10), updates byte/packet/large(>0x20) stats, logs NETWORK-TRAFFIC 'queued packet' push. (lane owner review requested) Better name: Game_NetworkThrottle_QueueOrSendPacket (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_traffic_queued_packet_size_connection_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 CF 49 89 C9",
+  "match": "0x14406f280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406f280",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTraffic_QueuedPacketSizeConnectionId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14406f280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14406f280.c;xref:0x14406f225",
+   "notes": "V6498 better name Game_NetworkTraffic_PushPacket: log method is push: queues packet into throttle queue + stats, broader than a size log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14406f280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406f280.c;xref:0x14406f225",
+   "notes": "V7146 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

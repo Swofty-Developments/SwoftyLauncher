@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMigrationManager_Destroy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143199e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143199e90.c;pat:log-message-cxx;xref:0x14580e660",
+  "notes": "Vtable cell 0x14580e660 (slot 0 of the vtable at 0x14580e660, written as *p1 here). Virtual deleting destructor ('~GameSessionMigrationManager()' log, NETWORK-MIGRATION): resets vtable, unregisters p1 from [p1[3]+0x110] (0x140997ee0), frees every Peer in the map p1[7..0xc] through [p1[3]+0x10] vt+0x38, clears the metadata and frees the slot array; if p2 != 0 frees p1 via the file/memory service 0x14618b130 (vt+0xe0 check, vt+0x38). Returns p1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_migration_manager_destroy",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 80 3D ?? ?? ?? ?? 01 75 68",
+  "match": "0x143199e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143199e90",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMigrationManager_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143199e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143199e90.c",
+   "notes": "V5908 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

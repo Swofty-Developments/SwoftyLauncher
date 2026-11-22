@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbLogitech_StartTrueforce",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f1cb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f1cb0.c;pat:log-channel-LOGITECH;xref:0x145bff978",
+  "notes": "Slot 1 of effect vtable 0x145bff970 (cell 0x145bff978; slot 2 = 0x1446f20e0 stop). Resets +0x1b0, stamps QPC time +0x1c0/+0x1c8. If device vcall +0x38 (trueforce) false: under CS +0x228 Start(1,0) on DirectInput constant/spring/friction effects +0x1e8/+0x1f0/+0x1f8, logs results (RACING[FFB]). Else: reads device +0x2a8 values into +0x200/+0x208, logs 'STARTING TRUEFORCE' and calls vcall +0x228(1) on the trueforce object. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_logitech_start_trueforce",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE C7 81 B0 01 00 00 00 00 00 00 C5 F8 57 C0",
+  "match": "0x1446f1cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f1cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbLogitech_StartTrueforce"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f1cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f1cb0.c",
+   "notes": "V6840 Start strings (constant/spring/friction Start(1,0)) confirmed; calls StopTrueforce on failure. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

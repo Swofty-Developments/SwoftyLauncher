@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Ffb_ComputeSuspensionLoadTorque",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b8210",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b8210.c;xref:0x1446b7cfd,0x1446b7e5b",
+  "notes": "(tyre, wheel, heat, k, dt, flag): contact angle from compression ((w+0x3c-(w+0x248-w+0x168))/w+0x3c, acos poly); +0x70 = max(R*|w+0x188|*dt*k0, patch term)*[*tyre+0x650]*2e6; +0x6c = +0x64 + heat*dt/+0x70, then cooled toward ambient (vcall +0x10 +273.15, or 403.15 K if flag) with 600 and 1.2e6 gains, capped 623.15 K. Both callers in Car_Tyre_UpdateTemperature, not FFB. (lane owner review requested) Better name: Car_Tyre_IntegrateContactTemp (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "car.ffb_compute_suspension_load_torque",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F3 48",
+  "match": "0x1446b8210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b8210",
+  "kind": "func_start",
+  "names": [
+   "Car_Ffb_ComputeSuspensionLoadTorque"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446b8210",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446b8210.c;xref:0x1446b7cfd",
+   "notes": "V3711 compression ratio / acos poly matches; only caller is Car_Tyre_UpdateTemperature (0x1446b7cfd), not Car_Ffb_TyreForceReal_Update"
+  }
+ ],
+ "proofs": []
+}

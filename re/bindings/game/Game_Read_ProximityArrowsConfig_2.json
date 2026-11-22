@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_ProximityArrowsConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143825110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143825110.c;pat:log-channel--;xref:0x14587a228",
+  "notes": "HUD element init (vtable cell 0x14587a228): GDB keys proximity_arrows.front_red_angle (def 45)->+0xe8 rad, back_red_angle->+0xec, bounding_circle_width (0.25)->+0xf4 (sq +0xfc), bounding_circle_height->+0xf8 (sq +0x100), angle_position (0.3)->+0x104; Vm_ElementBase_Init; deps +0x50..+0x70; binds node current_car.value to +0xb0; callback 0x1438250b0 on +0xa8. (lane owner review requested) Better name: Game_ProximityArrowsElement_Init (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_proximity_arrows_config_2",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 D3",
+  "match": "0x143825110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143825110",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_ProximityArrowsConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143825110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143825110.c",
+   "notes": "V6305 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

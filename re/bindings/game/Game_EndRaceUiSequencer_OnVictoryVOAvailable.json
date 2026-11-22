@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EndRaceUiSequencer_OnVictoryVOAvailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea3ba0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ea3ba0.c;pat:log-message-method;xref:0x142ea3369,0x142ea3e9f",
+  "notes": "Bus handler: logs 'onVictoryVOAvailable() called'; only when current state +0x58 == 0: if 0x146104178 vcall +0x10 is true -> next state 3; else reads option 'victory_vo_onoff' from the settings registry 0x146079258 (+0x270/+0x288) -> value 1 = state 1, else state 1 when the local player's ([+0x40]+0x148)[0x1400fa590] entry byte +0x18 != 2, otherwise 3; next state stored at +0x59. Returns 0. Fn ptr lea in 0x142ea3330, 0x142ea3e80. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.end_race_ui_sequencer_on_victory_vo_available",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4F B8 A1 00 00 00",
+  "match": "0x142ea3ba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea3ba0",
+  "kind": "func_start",
+  "names": [
+   "Game_EndRaceUiSequencer_OnVictoryVOAvailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea3ba0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea3ba0.c;xref:0x142ea336b",
+   "notes": "V5542 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

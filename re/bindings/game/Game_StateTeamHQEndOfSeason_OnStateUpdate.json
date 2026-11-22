@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateTeamHQEndOfSeason_OnStateUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437054f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437054f0.c;pat:log-message-cxx;xref:0x14585f748",
+  "notes": "onStateUpdate (vt cell 0x14585f748): online career only (system 0x14605b128, 0x14077c790, 0x1460609c8): if the lead player record lookup (0x140fdb170) is missing or not state 1, requests fade in (0x1437f07c0); then [+0xc98]+0x292=0, +0x291 = 0x104 - 0x14111b6d0(). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.state_team_hq_end_of_season_on_state_update",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC F8 00 00 00 48 89 D6 B8 3C F4 9D 7C",
+  "match": "0x1437054f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437054f0",
+  "kind": "func_start",
+  "names": [
+   "Game_StateTeamHQEndOfSeason_OnStateUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1437054f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437054f0.c",
+   "notes": "V6150 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomiser_ApplyHelmetDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401aa7c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401aa7c0.c;pat:log-channel-DRIVER_ACTOR_CUSTOMISER/DECALS;xref:0x14730a606",
+  "notes": "(cust, decal array): requires array, [[cust+8]+0x228] and count array[0x19]; per 0x28-byte entry fetches two descriptors (vcalls +8/+0x10 with provider 0x146064df0), Game_SurfacePackSystem_AssignHelmet 0x1437a6d20([cust+0x28], entry+0x20, model, ...); computes helmet/suit slot indices from [cust+0x28]+0x18380/+0x18280 tables (31 = none, logged), logs 'applyHelmetDecals (%p, %f, %f)' and sets node matrices on each attached model [[cust+8]+0x550..] via 0x143d3d8e0. Caller 0x14730a4b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_customiser_apply_helmet_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 85 D2 0F 84",
+  "match": "0x1401aa7c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401aa7c0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomiser_ApplyHelmetDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401aa7c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401aa7c0.c",
+   "notes": "V4334 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

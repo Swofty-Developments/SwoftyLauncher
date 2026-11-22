@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameTransactionSystem_StartCurrencySelectionFlow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e65c60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e65c60.c;str:s_GameTransactionSystem_StartCurrencySelectionFlow;xref:0x1419e34e4",
+  "notes": "startCurrencySelectionFlow(sys,delegate): stores delegate sys+0xc8/+0xd0; after overlay check 0x142e66210: no store ([sys+0x38]+0x7870==0) -> popup 'pp_store_unavailable', else popup 'transaction_currency_selection' kept in sys+0x78 with purchase_type=PPCurrencySelection and a queued bus message vt 0x1457f14b8. Completion callback 0x142e66380. Caller 0x1419e2b70. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_transaction_system_start_currency_selection_flow",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 00 01 00 00 48 89 D7 48 89 CE 80 3D",
+  "match": "0x142e65c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e65c60",
+  "kind": "func_start",
+  "names": [
+   "Game_GameTransactionSystem_StartCurrencySelectionFlow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e65c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e65c60.c;xref:0x1419e34e4",
+   "notes": "V5495 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

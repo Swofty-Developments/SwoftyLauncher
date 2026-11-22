@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Ne_Parse_Long",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14534dcd8",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int32_t Ne_Parse_Long(const char *text, char **end, int32_t base)",
+  "evidence": "decomp:re/decomp/14534dcd8.c;decomp:re/decomp/143dc39f0.c;xref:0x143dc3c76,0x143dc3ab6,0x143ca5088,0x143c60136,0x152713456,0x1471f8556",
+  "notes": "cxx=strtol (static UCRT): stores text into *end when end is set, then runs the common strtox body 0x14534e05c with base and is_signed 1 and returns the 32-bit long. 129 rel32 callers (117 .xtls, 12 .data1). Hardware-settings readers call it as (attr->value at +0x50, NULL, 0) after a case-insensitive name match (0x14534da24, length 0x1f), so its return address identifies the attribute. Resolved through the call at site_Ne_HwInt_WorldShadowMapSize; its own prologue is shared with the other strtox entry points. xanpavle F1-25-RE-Optimization FUN_14534dcd8 (int attribute parser)"
+ },
+ "signature": {
+  "id": "core.parse_long",
+  "section": ".xtls",
+  "pattern": "45 31 C0 E8 ?? ?? ?? ?? 89 86 E4 1E 00 00",
+  "match": "0x143dc3c73",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14534dcd8",
+  "kind": "call",
+  "names": [
+   "Ne_Parse_Long"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "func",
+   "item": "Ne_Parse_Long",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14534dcd8.c;decomp:re/decomp/14534e05c.c;decomp:re/decomp/143dc39f0.c;xref:0x143dc3c76,0x143dc3ab6,0x143ca5088,0x143c60136,0x152713456,0x1471f8556;sig:core.parse_long",
+   "notes": "V0926 strtol with a 32-bit long, 3 args (rcx text, rdx end, r8d base): sets *end = text when end is non-null, then calls 0x14534e05c(ctx, {text, end}, base, 1). That body auto-detects 0x/0 prefixes for base 0, sets EINVAL for a base outside 2..36, and on overflow sets ERANGE (0x22) and clamps to 0x7fffffff / 0x80000000. Own .pdata entry 0x14534dcd8-0x14534dd89, but its prologue bytes recur at other strtox entry points (0x14534db70, 0x14534dc24, 0x14534dd8c, 0x14534dfa8, 0x1453514c0 ...) and sigcheck --make finds no unique func_start within 96 bytes, so the call-kind signature is justified. core.parse_long matches once at 0x143dc3c73 and resolves the rel32 of the call at 0x143dc3c76 to 0x14534dcd8. A rel32 scan finds 129 calls (117 .xtls, 12 .data1) plus 5 .data1 jmps. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

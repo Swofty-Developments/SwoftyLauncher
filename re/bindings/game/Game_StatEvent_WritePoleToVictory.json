@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WritePoleToVictory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14376e9d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14376e9d0.c;pat:log-channel-STATEVENT;xref:0x143792c34",
+  "notes": "Providers this+8..+0x10; 6 entries 1.0 type 0: PoleToVictory, .SectionId, .GameplayModeId, .AIDifficulty(arg3).hasAtleastOneAI(arg4) combos. Caller 0x143790310. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_pole_to_victory",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 07 00 00 44 89 CD",
+  "match": "0x14376e9d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14376e9d0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WritePoleToVictory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14376e9d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14376e9d0.c;xref:0x143792c34",
+   "notes": "V6233 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

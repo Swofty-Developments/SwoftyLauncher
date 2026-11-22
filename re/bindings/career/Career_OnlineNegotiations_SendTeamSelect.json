@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_SendTeamSelect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141002410",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141002410.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x141000587,0x141003b4f",
+  "notes": "B-class bus handler ('ProcessTeamSelectMessage'): if driver id msg+0x10 is valid and found in the participants (this+0x270 vf+0x1c8, key +0x50/+0x52), stores/updates (id, team msg+0x14) in vector this+0x2f0..+0x300, sends net message 0xc6 (desc 0x1456b7580), logs 'Process team select sent'; if 0x140ffc990 is true posts 0x1456bb678 on the bus. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_send_team_select",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 78 48 89 D7 48 89 CE 48 8B 89 70 02 00 00",
+  "match": "0x141002410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141002410",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_SendTeamSelect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141002410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141002410.c;xref:0x141000586",
+   "notes": "V4548 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141002410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141002410.c;str:\"Process team select sent\"",
+   "notes": "V9132 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

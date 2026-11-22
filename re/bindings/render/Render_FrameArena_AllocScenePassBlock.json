@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_FrameArena_AllocScenePassBlock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc5760",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc5760.c;xref:0x143bab6e4,0x143bad702,0x143baef72,0x143bafba0",
+  "notes": "Lock-free bump allocation (CAS on arena +0x20, limit +0x10, base +0x18) of a 16-aligned 0x1700-byte block, memset 0 and filled by 0x143b8be50; Ne_FatalAbort on overflow; interns 'g_scene' (hash 0x36d5e02f47d618b9) and appends a 0x180-byte binding (size 0x1700) to the vector at +0x28 (Ne_Vector_GrowEmplace_Elem384). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.frame_arena_alloc_scene_pass_block",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 F8 29 B4 24 B0 01 00 00 44 89 CD 4D",
+  "match": "0x143bc5760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bc5760",
+  "kind": "func_start",
+  "names": [
+   "Render_FrameArena_AllocScenePassBlock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bc5760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc5760.c;xref:0x143bab6e4",
+   "notes": "V7803 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

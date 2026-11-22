@@ -275,7 +275,7 @@ pub fn compile_pass(
 }
 
 /// Compiles an effect's passes, one blob per pass. `dir` holds the effect's HLSL; `dxc` is the
-/// compiler (`swofty_core::postfx::dxc()`); `header` is `postfx.hlsli`.
+/// compiler (`swofty_core::content::postfx::dxc()`); `header` is `postfx.hlsli`.
 pub fn compile(
     effect: &Effect,
     dir: &Path,
@@ -310,11 +310,9 @@ mod tests {
     use crate::{Origin, parse_effect};
 
     const HEADER: &str = include_str!("../../sdk/include/swofty/postfx.hlsli");
-    const DXC: &str = "/home/swofty/SwoftyLauncher/dxc/bin/dxc";
 
     fn dxc() -> Option<PathBuf> {
-        let p = std::env::var_os("SWOFTY_DXC").map_or_else(|| PathBuf::from(DXC), PathBuf::from);
-        p.is_file().then_some(p)
+        crate::find_dxc(&[Path::new(env!("CARGO_MANIFEST_DIR")).join("../../dxc")]).filter(|p| p.is_file())
     }
 
     fn scratch(name: &str) -> PathBuf {

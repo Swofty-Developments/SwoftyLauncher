@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FeVehicleProxyActor_PostBuild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c3540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403c3540.c;pat:log-message-method;xref:0x14561dea0",
+  "notes": "Vtable slot 2 of 0x14561de90. Real body 0x1403c3540..0x1403c35c2: logs FeVehicleProxyActor 'postBuild %p' then tail-jumps to 0x1401cf580 (base postBuild). The decomp is polluted by that tail target. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.fe_vehicle_proxy_actor_post_build",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 64",
+  "match": "0x1403c3540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c3540",
+  "kind": "func_start",
+  "names": [
+   "Game_FeVehicleProxyActor_PostBuild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403c3540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403c3540.c",
+   "notes": "V4641 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

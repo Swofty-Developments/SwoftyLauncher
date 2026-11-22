@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Fade_ClearAllReasons",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437f08c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437f08c0.c;xref:0x142d52192,0x142da2965,0x142da4878,0x142da4883,0x143701a2a",
+  "notes": "Logs FADE_REQUESTS 'Clearing fade reasons'; for bits 0..31 set in this+0x7b8 except mask 0x80108001 (bits 0,15,20,31) calls 0x1437f07c0(this, bit, 0xd47eb226, zero). Returns void. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.fade_clear_all_reasons",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 F9",
+  "match": "0x1437f08c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437f08c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Fade_ClearAllReasons"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1437f08c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437f08c0.c;xref:0x142da2965,0x143701a2a",
+   "notes": "V3839 Logs FADE_REQUESTS 'Clearing fade reasons', loops 32 bits of mask +0x7b8 skipping 0x80108001, releases via 1437f07c0 with 0xd47eb226."
+  }
+ ],
+ "proofs": []
+}

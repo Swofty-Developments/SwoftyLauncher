@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantsUI_UITextureAssetCouldnFindValid",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424b0e10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424b0e10.c;pat:log-channel-ENTRANTS_UI;xref:0x1424bfa10,0x1424f1721,0x1424f27a5,0x1424f3732,0x1424f5642,0x1424f75e4,0x142e99d4f,0x142e9a40f",
+  "notes": "Opens gdb 'ui_texture_path' under path param_5; child node 'textures' (param_3 == 0) or 'invalid'; per row decodes obfuscated 'path'/'name' (xor 0x145890978), maps name via 0x1401b9000(param_4); mode 0 resolves the texture handle (0x1442b1b60 or 0x140846270 when param_6), logs ENTRANTS_UI 'UI Texture Asset: couldn't find valid handle for path %s' if missing, adds it (0x14083c270). Old name was a log fragment. (lane owner review requested) Better name: Game_EntrantsUi_LoadUiTexturePaths (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.entrants_ui_ui_texture_asset_couldn_find_valid",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 04 00 00 C5 F8 29 B4 24 D0 04 00 00 4C 89 4C 24 40",
+  "match": "0x1424b0e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424b0e10",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantsUI_UITextureAssetCouldnFindValid"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1424b0e10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1424b0e10.c;xref:0x1424bfa10",
+   "notes": "V5085 2.7 KB UI texture asset resolver (ui_texture_path/textures/path/name, 13 calls); error log is the failure branch. Better: Game_EntrantsUI_ResolveUITextureAsset"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1424b0e10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424b0e10.c;xref:0x1424bfa10",
+   "notes": "V7294 name fits; finding facts hold; 8 direct calls"
+  }
+ ],
+ "proofs": []
+}

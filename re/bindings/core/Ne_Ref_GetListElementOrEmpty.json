@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Ref_GetListElementOrEmpty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14420a770",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14420a770.c;xref:0x140b98dba,0x140c14764,0x140c148c2,0x140c15895,0x140c20fbf",
+  "notes": "(unused, node**, index): returns sentinel 0x146ca0e90 when *node is null. While node vcall +0x30 is true it follows [node+0x58] vcall +0x38 (up to 99 hops, alias chain); then if target vcall +0x10 is true and index < ([t+0x48]-[t+0x40])/8, returns element[index]+8 (or the sentinel if null), else the sentinel. call sites."
+ },
+ "signature": {
+  "id": "core.weak_ref_get_or_empty_sentinel",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 08 4C 89 EA 48 85 C9 74 6E",
+  "match": "0x140b98dba",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14420a770",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ref_GetListElementOrEmpty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14420a770",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14420a770.c;xref:0x140b98dba",
+   "notes": "V8170 Better name Ne_Ref_GetListElementOrEmpty: follows ref chain via vcall +0x38 up to 99 hops, checks vcall +0x10, returns element param_3 of pointer array +0x40..+0x48 (+8) or sentinel; param_3 is an index"
+  }
+ ],
+ "proofs": []
+}

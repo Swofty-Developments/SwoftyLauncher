@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_AddingPendingDriverThumbnail_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e31e50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e31e50.c;pat:log-channel-THUMBNAIL_SYSTEM;xref:0x142e31863,0x142e36d37",
+  "notes": "For set id in param_2: clears VM bool, finds set in system map, calls old callback(1), allocates new driver task (_Construct_A type 2 / _B type 1), replaces it, callback 0x142e32310, logs 'driver thumbnail REgeneration', queues id; sets +0xac on failure. (lane owner review requested) Better name: Game_ThumbnailSystem_RegenerateDriverThumbnail (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.thumbnail_system_adding_pending_driver_thumbnail_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 4C 89 C3",
+  "match": "0x142e31e50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e31e50",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_AddingPendingDriverThumbnail_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e31e50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e31e50.c;xref:0x142e31863",
+   "notes": "V5479 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

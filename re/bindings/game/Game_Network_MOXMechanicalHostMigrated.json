@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXMechanicalHostMigrated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432551a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432551a0.c;pat:log-channel-NETWORK;xref:0x14582ce00",
+  "notes": "Logs \"MOX/Mechanical: host migrated.\"; walks the vehicle set at this+0xf8/+0x100 and for each entry with flag +0x80 builds a message (vtable 0x145836530) and sends it through 0x14402e500 on transport [this+0x18]+0x3d0. (lane owner review requested) Better name: Game_Network_MOXMechanical_OnHostMigrated (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_mox_mechanical_host_migrated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 CE 80 3D ?? ?? ?? ?? 01 75 55 B8 00 01 00 00",
+  "match": "0x1432551a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432551a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXMechanicalHostMigrated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432551a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432551a0.c",
+   "notes": "V5775 name and description match body; log string/pretty name present; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_RedFlagTriggeredRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14072dd60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14072dd60.c;pat:log-channel-TELEMETRY;xref:0x1406e25b4,0x1406fe73d",
+  "notes": "One sub-record (0x140578690) per 0x60-byte entry. Bus handler: lea 0x1406e25b4 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1406fe73d in unsubscribe-all 0x1406fd6c0. Allocs 0x90 record (ctor 0x140578f20), copies msg fields, baseCtx by 0x14077bb90 'red_flag_triggered_record', pushed to static queue (guard 0x14604d9e0) under CS; logs TELEMETRY 'RedFlagTriggeredRecord'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_red_flag_triggered_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 D3 49 89 CE",
+  "match": "0x14072dd60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14072dd60",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_RedFlagTriggeredRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14072dd60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14072dd60.c;xref:0x6e25b6",
+   "notes": "V4823 name and event correct; logged text is the bare event string (no 'EA analytics event: ' prefix exists in the binary)"
+  }
+ ],
+ "proofs": []
+}

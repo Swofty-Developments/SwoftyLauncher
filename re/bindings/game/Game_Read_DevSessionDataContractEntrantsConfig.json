@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_DevSessionDataContractEntrantsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141127eb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141127eb0.c;pat:log-channel--;xref:0x141125f43,0x14112769d",
+  "notes": "Loop u=0.. while key DevSessionDataContract.Entrants.%s_%u.vehicle_name exists (FUN_143a44700 on this+0x368+0x18, %s=param_2): reads driver_name, team_name (entrants.teams stat_id), driver_customisation_name or helmet/suit/gloves/pose/emote, vehicle_customisation_name or livery/sticker, team_position, car_number, vehicle_specialisation_name; Game.DefaultEntrantGarageOverrides -> 0x58 rec at this+0x278+0x300 (count +0xe00); 0x88 entry pushed to vector param_4. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_dev_session_data_contract_entrants_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 CB 00 00",
+  "match": "0x141127eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141127eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_DevSessionDataContractEntrantsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141127eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141127eb0.c;xref:0x141125f43",
+   "notes": "V4601 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

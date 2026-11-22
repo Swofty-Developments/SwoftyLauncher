@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_AtByteKey_OrThrow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425b94f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_AtByteKey_OrThrow(void **map_ref, void *key_obj)",
+  "evidence": "decomp:re/decomp/1425b94f0.c;xref:0x141aed73f;xref:0x141aed852;xref:0x141b92043",
+  "notes": "myteam-g2: Looks up a byte key (key_obj+0x20) in a swiss-style hash map (multiply hash, 0x21 shift, group control bytes) and reports 'key not found' if absent; generic engine hash map accessor used by F1 World card screens."
+ },
+ "signature": {
+  "id": "core.hash_map_at_byte_key_or_throw",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 8B 19 48 8D 42 20",
+  "match": "0x1425b94f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425b94f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_AtByteKey_OrThrow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1425b94f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425b94f0.c",
+   "notes": "V10223 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

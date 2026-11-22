@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CollaborativeEventMatching_OnIncomingConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143151790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143151790.c;pat:log-message-cxx;xref:0x14581c860",
+  "notes": "Vtable cell 0x14581c860. Own pretty-function log. If the event session (0x1430402b0 on [[+0x10]+0x3c0]+0xa8) is missing or state 2, computes time to start; when the session is about to start logs 'tell the player session has closed' and returns 0x1c, else 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.collaborative_event_matching_on_incoming_connection",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 C5 F9 29 7C 24 40 C5 F9 29 74 24 30 48 89 CE 48 8B 41 10 48 8B 80 C0 03 00 00 48 8B 88 A8 00 00 00 E8 ?? ?? ?? ?? 48 85 C0 74 05 83 38 02 75 34 48 8B 46 10 48 8B 88 C8 03 00 00 C5 FB 10 B1 80 05 00 00 48 8B 80 F8 00 00 00 80 B8 B8 00 00 00 00 0F 84 ?? ?? ?? ?? C5 FB 10 80 90 00 00 00 E9 ?? ?? ?? ?? BE 1C 00 00 00",
+  "match": "0x143151790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143151790",
+  "kind": "func_start",
+  "names": [
+   "Game_CollaborativeEventMatching_OnIncomingConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143151790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143151790.c;xref:0x15091cf38",
+   "notes": "V5972 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

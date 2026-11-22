@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_CareerOnlineSynchroniser_IsSynchronisationRequired",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff7730",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ff7730.c;pat:log-message-cxx;xref:0x140ff742c,0x140ff880e",
+  "notes": "Reads player list [[this+0x20]+0x3c0]+0x130..+0x138 and looks up the local career entry (0x140fd0720 + 0x143066810) state in a hash map (entry+4 == 2 = other player present). Logs on CAREER_DATA_SYNC 'Playing alone' (list empty) / 'Other Player in the lobby' - NO NEED TO SYNCHRONISE. Returns true only if the list is non-empty and the state is not 2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.career_online_synchroniser_is_synchronisation_required",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 48 8B 41 20",
+  "match": "0x140ff7730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff7730",
+  "kind": "func_start",
+  "names": [
+   "Career_CareerOnlineSynchroniser_IsSynchronisationRequired"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ff7730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff7730.c;xref:0x140ff742b",
+   "notes": "V4521 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x140ff7730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff7730.c;str:\"NEbool game::championship::CareerOnlineSynchroniser::isSynch\"",
+   "notes": "V9123 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

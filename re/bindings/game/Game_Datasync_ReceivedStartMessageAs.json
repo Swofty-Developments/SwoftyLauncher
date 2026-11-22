@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Datasync_ReceivedStartMessageAs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431005a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431005a0.c;pat:log-channel-DATASYNC;xref:0x14fe71e48",
+  "notes": "Handler (lea at 0x14fe71e48 in 0x14fe71e00). Logs 'Received start message from %d as %s'. Stale continuation cookie -> broadcast finished (0x73). State 2: msg cookie 0 -> a sender that has a cookie sends it (msg 0x70) and opens the peer entry (0x1431053e0, +0x50 = 1); new cookie -> stored at +0x1c; different cookie -> state 1. Other states are logged and ignored. (lane owner review requested) Better name: Game_Datasync_OnSyncStartMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.datasync_received_start_message_as",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 48 8B 41 50",
+  "match": "0x1431005a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431005a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Datasync_ReceivedStartMessageAs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431005a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1431005a0.c;xref:0x14fe71e4a",
+   "notes": "V5734 Handles sync start message incl. sync-cookie request/host checks, not just the log. Better: Game_Datasync_HandleStartMessage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431005a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431005a0.c",
+   "notes": "V6984 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

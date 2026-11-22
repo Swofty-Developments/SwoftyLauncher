@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_FuelMix_BuildOptions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141788bc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Mfd_FuelMix_BuildOptions(void *fuel_sub, uint32_t mask)",
+  "evidence": "doc:re/db/subsystems/game.md;doc:re/research/fuel_mix_five.md#sites;decomp:re/decomp/141788bc0.c;xref:0x1417884d0,0x141788988,0x141788f9c",
+  "notes": "(mfd, mask): +0x324 = mask; rebuilds list +0x350 (0x1441f0ec0/0x1441f10d0); adds via 0x141789520: bit0 'lean' (lng_hud_fuel_lean, 0), bit1 'standard' (1), bit2 'rich' (2), bit3 'max' (lng_hud_fuel_max, 3) only when session type [[+0xf0]+0x1a8]+4 is outside 0xf..0x11. Then bool node +0x30 = 0x141789070(this). (lane owner review requested) | engine-re fuel-mix-5 2026-11-20 (static): the only fixed 4-mix parts are the four bit tests and the four Game_Mfd_FuelMix_AddRow 0x141789520 calls (ids 0..3); AddRow and Game_Mfd_FuelMix_SetSelected 0x1417891f0 take any id, so a replacement with a fifth AddRow(id 4) is enough for the row. The mask is compared with sub+0x324 at 0x14178897d (Game_Mfd_FuelMix_Update) and 0x141788ef9 (Game_Mfd_FuelMix_Recheck); a stored bit 4 the builders do not compute rebuilds the list every frame. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.mfd_fuel_mix_build_options",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 89 D3 48 89 CE 89 91",
+  "match": "0x141788bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141788bc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_FuelMix_BuildOptions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "fuel-verify",
+   "kind": "func",
+   "item": "Game_Mfd_FuelMix_BuildOptions",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x141788c9a,0x141788cc3",
+   "notes": "V1657 fuel-verify: add eax,-15; cmp eax,3; jb skips the max row; that 15..17 are race sessions not proven by these bytes"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "fuel-verify",
+   "kind": "func",
+   "item": "Game_Mfd_FuelMix_BuildOptions",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x141788c9a,0x141788cc3",
+   "notes": "V3898 fuel-verify: add eax,-15; cmp eax,3; jb skips the max row; that 15..17 are race sessions not proven by these bytes"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141788bc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141788bc0.c;xref:0x1417884d0",
+   "notes": "V4895 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

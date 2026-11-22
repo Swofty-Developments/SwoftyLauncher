@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_MessageQueue_DrainAll",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14398c0d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14398c0d0.c;xref:0x143567389,0x14356a76c,0x14356b87f,0x14398bf75",
+  "notes": "Under CS [q+0xd8]: pops each message from list q+0x58 (next = msg+8), sets q+0x69=1, leaves CS, calls msg vt[0](msg,0) then allocator [q+0x70] vt+0x38(alloc,msg) to free; repeats; clears q+0x6b, Ne_Event_ResetWithErrorTrace(q+0xc8). Callers: 0x143567220, 0x14356a490 (tail jmp), Sess_Rules_DisqualifyForPenaltyPoints, 0x14398bf50 (not Ne_Subscribe_BusMessage as the old note said)."
+ },
+ "signature": {
+  "id": "core.message_queue_drain_all",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 89 D8 00 00",
+  "match": "0x14398c0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14398c0d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_MessageQueue_DrainAll"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14398c0d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14398c0d0.c;xref:0x143567389",
+   "notes": "V3604 body matches (CS +0xd8, list +0x58, vcall[0], free vcall +0x38); only Sess_Rules_DisqualifyForPenaltyPoints is a confirmed caller; Ne_Subscribe_BusMessage is not among the 4 call sites"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Recompute_SeasonStandings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b2fa60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Recompute_SeasonStandings(void *standings, char mode)",
+  "evidence": "decomp:re/decomp/140b2fa60.c;decomp:re/decomp/14962fff0.c;decomp:re/decomp/140b30a90.c;xref:0x140ae86d7,0x140ae86f6,0x140ae8718,0x140ae873a",
+  "notes": "jmp thunk to .data1 0x149618ee0 (vtable ptrs 0x145670c10/0x145670c60). mode 2 pops the last session of the tables at +0x20 and +0x40; mode 0 calls 0x140b30040(+0x10); then vt+0x38(this), 0x140b30210(+0x10) rebuilds the cumulative table, and every session of +0x40 is sorted by 0x140b31170 with ctx {this,&packed(last round|last session id<<32)}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.recompute_season_standings",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 84 F4 0F 83 ?? ?? ?? ?? 8C AB 0F",
+  "match": "0x140b2fa60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b2fa60",
+  "kind": "func_start",
+  "names": [
+   "Career_Recompute_SeasonStandings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-03",
+    "by": "dropscores",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/standings_drop.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-03",
+   "verifier": "agreecheck",
+   "kind": "func",
+   "item": "0x140b2fa60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b2fa60.c;decomp:re/decomp/14962fff0.c;decomp:re/decomp/140b30a90.c;xref:0x140ae86d7,0x140ae92f8,0x140b84e80,0x1413cf074",
+   "notes": "V8630 Own disasm+scan: 140b2fa60 is e9 7b94ae08 (5 bytes, whole thunk) to .data1 0x149618ee0, no caller of the body (only the thunk jmp, vt 0x145670c10/c60 and e8 callers); rcx=standings, dl=mode (0/1/2 at callers); body clears/pops points +0x20 and table +0x40 rounds (0x20) of sessions (0x28, id +0x20) of records {key,i32}, 14962fff0/140b30a90 copy previous table session plus session points, then sorts each table session with 140b317a0 ctx {standings,&(id<<32|round)}; hook-after-call and thunk hook are clean"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140b2fa60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b2fa60.c",
+   "notes": "V9043 Thunk body: mode 2 pops last session vectors, mode 0 clears via 0x140b30040, then vt+0x38, sort of per-session tables with packed (round,session) context; matches."
+  }
+ ],
+ "proofs": []
+}

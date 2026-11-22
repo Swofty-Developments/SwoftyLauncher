@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetSerialisableVehicleDecalNodeList_CreateDecalNodeList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14313dbd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14313dbd0.c;pat:log-message-cxx;xref:0x143145952,0x14318d838",
+  "notes": "Callers 0x143145952, 0x14318d838. Builds a VehicleDecalNodeList in out (allocator 0x146064c80, +0x20 = this+8): for each of u16 count +0x18 net entries (0x60 at +0x20) allocs a 0x70 decal node (vt 0x1456e3240), copies fields, maps the type byte via table 0x1456e6e78, pushes (0x141108480); logs per node and total. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.net_serialisable_vehicle_decal_node_list_create_decal_node_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 48 8D 1D",
+  "match": "0x14313dbd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14313dbd0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetSerialisableVehicleDecalNodeList_CreateDecalNodeList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14313dbd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14313dbd0.c;xref:0x143145952",
+   "notes": "V5911 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

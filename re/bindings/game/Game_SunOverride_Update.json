@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SunOverride_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409a2590",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1409a2590.c;pat:log-channel-SunOverrideComponent;xref:0x1456631b8",
+  "notes": "update (secondary vtable cell 0x1456631b8): logs \"update %p\" (this-0x20); if the override index (this+0xf48) <0x40, equals active 0x145f96d2c and table 0x146106620 flag set, tail-vcalls vt+0x10. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.sun_override_update",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 65",
+  "match": "0x1409a2590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409a2590",
+  "kind": "func_start",
+  "names": [
+   "Game_SunOverride_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409a2590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409a2590.c",
+   "notes": "V4365 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

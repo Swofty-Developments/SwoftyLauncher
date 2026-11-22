@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_PerformanceMonitoringConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434b3190",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434b3190.c;pat:log-channel--;xref:0x145843350",
+  "notes": "Module init (vtable cell 0x145843350): allocator GAME_DEFAULT->+0x5b8; PerformanceMonitoring.dumpResourceTypeStats->+0x628, clearResourceTypeStatsAfterDumping->+0x629; ResourceTypeStats.mode LoadingTimeRegion(0)/AssetGroupRequest(1)->0x1460fa570; creates vector 0x1460fa568 and moves pending 0x20-byte records (0x1460fa4d0, count 0x1460fa550) into it; 0x1460fa4c8 = this. (lane owner review requested) Better name: Game_PerformanceMonitoring_Init (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_performance_monitoring_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 48 89 CE 48 8B 0D ?? ?? ?? ?? 48 8B 01 48 8D 15 ?? ?? ?? ?? FF 50 08 48 89 86 B8 05 00 00",
+  "match": "0x1434b3190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434b3190",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_PerformanceMonitoringConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434b3190",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434b3190.c",
+   "notes": "V6006 Better name Game_PerformanceMonitoring_Init: 210-line init: reads 3 PerformanceMonitoring settings but also sets up GAME_DEFAULT config, LoadingTimeRegion/AssetGroupRequest tracking arrays"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1434b3190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434b3190.c",
+   "notes": "V7072 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

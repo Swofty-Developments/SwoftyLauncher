@@ -68,6 +68,31 @@ A Halo-like dial: a base, a speed text, a boost lamp, a level bar, a battery gau
 
 `swofty hud compose <addon folder> registry/hud.json` writes the archives to a folder and exits 1 when a stock archive that carries a composed resource is left out. `swofty hud check` asserts the stock facts below against the game's original files, with the archives that carry each resource the composer writes and that they all hold the same copy.
 
+## A HUD file behind a setting
+
+A `when` at the top of a HUD file composes its records only while it holds, with the same keys as an [op file's `when`](/reference/addons/settings#content-that-needs-another-addon): option values and `addon`. A file whose `when` does not hold adds nothing to the HUD, and the build lists it as off. The composition is made when the profile builds, so the option binds `db` and a change applies at the next launch.
+
+```jsonc [swofty.json]
+{
+  "compat": { "game": "f1_25", "launcher": ">=1.10.14" },   // older launchers ignore the when and always compose the file
+  "options": [
+    { "id": "season_hud", "type": "toggle", "label": "Season HUD", "default": true, "binds": "db" }
+  ],
+  "operations": { "hud": ["hud/season.json"] }
+}
+```
+
+```jsonc [hud/season.json]
+{
+  "when": { "season_hud": true },        // off: the game's own HUD, with nothing composed
+  "hud.element": {
+    "season": { "dial": "f1_26", "sprites": { … }, "elements": [ … ] }
+  }
+}
+```
+
+The core loads every file in `registry/` as registry data and refuses a top-level `when` there, so a HUD file with a `when` sits outside `registry/`. The build warns about one inside it.
+
 ## Units and placement
 
 One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and `v` points down. A record written in Project Halo's tower unit (1/3 px at 1080p) says `"units": "tower"`; the composer reads every `at`, `bounds`, `box`, `pitch`, `gap`, `size` and `cap_height` in that unit (0.03 scene units) and the default `hud` stays 0.018. A sprite's `bounds` is where it sits in that frame, so a sprite's art lines up with the others without an `at`. The record's root sits where the bottom of its box lands on the stock bottom customisation point; the box is `box`, else the bounds of the sprite named `base`, else the bounds of every sprite. That point differs by a few hundred-thousandths between the dials, so a record that must land on one exact spot in every dial sets `root_y`, in its own units, `v` down from the dial centre; a variant's `root_y` overrides it for that dial. The selection box follows the root either way.
@@ -232,6 +257,31 @@ A decision may also run `on` a path or leaf instead of a dial value, listing its
 }
 ```
 
+A variant may set its own `stock` (and `stock_parts`) over the record's (schema `1.2`). A record that keeps the 2026 dial's parts and hides the F2 dial's only while its leaf is on:
+
+```jsonc
+"stock": "keep",
+"variants": {
+  "f2": { "dial": "f2", "stock": "hide", "switch": { "view_model": "view_model_data.hud_x_on", "default": false } }
+}
+```
+
+The f2 dial template then binds `v_stock_holder_central` and the other parts to the leaf negated, so the stock gear, rev and speed readouts show while the leaf is off and give way to the record while it is on; the f1_26 dial keeps its parts. `park` moves a dial's parts for good, so the check refuses it on a variant with a `switch`; a variant without one may park. The variant's `stock_parts` must be parts of its own dial.
+
+A record can carry the `switch` itself (schema `1.4`), so a plain dial record (no variants, no fake base dial) is scoped to a session the addon decides. A variant without its own `switch` inherits the record's; one with its own keeps it. A record that shows on the f1_25 dial only while the addon's leaf is on, and gives the stock parts back while it is off or absent:
+
+```jsonc
+"onboard": {
+  "dial": "f1_25",
+  "stock": "hide",
+  "switch": { "view_model": "view_model_data.hud_x_dial", "default": false }
+}
+```
+
+The switch's `default` (a bool, `true` when absent) is the state while the leaf has not been written: the record's root starts with it and every `v_stock_<part>` with its inverse. With `"default": false` the stock dial shows from the first frame and keeps showing if the addon's native code never runs. `switch` is for dial records: the check refuses it on a screen record (use `show`), on a scene target, and with `stock: park`.
+
+Several records with `stock: hide` on one dial (season HUDs that each show with their own cars) each hide the stock parts while their own leaf is on. Two `visible` bindings on one part fight, and the record composed last wins, so the first record by prefix binds the stock parts and each later record wraps them in a null of its own, `<prefix>_w_<part>` in the part's place in the dial scene, and binds that: with `s10_onboard` and `s11_onboard`, `s10_onboard_ctl.v_stock_frame` binds `frame` and `s11_onboard_ctl.v_stock_frame` binds `boundless_customisation.s11_onboard_w_frame`, the null around `frame`. A third record's null goes inside `s11_onboard_w_frame`. The stock dial then shows only while every record's leaf is off. The build log says which record hides its parts through wrappers.
+
 A variant's `add` entries go last at the top level unless one names its place: `before` or `after` an element of the base, or `replace` for one it stands in for. An id the variant removes or replaces is free inside that variant, so a swapped part keeps its id and its spot in the draw order. A variant also carries `decisions` of its own, built for its dial only and after the record's; they may show the variant's own `add` elements, and each dial still needs exactly one stock `MVCD` on the value (`drs_pit_state` has one in the f1_25 and f2 dials). Here the 2025 dial swaps the energy group under the bars and adds a two-state pill the 2026 dial has no value for:
 
 ```jsonc
@@ -298,6 +348,18 @@ The scene a scene target grows is read after every other addon's whole replaceme
 
 A record is not bound to the dials. With `screen` in place of `dial` its elements go on the standings board, the replay screen's drivers list or the spectator tower, with `show` and `also` naming the leaf that shows them on each screen, `stock_nodes` hiding the game's own parts while they show and `restyle` reshaping the Race Control banner: [HUD screens](/reference/ops/hud-screens). Team logos, the series logo and colour bars come from the game's own textures through the `unit` kind, `texture` bindings and stock-texture sprites: [HUD textures and units](/reference/ops/hud-textures). The rows of a timing tower are the `repeat`, `stack` and `centre` fields above. A group that slides or fades on a bool leaf carries a `motion`: [HUD motion](/reference/ops/hud-motion).
 
+## An editor entry of your own
+
+A `hud.slot` record in the same files adds an entry to the HUD editor with its own selection box, which the player moves, resizes and switches off. Native code reads the placement with `swofty/hud_slot.hpp` and draws there with the overlay: [HUD slots](/reference/std/hud-slots).
+
+```jsonc [registry/hud.json]
+{
+  "hud.slot": {
+    "radio": { "name": "Team radio", "rect": [0.02, 0.55, 0.28, 0.12], "anchor": "left" }
+  }
+}
+```
+
 ## Bridge addons
 
 Two addons that each replace `hud_dynamic_templates.ui` whole used to leave the later one the winner, and a third addon spliced their copies together by hand (Project Halo + Planked + Brake Check Panel does that). The build now merges whole replacements of the template and of the scenes node by node, and a `hud.element` composition starts from the merged result, so that bridge is no longer needed. See [two addons replacing one UI resource](/reference/ops/erp#two-addons-replacing-one-ui-resource) for the rules and the build lines and warnings.
@@ -354,6 +416,26 @@ Two limits:
 
 A compose error (an unknown game value, a missing sprite, a prefix two records share) stops the build with `the HUD elements do not compose: <reason>`.
 
+## When another addon claims the same part
+
+The editor `.uipre` the composer writes starts from the copy step 2 leaves. A setter that copy already has with the same value is kept once: an addon that ships its own copy of `driver_position_table_stacked.uipre` with `mask` hidden (Project Halo does) and a screen record that hides `mask` too compose, and the file lists `mask` once. Element names the composer adds carry the record's prefix, so they never meet another addon's.
+
+Three claims stop the build, naming the addons on both sides and the addons to turn off:
+
+| claim | when |
+|---|---|
+| the editor preview | the copy already sets one of the composer's setters to another value (shows what the composer hides, another text in a label) |
+| the board | a node under a screen's parent that the game's template has not got already shows and hides the stock board the screen masks (`mask` on the standings): another addon replaces the same board |
+| a stock part | a node the game's template has not got already shows and hides an element a record's `stock_nodes` or `restyle` hides |
+
+Two template nodes that show and hide one element fight: one board takes one addon's tower. Project Halo's timing tower (`tt_ctl.tt_mask` on `mask`) and TV Timing Tower's record stop the build with:
+
+```text
+the HUD elements do not compose: Project Halo and TV Timing Tower both replace the Track Position list, and only one of them can switch the game's own list off; turn Project Halo or TV Timing Tower off in this profile (Project Halo's template node hud_track_position.osd_visibility_option.track_position.tt_ctl.tt_mask already shows and hides mask)
+```
+
+The other side is the addon whose archive change put the node or setter there. When no addon's change holds it, the refusal says "another addon" and asks for Send Logs.
+
 ## Rules the composer keeps
 
 - `isHidden` on an element does not hide it in game or in the editor; only a template node's `visible` does. A root hidden by default has a `visible` node, and the spectator HUD gets its own groups.
@@ -363,7 +445,19 @@ A compose error (an unknown game value, a missing sprite, a prefix two records s
 - A resource the composer writes goes to every stock archive that carries it, not only to the archives its overlay is made for; an archive that also carries the resource gets an added `<archive>_2.erp` with the composed copies and the archive's new resources. A build that would leave a stock copy beside a composed one stops with `the composed HUD of <addons> would leave the game's own copy of a resource beside the composed one`.
 - A record's nodes are checked against the stock files: the template without the added groups and the signals to them is the stock template, node for node.
 
-The anim nodes a gauge or sweep adds are named `zh_<element>...`, which sorts after every stock name in the scene's anim string table.
+The anim nodes a gauge, sweep or motion adds are named `zh_<prefix>_<element>...`, which sorts after every stock name in the scene's anim string table. The table is sorted, and the names a record appends must sort after its last string. When another addon's copy of the scene already ends the table at or past `zh_<prefix>_` (Project Halo 0.2.4's `dial_complete` ends at `zh_sg8_anim`), the record's anim nodes take the first of `zi_` to `zz_` that sorts after it, and the build says so:
+
+```text
+s10_onboard: the anim string table of dial_complete.idf already ends at zh_sg8_anim, so this record's anim names start zi_
+```
+
+A table that ends past every one of them stops the build, naming the addon whose copy filled it:
+
+```text
+the HUD elements do not compose: Project Halo and SWOFTY 2010 both animate the dial, and Project Halo's animation names leave none after them for SWOFTY 2010; turn Project Halo or SWOFTY 2010 off in this profile (Project Halo's anim string table ends at zz_~)
+```
+
+A decision on a game value reads its states from the stock MVCD on that value under the dial's parent in the game's own template. Another addon's template can carry an MVCD of its own on the same value beside it (Project Halo's `halo_ctl.drs_state` on `drs_pit_state`), and the decision still takes the game's.
 
 ::: info Credit
 The element templates, the placement maths, the clip keys and the binding rules follow Project Halo by nyannoying (https://github.com/nyannoying1337/f1-25-project-halo). Uses work from Project Halo by nyannoying.

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Specialists_OnSetPrimary",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412df5b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1412df5b0.c;pat:log-channel-SPECIALISTS;xref:0x14a75675c",
+  "notes": "Message handler: logs 'Set primary specialist message received'; finds the manager (+0x358..+0x360, stride 0x128) by driver id (+0x12); if the specialist of type +0x10 is available (+2) clears isPrimary (+1) on all 6 specialists and sets it on that one; repeats for the team-mate path after 0x1412dcbd0. Only ref: .data1 0x14a75675c. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.specialists_on_set_primary",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC F8 00 00 00 48 89 D6",
+  "match": "0x1412df5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412df5b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Specialists_OnSetPrimary"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1412df5b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412df5b0.c;xref:0x14a75675e",
+   "notes": "V4741 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1412df5b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412df5b0.c;str:\"Set primary specialist message received | Specialist type: %\"",
+   "notes": "V9175 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Rnd_GetPausedReason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14385a2e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Rnd_GetPausedReason(void *out, void *a2, void *rnd, uint32_t part_key)",
+  "evidence": "decomp:re/decomp/14385a2e0.c;xref:0x14181613b,0x141816676,0x1419bf164",
+  "notes": "Out 3 bytes zeroed. Row in this+0x2e0..+0x2e8 (stride 0x88) matching the active profile id ([[0x14604c2c8+0x140]+0x198]+0x1c0 vt+0x38); match = row +0x50 byte and +0x52 u16 == param_4. 0x14385a9b0 < 2, or entity +0x2b2 != 0x3fff / +0x2b0 set: byte0 if match else byte1. Else record of component 0x1460609c8 (+0x340, 0x140fdb170): +0x30 == 1 -> byte0/byte2, else byte2/byte1. Name not shown by the body (bound). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.rnd_get_paused_reason",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 44 89 CD",
+  "match": "0x14385a2e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14385a2e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Rnd_GetPausedReason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14385a2e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14385a2e0.c;xref:0x14181613b",
+   "notes": "V10321 Finds queue entry (stride 0x88) and writes {ushort,byte} result via FUN_14385a9b0; paused-reason meaning and popup usage are unproven."
+  }
+ ],
+ "proofs": []
+}

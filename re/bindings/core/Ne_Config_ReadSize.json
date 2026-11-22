@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Config_ReadSize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439a9dd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439a9dd0.c;xref:0x143d6d510,0x14464aaa0",
+  "notes": "(ConfigNode **node, u32 *out): reads value string (node vtable +0x40) as integer size: '0x' hex, decimal, or with suffix K/M/G (x1024, x1048576, x1073741824); errno 2 missing, 0x57 bad suffix, 0x16 invalid. Callers: Render_RainFile_Load, Car_Read_VtfConvexHulls."
+ },
+ "signature": {
+  "id": "core.config_read_size",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 4C 24 68 48 85 C9 74 0B 48 8B 01 48 8D 54 24 68 FF 50 18 8B 84",
+  "match": "0x1401e4af2",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1439a9dd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Config_ReadSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1439a9dd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439a9dd0.c;xref:0x143d6d970,0x14464b383",
+   "notes": "V3476 0x prefix, decimal, suffix K(0x4b)/M(0x4d)/G(0x47); errno 2 missing, 0x57 bad suffix, 0x16 invalid; callers Render_RainFile_Load, Car_Read_VtfConvexHulls confirmed"
+  }
+ ],
+ "proofs": []
+}

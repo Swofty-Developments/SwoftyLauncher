@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Result_RequestDNF",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ccf600",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ccf600.c;xref:0x142d29085",
+  "notes": "(rec, reason): Sess_Result_RequestStatus inlined for eDidNotFinish (4) with reason, then commits the row via Sess_Result_ChangeVehicleStatus 0x142c7bae0 with the record's own XOR time/laps. Called from the RetireVehicle slot (+0x120) of Race/F1AMP/F1CG/PQ rulesets when an online participant has left (reason 9)."
+ },
+ "signature": {
+  "id": "session.result_request_d_n_f",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D3 48 89 CE 80 B9 1F 01",
+  "match": "0x142ccf600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ccf600",
+  "kind": "func_start",
+  "names": [
+   "Sess_Result_RequestDNF"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-a",
+   "kind": "func",
+   "item": "Sess_Result_RequestDNF",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ccf600.c;xref:0x142d28d30",
+   "notes": "V2284 Inlined status 4 + commit 142c7bae0 confirmed."
+  }
+ ],
+ "proofs": []
+}

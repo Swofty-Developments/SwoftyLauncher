@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2Texture_ClampBlockMinAndGetAllocInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439dcd00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439dcd00.c;xref:0x1439d20be,0x1439e80d4,0x143bda0e6",
+  "notes": "(dev,out16,texDesc): for block formats (desc+0x30 in 0x3d..0x46 or mask 0x2d0000000000000) clamps width +0x18 / height +0x1c to >=4; builds a D3D12 resource desc (dimension +0x2c, array/depth, mips +0x24, samples 1<<+0x34, flags +0x38) and writes {size,align} from [dev+0x508] vt+0xc8, or for flag bit35 via a QI (0x14589ae00) interface vt+0x220. Callers Render_Gfx2Device_CreateResourceInternal, Ne_Tga_ConvertToRgba8Buffer, Render_RenderGraph_FindOrCreateTextureDesc."
+ },
+ "signature": {
+  "id": "core.net_channel_apply_min_buffer_sizes",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 90 00 00 00 4C 89 C3",
+  "match": "0x1439dcd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439dcd00",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2Texture_ClampBlockMinAndGetAllocInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439dcd00",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1439dcd00.c;xref:0x1439d20be",
+   "notes": "V7781 better name Render_Gfx2Texture_ClampBlockMinAndGetAllocInfo: clamps w/h to >=4 for block-compressed formats (claim correct) then builds D3D12 resource desc and calls GetResourceAllocationInfo (vcall +0xc8); nothing to do with net channels"
+  }
+ ],
+ "proofs": []
+}

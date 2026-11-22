@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerInvitationalFlow_CareerInviteEventComponentInvite",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f6a0e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140f6a0e0.c;pat:log-channel-CAREER_INVITATIONAL_FLOW;xref:0x140f69d1d,0x140f6a4e3",
+  "notes": "Message handler (lea refs): logs 'Invite received with ID', finds the invitational game mode (0x1407c7280; failure logged, returns 0), its component 0x14605b0e8 -> 0x140bb2130(previous mode +0x278) and 0x140bb1f50(invite id, -1); component 0x14605d5f0 gets the target mode name copied to +0x2a8 (128-byte string). (lane owner review requested) Better name: Game_CareerInviteEventComponent_OnInviteReceived (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.career_invitational_flow_career_invite_event_component_invite",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC B8 00 00 00 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 69 B8 7E 00 00 00",
+  "match": "0x140f6a0e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f6a0e0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerInvitationalFlow_CareerInviteEventComponentInvite"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140f6a0e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f6a0e0.c;xref:0x140f69d1e,0x140f6a4e4",
+   "notes": "V4783 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

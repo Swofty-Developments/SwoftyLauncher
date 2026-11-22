@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Renderer_ResizeSlotListToIndex_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b446a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b446a0.c;xref:0x143b1be88,0x143b1cb00,0x143b226f9,0x143b4158d,0x143b4474a,0x143b4479a,0x143b44e0a,0x143b44e46,0x143b44e57,0x143b45137",
+  "notes": "Pooled list reserve(list, capacity, max) for 0xd0-byte nodes (same template as 0x141e6eb70 without element destructors): shrink unlinks trailing nodes to the free list and, for capacity>0, rebuilds via 0x143b44fb0 and swaps; grow allocates a 0x28 chunk + n*0xd0 nodes; capacity [7], max [8]; returns 0 or 0xc/1. Twin 0x143b439d0. (lane owner review requested) Better name: Game_Renderer_SlotListA_Reserve (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.renderer_resize_slot_list_to_index_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 53 10 48 85 D2 74 09 48 8D 4B 08 E8 ?? ?? ?? ?? 49 8B 06 4C 89 F1 48 89 DA FF 50 38 48 89 BE F8 0C",
+  "match": "0x143b1be88",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b446a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Renderer_ResizeSlotListToIndex_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143b446a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b446a0.c;xref:0x143b1be88",
+   "notes": "V8133 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

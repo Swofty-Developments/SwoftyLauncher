@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameModule_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140808890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140808890.c;pat:log-message-cxx;xref:0x145648728",
+  "notes": "Vtable cell 0x145648728. Per-frame: ticks [p1+0x140] vt+0x18 with dt [p1+0x78]+0x2c, 0x140a2ed40 when +0x228; works out the local player's car (+0xe8 of entrant) to set mirror/cockpit flags in [p1+0x80]+0xe0 / +0xf0; posts per-player items 0x13/0x14 to the queue 0x146c621e0; if +0x1a0 runs subsystem updates (0x140809370 on [p1+0x28]/[p1+0x20], 'WAIT:game subsystem update'), applies PC_OPTIONS mirror/shadow quality changes (+0x260, logs 'GameModule::update: m_mirrorQualitySettingsChanged...'), crowd LOD layers (standing/grandstand/marshal/podium-crowd lowLODShadows), timing service 0x146049008; 0x1430eef80 when +0x158. Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_module_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 0C 00 00 C5 F8 29 B4 24 00 0C 00 00 48 89 D7 48 89 CE",
+  "match": "0x140808890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140808890",
+  "kind": "func_start",
+  "names": [
+   "Game_GameModule_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140808890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140808890.c",
+   "notes": "V4319 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

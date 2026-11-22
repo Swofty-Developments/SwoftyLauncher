@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ScheduleNotifications_AddingCardManualEventNotification",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141289690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141289690.c;pat:log-channel-SCHEDULE_NOTIFICATIONS;xref:0x140d8da7b",
+  "notes": "Finds the stat with id param_3 (u16 at entry+8) in the hash map [+0x18]; if found and [+0x50] set: logs SCHEDULE_NOTIFICATIONS \"Adding a card manual event notification statId: %d, day: %d\", 0x141267cf0([+0x50],stat,day), allocates a 0x18 notification (vt 0x1456d1640, {param_2, day, statId}) and pushes it to vector +0x38..+0x48. Caller Career_ContractRenewal_AddEvent (0x140d8da7b). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.schedule_notifications_adding_card_manual_event_notification",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 66 41 83 F8 FF",
+  "match": "0x141289690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141289690",
+  "kind": "func_start",
+  "names": [
+   "Game_ScheduleNotifications_AddingCardManualEventNotification"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141289690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141289690.c;xref:0x140d8da7b",
+   "notes": "V4726 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

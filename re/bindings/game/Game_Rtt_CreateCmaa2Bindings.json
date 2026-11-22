@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_CreateCmaa2Bindings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c3f6d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c3f6d0.c;xref:0x143d85188,0x15255dbc4",
+  "notes": "(cmaa): creates compute dispatch objects (0x1439e5470/0x1439e57f0) edges_color_2x2 (+0x40, groups (w+0x1b>>2)/7), computeDispatchArgs (+0x50, +0x58), processCandidates (+0x68), colorApply2x2 (+0x78), debug_draw_edges (+0x88, (w+15)>>4) and binds inoutColorReadonly/Writeonly, workingControlBuffer, workingEdges, ... by name (Render_Gfx_BindShaderResourceByName_A/B); patches the workingEdges slot via FNV hash. Callers RttGenerator, 0x15255da10. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.rtt_create_cmaa2_bindings",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 8B 51 38 48 8B 81",
+  "match": "0x143c3f6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c3f6d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_CreateCmaa2Bindings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c3f6d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c3f6d0.c;xref:0x143d85188",
+   "notes": "V7872 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_StartFlow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffd830",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ffd830.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x140ffe85c",
+  "notes": "Sets this+0x290 = 3, calls 0x140ffd940 and 0x140ffc450; if the latter is true logs 'Starting negotiations flow with request type: %d' (3) else 'Starting holding screen', then posts bus message 0x1456bb528 with value 3 or 5 via 0x1439876c0. Caller 0x140ffda70. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_start_flow",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 48 89 CE C7 81 90 02 00 00 03 00 00 00",
+  "match": "0x140ffd830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffd830",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_StartFlow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ffd830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffd830.c;xref:0x140ffe85b",
+   "notes": "V4534 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x140ffd830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffd830.c;str:\"Starting negotiations flow with request type: %d\"",
+   "notes": "V9126 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

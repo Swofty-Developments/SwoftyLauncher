@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "FeTile_ItemBase_Slot78_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141698640",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/141698640_item_v78.c;xref:0x145703e58,0x145703f28,0x145704068,0x145704178,0x145704288,0x145704368,0x145704458,0x145704618+69;pat:vtable-slot;decomp:re/decomp/141698640.c",
+  "notes": "vt +0x78; role unknown m1-verify: bare jmp to 0x14b635140"
+ },
+ "signature": {
+  "id": "fe_tiles.item_base_slot78",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 9C 92 E9 ?? ?? ?? ?? 81 DF CC DA",
+  "match": "0x141698640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141698640",
+  "kind": "func_start",
+  "names": [
+   "FeTile_ItemBase_Slot78_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x141698640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141698640.c",
+   "notes": "V4151 bare jmp 0x14b635140, role unknown as claimed; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

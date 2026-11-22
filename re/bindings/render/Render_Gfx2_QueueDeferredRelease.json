@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_QueueDeferredRelease",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fdd40",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439fdd40.c;xref:0x1439d732a,0x1439e0e2e,0x143a0e480",
+  "notes": "Frees a descriptor record {type, block, cpu, gpu, index} (param_2): for type 0 without param_3 bumps serial 0x14618c160 (stored at [device+0x528]+0x140) and appends {serial, record} to the 0x30-byte deferred list +0xd78..+0xd88; else frees the block at once (Render_Gfx2_BlockAllocator_Free in pool +0x5b0+type*8). Clears the record. Callers 0x1439d7240, 0x1439e0d50, Render_Gfx2Device_AllocViewDescriptor_A/B 0x143a0e340/0x143a0e5b0. (lane owner review requested) Better name: Render_Gfx2Device_FreeDescriptorSlot (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_queue_deferred_release",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 8B 7A",
+  "match": "0x1439fdd40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439fdd40",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_QueueDeferredRelease"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439fdd40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fdd40.c;xref:0x14397b5b7",
+   "notes": "V7794 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

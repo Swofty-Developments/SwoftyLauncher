@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleDropInManager_OnRequestSessionData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323fa80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14323fa80.c;pat:log-message-cxx;xref:0x14582b1b0",
+  "notes": "Read in full (this, u8 conn): only when [this+8] < 2 (host role) and the session object this+0x30 passes 0x1436183e0/0x1436184e0 with +0x42 == 0: logs 'onRequestSessionData(%d)' and posts message 0x1458364f0 (id 0x3600000007) through 0x14402e500 on [this+0x20]+0x3d0 with mode 2 to conn. Vtable cell 0x14582b1b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_drop_in_manager_on_request_session_data",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 83 79 08 01 0F 8F ?? ?? ?? ?? 89 D3 48 89 CE 48 8B 79 30",
+  "match": "0x14323fa80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323fa80",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleDropInManager_OnRequestSessionData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323fa80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323fa80.c",
+   "notes": "V6054 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

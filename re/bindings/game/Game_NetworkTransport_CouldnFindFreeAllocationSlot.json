@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_CouldnFindFreeAllocationSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405ac50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14405ac50.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x14407aaad,0x14407adec",
+  "notes": "Logs 'addConnectionToStore' and 'newConnectionID': allocates a free connection id ('connection id [%02d] is now allocated') or logs 'Couldn't find free allocation slot.' (lane owner review requested) Better name: Game_NetworkTransport_AddConnectionToStore (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_transport_couldn_find_free_allocation_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 00 00 00 48 83 79 10 00",
+  "match": "0x14405ac50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14405ac50",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_CouldnFindFreeAllocationSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14405ac50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14405ac50.c;xref:0x14407aaad",
+   "notes": "V6485 partial: better name Game_NetworkTransport_AddConnectionToStore; addConnectionToStore: allocate id, register; slot failure is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14405ac50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405ac50.c;xref:0x14407aaad",
+   "notes": "V7128 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

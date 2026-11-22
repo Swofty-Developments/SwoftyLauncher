@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomMaterialModelComponent_CreateOverrideMaterial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a8fe40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a8fe40.c;pat:log-message-method;xref:0x1428aa3eb,0x1428aae7f,0x1428aaee0,0x1428b2ff3,0x1428b3057,0x1428b35dc,0x142a99e5f,0x142a9cf12,0x14dafaf79,0x14db2c598,0x14db360fb,0x14db451fd,0x14db589f6,0x14db75026",
+  "notes": "No overrides (p1+0x2a0 == 0) but one active (p1+0x48): SetNumberOverrideA, base material p1+0x38 written to render node [[p1+0x20]+0x80]+0xf0 (alloc type 0x13, 0x10 bytes), CopyOverrideParams([p1+0x28]), ReleaseOverrideMaterial, SetNumberOverrideB (' -- default material '). Else: per 0x20-byte entry at p1+0xe0 hashes the slot names (0x143929a10) into a combined hash; if != old hash p1+0x48 creates the multi-sub material 0x143c196f0, applies it like above, old one released, p1+0x48/+0x50 = new. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_material_model_component_create_override_material",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 49 89 CF",
+  "match": "0x142a8fe40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a8fe40",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomMaterialModelComponent_CreateOverrideMaterial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a8fe40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a8fe40.c;xref:0x1428aa3eb",
+   "notes": "V4985 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

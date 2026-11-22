@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomisationReplicationManager_OnNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431c1d90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431c1d90.c;pat:log-message-cxx;xref:0x145824898",
+  "notes": "Vtable cell 0x145824898 (this=[obj+8] = manager). Only when int [mgr+0x10]+8 < 2 (host): sends every replicated player's customisation (map list [mgr+0x40], id +0x60, record via Wear_Get_DriverCustomisation_Thunk 0x14246d940) to the new connection as net message 0x145824820 (0x14402e500([mgr+0x20], 2, ..)); then finds the human of that connection in [[mgr+0x18]+0x58..+0x60] (+0x63 == conn, +0x5b bit4), builds a default record, gets its id from FindOrGeneratePackedN 0x14313b680 and sends message 0x1458247c0; no human -> logs 'Could not find human for connection id (%d)'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_customisation_replication_manager_on_new_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 C6 00 00",
+  "match": "0x1431c1d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431c1d90",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomisationReplicationManager_OnNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431c1d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431c1d90.c",
+   "notes": "V5936 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

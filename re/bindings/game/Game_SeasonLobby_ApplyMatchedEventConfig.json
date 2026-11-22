@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonLobby_ApplyMatchedEventConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143156510",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143156510.c;xref:0x14581cd68",
+  "notes": "Vtable slot 0x14581cd68 (slot 0x1431581a0 logs 'F1 World Event data - missing track'). ev=[this+0x80]+0xf0 (weak ref +0xf8). If ev+0x18 track unset: seed 624-word RNG from QPC, pick ev+0x28 list[rand%n] via 0x143929b90 -> ev+0x18; 0x1430a9310([doc+0x418],ev); log 'MOX/Season: resetTrackSet(%d, %s)' then 0x143099650(..,1,0) else '- but the document is not open.' Type 0x0e: AddTeam_2 0x142475600 per entry (stride 0xa8) into [doc+0x518]+0x30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.season_lobby_apply_matched_event_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 8B 81",
+  "match": "0x143156510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143156510",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonLobby_ApplyMatchedEventConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_SeasonLobby_ApplyMatchedEventConfig",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143156510.c;xref:0x143156510",
+   "notes": "V2751 big lobby/event handler ok (+0x80, doc+0x2f0, [doc+0x3c8]+0x564/0x568, vcall [doc+0x458]); NO inline MT19937 constants - random via func_0x143929b90, so MT19937 unverified"
+  }
+ ],
+ "proofs": []
+}

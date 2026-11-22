@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkContent_ChangedRoleHost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143039ea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143039ea0.c;pat:log-channel-NETWORK-CONTENT;xref:0x14305bb4a,0x143064a12",
+  "notes": "Content domain verifier: logs \"Changed role to HOST (conn %d)\"; resets player/connection lists (this+0xb0, map this+0xc8), sets host state, dumps IDMAP and re-evaluates content items (\"ContentItem %s is now enabled/DISABLED\"). (lane owner review requested) Better name: Game_NetworkContent_BecomeHost (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_content_changed_role_host",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4F B8 D0 00 00 00",
+  "match": "0x143039ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143039ea0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkContent_ChangedRoleHost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143039ea0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143039ea0.c;xref:0x14305bb4b",
+   "notes": "V5433 role change to HOST also rebuilds content IDMAP and enables/disables ContentItems (231 lines). Better: Game_ContentDomainVerifier_OnRoleChangedToHost"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143039ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143039ea0.c;xref:0x14305bb4a",
+   "notes": "V6934 231 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

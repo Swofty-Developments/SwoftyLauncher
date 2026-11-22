@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_SessionClock_SetTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ceaa70",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "xref:0x143584383,0x1428836fc,0x142dff1f7,0x143609f77;decomp:re/decomp/14e70b9f0.c",
+  "notes": "thunk to 0x14e70b9f0 (readable): clock+0x60 = clock+0x68 = t (double seconds), +0x70 = 0, and if mode +0x28 == 1 re-bases the running clock (+0x78 start stamp from [[+0x38]+0xd8] timer). Elapsed read (inlined, e.g. 0x142ccf012): running byte +0x98 ? +0x70 + (now - +0x78) * +0x88 : +0x60. Clock = [RaceRuleset+0x2f0] = [RedFlagSystem+0x160]; callers: red flag time skip, red flag restart, SC teleport, Braking Point placement 0x142882f00"
+ },
+ "signature": {
+  "id": "session.session_clock_set_time",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? EC FB E9 ?? ?? ?? ?? 0F 8B",
+  "match": "0x142ceaa70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ceaa70",
+  "kind": "func_start",
+  "names": [
+   "Sess_SessionClock_SetTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "func_start": "0x14e70b9f0"
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sl-verify",
+   "kind": "func",
+   "item": "Sess_SessionClock_SetTime",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14e70b9f0.c;xref:0x142ceaa70",
+   "notes": "V1817 +0x60,+0x68=t,+0x70=0; rebase +0x78=now-t when +0x28==1"
+  }
+ ],
+ "proofs": []
+}

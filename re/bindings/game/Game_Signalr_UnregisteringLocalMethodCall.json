@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Signalr_UnregisteringLocalMethodCall",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b9ff0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432b9ff0.c;pat:log-channel-SIGNALR/V;xref:0x14259feab,0x1425a00ae,0x1425aa962,0x1425c5d30,0x143354dfa,0x1434579fe,0x1501fe9a3",
+  "notes": "Logs SIGNALR/V \"%s: %s\" with SignalRHubMethodHandle::unregisterSelf and *param_1; if name non-null: logs the SIGNALR unregisterLocalMethodCall line (inlined reporter), removes the djb2 hash of the name from [[0x1460c4a30]+0x500]+0x20098 +0x468 (0x1444f5510), 0x1433312a0(param_1[1]+8,&name), then param_1[0]=0. Old name was only the inlined log fragment. (lane owner review requested) Better name: Game_SignalRHubMethodHandle_UnregisterSelf (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.signalr_unregistering_local_method_call",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 69 B8 F9 00 00 00",
+  "match": "0x1432b9ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b9ff0",
+  "kind": "func_start",
+  "names": [
+   "Game_Signalr_UnregisteringLocalMethodCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432b9ff0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432b9ff0.c;xref:0x14259feac",
+   "notes": "V5897 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

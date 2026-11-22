@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineManager_OnlineCareerDeserialiseServer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141007000",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141007000.c;pat:log-channel-CAREER_ONLINE_MANAGER;xref:0x1456b7348",
+  "notes": "Not a deserialiser: vt cell 0x1456b7348 (vtable 0x1456b7310, slot +0x38) of an async load operation; switch on state +0x15c (copied to +0x158): 1 request, 2 receive, 3 deserialise 0x140fdc5d0 (logs 'failed to deserialise the server career'), setup slot 0x1429d42f0, load 0x1429d0b90, owner name '#ui_menu_data.current_online_career_owner_name'; 4/9 'Career_Online_FailedLoadCareer', 6 'Career_Online_RecoverBackup'. (lane owner review requested) Better name: Game_CareerOnlineLoadCareerOp_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.career_online_manager_online_career_deserialise_server",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 8B 81 5C 01 00 00",
+  "match": "0x141007000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141007000",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineManager_OnlineCareerDeserialiseServer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141007000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141007000.c",
+   "notes": "V4562 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

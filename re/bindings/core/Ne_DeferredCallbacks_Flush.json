@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_DeferredCallbacks_Flush",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a60650",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a60650.c;xref:0x1409a9d8c,0x14142f0e4,0x1428ba56b,0x1437ab689",
+  "notes": "Under CS [this+0x88]: if +0x10c set, ++counter +0x108 and when it was >0 calls 0x143a60500(this). Then under CS [this+0xd8] iterates vector [+0xc0,+0xc8) of 32-byte records {fn,ctx,arg,u32}: when fn or ctx non-null calls fn(ctx,arg,u32); then clears the vector (end=begin). Callers Game_ActorAssetGroupManager_Update, Game_DecalCustomisation_SwapAssetGroup, Game_FrontendSceneSystem_ProcessCommand."
+ },
+ "signature": {
+  "id": "core.deferred_callbacks_flush",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 89 88 00 00",
+  "match": "0x143a60650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a60650",
+  "kind": "func_start",
+  "names": [
+   "Ne_DeferredCallbacks_Flush"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a60650",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a60650.c;xref:0x1409a9d8c",
+   "notes": "V7832 better name Ne_DeferredCallbacks_Flush: entries are 32 bytes (puVar3+4), {fn,ctx,arg,u32 id}, not 24; rest (CS +0x88 fixup when +0x10c, CS +0xd8 list +0xc0..+0xc8, callers) matches"
+  }
+ ],
+ "proofs": []
+}

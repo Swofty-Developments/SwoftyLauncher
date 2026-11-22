@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EndRaceUiSequencer_OnFinishInvitationalRoundResults",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea3df0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ea3df0.c;pat:log-message-method;xref:0x142ea37f4,0x142ea3f0d",
+  "notes": "Bus handler: logs END_RACE_UI_SEQUENCER 'onFinishInvitationalRoundResults() called' and clears the wait flag +0x89 (state 10 of the update then proceeds). Returns 0. Fn ptr taken by lea in 0x142ea3330, 0x142ea3e80. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.end_race_ui_sequencer_on_finish_invitational_round_results",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 A1 00 00 00",
+  "match": "0x142ea3df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea3df0",
+  "kind": "func_start",
+  "names": [
+   "Game_EndRaceUiSequencer_OnFinishInvitationalRoundResults"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea3df0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea3df0.c;xref:0x142ea37f6",
+   "notes": "V5545 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

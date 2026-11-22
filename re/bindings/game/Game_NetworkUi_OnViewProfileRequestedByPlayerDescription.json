@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnViewProfileRequestedByPlayerDescription",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b0910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430b0910.c;pat:log-message-method;xref:0x14220ada1,0x1422175aa,0x14221e456,0x1422a9b1f,0x1430ac846,0x1430acc86",
+  "notes": "Logs NETWORK-UI '%s(%s).' with onViewProfileRequestedByPlayerDescription. If no session or session+0x750 != 1, asks the platform service [ctx+0x390] vslot +0x48 for the privilege; granted and player flag bit 0x10 -> opens the profile via [ctx+0x10f8] vslot +0x20; else closed message 'no_view_profile_privilege'. Tail-jumped from Game_NetworkUi_OnViewProfileRequested(ByDriverStatId). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ui_on_view_profile_requested_by_player_description",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x1430b0910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b0910",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnViewProfileRequestedByPlayerDescription"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b0910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b0910.c;xref:0x14220ada1",
+   "notes": "V5346 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

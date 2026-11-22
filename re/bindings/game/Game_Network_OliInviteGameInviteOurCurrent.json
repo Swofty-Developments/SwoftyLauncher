@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OliInviteGameInviteOurCurrent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143165750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143165750.c;pat:log-channel-NETWORK;xref:0x14581f2a0",
+  "notes": "Cell 0x14581f2a0 = slot 6 of vtable 0x14581f270. Gets the current session id via vt+0x68 of [[[this+8]+0xd8]+0x148] and compares it with the invite (param_2+0x10/+0x18, else +0x20/+0x24); on match low byte 1 and logs NETWORK 'Oli/Invite: Game invite is to our current session. Ignoring invite.', else 0. Better name: Game_Network_IsInviteToCurrentSession (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_oli_invite_game_invite_our_current",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 48 89 D6 C7 44 24 48 00 00 00 00",
+  "match": "0x143165750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143165750",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OliInviteGameInviteOurCurrent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143165750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143165750.c",
+   "notes": "V5802 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

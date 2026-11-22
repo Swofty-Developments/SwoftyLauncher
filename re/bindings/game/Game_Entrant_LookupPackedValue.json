@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Entrant_LookupPackedValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413f8e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1413f8e30.c;xref:0x14023403c,0x140fe0a64,0x140febfaa,0x1413f8d2e,0x1413f8f4e,0x1413fff88,0x141429d4d,0x141431944,0x1414338ae,0x14144219b,0x14144283e,0x14144296e,0x141446a95,0x141446aff,0x1419679e4,0x141e63918,0x141fdcae1,0x141fdd197,0x142056f74,0x14220df37,0x14254a347,0x14310db55,0x14313fda6,0x143141747,0x14314516c,0x1432b266a",
+  "notes": "(this, out, key): record = 0x14243fd10([this+0x28], &key); if found builds a 16-bit key from rec+0xcf2 (0 when rec byte 0 is 0) and searches the 0x60-byte groups +0x230..+0x238, each an FNV-1a hashed set (+0x30 buckets, mask +0x48, end +0x18, short key +0x10); out = group+4 of the first group holding it, default 0x3fff0000. Returns out. Called e.g. from 0x140233ed0, 0x140fdd630, 0x1413f8d10. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.entrant_lookup_packed_value",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CF 44 89 44",
+  "match": "0x1413f8e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413f8e30",
+  "kind": "func_start",
+  "names": [
+   "Game_Entrant_LookupPackedValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1413f8e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413f8e30.c;xref:0x140fe0a64",
+   "notes": "V8026 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

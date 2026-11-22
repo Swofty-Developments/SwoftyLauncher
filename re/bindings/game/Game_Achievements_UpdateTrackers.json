@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Achievements_UpdateTrackers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14017bbb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14017bbb0.c;pat:log-channel-ACHIEVEMENTS;xref:0x1455df6d8",
+  "notes": "Vtable slot (cell 0x1455df6d8): achievement tracker update. Inactive/unsigned (+0x3e9, +0x3b0 vs +0x3b8) -> frees trackers +0x280..+0x288, returns. Lead presence ((+0x238)+0x140)+0x198)+0x1c0 missing or vcall +0x28 true -> remove all (0x1443afb10(this+0x258)); untracked -> remove, then if signed (vcall +0x10) add tracker 0x1443af490. Writes random stamps +0x390/+0x3a0 into each tracker. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.achievements_update_trackers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 CE 80 B9 E9 03 00 00 00",
+  "match": "0x14017bbb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14017bbb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Achievements_UpdateTrackers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14017bbb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14017bbb0.c",
+   "notes": "V4312 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

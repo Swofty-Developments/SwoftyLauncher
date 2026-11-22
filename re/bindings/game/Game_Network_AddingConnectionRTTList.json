@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_AddingConnectionRTTList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406e7d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14406e7d0.c;pat:log-channel-NETWORK;xref:0x152f106b5",
+  "notes": "Connection-arrived handler: if the conn id is not yet in the RTT vector this+0x10..0x18 (0x58-byte entries, id at +0x4c) logs \"Adding connection [%d] to RTT list\" and appends an entry with QPC timestamps, else logs \"already present\"; sets local connectivity on. (lane owner review requested) Better name: Game_Network_AddConnectionToRttList (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_adding_connection_rtt_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 F7 81 B0 04 00 00 FD FF FF FF",
+  "match": "0x14406e7d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406e7d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_AddingConnectionRTTList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14406e7d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14406e7d0.c;xref:0x152f106b7",
+   "notes": "V6496 partial: better name Game_Network_OnConnectionArrived; connection arrived: setLocalConnectivity, RTT list add"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14406e7d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406e7d0.c;xref:0x152f106b7",
+   "notes": "V7143 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

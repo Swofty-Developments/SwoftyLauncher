@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_IncorrectlyDefinedLeagueEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143180fa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143180fa0.c;pat:log-channel-NETWORK-LEAGUES;xref:0x14317fcff",
+  "notes": "Parses a League Event JSON object: eventId, round, tier, tierCount, trackID, eventStartTime, secondsToEventStart, hasLobbyBeenOpened and the standings array (userId, platform, memberEntryId, constructorId, points, isAdmin per entrant); logs '? Incorrectly defined League Event.' and 'E%02d - ...' errors. Caller Game_NetworkLeagues_ParseLeague 0x14317e690. (lane owner review requested) Better name: Game_NetworkLeagues_ParseLeagueEvent (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_leagues_incorrectly_defined_league_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 F8 29 B4 24 B0 01 00 00 48 89 8C 24 90 00 00 00",
+  "match": "0x143180fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143180fa0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_IncorrectlyDefinedLeagueEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143180fa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143180fa0.c;xref:0x140277e9c",
+   "notes": "V5863 NetworkLeagues_ParseLeagueEventJson: 37KB JSON parser of event fields (eventId, round, trackID, standings...)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143180fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143180fa0.c;xref:0x14317fcff",
+   "notes": "V7012 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

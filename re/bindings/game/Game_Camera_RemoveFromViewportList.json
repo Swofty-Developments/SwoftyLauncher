@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Camera_RemoveFromViewportList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144402840",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144402840.c;xref:0x144400fa3,0x144536afa,0x14453719b,0x154b0250a,0x154b02567",
+  "notes": "List at [this+0x50]: null list/object -> errno 0xe; finds param_2, erases it (memmove), calls object vt+0x30, returns 0; not found -> errno via TLS error slot + backtrace ring. No TlsAlloc of its own (old note wrong). Counterpart of 0x144402400; also reached by jcc 0x144400fa3. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.camera_apply_viewport_a",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B 79 50 48 85 FF 0F 84",
+  "match": "0x144402840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144402840",
+  "kind": "func_start",
+  "names": [
+   "Game_Camera_RemoveFromViewportList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144402840",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144402840.c;xref:0x144400fa4",
+   "notes": "V7668 BetterName Game_Camera_RemoveFromViewportList: finds pointer in list at this+0x50, erases it, vcall +0x30 on it"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gbuffer_InitViewNameHashes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143db7700",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143db7700.c;xref:0x140101078,0x14010c9ed",
+  "notes": "Constructor (rename: it builds the object, not only hashes): base ctor 0x143b5ad80, vtbl 0x1459b69e0, param_5 to +0x550, then sets view slots 0..7 via vcall +0x30 on [this+0x20] with Ne_HashedName_FromString names depthDSV, depthSRV, main, albedo, normal, surface, surface2, vrsImage (slots 2..7 only when found in map [param_4]+0x88, else empty). Callers 0x140101078 (in 0x140100f00), 0x14010c9ed (Render_Gfx_BuildConfigObject). (lane owner review requested) Better name: Render_Gbuffer_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gbuffer_init_view_name_hashes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 4C 89 CF 48 89 CE 48 8B 9C",
+  "match": "0x143db7700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143db7700",
+  "kind": "func_start",
+  "names": [
+   "Render_Gbuffer_InitViewNameHashes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143db7700",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143db7700.c;xref:0x140101078",
+   "notes": "V8350 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapStorage_OnSyncFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407e2140",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407e2140.c;pat:log-channel-GAME;xref:0x145648400",
+  "notes": "Game handler for ghost storage syncTasksFinished (vtable cell 0x145648400): for DRY then WET gets the PB ghost of the track (0x142f93bb0(storage,[+0xe18]+0xe0,?,wet)), swaps pending handler +0x280 into +0x278, reads its header (0x142f8ac70) into PB times game+0x11f6/+0x11fc (dry) and +0x1202/+0x1208 (wet), posts bus msg vt 0x14564b0b8 when they changed; then pushes participant data via 0x1437a7290. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ghost_lap_storage_on_sync_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 48 89 CE E8",
+  "match": "0x1407e2140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407e2140",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapStorage_OnSyncFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407e2140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407e2140.c",
+   "notes": "V4314 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

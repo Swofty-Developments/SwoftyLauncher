@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_UnregisteringNetworkSafetyCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430cef70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430cef70.c;pat:log-channel-NETWORK;xref:0x14fe062e7",
+  "notes": "Only ref: the lea at 0x14fe062e7 in 0x14fe06200. (this, car): finds the car in the registered list, logs '[SAFETY_CAR] unregistering network safety car(%d).', removes it and decrements the count at +0x58. (lane owner review requested) Better name: Game_Network_UnregisterNetworkSafetyCar (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_unregistering_network_safety_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 83 79 08 02",
+  "match": "0x1430cef70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430cef70",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_UnregisteringNetworkSafetyCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430cef70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430cef70.c;xref:0x14bc34d5c",
+   "notes": "V5367 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

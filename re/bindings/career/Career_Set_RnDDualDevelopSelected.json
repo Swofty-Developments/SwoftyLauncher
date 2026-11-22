@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Set_RnDDualDevelopSelected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c55700",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Set_RnDDualDevelopSelected(int64_t *self,uint8_t a2)",
+  "evidence": "decomp:re/decomp/141c55700.c;xref:0x141c54420",
+  "notes": "myteam-g1: Writes #r_and_d_flow.upgrade_dual_develop_selected (dual-develop toggle, param byte)."
+ },
+ "signature": {
+  "id": "career.set_rn_ddual_develop_selected",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 8B 31 88 96 4A 03 00 00",
+  "match": "0x141c55700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c55700",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_RnDDualDevelopSelected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c55700",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c55700.c;xref:0x141c54420",
+   "notes": "V9972 Writes #r_and_d_flow.upgrade_dual_develop_selected and rush_production."
+  }
+ ],
+ "proofs": []
+}

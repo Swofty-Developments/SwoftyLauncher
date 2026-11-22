@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCarManager_SetCarNumber",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428b2d70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428b2d70.c;pat:log-message-method;xref:0x1428c3e97,0x1428e9e2c",
+  "notes": "Logs setCarNumber() (FRONTEND_SCENE_CAR_MANAGER). Hash lookup of ushort handle *param_2 in car map (+0x168..+0x19c); missing -> WARN 'Can't find car with handle %d.'. Car +0x7268 component (type 0x1460798e0): writes number param_3 to +0x67f9 and flag +0x67fa=1, recomputes visibility bytes +0xf0/+0x78 and refreshes (0x142a9b470, 0x142a8fe40). Decomp tail at 0x142a9c1f0 is a merged tail-jump target outside pdata. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_car_manager_set_car_number",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 44 89 C3 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 62 B8 7C 00 00 00",
+  "match": "0x1428b2d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428b2d70",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCarManager_SetCarNumber"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428b2d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428b2d70.c;xref:0x1428c3e97",
+   "notes": "V5125 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

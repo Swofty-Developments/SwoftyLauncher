@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TimeOfDay_ComputeSolarAngles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446175d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446175d0.c;xref:0x1428c2b01,0x1428c2bf9,0x142e15bb4,0x142e15c68,0x142e15d1c,0x142e16185,0x142e161e0,0x1438b7954,0x1438b9379",
+  "notes": "NOAA-style solar position: day of year (leap year, table 0x145bf6050), equation of time, declination asin(0.3979*sin), hour angle from time and longitude param_10, latitude param_11; outputs elevation (param_1), azimuth (param_2), sunrise (param_3) and sunset (param_4) hours. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.time_of_day_compute_solar_angles",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 C5 78 29 BC 24 B0 00 00 00 C5 78 29 B4 24 A0 00 00 00 C5 78 29 AC 24 90 00 00 00 C5 78 29 A4 24 80 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 4C 89 CF 4C",
+  "match": "0x1446175d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446175d0",
+  "kind": "func_start",
+  "names": [
+   "Game_TimeOfDay_ComputeSolarAngles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446175d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446175d0.c;xref:0x1428c2b01",
+   "notes": "V6796 Declination, equation of time, hour angle confirmed; it also outputs sunrise/sunset times (not mentioned)."
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "rndr-verify",
+   "kind": "func",
+   "item": "0x1446175d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446175d0.c;xref:1446176eb,144617760",
+   "notes": "V10815 outputs elev rad, azimuth rad, sunrise h, sunset h; decl asin(0.39794831*sinB), B=(doy-81)*360/365; EoT 9.87sin2B-7.53cosB-1.5sinB; lon term (lon-(lon/15)*15)*4 has no round/cvt, so 0 up to fp rounding"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_DeclareNamedRenderTargets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140141420",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140141420.c;xref:0x1401459af",
+  "notes": "Declares engine render targets via 0x14014b860, 0x14014c530 and 0x14014b430 with eaid://ego_package/ names (gbuffer_*, taa_result1-4, dlss_motion_vectors, hudless_backbuffer, video_reel_staging_0-2, depth_hierarchy, rt_*, vrUI; ui_package uiBlurBuffer/tvFeed); calls Render_Gfx_ComputeUpscaleRenderScale and Ne_Get_SettingBool. Caller in Render_Gfx_RegisterNamedResourceViews. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_declare_named_render_targets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 78 29 9C 24",
+  "match": "0x140141420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140141420",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_DeclareNamedRenderTargets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x140141420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140141420.c;xref:0x1401459af",
+   "notes": "V8432 declares ~90 eaid://ego_package/ names (tile_metadata, taa_*, vrs, gbuffer_*, dlss_*, video_reel*), Ne_StrBuf_Printf + Ne_Get_SettingBool called; single caller RegisterNamedResourceViews"
+  }
+ ],
+ "proofs": []
+}

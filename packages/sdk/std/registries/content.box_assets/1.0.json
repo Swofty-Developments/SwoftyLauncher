@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "content.box_assets 1.0",
+  "x-registry": "content.box_assets",
+  "x-version": "1.0",
+  "x-applies": "boot",
+  "x-snapshot": false,
+  "description": "content::BoxAssets: stock-named resources only one box's sessions load. Either a textures folder (one .dds or .png per stock texture, at the path of the stock resource below root, packed by the core) or a ready archive of the addon. The archive is listed first in the asset groups of the box's cars (every car, or one team entry's), so a session of any other box never loads it. The game keeps the first copy of a resource name it loads, so a resource shows only where the box's cars load before the stock archive that holds the same name.",
+  "type": "object",
+  "properties": {
+    "package": {
+      "description": "The box's content package.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-ref": "content.package"
+    },
+    "kind": {
+      "description": "What the resources dress; it picks the default root and is named in the core's log. garage: garage and pit lane art; sponsors: trackside sponsor boards; marshals: track marshal kit; crowd: the crowd; principal: team principal clothing; other: anything else.",
+      "type": "string",
+      "enum": [
+        "garage",
+        "sponsors",
+        "marshals",
+        "crowd",
+        "principal",
+        "other"
+      ]
+    },
+    "entry": {
+      "description": "The key of one team entry of the package: only that entry's cars list the archive. Empty or left out: every car of the box.",
+      "type": "string"
+    },
+    "textures": {
+      "$ref": "#/$defs/path",
+      "description": "A folder in the addon holding .dds and .png files. A file at a/b_d.dds is the resource root + a/b_d.tif.image and its view root + a/b_d.tif. One of textures and archive."
+    },
+    "root": {
+      "description": "The resource name every textures file path is appended to. Empty or left out: the stock root of the kind (garage: eaid://environment_package/core_assets/objects/textures/, sponsors: eaid://environment_package/core_assets/shared_textures/sponsors/), else eaid:// itself, so the folder mirrors the whole resource name.",
+      "type": "string",
+      "pattern": "^(eaid://.*/)?$"
+    },
+    "srgb": {
+      "description": "A .png file is encoded as sRGB BC7 when true, linear BC7 when false. A .dds file keeps its own format.",
+      "type": "boolean"
+    },
+    "archive": {
+      "$ref": "#/$defs/path",
+      "description": "A ready .erp archive in the addon, listed as it is (any resource types, e.g. texture arrays or material bindings). It needs resources. One of textures and archive."
+    },
+    "resources": {
+      "description": "The eaid:// name prefixes the archive (or the packed textures) may hold; the core refuses the record when a resource name starts with none of them.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^eaid://"
+      }
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "content.box_assets",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "package"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "path": {
+      "description": "A file or folder in the addon's folder, with / between folders. null: empty.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^[^/\\\\][^\\\\]*$"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Ne_PropertyType_Bag",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146129de0",
+  "type": "void *",
+  "level": "L3",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1439340c0.c;decomp:re/decomp/1439532f0.c;xref:0x1439342bc;trace:T010/run2:86288;trace:T010/run4:86249;trace:T010/run3",
+  "notes": "The property bag value type object (name propbag, vtable 0x145890c80 set by the type registry 0x1439532f0): its vt+0x10 returns the bag type id the writers compare a property's type id with."
+ },
+ "signature": {
+  "id": "core.property_type_bag",
+  "section": ".xtls",
+  "pattern": "48 8D 2D ?? ?? ?? ?? 48 89 E9 FF 50 10 39 C3 75 48",
+  "match": "0x1439342bc",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146129de0",
+  "kind": "data",
+  "names": [
+   "k_Ne_PropertyType_Bag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "global",
+   "item": "k_Ne_PropertyType_Bag",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439532f0.c;decomp:re/decomp/1439340c0.c;decomp:re/decomp/143651030.c;decomp:re/decomp/14364f3a0.c;xref:0x1439342b5,0x1439342bc,0x14365198e,0x143651995,0x14364f881,0x14364f999,0x14394fc20",
+   "notes": "V1122 0x1439532f0 initialises it: vtable 0x145890c80, name 'propbag' at +8, links it into the type list 0x146129950 via +0x18, and sets 0x146129790 = &it. Vtable +0x10 returns 0x67616270 ('pbag'), +0x20 returns 0x20. Users: WriteBag compares each entry's type vt+0x10 with it (0x1439342b5-0x1439342c9) to choose the codec recursion; 0x143651030 stores its id in [rsp+0x58] (0x14365199f) as the type id written for each child; 0x14364f3a0 checks the 'containers' property type against it (r12 = &it @0x14364f881). The bag property vtable 0x145892390 vt+8 (0x14394fc20) returns &it. The object lives in .rsrc virtual-only space and is filled at runtime by 0x1439532f0."
+  }
+ ],
+ "proofs": []
+}

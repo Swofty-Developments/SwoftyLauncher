@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_EVoiceMessageID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144037620",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144037620.c;pat:log-channel-NETWORK-VOICE;xref:0x143058919,0x143066a5e",
+  "notes": "Voice message handler: reads the message id from the bitstream and handles eVoiceMessageID_InitialStatusReceived, _DeviceChanged, _MuteSync and channel update ('Update channel received - %u'), each logged on NETWORK-VOICE. Called from Game_GameSessionManager_OnIncomingData and Game_NetworkData_VoiceDataBytes. (lane owner review requested) Better name: Game_NetworkVoice_HandleMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_voice_e_voice_message_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 05 00 00 C5 F9 29 B4 24 70 05 00 00 80 79 08 00",
+  "match": "0x144037620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144037620",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_EVoiceMessageID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144037620",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144037620.c;xref:0x143058919",
+   "notes": "V6415 partial: better name Game_NetworkVoice_HandleVoiceMessage; dispatches eVoiceMessageID InitialStatus/Channel/DeviceChanged/MuteSync"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144037620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144037620.c;xref:0x143058919",
+   "notes": "V7090 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

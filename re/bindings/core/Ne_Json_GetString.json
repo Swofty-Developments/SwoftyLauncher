@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Ne_Json_GetString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144435020",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144435020.c;xref:0x140796608,0x140796657,0x1407969b5,0x1434ef2ae,0x1434ef799",
+  "notes": "(name, NeString* out, obj*): member must be a string (flag 0x400; inline if 0x1000, else ptr +0x18); grows out (cap +8, data +0x10) via 0x1402b5650 and copies with NUL; null value returns 1 unchanged; else logs 'Unable to find value for %s in JSON', returns 0. Callers Game_Steam_ParsePriceOverview, Game_Trophies_ParseSeasonLocTag, Neos SignalR handlers."
+ },
+ "signature": {
+  "id": "core.json_get_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C6 49 89 D6 48 89 CB",
+  "match": "0x144435020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144435020",
+  "kind": "func_start",
+  "names": [
+   "Ne_Json_GetString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

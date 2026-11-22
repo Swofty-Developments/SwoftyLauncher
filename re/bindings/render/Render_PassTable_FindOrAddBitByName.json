@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_PassTable_FindOrAddBitByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b81e10",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b81e10.c;xref:0x143b19823,0x143b1984b,0x143b1987b,0x143b198ae",
+  "notes": "Under CS 0x146c3b4c8: Render_PassTable_FindByName on the table at this+8; if found returns the stored 128-bit mask, else assigns the next bit index (+0x50 counter) as a 128-bit one-hot mask, copies the name (allocator vcall +0x18) and inserts it (0x143f0d760, rehash 0x143f0dd70). Returns a mask, not a ref-counted entry. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.pass_table_find_by_name",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 D6 48 89 CF 4C",
+  "match": "0x143b81e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b81e10",
+  "kind": "func_start",
+  "names": [
+   "Render_PassTable_FindOrAddBitByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b81e10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143b81e10.c;xref:0x143b19823",
+   "notes": "V7786 Render_PassTable_FindOrAddBitByName: under global CS hashes name, returns a 128-bit one-hot mask (assigns next bit and copies the name when missing); not a ref-counted entry"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MailSystem_UploadDebugSavedGameDataOperation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143359540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143359540.c;str:s_MailSystem_UploadDebugSavedGameDataOperation;xref:0x141cb2f3e",
+  "notes": "Full read; pretty-function is its own. Under lock 0x146100c18 allocs largest free block of 'SAVE_TEMP_ALLOC' (logs 'Largest free block'), serialises save (0x143658130 on this+0x2b0, 0x1432c6c30 on this+0x10) to bytes, builds op (vtable 0x14583fe00, tag 'SAVE_OS_PROPERTY_BAG_TEMP', MessageId param_3+8, callback param_4+0x38, thunk 0x14335a310) queued on this+0x278->+0x30; handle -> param_2 (zero on fail). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.mail_system_upload_debug_saved_game_data_operation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 03 00 00 4C",
+  "match": "0x143359540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143359540",
+  "kind": "func_start",
+  "names": [
+   "Game_MailSystem_UploadDebugSavedGameDataOperation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143359540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143359540.c;xref:0x141cb2f3f",
+   "notes": "V5983 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

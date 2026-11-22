@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleAntiStallSystem_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f4ba40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f4ba40.c;xref:0x1457f8ab8",
+  "notes": "Read in full: in session types 15..17 with feature bit (0x1413ca0d0 +5 bit5) sets +0x10c from table [+0x90]+0x988; subscribes {handler, this} via Ne_Subscribe_BusMessage 0x143987810: MessageRaceStarted 0x142f4ec50, MessageVehicleLeftGarage 0x142f4ed60, RollingStartMessage 0x142f4eed0, MessageStartLightOn 0x142f4f040, RedFlagStatusChangedMessage 0x142f4f050; then +0x104 = 0, +0x100/+0x109 = table 0x145803cd0[session type], +0x114 = 1, resets car entries +0x48..+0x50. Vtable cell 0x1457f8ab8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_anti_stall_system_init",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE E8 ?? ?? ?? ?? F6 40 05 20 74",
+  "match": "0x142f4ba40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f4ba40",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleAntiStallSystem_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f4ba40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f4ba40.c",
+   "notes": "V5639 verified 5 subscriptions and handler addrs, entry layout"
+  }
+ ],
+ "proofs": []
+}

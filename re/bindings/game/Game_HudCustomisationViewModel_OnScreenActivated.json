@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HudCustomisationViewModel_OnScreenActivated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c0e650",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c0e650.c;pat:log-message-cxx;xref:0x14573be38",
+  "notes": "Log 'HudCustomisationViewModel::onScreenActivated - Calling setHudScreenActive(true)'. Binds view-model props (tool tips, selected element/filter/layout index, editing_*, is_full_map, options_popup, opacity/scale sliders, mini_map/full_track_map, map_rotation_toggle), posts 'EnteredHudCustomisationScreen', sets [+0x290]+0x699=1, +0xab0=1. Vtable cell 0x14573be38. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hud_customisation_view_model_on_screen_activated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 CE 48 8B 05",
+  "match": "0x141c0e650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c0e650",
+  "kind": "func_start",
+  "names": [
+   "Game_HudCustomisationViewModel_OnScreenActivated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c0e650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c0e650.c",
+   "notes": "V4938 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

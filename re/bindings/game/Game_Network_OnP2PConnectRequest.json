@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnP2PConnectRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440966b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440966b0.c;pat:log-message-method;xref:0x14406131b",
+  "notes": "Steam P2P session-request callback: logs onP2PConnectRequest(remoteUserId); gets the lobby member count (ISteamMatchmaking vtable+0x88) for lobby this+0x1e8, iterates members (vtable+0x90) and accepts the session (vtable+0x18) only if the requester is a member. (lane owner review requested) Better name: Game_Network_Steam_OnP2PSessionRequest (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_on_p2_p_connect_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 48 8D 0D",
+  "match": "0x1440966b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440966b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnP2PConnectRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440966b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440966b0.c;xref:0x14406131d",
+   "notes": "V6525 size=557; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Apply_SeasonResultsToStandings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ae8880",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ae8880.c;xref:0x140ae8871,0x148691e91",
+  "notes": "Season::applyResultsToStandings (log). Under CS season+0x4d8: per result (param_2+8..+0x10) builds 12-byte records {key +0x48^+0x50, lap rank (floats +0xe8^+0xf0, +0xf8^+0x100, +0x1c, byte0), status map 3->0,4->5,5->2,6->3,7->1 else 4}, feeds standings season+0x2b0 vt+0x10, copies entrant rows (0x88) and refreshes via 0x140b2fa60. Reached via the +0x208 thunk 0x140ae8850 (jmp). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.apply_season_results_to_standings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 79 7F 84 24",
+  "match": "0x140ae8880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ae8880",
+  "kind": "func_start",
+  "names": [
+   "Career_Apply_SeasonResultsToStandings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ae8880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ae8880.c;xref:0x140ae8871",
+   "notes": "V4425 log strings confirmed; reached via thunk 0x140ae8850 (jmp at 0x140ae8871)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140ae8880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ae8880.c",
+   "notes": "V9040 Log string Season::applyResultsToStandings, +0x2a8 standings, FUN_1413cd970 adds and 0x140b2fa60 recompute calls present."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_DepartmentsAffected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143527400",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Write_DepartmentsAffected(void * self,int64_t *a2)",
+  "evidence": "decomp:re/decomp/143527400.c;xref:0x14a6f1557",
+  "notes": "Save writer 'schedule': for each entry of vector this+0x60..+0x68 writes name, season_index (+0), rumour_start_weekend (+4), confirmation_weekend (+8), departments_affected[] of department (list +0x10, count +0x18) and types_affected[] of type (count +0x38). Caller in .data1 fn 0x14a6f13a0. (lane owner review requested) Better name: Career_Write_DepartmentsAffectedSchedule (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.write_departments_affected",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D7 49 89 CE",
+  "match": "0x143527400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143527400",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_DepartmentsAffected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143527400",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143527400.c;xref:0x14a6f1556",
+   "notes": "V10290 Writes a schedule record (name, season_index, rumour_start_weekend, confirmation_weekend) with departments_affected and types_affected arrays; claim covers only departments."
+  }
+ ],
+ "proofs": []
+}

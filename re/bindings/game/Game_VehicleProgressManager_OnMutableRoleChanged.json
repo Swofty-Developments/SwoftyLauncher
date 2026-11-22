@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressManager_OnMutableRoleChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432669b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432669b0.c;xref:0x14582dbb8",
+  "notes": "Read in full (this, role): logs 'onMutableRoleChanged(%s).' (role names 0x145f94690); refreshes this+0x18 / +0x19 (machine ids). Role 2 and this+8 == 0: Reset 0x1432602e0, writes both ids to [this+0x48]+0x68/+0x69, clears its table +0x40.., inserts both into map +0x20 (0x143318a90), clock [this+0x40] = {1, +0x18, +0x19}, vcall +0x18(this, id). Role 1: same with one id. Role 0: clock Setup 0x143255d50 twice, state 0, frees the per-vehicle records (0x143273e60) and logs 'VehiclePhysicsClock::reset()'. Vtable cell 0x14582dbb8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_manager_on_mutable_role_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 58 89 D7 48 89 CE 80 3D",
+  "match": "0x1432669b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432669b0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressManager_OnMutableRoleChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_VehicleProgressManager_OnMutableRoleChanged",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1432669b0.c;xref:0x1432669b0",
+   "notes": "V2769 OnRoleChanged(role 0..3) names 0x145f94690 ok but +0x19 is loaded from vcall [+0x18] of machine object (machine id), not the role param; role only drives branching"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_CountPaidDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141104190",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141104190.c;doc:re/research/sponsors.md#career-sponsors;xref:0x141108f4a,0x141111f4f,0x141ff887f,0x141ffc4a8,0x141ffe4b6,0x141ffeb7f",
+  "notes": "For team param_2 finds its entrant customisation (0x14246dcb0 on c+0x358). Branch A: per area of the [c+0x370] list sums 0x141103de0 slots minus reserved ([entry+0x30]+8), floored at 0. Branch B (livery data present): (cust+0xf0 - cust+0xe8)/0x10 nodes, minus reserved per area unless an active title record (+0xd8==0, +0x158) matches cust+0x78. Weekly-income use is from the doc only. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.sponsors_count_paid_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CB 48 8B 81 78 02 00 00",
+  "match": "0x141104190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141104190",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_CountPaidDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141104190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141104190.c",
+   "notes": "V9154 Branch A sums 141103de0 minus reserved per area, branch B uses (livery +0xf0 - +0xe8)>>4 minus reserved; only the weekly-income-threshold meaning is not provable from the code."
+  }
+ ],
+ "proofs": []
+}

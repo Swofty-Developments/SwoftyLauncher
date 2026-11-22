@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_ApplyVehicleDecalNodeList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a97c70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a97c70.c;pat:log-message-method;xref:0x1414379d5",
+  "notes": "(veh, list, livery, surface, generation): logs 'applyVehicleDecalNodeList(id=%I64u, num decals=%d)'; copies livery p3+0x10..+0x2c to p1+0x140..+0x15c, list id -> +0x88, surface -> +0x110. No surface/empty list: default livery path + DestroySurfaceAndProxy, +0x1d0 = 0. Same generation: clears the map of [p1+0xe8], +0x1d4 = 1. Else re-applies, DestroySetProxy, frees [p1+0xc8]+8, queues one request per decal node into p1+0x188; +0x1d0 = generation. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_apply_vehicle_decal_node_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 4D 89 CE 4D 89 C7 48 89 D7 48 89 CE",
+  "match": "0x142a97c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a97c70",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_ApplyVehicleDecalNodeList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a97c70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a97c70.c;xref:0x1414379d5",
+   "notes": "V4989 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -23,15 +23,9 @@ bool py_space(char32_t c)
            (c >= 0x2000 && c <= 0x200A) || c == 0x2028 || c == 0x2029 || c == 0x202F || c == 0x205F || c == 0x3000;
 }
 
-bool ascii_digit(char32_t c)
-{
-    return c >= '0' && c <= '9';
-}
+bool ascii_digit(char32_t c) { return c >= '0' && c <= '9'; }
 
-bool ascii_word(char32_t c)
-{
-    return c == '_' || ascii_digit(c) || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
+bool ascii_word(char32_t c) { return c == '_' || ascii_digit(c) || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); }
 
 bool in_ranges(char32_t c, const char32_t (*ranges)[2], std::size_t n)
 {
@@ -49,14 +43,14 @@ bool py_digit(char32_t c)
 
 bool py_word(char32_t c)
 {
-    static const char32_t ranges[][2] = {
-        {0xAA, 0xAA},     {0xB2, 0xB3},     {0xB5, 0xB5},     {0xB9, 0xBA},     {0xBC, 0xBE},     {0xC0, 0xD6},
-        {0xD8, 0xF6},     {0xF8, 0x2C1},    {0x2C6, 0x2D1},   {0x2E0, 0x2E4},   {0x2EC, 0x2EC},   {0x2EE, 0x2EE},
-        {0x370, 0x374},   {0x376, 0x377},   {0x37A, 0x37D},   {0x37F, 0x37F},   {0x386, 0x386},   {0x388, 0x38A},
-        {0x38C, 0x38C},   {0x38E, 0x3A1},   {0x3A3, 0x3F5},   {0x3F7, 0x481},   {0x48A, 0x52F},   {0x531, 0x556},
-        {0x560, 0x588},   {0x5D0, 0x5EA},   {0x620, 0x64A},   {0x660, 0x669},   {0x6F0, 0x6F9},   {0x966, 0x96F},
-        {0x1E00, 0x1F15}, {0x3041, 0x3096}, {0x30A1, 0x30FA}, {0x4E00, 0x9FFF}, {0xAC00, 0xD7A3}, {0xFF10, 0xFF19},
-        {0xFF21, 0xFF3A}, {0xFF41, 0xFF5A}};
+    static const char32_t ranges[][2] = {{0xAA, 0xAA},     {0xB2, 0xB3},     {0xB5, 0xB5},     {0xB9, 0xBA},     {0xBC, 0xBE},
+                                         {0xC0, 0xD6},     {0xD8, 0xF6},     {0xF8, 0x2C1},    {0x2C6, 0x2D1},   {0x2E0, 0x2E4},
+                                         {0x2EC, 0x2EC},   {0x2EE, 0x2EE},   {0x370, 0x374},   {0x376, 0x377},   {0x37A, 0x37D},
+                                         {0x37F, 0x37F},   {0x386, 0x386},   {0x388, 0x38A},   {0x38C, 0x38C},   {0x38E, 0x3A1},
+                                         {0x3A3, 0x3F5},   {0x3F7, 0x481},   {0x48A, 0x52F},   {0x531, 0x556},   {0x560, 0x588},
+                                         {0x5D0, 0x5EA},   {0x620, 0x64A},   {0x660, 0x669},   {0x6F0, 0x6F9},   {0x966, 0x96F},
+                                         {0x1E00, 0x1F15}, {0x3041, 0x3096}, {0x30A1, 0x30FA}, {0x4E00, 0x9FFF}, {0xAC00, 0xD7A3},
+                                         {0xFF10, 0xFF19}, {0xFF21, 0xFF3A}, {0xFF41, 0xFF5A}};
     return c == '_' || ascii_digit(c) || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
            (c >= 0x80 && in_ranges(c, ranges, std::size(ranges)));
 }
@@ -126,15 +120,9 @@ std::string pointer_of(const std::vector<std::string> &parts)
     return out;
 }
 
-bool integral(double d)
-{
-    return std::isfinite(d) && std::floor(d) == d;
-}
+bool integral(double d) { return std::isfinite(d) && std::floor(d) == d; }
 
-bool is_integer(const Value &v)
-{
-    return v.is_int() || (v.is_double() && integral(v.as_double()));
-}
+bool is_integer(const Value &v) { return v.is_int() || (v.is_double() && integral(v.as_double())); }
 
 const char *type_of(const Value &v)
 {
@@ -402,9 +390,9 @@ struct CharClass {
                 break;
             }
         if (!hit && flags)
-            hit = ((flags & digit) && py_digit(c)) || ((flags & not_digit) && !py_digit(c)) ||
-                  ((flags & word) && py_word(c)) || ((flags & not_word) && !py_word(c)) ||
-                  ((flags & space) && py_space(c)) || ((flags & not_space) && !py_space(c));
+            hit = ((flags & digit) && py_digit(c)) || ((flags & not_digit) && !py_digit(c)) || ((flags & word) && py_word(c)) ||
+                  ((flags & not_word) && !py_word(c)) || ((flags & space) && py_space(c)) ||
+                  ((flags & not_space) && !py_space(c));
         return hit != negate;
     }
 };
@@ -1917,7 +1905,9 @@ std::optional<Schema> Schema::compile(const swofty::json::Value &doc, Error *err
             if (auto *str = v->if_string()) {
                 auto dot = str->find('.');
                 auto digits = [](std::string_view t) {
-                    return !t.empty() && t.size() < 9 && std::all_of(t.begin(), t.end(), [](char ch) { return ch >= '0' && ch <= '9'; }) &&
+                    return !t.empty() && t.size() < 9 &&
+                           std::all_of(
+                               t.begin(), t.end(), [](char ch) { return ch >= '0' && ch <= '9'; }) &&
                            (t.size() == 1 || t[0] != '0');
                 };
                 if (dot != std::string::npos && digits(std::string_view(*str).substr(0, dot)) &&
@@ -1944,7 +1934,8 @@ std::optional<Schema> Schema::compile(std::string_view text, Error *err)
     auto doc = swofty::json::parse(text, &perr);
     if (!perr.ok()) {
         if (err)
-            *err = {"/", "not JSON: line " + std::to_string(perr.line) + " column " + std::to_string(perr.column) + ": " + perr.message};
+            *err = {"/", "not JSON: line " + std::to_string(perr.line) + " column " + std::to_string(perr.column) + ": " +
+                             perr.message};
         return std::nullopt;
     }
     return compile(doc, err);
@@ -1985,50 +1976,23 @@ bool Schema::valid(const swofty::json::Value &value, Mode mode) const
     return !main.over && !run.aborted();
 }
 
-const std::string &Schema::registry() const noexcept
-{
-    return impl_->registry;
-}
+const std::string &Schema::registry() const noexcept { return impl_->registry; }
 
-Schema::Version Schema::version() const noexcept
-{
-    return impl_->version;
-}
+Schema::Version Schema::version() const noexcept { return impl_->version; }
 
-const std::string &Schema::applies() const noexcept
-{
-    return impl_->applies;
-}
+const std::string &Schema::applies() const noexcept { return impl_->applies; }
 
-bool Schema::snapshot() const noexcept
-{
-    return impl_->snapshot;
-}
+bool Schema::snapshot() const noexcept { return impl_->snapshot; }
 
-std::int64_t Schema::snapshot_budget() const noexcept
-{
-    return impl_->budget;
-}
+std::int64_t Schema::snapshot_budget() const noexcept { return impl_->budget; }
 
-const std::string &Schema::adapter() const noexcept
-{
-    return impl_->adapter;
-}
+const std::string &Schema::adapter() const noexcept { return impl_->adapter; }
 
-const swofty::json::Keys &Schema::keys() const noexcept
-{
-    return impl_->keys;
-}
+const swofty::json::Keys &Schema::keys() const noexcept { return impl_->keys; }
 
-const std::vector<std::pair<std::string, std::vector<std::string>>> &Schema::keyed_lists() const noexcept
-{
-    return impl_->keyed;
-}
+const std::vector<std::pair<std::string, std::vector<std::string>>> &Schema::keyed_lists() const noexcept { return impl_->keyed; }
 
-bool is_record_id(std::string_view id)
-{
-    return schema_detail::record_id_ok(id);
-}
+bool is_record_id(std::string_view id) { return schema_detail::record_id_ok(id); }
 
 bool is_record_key(std::string_view key)
 {
@@ -2113,10 +2077,7 @@ bool data_key(std::string_view key, std::string &name, int &major)
     return true;
 }
 
-std::string at_pointer(const std::vector<std::string> &parts)
-{
-    return pointer_of(parts);
-}
+std::string at_pointer(const std::vector<std::string> &parts) { return pointer_of(parts); }
 
 void add_errors(DataReport &report, const std::string &version, const std::vector<std::string> &path, Schema::Result &r)
 {
@@ -2214,7 +2175,8 @@ void validate_variant(const swofty::json::Value &record, std::string_view regist
             return;
         }
         if (r == Effective::deep) {
-            report.problems.push_back({at_pointer(at_extends), "extends goes through more than " + std::to_string(max_bases) + " bases"});
+            report.problems.push_back(
+                {at_pointer(at_extends), "extends goes through more than " + std::to_string(max_bases) + " bases"});
             return;
         }
         if (r != Effective::ok)
@@ -2326,8 +2288,8 @@ DataReport check_data(const swofty::json::Value &doc, const DataLookup &lookup, 
         std::string name;
         int major = 0;
         if (!data_key(key, name, major)) {
-            report.problems.push_back(
-                {pointer_of(path), swofty::json::dump(swofty::json::Value(key)) + " is not a registry name (<name> or <name>@<major>)"});
+            report.problems.push_back({pointer_of(path), swofty::json::dump(swofty::json::Value(key)) +
+                                                             " is not a registry name (<name> or <name>@<major>)"});
             continue;
         }
         if (!options.only.empty() && name != options.only) {
@@ -2338,7 +2300,8 @@ DataReport check_data(const swofty::json::Value &doc, const DataLookup &lookup, 
         if (versions.versions.empty()) {
             if (options.skip_unknown && versions.missing.empty())
                 continue;
-            report.missing.push_back({pointer_of(path), versions.missing.empty() ? "no schema for registry " + name : versions.missing});
+            report.missing.push_back(
+                {pointer_of(path), versions.missing.empty() ? "no schema for registry " + name : versions.missing});
             continue;
         }
         auto *by_key = records.if_object();
@@ -2352,16 +2315,18 @@ DataReport check_data(const swofty::json::Value &doc, const DataLookup &lookup, 
                 if (rk == "$select") {
                     validate_select(value, name, versions, path, report, options);
                 } else if (!is_record_id(rk)) {
-                    report.problems.push_back(
-                        {pointer_of(path), swofty::json::dump(swofty::json::Value(rk)) + " is not a full record id (<namespace>/<key>)"});
+                    report.problems.push_back({pointer_of(path), swofty::json::dump(swofty::json::Value(rk)) +
+                                                                     " is not a full record id (<namespace>/<key>)"});
                 } else if (!value.is_object()) {
                     report.problems.push_back({pointer_of(path), "a layer is an object (a JSON Merge Patch)"});
                 } else {
                     validate_record(value, name, versions, path, report, true, options);
                 }
             } else if (!is_record_key(rk)) {
-                report.problems.push_back({pointer_of(path), swofty::json::dump(swofty::json::Value(rk)) +
-                                                                 " is not a record key (no spaces, '?', '|' or '*', no leading '/' or '$', no empty part)"});
+                report.problems.push_back(
+                    {pointer_of(path),
+                     swofty::json::dump(swofty::json::Value(rk)) +
+                         " is not a record key (no spaces, '?', '|' or '*', no leading '/' or '$', no empty part)"});
             } else {
                 swofty::json::Value scratch;
                 const auto &record = strip_protect_into(value, path, report, scratch);

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_RequestRegisterAIEntrants",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143117bb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143117bb0.c;pat:log-message-method;xref:0x14315ef6c,0x141ddfe18,0x14256e057",
+  "notes": "Host only, document open: logs requestRegisterAIEntrants numberOfAIs param_2; loops param_2 times: picks an AI template (0x14310f840), fills it with 0x14310fce0 (create AI entrant) and registers it with 0x143117630 (requestRegisterAIEntrant). Returns host && open. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_entrants_request_register_ai_entrants",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 48 89 CE 83 79 08 02",
+  "match": "0x143117bb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143117bb0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_RequestRegisterAIEntrants"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143117bb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143117bb0.c;xref:0x141ddfe18",
+   "notes": "V5817 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

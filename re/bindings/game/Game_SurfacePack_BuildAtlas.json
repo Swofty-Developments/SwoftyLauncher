@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SurfacePack_BuildAtlas",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437a4840",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437a4840.c;pat:log-channel-GameSurfacePack;xref:0x14012f3ba,0x14012fe27,0x1401330c6,0x14013376b,0x140133c0e,0x1401342e1,0x140134928,0x140135189,0x140135bc1",
+  "notes": "Skips if +0x1802c or no atlas +0x18018. Writes 0x300 x 0x20-byte entries (UV rect * 1/2048 and 1/2047, RGB of +0x30 /255, a=1) into a triple-buffered GPU buffer (Ne_Gfx2_BeginTripleBufferedScope), zero-fills unused slots, then copies placed surfaces (+0x18 stride 0x40 and unassigned +0xc018) into the atlas via param_2 vtable+0x30. Log 'Copying surfaces into atlas...'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.surface_pack_build_atlas",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 78 29 94 24 40 01 00 00 C5 78 29 8C 24 30 01 00 00 C5 78 29 84 24 20 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 89 CE 80 B9 2C 80 01 00 00",
+  "match": "0x1437a4840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437a4840",
+  "kind": "func_start",
+  "names": [
+   "Game_SurfacePack_BuildAtlas"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x1437a4840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437a4840.c;xref:0x14012f3ba",
+   "notes": "V6289 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

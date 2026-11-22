@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Render_GroundCover_LoadCascadeModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144467200",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144467200.c;pat:log-channel-GROUND_COVER;xref:0x145a90518",
+  "notes": "Rename: slot 3 of vtable 0x145a90500 (cell 0x145a90518, no direct calls). Reads the cascade properties (enabled, cascade, enable_fins, height_cutoff_low/high, height_scale, lod0/lod1 tier 1/2, draw_distance tier 1/2, resolution tier 1/2, width/height %d, mesh lod0/1, modelId %d, materialId %d, min/max_scale %d, visibility mask channel %d) through 0x144468330/0x144468680/0x1444689d0 and logs Ground cover cascade %d loading model: %s (GROUND_COVER). (lane owner review requested) Better name: Render_GroundCoverCascade_Load (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.ground_cover_load_cascade_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 02 00 00 48 89 D3",
+  "match": "0x144467200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144467200",
+  "kind": "func_start",
+  "names": [
+   "Render_GroundCover_LoadCascadeModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144467200",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144467200.c",
+   "notes": "V6660 0x112c body reads ~40 cascade params (enabled, fins, cutoffs, lod, draw_distance, tiers, mesh lods); model-load log is one part. Better: Render_GroundCover_ReadCascadeConfig (vtable/indirect; no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144467200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144467200.c",
+   "notes": "V7220 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

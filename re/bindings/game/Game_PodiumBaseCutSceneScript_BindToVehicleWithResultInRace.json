@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_BindToVehicleWithResultInRace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140362900",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140362900.c;pat:log-message-cxx;xref:0x14036234f,0x140362364,0x140362379",
+  "notes": "(this, script, position): maps race result position to vehicle id via [[0x14601f5c8]+0xb0]+0x108[pos] and the entrant list (byte +0x82), logs 'Attempt to bindToVehicle() using vehicle id', calls vfunc +0x2f0 (bindToVehicle). Called by Game_Podium2019CutSceneScript_Starting. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_bind_to_vehicle_with_result_in_race",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 44 89 C5 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140362900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140362900",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_BindToVehicleWithResultInRace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140362900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140362900.c;xref:0x305542",
+   "notes": "V4541 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

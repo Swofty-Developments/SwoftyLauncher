@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonDocument_SetWeatherSeed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143098e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143098e90.c;pat:log-channel-NETWORK-WEATHERSEED;xref:0x143036a48,0x143099400,0x143099721,0x1430a86dd,0x1430a8c7a",
+  "notes": "regenerateWeatherAndTimeOfDaySeed (logged as %s()). Host/offline (doc+8 < 2) and a new value: doc+0x760 = QPC low 32 bits; if [doc+0x498]+0x4bc < 1: 0x143227630([[doc+0x420]+0xf8]) and dirty +0x766/+0x768 = 1. Then applyWeatherAndTimeOfDaySeed: component 0x14605afc0 of [[doc+0x420]+0x4f8]+0x1030 gets +0x2c4 = seed and, if +0x2a0 set, Sess_WeatherComponent_SetSystemRandomSeed (0x140bde3e0). (lane owner review requested) Better name: Game_SeasonDocument_RegenerateWeatherAndTimeOfDaySeed (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.season_document_set_weather_seed",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 2D 01 00 00",
+  "match": "0x143098e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143098e90",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonDocument_SetWeatherSeed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x143098e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143098e90.c",
+   "notes": "V4175 Strings NETWORK-WEATHERSEED, setWeatherAndTimeOfDaySeed/regenerate..., host/offline doc+8<2: +0x760 = QPC value, dirty +0x766/+0x768, component type 0x14605afc0 +0x2c4 = seed then Sess_WeatherComponent_SetSystemRandomSeed (0x140bde3e0)"
+  }
+ ],
+ "proofs": []
+}

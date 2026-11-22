@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Instance_FindNearestOccupiedCellDistance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d6c910",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d6c910.c;xref:0x14446c4a2",
+  "notes": "Samples rings around position param_2 (radius from 2.8, 16 angles of pi/8), quantises each sample to a 4-unit cell key, looks it up in the cell hash set (+0x58 seed, +0x60/+0x68 slots, +0x78 mask, +0x88/+0x8c) and returns ring radius - param_3 for the first occupied cell. Only caller Render_Apply_InstanceRenderProperties 0x14446c4a2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.instance_eval_fade",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 78 29 BC 24 A0 00 00 00 C5 78 29 B4 24 90 00 00 00 C5 78 29 AC 24 80 00 00 00 C5 78 29 64 24 70 C5 78 29 5C 24 60 C5 78 29 54 24 50 C5 78 29 4C 24 40 C5 78 29 44 24 30 C5 F8 29 7C 24 20 C5 F8 29 74 24 10 C5 FA 11 14",
+  "match": "0x143d6c910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d6c910",
+  "kind": "func_start",
+  "names": [
+   "Render_Instance_FindNearestOccupiedCellDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d6c910",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143d6c910.c;xref:0x14446c4a2",
+   "notes": "V7921 Render_Instance_FindNearestOccupiedCellDistance: spiral search of 16 angles (pi/8 steps) over up to 60 growing radii probing a hash set at +0x60/+0x78/+0x88; returns distance minus param_3 or 999999.0; not a fade/LOD factor"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RollingStartSystem_UpdateLightSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f0ff20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f0ff20.c;xref:0x142f0fbd9,0x142f0fe75",
+  "notes": "(sys, v): if slot v (+0x80+v*0x28) is enabled (+0x95), thunk 0x1519eb350(+0x38, v, 0, 1) for each local player owning v; if v is a local player's vehicle queues bus message vt 0x145800f18; always queues vt 0x145800f28 {v} on [0x14618b3b8]+8 (CS +0x98, Ne_Event_Set +0x88); resets the slot (+0x80 0, +0x88 5.0, +0x90 3, +0x95 1, +0x98 -1.0, +0xa0 0). Callers 0x142f0f2a0. No light handling. (lane owner review requested) Better name: Game_RollingStartSystem_EndVehicleRollingStart (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.rolling_start_system_update_light_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 89 D3 48 89 CE 0F B6 C2",
+  "match": "0x142f0ff20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f0ff20",
+  "kind": "func_start",
+  "names": [
+   "Game_RollingStartSystem_UpdateLightSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142f0ff20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f0ff20.c;xref:0x142f0fbd9",
+   "notes": "V7569 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneSystemSubTask_Activate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14370c370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14370c370.c;str:s_FrontendSceneSystemSubTask_Activate;xref:0x14585fe78",
+  "notes": "Vtable cell 0x14585fe78 (neighbours code). Own pretty-function string 0x14585fec1 'virtual void game::FrontendSceneSystemSubTask::activate()' (FLOW). Reads inPlayGo/f1LifeEnabled/inF1CG, calls preload of initial customisation (0x1428bd7f0), preloadScene (0x1428bd420) for F1CG/F1World/[+0x1198]+0x10/Shop/AbstractScene, then switchScene (0x1428cfaa0 on [p1+0x70]) with preset 0x30 eF1CG, 0x15 eF1WMap, 0x13 eF1WGenericBackDrop, 1 eAbstractScene or 0x14 ePlayGo; sets p1+0x88..+0x8a = 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_system_sub_task_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 89 CE E8 ?? ?? ?? ?? 48 89 C7 48 8B",
+  "match": "0x14370c370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14370c370",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneSystemSubTask_Activate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14370c370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14370c370.c",
+   "notes": "V6154 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

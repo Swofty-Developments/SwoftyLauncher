@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_PuddleBuffer_Readback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14479f9c0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void(PuddleSystem*)",
+  "evidence": "decomp:re/decomp/14479f9c0.c;xref:0x145c06f80",
+  "notes": "Vtable cell 0x145c06f80 (no direct calls). Optional lock [[this+0x288]]; maps the frame counter buffer ([this+0x40]+0x1e8[frame]) via 0x1439ad480; a count > 0x10000 logs invalid puddle data count (%d) max (%d) (TRACKINFO) and is dropped; clears the 64 KB byte map slot [this+0x58] of [[this+0x40]+0x40]+0x60 and sets 1 at every index read from the mapped index buffer (+0x200[frame]); unmaps via vcall +0x48. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.puddle_buffer_readback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 48 89 CE 48 8B 81 88 02 00",
+  "match": "0x14479f9c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14479f9c0",
+  "kind": "func_start",
+  "names": [
+   "Render_PuddleBuffer_Readback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14479f9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14479f9c0.c",
+   "notes": "V6646 count<=0x10000 else invalid puddle data count (%d) max (%d) TRACKINFO log; clears 64KB map at [[+0x40]+0x40]+0x60 +8 + slot*0x10000 and marks indices; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FeaturedEvent_AddScore",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14120c6e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14120c6e0.c;pat:log-channel-FeaturedEvent;xref:0x1456ca4d0",
+  "notes": "Vtable cell 0x1456ca4d0. Resets scores (+0x4e4 total time, +0x4e8 best lap, +0x4f0 clean race), adds points from result list param_2 for the player's car (time vs target +0x4fc, best lap vs +0x4f8), counts clean races, sets flags +0x520..+0x526 and queues message 0x1456cf290 (flags, time) on the bus. Old name AddScore came from a log. (lane owner review requested) Better name: Game_FeaturedEvent_UpdateScoresFromResults (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.featured_event_add_score",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC F0 00 00 00 C5 F9 29 B4 24 E0 00 00 00",
+  "match": "0x14120c6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14120c6e0",
+  "kind": "func_start",
+  "names": [
+   "Game_FeaturedEvent_AddScore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14120c6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14120c6e0.c;xref:0x14120c6b3",
+   "notes": "V4676 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

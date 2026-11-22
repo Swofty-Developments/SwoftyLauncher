@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSurfacePack_Destroy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437a4160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437a4160.c;xref:0x1437a9250,0x1437a9383,0x1437ab663",
+  "notes": "GameSurfacePack destroy(pack,recreate): logs 'destroy' (GameSurfacePack). Looks up '<eaid://ego_package/textures/game_surface_pack.tif>.image' and '...tif' in resource set pack[2] (0x143993770); each found: vcall+8(0) then free via allocator pack[0] vt+0x38. When recreate!=0 rebuilds the 0x1d8 texture object (vt 0x1458c11f0, fmt 0xe) into pack[0x3003], registers it and a 0x70 view (0x143b73940), sets pack+0x1802c=1. Callers in 0x1437a9180 (both paths) and 0x1437ab5d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_surface_pack_destroy",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC A8 01 00 00 89 D3 48 89",
+  "match": "0x1437a4160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437a4160",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSurfacePack_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1437a4160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437a4160.c;xref:0x1437a9250",
+   "notes": "V7598 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

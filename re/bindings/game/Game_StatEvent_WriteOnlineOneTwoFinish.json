@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteOnlineOneTwoFinish",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143775930",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143775930.c;pat:log-channel-STATEVENT;xref:0x14379277e",
+  "notes": "Providers this+8..+0x10; 1 entry OnlineOneTwoFinish 1.0 type 0. Caller 0x143790310. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_online_one_two_finish",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 46 40 48 8B 40 60 48 8B 80",
+  "match": "0x14379277e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143775930",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteOnlineOneTwoFinish"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x143775930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143775930.c;xref:0x14379277e",
+   "notes": "V7402 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

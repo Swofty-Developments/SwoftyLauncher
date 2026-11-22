@@ -2,19 +2,17 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v xvfb-run >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable nixpkgs#xvfb-run -c "$SELF" "$@"
-fi
+NEEDS="zig wine xvfb-run"
+. "$(dirname "$SELF")/lib/env.sh"
 . ./game_lock.sh
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-runtime-assets}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game"
 mkdir -p "$OUT/game"
 
 echo "==== dbread logic unit test"
-"${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -o "$OUT/dbread_unit" dbread_unit.cpp
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -o "$OUT/dbread_unit" dbread_unit.cpp
 "$OUT/dbread_unit"
 
 ZS=../third_party/zstd
@@ -23,21 +21,25 @@ ZOBJ=()
 for c in $ZS/common/*.c $ZS/decompress/*.c; do
     o=$OUT/zstd/$(basename "${c%.c}").o
     ZOBJ+=("$o")
-    [[ $o -nt $c ]] || "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DZSTD_DISABLE_ASM -DXXH_NAMESPACE=ZSTD_ -DZSTD_LEGACY_SUPPORT=0 -I$ZS -c "$c" -o "$o" &
+    [[ $o -nt $c ]] || "${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -DZSTD_DISABLE_ASM -DXXH_NAMESPACE=ZSTD_ -DZSTD_LEGACY_SUPPORT=0 -I$ZS -c "$c" -o "$o" &
 done
 wait
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -Wno-unused-function -I$ZS -o "$OUT/game/F1_25.exe" fake_runtime.c "${ZOBJ[@]}" -lversion -luser32 -lws2_32
 cat > "$OUT/slow_mod.c" <<'EOC'
 #include <windows.h>
+#include <stdio.h>
 __declspec(dllexport) int SwoftyAddonInit(const void *api)
 {
     (void)api;
+    char tid[16];
+    snprintf(tid, sizeof tid, "%lu", (unsigned long)GetCurrentThreadId());
+    SetEnvironmentVariableA("SWOFTY_SLOW_THREAD", tid);
     Sleep(1500);
     SetEnvironmentVariableA("SWOFTY_SLOW_DONE", "1");
     return 1;
 }
 EOC
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -shared -o "$OUT/t_slow.dll" "$OUT/slow_mod.c"
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -shared -o "$OUT/t_slow.dll" "$OUT/slow_mod.c"
 cat > "$OUT/plain_mod.c" <<'EOC'
 __declspec(dllexport) int SwoftyAddonInit(const void *api)
 {
@@ -46,7 +48,7 @@ __declspec(dllexport) int SwoftyAddonInit(const void *api)
 }
 EOC
 for n in t_early t_window; do
-    "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -shared -o "$OUT/$n.dll" "$OUT/plain_mod.c"
+    "${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -shared -o "$OUT/$n.dll" "$OUT/plain_mod.c"
 done
 cat > "$OUT/t_files.cpp" <<'EOC'
 #include <swofty/registry.hpp>
@@ -66,8 +68,8 @@ SWOFTY_REGISTER
 
 SWOFTY_ADDON()
 EOC
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -I../../packages/sdk/include -shared -s -o "$OUT/t_files.dll" "$OUT/t_files.cpp" &
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -DSECOND -I../../packages/sdk/include -shared -s -o "$OUT/t_files2.dll" "$OUT/t_files.cpp" &
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -I../../packages/sdk/include -shared -s -o "$OUT/t_files.dll" "$OUT/t_files.cpp" &
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -DSECOND -I../../packages/sdk/include -shared -s -o "$OUT/t_files2.dll" "$OUT/t_files.cpp" &
 wait
 cp -r "../$DIST/." "$OUT/game/"
 python3 - "$OUT/game/swofty/addons/core/bindings.json" <<'EOB'
@@ -239,6 +241,7 @@ EOF
 files_cleanup() {
     rm -rf "$OUT/game/audio" "$OUT/game/game_package/gamedatabases" "$OUT/game/swofty/registry"
 }
+failed=()
 for mode in none replace gated late early earlywait secondcopy files; do
     echo "==== $mode"
     rm -rf "$OUT/game/swofty/assets.json" "$OUT/game/swofty/settings.json" "$OUT/game/swofty/addons/"t_*.dll "$OUT/game/swofty/addons/"t.*
@@ -254,7 +257,14 @@ for mode in none replace gated late early earlywait secondcopy files; do
     fi
     [[ $mode == none || $mode == files ]] || assets_json $mode
     [[ $mode == files ]] && files_setup
-    timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || status=1
+    started=$SECONDS rc=0
+    timeout 120 "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || rc=$?
+    if ((rc)); then
+        echo "FAIL: $mode: the game exited with $rc after $((SECONDS - started)) s$( ((rc == 124)) && echo ', killed by the 120 s timeout')"
+        cp "$LOG" "$OUT/failed-$mode.log" 2>/dev/null || true
+        failed+=("$mode")
+        status=1
+    fi
     echo "---- $LOG ($mode)"
     grep -v '  section ' "$LOG" | grep -vE '\] scan \.xtls|\[core\] bind ' || true
     case $mode in
@@ -419,5 +429,9 @@ for mode in none replace gated late early earlywait secondcopy files; do
         check "lang: valid table file accepted" "\[assets\] lang: table for 'eng': 1 string\(s\) from lang/good\.lngt"
         check "lang: table added and searched first" "\[assets\] lang: added 2 string\(s\) from assets\.json strings for 'eng' at priority 0 \(Loc_Add_LangTable returned 0\); lookup \"lng_press_start\" -> \"SWOFTY STRINGS OK\" \(the mod table is searched first\)"
     fi
+done
+for mode in "${failed[@]}"; do
+    echo "---- the last lines of $LOG in the $mode run, which failed"
+    tail -n 12 "$OUT/failed-$mode.log" 2>/dev/null || echo "(no log)"
 done
 exit $status

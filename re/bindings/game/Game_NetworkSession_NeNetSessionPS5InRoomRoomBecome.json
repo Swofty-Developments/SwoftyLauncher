@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_NeNetSessionPS5InRoomRoomBecome",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144085e20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144085e20.c;pat:log-channel-NETWORK-SESSION;xref:0x145a52f50",
+  "notes": "Vtable cell; NeNetSessionF1OS state update: update_Online / update_Creating / joining branches ('NeNetSessionF1OS::changeState' logs, setSearchable, CallSessionBrowserCreateSession 0x144084170); the PS5 'InRoom - room has become invalidated' text is one branch only. (lane owner review requested) Better name: Game_NetSessionF1OS_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_session_ne_net_session_ps5_in_room_room_become",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 05 00 00",
+  "match": "0x144085e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144085e20",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_NeNetSessionPS5InRoomRoomBecome"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144085e20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144085e20.c",
+   "notes": "V6514 better name Game_NetworkSession_F1OSUpdateStateMachine: 14 KB NeNetSessionF1OS update state machine (InRoom/Online/CreatingWebSession/FindingHost/Creating/Joining/Leaving, changeState), not just the room-invalidated log (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144085e20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144085e20.c",
+   "notes": "V7150 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_CreateTask_Vt14583d000",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143435e20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143435e20.c;xref:0x142b93fab,0x142b95eb5",
+  "notes": "F1OS task-system typed task allocator (template instance): allocates a 0x150-byte OnlineSubsystemTaskBase (base vtable 0x145834920, logs 'Created OnlineSubsystemTaskBase : @ %p' on F1OS) with final vtable 0x14583d000, wraps it in a ref-counted holder (vtable 0x14583f850) and adds it via Game_F1osTasksystem_AddTask 0x1432dd060, logging 'Allocated new task %s' on F1OS-TASKSYSTEM. Callers: engineer/currency UI code (Game_Currency_ClearPackages region). Addon: hook to see/create this task type. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3329)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_create_task_vt14583d000",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 4C 89 C7 48 89 D6 48 89 CB 4C 8B 61 10 49 8B 04 24 BA 50",
+  "match": "0x143435e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143435e20",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_CreateTask_Vt14583d000"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_CreateTask_Vt14583d000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143435e20.c;xref:0x143435e20",
+   "notes": "V3329 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_SetCustomCarLivery",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428eb990",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428eb990.c;pat:log-message-method;xref:0x1417e3804",
+  "notes": "Own body (pdata to 0x1428ebae7): logs '%s() Car [%u]' setCustomCarLivery (FRONTEND_SCENE_MANAGER/CAR), finds car component by ushort id in this+0x6fd8 vector (stride 0x6990, id +0xb8) and tail-jumps (0x1428ebac2) to 0x1428e64b0 Game_FrontendSceneComponentManager_SetCarLivery; otherwise logs 'Failed to find Car Component Id %u'. Decomp is merged with that tail target. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_set_custom_car_livery",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 C7 89 D6 48 89 CB 80 3D ?? ?? ?? ?? 01 75 73 B8 40 00 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 81 FA 19 EB 20 E0 74 32 85 D2 74 4C 83 C0 10 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 83 F8 40 75 C5 EB 1E 44 0F B7 CE 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 93 D8 6F 00 00 48 8B 83 E0 6F 00 00 48 39 C2 74 17 66 90 66 39 B2 B8 00 00 00 74 74 48 81 C2 90 69 00 00 48 39 C2 75 EB 66 83 FE FF 0F 84 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 40 00 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 84 00 00 00 00 00 8B 14 81 81 FA 19 EB 20 E0 74 4C 85 D2",
+  "match": "0x1428eb990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428eb990",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_SetCustomCarLivery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428eb990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428eb990.c;xref:0x1417e3804",
+   "notes": "V5147 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

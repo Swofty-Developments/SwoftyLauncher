@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PenaltyLog_FormatPenaltyText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143562cc0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143562cc0.c;xref:0x141902aac,0x141907686",
+  "notes": "(log, String *out, penaltyType, ...) Localises the penalty type (<0x15) via key table 0x14584fa98: 0 lng_drive_through, 1 lng_stop_go, 2 lng_grid_penalty, 3 lng_penalty_reminder, 4 lng_time_penalty, 5 lng_warning, 6 lng_disqualified, 7 lng_inf_removed_from_formation_lap, 9 lng_tyre_regulations, 10..15 lap invalidated / penalised variants, 16 lng_did_not_finish, 18 lng_speed_limit_penalty; replaces [driver_surname], [number], [places]. Callers Sess_PenaltyLog_Print, HUD. Addon: penalty type ids = UDP penalty enum."
+ },
+ "signature": {
+  "id": "session.penalty_log_format_penalty_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 4C 89 CB 44",
+  "match": "0x143562cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143562cc0",
+  "kind": "func_start",
+  "names": [
+   "Sess_PenaltyLog_FormatPenaltyText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143562cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143562cc0.c;xref:0x143565c79",
+   "notes": "V3771 Key table 0x14584fa98 verified: 0 lng_drive_through,1 lng_stop_go,2 lng_grid_penalty,3 lng_penalty_reminder,4 lng_time_penalty,5 lng_warning,6 lng_disqualified,7 lng_inf_removed_from_formation_lap,9 lng_tyre_regulations,10-15 lap invalidated/penalised,16 lng_did_not_finish,18 lng_speed_limit_penalty; placeholders [driver_surname]/[number]/[places]."
+  }
+ ],
+ "proofs": []
+}

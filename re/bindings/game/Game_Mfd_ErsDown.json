@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_ErsDown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141534490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_Mfd_ErsDown(void *mfd_car_settings_vm)",
+  "evidence": "doc:re/db/subsystems/game.md;decomp:re/decomp/141534490.c;xref:0x142a8ebbb,0x1410dbb44",
+  "notes": "Mirror of Game_Mfd_ErsUp (assist check 0x1415344dc) (fuel-mix, static) | findings from PR #474 by vogtmarcel07-cloud | engine-re E1 2026-11-18: called by Game_GameMfdSystem_Update 0x142a8e070 on action 'ERS Mode Down' (handle 0x146078d40) and once from 0x1410db680; writes InputRecord+0x08 like ErsUp. | raised by engine-re with --force 2026-11-18 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.mfd_ers_down",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 85 B8 00 00 00 48 8B 80 A8 01 00 00 8B 40 04 83 C0 F1 B3 01 83 F8 03 72 0B 4C 89 E9 44 89 F2 E8 ?? ?? ?? ?? 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 74 33 4B 8B 8C",
+  "match": "0x142a8ebba",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141534490",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_ErsDown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x141534490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141534490.c;xref:0x142a8ebba",
+   "notes": "V7336 mirror of ErsUp: same assist check, walks order table downward"
+  }
+ ],
+ "proofs": []
+}

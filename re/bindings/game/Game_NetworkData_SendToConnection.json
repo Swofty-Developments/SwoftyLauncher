@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkData_SendToConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406ed50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14406ed50.c;pat:log-message-method;xref:0x1409977ce,0x140997c0d,0x1430566b0,0x14305a123,0x14305a293,0x14305c1cf,0x143060299,0x143060e9c,0x143060f9e,0x14306175d,0x143061ae5,0x143061bb1,0x143061bfa,0x143061e8d,0x143061fed,0x143062126,0x14306346b,0x143063777,0x14306396f,0x143063d5c,0x1430645be",
+  "notes": "Body read in full. Returns 0x10 when byte +0x718 set; 0xe with logs when transport +0x110 is null or the destination is not connected (mask +0x180+src*0xc); else logs destination/dataType/size, for size < 0x48f and channel < 3 adds size*8 to the NETWORK-TRAFFIC counters at 0x146c9f2b0.. (logs kbits) and sends via 0x14406f280(+0x130,...); size >= 0x48f -> error 0x54. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_data_send_to_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 BD 10 00 00 00",
+  "match": "0x14406ed50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406ed50",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkData_SendToConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14406ed50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406ed50.c;xref:0x1409977ce",
+   "notes": "V6497 size=1313; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

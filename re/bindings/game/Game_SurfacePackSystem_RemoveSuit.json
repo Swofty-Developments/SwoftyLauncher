@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SurfacePackSystem_RemoveSuit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437a7670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437a7670.c;pat:log-channel-GameSurfacePackSystem;xref:0x1513bfe9b,0x1513bfeab,0x1513bfebb,0x1513bfecb,0x1513bfedb",
+  "notes": "Under CS +0x18480: slot lookup/allocate in suit table +0x18280, id = 0x160+min(param_2,4)+min(slot,31)*5 (same as AssignSuit); appends id to removal vector +0x18148 (grows x1.5 via allocator +0x18140) unless already queued. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.surface_pack_system_remove_suit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 4C 89 C3 89 D7 48 89 CE",
+  "match": "0x1437a7670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437a7670",
+  "kind": "func_start",
+  "names": [
+   "Game_SurfacePackSystem_RemoveSuit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x1437a7670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437a7670.c;xref:0x1513bfe9b",
+   "notes": "V6313 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

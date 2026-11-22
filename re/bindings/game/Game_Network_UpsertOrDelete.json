@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_UpsertOrDelete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430caa20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430caa20.c;pat:log-message-method;xref:0x1458135a8,0x1458135b0,0x1458135b8",
+  "notes": "(this, player, forceRemove): needs flag +0x5b&0x10; voter = !param_3 && +0x65 && !+0x66; logs NETWORK/T 'upsertOrDelete(%s) - %s' (VOTER / not a voter) and NETWORK '%s(%s).' removeFindPlayer; matches user id +0x18..+0x58 (Ne_UserId_Equals 0x144121bc0) in list +0xd0..+0xd8 (stride 0x60, vt 0x145823990): voter -> insert or set byte +8 = +0x63; else remove; count -> +0x2d8 (Ne_Property_SetS32IfChanged). Thunks 0x1430cb200/0x1430cb210 (r... (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_upsert_or_delete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 85 D2",
+  "match": "0x1430caa20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430caa20",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_UpsertOrDelete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430caa20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430caa20.c;xref:0x1430cb203",
+   "notes": "V5365 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

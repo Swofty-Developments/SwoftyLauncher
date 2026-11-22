@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ERPInfo_EError",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a691a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a691a0.c;pat:log-message-cxx;xref:0x143a65a5f,0x143a674ab",
+  "notes": "(loader, code): frees +0xa8/+0xe8/+0xf0, zeroes +0xb0..+0xdf/+0x378; ERPInfo [+0x330]: status 4 (log 'handleError - \"%s\" - setting m_status = ERPInfo::eError'), +0xc = code; removes it from pending +0x3d0..+0x3d8; closes file +0x338 (0x143f3daa0); 0x143a69a90(info); drops resource refs posting vt 0x1458a35b0, none -> 0x143a6b120; clears +0x330/+0x340, +0x3f5=1, +0x3f0=4. (lane owner review requested) Better name: Game_EgoErpLoader_HandleError (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.erp_info_e_error",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 89 D3",
+  "match": "0x143a691a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a691a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ERPInfo_EError"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a691a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a691a0.c;xref:0x143a65a5f",
+   "notes": "V6428 function is ERP loader handleError (sets m_status=eError, closes file); eError is a state value. Better Game_EgoErpLoader_HandleError"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143a691a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a691a0.c;xref:0x143a65a5f",
+   "notes": "V7046 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

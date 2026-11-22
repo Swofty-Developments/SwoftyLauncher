@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_DecalsSet_ReleaseAllGpuResources",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c66390",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c66390.c;xref:0x143c65889,0x143c68699,0x143c686b7,0x143c6c40a,0x143c7861d",
+  "notes": "Frees the objects at +0x1e8 (after 0x143ccd6c0) and +0x1f8, unregisters +0xe0 via Render_Gfx2_LookupEntryOrDefault and destroys it, then per 0xb8-byte record of +0xf0 destroys its pass (Render_Gfx_DestroyPassResources) and defers its views (Render_Gfx2Device_DeferRelease_A/B). Callers Render_CustomisationDecals_Teardown 0x143c65889, 0x143c671e0 (0x143c68699), 0x143c6c40a, Render_CustomisationDecalsSet_Build 0x143c7861d. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.decals_set_release_all_gpu_resources",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8B B9 E8 01",
+  "match": "0x143c66390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c66390",
+  "kind": "func_start",
+  "names": [
+   "Render_DecalsSet_ReleaseAllGpuResources"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143c66390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c66390.c;xref:0x143c65889",
+   "notes": "V8339 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

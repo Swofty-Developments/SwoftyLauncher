@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlag_SimulateUnlapLaps",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f65cf0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RED-FLAGS;decomp:re/decomp/142f65cf0.c;xref:0x142f6debf,0x142f6df79,0x14302add4",
+  "notes": "Log channel RED-FLAGS: 'Simulating %u laps to unlap vehicle #%u' | 'Vehicle #%u began on lap %u.' | 'Vehicle #%u is now on lap %u.'"
+ },
+ "signature": {
+  "id": "session.red_flag_simulate_unlap_laps",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 C5 78 29 8C 24 20 02 00 00",
+  "match": "0x142f65cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f65cf0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlag_SimulateUnlapLaps"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlag_SimulateUnlapLaps",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f65cf0.c;xref:0x142f65cf0",
+   "notes": "V1910 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

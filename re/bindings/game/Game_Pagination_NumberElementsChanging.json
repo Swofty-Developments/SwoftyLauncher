@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Pagination_NumberElementsChanging",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417f0a80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1417f0a80.c;pat:log-channel-PAGINATION;xref:0x14178463b,0x141cb25e8",
+  "notes": "(pager, count): logs 'Number of elements changing from %u to %u', stores count at +0x18, clamps current page +0x20 (valid flag +0x28) to the new page count (page size +0x10), calls change callback +0x40(+0x48) and vcall +0x20, then tail-jumps (0x1417f0b7b) into Game_Pagination_RequestCurrentView 0x1417f0220. Callers 0x141784580 (inbox) and 0x141cb24b0. (lane owner review requested) Better name: Game_Pagination_SetElementCount (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.pagination_number_elements_changing",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 00 01 00 00",
+  "match": "0x1417f0a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417f0a80",
+  "kind": "func_start",
+  "names": [
+   "Game_Pagination_NumberElementsChanging"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1417f0a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417f0a80.c;xref:0x14178463b",
+   "notes": "V4902 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

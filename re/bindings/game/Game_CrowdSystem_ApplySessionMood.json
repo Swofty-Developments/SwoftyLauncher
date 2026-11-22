@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_CrowdSystem_ApplySessionMood",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413ee2d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1413ee2d0.c;xref:0x1413f055c,0x142d4ecc8,0x142d5ff78,0x142d81508,0x142d8f8d8",
+  "notes": "Override +0x100 clear: value by session type ([+0xb8]+0x1a8)+4: 1-4 -> +0x108, 5-14 -> +0x10c, 15-17 -> +0x110, 18 -> +0x104, or +0x114 when +0x118 set; written to every zone (+0x88..+0x90) +0xc, message 0x1456e5910, 0x1413f1b50(zone,0); with override 0x1413f1b50(zone,1). Copies +0x100 into the 15 sub-objects +0x8..+0x78 (+0x30). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.crowd_system_apply_session_mood",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 80 B9",
+  "match": "0x1413ee2d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413ee2d0",
+  "kind": "func_start",
+  "names": [
+   "Game_CrowdSystem_ApplySessionMood"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1413ee2d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1413ee2d0.c;xref:0x1413f055c,0x142d8f8d8",
+   "notes": "V3368 session type ([this+0xb8]+0x1a8)+4 mapping 1-4->+0x108, 5-14->+0x10c, 15-17->+0x110, 18->+0x104, +0x114 when +0x118 set, writes +0xc per group (+0x88..+0x90) and posts message; callers ok. But +0x100 set does NOT select +0x114: it skips mood and calls 0x1413f1b50(group,1) per group then writes +0x30 flags to nodes"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1413ee2d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1413ee2d0.c;xref:0x1413f055c,0x142d8f8d8",
+   "notes": "V3982 session type ([this+0xb8]+0x1a8)+4 mapping 1-4->+0x108, 5-14->+0x10c, 15-17->+0x110, 18->+0x104, +0x114 when +0x118 set, writes +0xc per group (+0x88..+0x90) and posts message; callers ok. But +0x100 set does NOT select +0x114: it skips mood and calls 0x1413f1b50(group,1) per group then writes +0x30 flags to nodes"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x1413ee2d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413ee2d0.c;xref:0x1413f055c,0x142d4ecc8",
+   "notes": "V4141 session type switch +0x108/+0x10c/+0x110/+0x104, override +0x114 via +0x100/+0x118, groups +0x88..+0x90 +0xc, 5 callers confirmed"
+  }
+ ],
+ "proofs": []
+}

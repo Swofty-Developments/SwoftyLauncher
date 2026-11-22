@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_ViewModel_Teardown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14431d0c0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14431d0c0.c;xref:0x145680738,0x1456816d8,0x145681818,0x145681938",
+  "notes": "thunk -> .data1 0x153c4cd00 (body read): flags byte +0x25c: bit 0x10 -> vt slot 15 (+0x78), bit 4 -> slot 7 (+0x38); returns 0. Vtable slot 3 (e.g. cell 0x1456e6ca8 of TabViewModel vt 0x1456e6c90). The bits are set/cleared by Vm_Route_BindingEvent ev0/ev2 (0x10) and ev3/ev4 (4). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "vm.view_model_teardown",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F 84 ?? ?? ?? ?? 3A 35",
+  "match": "0x14431d0c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14431d0c0",
+  "kind": "func_start",
+  "names": [
+   "Vm_ViewModel_Teardown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14431d0c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14431d0c0.c;xref:0x14431d0b4",
+   "notes": "V6584 better name Vm_ViewModel_Teardown: only a jmp thunk to .data1 0x153c4cd00 (vtable/indirect refs); body claim (flags&0x10/&4) is black box, unverifiable; name unchanged pending proof"
+  }
+ ],
+ "proofs": []
+}

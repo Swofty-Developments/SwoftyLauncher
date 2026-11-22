@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_RequestRegisterAIEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143117630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143117630.c;pat:log-message-method;xref:0x14310d572,0x143117d7b,0x140fe320e",
+  "notes": "Logs requestRegisterAIEntrant(); unregisters an entrant with the same team info, builds the AI entrant (0x143117f90, Ne_Make_RandomIdBlock) and registers it via 0x14310c1d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_entrants_request_register_ai_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 31 C0",
+  "match": "0x143117630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143117630",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_RequestRegisterAIEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143117630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143117630.c;xref:0x140fe320e",
+   "notes": "V5812 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

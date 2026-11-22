@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Grow_GroundCoverPlugin",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143eeebe0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143eeebe0.c;xref:0x143cdcaad",
+  "notes": "Hash-map grow instance for Render_GroundCoverPlugin_Render; invalid-parameter -> stub 0x143eeebd0. Named callers: Render_GroundCoverPlugin_Render."
+ },
+ "signature": {
+  "id": "core.hash_map_grow_ground_cover_plugin",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 89 C2 48 83 E2 FE 31 C9 4D",
+  "match": "0x143cdcaad",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143eeebe0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Grow_GroundCoverPlugin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143eeebe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143eeebe0.c;xref:0x143cdcaad",
+   "notes": "V8161 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

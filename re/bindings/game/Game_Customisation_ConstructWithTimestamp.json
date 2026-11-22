@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Customisation_ConstructWithTimestamp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413ffe80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1413ffe80.c;xref:0x140fee912,0x141128e4a,0x1413ffb4f,0x141405932,0x1416c7b31,0x1416c7f86,0x1416ca2c7,0x1416cba05,0x141997df2,0x141bfbb52,0x141c02de9,0x141c02ee2,0x141c03003,0x141cbec8e,0x141cbf359,0x141cc03f0,0x141cc096e,0x141cc0aa5,0x141f296a0,0x141fdcc7a",
+  "notes": "Renamed (QueryPerformanceCounter value is never stored). (db, out, u32 key): writes base vt 0x145612f80 then derived 0x145612f60, empties lists, +0x118 = 0x3fff0000ffffffff, two 0x1820-byte slot arrays (count +0x4980 = 2). 0x1413f8e30 resolves key; with livery table 0x141107280(db): FindPackedEntry -> optional colour block +8..+0x38. With 0x1414054d0(db): two 0x30-byte colour entries at +0x60/+0x90 (ids +0x70/+0xa0, 16-byte colour from resolved record +0x3c, +0x4c), flag +0xd0; +0x11c = resolved key. (lane owner review requested) Better name: Game_VehicleCustomisation_ConstructFromKey (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.request_construct_with_deadline",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 44 89 C3 48 89 D6",
+  "match": "0x1413ffe80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413ffe80",
+  "kind": "func_start",
+  "names": [
+   "Game_Customisation_ConstructWithTimestamp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1413ffe80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1413ffe80.c;xref:0x141128e4a",
+   "notes": "V8027 Game_Customisation_ConstructWithTimestamp: large (~0x4a38 B) object ctor: QPC+base at +0x100 ok, but also queries packed lookup 0x1413f8e30 and fills fields; request/promise unsupported"
+  }
+ ],
+ "proofs": []
+}

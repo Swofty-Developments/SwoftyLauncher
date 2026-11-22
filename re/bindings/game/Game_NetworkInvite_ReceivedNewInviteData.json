@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkInvite_ReceivedNewInviteData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143073200",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143073200.c;pat:log-channel-NETWORK-INVITE;xref:0x14081158d,0x1430730c3,0x14307b6f9,0x1430ad988",
+  "notes": "Logs '%s(%s) : received new invite data...' with method name receiveInviteData. Calls Game_NetworkInvite_CanReceiveNewInvite (0x1430732d9); if busy logs 'Invite manager currently busy', else retires local players, sets the exclusive player and fires an InterruptQueue interrupt ('Accepted invite, fired interrupt'). Callers 0x1408113a0, 0x143072ea0, 0x14307b510, 0x1430ad6d0. (lane owner review requested) Better name: Game_NetworkInvite_ReceiveInviteData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_invite_received_new_invite_data",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143073200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143073200",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkInvite_ReceivedNewInviteData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143073200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143073200.c;xref:0x14081158e",
+   "notes": "V5567 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

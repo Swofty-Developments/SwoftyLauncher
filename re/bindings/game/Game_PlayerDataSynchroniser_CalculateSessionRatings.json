@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerDataSynchroniser_CalculateSessionRatings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432840b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432840b0.c;pat:log-message-cxx;xref:0x14315aedc",
+  "notes": "Sums safety rating byte [[e]+0x40]+0x24c (5 = none) over the player hash set this+0x80/+0x88 and over [[this+0x20]+0x100]+0x58..+0x60 entries (skipped when +0x64 or +0x66 set; record via 0x1432772b0); writes the average to *out when count > 0; logs NETWORK calculateSessionRatings (rating name, nPlayers). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.player_data_synchroniser_calculate_session_ratings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 54 24 28",
+  "match": "0x1432840b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432840b0",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerDataSynchroniser_CalculateSessionRatings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432840b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432840b0.c;xref:0x14315aedd",
+   "notes": "V5844 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

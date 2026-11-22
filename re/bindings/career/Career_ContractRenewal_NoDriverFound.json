@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_NoDriverFound",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d9afe0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d9afe0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d9aa47,0x140d9ac04",
+  "notes": "Iterates candidate driver keys (param_4+8..+0x10, u32) and writes the first for which 0x140d94f10(comp, driver, *team) is true to *param_2; if none writes 0x3fff0000 and logs CONTRACT_RENEWAL 'No valid driver found to approach'. Returns param_2. (lane owner review requested) Better name: Career_ContractRenewal_FindFirstApproachableDriver (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_no_driver_found",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC D8 00 00 00 4C 89 C7",
+  "match": "0x140d9afe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d9afe0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_NoDriverFound"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d9afe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9afe0.c;xref:0x140d9aa47,0x140d9ac04",
+   "notes": "V4734 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d9afe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9afe0.c",
+   "notes": "V9088 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

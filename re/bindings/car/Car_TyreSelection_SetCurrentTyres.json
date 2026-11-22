@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreSelection_SetCurrentTyres",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e9eda0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e9eda0.c;pat:log-channel-TYRES;xref:0x142e9425a,0x14f4297cc",
+  "notes": "(sel,{compound,index},lap): history vector +0x30..+0x40 of 0x78-byte entries {owner, 0x6c tyre-set copy, u16 lap +0x74}, at most 100 (oldest shifted out). Non-authoritative (+0x20 == 0) and an entry for lap exists -> logs, returns. Copies the set from allocation [+8] (groups +0x20 stride 0x28, count +0xd8) into the last entry or appends one; +0x48 = 1. Callers in 0x142e94040, 0x14f429710. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.tyre_selection_set_current_tyres",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 78 29 BC 24 90 01 00 00 C5 78 29 B4 24 80 01 00 00 C5 78 29 AC 24 70 01 00 00 C5 78 29 A4 24 60 01 00 00 C5 78 29 9C 24 50 01 00 00 C5 78 29 94 24 40 01 00 00 C5 78 29 8C 24 30 01 00 00 C5 78 29 84 24 20 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 44 89 C7",
+  "match": "0x142e9eda0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e9eda0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreSelection_SetCurrentTyres"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e9eda0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e9eda0.c;xref:0x142e9425a",
+   "notes": "V5536 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

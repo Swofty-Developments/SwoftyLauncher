@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_AddHuffTable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449de7cc",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449de7cc.c;xref:0x1449d3fd5,0x1449d3ff2,0x1449d400f,0x1449d402c",
+  "notes": "libjpeg add_huff_table: allocates the 0x112-byte JHUFF_TBL when *htblptr is null, copies the 17 BITS bytes, sums counts 1..16 and raises error 9 when the sum is 0 or > 256, copies huffval, clears sent_table. Callers 0x1449d3fd5, 0x1449d3ff2, 0x1449d400f, 0x1449d402c in Render_Jpeg_SetDefaults (standard DC/AC tables). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.jpeg_add_huff_table",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 20 48 8B 02 49",
+  "match": "0x1449de7cc",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449de7cc",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_AddHuffTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1449de7cc",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449de7cc.c;xref:0x1449d3fd5",
+   "notes": "V8424 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

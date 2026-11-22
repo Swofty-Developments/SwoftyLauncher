@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_ClearBoundFlag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141aeca80",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_F1World_ClearBoundFlag(void *self, void *a2)",
+  "evidence": "decomp:re/decomp/141aeca80.c;xref:0x141aeb494,0x141aeb93d,0x141b91e95",
+  "notes": "Renamed: sets bool holder +0x148 = false, string +0x120 = param_2, bool holder +0x108 = true (bool type 0x146129dc0, setter 0x140973e20). (lane owner review requested) Better name: Ui_F1World_SetMessageVisible (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "ui.f1_world_clear_bound_flag",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE C6 44 24 27 00",
+  "match": "0x141aeca80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141aeca80",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_ClearBoundFlag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141aeca80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141aeca80.c;xref:0x141aeb494;xref:0x141aeb93d",
+   "notes": "V9936 Sets bool false on node +0x148, copies a string into +0x120, then sets bool true on node +0x108; more than just clearing one flag."
+  }
+ ],
+ "proofs": []
+}

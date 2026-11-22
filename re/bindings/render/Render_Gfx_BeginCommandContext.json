@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_BeginCommandContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ff780",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ff780.c;xref:0x143b5a6da,0x143b5a7de",
+  "notes": "Sets ctx+0x58 = 1 and list param_2 at +0x60 (list+0x48 = device+0xa38), copies +0x16f4 -> +0x16f8, picks the allocator by list type (+0x20: 0/1/2 -> ctx+8/+0x20/+0x38 per frame) and calls list vcall +0x40 with it, clears PSO +0x12d8, Render_Gfx_ResetBindState, ++ +0x16f4, TlsSetValue(index 0x14618c688, ctx+0x1700), resets list +0x28..+0x38, list vcalls +0xb0 (2 heaps device+0xf20/+0x1290), +0x190, +0x198. Callers 0x143b5a680, 0x143b5a770. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_begin_command_context",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D0 48 89 CE C6 41 58",
+  "match": "0x1439ff780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ff780",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_BeginCommandContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439ff780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ff780.c;xref:0x143b5a6da",
+   "notes": "V8507 sets active +0x58, list +0x60, frame counter +0x16f4->+0x16f8, list vcall+0x40, clears +0x12d8, ResetBindState, TLS set"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamFacilitiesScene_PreloadFacility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ab0ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ab0ce0.c;pat:log-channel-MyTeamFacilitiesSceneSystem;xref:0x142ab0829,0x143710fff",
+  "notes": "Callers 0x142ab0829 (in 0x142aae940), 0x143710fff. Finds the TeamHQV2 cutscene set, preloads its asset groups (0x1428b5c20); for Engineering/Personnel/Corporate computes the phase from facility level (+0x148 + 0x140f89640 vs thresholds +0x110..+0x118, max 4) and preloads 'Phase%uCutscene' current and next (0x1428b45d0/0x1428b5fc0); others preInitSubsceneCutscenes (0x1428b5e40). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.my_team_facilities_scene_preload_facility",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 CE 48 8B 79 28",
+  "match": "0x142ab0ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ab0ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamFacilitiesScene_PreloadFacility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ab0ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ab0ce0.c;xref:0x142ab0829",
+   "notes": "V4999 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPiePopulateSlotCap",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f4821e",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f4821e;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "cmp r13d,4 ; ja: fall-through of the code guard (join target)"
+ },
+ "signature": {
+  "id": "career.rn_d_pie_populate_slot_cap",
+  "section": ".xtls",
+  "pattern": "41 83 FE 03 77 E9 41 83 FD 04 0F 87",
+  "match": "0x141f48218",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f4821e",
+  "kind": "mid",
+  "expect": "41 83 FD 04 0F 87 6B 19 00 00",
+  "names": [
+   "site_Career_RnDPiePopulateSlotCap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDPiePopulateSlotCap",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f4821c,0x141f4821e,0x141f48222,0x141f4832a,0x141f4832d,0x141f496df",
+   "notes": "V0161 cmp r13d,4; ja 0x141f49b93 (epilogue), reached only by fall-through of the code-guard ja 0x141f4821c (no branch targets it); r13d = slot count/next index (inc 0x141f4832a, spill [rsp+0x84], reloaded at 0x141f496df before every back-edge); 10-byte window, no branch inside"
+  }
+ ],
+ "proofs": []
+}

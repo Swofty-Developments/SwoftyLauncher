@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_NetworkConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430c4610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430c4610.c;pat:log-channel--;xref:0x1430d1d53",
+  "notes": "Body read in full: GameSessionVotingManager constructor (vtables 0x1458135a0/0x1458135c0, logs '%s().' GameSessionVotingManager): timers, VM handles network.voting_data.mode/state/result/countdown/count_yes/count_total/num_players/skip_practice_votes/kick_player_ref/kick_available/voted_skip_practice/voting_player_skip_practice/vote_skip_practice_text; handlers for message ids 0x1f/0x20/0x21 on [param_2+0x3d0] vt+8; 0x140997d80; appends itself to [param_2+0x100]+0x78. Caller 0x1430d1d53. Renamed: not a config reader. (lane owner review requested) Better name: Game_GameSessionVotingManager_Ctor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_network_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 D7 48 89 CE 48 B8 00 00 00 00 01 00 00 00",
+  "match": "0x1430c4610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430c4610",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_NetworkConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430c4610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430c4610.c;xref:0x1430d1d53",
+   "notes": "V5355 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

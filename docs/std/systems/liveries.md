@@ -227,6 +227,8 @@ SWOFTY_ADDON()
 
 The importer routes a `.vtf` inside a livery's `wep.erp` to `vehicle.handling`. Installing a livery leaves R&D Tyres' handling in place.
 
+A livery's `archive` carries the car's handling file. The build gives it the handling of the vehicle that wears it, or the livery addon's own records for that archive, and the base car for equal performance ([A livery's archive](./car-physics#a-livery-s-archive)).
+
 ## AI liveries
 
 The 1.6.0 header has no `ai_assignments` registry, no decal sets or sponsor packs, and no livery events or operations (`grant`, `assign`). This section and the next describe them for headers that come later.
@@ -297,7 +299,7 @@ liveries::sponsor_packs.add("real_sponsors", {
 ## Readiness and limits
 
 - **Livery records: ready, applied at boot.** A livery's archive is routed to the addon's file over the car's wep archive, and an asset group is registered for it when the car's archive is not in the game folder; its textures folder is routed file by file over the car's `textures` folder. A special livery also gets its `se_livery` row, its unlock row and an ownership report. All of it uses the same row engine and file routing as vehicles, and a livery that no car wears applies nothing.
-- **Common archive:** the asset group lists the car's package `teams/common.erp` first. A package that reuses the stock common archive keeps its archive on the 1.5 `file.put` and `group.register` operations (Classic Seasons 2022 and 2023 do).
+- **Common archive:** the asset group lists the car's package `teams/common.erp` first. A group whose template is a stock car of the same package also gets that car's shared archive: a 2025 My Team car's livery slot gets `teams/common_fom.erp`. A package that reuses the stock common archive keeps its archive on the 1.5 `file.put` and `group.register` operations (Classic Seasons 2022 and 2023 do).
 - **Classic Seasons:** seasons 2016 to 2021 and 2024 declare each team car's archive as a `liveries::Livery` record in `registry/content.json`; `assets/liveries.json` holds the same archives as 1.5 operations and `registry.json` names it in `replaced_operations`.
 - **Events and operations: unknown (L1).** `Game_Build_SpecialLiveryList`, `Game_FrontendSceneComponentCar_SetCarLivery`, `Game_FrontendSceneManager_SetCustomCarLivery` and the custom-livery colour setters are L1. `assign` comes later.
 - **Archives and textures apply at boot.** The core adds them to the game's asset manifest when the game parses it, and the game reads them from the addon folder until the next game start.

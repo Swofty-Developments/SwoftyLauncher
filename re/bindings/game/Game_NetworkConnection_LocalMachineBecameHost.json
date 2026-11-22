@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkConnection_LocalMachineBecameHost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144065aa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144065aa0.c;pat:log-channel-NETWORK-CONNECTION-QUALITY;xref:0x14406597b",
+  "notes": "Log string 'void neon::NeNetSystemCommon::update(const NEdouble)'. Under EnterCriticalSection(this[0xe4]): vfunc+0x30 on this[0x2a..0x2c], Game_NetworkThrottle_SendPacket(this[0x26]); inlined NeNetConnectionQuality updateArbiter/setArbiterState/startBandwidthEvaluations/updateTester on this[0x28] (host change log 'Local machine became the host'); handshake timeout -> vfunc+0x40; RTT timeouts (0x144070210/0x1440730e0); broadcastMyConnectivityTable; state 2 -> Ne_NetSystemCommon_LeaveSession. Caller 0x14406597b in 0x144065920. (lane owner review requested) Better name: Game_Network_NetSystemCommon_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_connection_local_machine_became_host",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 0C 00 00 C5 F8 29 BC 24 20 0C 00 00",
+  "match": "0x144065aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144065aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkConnection_LocalMachineBecameHost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144065aa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144065aa0.c;xref:0x14406597b",
+   "notes": "V6492 partial: better name Game_NetworkConnQuality_UpdateArbiter; 13 KB updateArbiter state machine; became-host is one log"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144065aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144065aa0.c;xref:0x14406597b",
+   "notes": "V7139 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

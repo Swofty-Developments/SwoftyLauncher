@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwInt_VolFogMapWidth",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ca5088",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/143ca4ea0.c;xref:0x143ca5088",
+  "notes": "call Ne_Parse_Long(attr+0x50 value, NULL, 0) for the hardware-settings attribute 'volumetricFogMapWidth' (name matched case-insensitively against the string loaded at 0x143ca5040) in reader 0x143ca4ea0, a settings listener callback; its return address keys xanpavle.re-optimization's integer enforcement"
+ },
+ "signature": {
+  "id": "core.hw_int_vol_fog_map_width",
+  "section": ".xtls",
+  "pattern": "31 D2 45 31 C0 E8 ?? ?? ?? ?? 89 C7 E9",
+  "match": "0x143ca5083",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ca5088",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwInt_VolFogMapWidth"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwInt_VolFogMapWidth",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ca4ea0.c;xref:0x143ca5088,0x143ca5040,0x143ca5076,0x143ca508d;sig:core.hw_int_vol_fog_map_width",
+   "notes": "V0931 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rdi = 'volumetricFogMapWidth' from lea 0x143ca5040, r8d 0x1f) at 0x143ca5076; on 0 it sets rcx = [attr+0x50], edx = 0, r8d = 0 and the E8 at 0x143ca5088 calls 0x14534dcd8 (.xtls, .pdata 0x143ca4ea0-0x143ca5281). This path runs only when volumetricFog is true and both volumetricFogMapWidth and volumetricFogMapHeight exist; otherwise a 1..3 preset indexes the tables at 0x145a3c9c4/0x145a3c9d0. Result kept in edi, clamped to 0xa0..0x780, rounded up to a multiple of 16 and written to the global 0x145f9708c when it changes. sigcheck: one hit, target 0x143ca5088"
+  }
+ ],
+ "proofs": []
+}

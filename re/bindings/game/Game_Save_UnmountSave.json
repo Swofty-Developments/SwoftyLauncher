@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Save_UnmountSave",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441490a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441490a0.c;pat:log-message-method;xref:0x14413f1f7,0x1441522dd",
+  "notes": "SAVE log 'Unmount save requested for %s - m_mountCreatedNew %d' (0x145a5d12b), arg4==0: 'unmounting save , m_storeInCloud is false' path. Cloud path (this+1000): 'unmountSave searchPath %S , search %S', FindFirstFileW/CreateFileW/ReadFile per file, remote write via (this+0x30)+0x108 vtbl+0, logs 'Remote storage write for file %s succeeded.'; then deletes mount dir this+0x50 via FUN_14413ac70 retry 16x Sleep(500), FUN_14414b150 rename (.old); logs 'Unmount save result: 0x%x'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.save_unmount_save",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 0E 00 00 C5 F8 29 B4 24 D0 0E 00 00",
+  "match": "0x1441490a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441490a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Save_UnmountSave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1441490a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441490a0.c;xref:0x14413f1f7",
+   "notes": "V6557 size=7296; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

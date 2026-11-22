@@ -6,20 +6,20 @@
 #include <string>
 #include <vector>
 
-#include "../../src/core/career_ops/driver_rows.hpp"
-#include "../../src/core/career_ops/fuel_logic.hpp"
-#include "../../src/core/career_ops/number_plan.hpp"
-#include "../../src/core/career_ops/seat_plan.hpp"
+#include "core/career/ops/driver_rows.hpp"
+#include "core/career/ops/fuel_logic.hpp"
+#include "core/career/ops/number_plan.hpp"
+#include "core/career/ops/seat_plan.hpp"
 
-using namespace career_ops;
+using namespace career::ops;
 
 static int failures = 0;
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                    \
-            ++failures;                                                                                                \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c);                                                             \
+            ++failures;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 static uint32_t key(uint32_t stat) { return stat << 16; }
@@ -29,8 +29,8 @@ static plan::Row reserve(uint32_t d, int team) { return {key(d), team, -1, false
 
 static std::vector<plan::Row> grid()
 {
-    return {race(5, 476, 0), race(6, 476, 1), race(7, 484, 0), race(8, 484, 1), race(1, 477, 0, true), race(2, 477, 1),
-            free_agent(30), reserve(31, 476), free_agent(32), free_agent(32)};
+    return {race(5, 476, 0), race(6, 476, 1), race(7, 484, 0),  race(8, 484, 1), race(1, 477, 0, true),
+            race(2, 477, 1), free_agent(30),  reserve(31, 476), free_agent(32),  free_agent(32)};
 }
 
 static void test_seats()
@@ -68,7 +68,8 @@ static void test_seats()
 static void test_numbers()
 {
     using numbers::Error;
-    std::vector<numbers::Row> rows = {{key(5), 44, true}, {key(6), 63, true}, {key(30), numbers::kNone, false}, {key(31), 14, true}};
+    std::vector<numbers::Row> rows = {
+        {key(5), 44, true}, {key(6), 63, true}, {key(30), numbers::kNone, false}, {key(31), 14, true}};
     numbers::Plan p = numbers::plan(rows, key(5), 7, false);
     CHECK(p.error == Error::none && p.row == 0 && p.swap_with == -1 && !p.unchanged);
     CHECK(numbers::plan(rows, key(5), 44, false).unchanged);
@@ -114,7 +115,8 @@ static fuel::Track track(uint32_t index, uintptr_t object, uintptr_t record, con
 static void test_fuel_sets()
 {
     CHECK(fuel::table_named("f1_2025") == &fuel::kSource && fuel::table_named("f1_2026") == &fuel::kTarget);
-    CHECK(fuel::table_named("sprint_f1_2025") == &fuel::kSprintSource && fuel::table_named("sprint_f1_2026") == &fuel::kSprintTarget);
+    CHECK(fuel::table_named("sprint_f1_2025") == &fuel::kSprintSource &&
+          fuel::table_named("sprint_f1_2026") == &fuel::kSprintTarget);
     CHECK(!fuel::table_named("classic") && !fuel::table_named(""));
 
     fuel::Fuel f;

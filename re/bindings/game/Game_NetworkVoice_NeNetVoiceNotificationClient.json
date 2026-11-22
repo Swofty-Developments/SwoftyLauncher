@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_NeNetVoiceNotificationClient",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144038730",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144038730.c;pat:log-channel-NETWORK-VOICE;xref:0x144038a55,0x144039a28,0x14403bbf4,0x14403bc31,0x1440421d5,0x14404233e",
+  "notes": "Under lock [this+0x48]: if capture is open (+0x79) calls waveInStop, waveInReset, waveInUnprepareHeader for buffers 1 and 2 and waveInClose on handle +0x80 (failures logged 'NeNetVoiceNotificationClient::... has failed'), then clears +0x80 and +0x79. Called from 0x144038a40, 0x144039a20, Game_Audio_CompressDataHelper, 0x1440421c0, 0x144042310. (lane owner review requested) Better name: Game_NetworkVoice_CloseWaveInDevice (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_voice_ne_net_voice_notification_client",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 49 48 FF 15",
+  "match": "0x144038730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144038730",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_NeNetVoiceNotificationClient"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144038730",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144038730.c;xref:0x14379c8ab",
+   "notes": "V6416 partial: better name Game_NetworkVoice_WaveInStopAndClose; waveInStop/Unprepare/Close teardown with error logs"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144038730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144038730.c;xref:0x14379c8ab",
+   "notes": "V7092 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

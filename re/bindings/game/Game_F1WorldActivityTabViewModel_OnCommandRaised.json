@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldActivityTabViewModel_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a7a6c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a7a6c0.c;str:s_F1WorldActivityTabViewModel_OnCommandRaised;xref:0x141a7ad27,0x14572ae70",
+  "notes": "Own pretty-function F1WorldActivityTabViewModel::onCommandRaised. Ignores commands while busy (+0x793) or route/player card opening (TOP_LEVEL_UI log). Hash 0x749c12c3 pushes 'fan_zone_overview' via navigator [+0x620] vcall +0x80 (mode 4); 0x2b0357a/0x795bdbec open goal/route screens (set +0x793); 0x70d928ee 0x141983e90; 0xd2ca61a4 clears +0x793. Adjustor thunk 0x141a7ad20. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_world_activity_tab_view_model_on_command_raised",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 D7 48 89 CE 48 8B 02 48 85 C0 74",
+  "match": "0x141a7a6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a7a6c0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldActivityTabViewModel_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a7a6c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a7a6c0.c;xref:0x141a7ad27",
+   "notes": "V4933 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

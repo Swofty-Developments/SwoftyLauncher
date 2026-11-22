@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Sess_Get_CarDriverName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f28c10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f28c10.c;xref:0x142f55040,0x143565bc0",
+  "notes": "(obj, u8 carIdx) -> const char *, the driver name of a car. 0xff, or an index at or past the count of the car pointer vector [obj+0x88, obj+0x90), returns \"\" (0x145612762). The car is cached at obj+0xa0+idx*8 (read 0x142f28c4a); on a miss the vector is searched for the car whose [[car+0x18]+0x58] byte +0xe8 equals the index (a null link gives 0xff) and the hit is cached (0x142f28cf5). A car whose byte +0x32 has the sign bit set returns the shared qword [obj+0x60] (0x142f28d08). Any other car takes its 0x88-byte record from [[[obj+0x190]+0x88]+0x260]+0x2e0..+0x2e8 where byte +0x82 equals the index, looks the driver up by the stat id at record+0x50 through 0x1423dbcf0([obj+0x198], &record[0x50]) (it returns 0 when it finds none, logging ENTRANTS_SYSTEM 'Driver with stat id %s not found' when the stat id's type is past 2 or its table is missing) and returns qword [driver+0xc8] (0x142f28d36); a null [[obj+0x190]+0x88] or [[[obj+0x190]+0x88]+0x260], no matching record or no driver returns \"\", while [obj+0x190] and [obj+0x198] themselves are read with no null check. Neither [obj+0x60] nor [driver+0xc8] is null-checked, so the result can be NULL. Callers: Sess_Misconduct_OnCarToCarCollision, Sess_PenaltyLog_Print, Sess_Misconduct_RemoveWatchedIncident, 0x1435b3550 (the unlapped rules message) and .data1 0x15026e7b0. Callers: census steam 0x2f28c10."
+ },
+ "signature": {
+  "id": "session.get_car_driver_name",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8D 35 ?? ?? ?? ?? 80 FA FF",
+  "match": "0x142f28c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f28c10",
+  "kind": "func_start",
+  "names": [
+   "Sess_Get_CarDriverName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f28c10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f28c10.c;xref:0x142f55462,0x143565c4d,0x1435b172b",
+   "notes": "V3710 Cached participant +0xa0+idx*8, [+0x18]+0x58+0xe8 car index, empty string 145612762 default, online players list +0x2e0 stride 0x88 name +200."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_Get_CarDriverName",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142f28c10-0x142f28d42,0x1423dbcf0-0x1423dbcf5,0x14c970d00-0x14c970e1c,0x142f55040-0x142f554be,0x143565bc0-0x14356606e,0x1435b1550-0x1435b1cc6,0x1435b3550-0x1435b425d,0x15026e7b0-0x15026ea8a,1.0.145 0x142f2b1a0-0x142f2b2d2,1.0.145 0x14c60f4b0-0x14c60f5cc;xref:0x142f28c16,0x142f28c1d,0x142f28c44,0x142f28c4a,0x142f28c5c,0x142f28ca0,0x142f28ca5,0x142f28ceb,0x142f28cf5,0x142f28d08,0x142f28d22,0x142f28d2c,0x142f28d36,0x142f55462,0x142f55472,0x143565c4d,0x143565d15,0x1435b172b,0x1435b1b25,0x1435b1b38,0x1435b392a,0x1435b3941,0x15026e8b7",
+   "notes": "V100070 Blind: partial. rcx=obj, dl=u8 car idx; 0xff or idx>=count of the [+0x88,+0x90) ptr vector -> \"\" 0x145612762. Cache +0xa0+idx*8 and [+0x18]+0x58 +0xe8 match confirmed (0x142f28c4a/cf5/ceb). Car byte +0x32 sign bit set -> returns qword [obj+0x60] (0x142f28d08), not in notes. Else records at [[[obj+0x190]+0x88]+0x260]+0x2e0, stride 0x88, byte +0x82 = idx; &rec+0x50 (stat id) goes to 0x1423dbcf0([obj+0x198]) and the name is [driver+0xc8] (0x142f28d36), so name +200 is on the looked-up driver, not on the 0x88 record or obj. Named callers are 3 of 5 (missing 0x1435b3550, 0x15026e7b0); census 10/5 matches. 1.0.145 twin 0x142f2b1a0, 78/78 equal."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_Get_CarDriverName",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142f28c10-0x142f28d42,0x14c970d00-0x14c970e1c,0x142f55040-0x142f554be,0x143565c0a-0x143565d50,0x1435b16f8-0x1435b1bb1,0x1435b38d4-0x1435b3a3a,0x15026e7b0-0x15026e900,1.0.145 0x142f2b1a0-0x142f2b2d2,1.0.145 0x14c60f4b0-0x14c60f5cc;xref:0x142f28c1d,0x142f28c44,0x142f28c4a,0x142f28cda,0x142f28cf5,0x142f28c57,0x142f28d08,0x142f28c69,0x142f28c73,0x142f28c83,0x142f28ca0,0x142f28d2c,0x142f28d34,0x142f28d36,0x14c970d08,0x14c970d38,0x14c970e10,0x142f55462,0x142f55472,0x143565c4d,0x143565d15,0x1435b172b,0x1435b1b25,0x1435b1b38,0x1435b392a,0x1435b3941,0x15026e8b7",
+   "notes": "V100071 Blind: partial. Confirmed in disasm: u8 id in dl; 0xff or id>=count of [obj+0x88,+0x90) (unsigned, 0x142f28c44) returns \"\" 0x145612762; cache obj+0xa0+id*8 read 0x142f28c4a, filled 0x142f28cf5 after the [[car+0x18]+0x58]+0xe8 scan; sign bit of car+0x32 returns unchecked [obj+0x60] (0x142f28d08); else 0x88-byte record by +0x82, 0x1423dbcf0([obj+0x198],rec+0x50) (log path matches), unchecked [driver+0xc8]. Callers and census 10/5 match. Imprecise: \"a null link returns \"\"\": [obj+0x190] is read unchecked at 0x142f28c69 (only +0x88 and +0x260 are checked); [obj+0x198] is unchecked too. 1.0.145 twin 0x142f2b1a0, 78/78 equal."
+  },
+  {
+   "date": "2026-11-19",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Sess_Get_CarDriverName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f28c10-0x142f28d42,0x14c970d00-0x14c970e1c,0x142f55040-0x142f554be,1.0.145 0x142f2b1a0-0x142f2b2d2,1.0.145 0x14c60f4b0-0x14c60f5cc;xref:0x142f28c1d,0x142f28c44,0x142f28c4a,0x142f28cf5,0x142f28d08,0x142f28c69,0x142f28d22,0x142f28d2c,0x142f28d0c,0x14c970d0c,0x14c970d20,0x14c970d38,0x14c970e10,0x142f55462,0x143565d15,0x1435b172b,0x1435b392a,0x15026e8b7",
+   "notes": "V100072 Blind: agree. Own disasm of 0x142f28c10-0x142f28d42 and callee thunk 0x1423dbcf0 -> .data1 0x14c970d00-0x14c970e1b: 2 args (obj, u8 idx), returns char*. 0xff or idx>=count -> \"\" 0x145612762; cache obj+0xa0+idx*8 read 0x142f28c4a, filled 0x142f28cf5 by the [[car+0x18]+0x58]+0xe8 scan; car+0x32 bit7 -> qword [obj+0x60]; else 0x88-byte record (+0x82==idx) under [[[obj+0x190]+0x88]+0x260]+0x2e0, 0x1423dbcf0([obj+0x198], rec+0x50), qword [drv+0xc8], neither null-checked. Callee logs only for type>2 or null table, and only with the ENTRANTS_SYSTEM channel on; out-of-range id returns 0 silently. 10 calls/5 fns match census. 1.0.145 twin 0x142f2b1a0 78/78 equal."
+  }
+ ],
+ "proofs": []
+}

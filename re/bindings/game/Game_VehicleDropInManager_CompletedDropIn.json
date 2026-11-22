@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleDropInManager_CompletedDropIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d6fad0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d6fad0.c;pat:log-message-cxx;xref:0x1457dfda8",
+  "notes": "Read in full (this, u32 *out): if [[[this+0xdb8]+0x3c0]+0x50]+8 < 2, nothing pending (+0x88/+0xd0 null) and no player entry with +0x68/+0x69 set: logs 'VehicleDropInManager::completedDropIn()', posts message 0x1458364d0 (0x3700000007) to all (mode 1) and clears +0x4e4. Then writes a state hash to *out (0x7c9df43c, [0x146cb2280] or [0x146cb2284]). Vtable cell 0x1457dfda8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_drop_in_manager_completed_drop_in",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 D6 48 89 CF E8 ?? ?? ?? ?? 48 8B 87 B8 0D 00 00",
+  "match": "0x142d6fad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d6fad0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleDropInManager_CompletedDropIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d6fad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d6fad0.c",
+   "notes": "V5402 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_GameSessionMatchingCareer_JoinCareerSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14306f4d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14306f4d0.c;pat:log-message-cxx;xref:0x1430ad6a1,0x1430ae884,0x1430b2825",
+  "notes": "__FUNCTION__ GameSessionMatchingCareer::joinCareerSession (NETWORK-SESSION log); calls 0x1431fe880, 0x140fdb2b0, 0x143070a80, then searchSession 0x143070f40 and 0x14306f770. Callers: GameSessionUI onCareerSessionRequested (0x1430ad4e0), 0x1430ae720, onJoinCareerSessionCompleted (0x1430b2710). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.game_session_matching_career_join_career_session",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 F8 00 00 00",
+  "match": "0x14306f4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14306f4d0",
+  "kind": "func_start",
+  "names": [
+   "Career_GameSessionMatchingCareer_JoinCareerSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14306f4d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14306f4d0.c;xref:0x1430ad6a2",
+   "notes": "V5555 name matches own log/pretty string and body; no broader behaviour found"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x14306f4d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14306f4d0.c;xref:0x14306f550;str:\"NEbool network::GameSessionMatchingCareer::joinCareerSession(JoinCareerDelegate)\"",
+   "notes": "V9218 Function name string is referenced at 0x14306f550; also logs onCareerSearchComplete / notifyJoinCareerSessionResult tags."
+  }
+ ],
+ "proofs": []
+}

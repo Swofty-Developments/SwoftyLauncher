@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehiclePhysicsClock_Setup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143255d50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143255d50.c;xref:0x14325d9db,0x14325d9e9,0x1432604b5,0x143266a9d,0x143266aab,0x1432e29a7",
+  "notes": "Read in full (clock): +4/+0x44/+0x38/+0x10 = 0, +0x3c = 1, +0x40 = rate +0xfc, period +0xc = (int)(1000/rate); stamps QPC+[0x1461089f8] into +0x20 (and +0x28 if non-zero); resets the 0x140-byte records +0x160.. (10000 defaults, name buffer +0xa8/+0xb0), the 0xc0-byte records +0x180.. (+0 = 0xffffffff00000000), the 12-byte entries +0x1a0.. (-1), the 0x44-byte entries +0x1c0.. (0) and zeroes +0x1d8..+0x2d8. Callers 0x14325c810, Game_VehiclePhysicsClock_Reset 0x1432602e0, 0x1432669b0, 0x1432e2740. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_physics_clock_setup",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 80 01 00 00 48 89 CE 48 C7 41 04 00",
+  "match": "0x143255d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143255d50",
+  "kind": "func_start",
+  "names": [
+   "Game_VehiclePhysicsClock_Setup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143255d50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143255d50.c;xref:0x14325d9db",
+   "notes": "V7575 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

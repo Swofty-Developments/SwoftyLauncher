@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_ThreadRun",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446fab00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446fab00.c;pat:log-channel-FFB;xref:0x1446f8487",
+  "notes": "Thread proc (lea at 0x1446f8487 in 0x1446f83f0). RoInitialize(1) (logs failure), loops on wait 0x14391e3b0 until stop: if enabled (+0x2c0, not paused +0x2c9/+0x2ca) under CS +0x1d8 for each device controller (+0x50..0x58, vcall +0x18) bound in map +0x110: with no plugins logs 'No Plugins for effect', resets (0x1446f0e00), adds 8 plugins via 0x1446f1880 (ids 0x146ce7f78..7ff0), sets scale +0x178; then update vcall +0x20(dt). RoUninitialize. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_thread_run",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 BC 24 F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 49 89 D5 48 89 CB B9 01 00 00 00",
+  "match": "0x1446fab00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446fab00",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_ThreadRun"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "Game_Ffb_ThreadRun",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1446fae42,0x1446faf23",
+   "notes": "V3895 wx-verify: 8 calls to 0x1446f1880 with descriptors 0x146ce7f78..7fe8"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446fab00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446fab00.c;xref:0x1446f8489",
+   "notes": "V6862 RoInitialize and No Plugins strings, 8 AddPlugin calls confirmed; descriptors are bss so ids unverifiable statically."
+  }
+ ],
+ "proofs": []
+}

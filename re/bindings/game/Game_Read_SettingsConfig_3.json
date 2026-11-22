@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SettingsConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b7a90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430b7a90.c;pat:log-channel--;xref:0x143065560,0x150f6e006",
+  "notes": "(this): this[1] = lookup key 0x14604ed28 in (*this)+0x40->+0x30. Once (byte this+0x10==0): per VM path 0x1442b1b60 node -> slots this+0x40..0x9e0, 0x1442344c0 registers change cb (0x1430b63c0..) for settings.current_settings.time_of_day.custom.*.start_time, weather.custom.*.active_slots/slots.typeN, time_of_day/weather .type/.quick, network.current_session.settings.return_to_garage; then 0x1430bb5d0(this). VM watchers, not bus. (lane owner review requested) Better name: Game_Settings_BindTimeOfDayWeatherWatchers (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_settings_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 48 89 CE 48 8B 01",
+  "match": "0x1430b7a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b7a90",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SettingsConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b7a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b7a90.c;xref:0x143065560",
+   "notes": "V5354 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

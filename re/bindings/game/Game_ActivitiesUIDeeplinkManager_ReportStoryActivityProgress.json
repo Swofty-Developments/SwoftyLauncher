@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_ReportStoryActivityProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438659d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438659d0.c;str:s_ActivitiesUIDeeplinkManager_ReportStoryActivityProgress;xref:0x14587e4f8",
+  "notes": "Own __FUNCTION__ game::ActivitiesUIDeeplinkManager::reportStoryActivityProgress. Story (mode+0x514 chapter): act_N_chapter_%d / storymode_act_N via Game_Activities_Finish 0x14386ac40, Start 0x14386a240, availability 0x14386a5e0. Else career weekend ids %s_%s_weekend_%d / my_team_, career_%s_%s (f1/f2). Trial/PlayGo blocked. mp_* match ids are tail code past pdata (jmp 0x14386b610, 0x14386b2a0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_report_story_activity_progress",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 48 8B 41 28 48",
+  "match": "0x1438659d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438659d0",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_ReportStoryActivityProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438659d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438659d0.c",
+   "notes": "V6342 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

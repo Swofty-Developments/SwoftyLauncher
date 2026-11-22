@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_AcceptingInputHubInputFlag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143803d90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143803d90.c;pat:log-channel-UIHubTrace;xref:0x151619618,0x151619637",
+  "notes": "Setter: this+0x98 = flag; if the UI node this+0x80 is live and its value type matches 0x146129dc0, pushes the byte via 0x140973e20; logs UIHubTrace '[Input Flag Change] AcceptingInput=...' with frame counter this+0xa8. Called from the protector dispatcher 0x1516195e0 (0x151619618, 0x151619637). (lane owner review requested) Better name: Game_UIHub_SetAcceptingInput (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_accepting_input_hub_input_flag",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 88 91 98 00 00 00",
+  "match": "0x143803d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143803d90",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_AcceptingInputHubInputFlag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143803d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143803d90.c",
+   "notes": "V6263 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

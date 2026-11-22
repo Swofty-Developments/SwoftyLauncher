@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Career_DriverAcademies_MapFindOrAdd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140e091e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_DriverAcademies_MapFindOrAdd(void *map, DriverAcademyMapSlot *slot, const uint16_t *key)",
+  "evidence": "decomp:own capstone disasm 0x140e091e0-0x140e097a1;decomp:own capstone disasm 0x140d6e840-0x140d6efd7;xref:0x140d6ee39,0x140d6f7b7",
+  "notes": "find-or-add of the driver id -> academy map of DriverAcademiesComponent (map header at comp+0x2b0, entries array at comp+0x2c8). rcx = map, rdx = out slot (u64 entry index at +0, u32 status at +8, written at 0x140e095b7/0x140e095ba), r8 = const u16 key (movzx at 0x140e09232). Callers: 0x140d6ee39 in the academies save loader 0x140d6e840 (strings assignedAcademies, academId; slot 3 of the component vtable 0x14568fd90) and 0x140d6f7b7. After the call at 0x140d6ee39 status 0 calls 0x140e097b0 with the map, status 2 and 3 write the u16 key at entries[index*16] and zero the record at +8 (0x140d6ee65, 0x140d6ee95). Has a .pdata entry; its prologue is a shared pattern, so it binds through the call site"
+ },
+ "signature": {
+  "id": "career.driver_academies_map_find_or_add",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 28 4C 8D 44 24 26 E8 ?? ?? ?? ?? 8B 44 24 30 85 C0 74 2E",
+  "match": "0x140d6ee2f",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xa"
+  },
+  "target": "0x140e091e0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverAcademies_MapFindOrAdd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "bind552",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-17",
+   "verifier": "bind552-verifier",
+   "kind": "func",
+   "item": "Career_DriverAcademies_MapFindOrAdd",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140e091e0-0x140e097a1;decomp:own capstone disasm 0x140d6e840-0x140d6efd7;xref:0x140d6ee39,0x140d6f7b7;sig:career.driver_academies_map_find_or_add",
+   "notes": "V10712 Independent second pass: rcx=map (rdi), rdx=slot (rsi: qword index at [rsi] 0x140e095b7, dword status at [rsi+8] 0x140e095ba), r8=key (rbx, u16 read at 0x140e09232). rel32 callers in .xtls are exactly 0x140d6ee39 and 0x140d6f7b7, both pass component+0x2b0 (0x140d6eb61, 0x140d6f794) and index [component+0x2c8] with shl 4 afterwards; no qword pointer to it in the image. Indirect callers beyond that were not searched"
+  }
+ ],
+ "proofs": []
+}

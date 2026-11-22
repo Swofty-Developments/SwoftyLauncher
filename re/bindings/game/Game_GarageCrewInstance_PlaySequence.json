@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstance_PlaySequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140382500",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140382500.c;xref:0x1403879b1,0x14038b439",
+  "notes": "GarageCrewInstance::playSequence(idx,name,startTime): binds the named sequence clip (Ne_SequenceClipInstance_BindOptional) for a crew member, logs GARAGECREWINSTANCE_VERBOSE 'PLAY SEQUENCE [%d] %s %f', WARN 'Failed to find sequence %s'. Callers Game_GarageCrew_UpdateBaySequences (3x), Game_GarageCrewModule_SpawnGarageCrew, Game_GarageCrewInstance_PlayOverlaySequence. Addon: trigger own garage crew animations. Callers: census steam 0x382500. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2818)"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_play_sequence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 C5",
+  "match": "0x140382500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140382500",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstance_PlaySequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_GarageCrewInstance_PlaySequence",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140382500.c;xref:0x140382500",
+   "notes": "V2818 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

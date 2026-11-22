@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldHub_RouteToActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141abde20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141abde20.c;xref:0x141ab8a1e",
+  "notes": "F1 World hub: sets entry point 0 (0x146066c74) and fires route 'activity' (or 'back' when +0x863 is clear); called from Game_F1WorldHub_BuildPlayTiles. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2453)"
+ },
+ "signature": {
+  "id": "game.f1_world_hub_route_to_activity",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 88 91 6C 08 00 00 80",
+  "match": "0x141abde20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141abde20",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldHub_RouteToActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_F1WorldHub_RouteToActivity",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141abde20.c;xref:0x141abde20",
+   "notes": "V2453 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

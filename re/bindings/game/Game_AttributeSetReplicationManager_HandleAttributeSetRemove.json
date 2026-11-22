@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AttributeSetReplicationManager_HandleAttributeSetRemove",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431235d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431235d0.c;pat:log-message-cxx;xref:0x14febce7b",
+  "notes": "Read in full. Address taken by lea 0x14febce7b in 0x14febce50 (handler registration). Logs 'Received a removal message ... key %u'; key msg+0x10 looked up in robin-hood map [mgr+0x30]+0xa0..+0xd4; entry live: key == local lead player id -> 'belongs to the lead player...'; else 0x140b44530([mgr+0x30]+0x80,key), posts msg vtable 0x14566bd20 {key} via Ne_Post_BusMessage, logs 'Removed attribute set'. Missing -> 'does not have an attribute set'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.attribute_set_replication_manager_handle_attribute_set_remove",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC A0 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1431235d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431235d0",
+  "kind": "func_start",
+  "names": [
+   "Game_AttributeSetReplicationManager_HandleAttributeSetRemove"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431235d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431235d0.c;xref:0x14febce7d",
+   "notes": "V5834 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

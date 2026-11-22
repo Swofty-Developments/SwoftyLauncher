@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteFastestLapRaceSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143773310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143773310.c;pat:log-channel-STATEVENT;xref:0x1437877d6",
+  "notes": "Providers this+8..+0x10; 5 entries: FastestLapUniqueRaceSession (+.F1WEventMode ctx+0x34, .SectionId +0xc, both) type 3, FastestLapsInRaceSession 1.0 type 0. Caller Game_StatEvent_OnLapCompleted 0x143785390. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_fastest_lap_race_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 06 00 00 48 89 D7",
+  "match": "0x143773310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143773310",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteFastestLapRaceSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143773310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143773310.c;xref:0x1437877d6",
+   "notes": "V6239 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

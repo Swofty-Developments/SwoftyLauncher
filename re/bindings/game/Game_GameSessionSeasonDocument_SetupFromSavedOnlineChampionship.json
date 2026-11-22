@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionSeasonDocument_SetupFromSavedOnlineChampionship",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430391f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430391f0.c;xref:0x140fe27ed,0x1430382ef,0x1430ec72a",
+  "notes": "Own bounds 0x1430391f0..0x14303970c (decomp merges the tail target 0x14309ac00 = populateUIData). Logs NETWORK/F 'setupFromSavedOnlineChampionship(%s)' (p2+0x248). Copies the saved header p2+0x290..+0x400 into p1+0x80..+0x1f0, rebuilds the pack buffer +0x618 from the saved stream [p2+0x410] (vt+0x60 rewind, vt+0xa8 size, buffer vt+0x40), applies it (0x1430a1e90), frees it, sets +0x766/+0x768, applies the weather/time-of-day seed +0x760 to the weather component (type 0x14605afc0, +0x2c4; logs NETWORK-WEATHERSEED / WEATHER_SEED_EXTENDED, 0x140bde3e0), 0x14309ceb0, tail-jumps to populateUIData. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.weather_tod_set_random_seed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D",
+  "match": "0x1430391f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430391f0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionSeasonDocument_SetupFromSavedOnlineChampionship"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430391f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430391f0.c;xref:0x140fe27ee",
+   "notes": "V5427 body is GameSessionSeasonDocument::setupFromSavedOnlineChampionship (599 lines; weather seed apply + populateUIData); setRandomSeed only a small part. Better: Game_GameSessionSeasonDocument_SetupFromSavedOnlineChampionship"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430391f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430391f0.c;xref:0x140fe27ed",
+   "notes": "V6933 599 decomp lines, strings match current name"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "0x1430391f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1430391f0-0x14303970c;xref:0x14303926d;str:network::GameSessionSeasonDocument::setupFromSavedOnlineChampionship(%s)",
+   "notes": "V9437 Round 3 blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own disp/rel32 scans). Name check only (L1): lea of the string 0x145810e23 network::GameSessionSeasonDocument::setupFromSavedOnlineChampionship(%s) at 0x14303926d near the entry; 63 chars, prefix Game."
+  }
+ ],
+ "proofs": []
+}

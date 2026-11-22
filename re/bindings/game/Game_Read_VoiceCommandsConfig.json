@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_VoiceCommandsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f748e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f748e0.c;pat:log-channel--;xref:0x142f79668,0x142f7d5f0,0x142f7db96,0x14facd01d",
+  "notes": "Old name wrong (no config read). One-shot (flag this+0x40) creation of UI data model 'voice_commands' bindings stored at this+...: show 0x50, command_list 0x70, active_command_list 0x90, command_recognised 0xc8, command_unrecognised 0xe8, speech_recognition_enabled 0x108, voice_commands_header_text 0x128, feedback_time 0x148, is_strategy_list 0x168, show_next_page 0x188, active_command_list_size 0x1b0, current_command 0x1d8, change_strategy_reason 0x1f8, pit_window_open/close 0x218/0x238, pit_string 0x258, hide_new_back_anim_1/2 0x8/0x28. (lane owner review requested) Better name: Game_VoiceCommands_InitDataModel (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_voice_commands_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 80 79 40 00",
+  "match": "0x142f748e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f748e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_VoiceCommandsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f748e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f748e0.c;xref:0x142f79668",
+   "notes": "V5656 838-line UI data-binding builder for voice commands (command_list, current_command, strategy reason), not a config read; better Game_VoiceCommands_UpdateUiData"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f748e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f748e0.c;xref:0x142f79668",
+   "notes": "V6923 838 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

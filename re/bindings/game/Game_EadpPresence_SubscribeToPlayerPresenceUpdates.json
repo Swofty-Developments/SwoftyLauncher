@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EadpPresence_SubscribeToPlayerPresenceUpdates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144000130",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144000130.c;pat:log-channel-EADP_PRESENCE;xref:0x145a46970,0x143dfdce7",
+  "notes": "Callback (vtable cell 0x145a46970; also stored by mov at 0x143dfdce7): logs 'subscribeToPlayerPresenceUpdates: Disconnected! ', code 0x11177 with matching text -> '... The session has been deleted on the server.'; owner +0x74 = code, +0x78 = 0, state +0x70 = 8 under critical section +0x20. (lane owner review requested) Better name: Game_EadpPresence_OnPlayerPresenceUpdatesDisconnected (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_presence_subscribe_to_player_presence_updates",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 8B 59 08",
+  "match": "0x144000130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144000130",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpPresence_SubscribeToPlayerPresenceUpdates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144000130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144000130.c;xref:0x143dfdce7",
+   "notes": "V6358 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

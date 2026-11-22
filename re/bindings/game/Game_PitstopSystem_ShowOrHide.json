@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PitstopSystem_ShowOrHide",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c62f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403c62f0.c;pat:log-message-method;xref:0x14561e1a8",
+  "notes": "vt 0x14561e0e0 slot (0x14561e1a8). Logs showOrHide; returns when this+0xc0 (show_pitstop_zone item) is 0. Per car slot: pose points -> lap fraction (Game_TrackSpace_FindVolume, Game_ZoneVolume_SignedDistance) tested against item +0x10..+0x14 (wraps when start > end) or forced byte this+0xb8+i. Inside and this+0xd0 clear -> 0x1403c0590, garage crews within 6 m of the camera unhidden, others hidden; else 0x1403c23b0 and all 32 crews hidden; posts a bus message. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pitstop_system_show_or_hide",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 CE",
+  "match": "0x1403c62f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c62f0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitstopSystem_ShowOrHide"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403c62f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403c62f0.c;xref:0x13c62cf",
+   "notes": "V4653 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AutoResetToTrack_ScheduleDeferred",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f02bd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f02bd0.c;xref:0x142f02135,0x14f5f866f",
+  "notes": "Not a scheduler: clears auto-reset state for vehicle idx: for each local player (session +0x198/+0x1a0) on idx calls 0x1519eb350(+0x88, idx, 0, 0xf); resets slot +0xe0+idx*0x18; if the map entry (+0x368) is active and idx is the tracked car (+0x4a8) posts msg 0x145800e20; sets UI node \"off\" and a bool node false, entry+0x80 = 0. Callers 0x142f01210, 0x14f5f8640. (lane owner review requested) Better name: Game_AutoResetToTrack_ClearVehicleState (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.auto_reset_to_track_schedule_deferred",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D5 49 89",
+  "match": "0x142f02bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f02bd0",
+  "kind": "func_start",
+  "names": [
+   "Game_AutoResetToTrack_ScheduleDeferred"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142f02bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f02bd0.c;xref:0x142f02135",
+   "notes": "V7568 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

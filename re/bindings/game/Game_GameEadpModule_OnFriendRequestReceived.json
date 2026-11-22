@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameEadpModule_OnFriendRequestReceived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d3150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406d3150.c;str:s_GameEadpModule_OnFriendRequestReceived;xref:0x1406d38be,0x1406d41a9",
+  "notes": "Own pretty-function string 0x145641d5b 'void game::GameEadpModule::onFriendRequestReceived(NEuint64, const NEchar *)' (EadpSDK log 'EA user id: %llu, player name: %s'). Refs are lea sites 0x1406d38be/0x1406d41a9 (handler setup). If no request pending (p1+0xc0 == 0) and p1+0x30 == 0: stores service 0x1460c2238 at +0xb0, creates a handle via 0x1432c56e0([svc+0x48]) into +0xc0/+0xc8 (releases old), stores user id p2 at +0x20 and name p3 into string +0x28 (0x1441974e0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_eadp_module_on_friend_request_received",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 4C 89 C6 48 89 D3 48 89 CF 80 3D",
+  "match": "0x1406d3150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d3150",
+  "kind": "func_start",
+  "names": [
+   "Game_GameEadpModule_OnFriendRequestReceived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406d3150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406d3150.c;xref:0x6d38c0",
+   "notes": "V4750 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

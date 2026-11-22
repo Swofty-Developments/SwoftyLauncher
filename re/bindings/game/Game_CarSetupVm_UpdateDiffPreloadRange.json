@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CarSetupVm_UpdateDiffPreloadRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c1def0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c1def0.c;xref:0x140c1b940,0x140c1cbde,0x140c1edb7,0x140c1eecb",
+  "notes": "Formats the diff preload value ('%.1f' of [[[+0x268]+0x28]+0x590]+0x2a4) with min/max from the handling block (vt+0x38: +0x38/+0x3c) into 'lng_cs_diff_range_preload (... lng_unit_nm)' on node +0x1560, bool +0x1580. Twin of 0x140c1d750. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.car_setup_vm_update_diff_preload_range",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8D AE D8 76 00 00 40 88 BE 69",
+  "match": "0x140c1cbde",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140c1def0",
+  "kind": "func_start",
+  "names": [
+   "Game_CarSetupVm_UpdateDiffPreloadRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140c1def0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c1def0.c;xref:0x140c1edb7",
+   "notes": "V3451 Printf %.1f + lng_cs_diff_range_preload/lng_unit_nm confirmed; same caller attribution caveat as 0x140c1d750"
+  }
+ ],
+ "proofs": []
+}

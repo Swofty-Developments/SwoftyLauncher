@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSubsystem_OnOnlineTitleConfigFullyParsed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f5810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430f5810.c;pat:log-message-cxx;xref:0x1458141a8",
+  "notes": "Virtual (last cell of a NetworkSubsystem vtable block) 'onOnlineTitleConfigFullyParsed': logs '%s - retrying enableCrossplay(%s)' and retries crossplay. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_subsystem_on_online_title_config_fully_parsed",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 63 83 C0 19",
+  "match": "0x1430f5810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f5810",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSubsystem_OnOnlineTitleConfigFullyParsed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f5810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f5810.c",
+   "notes": "V5408 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

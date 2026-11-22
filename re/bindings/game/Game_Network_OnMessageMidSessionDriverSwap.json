@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnMessageMidSessionDriverSwap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434db270",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434db270.c;pat:log-message-method;xref:0x1434dae94,0x1504b1c78",
+  "notes": "Logs onMessageMidSessionDriverSwap(); then calls own virtuals vtable+0x70 and vtable+0x58 on this. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_on_message_mid_session_driver_swap",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 4A 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 00 01 00 00 75 C3 EB 1A 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 06 48 89 F1 FF 50 70 48 8B 06 48 89 F1 FF 50 58 31 C0 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC CC CC CC CC CC E9",
+  "match": "0x1434db270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434db270",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnMessageMidSessionDriverSwap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434db270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434db270.c",
+   "notes": "V6063 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

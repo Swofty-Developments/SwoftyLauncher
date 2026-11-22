@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Playerset_SendPlayerSetInfoMessageInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14316e8a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14316e8a0.c;pat:log-message-method;xref:0x14316cbbb,0x14316ceb7,0x14316d31c,0x14316e7fc,0x14316f9bc",
+  "notes": "this+0x28 == 0: only clears entry dirty +0x69. this+0x28 == 1: copies entry fields (+0x18..+0x67, +0x90) plus arg4 into message 0x14581f6f0 and sends it with 0x14402e500([this+0x48]): mode 1 (all) when connection arg3 == 0 (then clears +0x69), else mode 2 to arg3. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.playerset_send_player_set_info_message_internal",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC E0 00 00 00 48 89 D6 8B 41 28 85 C0",
+  "match": "0x14316e8a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14316e8a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Playerset_SendPlayerSetInfoMessageInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14316e8a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14316e8a0.c;xref:0x14316cbbb",
+   "notes": "V5823 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

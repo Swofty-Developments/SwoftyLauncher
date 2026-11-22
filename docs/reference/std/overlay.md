@@ -122,6 +122,26 @@ The gamepad fields come from `xinput1_4.dll!XInputGetState`, read while an addon
 
 While an addon holds focus, the core keeps mouse moves, button presses, the wheel, typed characters, key presses and raw input (`WM_INPUT`) from the game and draws a cursor. Button and key releases and Alt key combinations still reach the game. The newest `focus(true)` wins. The focus goes back by itself when its addon has not painted for 2 s, and `swofty/loader.log` says so. Gamepads and wheels still reach the game while an addon holds focus: the core reads XInput but does not block it, and the game also reads controllers through DirectInput and Windows.Gaming.Input.
 
+## Images from memory (v4)
+
+A core whose `SwoftyCoreOverlayVersion` returns 4 or more also has `load_image_rgba`; `v4()` returns `true` there.
+
+```cpp
+std::vector<uint8_t> px(256 * 64 * 4); // straight RGBA8, top row first
+// ... fill px ...
+if (ov::load_image_rgba("atlas", 256, 64, px.data()) == ov::Result::ok)
+    ; // draw "atlas" with image() or image_uv() as if it came from a file
+```
+
+| Call | Does |
+|---|---|
+| `v4()` | `true` when the core implements `load_image_rgba` |
+| `load_image_rgba(id, width, height, rgba)` | loads `width*height*4` bytes of straight RGBA8 under `id`; the core copies them, so the buffer can go once the call returns. Loading an `id` again replaces it. `invalid` for an empty id, no pixels or a side outside 1..4096; `unavailable` on a core before version 4 |
+
+```text [swofty/loader.log]
+[overlay] api: author.my-addon load_image_rgba atlas (256x64) -> ok (slot 3)
+```
+
 ## Toolkit
 
 `swofty/overlay_ui.hpp` (namespace `swofty::overlay::ui`) is a header-only immediate-mode toolkit built on the calls above. Keep one `State` per addon and make a `Ui` at the top of each paint callback. Rects are framebuffer pixels; the `Theme` sizes are for 1920×1080 and scale with `ui_scale()`.
@@ -260,6 +280,7 @@ Paint callbacks run once per frame at `Present`, or at `Present1` for a swapchai
 | A swapchain that a frame generation module (DLSS Frame Generation, FSR or XeSS frame generation) created or presents | Draws into the game's back buffer (a resource named `BackBuffer`) before `Present` when frame generation was on in the game's settings at start |
 | A swapchain created through Streamline's frame generation hook (`sl.dlss_g.dll`, every NVIDIA Streamline build of F1 25) | Draws at `Present` while the game's `hardware_settings_config.xml` has `frame_gen mode="0"`; draws into the game's back buffer before `Present` once it reads anything else, when frame generation was on at start (otherwise it stops for the session) |
 | Frame generation, and the back buffer is not a render target of the swapchain's size, or its queue is not a direct queue, or it is on another device than the overlay's | Doesn't draw; one `[overlay]` line says which |
+| RivaTuner Statistics Server (it comes with MSI Afterburner) is running when the game starts | Doesn't draw: the core leaves its `Present` hook off, `available()` returns `false` and `on_paint` returns `unavailable`. One `[overlay] off:` line names it. `SWOFTY_OVERLAY_RIVAL=1` / `"overlay_rival": true` arms the hook anyway |
 | The GPU still holds the previous frames' overlay work | Skips drawing that frame |
 | The GPU was removed | Stops for the rest of the session; an `[overlay]` line says how long after the overlay last drew |
 

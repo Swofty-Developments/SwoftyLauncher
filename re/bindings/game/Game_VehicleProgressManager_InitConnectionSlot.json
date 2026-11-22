@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressManager_InitConnectionSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143267140",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143267140.c;xref:0x14582dbc8",
+  "notes": "Read in full (this, u8 conn): logs '%s(%d).' with 'onNewConnection' (NETWORK); refreshes this+0x18 / +0x19 from the machine object [this+0x28]+0xd8 (vcalls +0x18 / +0x10); re-initialises the 0x140-byte connection record [this+0x40]+0x160+conn*0x140 (+0 = 1, name copied from 0x143089210(.., conn) up to 0x7f chars into +0xb0, four 10000 defaults, +0x130 = 10000); sets this connection's 12-byte entries in +0x1a0 to -1 and clears +0x1d8[conn]. Sends nothing. Vtable cell 0x14582dbc8. Renamed to the game's own method string. (lane owner review requested) Better name: Game_VehicleProgressManager_OnNewConnection (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.vehicle_progress_manager_on_new_connection",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 08 02 00 00 89 D3 48 89",
+  "match": "0x143267140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143267140",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressManager_InitConnectionSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

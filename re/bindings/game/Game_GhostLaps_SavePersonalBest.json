@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_SavePersonalBest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fa31e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fa31e0.c;pat:log-channel-GHOSTLAP-TRACE;xref:0x142f98c89",
+  "notes": "writePersonalBestDataSetSetWithDescription per its log name: lap ms (+ invalid bit<<30); skipped if not better than h+0x300; serialises telemetry into the h+0x278 buffer, builds the description (vehicle/team/customisation ids, date, carSetup, assists, tyre, sectors +0x26c..+0x274 must sum to the lap +-10 ms), writes it (0x142f8a0c0), caches at h+0x280..+0x318, h+0x66=1; upload 0x142fa3de0 when global 0x1460960d0. Caller 0x142f98320. (lane owner review requested) Better name: Game_GhostLaps_WritePersonalBestDataSetWithDescription (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ghost_laps_save_personal_best",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 49 89 D6",
+  "match": "0x142fa31e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa31e0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_SavePersonalBest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fa31e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fa31e0.c;xref:0x142f98c89",
+   "notes": "V5702 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

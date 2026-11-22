@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RestartMonitor_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143228f50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143228f50.c;pat:log-message-cxx;xref:0x14305f96b",
+  "notes": "(mon): role +8 == 1 and request flag +0x18: logs 'requestSessionRestart processing', clears it, sends net message {vt 0x145836380, 7, 0x31} via 0x14402e500([+0x20]+0x3d0, 1, ...). Else if +0x19 (set by the handler): logs 'forceSessionRestartTransition processing', clears it, posts bus message vt 0x145755240 via 0x141e79b60 on [0x14618b3b8]+8. Caller 0x14305f96b. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.restart_monitor_update",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 48 89 CE 83 79 08 01",
+  "match": "0x143228f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143228f50",
+  "kind": "func_start",
+  "names": [
+   "Game_RestartMonitor_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143228f50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143228f50.c;xref:0x14305f96b",
+   "notes": "V6004 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

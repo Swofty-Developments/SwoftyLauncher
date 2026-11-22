@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Entrants_FindDriverStatIdByEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140248f90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140248f90.c;xref:0x140248f1e,0x140248f2b,0x140248f38,0x14024c68f,0x14027620d,0x140276229,0x140276245,0x140276261,0x14033d8cd,0x14033ec5d,0x140358dd7,0x140358de7,0x140358df7,0x1403617f9,0x1403651c0,0x1403674b4,0x140367754,0x1403688db,0x14036932a,0x140369e6a,0x14036b57e,0x14036d26e",
+  "notes": "(this, entrant idx): car id = byte 0 of [[0x14601f5c8+0xb0]+0x108][idx]; finds the participant (list vcall +0xa0, stride 0x88, car +0x82) and tail-jumps to 0x1423dbcf0([0x14604c2c8]+0x290, rec+0x50 key {type, u16}) (fallback {0, idx}). 0x1423dbcf0 returns the driver record (tables +0x268) and logs 'Driver with stat id %s not found'; decomp merges it. Old name claimed a stat id. (lane owner review requested) Better name: Game_Entrants_GetDriverByEntrant (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.entrants_find_driver_stat_id_by_entrant",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C6 BA 01 00 00 00 E8",
+  "match": "0x140248f1e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140248f90",
+  "kind": "func_start",
+  "names": [
+   "Game_Entrants_FindDriverStatIdByEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x140248f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140248f90.c;xref:0x140248f1e",
+   "notes": "V7723 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

@@ -77,7 +77,7 @@ impl Stars {
             .and_then(|t| serde_json::from_str(&t).ok())
             .unwrap_or_default();
         if !valid_client(&stars.client) {
-            stars.client = crate::usage::random_hex(2);
+            stars.client = crate::online::server::usage::random_hex(2);
             if let Err(e) = stars.save(root) {
                 eprintln!("swofty-core: could not save the stars: {e}");
             }

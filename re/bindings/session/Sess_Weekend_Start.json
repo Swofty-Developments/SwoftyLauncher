@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Weekend_Start",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140af0460",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Weekend_Start(void *weekend, const void *entrants, bool begin)",
+  "evidence": "decomp:re/decomp/140af0460.c;xref:0x140ae3be7,0x140af7b63,0x140ba84e2;doc:research/grid24-cap.md#2;str:s_Entrant_not_added",
+  "notes": "cxx=game::championship::Weekend::start(const EntrantPointers&, bool); copies entrants into the session 0x88 vector, no fixed size  laneX 2026-10-26: entrants is an EntrantPointers {allocator, EntrantRecord **begin +0x08, EntrantRecord **end +0x10, capacity} the callee only reads (0x140af7680 builds it from the career rows with a car, CareerEntity +0x2e0, and frees it itself); fills session[weekend+0x238] participants (session +0x18 vector: end = begin, grow through its allocator, Sess_ParticipantVec_PushBack per entrant passing the weekend +0x208/+0x210 filter; a session with +0x88 clear takes the previous session's classified entrants instead), clears its results unless +0x58, then rebuilds the weekend's entrant pointer list +0x288 (0x140af6d20); with begin false a fresh weekend (+0x23c 0) and the session state stay 0"
+ },
+ "signature": {
+  "id": "session.weekend_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 44 89 C3 49 89 D4",
+  "match": "0x140af0460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140af0460",
+  "kind": "func_start",
+  "names": [
+   "Sess_Weekend_Start"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "re-infra",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "laneX-verify2",
+   "kind": "func",
+   "item": "Sess_Weekend_Start",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140af0460.c;decomp:re/decomp/140af6d20.c;decomp:re/decomp/140af7680.c;decomp:re/decomp/140ae35a0.c;decomp:re/decomp/140ba7fe0.c;xref:0x140ae3be6,0x140af7b62,0x140ba84e1",
+   "notes": "V1082 3 callers (call insns 0x140ae3be6 Game_Season_Start passes its own arg2 + movzx r8d stack bool; 0x140af7b62 reset passes &stack {alloc,begin,end,cap} + setne r8b old +0x23c; 0x140ba84e1 hotload &stack list + mov r8b,1); claimant xrefs are call+1. Proto ok: rcx/rdx/r8 only, r9 written before read, begin tested as bl, entrants only read at +8/+0x10, no meaningful return. Body matches: idx=+0x238 (dword zero-extend), session=+0x220+idx*0xa0, skipped if idx>=count or session +0x10!=0; vec +0x18 end=begin, reserve if cap +0x30 < n (0x88-byte elems), Sess_ParticipantVec_PushBack each; filter accepts when +0x208/+0x210 both null or fn(+0x210,entrant,session)==0. +0x88 clear path: prev session (+0x70..+0x78, 0x60-byte rows) entrants with pos <= prev +0x60 that also match an entrant in the list and pass the filter. +0x23c==0: calls 0x140af6a70 then +0x23c=begin?1:0; session +0x10=begin?1:old. 0x140af6d20 clears +0x288 list (alloc +0x280, end +0x290, cap +0x298) and refills it with deduped participant pointers of every session (last to first)."
+  }
+ ],
+ "proofs": []
+}

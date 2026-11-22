@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameSetupModeEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a0ddb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a0ddb0.c;xref:0x140b9c475,0x141149abe,0x14128093b,0x141280ee7,0x1424a705d,0x142a1294e,0x142a13343,0x142e44f31,0x142e58803,0x142e5bee6,0x142e9b190",
+  "notes": "GDB row reader. is_invalid set -> returns zeroed entry. game_setup_modes list: each label looked up in game_setup.game_setup_modes, stat_id (<32) sets bit in u32 +0. seasons list: game_setup.seasons row statId sets bit in u32 +4. weekend_formats: u32 +8 |= 1<<(FNV-1a lower hash==0xb4d8c10d825b055). Strings XOR-decoded with key 0x145890978. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_game_setup_mode_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 C5 F8 29 BC 24 60 04 00 00 C5 F8 29 B4 24 50 04 00 00 48 89 D7",
+  "match": "0x142a0ddb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a0ddb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameSetupModeEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142a0ddb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a0ddb0.c;xref:0x140b9c475",
+   "notes": "V7540 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

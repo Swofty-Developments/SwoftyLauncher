@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RendererGfxConfig_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ef7f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ef7f0.c;xref:0x1443cc38c",
+  "notes": "Window object ctor: vtable 0x14589c8b0, allocator param_2 at +0xd0, settings +0xe0, owner +0xd8; UTF-16 title '<WINDOW TITLE NOT SET>' at +0x2c8; QPC timestamps/frequency +0x3d8..+0x3e8; ends with EnumDisplayMonitors(Ne_WindowWin_MonitorEnumProc, this). Not a config reader. (lane owner review requested) Better name: Game_WindowWin_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_renderer_gfx_config_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 50 01 00 00 C5 F8 29 B4 24 40 01 00 00 4C",
+  "match": "0x1439ef7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ef7f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RendererGfxConfig_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439ef7f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ef7f0.c;xref:0x1443cc38c",
+   "notes": "V7788 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

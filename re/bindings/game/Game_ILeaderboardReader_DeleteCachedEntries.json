@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ILeaderboardReader_DeleteCachedEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fbd450",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fbd450.c;str:s_ILeaderboardReader_DeleteCachedEntries;xref:0x140adc41c,0x140b0ab4c,0x142fbb7ae",
+  "notes": "'void game::ILeaderboardReader::deleteCachedEntries(NEbool)' (LEADERBOARD, keeping/deleting). Destroys and frees each cached entry (+0x20..+0x28); with arg 0 the player entry (+0x10) is kept; then end=begin, storage freed via +0x18, +0x30=0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.i_leaderboard_reader_delete_cached_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x142fbd450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fbd450",
+  "kind": "func_start",
+  "names": [
+   "Game_ILeaderboardReader_DeleteCachedEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fbd450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fbd450.c;xref:0x140adc41c",
+   "notes": "V5713 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

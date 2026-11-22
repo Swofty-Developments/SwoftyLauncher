@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_TimeTrial_SetReferenceNoList",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14147bede",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14147b720.c;xref:0x14147baee,0x14147bafe,0x14147bb0e,0x14147bb17,0x14147bb25,0x14147bbc5,0x14147bdb7,0x14147bdc4,0x14147bed7",
+  "notes": "In Game_TimeTrial_SetReference: lea rsi,[rip+...] that starts the common exit, where the game goes when the mode, its entity, the entity game setup mode (+0x2b0), the track record (r13) or the selected list (+0xe18) is null (je at 0x14147baee, 0x14147bafe, 0x14147bb0e, 0x14147bb17, 0x14147bb25), when nothing changed (je at 0x14147bbc5), from jb 0x14147bdb7 and je 0x14147bdc4, and by fall-through from 0x14147bed7. It reads the frame and rbx (rsp+0x68 from 0x14147bab6) and reloads rsi; from 0x14147bb25 to 0x14147bbf9 rsp and rbx are unchanged and the string taken at 0x14147bb4f is released by 0x14147bbac. The rip target of the core time trial reference list guard; never hooked."
+ },
+ "signature": {
+  "id": "game.time_trial_set_reference_no_list",
+  "section": ".xtls",
+  "pattern": "48 8D 35 ?? ?? ?? ?? 48 89 74 24 60 48 8B 44 24 68",
+  "match": "0x14147bede",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14147bede",
+  "kind": "mid",
+  "names": [
+   "site_Game_TimeTrial_SetReferenceNoList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "ttlistboard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ],
+  "expect": "48 8D 35"
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "ttlistboard-verify",
+   "kind": "global",
+   "item": "0x14147bede",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14147b720-0x14147c0e6;decomp:own capstone disasm 0x144179360-0x144179458;xref:0x14147baee,0x14147bafe,0x14147bb0e,0x14147bb17,0x14147bb25,0x14147bbc5,0x14147bdb7,0x14147bdc4,0x14147bab6,0x14147bb37,0x14147bb4f,0x14147bb79,0x14147bbac,0x14147bede,0x14147bf1e;sig:game.time_trial_set_reference_no_list",
+   "notes": "V9260 Code claims hold; the signature's expect does not resolve on EA. 0x14147bede lea rsi,[rip+0x4196f63] = 0x145612e48, a 2-slot handle vtable (EA 0x1457252a8, same slot code). je 0x14147baee (mode [[rsi+0x20]+0x88]), 0x14147bafe (+0x260), 0x14147bb0e (+0x2b0), 0x14147bb17 (r13), 0x14147bb25 (cmp [rax+0xe18],0) and 0x14147bbc5 (dil==[rsi+0x41], ecx==ebp, al==[rsi+0x40]) all reach it as stated. The list is not complete: jb 0x14147bdb7, je 0x14147bdc4 and the fall-through from 0x14147bed7 also reach it; the guard does not need them. The path 0x14147bede-0x14147c0e0 reads only frame slots rsp+0x40..0x50, 0x60..0xd8 and 0xe0 (xmm6), plus rbx (cmp [rax+0x28],rbx at 0x14147bf1e). rsi is written at 0x14147bede before every read and is callee-saved across the 0x1442b3d70 calls. rax, rcx, rdx and r8 are written before they are read in every block, and flags are set before each jcc. ecx, rbp, rdi, r12, r13, r14 and r15 are never read (the epilogue pops them). rbx=rsp+0x68 from 0x14147bab6, and nothing writes rbx or rsp in 0x14147bab6-0x14147bbf9. Between 0x14147bb25 and 0x14147bbf2 the only frame writes are to [rsp+0x30]: zeroed at 0x14147bb37, filled by 0x144179360 at 0x14147bb4f (which only reads [rdx], the rsp+0x68 handle), and released at 0x14147bb79-0x14147bbac on every path. The exit never reads [rsp+0x30], so there is no leak and no double release. The log block's [rsp+0x30]/[rsp+0x38] handles at 0x14147bc94 are taken and dropped inside that block, after the site. The frame at 0x14147bbf2 equals the frame at the existing je 0x14147bbc5: only the [rsi+0x41]/[+0x40]/[+0x3c] stores and rax/rdx loads lie between them. Behaviour for the guard owner: the presenter keeps the new track, wet flag and mode byte, so a repeat call takes the 0x14147bbc5 exit. [rsi+0x20278], vt+0x130 of [rsi+0x10], 0x14147c0f0 and the 0x14147bda4 reset block are skipped. Signature: the pattern is unique in Steam .xtls (0x147bede) and EA .rdata (0x14762ae). The 0x20 bytes are identical except the lea rsi disp32 (63 6F 19 04 vs F3 EF 2A 04, wildcarded), and the EA function is the same code. But expect '48 8D 35 63 6F 19 04' bakes in Steam's disp32. bindverify's Resolver (the manager.cpp:595 expect check) reports site_Game_TimeTrial_SetReferenceNoList unresolved 'expect bytes differ' on the EA dump, by hint and by scan, so leaderboard_guard.cpp would turn the list guard off on EA. Fix: expect '48 8D 35', no expect (the site is only a rip target), or an ea.json overrides expect; then re-verify."
+  },
+  {
+   "date": "2026-11-13",
+   "verifier": "ttlistboard-verify",
+   "kind": "global",
+   "item": "0x14147bede",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14147b720-0x14147c0e6;decomp:own capstone disasm 0x144179360-0x144179458;xref:0x14147baee,0x14147bafe,0x14147bb0e,0x14147bb17,0x14147bb25,0x14147bbc5,0x14147bdb7,0x14147bdc4,0x14147bed7,0x14147bab6,0x14147bb4f,0x14147bbac,0x14147bf1e;sig:game.time_trial_set_reference_no_list",
+   "notes": "V9261 Re-check of the corrected row and signature after V9260. expect is now '48 8D 35' (opcode and ModRM only, no disp32), and the pattern is unchanged. bindverify's Resolver, with the generated binding and the manager.cpp expect check, now resolves site_Game_TimeTrial_SetReferenceNoList on the EA dump with the ea.json hint 0x14762ae and by scan, and on Steam by scan and by hint (0x147bede). sigcheck is OK. The pattern is still unique in Steam .xtls and EA .rdata, and the 0x20 bytes are identical except the wildcarded lea rsi disp32. The notes now list jb 0x14147bdb7, je 0x14147bdc4 and the fall-through from 0x14147bed7. That matches my full scan: those 8 jcc sources plus the fall-through are the only ways in, with no E8/E9/Jcc rel32 elsewhere in .xtls or .data1. The row's xref token still lists only the first six. All code claims re-derived in V9260 still hold: the path reads only the frame and rbx (0x14147bf1e); rsi is written first; ecx, rbp, rdi and r12-r15 are never read; rbx and rsp are unchanged from 0x14147bab6 to 0x14147bbf9; the [rsp+0x30] handle from 0x14147bb4f is released by 0x14147bbac and never read by the exit; and the frame at 0x14147bbf2 equals the frame at je 0x14147bbc5."
+  }
+ ],
+ "proofs": []
+}

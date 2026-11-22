@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MatchedChampionshipCodeLoading",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430384f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430384f0.c;pat:log-channel-NETWORK/T;xref:0x1430ec8fe",
+  "notes": "Caller 0x1430e0560 (NetworkSubsystem slot 25). (this, code): scans [[this+0x80]+0x228,+0x230) for an entry with +0x210 == code; none: +0x18=0 and +0x60/+0x68 cleared. Found: logs 'Matched championship code %d, loading %s' (name +0x248), copies entry +0x220..+0x230 into this+0x28 and +0x48, stores the entry at +0x60/+0x68, +0x18 = 0x1430cd310(0x1460be8f0, ...) when the name is non-empty. (lane owner review requested) Better name: Game_Network_SelectChampionshipByCode (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_matched_championship_code_loading",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 80 00 00 00",
+  "match": "0x1430384f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430384f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MatchedChampionshipCodeLoading"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430384f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430384f0.c;xref:0x1430ec8ff",
+   "notes": "V5420 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

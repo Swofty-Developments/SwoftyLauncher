@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsTabbingBaseViewModel_UpdateFilterLevel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d9ca70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d9ca70.c;str:s_SettingsTabbingBaseViewModel_UpdateFilterLevel;xref:0x141d9b95a,0x141d9f6b3",
+  "notes": "Logs OPTIONS-UI updateFilterLevel \"to [%d]\" (filter level 0x14606aa34); vcall +0xe0(1); bool = level 0 and view node +0x970 not set; pushes it to view node +0x8d0 and fires \"update_filter\" (0x144320fe0). Callers jmp at 0x141d9b95a and Game_SettingsControlsScreenViewModel_OnDataChanged (0x141d9f6b3). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.settings_tabbing_base_view_model_update_filter_level",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6C",
+  "match": "0x141d9ca70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d9ca70",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsTabbingBaseViewModel_UpdateFilterLevel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d9ca70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d9ca70.c;xref:0x141d9b95a",
+   "notes": "V5213 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

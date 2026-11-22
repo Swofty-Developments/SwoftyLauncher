@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TodStitching_InstancesDestIter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14460fcd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14460fcd0.c;pat:log-message-method;xref:0x14460f8ea,0x14461630d",
+  "notes": "ret if p3>7/p4>1. p3&3=1..4 comps (key stride 2..5 floats), p3>=4 int lerp. Over p5 keys p1: if p10!=0 emit lerp key at p10 (t=clamp((b-t0)/max(dt,1e-4)),|v|<1e-8->0), keep keys in [p10,p11] else 'DISCARD t=%f', if p11!=1.0 emit POST key; emit 144621c90/1f80/22390/228b0, *p7+=8..0x14, *p6++. Log 'TOD_STITCHING' 1406d4c80: 'instancesDestIter 0x%x','beginPlayBackTime=%f, endPlayBackTime=%f' (lane owner review requested) Better name: Game_TodStitch_ClipKeyTrackToPlaybackWindow (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.tod_stitching_instances_dest_iter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 78 29 BC 24 90 01 00 00 C5 78 29 B4 24 80 01 00 00 C5 78 29 AC 24 70 01 00 00 C5 78 29 A4 24 60 01 00 00 C5 78 29 9C 24 50 01 00 00 C5 78 29 94 24 40 01 00 00 C5 78 29 8C 24 30 01 00 00 C5 78 29 84 24 20 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 44 89 C5 48 89 8C 24 D8 00 00 00",
+  "match": "0x14460fcd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14460fcd0",
+  "kind": "func_start",
+  "names": [
+   "Game_TodStitching_InstancesDestIter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14460fcd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14460fcd0.c;xref:0x14460f8ea",
+   "notes": "V6705 0x608f body is the TOD stitch interpolation (INTERP t/interpT, POST m_p00..02, I%d/F%d dumps, 97 logs), called from MergeInstancesMulti/Single; iter log is minor. Better: Game_TodStitching_InterpolateInstances"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14460fcd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14460fcd0.c;xref:0x14460f8ea",
+   "notes": "V7237 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

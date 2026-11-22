@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_UnmutingPlayerAfterUnblocking",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430cb940",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430cb940.c;pat:log-channel-NETWORK;xref:0x143055c43,0x1430cbc48",
+  "notes": "Referenced by the leas at 0x143055c43 (in 0x143054470) and 0x1430cbc48 (in 0x1430cba50). (this, event): when the unblocked user is found and muted, logs 'Unmuting player %llu after unblocking' and tail-jumps 0x144033b30 (unmute). (lane owner review requested) Better name: Game_NetworkVoice_UnmutePlayerAfterUnblock (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_unmuting_player_after_unblocking",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 83 3A 0B",
+  "match": "0x1430cb940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430cb940",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_UnmutingPlayerAfterUnblocking"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430cb940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430cb940.c;xref:0x143055c45",
+   "notes": "V5366 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

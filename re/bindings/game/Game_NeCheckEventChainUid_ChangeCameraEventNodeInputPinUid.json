@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NeCheckEventChainUid_ChangeCameraEventNodeInputPinUid",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445507a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445507a0.c;pat:log-channel-NeCheckEventChainUid;xref:0x154b8d385",
+  "notes": "Binder 0x154b8d340 (lea 0x154b8d385). Finds the entity whose guid matches pin this+0x20 (camera manager 0x146cc3ab0 list, else registry 0x146cc25f0), resolves the camera via 0x144538ff0 (0x146cc3a18+0x70, guid pin +0x10) and name pin +0x18 (djb2 lower, 0x1445337e0), vp via 0x146cc3ab8, calls 0x144534390(cam,req{pins +0x28,+0x30},entity,vp,2,0,0), fires output +0x38. (lane owner review requested) Better name: Game_EventNode_ChangeCamera_OnInput (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ne_check_event_chain_uid_change_camera_event_node_input_pin_uid",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 4C 89 C3 48 89 D6 48 89 CF",
+  "match": "0x1445507a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445507a0",
+  "kind": "func_start",
+  "names": [
+   "Game_NeCheckEventChainUid_ChangeCameraEventNodeInputPinUid"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445507a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1445507a0.c;xref:0x154b8d387",
+   "notes": "V6682 body does real work: FindByUid camera, RequiresCrossfade, Ne_EventDispatcher_SendEvent; log is only the uid check. Better: Game_ChangeCameraEventNode_OnInput"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1445507a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445507a0.c;xref:0x154b8d387",
+   "notes": "V7230 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

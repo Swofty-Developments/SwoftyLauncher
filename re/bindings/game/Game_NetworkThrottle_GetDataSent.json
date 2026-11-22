@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkThrottle_GetDataSent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440751a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440751a0.c;pat:log-message-method;xref:0x1430615a1",
+  "notes": "Looks up the connection queue by id p2 and logs '%s: connectionId: %d, data sent: %d' with 'getDataSent', returning the byte count. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_throttle_get_data_sent",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 C8 44 0F B6 CA",
+  "match": "0x1440751a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440751a0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkThrottle_GetDataSent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440751a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440751a0.c;xref:0x1430615a1",
+   "notes": "V6504 size=366; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

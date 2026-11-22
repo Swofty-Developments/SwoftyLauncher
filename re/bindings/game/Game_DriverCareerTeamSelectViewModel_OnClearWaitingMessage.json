@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCareerTeamSelectViewModel_OnClearWaitingMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a691e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a691e0.c;str:s_DriverCareerTeamSelectViewModel_OnClearWaitingMessage;xref:0x141a68714,0x141a69471",
+  "notes": "Dispatch handler lea'd at 0x141a68714 (in 0x141a68080) and 0x141a69471 (in 0x141a69300). Logs ONLINE_CONTRACT_NEGOTIATIONS with its own pretty-function string 0x145729fd0 (DriverCareerTeamSelectViewModel::onClearWaitingMessage); if [[[vm+0x280]+0x10]+0x38] is a non-empty string, calls 0x1442aad70(vm+0x278) and sets vm+0x2c1 = 1. Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_career_team_select_view_model_on_clear_waiting_message",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 24 01",
+  "match": "0x141a691e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a691e0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCareerTeamSelectViewModel_OnClearWaitingMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a691e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a691e0.c;xref:0x141a68716",
+   "notes": "V4930 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

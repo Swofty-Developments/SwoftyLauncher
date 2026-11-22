@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineDocumentComponent_OnSessionEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bb4800",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bb4800.c;pat:log-message-cxx;xref:0x145678508,0x1456b2a18",
+  "notes": "Logs NETWORK/F 'OnlineDocumentComponent::onSessionEnter()', resolves 'application_object' and calls Game_GameSessionManager_RequestSessionData. Referenced only by vtable cells 0x145678508 and 0x1456b2a18. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_document_component_on_session_enter",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 5B 01 00 00",
+  "match": "0x140bb4800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bb4800",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineDocumentComponent_OnSessionEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bb4800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bb4800.c",
+   "notes": "V4461 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

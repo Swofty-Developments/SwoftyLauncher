@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WeeklyGPComponent_SimulateQualifyingSessionForMultiplayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bef050",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bef050.c;pat:log-message-cxx;xref:0x140beed0c,0x140bf0333",
+  "notes": "If [+0x2a0]+0x58==3, +0x54 in 1..2: flag 0x20 on [+0x290]+0x4f8, 0x1407b5c40 (championship begin); per session (0xa0): types 1-4 build 0x128 entries (0x142c79940); types 5-14 log 'WeeklyGPComponent::simulateQualifyingSessionForMultiplayer()', WEEKLY_GP_GRID 'Seeding/Forcing fastest lap time', 'Adding grid penalty time', 0x140af2880; types 15-17 stop. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.weekly_gp_component_simulate_qualifying_session_for_multiplayer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 78 29 94 24 10 02 00 00 C5 78 29 8C 24 00 02 00 00 C5 78 29 84 24 F0 01 00 00 C5 F8 29 BC 24 E0 01 00 00 C5 F8 29 B4 24 D0 01 00 00 48 89 CE 48 8B 81 90 02 00 00",
+  "match": "0x140bef050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bef050",
+  "kind": "func_start",
+  "names": [
+   "Game_WeeklyGPComponent_SimulateQualifyingSessionForMultiplayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bef050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bef050.c",
+   "notes": "V4504 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_InitialisePlayFabPartyHost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14409ea80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14409ea80.c;pat:log-channel-NETWORK-TRANSPORT;xref:0x145a55138",
+  "notes": "Vtable cell: NetConnectionStore_Initialise 0x14405a430, logs 'Initialise PlayFabParty for host' ('initialiseHost'), InitialiseInternal 0x14409f370, then createNetwork/connectNetwork. (lane owner review requested) Better name: Game_NetworkTransportPlayFab_InitialiseHost (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_transport_initialise_play_fab_party_host",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 02 00 00 89 D3 48 89 CF",
+  "match": "0x14409ea80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14409ea80",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_InitialisePlayFabPartyHost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14409ea80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14409ea80.c;xref:0x143293a6a",
+   "notes": "V6534 size=2288; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

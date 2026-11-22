@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RetrieveConsumableEntitlementsTask_CollatePackageData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140794a00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140794a00.c;str:s_RetrieveConsumableEntitlementsTask_CollatePackageData;xref:0x140793a76,0x140794982,0x140795e09",
+  "notes": "Pretty-function 'void game::RetrieveConsumableEntitlementsTask::collatePackageData()' (ENTITLEMENTS/F, '%zu OS packages, %zu platform packages'). Clears out array this+0x120 (0x1e0 stride, count [this+0x7920]); for each OS package ([this+0x7958..0x7960], 0x190 stride) builds entry via 0x142b92040, matches platform package ([this+0x7938..0x7940], 0xe0 stride) by id for price, else logs '! %s - no price, discarding.'; logs 'setting finished on %s : %s' (OK!/with error), sets this+0xa1 = 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.retrieve_consumable_entitlements_task_collate_package_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 02 00 00 C5 78 29 84 24",
+  "match": "0x140794a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140794a00",
+  "kind": "func_start",
+  "names": [
+   "Game_RetrieveConsumableEntitlementsTask_CollatePackageData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140794a00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140794a00.c",
+   "notes": "V4292 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

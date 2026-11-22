@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXMechanicalVehicleRacingVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143252220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143252220.c;pat:log-channel-NETWORK;xref:0x143252b4a,0x1432530e0,0x143253141",
+  "notes": "Called from 0x143252aa0. (this, rec): when +0xa8 enabled resolves the vehicle's components into the per-vehicle record: car object, game component (0x143f9b3c0 key 0x146ce8a40), ghost/helper/tyre components (0x1446029b0 keys 0x146080cc8/0x1460969c8/0x146096968), cachedCarData (0x142f01190) and driver orders; stores them at rec+8/+0x18/+0x20/+0x30, or logs which one is missing and clears the record. (lane owner review requested) Better name: Game_Network_ResolveMechanicalVehicleComponents (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_mox_mechanical_vehicle_racing_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 B9 A8 00 00 00 00",
+  "match": "0x143252220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143252220",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXMechanicalVehicleRacingVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143252220",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143252220.c;xref:0x143252b4b",
+   "notes": "V5759 Better name Game_Network_MOXMechanicalAttachVehicle: 195-line function collects MOX/Mechanical components (ghost, helper, TyreComponent, cachedCarData, driver orders) with several missing-component logs; the no-car message is only one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143252220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143252220.c;xref:0x143252b4a",
+   "notes": "V7026 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

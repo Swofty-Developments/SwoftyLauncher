@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddTeamCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142473670",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142473670.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x141401afa",
+  "notes": "AddTeamCustomisation for type 1 eUserDefined: array this+0x308; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Inserts via 0x1424746e0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_team_customisation",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 30 01 00 00 4C 89 C7 48 8B 89 08 03 00 00",
+  "match": "0x142473670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142473670",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddTeamCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142473670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142473670.c;xref:0x141401afa",
+   "notes": "V5060 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

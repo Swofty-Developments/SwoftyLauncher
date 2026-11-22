@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EadpSDK_UserLongerLoggedClearing",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fdb010",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fdb010.c;pat:log-channel-EadpSDK;xref:0x145a45468",
+  "notes": "Virtual (vtable cell 0x145a45468): not logged in -> 'User no longer logged in, clearing subscriptions'; else builds an 'Authorization' header ('eadp.identity.proxy'), logs 'Requesting EA subscriptions via web api: %s', registers 0x143fdc380 as response callback (lea 0x143fdbb17); may add 'a synthesized EA_ACCESS subscription'. (lane owner review requested) Better name: Game_EadpSDK_RequestSubscriptions (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_sdk_user_longer_logged_clearing",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 03 00 00 48 89 CE 80 B9 48 01 00 00 00",
+  "match": "0x143fdb010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fdb010",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpSDK_UserLongerLoggedClearing"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fdb010",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fdb010.c",
+   "notes": "V6334 partial: better name Game_EadpSDK_RefreshEaSubscriptions; clears subs then requests EA subscriptions via web api (identity proxy), synthesizes EA_ACCESS"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143fdb010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fdb010.c",
+   "notes": "V7068 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

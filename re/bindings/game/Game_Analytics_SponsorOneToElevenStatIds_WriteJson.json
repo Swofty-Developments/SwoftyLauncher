@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_SponsorOneToElevenStatIds_WriteJson",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1404536c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *rec, void *json_writer",
+  "evidence": "decomp:re/decomp/1404536c0.c;xref:0x14087e330",
+  "notes": "Writer of 'customisation_loadout_on_session_start_record': baseCtx rec+0x50, 'livery_data' rec+0x60 via 0x140420190, ints suit..sponsor_eleven_stat_id rec+0x70..0xc0, bool custom_liverys_used 0xc4, array equipped_decal_list (vec 0xc8: chosen_decal_id/projection_area_id/projection_area_name), special_edition_livery_id 0xe0. (lane owner review requested) Better name: Game_Analytics_CustomisationLoadoutRecord_WriteJson (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_sponsor_one_to_eleven_stat_ids_write_json",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 D6 48 89 CF 48 83 79 50 00 0F 84 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 8D 5C 24 20",
+  "match": "0x1404536c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1404536c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_SponsorOneToElevenStatIds_WriteJson"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x1404536c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1404536c0.c;str:\"sponsor_eleven_stat_id\"",
+   "notes": "V9467 Writes the whole livery/loadout record: livery_data, suit/helmet/gloves/emote/head/badge/radio/pose/sticker stat ids, sponsor_one..eleven_stat_id, custom_liverys_used, decals, special_edition_livery_id; sponsors are only part."
+  }
+ ],
+ "proofs": []
+}

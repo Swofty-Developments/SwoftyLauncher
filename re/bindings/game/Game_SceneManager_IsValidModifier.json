@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SceneManager_IsValidModifier",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401de400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401de400.c;pat:log-message-cxx;xref:0x1401dd833,0x1401ddbd3",
+  "notes": "Checks a scene XML node: name must be \"modifier\" and attributes \"type\" and \"id\" must exist; if global 0x14601e0e9 == 0, type must equal \"game::PhysicBoneSimModifier\" (else 0), otherwise any type passes (1). A missing attribute logs ACTOR \"SceneManager::isValidModifier failed type='%s' id='%s'\" and returns 0. Callers in 0x1401dc2b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.scene_manager_is_valid_modifier",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CE 48 8B 09",
+  "match": "0x1401de400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401de400",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneManager_IsValidModifier"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401de400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401de400.c",
+   "notes": "V4380 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

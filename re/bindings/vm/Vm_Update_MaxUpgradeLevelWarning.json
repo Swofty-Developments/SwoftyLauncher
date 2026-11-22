@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Update_MaxUpgradeLevelWarning",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141af0870",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Update_MaxUpgradeLevelWarning(void *screen)",
+  "evidence": "decomp:re/decomp/141af0870.c;xref:0x141ae974a,0x141b914e4,0x141b91714,0x141b91c73",
+  "notes": "sel = 0x141af1200(vm,sub+0xb80); for each card in sub(+0x330)+0xd08..+0xd10: same int id (+0x30) as sel -> bool [card+0x360]=0; else bool=1 and bg nodes card+0x318/+0x338 = tech_level_bg_large/tech_level_bg [high] when no sel or sel u32 +0x90 <= card +0x90, else [low] (Vm_Resolve_IconNodeByPath). Renamed (no warning text set). (lane owner review requested) Better name: Vm_Update_TechLevelCardBackgrounds (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "vm.update_max_upgrade_level_warning",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8D B9 30 03 00 00",
+  "match": "0x141af0870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141af0870",
+  "kind": "func_start",
+  "names": [
+   "Vm_Update_MaxUpgradeLevelWarning"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141af0870",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141af0870.c;xref:0x141ae974a;xref:0x141b914e4",
+   "notes": "V9939 Chooses tech_level_bg / tech_level_bg_large [high] or [low] overrides and sets bool nodes; the max-level warning attribution is only by caller."
+  }
+ ],
+ "proofs": []
+}

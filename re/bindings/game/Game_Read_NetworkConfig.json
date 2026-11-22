@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_NetworkConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143040da0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143040da0.c;pat:log-channel--;xref:0x1430d182e",
+  "notes": "Constructor (called at 0x1430d182e in 0x1430d11b0): vtable 0x145813d40 then 0x145809d40, allocs 3 maps via allocator param_2+0x10, writes defaults (e.g. +0x282 \"progress_logs\", +0x3d8 \"realistic\", +0x400 \"equal\", +0x420 \"clear\"), registers Network.* vars (0x145807aba Network.Transport.DeveloperID .. 0x145809d08 Network.Prediction.*) via FUN_1430ce030(this+0x10 map,name,{ptr,type,len}) with NETWORK-CONFIG ConfigParser registerVar logs, 9x NetStats.BandwidthBucket_%d; applies overrides from param_2+0x200 by type 0..8 (FUN_143a43b90/44280/44700/42f10/43240/43550/43880/44090/43ea0); stores this in 0x1460bff80; logs \"Matchmaking Developer Code: 0x%08x\" via FUN_14304cb60; returns this. (lane owner review requested) Better name: Game_GameSessionConfig_Ctor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_network_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 49 89 CD 48 89 94 24 80 00 00 00",
+  "match": "0x143040da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143040da0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_NetworkConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143040da0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143040da0.c;xref:0x1430d182f",
+   "notes": "V5468 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

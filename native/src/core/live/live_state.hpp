@@ -1,18 +1,26 @@
 #pragma once
 #include <swofty_api.h>
 
-#include "live_layout.hpp"
-#include "live_mem.hpp"
+#include "core/live/live_layout.hpp"
+#include "core/live/live_mem.hpp"
+#include "core/live/live_badges.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <vector>
 
 namespace swofty_core::live {
 
 namespace L = layout;
+
+// The pit box of a garage index: garage >> 1, box 12 for the safety car's garage 99.
+inline uint8_t garage_pit_box(uint8_t garage)
+{
+    return garage == L::pit::garage_safety_car ? uint8_t(L::pit::safety_car_box) : uint8_t(garage >> 1);
+}
 
 constexpr unsigned MAX_CARS = SWOFTY_LIVE_MAX_CARS;
 constexpr size_t MAX_ENTRIES = 64;
@@ -24,10 +32,7 @@ inline float from_bits(uint32_t u)
     return f;
 }
 
-inline bool within(float v, float lo, float hi)
-{
-    return std::isfinite(v) && v >= lo && v <= hi;
-}
+inline bool within(float v, float lo, float hi) { return std::isfinite(v) && v >= lo && v <= hi; }
 
 template <class T> inline T field(const uint8_t *buf, uintptr_t lo, uintptr_t off)
 {
@@ -60,6 +65,35 @@ inline char checked_tyre_letter(uint8_t visual, int32_t compound)
 {
     char a = tyre_letter_of_visual(visual), b = tyre_letter_of_compound(compound);
     return a && a == b ? a : 0;
+}
+
+// Length of the longest prefix of s[0..n) that is whole, valid UTF-8 and no longer than max bytes; npos when s holds a
+// control character or an invalid sequence (the string is then not a name).
+inline size_t utf8_prefix(const char *s, size_t n, size_t max)
+{
+    size_t i = 0, keep = 0;
+    while (i < n) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        size_t len = c < 0x80 ? 1 : (c & 0xe0) == 0xc0 ? 2 : (c & 0xf0) == 0xe0 ? 3 : (c & 0xf8) == 0xf0 ? 4 : 0;
+        if (!len || (len == 1 && (c < 0x20 || c == 0x7f)) || (len == 2 && c < 0xc2) || (len == 4 && c > 0xf4) || i + len > n)
+            return ~size_t(0);
+        for (size_t k = 1; k < len; k++)
+            if ((static_cast<unsigned char>(s[i + k]) & 0xc0) != 0x80)
+                return ~size_t(0);
+        if (len == 3) {
+            unsigned char d = static_cast<unsigned char>(s[i + 1]);
+            if ((c == 0xe0 && d < 0xa0) || (c == 0xed && d > 0x9f))
+                return ~size_t(0);
+        } else if (len == 4) {
+            unsigned char d = static_cast<unsigned char>(s[i + 1]);
+            if ((c == 0xf0 && d < 0x90) || (c == 0xf4 && d > 0x8f))
+                return ~size_t(0);
+        }
+        i += len;
+        if (i <= max)
+            keep = i;
+    }
+    return keep;
 }
 
 struct Event {
@@ -130,6 +164,7 @@ public:
 
     SwoftyLiveSession ses;
     SwoftyLiveCar cars[MAX_CARS];
+    SwoftyLiveCarDetail details[MAX_CARS];
     bool present[MAX_CARS] = {};
     uint64_t seq = 0;
 
@@ -181,7 +216,9 @@ public:
             job_pit();
         if (g_[G_PENALTIES] && due(t_pen_, 0.25))
             job_penalties();
-        if (g_[G_TYRES] && due(t_tyre_, 0.5))
+        if (g_[G_LAP_TIMES] && due(t_laps_, 0.1))
+            job_laps();
+        if ((g_[G_TYRES] || g_[G_TYRE_WEAR] || g_[G_TYRE_AGE]) && due(t_tyre_, 0.5))
             job_tyres();
         if (g_[G_FLAGS] && due(t_flags_, 0.25))
             job_flags();
@@ -196,40 +233,135 @@ public:
 
     bool read_team_badge(uint32_t vehicle, char *key, size_t cap)
     {
-        if (!g_[G_BADGES] || !s_.key_game_mode || !s_.key_team_tables || vehicle >= MAX_CARS || cap < 2)
+        BadgeRef b;
+        if (cap < 2 || !find_badge(vehicle, b) || b.kind == L::badge::my_team_kind || b.render)
             return false;
-        uintptr_t gmc = find(c_mode_, s_.key_game_mode);
-        uintptr_t mode = 0, game = 0, ev[2];
-        if (!gmc || !m_.get(gmc + L::badge::mode, mode) || !mode || !m_.get(mode + L::badge::game, game) || !game ||
-            !m_.read(game + L::badge::entrants, ev, sizeof ev) || ev[1] <= ev[0] ||
-            (ev[1] - ev[0]) % L::badge::entrant_stride || (ev[1] - ev[0]) / L::badge::entrant_stride > 512)
+        return read_cstr(b.key, key, cap > 40 ? 40 : cap);
+    }
+
+    bool read_team_badge_texture(uint32_t vehicle, char *path, size_t cap)
+    {
+        if (path && cap)
+            path[0] = 0;
+        BadgeRef b;
+        if (!path || cap < 2 || !find_badge(vehicle, b))
             return false;
-        size_t n = (ev[1] - ev[0]) / L::badge::entrant_stride;
-        for (size_t i = 0; i < n; i++) {
+        char id[40];
+        int n = -1;
+        if (!b.render) {
+            if (read_cstr(b.key, id, sizeof id))
+                n = std::snprintf(path, cap, "%s%s", L::badge::catalogue_prefix, id);
+        } else if (uint32_t badge = 0; g_[G_BADGE_RENDER] && m_.get(b.entrant + L::badge::entrant_badge, badge)) {
+            if (b.kind == L::badge::my_team_kind) {
+                uintptr_t label = 0;
+                char name[64]{};
+                if (!g_[G_MODE] || !m_.get(b.mode + L::mode::label, label) || !read_cstr(label, name, sizeof name))
+                    return false;
+                if (!std::strncmp(name, "my_team_career", 14) && (name[14] == 0 || name[14] == '_')) {
+                    uint64_t slot = 0;
+                    uint32_t mode_id = 0;
+                    if (!s_.my_team_saved_badge || !current_badge_slot(m_, b.game, s_.image_lo, s_.image_hi, slot) ||
+                        !m_.get(b.game + 0x2a8, mode_id) || !assigned_badge(m_, customisation_system(), mode_id, slot, badge))
+                        return false;
+                }
+            }
+            unsigned table = badge & 0xff, index = badge >> 16;
+            if (index == L::badge::badge_none)
+                n = std::snprintf(path, cap, "%s", L::badge::render_default);
+            else if (table <= L::badge::max_kind)
+                n = std::snprintf(path, cap, "%s%s %u", L::badge::render_prefix, L::badge::table_names[table], index);
+        }
+        if (n > 0 && size_t(n) < cap)
+            return true;
+        path[0] = 0;
+        return false;
+    }
+
+    // The driver name the game shows for a car (Sess_Get_CarDriverName): the player name for a human-driven car, else
+    // the display name of the driver record the car's session entrant points at. UTF-8, cut at a character boundary to
+    // fit cap - 1 bytes.
+    bool read_driver_name(uint32_t vehicle, char *out, size_t cap)
+    {
+        namespace D = L::driver;
+        if (!active() || !g_[G_DRIVER_NAMES] || !s_.key_game_mode || !s_.key_team_tables || !s_.key_session_component ||
+            vehicle >= MAX_CARS || cap < 2)
+            return false;
+        uintptr_t vh = find(c_s1_, s_.key_session_component), pv[2];
+        size_t pn = 0;
+        if (!vh || !m_.read(vh + D::participants, pv, sizeof pv) || !vec_ok(pv[0], pv[1], 8, D::max_participants, pn) ||
+            vehicle >= pn)
+            return false;
+        uintptr_t parts[D::max_participants], participant = 0;
+        if (!m_.read(pv[0], parts, pn * 8))
+            return false;
+        for (size_t i = 0; i < pn && !participant; i++) {
+            uintptr_t phys = 0, car = 0;
             uint8_t vid = 0xff;
-            uint32_t team = 0;
-            uintptr_t e = ev[0] + i * L::badge::entrant_stride;
-            if (!m_.get(e + L::badge::entrant_vid, vid) || vid != vehicle)
-                continue;
-            if (!m_.get(e + L::badge::entrant_team, team))
+            if (parts[i] && m_.get(parts[i] + D::participant_physics, phys) && phys && m_.get(phys + D::physics_car, car) &&
+                car && m_.get(car + L::car::vehicle_id, vid) && vid == vehicle)
+                participant = parts[i];
+        }
+        uint8_t flags = 0;
+        if (!participant || !m_.get(participant + D::participant_flags, flags))
+            return false;
+        uintptr_t name = 0;
+        if (flags & D::human_flag) {
+            if (!m_.get(vh + D::player_name, name))
                 return false;
-            unsigned kind = team & 0xff, index = team >> 16;
-            if (kind > L::badge::max_kind || kind == L::badge::my_team_kind)
+        } else {
+            uintptr_t gmc = find(c_mode_, s_.key_game_mode), mode = 0, game = 0, ev[2];
+            size_t n = 0;
+            if (!gmc || !m_.get(gmc + L::badge::mode, mode) || !mode || !m_.get(mode + L::badge::game, game) || !game ||
+                !m_.read(game + L::badge::entrants, ev, sizeof ev) || !vec_ok(ev[0], ev[1], L::badge::entrant_stride, 512, n))
                 return false;
-            uintptr_t tt = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0, str = 0;
-            uint8_t render = 0;
-            if (!tt || !m_.get(tt + L::badge::tables + kind * 16, table) || !table ||
-                !m_.read(table + L::badge::table_vec, vec, sizeof vec) || vec[1] <= vec[0] ||
-                index >= (vec[1] - vec[0]) / 16 || !m_.get(vec[0] + uintptr_t(index) * 16 + L::badge::slot_record, rec) || !rec ||
-                !m_.get(rec + L::badge::record_render, render) || render ||
-                !m_.get(rec + L::badge::record_key, str) || !str)
+            uintptr_t entrant = 0;
+            for (size_t i = 0; i < n && !entrant; i++) {
+                uint8_t vid = 0xff;
+                if (m_.get(ev[0] + i * L::badge::entrant_stride + L::badge::entrant_vid, vid) && vid == vehicle)
+                    entrant = ev[0] + i * L::badge::entrant_stride;
+            }
+            uint32_t ref = 0;
+            if (!entrant || !m_.get(entrant + D::entrant_ref, ref) || (ref & 0xff) > D::max_domain)
                 return false;
-            return read_cstr(str, key, cap > 40 ? 40 : cap);
+            uintptr_t es = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0;
+            size_t count = 0, id = ref >> 16;
+            if (!es || !m_.get(es + D::sets + (ref & 0xff) * D::set_stride, table) || !table ||
+                !m_.read(table + D::table_vec, vec, sizeof vec) || !vec_ok(vec[0], vec[1], 16, 0x10000, count) || id >= count ||
+                !m_.get(vec[0] + id * 16 + D::slot_record, rec) || !rec || !m_.get(rec + D::record_name, name))
+                return false;
+        }
+        char buf[D::max_name];
+        size_t len = 0;
+        if (!name || !read_text(name, buf, sizeof buf, len) || !len)
+            return false;
+        size_t keep = utf8_prefix(buf, len, cap - 1);
+        if (keep == ~size_t(0) || !keep)
+            return false;
+        std::memcpy(out, buf, keep);
+        out[keep] = 0;
+        return true;
+    }
+
+private:
+    // Copies the NUL-terminated string at p into out (at most cap - 1 bytes before the NUL); false when it is unreadable or
+    // has no NUL within cap bytes.
+    bool read_text(uintptr_t p, char *out, size_t cap, size_t &len)
+    {
+        size_t n = 0;
+        while (n < cap) {
+            size_t chunk = std::min<size_t>(cap - n, 0x1000 - ((p + n) & 0xfff));
+            if (!m_.read(p + n, out + n, chunk))
+                return false;
+            for (size_t i = 0; i < chunk; i++)
+                if (!out[n + i]) {
+                    len = n + i;
+                    return true;
+                }
+            n += chunk;
         }
         return false;
     }
 
-private:
     struct Slot {
         uintptr_t value = 0;
         size_t slot = ~size_t(0);
@@ -245,7 +377,7 @@ private:
     };
     struct Cls {
         bool have = false, tpen = false;
-        uint8_t status = 0xff, pos = 0;
+        uint8_t status = 0xff, pos = 0, grid = 0;
         float penalty = 0;
     };
     struct Gap {
@@ -260,6 +392,19 @@ private:
         bool have = false;
         uint8_t visual = 0xff, actual = 0xff;
         char letter = 0;
+        bool damage = false;
+        uint8_t state[4] = {};
+        float deflation[4] = {};
+        bool wear_ok = false;
+        float wear[4] = {};
+        bool age_ok = false;
+        uint8_t age = 0, stint = 0;
+    };
+    struct Laps {
+        bool have = false, best = false;
+        uint32_t completed = 0, current_ms = 0, current_s[2] = {}, last_ms = 0, last_s[3] = {};
+        uint32_t best_ms = 0, best_number = 0, best_s[3] = {};
+        uint8_t flags = 0;
     };
 
     Mem m_;
@@ -267,7 +412,7 @@ private:
     Gates g_;
     double now_ = 0, last_now_ = -1e18;
     double t_scan_ = -1e9, t_ctrl_ = -1e9, t_cls_ = -1e9, t_prog_ = -1e9, t_timing_ = -1e9, t_pit_ = -1e9, t_pen_ = -1e9,
-           t_tyre_ = -1e9, t_flags_ = -1e9, t_mode_ = -1e9, t_track_ = -1e9, t_cars_ = -1e9;
+           t_tyre_ = -1e9, t_flags_ = -1e9, t_mode_ = -1e9, t_track_ = -1e9, t_cars_ = -1e9, t_laps_ = -1e9, t_best_ = -1e9;
     const char *stop_ = "";
 
     uintptr_t slots_[MAX_CARS] = {};
@@ -278,6 +423,9 @@ private:
     size_t entrants_ = 0;
 
     Slot c_results_, c_spectator_, c_timing_, c_pit_, c_sc_, c_log_, c_s1_, c_tyres_, c_marshal_, c_red_, c_mode_, c_teams_;
+    Slot c_customisation_, c_laps_;
+    uintptr_t customisation_key_ = 0;
+    double customisation_scan_ = -2.0;
 
     SysRec sys_[MAX_CARS];
     ErsRec ers_[MAX_CARS];
@@ -291,6 +439,7 @@ private:
     uint8_t pit_[MAX_CARS];
     Pen pen_[MAX_CARS];
     Tyre tyre_[MAX_CARS];
+    Laps laps_[MAX_CARS];
     float sector_end_[8] = {};
     int sector_count_ = 0;
     float sector_track_ = 0;
@@ -314,6 +463,8 @@ private:
     uint8_t pit_status_[MAX_CARS] = {};
     uint8_t pit_stops_[MAX_CARS] = {};
     bool pit_lane_ok_[MAX_CARS] = {};
+    uint8_t garage_[MAX_CARS] = {};
+    bool garage_ok_[MAX_CARS] = {};
     bool retire_from_bus_ = false;
     uint32_t player_gen_ = 0, subject_gen_ = 0;
     uintptr_t player_ptr_ = 0, subject_ptr_ = 0;
@@ -326,14 +477,17 @@ private:
     {
         std::memset(&ses, 0, sizeof ses);
         std::memset(cars, 0, sizeof cars);
+        std::memset(details, 0, sizeof details);
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         reset_timers();
     }
 
     void reset_timers()
     {
-        t_scan_ = t_ctrl_ = t_cls_ = t_prog_ = t_timing_ = t_pit_ = t_pen_ = t_tyre_ = t_flags_ = t_mode_ = t_track_ = t_cars_ = -1e9;
+        t_scan_ = t_ctrl_ = t_cls_ = t_prog_ = t_timing_ = t_pit_ = t_pen_ = t_tyre_ = t_flags_ = t_mode_ = t_track_ = t_cars_ =
+            t_laps_ = t_best_ = -1e9;
     }
 
     bool due(double &t, double period)
@@ -357,7 +511,9 @@ private:
         observed_valid_ = false;
         events_.clear();
         c_results_ = c_spectator_ = c_timing_ = c_pit_ = c_sc_ = c_log_ = c_s1_ = c_tyres_ = c_marshal_ = c_red_ = c_mode_ =
-            c_teams_ = Slot{};
+            c_teams_ = c_customisation_ = c_laps_ = Slot{};
+        customisation_key_ = 0;
+        customisation_scan_ = -2.0;
         if (player_ptr_) {
             player_ptr_ = 0;
             player_gen_++;
@@ -375,6 +531,7 @@ private:
         std::memset(present, 0, sizeof present);
         std::memset(&ses, 0, sizeof ses);
         std::memset(cars, 0, sizeof cars);
+        std::memset(details, 0, sizeof details);
         for (auto &c : cls_)
             c = Cls{};
         for (auto &g : gap_)
@@ -383,8 +540,11 @@ private:
             p = Pen{};
         for (auto &t : tyre_)
             t = Tyre{};
+        for (auto &l : laps_)
+            l = Laps{};
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         ++seq;
     }
 
@@ -409,13 +569,93 @@ private:
         return false;
     }
 
+    struct BadgeRef {
+        unsigned kind = 0;
+        uintptr_t entrant = 0, key = 0, mode = 0, game = 0;
+        uint8_t render = 0;
+    };
+
+    bool find_badge(uint32_t vehicle, BadgeRef &out)
+    {
+        if (!active() || !g_[G_BADGES] || !s_.key_game_mode || !s_.key_team_tables || vehicle >= MAX_CARS)
+            return false;
+        uintptr_t gmc = find(c_mode_, s_.key_game_mode);
+        uintptr_t mode = 0, game = 0, ev[2];
+        if (!gmc || !m_.get(gmc + L::badge::mode, mode) || !mode || !m_.get(mode + L::badge::game, game) || !game ||
+            !m_.read(game + L::badge::entrants, ev, sizeof ev) || ev[1] <= ev[0] || (ev[1] - ev[0]) % L::badge::entrant_stride ||
+            (ev[1] - ev[0]) / L::badge::entrant_stride > 512)
+            return false;
+        size_t n = (ev[1] - ev[0]) / L::badge::entrant_stride;
+        for (size_t i = 0; i < n; i++) {
+            uint8_t vid = 0xff;
+            uint32_t team = 0;
+            uintptr_t e = ev[0] + i * L::badge::entrant_stride;
+            if (!m_.get(e + L::badge::entrant_vid, vid) || vid != vehicle)
+                continue;
+            if (!m_.get(e + L::badge::entrant_team, team))
+                return false;
+            unsigned kind = team & 0xff, index = team >> 16;
+            if (kind > L::badge::max_kind)
+                return false;
+            out.kind = kind;
+            out.entrant = e;
+            out.mode = mode;
+            out.game = game;
+            if (kind == L::badge::my_team_kind) {
+                // User-defined teams have no catalogue key. The HUD's rendered
+                // fallback uses this entrant's badge key, not the team index.
+                out.render = 1;
+                return true;
+            }
+            uintptr_t tt = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0;
+            return tt && m_.get(tt + L::badge::tables + kind * 16, table) && table &&
+                   m_.read(table + L::badge::table_vec, vec, sizeof vec) && vec[1] > vec[0] && index < (vec[1] - vec[0]) / 16 &&
+                   m_.get(vec[0] + uintptr_t(index) * 16 + L::badge::slot_record, rec) && rec &&
+                   m_.get(rec + L::badge::record_render, out.render) && m_.get(rec + L::badge::record_key, out.key) &&
+                   (out.render || out.key);
+        }
+        return false;
+    }
+
+    uintptr_t customisation_system()
+    {
+        if (customisation_key_)
+            return find(c_customisation_, customisation_key_);
+        if (now_ >= customisation_scan_ && now_ - customisation_scan_ < 1.0)
+            return 0;
+        customisation_scan_ = now_;
+        uintptr_t manager = 0, registry = 0, entries[2]{};
+        if (!m_.get(s_.game_manager, manager) || !manager || !m_.get(manager + L::registry::from_manager, registry) ||
+            !registry || !m_.read(registry + L::registry::slots, entries, sizeof entries))
+            return 0;
+        if (!entries[0] || (entries[0] & 7) || entries[1] <= entries[0] || (entries[1] - entries[0]) % 16 ||
+            (entries[1] - entries[0]) / 16 > L::registry::max_slots)
+            return 0;
+        uintptr_t match = 0;
+        for (size_t i = 0, count = (entries[1] - entries[0]) / 16; i < count; ++i) {
+            uint8_t used = 0;
+            uintptr_t key = 0, name_pointer = 0;
+            char name[64]{};
+            if (!m_.get(entries[1] + i, used) || !used || !m_.get(entries[0] + i * 16, key) || !key ||
+                !m_.get(key + 8, name_pointer) || !read_cstr(name_pointer, name, sizeof name))
+                continue;
+            if (std::strcmp(name, "playerCustomisationInfoSystem"))
+                continue;
+            if (match)
+                return 0;
+            match = key;
+        }
+        customisation_key_ = match;
+        return match ? find(c_customisation_, match) : 0;
+    }
+
     uintptr_t find(Slot &c, uintptr_t key)
     {
         uintptr_t cached = c.value;
         c.value = 0;
         uintptr_t mgr = 0, reg = 0, sl[2] = {};
-        if (!key || !s_.game_manager || !m_.get(s_.game_manager, mgr) || !mgr ||
-            !m_.get(mgr + L::registry::from_manager, reg) || !reg || !m_.read(reg + L::registry::slots, sl, sizeof sl))
+        if (!key || !s_.game_manager || !m_.get(s_.game_manager, mgr) || !mgr || !m_.get(mgr + L::registry::from_manager, reg) ||
+            !reg || !m_.read(reg + L::registry::slots, sl, sizeof sl))
             return 0;
         uintptr_t base = sl[0], info = sl[1];
         if (!base || (base & 7) || info <= base || (info - base) % 16 || (info - base) / 16 > L::registry::max_slots)
@@ -530,14 +770,14 @@ private:
         ctrl_vid_ = -1;
         uintptr_t sys = 0, vt = 0, cv = 0, sets = 0;
         uint8_t built = 0;
-        if (!s_.controllers || !s_.vt_controllers || !m_.get(s_.controllers, sys) || !sys || (sys & 7) ||
-            !m_.get(sys, vt) || vt != s_.vt_controllers)
+        if (!s_.controllers || !s_.vt_controllers || !m_.get(s_.controllers, sys) || !sys || (sys & 7) || !m_.get(sys, vt) ||
+            vt != s_.vt_controllers)
             return;
         ctrl_hits_ = 0;
         uint32_t c[3];
         if (!m_.get(sys + L::controllers::built, built) || !built || !m_.get(sys + L::controllers::count_vec, cv) || !cv ||
-            (cv & 7) || !m_.read(cv + L::controllers::count_lo, c, sizeof c) ||
-            !m_.get(sys + L::controllers::sets, sets) || !sets || (sets & 7))
+            (cv & 7) || !m_.read(cv + L::controllers::count_lo, c, sizeof c) || !m_.get(sys + L::controllers::sets, sets) ||
+            !sets || (sets & 7))
             return;
         size_t n = uint8_t((c[2] - c[0]) >> 3);
         uintptr_t set[MAX_CARS];
@@ -607,6 +847,11 @@ private:
                 c.tpen = true;
                 c.penalty = float(d);
             }
+            uint32_t grid[3] = {};
+            if (g_[G_GRID] && m_.read(p + L::grid::pos_a, grid, sizeof grid)) {
+                uint32_t slot = (grid[0] ^ grid[2]) + 1;
+                c.grid = slot >= 1 && slot <= ne && slot <= MAX_ENTRIES ? uint8_t(slot) : 0;
+            }
             uint32_t pos = (field<uint32_t>(b, 0, L::results::pos_a) ^ field<uint32_t>(b, 0, L::results::pos_b)) + 1;
             if (pos < 1 || pos > ne || pos > MAX_ENTRIES)
                 continue;
@@ -654,8 +899,9 @@ private:
         size_t n = 0;
         uintptr_t ptr[MAX_ENTRIES];
         if (!s_.game_manager || !m_.get(s_.game_manager, mgr) || !mgr ||
-            !m_.get(mgr + (s_.progress_from_manager ? s_.progress_from_manager : L::progress::from_manager), sys) || !sys || !m_.read(sys + L::progress::vec_begin, v, sizeof v) ||
-            !vec_ok(v[0], v[1], 8, MAX_ENTRIES, n) || !n || !m_.read(v[0], ptr, n * 8))
+            !m_.get(mgr + (s_.progress_from_manager ? s_.progress_from_manager : L::progress::from_manager), sys) || !sys ||
+            !m_.read(sys + L::progress::vec_begin, v, sizeof v) || !vec_ok(v[0], v[1], 8, MAX_ENTRIES, n) || !n ||
+            !m_.read(v[0], ptr, n * 8))
             return;
         for (unsigned vid = 0; vid < MAX_CARS && vid < n; vid++) {
             if (!ref_of(vid))
@@ -701,6 +947,7 @@ private:
     {
         std::memset(pit_, 0xff, sizeof pit_);
         std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
+        std::memset(garage_ok_, 0, sizeof garage_ok_);
         uintptr_t s = find(c_pit_, s_.key_pit);
         uintptr_t rec[MAX_CARS * 2];
         if (!s || !m_.read(s + L::pit::records, rec, sizeof rec))
@@ -723,6 +970,13 @@ private:
                 pit_status_[vid] = !in_lane ? 0 : st == 4 ? 2 : 1;
                 pit_stops_[vid] = uint8_t(stops & 0xff);
                 pit_lane_ok_[vid] = true;
+                if constexpr (L::HAS_GARAGE) {
+                    int32_t garage = -1;
+                    if (m_.get(flags + L::pit::garage, garage) && garage >= 0 && garage <= int32_t(L::pit::garage_safety_car)) {
+                        garage_[vid] = uint8_t(garage);
+                        garage_ok_[vid] = true;
+                    }
+                }
             }
         }
     }
@@ -789,15 +1043,101 @@ private:
         }
     }
 
+    bool read_wheels(uintptr_t V, uintptr_t (&wheels)[4])
+    {
+        namespace D = L::tyre_damage;
+        uintptr_t physics = 0, car = 0, suspension = 0;
+        if (!V || (V & 7) || !m_.get(V + D::physics, physics) || !physics || (physics & 7) || !m_.get(physics + D::car, car) ||
+            !car || (car & 7) || !m_.get(car + D::suspension, suspension) || !suspension || (suspension & 7) ||
+            !m_.read(suspension + D::wheels, wheels, sizeof wheels))
+            return false;
+        for (uintptr_t w : wheels)
+            if (!w || (w & 7))
+                return false;
+        return true;
+    }
+
+    void read_tyre_wear(const uintptr_t (&wheels)[4], Tyre &t)
+    {
+        float wear[4];
+        for (unsigned w = 0; w < 4; w++)
+            if (!m_.get(wheels[w] + L::tyre_wear::wear, wear[w]) || !within(wear[w], 0.f, 1.f))
+                return;
+        for (unsigned w = 0; w < 4; w++)
+            t.wear[w] = wear[w] * 100.f;
+        t.wear_ok = true;
+    }
+
+    void read_tyre_damage(const uintptr_t (&wheels)[4], Tyre &t)
+    {
+        namespace D = L::tyre_damage;
+        for (unsigned w = 0; w < 4; w++) {
+            uint8_t flags = 0;
+            float deflation = 0;
+            if (!m_.get(wheels[w] + D::flags, flags) || !m_.get(wheels[w] + D::deflation, deflation) ||
+                !(deflation == deflation) || deflation < 0 || deflation > 100)
+                return;
+            uint8_t st = flags & D::state_mask;
+            t.state[w] = st == 2 || st == 3 ? st : 0;
+            t.deflation[w] = deflation;
+        }
+        t.damage = true;
+    }
+
+    // The UDP car status count of laps on the fitted set (0x142d00060): over the stint records in fitting order, each
+    // starting the lap after the previous one ended, add the laps up to the current lap of every record with the
+    // fitted record's compound and set index.
+    void read_tyre_age(uintptr_t V, uint32_t current, Tyre &t)
+    {
+        namespace A = L::tyre_age;
+        uintptr_t set[2];
+        if (!m_.read(V + L::tyres::set_begin, set, sizeof set) || !set[0] || set[1] <= set[0] ||
+            (set[1] - set[0]) % L::tyres::set_stride || (set[1] - set[0]) / L::tyres::set_stride > A::max_stints)
+            return;
+        size_t n = (set[1] - set[0]) / L::tyres::set_stride;
+        static uint8_t buf[A::max_stints * L::tyres::set_stride];
+        if (!m_.read(set[0], buf, n * L::tyres::set_stride))
+            return;
+        const uint8_t *fitted = buf + (n - 1) * L::tyres::set_stride;
+        uint32_t compound = field<uint32_t>(fitted, 0, A::compound), start = 0, age = 0, stint = 0;
+        uint8_t index = fitted[A::set_index];
+        for (size_t k = 0; k < n; k++) {
+            const uint8_t *r = buf + k * L::tyres::set_stride;
+            uint32_t end = uint32_t(field<uint16_t>(r, 0, A::end_lap)) + 1, upto = std::min(end, current);
+            uint32_t laps = upto > start ? upto - start : 0;
+            if (field<uint32_t>(r, 0, A::compound) == compound && r[A::set_index] == index)
+                age += laps;
+            if (k + 1 == n)
+                stint = laps;
+            start = end;
+        }
+        t.age = uint8_t(std::min<uint32_t>(age, 255));
+        t.stint = uint8_t(std::min<uint32_t>(stint, 255));
+        t.age_ok = true;
+    }
+
     void read_tyre(uintptr_t V, Tyre &t)
     {
+        uintptr_t wheels[4] = {};
+        bool damage = L::HAS_TYRE_DAMAGE && s_.tyre_damage, wear = g_[G_TYRE_WEAR] && s_.wheel_chain;
+        bool chain = (damage || wear) && read_wheels(V, wheels);
+        if constexpr (L::HAS_TYRE_DAMAGE)
+            if (chain && damage)
+                read_tyre_damage(wheels, t);
+        if (chain && wear)
+            read_tyre_wear(wheels, t);
+        if (!g_[G_TYRES])
+            return;
         uint8_t b[L::tyres::hi - L::tyres::lo];
         auto F = [&](uintptr_t off) { return off - L::tyres::lo; };
         if (!V || (V & 7) || !m_.read(V + L::tyres::lo, b, sizeof b))
             return;
-        uint64_t version = field<uint64_t>(b, L::tyres::lo, L::tyres::version), count = field<uint64_t>(b, L::tyres::lo, L::tyres::count),
-                 built_for = field<uint64_t>(b, L::tyres::lo, L::tyres::built_for), built = field<uint64_t>(b, L::tyres::lo, L::tyres::built);
-        uintptr_t sb = field<uintptr_t>(b, L::tyres::lo, L::tyres::set_begin), se = field<uintptr_t>(b, L::tyres::lo, L::tyres::set_end);
+        uint64_t version = field<uint64_t>(b, L::tyres::lo, L::tyres::version),
+                 count = field<uint64_t>(b, L::tyres::lo, L::tyres::count),
+                 built_for = field<uint64_t>(b, L::tyres::lo, L::tyres::built_for),
+                 built = field<uint64_t>(b, L::tyres::lo, L::tyres::built);
+        uintptr_t sb = field<uintptr_t>(b, L::tyres::lo, L::tyres::set_begin),
+                  se = field<uintptr_t>(b, L::tyres::lo, L::tyres::set_end);
         if (!built || built_for != version)
             return;
         uint32_t id = 0;
@@ -839,8 +1179,110 @@ private:
             (n && !m_.read(v[0], ptr, n * 8)))
             return;
         for (unsigned vid = 0; vid < MAX_CARS && vid < n; vid++)
-            if (racer(vid))
+            if (racer(vid)) {
                 read_tyre(ptr[vid], tyre_[vid]);
+                if (g_[G_TYRE_AGE] && laps_[vid].have && ptr[vid] && !(ptr[vid] & 7))
+                    read_tyre_age(ptr[vid], laps_[vid].completed, tyre_[vid]);
+            }
+    }
+
+    static bool lap_ms(const uint8_t *r, uintptr_t a, uintptr_t b, uint32_t &out)
+    {
+        float s = from_bits(field<uint32_t>(r, 0, a) ^ field<uint32_t>(r, 0, b));
+        if (!within(s, 0.f, 86400.f))
+            return false;
+        out = uint32_t(s * 1000.f);
+        return true;
+    }
+
+    static bool lap_valid(const uint8_t *r)
+    {
+        return (field<uint64_t>(r, 0, L::lap_times::valid_b) & 1) == r[L::lap_times::valid_a];
+    }
+
+    static bool sector_set(const uint8_t *r, uintptr_t a, uintptr_t b)
+    {
+        return ((field<uint32_t>(r, 0, a) ^ field<uint32_t>(r, 0, b)) & 0x7fffffffu) != 0;
+    }
+
+    // Laps of one car's lap data (VehicleLapTimesEntry + 0x38): the lap in progress is record current_lap, the last
+    // completed one the record before it (Sess_Udp_SyncLapData). The best lap, as Sess_LapTimes_IsNewFastestLap and the
+    // session history pick it: of the valid records whose three sectors are set, the first with the lowest time.
+    bool read_laps(uintptr_t data, Laps &l, bool scan)
+    {
+        namespace T = L::lap_times;
+        uint8_t current = 0;
+        if (!m_.get(data + T::current_lap, current) || current >= T::records)
+            return false;
+        uint8_t two[2 * T::stride];
+        size_t first = current ? current - 1u : 0u;
+        if (!m_.read(data + T::laps + first * T::stride, two, (current ? 2 : 1) * T::stride))
+            return false;
+        const uint8_t *now = two + (current ? T::stride : 0), *last = current ? two : nullptr;
+        Laps n;
+        n.completed = current;
+        if (!lap_ms(now, T::time_a, T::time_b, n.current_ms) || !lap_ms(now, T::s1_a, T::s1_b, n.current_s[0]) ||
+            !lap_ms(now, T::s2_a, T::s2_b, n.current_s[1]))
+            return false;
+        n.flags = lap_valid(now) ? SWOFTY_LIVE_LAP_CURRENT_VALID : 0;
+        if (last) {
+            if (!lap_ms(last, T::time_a, T::time_b, n.last_ms) || !lap_ms(last, T::s1_a, T::s1_b, n.last_s[0]) ||
+                !lap_ms(last, T::s2_a, T::s2_b, n.last_s[1]) || !lap_ms(last, T::s3_a, T::s3_b, n.last_s[2]))
+                return false;
+            n.flags |= lap_valid(last) ? SWOFTY_LIVE_LAP_LAST_VALID : 0;
+        }
+        if (scan || !l.have) {
+            static uint8_t all[T::records * T::stride];
+            if (!m_.read(data + T::laps, all, sizeof all))
+                return false;
+            const uint8_t *best = nullptr;
+            uint32_t best_ms = 0;
+            for (size_t i = 0; i < T::records; i++) {
+                const uint8_t *r = all + i * T::stride;
+                uint32_t ms = 0;
+                if (!sector_set(r, T::s1_a, T::s1_b) || !sector_set(r, T::s2_a, T::s2_b) || !sector_set(r, T::s3_a, T::s3_b) ||
+                    !lap_valid(r))
+                    continue;
+                if (!lap_ms(r, T::time_a, T::time_b, ms))
+                    return false;
+                if (!best || ms < best_ms) {
+                    best = r;
+                    best_ms = ms;
+                }
+            }
+            if (best && best[T::lap] != 0xff && lap_ms(best, T::s1_a, T::s1_b, n.best_s[0]) &&
+                lap_ms(best, T::s2_a, T::s2_b, n.best_s[1]) && lap_ms(best, T::s3_a, T::s3_b, n.best_s[2])) {
+                n.best = true;
+                n.best_ms = best_ms;
+                n.best_number = uint32_t(best[T::lap]) + 1;
+            }
+        } else {
+            n.best = l.best;
+            n.best_ms = l.best_ms;
+            n.best_number = l.best_number;
+            std::memcpy(n.best_s, l.best_s, sizeof n.best_s);
+        }
+        n.have = true;
+        l = n;
+        return true;
+    }
+
+    void job_laps()
+    {
+        namespace T = L::lap_times;
+        bool scan = due(t_best_, 1.0);
+        uintptr_t sys = find(c_laps_, s_.key_lap_times), v[2];
+        size_t n = 0;
+        uintptr_t ptr[MAX_ENTRIES];
+        if (!sys || !m_.read(sys + T::cars_begin, v, sizeof v) || !vec_ok(v[0], v[1], 8, MAX_ENTRIES, n) ||
+            (n && !m_.read(v[0], ptr, n * 8))) {
+            for (auto &l : laps_)
+                l = Laps{};
+            return;
+        }
+        for (unsigned vid = 0; vid < MAX_CARS; vid++)
+            if (vid >= n || !racer(vid) || !ptr[vid] || (ptr[vid] & 7) || !read_laps(ptr[vid] + T::entry_data, laps_[vid], scan))
+                laps_[vid] = Laps{};
     }
 
     void job_flags()
@@ -866,8 +1308,8 @@ private:
                 uintptr_t z = field<uintptr_t>(zbuf, 0, i * L::marshal::stride + L::marshal::zone);
                 uint8_t zb[0x18];
                 int32_t flag = -1;
-                if (!z || (z & 7) || !m_.read(z, zb, sizeof zb) ||
-                    (flag = field<int32_t>(zb, 0, L::marshal::zone_flag)) < 0 || flag > 4) {
+                if (!z || (z & 7) || !m_.read(z, zb, sizeof zb) || (flag = field<int32_t>(zb, 0, L::marshal::zone_flag)) < 0 ||
+                    flag > 4) {
                     ok = false;
                     break;
                 }
@@ -926,8 +1368,8 @@ private:
         game_mode_ok_ = false;
         game_mode_ = 0;
         uintptr_t gmc = find(c_mode_, s_.key_game_mode), mode = 0, label = 0;
-        if (!gmc || !m_.get(gmc + L::mode::from_context, mode) || !mode || (mode & 7) ||
-            !m_.get(mode + L::mode::label, label) || !label)
+        if (!gmc || !m_.get(gmc + L::mode::from_context, mode) || !mode || (mode & 7) || !m_.get(mode + L::mode::label, label) ||
+            !label)
             return;
         char b[32];
         size_t n = 0;
@@ -952,7 +1394,7 @@ private:
                 return;
         }
         game_mode_ok_ = true;
-        game_mode_ = !std::strcmp(b, "time_trial") ? SWOFTY_LIVE_MODE_TIME_TRIAL
+        game_mode_ = !std::strcmp(b, "time_trial")        ? SWOFTY_LIVE_MODE_TIME_TRIAL
                      : !std::strncmp(b, "grand_prix", 10) ? SWOFTY_LIVE_MODE_GRAND_PRIX
                                                           : SWOFTY_LIVE_MODE_UNKNOWN;
     }
@@ -966,9 +1408,9 @@ private:
         type_ok_ = s_.session_type && m_.get(s_.session_type, type) && type <= 64;
         type_ = type_ok_ ? type : 0;
         uintptr_t w = 0, a = 0, t = 0, str = 0;
-        track_name_ok_ = g_[G_TRACK_NAME] && s_.track_world && m_.get(s_.track_world, w) && w && m_.get(w + L::track::world_to_a, a) && a &&
-                         m_.get(a + L::track::a_to_b, t) && t && m_.get(t + L::track::b_to_name, str) && str &&
-                         read_name(str);
+        track_name_ok_ = g_[G_TRACK_NAME] && s_.track_world && m_.get(s_.track_world, w) && w &&
+                         m_.get(w + L::track::world_to_a, a) && a && m_.get(a + L::track::a_to_b, t) && t &&
+                         m_.get(t + L::track::b_to_name, str) && str && read_name(str);
         if (!track_name_ok_)
             track_name_[0] = 0;
     }
@@ -1101,11 +1543,17 @@ private:
         uint8_t b[L::ers::live_hi - L::ers::live_lo];
         float cfg[2];
         if (m_.read(c.es + L::ers::live_lo, b, sizeof b)) {
-            float energy = field<float>(b, L::ers::live_lo, L::ers::energy), hk = field<float>(b, L::ers::live_lo, L::ers::harvest_k),
+            float energy = field<float>(b, L::ers::live_lo, L::ers::energy),
+                  hk = field<float>(b, L::ers::live_lo, L::ers::harvest_k),
                   hh = field<float>(b, L::ers::live_lo, L::ers::harvest_h), dp = field<float>(b, L::ers::live_lo, L::ers::deploy),
-                  hl = field<float>(b, L::ers::live_lo, L::ers::harvest_lap), dl = field<float>(b, L::ers::live_lo, L::ers::deploy_lap),
+                  hl = field<float>(b, L::ers::live_lo, L::ers::harvest_lap),
+                  dl = field<float>(b, L::ers::live_lo, L::ers::deploy_lap),
                   ll = field<float>(b, L::ers::live_lo, L::ers::lap_limit);
-            int32_t mode = field<int32_t>(b, L::ers::live_lo, L::ers::mode);
+            int32_t mode = -1;
+            if (s_.ers_mode && s_.ers_mode != L::ers::mode)
+                m_.get(c.es + s_.ers_mode, mode);
+            else
+                mode = field<int32_t>(b, L::ers::live_lo, L::ers::mode);
             if (within(energy, -1.0e5f, 2.0e7f)) {
                 e.store = std::max(0.f, energy);
                 e.have |= SWOFTY_LIVE_HAVE_ERS_STORE;
@@ -1232,7 +1680,8 @@ private:
             ses.have |= SWOFTY_LIVE_SHAVE_YELLOW;
         }
         if (red_raw_ != 0xff || zones_ok_) {
-            uint8_t red = red_raw_ == 1 || red_raw_ == 2 ? red_raw_ : uint8_t(zones_ok_ && zones_ > 0 && zones_red_ == zones_ ? 1 : 0);
+            uint8_t red =
+                red_raw_ == 1 || red_raw_ == 2 ? red_raw_ : uint8_t(zones_ok_ && zones_ > 0 && zones_red_ == zones_ ? 1 : 0);
             ses.red_flag = red;
             ses.have |= SWOFTY_LIVE_SHAVE_RED_FLAG;
         }
@@ -1270,6 +1719,7 @@ private:
         }
 
         std::memset(cars, 0, sizeof cars);
+        std::memset(details, 0, sizeof details);
         std::memset(present, 0, sizeof present);
         for (int i = 0; i < n_cars_; i++) {
             const CarRef &r = refs_[i];
@@ -1344,6 +1794,11 @@ private:
                 c.pit_status = pit_status_[id];
                 c.pit_stops = pit_stops_[id];
             }
+            if (garage_ok_[id]) {
+                c.have |= SWOFTY_LIVE_HAVE_GARAGE;
+                c.garage = garage_[id];
+                c.pit_box = garage_pit_box(garage_[id]);
+            }
             c.gap_leader_ms = c.gap_ahead_ms = SWOFTY_LIVE_NO_GAP;
             const Gap &g = gap_[id];
             bool ok_status = k.have && (k.status == 2 || k.status == 3) && !(pit_[id] >= 2 && pit_[id] <= 15);
@@ -1370,6 +1825,46 @@ private:
                 c.have |= SWOFTY_LIVE_HAVE_TYRE;
                 c.tyre_letter = t.letter;
             }
+            if (t.damage) {
+                c.have |= SWOFTY_LIVE_HAVE_TYRE_DAMAGE;
+                for (unsigned w = 0; w < 4; w++) {
+                    c.tyre_damage[w] = t.state[w];
+                    c.tyre_deflation[w] = t.deflation[w];
+                }
+            }
+            SwoftyLiveCarDetail &d = details[id];
+            d.version = SWOFTY_LIVE_VERSION;
+            d.size = sizeof d;
+            d.vehicle = id;
+            if (k.have && k.grid) {
+                c.have |= SWOFTY_LIVE_HAVE_GRID;
+                d.grid_position = k.grid;
+            }
+            if (t.wear_ok) {
+                c.have |= SWOFTY_LIVE_HAVE_TYRE_WEAR;
+                std::memcpy(d.tyre_wear, t.wear, sizeof d.tyre_wear);
+            }
+            if (t.age_ok) {
+                c.have |= SWOFTY_LIVE_HAVE_TYRE_AGE;
+                d.tyre_age_laps = t.age;
+                d.tyre_stint_laps = t.stint;
+            }
+            const Laps &l = laps_[id];
+            if (l.have) {
+                c.have |= SWOFTY_LIVE_HAVE_LAP_TIMES;
+                d.laps_completed = l.completed;
+                d.current_lap_ms = l.current_ms;
+                std::memcpy(d.current_sector_ms, l.current_s, sizeof d.current_sector_ms);
+                d.last_lap_ms = l.last_ms;
+                std::memcpy(d.last_sector_ms, l.last_s, sizeof d.last_sector_ms);
+                d.lap_flags = l.flags;
+                if (l.best) {
+                    d.best_lap_ms = l.best_ms;
+                    d.best_lap_number = l.best_number;
+                    std::memcpy(d.best_sector_ms, l.best_s, sizeof d.best_sector_ms);
+                }
+            }
+            d.have = c.have;
         }
 
         if (g_[G_CLASS] && cls_ok_) {

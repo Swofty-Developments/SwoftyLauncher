@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteCareerCashTransactions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143760ca0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143760ca0.c;pat:log-channel-STATEVENT;xref:0x143737e30",
+  "notes": "STATEVENT sub-writer: keys via 0x1401009f0 + djb2, providers this+8..+0x10 vcall +0x18 (enabled) / +0x30 (write). (list, evt, amount, type, flow, account, spent, earnt): 4 keys CareerCashTransactions.GameplayModeId.IsInTeamCareer.TransactionFlow.AccountType, ..TransactionType.., CareerCashTransactionsTotalSpent.., ..TotalEarnt.. (evt+8, evt+0x30); values amount, 0, spent, earnt. Caller 0x143737e30 in Game_StatEvent_OnBankAccountTransactionMessage. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_career_cash_transactions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 05 00 00 44 89 CD",
+  "match": "0x143760ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143760ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteCareerCashTransactions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143760ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143760ca0.c;xref:0x143737e30",
+   "notes": "V6213 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

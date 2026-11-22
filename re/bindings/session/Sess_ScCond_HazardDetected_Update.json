@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScCond_HazardDetected_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143633f30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ScCondition*, float dt)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/143633f30.c;xref:0x14c3f81d6,0x1458539c0",
+  "notes": "SC logic condition update (slot 2): shifts the 2-byte results per SC entry (prev = cur, cur = 0), then sets cur for full SC: when [+0x88]+0xd1 == 0: (g 0x145f96850 == 1 and child +0x70) or (child +0x68 and g 0x145f968e0 == 1) or (children +0x40, +0x48, +0x78 and g_Sess_ScDeployPointsReached == 1); else (850 == 1 and child +0x70) or (child +0x68 and 8e0 == 1). The bytes 850 / 8e0 / 930 are per-source responses 0 none, 1 SC, 2 VSC."
+ },
+ "signature": {
+  "id": "session.sc_cond_hazard_detected_update",
+  "section": ".xtls",
+  "pattern": "53 48 8B 51 10 48 8B 41 18 48 39 C2 74 66 49 89 C0 49 29 D0 49 83 C0 FE 49 83 F8 10 72 42 49 D1 E8 49 FF C0 45 89 C1 41 83 E1 07 41 BA 08 00 00 00 4D 0F 45 D1 4D 29 D0 4E 8D 0C 42 45 31 D2 90 C4 A1 7A 6F 04 52 C5 F9 71 F0 08 C4 A1 7A 7F 04 52 49 83 C2 08 4D 39 D0 75 E6 4C 89 CA 0F 1F 00 44 0F B6 02 44 88 42 01 C6 02 00 48 83 C2 02 48 39 C2 75 EC 48 8B 51 38 48 8B 42 48 48 8B 52 50 48 39 D0 0F 84 ?? ?? ?? ?? 44 0F B6 05 ?? ?? ?? ?? EB 2B 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 4C 8B 41 10 43 C6 04 48 01 44 0F B6 05 ?? ?? ?? ?? 48 83 C0 08 48 39 D0 0F 84 ?? ?? ?? ?? 4C 8B 08 45 8B 49 38 4C 8B 51 70 4C 8B 99 88 00 00 00",
+  "match": "0x143633f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143633f30",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScCond_HazardDetected_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_ScCond_HazardDetected_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143633f30.c;xref:0x14c3f81d6,0x1458539c0",
+   "notes": "V1962 [+0x88]+0xd1==0: (850==1 and child0x70) or (child0x68 and 8e0==1) or (0x40,0x48,0x78 and 930==1); else first two terms; 930 = g_Sess_ScDeployPointsReached"
+  }
+ ],
+ "proofs": []
+}

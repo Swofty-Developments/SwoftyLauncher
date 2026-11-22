@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PressInterview_ReceiveFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fd4ea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fd4ea0.c;pat:log-channel-PRESS_INTERVIEWS;xref:0x140fd4840",
+  "notes": "Network message handler (lea 0x140fd4840 in 0x140fd42c0): decodes msg+0x14 (slot >>14, id &0x3fff), logs 'Press interview finished network message received, driver %s', then 0x140fd53a0([this+0x298], key). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.press_interview_receive_finished",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 80 00 00 00 48 89 CE 0F B7 42 14",
+  "match": "0x140fd4ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fd4ea0",
+  "kind": "func_start",
+  "names": [
+   "Game_PressInterview_ReceiveFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fd4ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fd4ea0.c;xref:0x140fd4842",
+   "notes": "V4829 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

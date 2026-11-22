@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_PlatformSearch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143082ae0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143082ae0.c;pat:log-message-method;xref:0x14580dac0",
+  "notes": "Hopper vtable cell: computes search params, may cancel ('GameSessionMatchingHopperCommon::cancel()' + Leave), changeState Unset->SearchRequested and logs '%s: Search started.' with 'platformSearch'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_session_platform_search",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 58 01 00 00 48 89 CE 48 8B 49 10",
+  "match": "0x143082ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143082ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_PlatformSearch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143082ae0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143082ae0.c",
+   "notes": "V5679 359 lines: HopperCommon::cancel of previous op + changeState to SearchRequested + platformSearch log (no direct callers, vtable). Better: Game_GameSessionMatchingHopperCommon_StartSearch [vtable/indirect]"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143082ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143082ae0.c",
+   "notes": "V6957 359 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

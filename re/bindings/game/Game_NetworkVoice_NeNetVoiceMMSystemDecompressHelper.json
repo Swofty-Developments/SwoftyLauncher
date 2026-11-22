@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_NeNetVoiceMMSystemDecompressHelper",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144038ea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144038ea0.c;pat:log-channel-NETWORK-VOICE;xref:0x1440324ab",
+  "notes": "Thread body of the MMSystem backend: logs 'NeNetVoiceMMSystem: decompress helper thread %d is running.', then loops decompressing remote voice packets into play buffers (strings decompressHelperThreadMain, decompressVoicePacket). Address taken (lea) in Game_NetworkVoice_CreateNetVoiceObject, where the 'voice_chat_decompress_helper_%d' threads are started. (lane owner review requested) Better name: Game_NetworkVoice_MMSystemDecompressHelperThreadMain (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_voice_ne_net_voice_mm_system_decompress_helper",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 85 D2 0F 84",
+  "match": "0x144038ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144038ea0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_NeNetVoiceMMSystemDecompressHelper"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144038ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144038ea0.c;xref:0x1440324ad",
+   "notes": "V6417 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

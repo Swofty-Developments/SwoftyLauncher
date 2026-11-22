@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineRole_NotifyListenersHostChange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140998120",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140998120.c;xref:0x145658658",
+  "notes": "If param_2 != 0 logs 'MOX/Role: %s: host status: %d' (onSessionHostChange) and calls vslot +0x10 on every listener in this+0x30..+0x38. Only reference: vtable cell 0x145658658. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_role_on_session_host_change",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 85 D2 0F 84 ?? ?? ?? ?? 48 89",
+  "match": "0x140998120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140998120",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineRole_NotifyListenersHostChange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140998120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140998120.c",
+   "notes": "V4102 logs onSessionHostChange when param_2!=0 and calls vslot +0x10 on every listener +0x30..+0x38; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

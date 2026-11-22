@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerManager_HandleControllerReconnect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434e0560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434e0560.c;pat:log-channel-INPUT;xref:0x145845210",
+  "notes": "Vtable cell 0x145845210 (neighbours 0x145845200/208/218.. are code ptrs). (this,belongs,dev,devId): dev==0 -> 0x1434deea0 with 'device NONE %s to %s' (INPUT). Lead dev ([dev+0x20]+0x198==dev): !belongs -> InterruptQueue job 3 + addNextUnfilteredAxisCallback 0x1434df850 on this+0x538; belongs -> this+0x560=devId[1], job 4. Second player (+0x1a0): callback this+0x220, scheme match in +0x38 list, 0x142a79e70, dev vfunc +8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.player_manager_handle_controller_reconnect",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 02 00 00 48 89 CE",
+  "match": "0x1434e0560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434e0560",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerManager_HandleControllerReconnect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434e0560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434e0560.c",
+   "notes": "V6068 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_MipTailGenerator_Destroy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143eab230",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143eab230.c;xref:0x143e9fca7,0x1459b2188",
+  "notes": "cxx=NeMipTailGenerator::~NeMipTailGenerator; log channel MIPTAIL: 'NeMipTailGenerator::~NeMipTailGenerator'"
+ },
+ "signature": {
+  "id": "core.mip_tail_generator_destroy",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 80 3D ?? ?? ?? ?? 01 75 64 B8 3D 01 00 00",
+  "match": "0x143eab230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143eab230",
+  "kind": "func_start",
+  "names": [
+   "Ne_MipTailGenerator_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_MipTailGenerator_Destroy",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143eab230.c;xref:0x1459b2188",
+   "notes": "V2063 destructor log MIPTAIL; vtable slot 0"
+  }
+ ],
+ "proofs": []
+}

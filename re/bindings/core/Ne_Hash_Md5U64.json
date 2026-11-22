@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Hash_Md5U64",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439298f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439298f0.c;xref:0x14364b84e,0x14364bf28,0x14364bf51",
+  "notes": "MD5 (init 0x67452301/0xefcdab89/...) over (buf, len) returning a 64-bit digest part. 80 callers incl. Game_CompressedSave_AddWriteRequest / OnReadResult (save checksums). (80 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.hash_md5_u64",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC D0 00 00 00 48 89 D6 C5 F8 28",
+  "match": "0x1439298f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439298f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Hash_Md5U64"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1439298f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439298f0.c;xref:0x14364b84e",
+   "notes": "V6781 MD5 init constants, 64-bit digest return confirmed; 80 callers."
+  }
+ ],
+ "proofs": []
+}

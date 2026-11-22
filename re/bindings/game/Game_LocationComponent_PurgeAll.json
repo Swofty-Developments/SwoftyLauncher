@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_LocationComponent_PurgeAll",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141212e70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141212e70.c;pat:log-message-method;xref:0x140cd77d7,0x145684a38,0x145685a58,0x145691908,0x1456b9298,0x1456caa38",
+  "notes": "Update(this, dt) of game::championship::LocationComponent (5 vtable cells, jmp 0x140cd77d7), state byte +0x1530 (1..0x10): 1 TEXTURE_STREAMING purge ('purgeAll %x %s'), 2 wait streaming, 3 vcall +0x2a8, 4 starts the 'game::championship::LocationComponent' thread (0x141213a80), 5 waits (texture streaming/IBL/bgnd spawning, 30 s cap), 6..0x10 vcalls +0x2f0/+0x2d0/+0x2e0/+0x288/+0x2b8/+0x300, frees parts, posts vt 0x145623ce0 events 1/4. purgeAll was only state 1. (lane owner review requested) Better name: Game_LocationComponent_UpdateLoadStateMachine (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.location_component_purge_all",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 0F B6 81 30 15 00 00",
+  "match": "0x141212e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141212e70",
+  "kind": "func_start",
+  "names": [
+   "Game_LocationComponent_PurgeAll"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141212e70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141212e70.c;xref:0x140cd77d7",
+   "notes": "V4690 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

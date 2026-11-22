@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Career_DriverMarket_CheckTeamRequirements",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d7e8d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d7e8d0.c;pat:log-channel-DRIVER_MARKET;xref:0x140d7e0f7,0x145693f68",
+  "notes": "DRIVER_MARKET bool: the team must meet the driver's required constructors championship level, previous best finish and performance index; Add-on driver cap for non-player teams (logs each failure). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.driver_market_check_team_requirements",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 8B 8C 24 80 00 00 00 48 89 CE",
+  "match": "0x140d7e0f7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140d7e8d0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverMarket_CheckTeamRequirements"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x140d7e8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d7e8d0.c;xref:0x140d7e0f7",
+   "notes": "V7327 three requirement logs confirmed (+ a 4th add-on cap log); sets flag bits in out struct; caller ContractRenewal_FindAvailableDriver"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d7e8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d7e8d0.c",
+   "notes": "V9072 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

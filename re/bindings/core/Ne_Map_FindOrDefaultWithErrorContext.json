@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_FindOrDefaultWithErrorContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a42f10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a42f10.c;xref:0x140356f96",
+  "notes": "Reads an integer config value under the shared SRW lock at self+0x10 (0x1449e2298, released through 0x1449e22bc on every path): rcx self, rdx const char *key, r8 int32 *out, r9d int32 default; returns 0, 2 or 0x21. The map at self+8 is searched with FNV-1a and strcmp (0x143905280); the value is the string at entry+8, parsed with strtol(value, &end, 0) (0x143a42f7b) into *out, returning 0. When nothing parses, *out = default and the error code is 0x21 (0x143a42f88). A null map pointer at self+8 writes the default with error code 2 (0x143a42f3c). Both error paths set the code in every thread error context node (0x14391ade0), capture the caller's address with RtlCaptureStackBackTrace and put {caller, code} into a 10-entry ring only while tracing is on for the current thread. A key that is not in the map writes the default and returns 2 with no tag and no ring entry (0x143a43187). Callers Game_Podium2019CutSceneScript_ChooseCutScenesToPlay, Asset_Load_DevSessionWorlds. Callers: census steam 0x3a42f10."
+ },
+ "signature": {
+  "id": "core.map_find_or_default_with_error_context",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 44 89 CB 4D 89",
+  "match": "0x143a42f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a42f10",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_FindOrDefaultWithErrorContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a42f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a42f10.c;xref:0x140356f96",
+   "notes": "V7824 name, concrete offsets/strings/callers match decomp"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Map_FindOrDefaultWithErrorContext",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x143a42f10-0x143a43232,0x143905280-0x1439053c6,0x14391ade0-0x14391af40,0x14534dcd8-0x14534dd89,0x1449e2298-0x1449e22c3,1.0.145 0x143a454e0-0x143a45802;xref:0x143a42f3c,0x143a42f5b,0x143a43187,0x143a42f7b,0x143a42f88,0x143a4300d,0x143a430fd,0x140356f96,0x141124c07,0x1443c672c",
+   "notes": "V100059 Blind: partial. Confirmed: shared SRW lock self+0x10 via 0x1449e2298/0x1449e22bc; *param_3=param_4 on failure; callers 0x140356a20/0x141124b30; census 27/14 .xtls, 0 other refs; xref 0x140356f96. Wrong: key missing (entry==end 0x143a43187) returns 2 silently, no TLS tag or stack capture; only a NULL map ptr self+8 (0x143a42f3c, not 'empty') tags 2. Imprecise: 'reads the record' = strtol(value,&end,0) 0x143a42f7b into *out, ret 0; nothing parsed (0x143a42f88) -> default, tag+ring 0x21, ret 0x21. Proto int32(Obj*,const char*,int32*,int32). Only 0x1443c672c uses ret. 1.0.145 twin 0x143a454e0 173/173."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Map_FindOrDefaultWithErrorContext",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143a42f10-0x143a43232,0x143905280-0x1439053c6,0x14534dcd8-0x14534dd89,0x14391ade0-0x14391af40,1.0.145 0x143a454e0-0x143a45802;xref:0x140356f96,0x141124c07,0x141124ca3,0x1443c672c,0x14304ca62,0x143a42f3c,0x143a42f7b,0x143a42f88,0x143a43187",
+   "notes": "V100060 Blind: agree. Own disasm 0x143a42f10-0x143a43232: int32 f(self rcx, const char* key rdx, int32* out r8, int32 def r9d). Shared SRW lock self+0x10 (0x1449e2298/0x1449e22bc, every path); map self+8 robin-hood FNV-1a+strcmp find 0x143905280, 16-byte entries, value char* at +8; signed strtol(v,&end,0) 0x143a42f7b. 0 ok; 0x21 end==v (0x143a42f88); 2 null map (0x143a42f3c); 2 absent key (0x143a43187, no TLS tag or ring). Error paths tag every TLS node, RtlCaptureStackBackTrace(1,1), 10-slot ring 0x146107830 gated on byte 0x1461078d0 + owner TID. Census 27/14 .xtls = own E8 scan; only 0x1443c672c uses eax. 1.0.145 twin 0x143a454e0 173/173 same."
+  }
+ ],
+ "proofs": []
+}

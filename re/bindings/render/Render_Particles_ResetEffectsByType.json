@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_ResetEffectsByType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b05870",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b05870.c;xref:0x143b08f94",
+  "notes": "Walks the effect vector back to front; effects whose type char (def+0x10 first byte) is 'c','d' or 's' (mask 0x10003 after -99): clears bit0 at effect+0x60 and each instance +0x178, copies def+0x58c to inst+0xdc, then Game_Particles_RemoveEffect(mgr, eff, 0). (lane owner review requested) Better name: Render_Particles_RemoveEffectsOfTypeCDS (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.particles_reset_effects_by_type",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 81 98 8E 85 00",
+  "match": "0x143b05870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b05870",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_ResetEffectsByType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b05870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b05870.c;xref:0x143b08f94",
+   "notes": "V7881 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

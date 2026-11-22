@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvanceVM_GetSponsorshipEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c9160",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/1422c9160.c;xref:0x1422c3879",
+  "notes": "Not a getter. Processes today's timeline entries (Career_Timeline_ProcessKind0Entries/Kind1Entries with day = [[this+0x6e0]+0x2b0]>>5 /0x2d, kind 0xd), then calls a VM vslot +0x80 with key transition_to_screen and value sponsorship. Only ref: tail jmp in Game_TeamHQAdvanceViewModel_OnCommandRaised. (lane owner review requested) Better name: Career_TeamHqAdvanceVM_OpenSponsorshipScreen (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.team_hq_advance_vm_get_sponsorship_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC E0 00 00 00 48 89 CE 48 8B 89 E8 06 00 00",
+  "match": "0x1422c9160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c9160",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvanceVM_GetSponsorshipEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422c9160",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422c9160.c;xref:0x1422c3879",
+   "notes": "V10084 Not a getter: looks up team day record and marks calendar day (FUN_14128b310/141273e40 with 0xd) and sets transition_to_screen; string \"sponsorship\"."
+  }
+ ],
+ "proofs": []
+}

@@ -1,99 +1,27 @@
-pub use swofty_addon::{GAME_ID, asset, builder, launcher, manifest, ops, view};
+pub use swofty_addon::{GAME_ID, asset, builder, game, launcher, manifest, ops, view};
 
-pub mod activation;
-pub mod addon_storage;
-pub mod app_control;
-pub mod baseline;
-pub mod build;
-pub mod builtin;
-pub mod busy;
+pub mod addons;
 pub mod cache;
 pub mod catalog;
-pub mod compat;
-pub mod conflicts;
-pub mod copies;
-pub mod crash;
-pub mod crash_report;
-pub mod data_move;
-pub mod data_usage;
-pub mod dbedit;
-pub mod disk;
-pub mod ea_app;
-pub mod ea_diag;
-pub mod entitlement;
-pub mod entrant_lists;
-pub mod erpbuild;
-pub mod exe_version;
-pub mod fast_fail;
-pub mod folders;
-pub mod heads;
-pub mod helper;
-pub mod home_menu;
-pub mod http;
-pub mod hud;
-pub mod import;
+pub mod data;
+pub mod diagnostics;
+pub mod game_folder;
+pub mod games;
 pub mod install;
-pub mod journal;
-pub mod known_problems;
-pub mod launch;
-pub mod launcher_saves;
-pub mod link_cache;
-pub mod loader_check;
-pub mod managed;
-pub mod map;
-pub mod mpauth;
-pub mod multiplayer;
-pub mod offline;
-pub mod order;
-pub mod overlay_guard;
-pub mod owned;
-pub mod package;
-pub mod paths;
-pub mod pkgedit;
-pub mod placed;
-pub mod planner;
-pub mod postfx;
-pub mod process;
+pub mod online;
+pub mod platform;
 pub mod profile;
-pub mod quarantine;
-pub mod recovery;
-pub mod registry;
-pub mod resolver;
-pub mod rnd_budget;
-pub mod row_ids;
-pub mod rowkeys;
-pub mod runtime;
-pub mod save_backup;
-pub mod save_stall;
-pub mod saves;
-pub mod send_logs;
 pub mod session;
-pub mod settings;
-pub mod setup;
-pub mod shaders;
-pub mod stdlib;
-pub mod steam;
-pub mod steam_client;
-pub mod stock;
 pub mod store;
-pub mod support;
-pub mod testsuite;
-pub mod texcheck;
-pub mod timetrial;
-pub mod tracks;
-pub mod transfer;
-pub mod udp_ids;
-pub mod ui;
-pub mod update;
-pub mod updater;
-pub mod usage;
-pub mod vault;
-pub mod vdf;
-pub mod version;
-pub mod virtual_lists;
+pub mod updates;
+
+pub use games::f1_25::{
+    activation, build, build_support, content, dbedit, erp, game_db, hud, loader_check, offline, planner,
+    row_ids, saves, stdlib, testsuite, tracks, ui,
+};
 
 pub const STEAM_APP_ID: u32 = 3_059_520;
-pub const GAME_EXE: &str = "F1_25.exe";
+pub const GAME_EXE: &str = swofty_addon::game::F1_25.exe();
 pub const IMAGE_BASE: u64 = 0x1_4000_0000;
 
 #[derive(Debug, thiserror::Error)]
@@ -126,26 +54,26 @@ pub enum Error {
     Leftovers(Vec<install::Conflict>),
     #[error(
         "{} {} not the copy Steam installed, usually after a mod was copied into the game folder by hand; nothing in the game folder was changed; verify the game files in Steam to put them back (open {}, or F1 25 > Properties > Installed Files > Verify integrity of game files), then try again",
-        stock::names(.0),
+        game_folder::stock::names(.0),
         if .0.len() == 1 { "is" } else { "are" },
-        stock::STEAM_VERIFY_URL
+        game_folder::stock::STEAM_VERIFY_URL
     )]
     NotStock(Vec<String>),
-    #[error("{}", stock::missing_text(files, version.as_deref()))]
+    #[error("{}", game_folder::stock::missing_text(files, version.as_deref()))]
     MissingStock {
         files: Vec<String>,
         version: Option<String>,
     },
-    #[error("{}", stock::changed_and_missing_text(changed, missing, version.as_deref()))]
+    #[error("{}", game_folder::stock::changed_and_missing_text(changed, missing, version.as_deref()))]
     NotStockAndMissing {
         changed: Vec<String>,
         missing: Vec<String>,
         version: Option<String>,
     },
     #[error("{}", .0.text())]
-    Blocked(app_control::Block),
+    Blocked(platform::app_control::Block),
     #[error("{}", .0.text())]
-    NotEntitled(entitlement::Refusal),
+    NotEntitled(game_folder::entitlement::Refusal),
     #[error("{0}")]
     Requires(catalog::requires::Refusal),
     /// The dependency check of the 1.6 standard library stopped Play.
@@ -153,8 +81,23 @@ pub enum Error {
     Dependencies(String),
     #[error("{}", no_space(drive, *need, *free))]
     NoSpace { drive: String, need: u64, free: u64 },
-    #[error("{}", busy::CANCELLED)]
+    #[error("{}", game_folder::busy::CANCELLED)]
     Cancelled,
+    /// A part of the HUD that the composed records and another addon's archive changes both claim.
+    #[error("hud: {0}")]
+    HudConflict(Box<hud::conflict::Conflict>),
+    /// An entry an addon adds that an earlier addon in the load order added already.
+    #[error("{resource}: {at}: an entry with {entry} already exists; {earlier} adds it too")]
+    DuplicateEntry {
+        resource: String,
+        at: String,
+        entry: String,
+        earlier: String,
+    },
+    /// The game's own copy of the archive `rel` already holds an entry an addon or the launcher's menus add: the
+    /// launcher's output of an earlier session left in the game folder in place of the original.
+    #[error("{detail}")]
+    StaleInput { rel: String, detail: String },
     #[error("{0}")]
     Other(String),
 }
@@ -163,8 +106,8 @@ fn no_space(drive: &str, need: u64, free: u64) -> String {
     let colon = if drive.ends_with(':') { "" } else { ":" };
     format!(
         "not enough free space on {drive}{colon} this profile needs about {} GB, {} GB free",
-        disk::gb(need),
-        disk::gb(free)
+        platform::disk::gb(need),
+        platform::disk::gb(free)
     )
 }
 
@@ -203,7 +146,90 @@ pub fn doing() -> String {
 }
 
 pub(crate) fn now_doing(step: impl Into<String>) {
-    *DOING.lock().unwrap_or_else(|e| e.into_inner()) = step.into();
+    let step = step.into();
+    diagnostics::phases::step(&step);
+    STEPS.with(|s| {
+        if let Some(v) = s.borrow_mut().as_mut() {
+            v.push((step.clone(), std::time::Instant::now()));
+        }
+    });
+    *DOING.lock().unwrap_or_else(|e| e.into_inner()) = step;
+}
+
+type StepStarts = Vec<(String, std::time::Instant)>;
+
+thread_local! {
+    static STEPS: std::cell::RefCell<Option<StepStarts>> = const { std::cell::RefCell::new(None) };
+}
+
+/// A step a build or install went through and how long it took.
+pub type Step = (String, std::time::Duration);
+
+/// The prefix of the step a build is on while it applies one addon operation.
+pub const APPLYING: &str = "applying ";
+
+/// Runs `f` and returns how long each [`doing`] step it went through on this thread took, in order, with
+/// `first` naming the time before its first step and consecutive repeats merged.
+pub fn timed_steps<T>(first: &str, f: impl FnOnce() -> T) -> (T, Vec<Step>) {
+    struct Restore(Option<StepStarts>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            let was = self.0.take();
+            STEPS.with(|s| *s.borrow_mut() = was);
+        }
+    }
+    let started = vec![(first.to_owned(), std::time::Instant::now())];
+    let restore = Restore(STEPS.with(|s| s.borrow_mut().replace(started)));
+    let out = f();
+    let starts = STEPS.with(|s| s.borrow_mut().take()).unwrap_or_default();
+    drop(restore);
+    (out, step_durations(starts, std::time::Instant::now()))
+}
+
+fn step_durations(starts: StepStarts, end: std::time::Instant) -> Vec<Step> {
+    let mut out: Vec<Step> = Vec::new();
+    for (i, (name, at)) in starts.iter().enumerate() {
+        let until = starts.get(i + 1).map_or(end, |(_, next)| *next);
+        let took = until.saturating_duration_since(*at);
+        match out.last_mut() {
+            Some((last, d)) if last == name => *d += took,
+            _ => out.push((name.clone(), took)),
+        }
+    }
+    out
+}
+
+/// `steps` with the [`APPLYING`] steps cut to the `keep` slowest, each operation's time summed, in their
+/// order, and the rest summed into one `applying N other operation(s)` step after them.
+pub fn fold_steps(steps: Vec<Step>, keep: usize) -> Vec<Step> {
+    let mut applying: Vec<Step> = Vec::new();
+    for (name, d) in steps.iter().filter(|(n, _)| n.starts_with(APPLYING)) {
+        match applying.iter_mut().find(|(n, _)| n == name) {
+            Some((_, sum)) => *sum += *d,
+            None => applying.push((name.clone(), *d)),
+        }
+    }
+    let mut slowest: Vec<&Step> = applying.iter().collect();
+    slowest.sort_by_key(|s| std::cmp::Reverse(s.1));
+    let kept: std::collections::HashSet<&str> = slowest.iter().take(keep).map(|(n, _)| n.as_str()).collect();
+    let (rest, rest_time) = applying
+        .iter()
+        .filter(|(n, _)| !kept.contains(n.as_str()))
+        .fold((0, std::time::Duration::ZERO), |(n, t), (_, d)| (n + 1, t + *d));
+    let last = steps.iter().rposition(|(n, _)| n.starts_with(APPLYING));
+    let mut out: Vec<Step> = Vec::new();
+    for (i, (name, d)) in steps.into_iter().enumerate() {
+        if !name.starts_with(APPLYING) {
+            out.push((name, d));
+        } else if kept.contains(name.as_str()) && !out.iter().any(|(n, _)| *n == name) {
+            let sum = applying.iter().find(|(n, _)| *n == name).map_or(d, |(_, s)| *s);
+            out.push((name, sum));
+        }
+        if Some(i) == last && rest > 0 {
+            out.push((format!("{APPLYING}{rest} other operation(s)"), rest_time));
+        }
+    }
+    out
 }
 
 pub(crate) fn io_err(path: impl Into<std::path::PathBuf>) -> impl FnOnce(std::io::Error) -> Error {
@@ -531,6 +557,88 @@ mod tests {
             .collect();
         assert_eq!(names, ["x.json"]);
         std::fs::remove_dir_all(&dir).ok();
+    }
+
+    fn ms(n: u64) -> std::time::Duration {
+        std::time::Duration::from_millis(n)
+    }
+
+    fn steps(list: &[(&str, u64)]) -> Vec<Step> {
+        list.iter().map(|(n, d)| ((*n).to_owned(), ms(*d))).collect()
+    }
+
+    #[test]
+    fn step_durations_run_until_the_next_step_and_merge_repeats() {
+        let t0 = std::time::Instant::now();
+        let starts = vec![
+            ("first".to_owned(), t0),
+            ("a".to_owned(), t0 + ms(10)),
+            ("a".to_owned(), t0 + ms(15)),
+            ("b".to_owned(), t0 + ms(40)),
+        ];
+        assert_eq!(
+            step_durations(starts, t0 + ms(100)),
+            steps(&[("first", 10), ("a", 30), ("b", 60)])
+        );
+        assert!(step_durations(Vec::new(), t0).is_empty());
+    }
+
+    #[test]
+    fn timed_steps_record_this_threads_steps_only_while_timing() {
+        now_doing("before");
+        let (out, got) = timed_steps("start", || {
+            now_doing("one");
+            std::thread::spawn(|| now_doing("elsewhere")).join().unwrap();
+            let (inner, nested) = timed_steps("inner", || {
+                now_doing("two");
+                7
+            });
+            assert_eq!(
+                nested.iter().map(|(n, _)| n.as_str()).collect::<Vec<_>>(),
+                ["inner", "two"]
+            );
+            now_doing("three");
+            inner
+        });
+        assert_eq!(out, 7);
+        assert_eq!(
+            got.iter().map(|(n, _)| n.as_str()).collect::<Vec<_>>(),
+            ["start", "one", "three"]
+        );
+        STEPS.with(|s| assert!(s.borrow().is_none()));
+    }
+
+    #[test]
+    fn fold_steps_keeps_the_slowest_operations_and_sums_the_rest() {
+        let folded = fold_steps(
+            steps(&[
+                ("reading the addons", 5),
+                ("editing the game database", 100),
+                ("applying a", 1),
+                ("applying b", 50),
+                ("applying c", 2),
+                ("applying a", 40),
+                ("applying d", 3),
+                ("placing files", 7),
+            ]),
+            2,
+        );
+        assert_eq!(
+            folded,
+            steps(&[
+                ("reading the addons", 5),
+                ("editing the game database", 100),
+                ("applying a", 41),
+                ("applying b", 50),
+                ("applying 2 other operation(s)", 5),
+                ("placing files", 7),
+            ])
+        );
+        let all = steps(&[("applying a", 1), ("applying b", 2)]);
+        assert_eq!(fold_steps(all.clone(), 3), all);
+        assert_eq!(fold_steps(all, 0), steps(&[("applying 2 other operation(s)", 3)]));
+        let none = steps(&[("reading the addons", 5)]);
+        assert_eq!(fold_steps(none.clone(), 3), none);
     }
 
     #[test]

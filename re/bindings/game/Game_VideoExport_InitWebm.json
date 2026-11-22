@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_InitWebm",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444b1f20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444b1f20.c;pat:log-channel-VIDEO_EXPORT;xref:0x142bd1e0e,0x1444b1802",
+  "notes": "Read in full: (enc, path, w, h, fps, bitrate): 'VP90' +0x24c, size/fps +0x250..+0x25c; I420 image +0x1c0; codec config + init (+0x2b9) + 4 controls; file +0x260, writer +0x268, segment +0x270; video track +0x280, optional vorbis track +0x288 from audio src +0x298 (Xiph-laced headers); returns 0 or 5. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.video_export_init_webm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 44 89 CF 44 89 C3 49 89 D6 48 89 CE",
+  "match": "0x1444b1f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444b1f20",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_InitWebm"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1444b1f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444b1f20.c;xref:0x142bd1e0e",
+   "notes": "V6668 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

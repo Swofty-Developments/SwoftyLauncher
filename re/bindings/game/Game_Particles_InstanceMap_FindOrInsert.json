@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_InstanceMap_FindOrInsert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ee2900",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ee2900.c;xref:0x143df2fe2,0x14477d479,0x1525bf84b,0x1525ef480,0x154ebbd1d",
+  "notes": "Generic open-addressing hash map find-or-insert with FNV-1a 64 over an 8-byte key (param_3) times seed +0x10; control bytes +0x20, slots +0x18 (16 bytes), mask +0x30, size +0x28/limit +0x38, grow 0x143ee2c40 (up to 0x100 tries). Returns {slot index, status 1 found, 2/3 inserted, 0 grow failed}. Callers are not particle code only (0x143df2ea0, 0x14477d2d0, others listed); old particle name was a guess. (lane owner review requested) Better name: Game_HashMapFnv64_FindOrInsert (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.particles_instance_map_find_or_insert",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 44 24 48 85 C0 74 27 83 F8 03",
+  "match": "0x143df2fe2",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ee2900",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_InstanceMap_FindOrInsert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143ee2900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ee2900.c;xref:0x143df2fe2",
+   "notes": "V8159 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

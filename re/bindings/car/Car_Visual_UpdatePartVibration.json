@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Visual_UpdatePartVibration",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14039f960",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14039f960.c;xref:0x14039dd6c,0x1403a6b18",
+  "notes": "(vis,dt): repeated calls of 0x1403a0c40(vis, id, a, b, out +0x10e8..+0x1148, dt, amplitudes 1.2/0.2/2.5..., input +0x10c4..+0x10e4); last one picks +0x1140/+0x1138 by byte +0x10ac. Callers in 0x14039aa80, 0x1403a66d0."
+ },
+ "signature": {
+  "id": "car.visual_update_part_vibration",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 C5 F8 28",
+  "match": "0x14039f960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14039f960",
+  "kind": "func_start",
+  "names": [
+   "Car_Visual_UpdatePartVibration"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14039f960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14039f960.c;xref:0x14039dd6c",
+   "notes": "V3524 nine+ calls to 0x1403a0c40 with ids 1..9, targets +0x10e8..+0x1148, float consts 1.2/0.2/2.5 amplitudes; caller seen"
+  }
+ ],
+ "proofs": []
+}

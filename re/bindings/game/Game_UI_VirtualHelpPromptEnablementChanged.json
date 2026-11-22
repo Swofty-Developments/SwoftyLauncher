@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UI_VirtualHelpPromptEnablementChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1415db4d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1415db4d0.c;pat:log-channel-UI;xref:0x1415dacc4,0x1415db686",
+  "notes": "Message handler (lea registrations 0x1415dacc4, 0x1415db686): if this+0x2c8 != 0 takes byte msg+0x10, writes it into the UI data node this+0x290 (type check vs 0x146129dc0, 0x140973e20), reads it back and logs 'Virtual help prompt enablement changed to %d'. (lane owner review requested) Better name: Game_UI_OnVirtualHelpPromptEnablementChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_virtual_help_prompt_enablement_changed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 B9 C8 02 00 00 00",
+  "match": "0x1415db4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1415db4d0",
+  "kind": "func_start",
+  "names": [
+   "Game_UI_VirtualHelpPromptEnablementChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1415db4d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1415db4d0.c;xref:0x1415dacc6",
+   "notes": "V4887 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

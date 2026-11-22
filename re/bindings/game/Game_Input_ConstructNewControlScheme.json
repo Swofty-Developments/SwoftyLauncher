@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Input_ConstructNewControlScheme",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142af1f30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142af1f30.c;pat:log-message-method;xref:0x142af1daa,0x14ddfd1f8",
+  "notes": "Bus handler (lea 0x14ddfd1f8 -> Ne_Subscribe 0x143987810, lea 0x142af1daa -> unsubscribe 0x143988350, key 0x145754e8e). Needs this+0x98, pending this+0x30. msg+0x10: 0 drop; 1 copy pending bindings into current scheme (id ctx+0x60); 2 new 0x168 scheme vtbl 0x1457bb690, unique id ctr<<8|2, name from msg+0x18, log constructNewControlScheme, XML Device/ActionMaps file; then select scheme, ctx+0x72=1 (lane owner review requested) Better name: Game_Input_OnSaveControlSchemeResult (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.input_construct_new_control_scheme",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 09 00 00 C5 78 29 9C 24 50 09 00 00",
+  "match": "0x142af1f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142af1f30",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_ConstructNewControlScheme"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142af1f30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142af1f30.c;xref:0x142af1dac",
+   "notes": "V5015 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Memchr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145378320",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/145378320.c;xref:0x14018781a,0x140187854,0x140187a3b,0x140187a74,0x14031c29a",
+  "notes": "memchr(buf, c, n): byte loop until 16-aligned, then 2x16-byte SSE compare per loop with the broadcast byte, tail handling; returns pointer to the first match or NULL. 43 sites (e.g. Game_Actor_LoadModelResources)."
+ },
+ "signature": {
+  "id": "core.str_find_byte_in_range",
+  "section": ".xtls",
+  "pattern": "0F B6 D2 69 D2 01 01 01 01 66 0F 6E C2 66 0F 70",
+  "match": "0x145378320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145378320",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Memchr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x145378320",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/145378320.c;xref:0x14018781a",
+   "notes": "V8199 Ne_Crt_Memchr - body reads 16 bytes per stride (SSE-style, threshold 0x1f), not 8-byte strides"
+  }
+ ],
+ "proofs": []
+}

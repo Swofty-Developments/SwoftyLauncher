@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddBadge_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142471c60",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142471c60.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x141854ec9,0x142573a5f,0x143129f2c",
+  "notes": "AddBadge for type 2 eNetworkReplicated: array this+0x3d8; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Same body as Ent_EntrantsSystem_AddBadge (0x1424717e0) except array and type. (lane owner review requested) Better name: Ent_EntrantsSystem_AddBadge_NetReplicated (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_badge_2",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 01 00 00 4C 89 C7 48 8B 89 D8 03 00 00",
+  "match": "0x142471c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142471c60",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddBadge_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142471c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142471c60.c;xref:0x141854ec9",
+   "notes": "V5056 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

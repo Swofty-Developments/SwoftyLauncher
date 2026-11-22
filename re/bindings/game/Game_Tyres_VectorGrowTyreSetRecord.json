@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tyres_VectorGrowTyreSetRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e9fe40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e9fe40.c;xref:0x142e90369,0x142e91936",
+  "notes": "vector<0x78-byte record>::emplace_back(key): fast path writes in place, else grows x1.5 (allocator vt+0x18, memcpy, free vt+0x38). New record: +0 key, +8 = 0xffffffff00000000, +0x10 = 0xff, eight zeroed 12-byte slots +0x12..+0x71, +0x74 = 0xffff. Callers 0x142e90369, 0x142e91936. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyres_vector_grow_tyre_set_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC E0 00 00 00 48 89 D3 48 89 CE",
+  "match": "0x142e9fe40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e9fe40",
+  "kind": "func_start",
+  "names": [
+   "Game_Tyres_VectorGrowTyreSetRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142e9fe40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e9fe40.c;xref:0x142e90369",
+   "notes": "V7564 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

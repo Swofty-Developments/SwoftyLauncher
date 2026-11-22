@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Rtt_EraseGeneratorEntryByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143db30c0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143db30c0.c;xref:0x143db295e,0x143db2974",
+  "notes": "Red-black tree erase(key) by u64 key at node+0x20: equal_range walk (nil flag node+0x19); if the range is the whole tree clears it via 0x143ebf2e0 and resets head/size, else unlinks and frees each node; returns the erased count. Callers 0x143db295e and 0x143db2974 in Render_Rtt_UnregisterGeneratorEntry (0x143db28d0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.rtt_erase_generator_entry_by_key",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 85 FF 75 11 EB 26 4C 89 74 24",
+  "match": "0x143db295e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143db30c0",
+  "kind": "func_start",
+  "names": [
+   "Render_Rtt_EraseGeneratorEntryByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143db30c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143db30c0.c;xref:0x143db295e",
+   "notes": "V8280 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

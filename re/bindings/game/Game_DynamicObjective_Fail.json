@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DynamicObjective_Fail",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14115dfc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14115dfc0.c;pat:log-channel-DYNAMIC_OBJECTIVES;xref:0x1456c28e8,0x1456c3cb8,0x1456c3e68,0x1456c4048,0x1456c41b8,0x1456c4398,0x1456c4508,0x1456c4678,0x1456c47e8,0x1456c4958,0x1456c4ac8,0x1456c4c38,0x1456c4da8,0x1456c4f18,0x1456c5078,0x1456c51e8,0x1456c5358,0x1456c54c8,0x1456c6fe8,0x1456c7158,0x1456c72c8,0x1456c7438",
+  "notes": "Only when state byte +0x18 == 1 and vcall +0xf8 returns 0: state=3, posts bus msg vt 0x1456c5a10 {id +0x40, type (vcall +0xa0), 1, max(0, now - start time +0x50)}, vcall +0x98(2), vcall +0x20. State != 1 logs \"Attempting to fail an objective that's not active.\" Refs are vtable cells (same slot in each objective vtable). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.dynamic_objective_fail",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 F9 29 74 24 50 80 79 18 01 0F 85 ?? ?? ?? ?? 48 89 CE 48 8B 01 FF 90 F8 00 00 00 84 C0 0F 85 ?? ?? ?? ?? C6 46 18 03",
+  "match": "0x14115dfc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14115dfc0",
+  "kind": "func_start",
+  "names": [
+   "Game_DynamicObjective_Fail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14115dfc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14115dfc0.c;xref:0x14e92825d",
+   "notes": "V4634 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

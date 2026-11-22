@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeedSystem_InterpolateUDPCarDataFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c2f250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c2f250.c;pat:log-message-cxx;xref:0x142c1b65d",
+  "notes": "Own log string. Mode 0 of FetchCarDataFrame 0x142c1b630. Returns 0x16 when paused (+400 set, +0x191 clear); finds two UDP packets around time (0x142c36820), reads both (0x142c319e0), lerps per car (20 x 0xc0) position, orientation, lap distance (0..1 wrap); copies into frames this+0x18b470+i*0xc0, sets +0x18e0b4. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_data_feed_system_interpolate_udp_car_data_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 B8 30 37 00 00",
+  "match": "0x142c2f250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c2f250",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeedSystem_InterpolateUDPCarDataFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c2f250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c2f250.c;xref:0x142c1b65d",
+   "notes": "V5044 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

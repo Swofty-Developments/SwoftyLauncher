@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecaledModelsGenerator_SubmitBakeJob",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144470dd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144470dd0.c;xref:0x142a939af",
+  "notes": "Called from 0x142a92ba0 (0x142a939af). Same as 0x144470ed0 but the 0x20-byte record = {[param_2+8], param_3[0] u32, param_3+4 qword pair at +0x10/+0x18} and the 'decaledModelsGenerator' mask is OR-ed INTO ctx+0x70; then ctx+0x128/+0x12c as in the empty job. Sets this+0x112 = 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decaled_models_generator_submit_bake_job",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 4C 89 C7 48 89 CE 48 8B 99 80 00",
+  "match": "0x144470dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144470dd0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecaledModelsGenerator_SubmitBakeJob"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144470dd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144470dd0.c;xref:0x142a939af",
+   "notes": "V7678 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

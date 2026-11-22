@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Load_Scenarios",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a224f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Load_Scenarios(void *registry, void *alloc)",
+  "evidence": "decomp:re/decomp/142a224f0.c;xref:0x14d83faea",
+  "notes": "Whole body read: opens GDB table 'game_setup.scenarios'/'scenarios' (stack literals) via 0x1445a25c0, iterates rows (0x1445a28f0); reads game_setup_mode, statId, display_name, race_class, use_custom_vehicle_spec, entrant_list and '<row>.<sub>.fill_remaining_entrants'; checks entrant list exists in 0x146079b28 list, else logs GAME 0x1457b95c7; appends 0x50-byte entries to vector param_1[1..3] (grow x1.5) built by 0x142a33aa0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.load_scenarios",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 05 00 00 C5 F8 29 B4 24 E0 05 00 00 48 89 94 24",
+  "match": "0x142a224f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a224f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_Scenarios"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a224f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a224f0.c;xref:0x14d83faea",
+   "notes": "V5164 game_setup.scenarios keys, 0x50-byte entries via 0x142a33aa0 and log confirmed"
+  }
+ ],
+ "proofs": []
+}

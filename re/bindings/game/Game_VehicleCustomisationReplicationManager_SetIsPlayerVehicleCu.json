@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_SetIsPlayerVehicleCu",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143144370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143144370.c;pat:log-message-cxx;xref:0x143145781,0x14314614b,0x143146551",
+  "notes": "Read in full (this, player key, char *ready): finds or inserts the key in the tree this+0xa8/+0xb0 (compare 0x143211760, insert 0x143211920) and stores *ready in node+0x88; logs 'Manager is ready to apply / no longer ready to apply decals for player'. Callers 0x143145350, 0x143145920, 0x143146160. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_set_is_player_vehicle_cu",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC D8 00 00 00 4C 89 C6 48 89 D7",
+  "match": "0x143144370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143144370",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_SetIsPlayerVehicleCu"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143144370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143144370.c;xref:0x143145781",
+   "notes": "V5935 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

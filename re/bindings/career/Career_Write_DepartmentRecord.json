@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_DepartmentRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143509590",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Write_DepartmentRecord(uint64_t self,int64_t *a2,void * a3,void * a4)",
+  "evidence": "decomp:re/decomp/143509590.c;xref:0x14a6f159a",
+  "notes": "Save writer: teams[team_id] -> career[season_index] -> season -> weekend[weekend_index] -> weekend[] of {department byte +0, num_adapted byte +1, num_adaptable byte +2}; nested hash sets iterated from param_3+0x28/0x30/0x38; team filter when param_4+0x2c0 is set. Uses Gdb_Write_ReflectedFieldA 0x143932a40. Caller in .data1 fn 0x14a6f13a0. (lane owner review requested) Better name: Career_Write_WeekendAdaptationCounts (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.write_department_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 4D 89 CC 4C 89 C3",
+  "match": "0x143509590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143509590",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_DepartmentRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143509590",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143509590.c;xref:0x14a6f159a",
+   "notes": "V10264 Writes nested teams[] -> team_id, career[] -> season_index, season[] -> weekend_index, weekend[] -> department, num_adapted, num_adaptable; not just a department field."
+  }
+ ],
+ "proofs": []
+}

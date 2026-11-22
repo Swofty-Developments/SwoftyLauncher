@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleAuthorityManager_OnHostMigrated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143239d30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143239d30.c;pat:log-message-cxx;xref:0x14582aec0",
+  "notes": "Read in full: logs 'VehicleAuthorityManager::onHostMigrated' on channel NETWORK, then sets byte this+0x7c = 1 (flag for a later pass). Only reference is the vtable cell 0x14582aec0 (neighbour cells not code; slot check weak). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_authority_manager_on_host_migrated",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 43 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 00 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? C6 46 7C 01",
+  "match": "0x143239d30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143239d30",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleAuthorityManager_OnHostMigrated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143239d30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143239d30.c",
+   "notes": "V6031 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

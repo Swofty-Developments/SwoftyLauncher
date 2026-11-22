@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_ReportAdjusted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14375aa60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14375aa60.c;xref:0x141d06aa1,0x141d06c18,0x141d06d7f,0x141d06edf,0x141d0703f,0x141d0719f,0x141d07309,0x141d07469,0x141d075df,0x141d0773d,0x141d0789f,0x141d07ab5,0x141d07c2d,0x141d07dc6,0x141d07f66,0x141d080a7",
+  "notes": "Entrant list [[[this+0xb0]+0x88]+0x260]+0x2e0..+0x2e8 (0x88 stride) matched with Sess_Match_EntrantIdentity_Thunk 0x1431146d0 against a local identity (0x1441207d0, [[[0x14604c2c8]+0x140]+0x198]+0x1c0 vfunc +0x38); then Game_StatEvent_InitCommon 0x14371fe70(buf, obj, [[this+0x98]+0x1a8], [this+0xa8], entrant, [this+0xd0], [this+0xe0]) and Game_StatEvent_WritePhotoAdjusted 0x14375ac40(this+0x48). Callers: PhotoModeViewModel On*Changed handlers. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_report_adjusted",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 78 04 00 00 01 48 83 C4 20",
+  "match": "0x141d06aa1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14375aa60",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_ReportAdjusted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14375aa60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14375aa60.c;xref:0x141d06aa1",
+   "notes": "V8121 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

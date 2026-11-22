@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_TextureTable_FindByNameHash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fe470",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439fe470.c;xref:0x144719bd5",
+  "notes": "Third copy of the name binder: FNV-1a 64 of param_2 (null -> 0), linear search of the 40-byte table [[this+0x20]+0x20]+0x678..+0x680 (hash at +8), stores param_3 into this+0xc0[idx] and clears this+0xc8[idx]; returns 0. Caller Render_Skidmarks_CreateTextureSrv 0x144719970. (lane owner review requested) Better name: Render_Gfx_BindShaderResourceByName_C (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.texture_table_find_by_name_hash",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B 4C 24 30 48 85 C9 74 04",
+  "match": "0x144719bd5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1439fe470",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureTable_FindByNameHash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1439fe470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fe470.c;xref:0x144719bd5",
+   "notes": "V8242 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

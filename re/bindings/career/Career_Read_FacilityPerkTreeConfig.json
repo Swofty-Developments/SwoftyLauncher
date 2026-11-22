@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_FacilityPerkTreeConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f7cfe0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *tree, void *xml, ...)",
+  "evidence": "decomp:re/decomp/140f7cfe0.c;xref:0x140f7cd60;xref:0x140f85513",
+  "notes": "myteam-g1: Builds the FacilityPerkTree from XML: base_workforce_capacity, effective_workforce_attribute, facility_type, and hooks MessageFacilityUpgradeComplete plus MessageMyTeamTeamAttributeSetAdded/Removed so perks and workforce attributes follow facility upgrades."
+ },
+ "signature": {
+  "id": "career.read_facility_perk_tree_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 20 11 00 00",
+  "match": "0x140f7cfe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f7cfe0",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_FacilityPerkTreeConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140f7cfe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f7cfe0.c;xref:0x140f85513;str:\"base_workforce_capacity\";str:\"MessageFacilityUpgradeComplete\"",
+   "notes": "V8979 Reads facility_type, effective_workforce_attribute, base_workforce_capacity etc. and subscribes (143987810) MessageMyTeamTeamAttributeSetAdded/Removed and MessageFacilityUpgradeComplete. The class name FacilityPerkTree could not be tied to this function by string reference."
+  }
+ ],
+ "proofs": []
+}

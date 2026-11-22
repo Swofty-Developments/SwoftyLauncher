@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Ai_Resolve_GeneralSettings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405fb920",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Resolve_GeneralSettings(void **out_nodes5)",
+  "evidence": "decomp:re/decomp/1405fb920.c;imm:0x2df3abd6a51964e1;imm:0xfa574ad9fe1478e1;imm:0x3c9427ecd54b1e98;imm:0x804758859448935d;imm:0x2273a5bae867b23b;xref:0x14068172c,0x140617897;kb:subsystems/ai.md#general-settings",
+  "notes": "resolves 5 ai.general_ai_settings.* node ptrs from global game-value DB (g_Gdb_Registry _DAT_146cc4278) into out[0..4]: [0]awareness_time [1]max_test_distance [2]max_test_radius [3]max_test_speed [4]max_test_time; absl flat_hash_map lookups keyed by the 5 fnv1a64 key hashes; result cached in g_Ai_GeneralSettings (C++11 static-local); ~39 call sites across the AI cluster. See db_keys reader 0x1405fb920"
+ },
+ "signature": {
+  "id": "ai.general_settings_resolve",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 89 C8 49 B9 E1 64 19 A5 D6 AB F3 2D",
+  "match": "0x1405fb920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405fb920",
+  "kind": "func_start",
+  "names": [
+   "Ai_Resolve_GeneralSettings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "ai-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

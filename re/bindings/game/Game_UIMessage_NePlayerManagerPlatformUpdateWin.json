@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_UIMessage_NePlayerManagerPlatformUpdateWin",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144117e00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144117e00.c;pat:log-channel-UI_MESSAGE;xref:0x1434df18d,0x145a5b298",
+  "notes": "Is NePlayerManager::platformUpdateWin itself (log 0x145a5b4db 'm_updateUserControllerPairing = %s' when +0x261 set and +0x263 clear, then 0x14411b260 PlatformProcessAllInputDevices). Syncs device lists +0x70..+0x170 vs player slots +0x1b0/+0x1b8 (+0x1c0 dev); lead logout -> closeAllMessagesInQueue multipage_popup_queue/default_queue + lead_player_logout_msg (0x1442d9bf0, cb 0x14411aeb0); state +0x1f0 1/4 'Staring Platform Signin Flow', 3 'Login Process Completed for player %d'; device_not_supported_msg, no_mp_not_signed_in_msg. (lane owner review requested) Better name: Game_NePlayerManager_PlatformUpdateWin (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_message_ne_player_manager_platform_update_win",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 BC 24 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 48 89 CE",
+  "match": "0x144117e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144117e00",
+  "kind": "func_start",
+  "names": [
+   "Game_UIMessage_NePlayerManagerPlatformUpdateWin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144117e00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144117e00.c;xref:0x1434df18d",
+   "notes": "V6551 better name Game_UIMessage_PlayerManagerPlatformUpdate: 9 KB: closeAllMessagesInQueue x4 plus NePlayerManager::platformUpdateWin sign-in/login flow"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144117e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144117e00.c;xref:0x1434df18d",
+   "notes": "V7173 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

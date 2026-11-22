@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionSeasonDocument_PackChampionship",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a6100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430a6100.c;pat:log-message-cxx;xref:0x143035159,0x1430362cd,0x14303979c,0x14309531d,0x1430a4bec",
+  "notes": "Logs NETWORK/F 'GameSessionSeasonDocument::packChampionship()'. Fills the season header: track-set name +0x88 (from [p1+0x3a8]), weekend count/current weekend/session +0x130..+0x138 (empty -> telemetry parameterError 'SeasonDocument HostWeekendCount'), lobby options +0x140..+0x1cd, rules bytes from the 0x14605afc0 component (+0x2c8..+0x305), custom grid +0x748..+0x750 into +0x1d0; serialises the property bag (0x143658130) into a new 0x710-byte buffer +0x618 (0x1430a3e80) and stores its size at +0x13c. Errors 0x57/0x58. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_season_document_pack_championship",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 25",
+  "match": "0x1430a6100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a6100",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionSeasonDocument_PackChampionship"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a6100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a6100.c;xref:0x143035159",
+   "notes": "V5321 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

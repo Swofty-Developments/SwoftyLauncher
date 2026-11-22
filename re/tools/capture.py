@@ -9,7 +9,7 @@ latest pass per binding wins. Hints come only from verified pattern resolutions;
 resolved target is listed as target-only and never becomes a hint. `--write` merges the hints into
 re/db/builds/<build>.json after checking the log's build identity against that file's `build` block.
 """
-import argparse, difflib, hashlib, json, os, re, sys, zipfile
+import argparse, difflib, functools, hashlib, json, os, re, sys, zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(os.path.dirname(HERE), 'db')
@@ -343,6 +343,8 @@ def load_inputs(paths):
 
 
 def read_subsystems(db=DB):
+    if os.path.abspath(db) == os.path.abspath(DB):
+        return dict(kb_subsystems())
     out = {}
     for table in ('functions', 'globals'):
         p = os.path.join(db, f'{table}.tsv')
@@ -357,6 +359,19 @@ def read_subsystems(db=DB):
                 c = line.rstrip('\n').split('\t')
                 if len(c) > max(ni, si) and c[si] and c[si] != '-':
                     out.setdefault(c[ni], c[si])
+    return out
+
+
+@functools.lru_cache(maxsize=1)
+def kb_subsystems():
+    """name -> subsystem over the tables and the binding records, as kb.py reads them."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import kb
+    out = {}
+    for table in ('functions', 'globals'):
+        for r in kb.read_table(table)[0]:
+            if r['subsystem'] and r['subsystem'] != '-':
+                out.setdefault(r['name'], r['subsystem'])
     return out
 
 

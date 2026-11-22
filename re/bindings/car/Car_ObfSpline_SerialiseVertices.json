@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_ObfSpline_SerialiseVertices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14466d150",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61,0x144674a77,0x144674a8d,0x144674aa3,0x144674ab9,0x144674acf,0x144674ae5,0x144674afb,0x144674b11,0x144674b27,0x144674b3d,0x144674b53,0x14468687c,0x14468691e,0x144686934,0x144686c2b,0x144686c57,0x144686c7c,0x144686f36,0x144686f4c,0x144686f9b,0x144686fea,0x144687000,0x14468716c,0x1446873ca,0x1446a8a0e,0x1446a937d,0x1446a9393,0x1446a98c0,0x1446a98d6,0x1446a98ec,0x1446a9902,0x1446a9918,0x1446a992e,0x1446a9944,0x1446a995a,0x1446b6674,0x1446c7aad,0x1446c7acc,0x1446c7aea,0x1446c7b09,0x1446c7b27,0x1446c7b46,0x1446c7b64,0x1446c7b83,0x1446cc781,0x1446cc797,0x1446cc7ad,0x1446cc7c3,0x1446cc7d9,0x1446cc7ef,0x1446cc805,0x1446cc81b,0x1446cc831,0x1446cc847,0x1446cc85d,0x1446cc873,0x1446cfb61,0x1446cfb77,0x1446cfb8d,0x1446cfba3,0x1446cfbea,0x1446cfc00,0x1446cfc16,0x1446cfc5d,0x1446cfc73",
+  "notes": "(writer, name, ObfSpline*): writer vcall +0x28 begin, +0x48 array('numVertices', n=(end-begin)>>5); per element +0x28('SplineElement'), +0x68('x', e+0^e+8), +0x68('y', e+0x10^e+0x18), +0x78 end; final +0x78; returns first error. Callers in Car_Write_BrakeECU/Engine/SuspensionSystem/Turbo/F1Aero/F1Assists/EnergyRecovery. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.obf_spline_serialise_vertices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 CE 48 8B 01 FF 50 28",
+  "match": "0x14466d150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14466d150",
+  "kind": "func_start",
+  "names": [
+   "Car_ObfSpline_SerialiseVertices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14466d150",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61",
+   "notes": "V3696 serialiser matches (numVertices, SplineElement, x=e0^e2) but callers are Car_Write_BrakeECU/Engine/SuspensionSystem/Turbo/F1Aero/EnergyRecovery: generic curve writer, not steering path"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14466d150",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61",
+   "notes": "V4021 serialiser matches (numVertices, SplineElement, x=e0^e2) but callers are Car_Write_BrakeECU/Engine/SuspensionSystem/Turbo/F1Aero/EnergyRecovery: generic curve writer, not steering path"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14466d150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14466d150.c;xref:0x144674a61,0x144674a77",
+   "notes": "V4137 serialise; callers block 0x144674a61.. confirmed"
+  }
+ ],
+ "proofs": []
+}

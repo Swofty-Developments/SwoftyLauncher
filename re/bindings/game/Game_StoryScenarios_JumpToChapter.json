@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StoryScenarios_JumpToChapter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141356920",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141356920.c;pat:log-channel-STORY_SCENARIOS;xref:0x141f6bade",
+  "notes": "jumpToChapter(chapter): logs, 0x141330770([+0x298], chapter|0x400000000); reads story system 0x146063fb0 flags (+0x308, +0x5a0, +0x514); for entries with id 0xd1125bb7 in [0x146079258]+0x340 sets a bitset and rebuilds masks +0x650..+0x668 via 0x142b5e950/0x142ad73f0. Caller 0x141f6b410. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.story_scenarios_jump_to_chapter",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 89 D7 48 89 CE",
+  "match": "0x141356920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141356920",
+  "kind": "func_start",
+  "names": [
+   "Game_StoryScenarios_JumpToChapter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141356920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141356920.c;xref:0x141f6bade",
+   "notes": "V4763 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

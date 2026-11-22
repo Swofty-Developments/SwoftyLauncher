@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DynObjCriterion_UpdateGapAhead",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14117bec0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14117bec0.c;xref:0x1456c33c0",
+  "notes": "Dynamic-objective criterion vtable 0x1456c33b0 slot 2: vehicle this+0xa8, context this+0xb8 (+0xe8 race helper, +0x118 gap table, +0x110 max gap s, +0x120 timing provider vcall +0xf0); finds the car ahead (XOR position decode) and stores its gap in seconds (i64 ms /1000 at gap entry +0x40, valid +0x50, vehicle +0x90, stride 0x98) into this+0xa0. Addon: gap-to-car-ahead per vehicle. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3180)"
+ },
+ "signature": {
+  "id": "game.dyn_obj_criterion_update_gap_ahead",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 81",
+  "match": "0x14117bec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14117bec0",
+  "kind": "func_start",
+  "names": [
+   "Game_DynObjCriterion_UpdateGapAhead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_DynObjCriterion_UpdateGapAhead",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/4117bec0.c;xref:None",
+   "notes": "V3180 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ers_OverrideModeSystem_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142517580",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Ers_OverrideModeSystem_Update(void *sys)",
+  "evidence": "decomp:re/decomp/142517580.c;doc:re/db/subsystems/game.md;xref:0x1457907d8",
+  "notes": "Update(sys, dt), skipped if dt+0x34/+0x36. Blocked by SC ([+0x68]+0x108 in 1..2), cars in state 0xe/0xf, 0x1436183e0/0x1436184e0, or wetness > [+0x60]+0xfcc. Per car [veh+0x5a8]: progress +0x1a54/+0x1a58, gap ahead +0x1a5c; zone settings (+0x1980/+0x19a8: +0x14 detect, +0x18 activate, +0x1c max gap) -> flags +0x1a60..+0x1a63 unless +0x1a71. Race-wide +0x89 change: 'overtake_mode_enabled/disabled', posts vt 0x145793680/690. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ers_override_mode_system_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 78 29 AC 24",
+  "match": "0x142517580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142517580",
+  "kind": "func_start",
+  "names": [
+   "Game_Ers_OverrideModeSystem_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142517580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142517580.c;xref:0x140c62d73",
+   "notes": "V5090 Override flags +0x1a60..63, gap +0x1a5c, overtake_mode_* strings match; lap-progress setting names not seen in body"
+  }
+ ],
+ "proofs": []
+}

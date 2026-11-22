@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_ValidPlayerCorrectState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143227440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143227440.c;pat:log-channel-NETWORK-READY;xref:0x141c3e556,0x141c3e588,0x141c64def,0x141c969c6",
+  "notes": "Logs 'setLocalPlayersReady %s'; walks the player list [[this+0x60]+0x58..+0x60], for each valid local entry (ix<0x80, [this+0x13c+ix*4]!=0) calls 0x1432242d0(this, ix, ready, 0). 'valid player in correct state' is one of three log lines, not the purpose. (lane owner review requested) Better name: Game_NetworkReady_SetLocalPlayersReady (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ready_valid_player_correct_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 76 B8 5E 00 00 00",
+  "match": "0x143227440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143227440",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_ValidPlayerCorrectState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143227440",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143227440.c;xref:0x141c3e556",
+   "notes": "V5969 ReadySystem_SetLocalPlayersReady: setLocalPlayersReady with valid-player search; log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143227440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143227440.c;xref:0x141c3e556",
+   "notes": "V7019 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

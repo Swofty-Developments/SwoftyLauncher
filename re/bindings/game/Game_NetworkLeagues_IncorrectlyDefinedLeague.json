@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_IncorrectlyDefinedLeague",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14317e690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14317e690.c;pat:log-channel-NETWORK-LEAGUES;xref:0x14317a1a6,0x14317b15f",
+  "notes": "Parses a League JSON object: leagueId (uint64), leagueName, tier, isUserAdmin, ownerUserId, ownerPlatformId, carCategoryId, leaguePlatform; logs '? Incorrectly defined League.' with per-field errors, dumps '* League %zu (%s)' and practice/qualifying options; calls Game_NetworkLeagues_ParseLeagueEvent (0x14317fcff). Callers in 0x1431717c0. (lane owner review requested) Better name: Game_NetworkLeagues_ParseLeague (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_leagues_incorrectly_defined_league",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 66 83 7A 0E 03",
+  "match": "0x14317e690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14317e690",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_IncorrectlyDefinedLeague"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14317e690",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14317e690.c;xref:0x14317a1a6",
+   "notes": "V5846 NetworkLeagues_ParseLeagueJson: 26KB JSON parser of league fields (leagueId,name,tier,owner...) with error logs"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14317e690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14317e690.c;xref:0x14317a1a6",
+   "notes": "V7009 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

@@ -16,10 +16,7 @@ constexpr uint64_t PROBE_RECORDS = 32;
 constexpr uint64_t MARGIN = 4096;
 constexpr uint64_t SLACK_PERCENT = 5;
 
-constexpr uint64_t grows_at(uint64_t slots)
-{
-    return slots < 0x28f5c28f5c28f5dull ? slots * 80 / 100 : (slots / 100) * 80;
-}
+constexpr uint64_t grows_at(uint64_t slots) { return slots < 0x28f5c28f5c28f5dull ? slots * 80 / 100 : (slots / 100) * 80; }
 
 constexpr uint64_t slots_for(uint64_t records)
 {
@@ -198,10 +195,10 @@ inline std::string line(const Report &r)
         return "[registry] room: value map sized for " + thousands(grows_at(r.slots)) +
                " records before load (older addons' edits " + older + "; 1.6 records " + fresh + "); " + used + sizing(r);
     if (r.presize == "unavailable")
-        return "[registry] room: pre-size unavailable" + (r.reason.empty() ? std::string() : " (" + r.reason + ")") +
-               "; " + used + " (older addons' edits " + older + "; 1.6 records " + fresh + ")" + sizing(r);
-    return "[registry] room: the game's own size was enough (older addons' edits " + older + "; 1.6 records " + fresh +
-           "); " + used + sizing(r);
+        return "[registry] room: pre-size unavailable" + (r.reason.empty() ? std::string() : " (" + r.reason + ")") + "; " +
+               used + " (older addons' edits " + older + "; 1.6 records " + fresh + ")" + sizing(r);
+    return "[registry] room: the game's own size was enough (older addons' edits " + older + "; 1.6 records " + fresh + "); " +
+           used + sizing(r);
 }
 
 }

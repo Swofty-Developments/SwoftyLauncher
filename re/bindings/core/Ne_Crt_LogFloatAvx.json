@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_LogFloatAvx",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145357d30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/145357d30.c;xref:0x143bc62d1",
+  "notes": "CRT-style single-precision logarithm (AVX path, handles denormal/inf/neg, exponent bias 127, polynomial); used by tonemap (log of luminance). Hypothesis: log2f/logf variant. 58 callers incl. Render_PostProcess_ComputeColorParams."
+ },
+ "signature": {
+  "id": "core.crt_log_float_avx",
+  "section": ".xtls",
+  "pattern": "48 83 EC 78 83 3D ?? ?? ?? ?? 00 0F 85 ?? ?? ?? ?? 33 C0 66",
+  "match": "0x145357d30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145357d30",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_LogFloatAvx"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x145357d30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/145357d30.c;xref:0x143bc62d1",
+   "notes": "V8195 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

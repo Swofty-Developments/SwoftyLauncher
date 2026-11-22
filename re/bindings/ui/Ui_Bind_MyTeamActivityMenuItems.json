@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_MyTeamActivityMenuItems",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141973000",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Bind(void *vm, void *activity_data)",
+  "evidence": "decomp:re/decomp/141973000.c;xref:0x142317ed7;xref:0x14231f1c1;xref:0x142321236",
+  "notes": "myteam-g2: Populates the My Team activities menu layout: sets many string/bool/int VM nodes per activity (offsets +0x22..+0x52 flags, +0x2ac); uses FeTile and token resolver. UI only."
+ },
+ "signature": {
+  "id": "ui.bind_my_team_activity_menu_items",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 D7 48 89 CE 0F B6 84 24 C0 00 00 00",
+  "match": "0x141973000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141973000",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_MyTeamActivityMenuItems"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141973000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141973000.c;xref:0x142317ed7",
+   "notes": "V9843 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

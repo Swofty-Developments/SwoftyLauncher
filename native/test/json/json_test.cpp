@@ -148,7 +148,7 @@ static void rfc7396()
     })");
     Value out = json::merged(doc, patch);
     expect(json::dump(out) == R"({"title":"Hello!","author":{"givenName":"John"},"tags":["example"],)"
-                               R"("content":"This will be unchanged","phoneNumber":"+01-123-456-7890"})",
+                              R"("content":"This will be unchanged","phoneNumber":"+01-123-456-7890"})",
            "rfc7396 section 3 example, members in order: " + json::dump(out));
     expect(json::dump(doc["author"]) == R"({"givenName":"John","familyName":"Doe"})", "merged leaves its target alone");
 }
@@ -227,8 +227,7 @@ static void pointers()
            "set of a whole keyed element adds its key fields first");
     expect(w.set("/teams/slot=\"q\"/team", "quoted") && *w.get("/teams/5/slot") == Value("q"),
            "a quoted key makes a string key field");
-    expect(w.set("/teams/slot=1/seats/-", "game/third") && w.get("/teams/slot=1/seats")->size() == 3,
-           "- appends to an array");
+    expect(w.set("/teams/slot=1/seats/-", "game/third") && w.get("/teams/slot=1/seats")->size() == 3, "- appends to an array");
     expect(w.set("/teams/slot=1/seats/3", "game/fourth") && w.get("/teams/slot=1/seats")->size() == 4,
            "the index equal to the size appends");
     Value before = w;
@@ -294,8 +293,8 @@ static void keyed()
     Value out = base;
     json::Error e;
     expect(json::merge_patch(out, layer, season_keys, &e) && e.ok(), "the layers.md layer applies");
-    expect(json::dump(out) == json::dump(effective), "the layers.md layer gives the documented effective value: " +
-                                                         json::dump(out, 2));
+    expect(json::dump(out) == json::dump(effective),
+           "the layers.md layer gives the documented effective value: " + json::dump(out, 2));
     expect(json::merged(base, layer).get("/teams/0/team") == nullptr,
            "without keys the same patch replaces the list whole, as in RFC 7396");
 
@@ -316,8 +315,7 @@ static void keyed()
     expect(run(R"({"list":[{"id":1},{"id":2}]})", R"({"list":[{"id":2,"$delete":true},{"id":9,"$delete":true}]})", k) ==
                R"({"list":[{"id":1}]})",
            "$delete removes the element with that key and ignores a missing one");
-    expect(run(R"({"list":[{"id":1}]})", R"({"list":[{"id":1,"$delete":false,"a":1}]})", k) ==
-               R"({"list":[{"id":1,"a":1}]})",
+    expect(run(R"({"list":[{"id":1}]})", R"({"list":[{"id":1,"$delete":false,"a":1}]})", k) == R"({"list":[{"id":1,"a":1}]})",
            "\"$delete\": false merges and is dropped");
     expect(run(R"({"list":[{"id":1}]})", R"({"list":[{"id":5,"$delete":false}]})", k) == R"({"list":[{"id":1},{"id":5}]})",
            "\"$delete\": false on a new key appends without it");
@@ -359,8 +357,7 @@ static void keyed()
            "$delete in a list that isn't keyed is plain data");
     expect(run(R"({"list":"text"})", R"({"list":[{"id":1,"a":1}]})", k) == R"({"list":[{"id":1,"a":1}]})",
            "a keyed patch on a target that isn't a list starts from an empty list");
-    expect(run(R"({})", R"({"list":[{"id":1,"a":null,"b":2},{"id":2,"$delete":true}]})", k) ==
-               R"({"list":[{"id":1,"b":2}]})",
+    expect(run(R"({})", R"({"list":[{"id":1,"a":null,"b":2},{"id":2,"$delete":true}]})", k) == R"({"list":[{"id":1,"b":2}]})",
            "a keyed patch on a missing list builds it, nulls and deletes left out");
     expect(run(R"({"list":[{"id":1,"a":1}]})", R"({"list":[{"id":1,"a":2},{"id":1,"b":3}]})", k) ==
                R"({"list":[{"id":1,"a":2,"b":3}]})",
@@ -386,20 +383,19 @@ static void keyed()
                .starts_with("error:"),
            "a nested bad $delete is an error");
     expect(run(R"({"cars":[{"team":"f","number":5,"x":1},{"team":"f","number":7}]})",
-               R"({"cars":[{"team":"f","number":7,"x":2},{"team":"m","number":5}]})", nested) ==
-               R"({"cars":[{"team":"f","number":5,"x":1},{"team":"f","number":7,"x":2},{"team":"m","number":5}]})",
+               R"({"cars":[{"team":"f","number":7,"x":2},{"team":"m","number":5}]})",
+               nested) == R"({"cars":[{"team":"f","number":5,"x":1},{"team":"f","number":7,"x":2},{"team":"m","number":5}]})",
            "a two-field key needs both fields to match (a path without its slash works)");
     expect(run(R"([{"k":1,"a":1}])", R"([{"k":1,"b":2}])", json::Keys{{"", {"k"}}}) == R"([{"k":1,"a":1,"b":2}])",
            "the root itself can be a keyed list");
-    expect(run(R"({"teams":[{"slot":1,"drivers":[{"name":"a"}]}]})", R"({"teams":[{"slot":1,"drivers":[{"x":1}]}]})",
-               nested)
+    expect(run(R"({"teams":[{"slot":1,"drivers":[{"name":"a"}]}]})", R"({"teams":[{"slot":1,"drivers":[{"x":1}]}]})", nested)
                .starts_with("error:"),
            "a nested element without its key is an error");
     expect(run(R"({"teams":[{"slot":1,"drivers":[{"name":"a"}]}]})", R"({"teams":[{"slot":1,"drivers":[]}]})", nested) ==
                R"({"teams":[{"slot":1,"drivers":[{"name":"a"}]}]})",
            "a nested empty keyed list changes nothing");
-    expect(run(R"({"teams":[{"slot":1,"drivers":[{"name":"a"}]}]})", R"({"teams":[{"slot":1,"$delete":true,"drivers":[{"x":1}]}]})",
-               nested) == R"({"teams":[]})",
+    expect(run(R"({"teams":[{"slot":1,"drivers":[{"name":"a"}]}]})",
+               R"({"teams":[{"slot":1,"$delete":true,"drivers":[{"x":1}]}]})", nested) == R"({"teams":[]})",
            "a $delete element's other fields aren't merged, so they aren't checked");
     {
         json::Keys added;
@@ -426,8 +422,8 @@ static void numbers()
     expect(kind("1E+2") == "double 100.0", "1E+2 is a double");
     expect(kind("9223372036854775807") == "int 9223372036854775807", "int64 max is an int");
     expect(kind("-9223372036854775808") == "int -9223372036854775808", "int64 min is an int");
-    expect(kind("9223372036854775808") == "double 9223372036854775808.0", "past int64 is a double: " +
-                                                                               kind("9223372036854775808"));
+    expect(kind("9223372036854775808") == "double 9223372036854775808.0",
+           "past int64 is a double: " + kind("9223372036854775808"));
     expect(kind("-9223372036854775809") == "double -9223372036854775808.0", "below int64 is a double");
     expect(kind("1e5") == "double 1e+05" && kind("123456789e300") == "double 1.23456789e+308", "exponents dump as such");
     expect(kind("9007199254740993") == "int 9007199254740993", "an int past 2^53 keeps every digit");
@@ -446,8 +442,7 @@ static void numbers()
                kind("1e") == "error" && kind("-") == "error" && kind("0x1") == "error" && kind("NaN") == "error" &&
                kind("Infinity") == "error" && kind("1.5e+") == "error",
            "malformed numbers are refused");
-    expect(json::dump(Value(1.0 / 0.0)) == "null" && json::dump(Value(std::nan(""))) == "null",
-           "inf and NaN dump as null");
+    expect(json::dump(Value(1.0 / 0.0)) == "null" && json::dump(Value(std::nan(""))) == "null", "inf and NaN dump as null");
     expect(Value(std::uint64_t(18446744073709551615ull)).is_double(), "a uint64 past int64 becomes a double");
     expect(Value(std::uint32_t(4000000000u)).as_int() == 4000000000, "a uint32 is an int");
     expect(Value(3) == Value(3.0) && !(Value(3) == Value(3.5)) && !(Value(1) == Value(true)),
@@ -474,13 +469,13 @@ static void values()
     expect(json::dump(v) == R"({"b":2,"a":"x","c":{"d":true}})", "members keep insertion order: " + json::dump(v));
     expect(json::dump(v, 2) == "{\n  \"b\": 2,\n  \"a\": \"x\",\n  \"c\": {\n    \"d\": true\n  }\n}",
            "pretty dump: " + json::dump(v, 2));
-    expect(json::dump(P(R"({"a":[],"b":{},"c":[1,[2]]})"), 1) == "{\n \"a\": [],\n \"b\": {},\n \"c\": [\n  1,\n  [\n   2\n  ]\n ]\n}",
+    expect(json::dump(P(R"({"a":[],"b":{},"c":[1,[2]]})"), 1) ==
+               "{\n \"a\": [],\n \"b\": {},\n \"c\": [\n  1,\n  [\n   2\n  ]\n ]\n}",
            "pretty dump of empty and nested containers");
     expect(json::dump(P("[1,2]"), 0) == "[\n1,\n2\n]", "indent 0 puts each item on its own line");
     const Value &c = v;
     expect(c["nope"].is_null() && c["b"][0].is_null() && c[3].is_null() && c["c"]["d"].as_bool(), "const lookups");
-    expect(c["a"].as_string() == "x" && c["b"].as_string("dflt") == "dflt" && c["a"].as_int(9) == 9 &&
-               c["a"].as_bool(true),
+    expect(c["a"].as_string() == "x" && c["b"].as_string("dflt") == "dflt" && c["a"].as_int(9) == 9 && c["a"].as_bool(true),
            "typed accessors give the fallback for another type");
     expect(v.size() == 3 && v.erase("a") && !v.erase("a") && v.size() == 2 && !v.contains("a"), "erase");
     Value a;
@@ -537,7 +532,9 @@ static void values()
     expect(json::parse(R"("𝄞 é \u0000")").as_string() == std::string("\xF0\x9D\x84\x9E \xC3\xA9 \0", 9),
            "\\u escapes, surrogate pairs and NUL");
     expect(json::parse(R"("\ud800x")").as_string() == "\xEF\xBF\xBDx", "a lone surrogate becomes U+FFFD");
-    expect(json::parse(R"("\ud800A")").as_string() == "\xEF\xBF\xBD" "A", "a high surrogate before a non-low");
+    expect(json::parse(R"("\ud800A")").as_string() == "\xEF\xBF\xBD"
+                                                      "A",
+           "a high surrogate before a non-low");
     json::Error e;
     json::parse("{\n  \"a\": 1,\n  \"b\": tru\n}", &e);
     expect(!e.ok() && e.line == 3 && e.column == 8 && e.offset == 19,
@@ -719,12 +716,16 @@ static void fuzz(int rounds)
         std::string ptr;
         int segs = pick(4);
         for (int k = 0; k < segs; ++k)
-            ptr += std::string("/") + std::vector<const char *>{"id", "a", "0", "1", "-", "id=1", "id=\"x\"", "slot=0,id=2", "~1", "~", "="}[static_cast<std::size_t>(pick(11))];
+            ptr +=
+                std::string("/") + std::vector<const char *>{"id",       "a",           "0",  "1", "-", "id=1",
+                                                             "id=\"x\"", "slot=0,id=2", "~1", "~", "="}[static_cast<std::size_t>(
+                                       pick(11))];
         Value before = target, marker = Value::object({{"marker", r}});
         json::Error pe;
         if (target.set(ptr, marker, &pe)) {
             auto got = target.get(ptr);
-            if (ptr.find_first_of("-=") == std::string::npos && (!got || !(got->find("marker") && *got->find("marker") == Value(r)))) {
+            if (ptr.find_first_of("-=") == std::string::npos &&
+                (!got || !(got->find("marker") && *got->find("marker") == Value(r)))) {
                 ++pointer_bad;
                 show("set", ptr + " on " + json::dump(before));
             }
@@ -751,12 +752,11 @@ static void fuzz(int rounds)
     }
     printf("fuzz: %d rounds, %d mutated documents accepted\n", rounds, accepted);
     expect(round_trip_bad == 0, "fuzz: parse, dump and parse agree (" + std::to_string(round_trip_bad) + " bad)");
-    expect(merge_bad == 0, "fuzz: merge_patch without keys matches the RFC 7396 pseudocode (" +
-                               std::to_string(merge_bad) + " bad)");
+    expect(merge_bad == 0,
+           "fuzz: merge_patch without keys matches the RFC 7396 pseudocode (" + std::to_string(merge_bad) + " bad)");
     expect(pointer_bad == 0, "fuzz: pointers find what a walk finds, and set either applies or changes nothing (" +
                                  std::to_string(pointer_bad) + " bad)");
-    expect(keyed_bad == 0, "fuzz: a keyed merge patch applied twice is the same as once (" + std::to_string(keyed_bad) +
-                               " bad)");
+    expect(keyed_bad == 0, "fuzz: a keyed merge patch applied twice is the same as once (" + std::to_string(keyed_bad) + " bad)");
 }
 
 int main(int argc, char **argv)

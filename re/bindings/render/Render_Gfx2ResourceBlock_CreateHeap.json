@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2ResourceBlock_CreateHeap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439bbd20",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439bbd20.c;xref:0x1439bbc22,0x1439fe3bb",
+  "notes": "Allocates a 200-byte NeGfx2ResourceBlock, heap size max(param_2, 128 MiB), align 4 MiB or 64 KiB (param_1+9), heap flags 0xc0 or 0x44/0x84, CreateHeap (+0xe0) named NeGfx2ResourceBlock, QI device + vcall +0x170 with 0xa0010000/0x78000000, block allocator of 0x2000 nodes, appends to vector param_1[3..5]. Callers 0x1439bba90, Render_Gfx2Device_CreateCommittedResource. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx2_resource_block_create_heap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 48 89 CE 48 8B 1D",
+  "match": "0x1439bbd20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439bbd20",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2ResourceBlock_CreateHeap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439bbd20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439bbd20.c;xref:0x142faf89a",
+   "notes": "V8499 strings NeGfx2ResourceBlock and CreateHeap, PlacedResourceForward calls, SetD3DObjectName"
+  }
+ ],
+ "proofs": []
+}

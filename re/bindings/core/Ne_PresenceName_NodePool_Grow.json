@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PresenceName_NodePool_Grow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144136ef0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144136ef0.c;xref:0x144136085,0x144136111",
+  "notes": "Node pool grow, not a hash rehash: block size doubles from 4 to 0x2000 nodes by the number of blocks already in chain param_1[1]; allocates n*0xc0+8 via allocator param_1[2] vcall +0x10 (tag ne_hash_map.h path 0x145612f08), links the block into param_1[1], threads the 0xc0-byte nodes into free list *param_1; alloc failure -> 0x1403139f0 + int3. Caller Ne_PresenceNameResolverFixed_InsertName (2 sites)."
+ },
+ "signature": {
+  "id": "core.hash_map_grow_presence_name",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8D 79 08 B9 04 00 00 00 48 89 F8 66 2E 0F 1F 84 00 00 00 00 00 48 89 CB 48 81 F9 00 20 00 00 77 0C 48 8B 00 48 8D 0C 1B 48 85 C0 75 E8 48 C1 E3 06 4C 8D 0C 5B 49 83 C1 08",
+  "match": "0x144136ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144136ef0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PresenceName_NodePool_Grow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x144136ef0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/144136ef0.c;xref:0x144136085",
+   "notes": "V8385 Ne_PresenceName_NodePool_Grow: doubling chunk alloc (<=0x2000) of 0xc0-byte free-list nodes, not a hash map grow"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_CheckOwnDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d97ec0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d97ec0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d9a96b,0x140d9a9bb",
+  "notes": "For own entrant param_2 (driver key +0x50) of team param_3: if no due contract entry (0x140db7e30 on [comp+0x298]) and 0x140dca800 passes, runs 0x140d982c0; on pass logs 'on our team and meets our requirements' and returns 1 only if 0x140d98850 is false and 0x140d94f10 allows the approach; on fail logs 'we want to change him' and returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.contract_renewal_check_own_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 44 89 C7 48 89 D6 48 89 CB 44 89 44 24 24",
+  "match": "0x140d97ec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d97ec0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_CheckOwnDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d97ec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d97ec0.c;xref:0x140d9a96b,0x140d9a9bb",
+   "notes": "V4722 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d97ec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d97ec0.c",
+   "notes": "V9084 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

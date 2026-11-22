@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_OnShutDownComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403582f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403582f0.c;pat:log-message-cxx;xref:0x1455f7248,0x1456032f8,0x145603688,0x145603a28",
+  "notes": "Logs Podium2019/PodiumBase onShutDownComplete, 0x14024d360, vfunc +0x1b8, sets state this+0x40 = 0xc (setStateShutdown). Slot in 4 vtables. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_on_shut_down_complete",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 4C 01 00 00 48 8D 3D ?? ?? ?? ?? 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 0C 87 85 C9 74 4E 81 F9 8C DE 03 08 74 2A 83 C0 17 48 69 C8 43 43 66 5F 48 C1 E9 20 89 C2 29 CA D1 EA 01 CA C1 EA 08 69 CA 75 01 00 00 29 C8 3D 4C 01 00 00 75 C9 EB 1C 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 57",
+  "match": "0x1403582f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403582f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_OnShutDownComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1403582f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403582f0.c",
+   "notes": "V4506 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

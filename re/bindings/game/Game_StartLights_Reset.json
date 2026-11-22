@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StartLights_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cd4630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cd4630.c;pat:log-message-cxx;xref:0x142cd461f,0x142cd5938,0x142cd5d9e,0x142d5ecc8,0x142dfba08,0x14e6f1b6a",
+  "notes": "Logs NETWORK/F StartLights::reset(); clears +0xc20; restarts QPC timer +0x38/+0x40; hold time +0x50 by mode +0x28: 2 formation (+0xbb4), 1 pursuit ((+0xbac+0xbb0)/2), 0 random in [+0xbac,+0xbb0] (RNG +0x84), logged NETWORK/T; +0x70=+0xba8, +0x78=+0xba8*table 0x1457d8230[mode==2], +0x7c=0, +0x80=0, state +0x29=0; listeners +0xa68 set to \"off\" (Vm_Holder_SetCStr) unless entry+0x84; +0xa4d=0, 0x142cd6fd0(+0xa50,0), +0xa4c=0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.start_lights_reset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 5B 01 00 00",
+  "match": "0x142cd4630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cd4630",
+  "kind": "func_start",
+  "names": [
+   "Game_StartLights_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142cd4630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cd4630.c;xref:0x14292ab7e",
+   "notes": "V5059 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

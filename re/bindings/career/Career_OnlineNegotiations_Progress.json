@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_Progress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fefb80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fefb80.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x140fefafc,0x1436bf71b",
+  "notes": "Logs 'Progress negotiations'. State this+0x290: 0 -> 1, copies drivers vector +0x2c8..+0x2d8 ('Human drivers that will negotiate: %d'); player list +0x2e8..+0x2f0 (0x10 bytes = both players). Calls 0x140fef670 (lead turn), 0x140ff0da0, 0x1410c7010/0x1410ca800, sends via 0x140ff1380, posts bus msg 0x1456bb528 (0x1439876c0), sets +0x300=1 ('Starting holding screen'). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_progress",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140fefb80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fefb80",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_Progress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fefb80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fefb80.c;xref:0x140fefafb,0x1436bf71a",
+   "notes": "V4840 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x140fefb80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fefb80.c;str:\"Progress negotiations | Both players finished, exiting negot\"",
+   "notes": "V9111 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

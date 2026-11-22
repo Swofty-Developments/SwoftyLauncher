@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_CreateHotloadWeekend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ba7fe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ba7fe0.c;pat:log-channel-INSTANT_RACE;xref:0x1456778f0",
+  "notes": "InstantRaceSetupComponent onPreProgress (vt cell 0x1456778f0). If +0x291: mode entity by name +0x308; removes the first event, builds mode by +0x2a0 (0x140ba4a10/0x140ba4c40), new event 0x140aee2b0 + 0x140ae6160, 0x140ba36e0, 0x140ba3380, bus msg; driver list; SessionExit 3 (FLOW log); logs 'Created a new weekend to hotload to'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.instant_race_create_hotload_weekend",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 80 B9 91 02 00 00 00",
+  "match": "0x140ba7fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba7fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_CreateHotloadWeekend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ba7fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ba7fe0.c",
+   "notes": "V4449 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

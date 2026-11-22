@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SaveDataSystem_LogBuildInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143656980",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143656980.c;pat:log-channel-SaveDataSystem;xref:0x145855f98",
+  "notes": "p1 build-info object, p2 key/value container read via 0x143931730: defaults CL +0x238=-1 and '<unknown/...>' strings (+0x250/+0x2a8/+0x300/+0x358/+0x3b0/+0x408); keys __p4_changelist__, __p4_branch_name__, __p4_date_time__, __platform__, __build_config__, __game_info_name__, __smoke_test_info__, utc_date_time (formatted %04d/%02d/..); missing key 0x57 / wrong type 0x58 to ring 0x146107830; then optional SaveDataSystem log. (lane owner review requested) Better name: Game_SaveDataSystem_ReadBuildInfo (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.save_data_system_log_build_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 48 89 D7 48 89 CE C7 84 24 80 00 00 00 FF FF FF FF",
+  "match": "0x143656980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143656980",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveDataSystem_LogBuildInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143656980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143656980.c",
+   "notes": "V6109 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

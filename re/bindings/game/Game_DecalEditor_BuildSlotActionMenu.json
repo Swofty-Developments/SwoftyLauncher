@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_BuildSlotActionMenu",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ff79b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141ff79b0.c;doc:re/research/sponsors.md#decal-editor;xref:0x141ff6bf3",
+  "notes": "If +0x420 and a selected slot: sets 'button_highlight_helper_flags'.'force_highlight'; rebuilds action list +0x480 (count +0x530, 0xb0 items) via 0x141855ba0 with cb 0x141ffdef0: 0 lng_edit_decal, 4 lng_duplicate_decal (lng_decal_editor_no_free_slots), 3 lng_mirror_decal (lng_decal_editor_decal_already_linked / no_free_slots), 2 lng_swap_decal (lng_decal_editor_reserved_swap), 1 lng_delete_decal (lng_decal_editor_reserved_delete); po... (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decal_editor_build_slot_action_menu",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 80 B9 20 04 00 00 00",
+  "match": "0x141ff79b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff79b0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_BuildSlotActionMenu"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

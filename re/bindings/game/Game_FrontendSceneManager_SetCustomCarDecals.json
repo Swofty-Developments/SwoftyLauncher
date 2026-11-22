@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_SetCustomCarDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428eb1b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428eb1b0.c;pat:log-message-method;xref:0x1417e3813",
+  "notes": "Logs '%s() Car [%u]' (MANAGER/CAR, setCustomCarDecals); scans custom-car vector this+0x6fd8..+0x6fe0 (stride 0x6990) for ushort id +0xb8 == param_2; hit -> tail-jmp 0x1428e72e0(this,car,decals) at 0x1428eb2df; miss and id!=0xffff -> logs 'Failed to find Car Component Id %u'. Decomp merges the tail target; judged by disasm 0x1428eb1b0..0x1428eb304. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_set_custom_car_decals",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? E8 ?? ?? ?? ?? F7",
+  "match": "0x1417e3813",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1428eb1b0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_SetCustomCarDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1428eb1b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428eb1b0.c;xref:0x1417e3813",
+   "notes": "V7345 log string setCustomCarDecals + FrontendSceneComponentCar::setCarDecals inlined; sole caller Game_FrontendScenePreview_Refresh"
+  }
+ ],
+ "proofs": []
+}

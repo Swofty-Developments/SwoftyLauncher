@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Eadp_ParseMessageFromString_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144aec780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144aec780.c;xref:0x143fd49bf",
+  "notes": "Not a parse: builds the std::string 'eadp.playercard.v1.BatchGetPlayerCardsRequest' (immediate stores), calls base message ctor 0x144935190(this, &name), sets vtable 0x1453b33f8 and zeroes fields +0x48..+0xc8. Caller 0x143fd4860 (Ne_PresenceEadp_ProcessPlayerCardList) at 0x143fd49bf. (lane owner review requested) Better name: Game_Eadp_BatchGetPlayerCardsRequest_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_parse_message_from_string_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 77 08 48 85 F6 48 89 6C 24",
+  "match": "0x143fd49bf",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144aec780",
+  "kind": "func_start",
+  "names": [
+   "Game_Eadp_ParseMessageFromString_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x144aec780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144aec780.c;xref:0x143e6307c",
+   "notes": "V8313 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

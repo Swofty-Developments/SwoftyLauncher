@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_ResolveVehicleState0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434c0600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434c0600.c;xref:0x1434b8028,0x1434c0431",
+  "notes": "Body read in full. (mgr, spline out, car pose param_3, box param_4): box position mgr+0x70+box*0x90 (box 0xc via [mgr+8]+0x738, else [mgr+8]+0x838+box*8, 0x142f62580); neighbour box = box +-1 by byte [*mgr]+0xc2a; distance ratio *0.25 scaled by factors at mgr+0x8c0..+0x8d8; three 0x1434c6e00 helper points; appends the knots (pose +0x20/+0x30, box points) to the spline vector out+0x10 and ends in 0x1445041c0 (Ne_Spline_ComputeLengths). Better name Game_PitLane_BuildEntrySplinePullThrough (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pitlane_resolve_vehicle_state0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 C7 84 24 D4 00 00 00 00 00 00",
+  "match": "0x1434b8028",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1434c0600",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_ResolveVehicleState0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1434c0600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434c0600.c;xref:0x1434b8028",
+   "notes": "V8228 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesOsdConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141569430",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141569430.c;pat:log-channel--;xref:0x141568f0f,0x1415692d4,0x1415693d4",
+  "notes": "Under lock [+0x6b0]: practice program obj -> +0x308 (else 0x14156ad90, return). 5 lap slots (+0x410 step 0x80): icon overrides.osd.practice_programs_qp_icons.quali_pace_lap_not_set, text 'off', visible i<vfn+0x70, label '%hs%u' lng_hud_laps,i. If vfn+200 graph: +0x638/650/668/680 = practice_graph_lap_icons graph_lap_icon_not_set/failed/passed/perfect, else quali_pace_lap_*; bools +0x318/+0x338/+0x378 (vfn+0x48 !=0 / ==4). Old name = string fragment. (lane owner review requested) Better name: Game_PracticeOsd_RefreshLapIcons (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_overrides_osd_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 8B 89 B0 06 00 00",
+  "match": "0x141569430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141569430",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesOsdConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141569430",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141569430.c;xref:0x141568f0f",
+   "notes": "V4884 20 KB practice lap icon builder (graph_lap_icon_*, quali_pace_lap_*, lng_hud_laps) not only key reads. Better: Hud_Build_PracticeLapIcons"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141569430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141569430.c;xref:0x141568f0f",
+   "notes": "V7217 name fits; finding facts hold; 3 direct calls"
+  }
+ ],
+ "proofs": []
+}

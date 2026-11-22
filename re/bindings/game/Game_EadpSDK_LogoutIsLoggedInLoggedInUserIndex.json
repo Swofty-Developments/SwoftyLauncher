@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_EadpSDK_LogoutIsLoggedInLoggedInUserIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fd6f20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fd6f20.c;pat:log-channel-EadpSDK;xref:0x145a45058,0x145a45118",
+  "notes": "Virtual (vtable cells 0x145a45058, 0x145a45118): sets +0x30 = 1; if not logged in (+0x31 == 0) or user index +0x2c == -1 logs 'Failed to logout. m_isLoggedIn = %d, m_loggedInUserIndex = %d'; else calls auth object (+8) vcall +0x38(userIndex, callback functor vtables 0x145a45f28/0x145a45f40). (lane owner review requested) Better name: Game_EadpSDK_Logout (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_sdk_logout_is_logged_in_logged_in_user_index",
+  "section": ".xtls",
+  "pattern": "48 81 EC 88 00 00 00 C6 41 30 01 44 0F B6 41 31",
+  "match": "0x143fd6f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fd6f20",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpSDK_LogoutIsLoggedInLoggedInUserIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fd6f20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fd6f20.c;xref:0x15154a79a",
+   "notes": "V6326 partial: better name Game_EadpSDK_Logout; logout; failure log only in the not-logged-in branch, else vtable+0x38 call"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143fd6f20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fd6f20.c;xref:0x15154a79a",
+   "notes": "V7065 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

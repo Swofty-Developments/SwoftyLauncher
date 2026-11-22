@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamRewards_Revoke",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc6190",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fc6190.c;pat:log-channel-MY_TEAM_REWARDS;xref:0x140fc69f0",
+  "notes": "Twin of 0x140fc6000 differing only in the log: 'Team %s revoked reward'; locks the weak_ptr (+8/+0x10) and calls obj->vt+0x38(param_2). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.my_team_rewards_revoke",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 C7 10 48 39 DF 75 E2 C6 46",
+  "match": "0x140fc69f0",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140fc6190",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamRewards_Revoke"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x140fc6190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc6190.c;xref:0x140fc69f0",
+   "notes": "V7329 name matches log/pretty-function string and body; sibling-consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x140fc6190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc6190.c;str:\"Team %s revoked reward \"",
+   "notes": "V9108 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_App_SetPauseReason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14080e110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14080e110.c;xref:0x141a37325,0x141a38186,0x141bc56ae,0x141bc653d,0x142c0559a,0x142c15da7,0x142d65f44,0x142d65f74,0x142d6ab64,0x142d74395,0x142d743d4,0x142d76068,0x142d77c78,0x142da3816,0x142da71e5,0x142e796e1,0x14e93c140",
+  "notes": "(app, set, bit): sets/clears bit in pause mask app+0x210 (u32 array). Acts only when dword 0 goes 0->nonzero (set) or ->0 (clear): pauses/resumes global 0x146cc3a80 (0x14453f4e0 / 0x14453f6f0(...,7)), then 0x1519eb350(obj, player idx, set, 5) or vt slot 0xe/0xd on [svc+0x88]+0x260 plus a 0x18-byte message (vtable 0x14564b690, byte set) posted to the application_object queue. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.app_set_pause_reason",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 84 D2",
+  "match": "0x14080e110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14080e110",
+  "kind": "func_start",
+  "names": [
+   "Game_App_SetPauseReason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/view_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14080e110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14080e110.c;xref:0x142d76068,0x142d77c78",
+   "notes": "V3796 pause-reason mask bit set/clear, 'application_object' worker list walk, Ne_Event_Set; callers Sess_State_Pause/Unpause, GarageState_OnStateExit, NetJournalMonitorState seen"
+  }
+ ],
+ "proofs": []
+}

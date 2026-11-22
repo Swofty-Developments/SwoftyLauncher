@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RenderSettingsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d15520",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d15520.c;pat:log-channel--;xref:0x1457da598",
+  "notes": "Whole body read: builds '<ctx>.Autocross_Settings_0' (stack literal) and reads start/end_proportion_round_lap, start_proportion_to_place_vehicle, start_challenge_lap, hit_cone_time_added, missed_gate_time_added, num_gates_visible(_alpha), num_laps (vfunc +0x168); then render_settings.* (default_gate_size, cone_object_string -> 3 idf/emb paths via 0x14016d400, per-gate left/right_position, orientation_col_0..2 -> 0x80-byte gates in this+0x438 vector, gate height/depth, colour_alpha, near_fade, gate_y_offset); ends 0x1429a25e0, 0x142d13a80. Old name too generic. (lane owner review requested) Better name: Game_Autocross_LoadSettings (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_render_settings_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0B 00 00 C5 78 29 9C 24 A0 0B 00 00",
+  "match": "0x142d15520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d15520",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RenderSettingsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d15520",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d15520.c",
+   "notes": "V5374 reads TimeAttack gate config (num_gates_visible, hit_cone_time_added, laps, gate transform/render_settings), calls TimeAttackGates_BuildGates; better Game_TimeAttack_ReadGateConfig"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142d15520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d15520.c",
+   "notes": "V6889 788 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

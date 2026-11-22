@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_DriverSelect_BadgeFormat",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416a5820",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1416a5440.c;decomp:re/decomp/141a5adc0.c;xref:0x1416a580b,0x1416a5810,0x1416a5814,0x1416a581b,0x1416a5820,0x1416a5831",
+  "notes": "Choose Driver card build Game_DriverSelect_AddCard 0x1416a5440: the call to Ne_Format_String (0x1441630f0) that builds the card's team badge key; rcx = rsp+0x58 the NeStr** out, rdx = 'overrides.teams.badges_broadcast.%s' (lea at 0x1416a5814), r8 = the team record's label (+0x18, loaded at 0x1416a5810) of the driver's setup-list row team. The result goes to 0x1416864d0 (card -0xa8) right after. EA (re/db/builds/ea.json): EA 0x14169fbf0 calls Ne_Format_String EA 0x1441572e0 with the same format string and rcx/rdx/r8 setup; the containing function EA 0x14169f810 is instruction-for-instruction Steam's; only the rel32 in expect differs (EA E8 EB 76 AB 02)."
+ },
+ "signature": {
+  "id": "game.driver_select_badge_format",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 8E 58 FF FF FF",
+  "match": "0x1416a5820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416a5820",
+  "kind": "mid",
+  "expect": "E8 CB D8 AB 02",
+  "names": [
+   "site_Game_DriverSelect_BadgeFormat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-26",
+    "by": "progressive-wizvis",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/cards.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "logo-sites-verify",
+   "kind": "global",
+   "item": "site_Game_DriverSelect_BadgeFormat",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416a5440.c;decomp:re/decomp/1441630f0.c;xref:0x1416a57e4,0x1416a57f1,0x1416a57fb,0x1416a580b,0x1416a5810,0x1416a5814,0x1416a581b,0x1416a5820,0x1416a5831;xref:0x1416864d0;str:0x1456fe515;sig:game.driver_select_badge_format",
+   "notes": "V1061 Checked from my own capstone sweep of the .pdata function 0x1416a5440-0x1416a5a50 (.xtls) and a fresh decomp. The sweep from the function start lands on 0x1416a5820 (instruction boundary); bytes E8 CB D8 AB 02 = 5-byte call to 0x1441630f0 Ne_Format_String. rcx = lea [rsp+0x58] at 0x1416a581b (the NeStr* slot, zeroed before the branch in the decomp). rdx = lea at 0x1416a5814 -> 0x1456fe515 (.xtext) = 6f 76 65 72 ... 2e 25 73 00 'overrides.teams.badges_broadcast.%s', one % only, so r9 and the stack are not read. r8 = [rax+0x18] at 0x1416a5810 with rax = [[ [rcx + byte[row+0x58]*0x10 + 0x2c8] + 8] + word[row+0x5a]*0x10 + 8] (0x1416a57f3-0x1416a580b), i.e. the team stat id at EntrantRecord-style +0x58/+0x5a of the row found by the 0x88-stride search; the call is skipped (je 0x1416a5825) when the row is null (0x1416a57e4) or the id is 0x3fff (0x1416a57f1). +0x18 of that table entry is a C string label (same walk passes it as %s/%hs at 0x140dc757c, 0x1421abb70, 0x1435355a8). Afterwards rcx = rsi-0xa8, rdx = rsp+0x58 go to 0x1416864d0 at 0x1416a5831, which uses the chars only as a Vm_Resolve_RegistryNode path and binds the node into the holder; then the NeStr is released (0x1416a5836-). So the result is only a string key. sigcheck: OK, one hit at 0x1416a5820, expect E8 CB D8 AB 02. Note: a %hs copy of this format is also built at 0x1421abb70 (in 0x1421a9060), which this site does not cover."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "easites-verify",
+   "kind": "sig",
+   "item": "game.driver_select_badge_format",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.driver_select_badge_format;xref:0x1416a5820,0x1416a5440,0x1441630f0;pat:E8 ?? ?? ?? ?? 48 8D 8E 58 FF FF FF",
+   "notes": "V1146 EA overlay: the pattern matches EA .rdata once at 0x169fbf0, which holds E8 EB 76 AB 02, a call to 0x1441572e0 (instruction-identical to Steam Ne_Format_String 0x1441630f0). The containing EA function 0x14169f810 is instruction-identical to Steam 0x1416a5440 (406 insns, site at +0x3e0 in both), with rcx = rsp+0x58, rdx = overrides.teams.badges_broadcast.%s and r8 = [entry+0x18] as on Steam."
+  }
+ ],
+ "proofs": []
+}

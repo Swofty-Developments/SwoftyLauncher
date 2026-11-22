@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeViewModel_OnExposureChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d06ac0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d06ac0.c;pat:log-message-cxx;xref:0x141cef943",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. float -> this+0x4fc, +0x500 = value - auto exposure (0x141d007b0); system+0x2d30; dirty; refresh unless +0x365. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_view_model_on_exposure_changed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 83 7A 08 0A 0F 85 ?? ?? ?? ?? 48 89 CE 4C 8B 42 10 C5 C8 57 F6 49 83 38 00 74 6C 48 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 45 31 C9 E8 ?? ?? ?? ?? 48 8B 38 48 85 FF 74 4E 48 3B 3D ?? ?? ?? ?? 74 45 48 8B 07 48 89 F9 FF 50 20 84 C0 74 38 48 8B 4F 58 48 8B 01 FF 50 08 48 8B 10 48 89 C1 FF 52 10 89 C3 48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 10 39 C3 75 0E 48 8B 4F 58 48 8B 01 FF 50 38 C5 FA 10 30 C5 FA 11 B6 FC 04 00 00",
+  "match": "0x141d06ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d06ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeViewModel_OnExposureChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141d06ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d06ac0.c;xref:0x141cef945",
+   "notes": "V4974 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_ParamList_PushEntryKind3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c21350",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c21350.c;xref:0x1400fe126,0x1400fe13b,0x1400fe1aa,0x1400fe1bf,0x1400fe1d2,0x1400fe1e7",
+  "notes": "Sibling of Render_Gfx_KeyValueWriter_AddString: appends entry {u32 +0x50, kind 3, u32 +0xe0}, writes key param_2 + NUL into stream +0x60 and the u32 value param_3 (byte-swapped unless +0xf8 == 1) into stream +0xf0. Kind 3 = 32-bit integer value, not UAV. Call sites all in 0x1400fd6d0 (0x1400fe126, 0x1400fe13b ...). (lane owner review requested) Better name: Render_Gfx_KeyValueWriter_AddU32 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx_param_list_push_entry_kind3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 44 89 C7 48 89 D3 48 89 CE 44 8B 69",
+  "match": "0x143c21350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c21350",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_ParamList_PushEntryKind3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143c21350",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c21350.c;xref:0x1400fe126",
+   "notes": "V8335 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

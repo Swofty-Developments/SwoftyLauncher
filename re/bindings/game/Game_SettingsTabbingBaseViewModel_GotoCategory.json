@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsTabbingBaseViewModel_GotoCategory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ded550",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141ded550.c;str:s_SettingsTabbingBaseViewModel_GotoCategory;xref:0x14574cc60,0x14574d5f0,0x14574e890,0x14574eec0,0x14574f0c0,0x14574f300,0x14574f550,0x1457521a0",
+  "notes": "Vtable cells in the settings view-model vtables (0x14574cc60 ...). Needs param_2 and +0x8a0; clears +0x8b1; looks up category param_2 by name in +0x670 (count +0x870), stores the name in +0x948 (0x1407b10c0); category with a non-empty command -> logs OPTIONS-UI \"nav through to category [%s] with command [%s]\" and vcall +0x128(command), else logs \"nav through to category [%s]\" and vcall +0x128(\"settings_edit\"). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.settings_tabbing_base_view_model_goto_category",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 85 D2 74 65",
+  "match": "0x141ded550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ded550",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsTabbingBaseViewModel_GotoCategory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141ded550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ded550.c",
+   "notes": "V5226 name/cxx or log string and body match; body size consistent with name (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

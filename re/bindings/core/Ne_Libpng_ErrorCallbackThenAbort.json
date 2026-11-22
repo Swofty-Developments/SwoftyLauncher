@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_ErrorCallbackThenAbort",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447a04f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447a04f0.c;xref:0x142bd4bfc,0x14390ef1d,0x14390ef2c,0x14390f1a2,0x143910692",
+  "notes": "png_error shape: (png_ptr, msg): if png_ptr and error_fn [png_ptr+0x118] set, calls it(png_ptr, msg); then default error 0x1447a0530(png_ptr, msg); then int3 (no return). 146 sites incl. Ne_Libpng_CheckIhdr."
+ },
+ "signature": {
+  "id": "core.libpng_forward_with_field118",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 48 85 C9 74",
+  "match": "0x1447a04f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447a04f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_ErrorCallbackThenAbort"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1447a04f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1447a04f0.c;xref:0x142bd4bfc",
+   "notes": "V8403 Ne_Libpng_ErrorCallbackThenAbort: png_error forwarder, calls error_fn at +0x118 then 1447a0530 and traps"
+  }
+ ],
+ "proofs": []
+}

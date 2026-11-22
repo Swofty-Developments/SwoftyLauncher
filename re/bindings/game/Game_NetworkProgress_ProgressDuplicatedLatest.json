@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkProgress_ProgressDuplicatedLatest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325b7d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14325b7d0.c;pat:log-channel-NETWORK-PROGRESS;xref:0x14326f35e,0x14582da20,0x145836d10",
+  "notes": "Progress history ring buffer (0xf0-byte records, time stamp at +0xe0): when the type matches, the first record is copied in directly; a later record older than, equal to or too close to the latest logs 'progress (%s) out of order / duplicated / too close to latest : latest(%s)' and is rejected. Caller 0x14326a9c0; vtable cells 0x14582da20, 0x145836d10. (lane owner review requested) Better name: Game_NetworkProgress_HistoryAddProgress (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_progress_progress_duplicated_latest",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 C6 48 89 D3 48 89 CF 4C 89 44 24 40",
+  "match": "0x14325b7d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325b7d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkProgress_ProgressDuplicatedLatest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325b7d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14325b7d0.c;xref:0x14326f35f",
+   "notes": "V5785 Better name Game_NetworkProgress_ValidateProgressOrder: checks out-of-order, duplicated and too-close-to-latest progress with timestamps; duplicated is one of three branches"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14325b7d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325b7d0.c;xref:0x14326f35e",
+   "notes": "V7029 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SpeechRecognitionConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144494aa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144494aa0.c;pat:log-channel--;xref:0x140a274f6,0x1444e2684",
+  "notes": "Returns bool SpeechRecognition.enabled; nfsDataPath->+0x40; parses xmlDataPath+\"/speech_recognition.xml\": KeywordList (<=5, stride 0x1ae88 from +0x220, count +0x86ac8), Keyword (<=0x24/list, <300 total, 10 lang ids en..zh), Action (<=5: changeKeywordList=1 playSpeechVO=2 UICommand=3 GameCommand=4), Filter tyre bitmask; lists fed to recognizer +0x10 vtbl+0x10/+0x18. 0x1444e2684 = thunk, rcx=[rcx+0x10]. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_speech_recognition_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F9 7F BC 24 80 13 00 00",
+  "match": "0x144494aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144494aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SpeechRecognitionConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144494aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144494aa0.c;xref:0x140a274f6",
+   "notes": "V6661 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

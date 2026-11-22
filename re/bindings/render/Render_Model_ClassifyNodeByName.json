@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Model_ClassifyNodeByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d4a730",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d4a730.c;xref:0x14069c729,0x1429ab8a0,0x14446b4b4,0x144797421",
+  "notes": "Node name prefixes wheel, LoosePart, front, nosecone, 'Layer car' give 0x10000, 'TrackInformationSystem' gives 1, type name SkinnedActor (param_3) gives 0x10000; otherwise (incl. 'Layer safe' path) returns vcall +8 of [param_1+0x118](param_3). Callers Game_ModelProxyList_Resolve 0x14069c729, Game_TimeAttackGates_CreateGateModel 0x1429ab8a0, Render_ModelComponent_Load 0x14446b4b4, Game_TrackInformationSystem_Update 0x144797421. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.model_classify_node_by_name",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 4C 89 C6 48 89 CF 48 85",
+  "match": "0x143d4a730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d4a730",
+  "kind": "func_start",
+  "names": [
+   "Render_Model_ClassifyNodeByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d4a730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d4a730.c;xref:0x14069c729",
+   "notes": "V7918 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

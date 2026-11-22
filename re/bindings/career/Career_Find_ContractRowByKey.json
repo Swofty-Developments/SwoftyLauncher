@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_ContractRowByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416dffe0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Find(void *ctx, void *out, void *key)",
+  "evidence": "decomp:re/decomp/1416dffe0.c;xref:0x140557ccd,0x14187826f,0x1418782b8,0x141c883e6",
+  "notes": "Resolves from registry param_3 (Ne_RobinHoodMap_U64_FindIndex) key 0x14604ed28 -> +8 and EntrantsSystem (0x14606ecd8) -> +0x10; then from (+8)+0x88 ->+0x260 game mode gets CareerRecognitionComponent (0x146060948) -> +0x18 and DriverStatisticsComponent (0x146061768) -> +0x20. Returns 0, or 0x16 with error trace when a system is missing. Not a contract-row lookup. (lane owner review requested) Better name: Career_Bind_RecognitionStatsContext (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.find_contract_row_by_key",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C6 48 89 CF 48 8D 05",
+  "match": "0x1416dffe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416dffe0",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_ContractRowByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416dffe0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1416dffe0.c;xref:0x14187826f;xref:0x1418782b8",
+   "notes": "V9763 Looks up two keys in the map param_3 (FUN_14030ffd0) and stores both object pointers at ctx+8/+0x10 with a type check; no row lookup by key is returned."
+  }
+ ],
+ "proofs": []
+}

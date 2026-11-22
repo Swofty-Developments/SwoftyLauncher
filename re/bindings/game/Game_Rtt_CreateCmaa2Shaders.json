@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_CreateCmaa2Shaders",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c3eec0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c3eec0.c;xref:0x143d85180,0x15255dbbc",
+  "notes": "(cmaa): looks up (does not load) five compute programs by name in the shader package [+0xd8]+0x140..+0x148 (match after the last '/'): hdr_array/ or ldr_array/ when the target has 4 layers ([+200]+0x48 +0x34 == 4), else hdr/ or ldr/, chosen by format byte +0x38 == 'J'; edges_color_2x2 +0x38, compute_dispatch_args +0x48, process_candidates +0x60, deferred_color_apply_2x2 +0x70, debug_draw_edges +0x80. Callers RttGenerator, 0x15255da10. (lane owner review requested) Better name: Game_Rtt_FindCmaa2Shaders (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.rtt_create_cmaa2_shaders",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 48 8B 81 C8 00 00",
+  "match": "0x143c3eec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c3eec0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_CreateCmaa2Shaders"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c3eec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c3eec0.c;xref:0x143d85180",
+   "notes": "V7871 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

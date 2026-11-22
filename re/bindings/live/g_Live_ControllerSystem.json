@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "g_Live_ControllerSystem",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146096578",
+  "type": "ControllerSystem *",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/142f43c00.c;decomp:re/decomp/14389a120.c;xref:0x142f43c7e,0x14039c7d3,0x1414ed23c,0x142c7624b;xref:0x14039c7d0",
+  "notes": "pointer to the vehicle controller system, stored from registry key 0x146106b08 by 0x142f43c00 (no KB name for that key yet); vtable vt_Sess_ControllerSystem. Halo: human car = set whose active controller (mode 0) has vt_Sess_HumanController"
+ },
+ "signature": {
+  "id": "live.controller_system",
+  "section": ".xtls",
+  "pattern": "74 58 48 8B 0D ?? ?? ?? ?? 49 8B 57 58",
+  "match": "0x14039c7ce",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x2",
+   "len": 7
+  },
+  "target": "0x146096578",
+  "kind": "data",
+  "names": [
+   "g_Live_ControllerSystem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "g_Live_ControllerSystem",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f43c00.c;decomp:re/decomp/14389a120.c;xref:0x142f43c81",
+   "notes": "V8784 own read: 0x142f43c00 does FindIndex(registry,0x146106b08) and stores slot value (or 0 on a miss) into the global (refs 0x142f43c81 inside that function). Key 0x146106b08: vtable 0x1458824a0 (vt_Sess_ControllerSystem) slot 0 = 0x1438d2a30 (jmp-free lea rax,[0x146106b08]; ret, own disx) and slot 32 = 0x14389a120 whose this has +0x364/+0x365/+0x30/+0x90 as in the struct. 33 other referencing sites exist"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.controller_system",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.controller_system;xref:0x14039c7d0,0x146096578",
+   "notes": "V8896 sigcheck hits=1 match 0x14039c7ce; anchor 0x14039c7d0 mov rcx,[rip+0x5cf9da1] resolves 0x146096578; the loaded pointer is indexed [rcx+0x30][byte*8] = ControllerSystem.sets, consistent with g_Live_ControllerSystem"
+  }
+ ],
+ "proofs": []
+}

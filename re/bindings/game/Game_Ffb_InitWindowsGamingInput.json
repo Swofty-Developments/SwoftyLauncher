@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_InitWindowsGamingInput",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f6ad0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f6ad0.c;pat:log-channel-FFB;xref:0x145c00778",
+  "notes": "Slot 3 of vtable 0x145c00760 (string 'EgoRacingFFBSubsystem' before it). Adds deviceConnected cb 0x1446f7a20 to input listener vector if absent; allocates +0x160..+0x178 and 8 plugin factories +0x180..+0x1b8 (vtables 0x145c051c0..0x145c05220) into map +0x160; logs isWindows10; Win10: loads CM.Windows.Gaming.Input.dll, UwpWrapper_WindowsGamingInput_GetInterface, iface init; fail -> 0x1446f9200. (lane owner review requested) Better name: Game_RacingFfbSubsystem_Init (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ffb_init_windows_gaming_input",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 01 00 00 48 89 CE 48 8D 05",
+  "match": "0x1446f6ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f6ad0",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_InitWindowsGamingInput"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f6ad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f6ad0.c",
+   "notes": "V6855 Load wrapper DLL and interface strings confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

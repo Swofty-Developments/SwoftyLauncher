@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Playerset_TryPromoteSpectators",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140997490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140997490.c;pat:log-message-method;xref:0x145658640",
+  "notes": "vt cell 0x145658640. When this+0x28 set: logs tryPromoteSpectators; for each player in [this+0x40]+0x58..+0x60 with +0x64 set, +0x60 >= 0, +0x65 clear calls 0x1409975e0(this); same for players whose connection (+0x63) is in state 5 in this+0x70..+0x78. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.playerset_try_promote_spectators",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 80 79 28 00",
+  "match": "0x140997490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140997490",
+  "kind": "func_start",
+  "names": [
+   "Game_Playerset_TryPromoteSpectators"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140997490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140997490.c",
+   "notes": "V4349 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

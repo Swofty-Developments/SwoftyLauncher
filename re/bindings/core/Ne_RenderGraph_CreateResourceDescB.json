@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_CreateResourceDescB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdccd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdccd0.c;xref:0x140101ac8,0x1401406ce,0x1401408e1",
+  "notes": "Sibling of 0x143bdc9f0: appends a 0x160-byte entry of kind 2 (+8) to the resource table graph+0x50/+0x58/+0x60 with the 11-qword desc param_3 in the second sub-desc slot, defaults elsewhere; returns count-1 in *param_2. call sites. Old note said 0x180 stride (it is 0x160). Better name: Ne_RenderGraph_AppendResourceEntryB (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.render_graph_build_attachment_desc",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F0 48 83 C4 78 5F 5E C3 CC",
+  "match": "0x140101ac8",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143bdccd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_CreateResourceDescB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143bdccd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bdccd0.c;xref:0x140101ac8",
+   "notes": "V8142 Better name Render_RenderGraph_CreateResourceDescB: emplaces a 0x160-byte record from desc param_3 into vector ctx+0x50/+0x58 and returns its index; 0x180 stride table is not used here"
+  }
+ ],
+ "proofs": []
+}

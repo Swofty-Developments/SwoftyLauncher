@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_ReceiveContractReviewed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141003420",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141003420.c;pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS;xref:0x141000de8",
+  "notes": "Net handler for message 0xc8 (registered in 0x140ffeec0): logs 'Process contract reviewed message received', calls 0x140d82b40([this+0x2b0], driver id msg+0x14, value +0x18, 0); if 0x140ffd1c0 is false repeats it for the local participant (matched via 0x1431146d0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_receive_contract_reviewed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC D0 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x141003420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141003420",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_ReceiveContractReviewed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141003420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141003420.c;xref:0x141000de7",
+   "notes": "V4555 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141003420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141003420.c;str:\"Process contract reviewed message received\"",
+   "notes": "V9136 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

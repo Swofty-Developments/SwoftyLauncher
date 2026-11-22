@@ -1,0 +1,152 @@
+{
+ "schema": 1,
+ "name": "site_Game_CrewWorkingOnCar_TeamRecord",
+ "table": "globals",
+ "author": "saves",
+ "row": {
+  "addr": "0x14027a83d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x14027a800-0x14027a844;xref:0x14027a80b,0x14027a83d",
+  "notes": "In Game_CrewWorkingOnCar_Initialise (0x140278970): rax = the TeamRecord pointer [[[g+0x290]+set*0x10+0x2c8]+8][id*0x10+8]; mov r,[rax+0x18] reads its label with no null test, so a team with no loaded TeamRecord faults reading 0x18. The sentinel key 0x3fff0000 skips this lookup through the je ahead of it; the core takes that je target when rax is 0."
+ },
+ "signature": {
+  "id": "game.crew_working_on_car_team_record",
+  "section": ".xtls",
+  "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 90 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 4C 89 F1 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 4C 89 F2 41 B0 01 E8 ?? ?? ?? ?? 48 C7 84 24 E0 0C 00 00 00 00 00 00",
+  "match": "0x14027a800",
+  "anchor": "0x3d",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14027a83d",
+  "kind": "mid",
+  "names": [
+   "site_Game_CrewWorkingOnCar_TeamRecord"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-20",
+    "by": "saves",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "expect": "48 8B 50 18 4C 89 F1",
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14027a800",
+  "made_on_target": "0x14027a83d",
+  "twin": "made on steam-26566308; the target 0x14027a83d is KB 0x14027a83d: Game_CrewWorkingOnCar_Initialise (0x278970) and Game_DriverTalksToPress_Initialise (0x27b460) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [
+  {
+   "date": "2026-11-20",
+   "verifier": "saves-blind",
+   "kind": "global",
+   "item": "site_Game_CrewWorkingOnCar_TeamRecord",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:disasm 0x14027a83d mov r,[rax+0x18] after chain [g+0x290] [+set*16+0x2c8] [+8] [+id*16+8] and cmp ecx 0x3fff0000 at 0x14027a806 je 0x14027a84c,xref:vtable cell 0x1455fc600 -> Game_CrewWorkingOnCar_Initialise 0x140278970,imm:0x3fff0000 at 0x14027a806 and 0x290 0x2c8 0x18",
+   "notes": "gh:saves-blind Re-derived blind on KB: site 0x14027a83d is mov r,[rax+0x18]; rax from rdx=[[g]+0x290], [rdx+(al<<4)+0x2c8], [+8], [+(ecx>>16<<4)+8]. Sentinel cmp at 0x14027a806 (55 bytes before site) je 0x14027a84c. Join 0x14027a84c: rax rcx rdx reloaded or overwritten before any read, no use of the skipped register after the join. Function Game_CrewWorkingOnCar_Initialise (0x140278970) is referenced from vtable cell 0x1455fc600. binding verify: KB sigcheck passed, Steam 145 resolved once."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "saves",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14027a800",
+    "target": "0x14027a83d"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bc9547bedb136e0daf942f34182cbe42f1f64b29cff92b3c00c61c8b490b48b3"
+  },
+  {
+   "by": "saves",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14027a800",
+    "target": "0x14027a83d"
+   },
+   "sigcheck": "passed",
+   "digest": "78d509873d1923a228a32c36d5b20382582e182b8790faea01e184a7a9c66192"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14027a800",
+    "target": "0x14027a83d"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bc9547bedb136e0daf942f34182cbe42f1f64b29cff92b3c00c61c8b490b48b3"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14027a800",
+    "target": "0x14027a83d"
+   },
+   "sigcheck": "passed",
+   "digest": "78d509873d1923a228a32c36d5b20382582e182b8790faea01e184a7a9c66192"
+  },
+  {
+   "by": "saves-blind",
+   "date": "2026-11-20",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14027a800",
+    "target": "0x14027a83d"
+   },
+   "sigcheck": "skipped (pefile is not installed; re/tools/py has it)",
+   "digest": "78d509873d1923a228a32c36d5b20382582e182b8790faea01e184a7a9c66192"
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_ScoreDriverCandidates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d98850",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractRenewal_ScoreDriverCandidates(void *comp, uint8_t *team_key, uint32_t *out_driver)",
+  "evidence": "decomp:re/decomp/140d98850.c;xref:0x140d90582,0x140d980df",
+  "notes": "Returns true if driver param_2 is in the u16 hash set built by 0x140dc9f20 from [comp+0x298], or appears in team param_3's exit list (comp+0x348 record +0x30) or the team appears in the driver's exit list (comp+0x368 record +0x30). Does not pick or write a driver. Used by 0x140d97ec0 (returns early when true). (lane owner review requested) Better name: Career_ContractRenewal_IsDriverExcluded (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_score_driver_candidates",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC B0 00 00 00 4C 89 C3",
+  "match": "0x140d98850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d98850",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_ScoreDriverCandidates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d98850",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d98850.c",
+   "notes": "V9542 No scoring seen: builds candidate set via FUN_140dc9f20, checks the team key in it and looks up param_3 in the list at +0x348; param_3 is read as a driver key, not written as output."
+  }
+ ],
+ "proofs": []
+}

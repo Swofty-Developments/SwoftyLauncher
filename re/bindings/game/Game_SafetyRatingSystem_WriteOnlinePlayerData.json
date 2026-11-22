@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SafetyRatingSystem_WriteOnlinePlayerData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c6def0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c6def0.c;str:s_SafetyRatingSystem_WriteOnlinePlayerData;xref:0x142c6d8cb,0x142c6f9c4,0x142c70560",
+  "notes": "(sys): without valid data (+0x521) logs 'aborting cloud write because we don't have valid data'; else gets the online record 0x143276fc0([+0x4d8]+0x3d8) and stores a new 0x10-byte blob {2, rating +0x40, tier byte +0x44, float +0x48} as shared_ptr (vt 0x1457d7230) at record +0x10/+0x18. Tail-jumped from OnEarlyQuit (0x142c6d8cb) and OnMatchComplete (0x142c6f9c4); call 0x142c70560. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.safety_rating_system_write_online_player_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 C5 F8 29 74 24 20 80 B9 21 05",
+  "match": "0x142c6def0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c6def0",
+  "kind": "func_start",
+  "names": [
+   "Game_SafetyRatingSystem_WriteOnlinePlayerData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c6def0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c6def0.c;xref:0x142c6d8cb",
+   "notes": "V5053 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

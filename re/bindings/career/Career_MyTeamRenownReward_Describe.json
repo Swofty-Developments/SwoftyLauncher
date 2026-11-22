@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamRenownReward_Describe",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc5990",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *reward, void *out",
+  "evidence": "decomp:re/decomp/140fc5990.c;xref:0x1456b1b40",
+  "notes": "myteam-g1: Description text \"Gives %.2f renown to the team immediately.\" from float reward+0x58 (the renown amount of a MyTeamRenownReward definition)."
+ },
+ "signature": {
+  "id": "career.my_team_renown_reward_describe",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 89 D0 C5 FA 10 41 58",
+  "match": "0x140fc5990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc5990",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamRenownReward_Describe"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140fc5990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc5990.c;xref:0x1456b1b40;str:\"Gives %.2f renown to the team immediately.\"",
+   "notes": "V8986 Calls the formatter with the string at 0x1456b1b50 and (double)*(float*)(reward+0x58); string resolved exactly."
+  }
+ ],
+ "proofs": []
+}

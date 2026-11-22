@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SceneManager_ResolveMaterialActorIds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401ed220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401ed220.c;xref:0x1401a6401,0x1401ebb97,0x1401ec128",
+  "notes": "param_3 = u32 id vector: 0 ids -> 0xffffffff, 1 -> that id. Else under CS +0x30: per id finds/inserts node {id,u64 useCount} in FNV-1a robin-hood map +0x60..+0xb4 (new count 0), keeps ids with minimal count, picks one by LCG +0xc0 (0x343fd/0x269ec3), increments its count, returns it. +200 = allocator (vcall +0x18/+0x38). Old 'merges' claim wrong. (lane owner review requested) Better name: Game_SceneManager_PickLeastUsedActorId (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.scene_manager_resolve_material_actor_ids",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CF 49",
+  "match": "0x1401ed220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401ed220",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneManager_ResolveMaterialActorIds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1401ed220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401ed220.c;xref:0x1401a6401",
+   "notes": "V7976 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

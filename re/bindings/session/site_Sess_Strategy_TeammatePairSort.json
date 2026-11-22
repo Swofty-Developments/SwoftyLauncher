@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Sess_Strategy_TeammatePairSort",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436abcaa",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1436abb70.c;decomp:re/decomp/1436b36f0.c;xref:0x1436abca4,0x1436abcaa,0x1436abcae",
+  "notes": "cmp r13,0x10; jb 0x1436abd80 in Sess_Strategy_UpdateTeammatePairs 0x1436abb70, per-team loop after 0x1424abd60 returns the car vector (r12 begin, rbp end, r13 bytes, 8 per record). cmp r13,9; jb 0x1436abc60 just before sends 0 or 1 car to the free/next-team path. 2+ cars: +0x81 of records 0/1 both set -> introsort 0x1436b36f0 (throws via Ne_Std_ThrowBadOptionalAccess on a record with +0x81 == 0), both clear -> 0x1436b3e00; only records 0/1 paired."
+ },
+ "signature": {
+  "id": "session.strategy_teammate_pair_sort",
+  "section": ".xtls",
+  "pattern": "49 83 FD 10 0F 82 ?? ?? ?? ?? 49 8B 04 24 49 8B 54 24 08 0F B6 88 81 00 00 00",
+  "match": "0x1436abcaa",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436abcaa",
+  "kind": "mid",
+  "expect": "49 83 FD 10 0F 82",
+  "names": [
+   "site_Sess_Strategy_TeammatePairSort"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "tp-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/teammate_pairs_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

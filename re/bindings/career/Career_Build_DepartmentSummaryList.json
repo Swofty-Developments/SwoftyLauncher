@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_DepartmentSummaryList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422faac0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_DepartmentSummaryList(void * self)",
+  "evidence": "decomp:re/decomp/1422faac0.c;xref:0x14577dd38",
+  "notes": "Vtable slot (cell 0x14577dd38). Builds the secret meeting screen: showing_interested_team, interested_team, display_data_team, screen_title/meeting_title/description/accept_meeting_text (lng_secret_meeting_1..3_*), team_performance (driver_list/team_list/team_ref), team_development (num_upgrades_applied, upgrades_success_rate, average_time, focus_department, department_list), team_hopes, can_go_back, show_all_meetings_as_completed. (lane owner review requested) Better name: Career_SecretMeetingVM_BuildScreen (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.build_department_summary_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 48 89 CE 48 8D 99 C0 02 00 00",
+  "match": "0x1422faac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422faac0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_DepartmentSummaryList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422faac0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422faac0.c;xref:0x14577dd38",
+   "notes": "V10106 Also binds secret-meeting and interested_team data (lng_secret_meeting_*, team_hopes), not just a department summary."
+  }
+ ],
+ "proofs": []
+}

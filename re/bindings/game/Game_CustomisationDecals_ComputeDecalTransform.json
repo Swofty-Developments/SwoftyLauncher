@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_ComputeDecalTransform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141423e40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141423e40.c;xref:0x141421022,0x142a95d57",
+  "notes": "(decal node, float out[16]): 4x4 matrix; row0 = normalize(vec [+0x88]+0x10) * scalar [+0x60]+8, row1 = normalize(cross(row0 dir, -normalize(vec [+0x80]+0x10))) * scalar [+0x78]+8, row2 = -normalize(vec [+0x80]+0x10) * scalar [+0x60]+8, row3 = xyz of [+0x58]+0x10 with w = 1; null scalar nodes give 0. Position is the +0x58 sub-node (not +0x60). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_compute_decal_transform",
+  "section": ".xtls",
+  "pattern": "48 83 EC 78 C5 78 29 64 24 60 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 89 D0",
+  "match": "0x141423e40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141423e40",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_ComputeDecalTransform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x141423e40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141423e40.c;xref:0x141421022",
+   "notes": "V8029 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

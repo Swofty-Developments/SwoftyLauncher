@@ -20,3 +20,4 @@ Owner: see `subsystems.tsv`. Rows: `kb.py find '\tfe_input\t'`. How input device
 - engine-re finding for FeInput_Add_PlayerProvider 0x1434d6fd0: cxx=game::Player::addPlayerInputProvider; attaches an input device provider to a Player and publishes device-present bools on VM nodes player+0x290/+0x2b0/+0x2d0 via Vm_NodeSet_Bool; returns 0x16 if the provider is incomplete; INPUT log; L1 (no clean caller xref, reached indirectly)
 - engine-re finding for FeInput_Remove_PlayerProvider 0x1434d7340: cxx=game::Player::removePlayerInputProvider
 - engine-re finding for FeInput_RemoveAll_PlayerProviders 0x1434d7850: cxx=game::Player::removeAllPlayerInputProviders
+- 2026-11-18 17:44 engine-re: engine-re E1 2026-11-18: FeInput_XInput_PollState 0x143a9e770 is the pad side of the gameplay input path in session.md#input-actions (XINPUT_STATE at obj+0xc); wheels go through DirectInput (Ne_InputDeviceDirectInput_Update 0x143a934f0).

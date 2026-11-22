@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_TextureMap_FatalStub",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ed51b0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ed51b0.c;xref:0x143bf04ce,0x143ed579e",
+  "notes": "10-byte noreturn stub: call Ne_Crt_InvalidParameterAbort (0x145351784); int3. Cold-path callers 0x143bf04ce (Render_Texture_CreateFromResourceCore) and 0x143ed579e (0x143ed51c0: KB name Ne_Container_GrowVectorChecked, but its body carries the ne_hash_map.h string and a (map, size) rehash signature). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.texture_map_fatal_stub",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC 4C 89",
+  "match": "0x143bf04ce",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ed51b0",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureMap_FatalStub"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143ed51b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ed51b0.c;xref:0x143bf04ce",
+   "notes": "V8288 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

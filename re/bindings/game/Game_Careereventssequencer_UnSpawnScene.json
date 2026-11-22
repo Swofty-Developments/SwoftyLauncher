@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Careereventssequencer_UnSpawnScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c7c890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c7c890.c;pat:log-message-method;xref:0x140c7a587,0x140c7a594,0x140c7a5a1,0x140c7a5ae",
+  "notes": "Logs 'unSpawnScene' (own). (this, slot): releases the scene object in global table 0x14605a9e0[slot] (refcount -1, vcall +8, owner vcall +0x38, cell=0), destroys the six global actors 0x14605a9a8..0x14605a9d0 via 0x140190bb0 + 0x14018ef80 on [0x14601db08]+0x68, clears +0x98. Called for slots 0..3 from the resetState chunk. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.careereventssequencer_un_spawn_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140c7c890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7c890",
+  "kind": "func_start",
+  "names": [
+   "Game_Careereventssequencer_UnSpawnScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c7c890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c7c890.c;xref:0x140c7a587,0x140c7a594",
+   "notes": "V4612 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

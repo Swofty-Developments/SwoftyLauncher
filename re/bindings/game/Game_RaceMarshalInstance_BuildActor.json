@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RaceMarshalInstance_BuildActor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403d2ed0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403d2ed0.c;xref:0x1403d1e3a",
+  "notes": "lea 0x1403d1e3a in 0x1403d1af0. Looks up scene 'RaceMarshal' in library [0x14601db08]+0x68 (0x1401a4810), instantiates it (0x1401a4b70) into inst+0x68 (TRACE 'buildFromSerialiser failed unable to find scene' when null), world matrix = inst matrix +0x20 x scene local, 0x1401e7aa0(obj,1); per actor: 'Flag' node +0x228 -> inst+0x78, hides 'mouth_x', actor+0x48 = 300.0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.race_marshal_instance_build_actor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC F0 01 00 00 C5 78 29 84 24 E0 01 00 00",
+  "match": "0x1403d2ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403d2ed0",
+  "kind": "func_start",
+  "names": [
+   "Game_RaceMarshalInstance_BuildActor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403d2ed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403d2ed0.c;xref:0x3d1e3c",
+   "notes": "V4665 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

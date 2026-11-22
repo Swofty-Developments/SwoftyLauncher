@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Vm_UserId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14328ec60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14328ec60.c;pat:log-message-method;xref:0x1408167cb,0x141697692",
+  "notes": "Read in full: once per request (+0x48): fetches picture (vcall +0x18); w*h*4 (size table 0x14582f230[idx]) RGBA copied, w*h*3 RGB expanded with alpha 0xff, else zeroed placeholder; logs VM 'userId %s has ... gamerPic ...'; texture name '%s%llu_%llu' (prefix, decoded user id, counter 0x1460c0810); queues a 0x68-byte create command on 0x146c621e0. Old name was a log fragment. (lane owner review requested) Better name: Game_Vm_LoadUserGamerPicTexture (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.vm_user_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 4C 89 C6 31 C0",
+  "match": "0x14328ec60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14328ec60",
+  "kind": "func_start",
+  "names": [
+   "Game_Vm_UserId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14328ec60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14328ec60.c;xref:0x1408167cc",
+   "notes": "V5847 Better name Vm_UserGamerPic_CreateTexture: handles userId gamerPic: RGB->RGBA conversion, transparent placeholder, .srv resource naming; not a userId accessor"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14328ec60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14328ec60.c;xref:0x1408167cb",
+   "notes": "V7039 current Game_ prefix; body is UI gamerPic texture creation -> Vm_UserGamerPic_CreateTexture per finding (prefix only); facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HairModifier_SetQualityChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401bc010",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401bc010.c;pat:log-message-method;xref:0x1455e2928",
+  "notes": "HairModifier vt cell 0x1455e2928, logs 'setQualityChanged m_strandHairEnabled %s'. If the actor (+0x10) has the expected type calls actor[0xb0] vt+0xc0('hair_x', !strandHairEnabled 0x145f8d26e): mesh hair shown when strand hair is off. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hair_modifier_set_quality_changed",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 79 B8 36 01 00 00",
+  "match": "0x1401bc010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401bc010",
+  "kind": "func_start",
+  "names": [
+   "Game_HairModifier_SetQualityChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401bc010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401bc010.c",
+   "notes": "V4340 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

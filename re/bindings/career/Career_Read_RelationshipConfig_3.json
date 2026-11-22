@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_Read_RelationshipConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412e8be0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1412e8be0.c;pat:log-channel--;xref:0x141668a94,0x1456d2280",
+  "notes": "Specialists save writer: Gdb_Write_ReflectedFieldA (0x143932a40) per field: specialistManagers, packedDriverStatId, cadenceIndexValid, cadenceIndex, specialistsContainer, isAvailable, isPrimary, selectedObjective, selectableObjectives, relationship.*, dynamicObjectives*, specialistObjective*, cooldown and history containers (managers +0x358..+0x360). Vtable cell 0x1456d2280. Not a config reader. (lane owner review requested) Better name: Career_Specialists_WriteSaveData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.read_relationship_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 4D 89 C5 48 89 D7",
+  "match": "0x1412e8be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412e8be0",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_RelationshipConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1412e8be0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1412e8be0.c;xref:0x141668a93",
+   "notes": "V4743 body is specialistManagers save-data serialise (packedDriverStatId, cadenceIndex, history) not a config read; better Career_Specialists_SerialiseSaveData_2"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1412e8be0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412e8be0.c",
+   "notes": "V7195 name fits; finding facts hold; vtable/indirect (no direct call)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1412e8be0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1412e8be0.c",
+   "notes": "V9177 This is the specialists save-data writer (27 field adds 143932a40: specialistManagers, packedDriverStatId, cadenceIndex, relationship.* fields), not a config reader."
+  }
+ ],
+ "proofs": []
+}

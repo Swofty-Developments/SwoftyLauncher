@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_CannedEvents_PressureLockUp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409bf490",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_CannedEvents_PressureLockUp(void *sys, void *evState, void *cfg, float dt)",
+  "evidence": "decomp:re/decomp/1409bf490.c;xref:0x1409bed3b,0x1409bed5b",
+  "notes": "Own lap progress from Game_VehicleProgressSystem_GetLapProgress ([sys+0x48], car ev+0x78; obf +0x68^+0x70 minus lap shorts * track length 0x146ce66b8, clamped). Scans the other cars ([sys+0x50] count) for one whose progress lies in (own - row+0x110, own - 0.25) with wrap (a car close behind). If none: return. If found: chance = (ev+0x130 + 1) * ((1 - T+0xb0) + 1) * (row+0x10c or +0x114) * ((T_other+0xa8 - T_own+0xa8) + 1); logs CANNED_EVENTS 'Vehicle ID: %d, pressure lock up chance %f, time %f ' (hash 0x7ea765c6 gate); ev+0x130 += dt; every 0.1 s step (counter ev+0x64) rolls RNG; on hit ev+0x68 = 1 and Ai_CannedEvents_SetObfLockupValue(ev, [cfg+0x48]+0x14 < 0, rand in [row+0x100,row+0x104]), then resets +0x130/+0x64. Caller Ai_CannedEvents_Update cases 2 and 3. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.canned_events_pressure_lock_up",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 B4 24 B0 00 00 00 C5 78 29 AC 24 A0 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 C5 F8 28 F3",
+  "match": "0x1409bf490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409bf490",
+  "kind": "func_start",
+  "names": [
+   "Ai_CannedEvents_PressureLockUp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409bf490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409bf490.c",
+   "notes": "V4377 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1409bf490",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1409bf490-0x1409bf8e7;xref:0x1409bed3b,0x1409bed5b",
+   "notes": "V10592 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Two calls 0x1409bed3b/0x1409bed5b in Ai_CannedEvents_Update. 4 args (xmm3 read). CANNED_EVENTS log Vehicle ID / pressure lock up chance / time, calls 0x1446046a0, RNG 0x143929b90, then 0x1409b3ad0 (0x1409bf87b)."
+  }
+ ],
+ "proofs": []
+}

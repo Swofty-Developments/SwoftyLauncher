@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_PDDIDTIDVIDTPCNCreatedAIEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14310fce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14310fce0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x143117d01,0x143109847,0x141ddbe89",
+  "notes": "Fills an AI entrant description *param_2 from template param_3 (driver/team/vehicle ids, 0x3fff = unset, team position via 0x14310e070, scan of the entrant vector); logs \"PD..CN - Created AI Entrant - %s\" (customised by delegate). (lane owner review requested) Better name: Game_NetworkEntrants_CreateAIEntrant (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_entrants_pddidtidvidtpcn_created_ai_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 02 00 00 44 88 4C 24 53",
+  "match": "0x14310fce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14310fce0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_PDDIDTIDVIDTPCNCreatedAIEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14310fce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14310fce0.c;xref:0x141ddbe89",
+   "notes": "V5755 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Build_TeamHqMyTeamTabViewModels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14431d720",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Build(void *hq, void **node, int index, void *tab)",
+  "evidence": "decomp:re/decomp/14431d720.c;xref:0x1414bfbfb;xref:0x1414bfc76;xref:0x1419f9eb5",
+  "notes": "myteam-g2: Very large UI builder (41 KB): creates child VM nodes/lists (Vm_GetOrCreate_ListChild, Vm_Register_ViewModel), snprintf labels, sets 'locked' flags (+0x148/+0x149), registers My Team hub tab view-models; throws bad_function_call if a callback is missing. UI only."
+ },
+ "signature": {
+  "id": "ui.build_team_hq_my_team_tab_view_models",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 05 00 00 C5 F8 29 B4 24 10 05 00 00 4C 89 8C 24 F0 01 00 00",
+  "match": "0x14431d720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14431d720",
+  "kind": "func_start",
+  "names": [
+   "Ui_Build_TeamHqMyTeamTabViewModels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14431d720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14431d720.c;xref:0x1414bfbfb",
+   "notes": "V10354 Strings tabs, tab_, content_template, header_template, current_tab; flags at +0x148/+0x149."
+  }
+ ],
+ "proofs": []
+}

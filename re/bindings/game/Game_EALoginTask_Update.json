@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EALoginTask_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143372c10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143372c10.c;xref:0x14583cce8",
+  "notes": "EALoginTask slot 15 update: while waiting (+0x138) and more than 5.0 s elapsed on the QPC timer (+0x148, divisor +0x158) calls Game_CheckPrivilegeTask_OnFinished 0x143372d60(task,0,0) (timeout path); when flag +0x170 is set clears it, runs 0x143371ff0 and marks the task finished. Addon: the 5 s privilege-check timeout lives here. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3323)"
+ },
+ "signature": {
+  "id": "game.e_a_login_task_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 B9 38 01 00 00 00",
+  "match": "0x143372c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143372c10",
+  "kind": "func_start",
+  "names": [
+   "Game_EALoginTask_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_EALoginTask_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143372c10.c;xref:0x143372c10",
+   "notes": "V3323 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

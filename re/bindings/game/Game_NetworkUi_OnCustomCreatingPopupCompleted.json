@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnCustomCreatingPopupCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ade60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430ade60.c;pat:log-message-method;xref:0x1430ae670,0x1430b22ac",
+  "notes": "Logs NETWORK-UI '%s().' with its own name onCustomCreatingPopupCompleted, then calls Game_GameSessionMatchingCustom_Cancel and updates VM nodes (Vm_NodeSet_Bool, Vm_Holder_SetCStr). Address taken (lea) in 0x1430ae3f0 and Game_Network_CECreate, i.e. passed as popup-completed callback. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ui_on_custom_creating_popup_completed",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 70 01 00 00",
+  "match": "0x1430ade60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ade60",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnCustomCreatingPopupCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430ade60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ade60.c;xref:0x1430ae672",
+   "notes": "V5338 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

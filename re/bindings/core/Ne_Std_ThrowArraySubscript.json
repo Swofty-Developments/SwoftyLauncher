@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ThrowArraySubscript",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435d5cd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435d5cd0.c;xref:0x143571438",
+  "notes": "Throws 'invalid array<T, N> subscript' (0x1449e16b4) then int3. Called from Sess_Flags_UpdateYellowReasons."
+ },
+ "signature": {
+  "id": "core.std_throw_array_subscript",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 89",
+  "match": "0x1435d5cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435d5cd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ThrowArraySubscript"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1435d5cd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435d5cd0.c;xref:0x143571438",
+   "notes": "V3816 Calls thrower FUN_1449e16b4 with message at 0x1456c66cd 'invalid array<T, N> subscript' then int3 (the 0x1449e16b4 cited is the thrower function, string is at 0x1456c66cd)."
+  }
+ ],
+ "proofs": []
+}

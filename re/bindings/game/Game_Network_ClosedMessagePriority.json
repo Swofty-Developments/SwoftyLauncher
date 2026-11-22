@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ClosedMessagePriority",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143062630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143062630.c;pat:log-channel-NETWORK;xref:0x1406d1d8b,0x1406d241a,0x1407c34f5,0x1430b2223,0x1430e0bb0",
+  "notes": "Many callers (sites listed are examples; 0x1430b2223 in Game_Network_CECreate passes network_invite_join_error_banned). (ui, msgId, callback, arg): if a message is open and the new one has higher priority closes it (logs '[UI_MESSAGE] closed message'), logs opened message, posts displayMessage (0x1406d5c20 on g 0x14604bbc8), builds the popup (0x1442d9bf0/0x1442aa6c0), sets lng_error_code, current_description, current_description_is_loc_tag. (lane owner review requested) Better name: Game_NetworkUi_DisplayMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_closed_message_priority",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 48 85 D2",
+  "match": "0x143062630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143062630",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ClosedMessagePriority"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143062630",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143062630.c;xref:0x1406d1d8c",
+   "notes": "V5520 412-line displayMessage UI message open/close (priority) + current_description setup. Better: Game_Network_DisplayUIMessage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143062630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143062630.c;xref:0x1406d1d8b",
+   "notes": "V6940 412 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

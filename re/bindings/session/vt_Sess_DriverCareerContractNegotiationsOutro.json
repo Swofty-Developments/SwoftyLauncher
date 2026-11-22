@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_DriverCareerContractNegotiationsOutro",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14585a530",
+  "type": "vtable[16]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;decomp:re/decomp/140843c30.c;xref:0x140843cbe,0x1437b406e",
+  "notes": "cxx=StateDriverCareerContractNegotiationsOutro; 16 slots (next vtable at +0x80, lea 0x1437c21bd). Slot 0 -> type record 0x146101c68, +8=name set by static init 0x1437c1990 at 0x1437c219e. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436c3330/0x1436c3750/0x1436c3820. Ctor 0x140843c30 (lea 0x140843cbe; mov [rsi],rax). Also loaded by 0x1437b4060 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.driver_career_contract_negotiations_outro",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 C5 F8 11 86 90 0C 00 00 C5 F8 11 86 80 0C 00 00 C7 86",
+  "match": "0x140843cbe",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14585a530",
+  "kind": "data",
+  "names": [
+   "vt_Sess_DriverCareerContractNegotiationsOutro"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14585a530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x140843cc1",
+   "notes": "V7467 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

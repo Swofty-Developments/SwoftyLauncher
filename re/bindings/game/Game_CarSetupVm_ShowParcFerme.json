@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_CarSetupVm_ShowParcFerme",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c1bf00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CarSetupVm_ShowParcFerme(void *vm, ...)",
+  "evidence": "decomp:re/decomp/140c1bf00.c;doc:re/db/subsystems/game.md;xref:0x140c1b819,0x140c1bec9,0x140c1eba7",
+  "notes": "Parc ferme view: refreshes nodes +0x7680/+0x76a0/+0x76c0, rebuilds presets (0x140c15e10, category [[+0x268]+1]), sets the slot record (+0x76d8 + idx*0x120) title 'lng_cs_parc_ferme_title', description 'lng_cs_parc_ferme_desciption', icon '#overrides.tablet.cs_preset_icons.%s_parc_ferme_icon'; bool +0x7da0 = 0, +0x7dc0 = 1; then 0x140c17250. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.car_setup_vm_show_parc_ferme",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 40 07 00 00 48 89 CE",
+  "match": "0x140c1bf00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c1bf00",
+  "kind": "func_start",
+  "names": [
+   "Game_CarSetupVm_ShowParcFerme"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Game_CarSetupVm_ShowParcFerme",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x140c1c0df",
+   "notes": "V1678 cg-verify: lng_cs_parc_ferme_title referenced"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Game_CarSetupVm_ShowParcFerme",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x140c1c0df",
+   "notes": "V3914 cg-verify: lng_cs_parc_ferme_title referenced"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c1bf00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c1bf00.c;xref:0x140bf9877,0x140c1b819",
+   "notes": "V4576 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

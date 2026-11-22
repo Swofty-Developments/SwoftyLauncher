@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkProgress_VehicleIdThreadIdTimeStamp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143271400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143271400.c;pat:log-channel-NETWORK-PROGRESS/V;xref:0x14326dd30,0x1432745df",
+  "notes": "cxx=NEbool network::VehicleProgressPrediction::calculateProgress(TimeStamp, VehicleProgressData&, VehicleProgressData&): logs vehicle id / thread id / time stamp, evaluates the history (VehicleProgressHistory::evaluateProgress inlined), caches predictions (cachePredictions inlined), interpolates m_predictions and calls 0x143256510 (extrapolate). Callers 0x14326a9c0, 0x143274180. (lane owner review requested) Better name: Game_NetworkProgress_CalculateProgress (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_progress_vehicle_id_thread_id_time_stamp",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 C5 78 29 BC 24 A0 04 00 00 C5 78 29 B4 24 90 04 00 00",
+  "match": "0x143271400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143271400",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkProgress_VehicleIdThreadIdTimeStamp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143271400",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143271400.c;xref:0x14326dd31",
+   "notes": "V5836 Better name Game_VehicleProgressPrediction_CalculateProgress: 7.4KB = VehicleProgressPrediction::calculateProgress + VehicleProgressHistory::evaluateProgress (pretty strings); the vehicle/thread/timestamp line is a trace"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143271400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143271400.c;xref:0x14326dd30",
+   "notes": "V7034 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

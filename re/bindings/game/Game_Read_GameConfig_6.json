@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameConfig_6",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14365a8b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14365a8b0.c;pat:log-channel--;xref:0x1458563d0",
+  "notes": "Body read in full (vt cell 0x1458563d0). Resolves services via param_2 vt+0x28 (0x146cb8278, 0x14604ec98 -> +0x20, 0x146cb8078 -> +0x28, 0x146cb8218 -> +0x30; missing -> 0x16); reads Game.EnableSaveGame/EnableSaving/EnableLoading into +0x1b4..+0x1b6, Game.EnableSaveSystemInSkipFE into +0x1b7 when Steam context 0x145f8d6a0 is set, Save.SaveTitleOverride into +0x80 (0x80 bytes); entry 0x146100bf8 of param_3 -> +0x148/+0x150; four 0x143658620 registrations on +0x38. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_game_config_6",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 70 01 00 00 4C 89 C3",
+  "match": "0x14365a8b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14365a8b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameConfig_6"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14365a8b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14365a8b0.c",
+   "notes": "V6111 Keys listed are read, but function (2696 bytes) is the save-system init: also reads lng_save_* titles and registers 4 save groups via 0x143658620 with sizes 0xa00000/0xe00000/0xc00000/0x1900000. Better: Game_SaveSystem_Init. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14365a8b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14365a8b0.c",
+   "notes": "V7088 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_RequestSessionUnload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d47f40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION_LOADER;decomp:re/decomp/142d47f40.c;xref:0x142df8c26",
+  "notes": "named from its log messages (channel SESSION_LOADER): 'Session unload requested for %s'"
+ },
+ "signature": {
+  "id": "session.loader_request_session_unload",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 E6 00 00 00",
+  "match": "0x142d47f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d47f40",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_RequestSessionUnload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Loader_RequestSessionUnload",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d47f40.c;xref:0x142df8c26",
+   "notes": "V1892 SESSION_LOADER 'Session unload requested for %s' (function also does thumbnail generation request)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ResultsContainer_OnTransitionDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d247c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d247c0.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141d247b8,0x141d50796,0x141d50ac0,0x145748d30,0x14574ac00",
+  "notes": "Body 0x141d247c0-0x141d24be9 read (decomp merges tail-jump targets 0x1417dfc50, 0x141d7dcd0). Switch on event hash *param_2: -0x570399ee sets +0x11b0; -0x78e45f5f / 0x6adae820 / 0x2d9097c3 log and invoke stored callbacks (+0x1078/+0x10b8/+0x10f8 via 0x1417dfc50); 0x2e4d24e3 opens the 'restart_resume_replay_confirm' popup or tail-jumps 0x141d7dcd0. Better name Game_ResultsContainer_OnUIEvent (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.results_container_on_transition_done",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC E8 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D C2 97 90 2D",
+  "match": "0x141d247c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d247c0",
+  "kind": "func_start",
+  "names": [
+   "Game_ResultsContainer_OnTransitionDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d247c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d247c0.c;xref:0x141d247b8",
+   "notes": "V5194 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

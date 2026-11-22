@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Career_UpgradeTypeOrder",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14566fd16",
+  "type": "uint8_t[19]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141238cb0.c;xref:0x141238f0a,0x141238f84,0x141c7e4c8,0x141c7e4df,0x141c75733,0x141c7574a,0x14353a3d0;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "19-byte upgrade type order (0..18), end 0x14566fd29; iterated by the vehicle fill 0x141238cb0, the department page and research category loops and the upgrade_type name resolvers"
+ },
+ "signature": {
+  "id": "career.upgrade_type_order",
+  "section": ".xtls",
+  "pattern": "4C 89 74 24 38 4D 8D 6E 28 4C 8D 3D",
+  "match": "0x141238f01",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x9",
+   "len": 7
+  },
+  "target": "0x14566fd16",
+  "kind": "data",
+  "names": [
+   "k_Career_UpgradeTypeOrder"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "k_Career_UpgradeTypeOrder",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141238cb0.c;xref:0x141238f0a,0x141238f84,0x141c75733,0x141c7574a,0x141c7e4c8,0x141c7e4df,0x14353a3d0,0x14353c6d0",
+   "notes": "V0080 bytes at 0x14566fd16 are 00..12 (19 bytes, identity order), end 0x14566fd29 referenced as loop end; readers incl. vehicle fill, research/dept loops, 0x143539bc0/0x14353c4f0/0x14353d4f0 (also 0x1409b9aa0, 0x14275f620, 0x143527a70 not listed)"
+  }
+ ],
+ "proofs": []
+}

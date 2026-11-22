@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_F1wCurrentEventCompletedAndSent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140754920",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140754920.c;pat:log-channel-TELEMETRY;xref:0x1406f0bf8,0x14070c1c1",
+  "notes": "Bus handler(this,msg); subscribed 0x1406f0bf8 (0x1406d8470), unregistered 0x14070c1c1. 0x88-byte record: returns 0 if msg+0x168 == 0; optional list msg+0x178..+0x180 (flag msg+400); log arg with rewards / without rewards. Tag 'f1w_current_event_completed_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'f1w current event completed and sent %s' (TELEMETRY). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_f1w_current_event_completed_and_sent",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 80 BA 68 01 00 00 00",
+  "match": "0x140754920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140754920",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_F1wCurrentEventCompletedAndSent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140754920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140754920.c",
+   "notes": "V4259 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Tls_GetThreadContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143abfc00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143abfc00.c;xref:0x1401eca7f,0x1406058b7",
+  "notes": "Returns TlsGetValue(slot g 0x1462923d4) or records error code 1 when the slot is unset. Callers: Game_SceneManager_BuildMaterialActorForScene."
+ },
+ "signature": {
+  "id": "core.tls_get_thread_context",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 0F B6 0D ?? ?? ?? ?? 48 85 C0 74 4A F6 C1 01",
+  "match": "0x1401eca7f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143abfc00",
+  "kind": "func_start",
+  "names": [
+   "Ne_Tls_GetThreadContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x143abfc00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143abfc00.c;xref:0x1401eca7f",
+   "notes": "V3478 TlsGetValue(slot 0x1462923d4) if != -1 else trace errno 1 return 0; caller Game_SceneManager_BuildMaterialActorForScene confirmed"
+  }
+ ],
+ "proofs": []
+}

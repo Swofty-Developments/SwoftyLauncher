@@ -57,10 +57,10 @@ Test Ring is now the addon Test Ring
 testring: track data: testring cloned from melbourne in 19 dataset(s): f1, f2, classic, ...
 ```
 
-The importer turns the zip into the addon `mod.testring`, installs it and turns it on in the active profile. You can also drop the zip on the launcher ([Tracks](/using/mods#tracks)). The addon holds the unpacked package and one op:
+The importer turns the zip into the addon `tester.testring` ([The addon's id](#the-addon-s-id)), installs it and turns it on in the active profile. You can also drop the zip on the launcher ([Tracks](/using/mods#tracks)). The addon holds the unpacked package and one op:
 
 ```text
-$DATA/addons/mod.testring/
+$DATA/addons/tester.testring/
 ├── swofty.json          category Tracks, kind database and erp
 ├── track/               the unpacked package: manifest.json, testring.erp, mipmaps/, ui/
 └── ops/track.json       { "op": "track.add", "source": "track" }
@@ -72,8 +72,23 @@ $DATA/addons/mod.testring/
 
 - A zip is a track package when it holds `manifest.json` at its root, or holds exactly one zip and no `swofty.json`, `mod.serps` or `F1 25/` folder. A download zip that wraps one package is unwrapped.
 - The `manifest.json` needs a `track_code` of letters, digits, `_` and `-`. Without one, the zip imports as an ordinary mod ([`.serps` packages](./serps)).
-- The track code becomes the mod's id. When another mod in the library already has that id, the id is `<code>-track`, then `<code>-track-2`. Importing the same track code again reuses its id.
+- The track code becomes the mod's id in the importer's library. When another mod in the library already has that id, the id is `<code>-track`, then `<code>-track-2`. Importing the same track code again reuses its id.
 - A track package converts without the game's files.
+
+## The addon's id
+
+The importer asks for the id `mod.<mod id>`. The launcher installs the addon under the first of these ids that no addon other than an import has:
+
+1. `<author>.<mod id>`, when `author_name` is set: `tester` and `testring` give `tester.testring`. The author is lowercased, accents are dropped (`José` gives `jose`), other letters with no plain spelling are left out, and each run of other characters becomes one `-` (`RM Designs` gives `rm-designs`). It is at most 32 characters. An author that gives nothing, or gives `swofty`, `mod`, `local`, `core`, `std`, `imported-mod` or `dbedit`, is skipped.
+2. `imported-mod.<mod id>`: `testring` without an `author_name` gives `imported-mod.testring`.
+
+The mod id keeps its library suffix: when another mod in the library has the id `testring`, the track by `tester` gives `tester.testring-track`.
+
+- An import installed before these rules keeps its id, such as `mod.testring`, and importing it again replaces it in place.
+- Importing a track again replaces the addon the last import made, under the same id.
+- A zip with a `swofty.json` installs as an addon under that file's `id` ([Install an addon](/using/addons#install-an-addon)), not through the importer.
+- The Addon Browser never updates an import, even when an Addon Browser addon has the same id. It doesn't install over one either: remove the import on the **Addons** page first. The import's row on the **Addons** page shows **Kept separate**, and the Addon Browser's button reads **Your import v1.0.0 has this id**.
+- An import and an Addon Browser addon that add the same track code can both be installed. A build with both on stops: `track testring is added by both imported-mod.testring and mod.testring; turn one of them off on the Addons page`.
 
 ## The manifest
 
@@ -91,7 +106,7 @@ mytrack: sprint f1_2025: mytrack has no weekend format in that data set, so it t
 A build leaves out a package with neither `copy_from_track` nor `copy_slot`, or with a `manifest.json` that doesn't read, and builds the rest of the profile. It warns:
 
 ```text
-Portimao (mod.portimao): track Portimao is left out; its manifest.json doesn't say which track it replaces or copies. Import a fixed version, or ask its author for one
+Portimao (imported-mod.portimao): track Portimao is left out; its manifest.json doesn't say which track it replaces or copies. Import a fixed version, or ask its author for one
 ```
 
 A race weekend set to a track the build leaves out races at its stock track again, with a warning. Importing or installing such a package shows the same warning, and the **Addons** page marks its addon **Track left out**.
@@ -145,6 +160,21 @@ testring: fixed the AI pit lane of Test Ring so F1 25 doesn't crash when an AI c
 ```
 
 A pit lane whose white lines vary along its length, as at the stock tracks, needs no change.
+
+When the racing line breaks one of the rules below, F1 25 can't load it and crashes as a session on the track loads or starts. The build stops on such a racing line, and Play doesn't start. Gates count in file order from 0.
+
+- The racing line is a `<track>` with all seven lists: `gates`, `links`, `routes`, `brake_lines`, `corner_start_lines`, `corner_end_lines` and `retire_lines`. A list can be empty.
+- Every link has an `id`, and its `from_gate` and `to_gate` are gates of the track: 0 to the number of gates minus 1.
+- Every route has a `type`, `from_route` and `to_route` of `track` or `pit`, and a `from_link` and `to_link` with at least one link id between them.
+- Every brake line, corner end and retire line has an `id` and a `gate_id` of 0 to the number of gates minus 1.
+- Every corner start has an `id` and a `gate_id` of 1 to the number of gates minus 1, and so has its `pair_id` when it has one. Gate 0, the first gate of the lap, can't start a corner.
+- Every retire line has `x`, `y`, `z` and `side`.
+
+The build names the first line that breaks a rule and counts the rest:
+
+```text
+Test Ring would crash F1 25 when a session on it starts: the game can't load its AI data, because corner start 12 starts at gate 0, the first gate of the lap, where no corner can start. Ask the track's author to fix it. Turn Test Ring off in this profile, and set any race weekend that uses it back to another track.
+```
 
 ## Check the build
 

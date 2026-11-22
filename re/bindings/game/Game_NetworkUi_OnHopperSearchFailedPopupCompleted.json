@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnHopperSearchFailedPopupCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ae0b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430ae0b0.c;pat:log-message-method;xref:0x1430b05f7,0x1430b061a",
+  "notes": "Logs NETWORK-UI '%s().' with onHopperSearchFailedPopupCompleted, calls Game_GameSessionMatchingHopper_Cancel([ctx+0x3f0],0xb); if the answer string (*param_2+9) equals 'retry' it re-requests the search via Game_NetworkUI_RequestedHopperSearchGameType. Address taken (lea) twice in Game_NetworkUI_SessionMatchedUnsuitableSafety. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ui_on_hopper_search_failed_popup_completed",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 70 01 00 00",
+  "match": "0x1430ae0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ae0b0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnHopperSearchFailedPopupCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430ae0b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ae0b0.c;xref:0x1430b05f9",
+   "notes": "V5341 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

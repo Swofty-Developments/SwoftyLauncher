@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MorphModifier_PreWriteToLocalTransforms",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401c6af0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401c6af0.c;pat:log-message-method;xref:0x14560bcc0",
+  "notes": "Virtual (cell 0x14560bcc0). Enabled (+8) and actor LOD < 2: evaluates layers (0x143a37610, cb 0x1401c5c50); then advances three random idle timers (LCG seed +0x150), smooths weights 0.1/0.9 into channels +0x1a8/+0x1b0/+0x1b8, calls 0x1401c7010/0x1401c71b0(dt). Missing set logs 'preWriteToLocalTransforms %p...'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.morph_modifier_pre_write_to_local_transforms",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 C5 F8 29 74 24 40 80 79 08 00",
+  "match": "0x1401c6af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401c6af0",
+  "kind": "func_start",
+  "names": [
+   "Game_MorphModifier_PreWriteToLocalTransforms"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401c6af0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401c6af0.c",
+   "notes": "V4356 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

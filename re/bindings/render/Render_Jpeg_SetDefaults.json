@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_SetDefaults",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d3f50",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d3f50.c;xref:0x14379cf64,0x144bd902b",
+  "notes": "libjpeg jpeg_set_defaults: requires global_state 100 (error 0x15), allocates 0x3c0 bytes of component info, data_precision 8, jpeg_set_quality(75) (0x1449d4404), four standard Huffman tables via add_huff_table (0x1449de7cc), arith/restart/smoothing defaults, then colorspace defaults. Callers 0x14379cf64 (0x14379c250), 0x144bd902b (0x144bd8ea0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.jpeg_set_defaults",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 83 79 24 64 48",
+  "match": "0x1449d3f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d3f50",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_SetDefaults"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1449d3f50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449d3f50.c;xref:0x14379cf64",
+   "notes": "V7708 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

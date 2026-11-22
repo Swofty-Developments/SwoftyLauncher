@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_OsMetrics_RecordArgs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432bf450",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432bf450.c;pat:log-message-method;xref:0x1432c33b7,0x14330424a",
+  "notes": "(mgr, id, str): logs 'recordArgs %d: %s' (OS_METRICS), looks id up in the record hash map (+0x20 seed, +0x28 slots, +0x30 control, +0x40 mask), copies str (<0x7f chars) and passes it to the record's args setter 0x1404fbbd0 (record = node+0x28). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.os_metrics_record_args",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 8E 08 01 00 00 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 03",
+  "match": "0x1432c33b7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1432bf450",
+  "kind": "func_start",
+  "names": [
+   "Game_OsMetrics_RecordArgs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1432bf450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432bf450.c;xref:0x1432c33b7",
+   "notes": "V7356 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

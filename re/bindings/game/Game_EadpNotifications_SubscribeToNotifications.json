@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EadpNotifications_SubscribeToNotifications",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fd99c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fd99c0.c;pat:log-message-method;xref:0x145a45228",
+  "notes": "Virtual (vtable cell 0x145a45228); returns if +0x68 null. Logs 'Notifications Disconnected Error: code %u' (+0x8c), 'Notification service waiting for connect', 'Starting notification service after connect and %u seconds', allocates holders (vtables 0x145a45fb0/0x145a45fd0), builds a PlayerId (0x1449a3530), logs 'subscribeToNotifications completed'. (lane owner review requested) Better name: Game_EadpNotifications_StartNotificationService (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.eadp_notifications_subscribe_to_notifications",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 83 79 68 00",
+  "match": "0x143fd99c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fd99c0",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpNotifications_SubscribeToNotifications"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fd99c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fd99c0.c",
+   "notes": "V6332 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

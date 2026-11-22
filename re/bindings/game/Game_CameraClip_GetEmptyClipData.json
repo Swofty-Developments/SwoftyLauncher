@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CameraClip_GetEmptyClipData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140183c30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140183c30.c;xref:0x14019a533,0x1437fb5f6,0x1437fb600,0x1437fb61d,0x1437fb627,0x1437fb9b4,0x1437fb9be",
+  "notes": "Returns &0x1460446dc: a static 32-byte object zeroed once under the thread-safe init guard 0x1460446fc (0x1449e05fc/0x1449e06b0). Callers use it as an empty default (0x14019a533 in 0x140199cd0, 0x1437fb5f6,0x1437fb600,0x1437fb61d,0x1437fb627,0x1437fb9b4,0x1437fb9be in 0x1437fad40). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.camera_clip_get_empty_clip_data",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 7F 0C 48 8D 05 ?? ?? ?? ?? 48 83 C4 28 C3 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 83 3D ?? ?? ?? ?? FF 75 DF C5 F8 57 C0 C5 F8",
+  "match": "0x140183c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140183c30",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraClip_GetEmptyClipData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140183c30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140183c30.c;xref:0x14019a533",
+   "notes": "V7961 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_NewSessionNameWill",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430fc720",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430fc720.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x143070bab,0x14307677e",
+  "notes": "Logs '[LEAVE] Leaving session %s' (this+0x1c8) and, with a non-empty param_2, '[LEAVE] The new session name will be %s'; copies the names and starts the leave with completion callback 0x1430ffb70 (lea 0x1430fc9d5). Callers 0x143070a80, 0x1430766c0. (lane owner review requested) Better name: Game_NetworkOSSession_LeaveSession (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_os_session_new_session_name_will",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430fc720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430fc720",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_NewSessionNameWill"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430fc720",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430fc720.c;xref:0x143070bab",
+   "notes": "V5426 better name Game_NetworkOSSession_LeaveSession: 253-line leave-session routine (Leaving session / new name logs); new-name log is one part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1430fc720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430fc720.c;xref:0x143070bab",
+   "notes": "V6980 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

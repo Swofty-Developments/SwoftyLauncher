@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowVerbose_SessionStateRTTDriverOfTheDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d8caa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d8caa0.c;pat:log-channel-FLOW_VERBOSE;xref:0x1457e22f0",
+  "notes": "Slot 4 (+0x20, onStateEnter) of state vtable 0x1457e22d0 (cell 0x1457e22f0). Logs 'onStateEnter setThumbnailGenerationEnabled'/'onStateEnter wait'. First pass caches player car +0xdc8/+0xdd0; finds DOTD driver entry, enables thumbnail system (flag 0x10 at +0x140 or THUMBNAIL_SYSTEM reject log), starts capture 0x142e30a60(kind 0x17) handle +0xdc0, +0xdc4=1; returns true once 0x142e39bb0 status == 2. (lane owner review requested) Better name: Game_SessionStateRTTDriverOfTheDay_OnStateEnter (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.flow_verbose_session_state_rtt_driver_of_the_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 40 B6 01 48 83 B9 B0 0D 00 00 00",
+  "match": "0x142d8caa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d8caa0",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowVerbose_SessionStateRTTDriverOfTheDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d8caa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d8caa0.c",
+   "notes": "V5419 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

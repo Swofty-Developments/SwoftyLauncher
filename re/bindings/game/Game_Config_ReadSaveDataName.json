@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Config_ReadSaveDataName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143652660",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143652660.c;xref:0x1407ccd01,0x1407d398a,0x1407d7fcc,0x140d0027b,0x140d0071b,0x140d00bdb,0x140d00f5b,0x140d0131b,0x140d0183b,0x140d01beb,0x140d01f9b,0x140d0230b,0x140d0267b,0x140d02aab,0x140d02e0b,0x140d03295,0x140d0375b,0x140d03acb,0x140d03f1b,0x140d042db,0x140d0463b,0x140d0499b,0x140d04d3b,0x140d050fb,0x140d055eb,0x140d05e1b,0x140d0628b,0x140d0669b,0x140d06a5b,0x140d06f8b,0x140d0735b,0x140d076ab,0x140d07b7b,0x140d07ecb,0x140d08bfb,0x140d08fdb,0x140d0932b,0x140d0970b,0x140d09afb,0x140d0a2db,0x140d0c98b,0x140d0d88b,0x140d0e34b,0x140d1029b,0x140d105fb,0x140d10efb,0x140d116db,0x140d11aeb,0x140d11ecb,0x140d1229b,0x140d1265b,0x140d12a3b,0x140d12e8b,0x140d1355b,0x140d13e4b,0x140d141db,0x140d145cb,0x140d14abb,0x140d14e0b,0x140d1518b,0x140d1558b,0x140d15a6b,0x140d15dfb,0x140d1614b,0x140d1649b,0x140d16a6b,0x140d16e3b,0x140d171eb,0x140d1757b,0x140d178eb,0x140d17c7b,0x140d1802b,0x140d18444,0x140d1895b,0x140d194db,0x140d1986b,0x140d1a09b,0x140d1a4bb,0x140d1a80b,0x140d1b0fb,0x140d1b8bb,0x140d1bf8b,0x140d1c7eb,0x140d1ced4,0x140d1d3db,0x140d1e1ab,0x140d1e54b,0x140d1e89b,0x140d1ec3b,0x140d1f00b,0x140d1f38b,0x140d1f72b,0x140d1fc44,0x140d2053b,0x140d2090b,0x140d20deb,0x140d2127b,0x140d2160b,0x140d219cb,0x140d21d8b,0x140d2215b,0x140d22c2b,0x140d23184,0x140d236bb,0x140d23afb,0x140d2400b,0x140d2448b,0x140d24b5b,0x140d24f4b,0x140d2540b,0x140d2575b,0x140d27f2b,0x140d28a6b,0x140d28dbb,0x140d291fb,0x140d2964b,0x140d29a7b,0x140d29e3b,0x140d2a18b,0x140d2a654,0x140d2aa7b,0x140d2af1b,0x149bd7afb,0x149bdd55b,0x149bdd96b,0x149be03ab,0x149be196b,0x149be2efb,0x149be588b,0x149bf9e2b,0x149bfef5b,0x149bfff5b,0x149c01ffb,0x149c095db,0x149c0f13b,0x149c2003b,0x149c205ab,0x149c2525b,0x149c2645b,0x149c29d7b,0x149c2a72b,0x149c47e14,0x149c4828b,0x149c4c6db,0x149c4cb9b,0x149c5878b,0x149c5b50b,0x149c5e2ab,0x149c6be1b,0x149c6f514,0x149c7143b,0x149c77a1b,0x149c8284b,0x149c8771b,0x149c89a5b,0x149c8a40b,0x149c8ee1b,0x149c9207b,0x149c95b24,0x149c9c4eb,0x149ca213b,0x149cbe81b,0x149cc935b,0x149cc9ec4,0x149ccb19b",
+  "notes": "(out, node, groupMask): 'save_data.name' (XOR key 0x145890978) into inline string out[0..0x58], 'save_data.group' & groupMask XOR random key (+0x58, key +0x60), 'save_data.allow_reset' bit (+0x68, key +0x70), 'save_data.backup' bit (+0x78, key +0x80). Renamed: old name covered only the first field. (lane owner review requested) Better name: Game_Config_ReadSaveDataDesc (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.config_read_save_data_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C3 48 89 D7 48 89 CE 48 8D 15",
+  "match": "0x143652660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143652660",
+  "kind": "func_start",
+  "names": [
+   "Game_Config_ReadSaveDataName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143652660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143652660.c;xref:0x1407ccd01,0x1407d7fcc",
+   "notes": "V3829 Reads node key 'save_data.name' (0x145855da3) via 1445a2cf0, XOR de-obfuscates with 4-byte key at 0x145890978; 171 call sites, named callers present."
+  }
+ ],
+ "proofs": []
+}

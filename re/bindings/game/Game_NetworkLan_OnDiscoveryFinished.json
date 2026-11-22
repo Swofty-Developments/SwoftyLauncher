@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLan_OnDiscoveryFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144092690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144092690.c;pat:log-message-method;xref:0x145a54570",
+  "notes": "Logs 'onDiscoveryFinished received', sets state this+0x48 = 4, calls the completion callback this+0x58(this+0x60, 1, this+0x68, 1), clears it and releases the result list (refcounted entries at result+0x18..+0x20). Only ref: vtable cell 0x145a54570. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_lan_on_discovery_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 AF 00 00 00 48 8D 0D ?? ?? ?? ?? 66 0F 1F 84 00 00 00 00 00 8B 14 81 81 FA 55 5C A0 C7 74 34 85 D2 74 43 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D AF 00 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? C7 46 48 04 00 00 00",
+  "match": "0x144092690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144092690",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLan_OnDiscoveryFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144092690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144092690.c",
+   "notes": "V6520 size=769; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

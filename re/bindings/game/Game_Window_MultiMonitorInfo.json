@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Window_MultiMonitorInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439c8810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439c8810.c;pat:log-message-method;xref:0x142c94424,0x1439c3256,0x1439f7043,0x1439fa389",
+  "notes": "Read in full: resets grid +0xa00 = 1x1 and rect +0xa08..+0xa14; on NVIDIA (vendor 0x10de) queries NvAPI Mosaic topology (0x140002b20/0x140002ce0/0x140002bf0) -> grid from tables 0x1458a0768/0x1458a07a0 and display rect; then display-config entries +0x778 (0x78 stride) override grid/rect and pick the primary (+0x750/+0x754, copy 0x1d8 bytes to +0x578, +0x3997); +0xa19 = aspect <= 16:9; logs both 'multiMonitorInfo: ...' lines. (lane owner review requested) Better name: Game_Window_UpdateMultiMonitorInfo (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.window_multi_monitor_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 48 89 CE",
+  "match": "0x1439c8810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439c8810",
+  "kind": "func_start",
+  "names": [
+   "Game_Window_MultiMonitorInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439c8810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439c8810.c;xref:0x142c94424",
+   "notes": "V6395 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GlobalProgressData_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f651f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f651f0.c;pat:log-message-cxx;xref:0x14faab7ae,0x14faab839",
+  "notes": "Constructor of a 0xba0-byte entrant (out, a2, a3, veh byte a4, ...): +0 a2, +8 a6, GlobalProgressData at +0x28 (0x1445feb90), RNG state (0x270 words) seeded, 3 vehicle components looked up by type for veh!=0xff into +0x10/+0x18; tail = inlined GlobalProgressData::reset (PROGRESS log). Both calls are in the VIRTUAL-SESSION 'Created virtual entrant' builder 0x14faab5c0 (stride 0xba0). (lane owner review requested) Better name: Game_VirtualSessionEntrant_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.global_progress_data_reset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 44 89 CB 44 89 C7",
+  "match": "0x142f651f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f651f0",
+  "kind": "func_start",
+  "names": [
+   "Game_GlobalProgressData_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f651f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f651f0.c;xref:0x14faab7ae",
+   "notes": "V5650 Is a constructor (8 params, seeds RNG state 0x12345678 mt table, init fields) with reset log only at the end; better Game_GlobalProgressData_Construct"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f651f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f651f0.c",
+   "notes": "V6919 constructor confirmed; RNG seed constant is 0x1234567912345678 (param_1[0x2b]) not just 0x12345678; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

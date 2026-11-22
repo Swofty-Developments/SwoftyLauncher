@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_FillBuildInfoRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14077b4c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14077b4c0.c;xref:0x14077a359,0x14077c0b5",
+  "notes": "Fills record header param_2 from context param_3 (built by 0x14077a3d0): '{UID_TAG}', +0x70=0x15a289, 'master','win','steam', player name for ctx+0x50 (else 'unknown' / ctx+0x60), country ctx+0x58 ('??'), ctx+0x10..+0xe4, this+0x20318. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_build_tag_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 4C 89 C7 48 89 D6 48 89 CB 48",
+  "match": "0x14077b4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14077b4c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_FillBuildInfoRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14077b4c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14077b4c0.c;xref:0x14077a359",
+   "notes": "V8448 fills many event record fields via setters (UID_TAG, master, steam, build ids); not a tag-string builder; better name Game_Analytics_FillBuildInfoRecord"
+  }
+ ],
+ "proofs": []
+}

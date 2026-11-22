@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EndRaceUiSequencer_StopSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea5800",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ea5800.c;pat:log-message-method;xref:0x142dabaa1",
+  "notes": "Logs 'stopSequence() called'; for each active UI request posts the cancel bus msg (vt 0x14565e950 with id +0x80 if +0x81, +0x82 if +0x83, 0x2b if +0x87; vt 0x1457f19b0 if +0x86) and clears the flag; if VO delegates were set (+0x70) removes both speech delegates (0x140a35e10 at +0x960/+0x9a0); sets next state +0x59 = 0xe. Caller 0x142dab950. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.end_race_ui_sequencer_stop_sequence",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4E B8 A1 00 00 00",
+  "match": "0x142ea5800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea5800",
+  "kind": "func_start",
+  "names": [
+   "Game_EndRaceUiSequencer_StopSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea5800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea5800.c;xref:0x142dabaa1",
+   "notes": "V5550 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

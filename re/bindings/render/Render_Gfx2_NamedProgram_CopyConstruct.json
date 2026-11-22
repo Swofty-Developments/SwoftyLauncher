@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_NamedProgram_CopyConstruct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143dcb650",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143dcb650.c;xref:0x143b5c593,0x143f04508",
+  "notes": "Copy constructor of the program description held at NamedProgram+0x10: copies 8 pointer pairs, memcpy 0x334 bytes at +0xa0, three shared_ptr copies with refcount++ at ctrl+8 (+0x3d8/+0x3e8/+0x3f8), clones a callable at +0x468 via its vcall slot 0 into +0x430, copies the trailing fields up to +0x500. Callers 0x143b5c593 (Render_Gfx2_NamedProgram_Create, right after its vtbl store) and 0x143f04508 (in 0x143f044a0). (lane owner review requested) Better name: Render_Gfx2_NamedProgramDesc_CopyConstruct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_named_program_copy_construct",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE C5 F8 28 02",
+  "match": "0x143dcb650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143dcb650",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_NamedProgram_CopyConstruct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143dcb650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143dcb650.c;xref:0x143b5c593",
+   "notes": "V8351 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

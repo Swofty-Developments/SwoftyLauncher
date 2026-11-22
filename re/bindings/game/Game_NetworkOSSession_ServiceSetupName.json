@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_ServiceSetupName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143070a80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143070a80.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x14306f726,0x143159428",
+  "notes": "Logs 'Service setup with name: %s'; if a session with another name is active (this+0x70, name this+0x1c8) logs 'Found an existing session with name %s, leave it' and calls 0x1430fc720 (leave), then copies the new name. Callers 0x14306f4d0, 0x143159080. (lane owner review requested) Better name: Game_NetworkOSSession_SetupService (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_os_session_service_setup_name",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6F B8 E7 00 00 00",
+  "match": "0x143070a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143070a80",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_ServiceSetupName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143070a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143070a80.c;xref:0x14306f727",
+   "notes": "V5557 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Neos_SignalRReadStatusInt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144445db0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144445db0.c;xref:0x144444be9",
+  "notes": "Only caller 0x144444be9. Looks up member 'S' in the parsed JSON object; if it is an int copies it to *param_3 (missing value logged on JSON); returns found && *param_3 == *param_2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.neos_signal_r_read_status_int",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 C7 48 89 D3 31 D2",
+  "match": "0x144445db0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144445db0",
+  "kind": "func_start",
+  "names": [
+   "Game_Neos_SignalRReadStatusInt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x144445db0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144445db0.c;xref:0x144444be9",
+   "notes": "V4125 finds member S, reads int into *param_3 and returns found && *param_3 == *param_2; caller Game_Neos_SignalRHandleStartResponse 0x144444be9"
+  }
+ ],
+ "proofs": []
+}

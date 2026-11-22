@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkContent_ConnectedHostSendingLanguageID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303a520",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14303a520.c;pat:log-channel-NETWORK-CONTENT;xref:0x14305b33e,0x143064c01",
+  "notes": "Client side: resets lists, stores host conn this+0xe0 and own conn this+0xe1, sends the language report; logs \"Connected to host %d, sending language ID %d (conn %d)\" and the addPlayerConnectionID mask. (lane owner review requested) Better name: Game_NetworkContent_ConnectToHost (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_content_connected_host_sending_language_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 44 89 C6 89 D3 48 89 CF 8B 89 E4 00 00 00",
+  "match": "0x14303a520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303a520",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkContent_ConnectedHostSendingLanguageID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303a520",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14303a520.c;xref:0x143039464",
+   "notes": "V5436 also calls addPlayerConnectionID (mask update) in two branches; handler for connecting to host. Better: Game_ContentDomainVerifier_OnConnectedToHost"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x14303a520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303a520.c;xref:0x143039463",
+   "notes": "V6935 135 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

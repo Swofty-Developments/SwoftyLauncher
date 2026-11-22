@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_InitCommon",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14371fe70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14371fe70.c;xref:0x1436ddf1d,0x1436e0e03,0x14372f3d3,0x1437307b6,0x143730d23,0x143731143,0x143731613,0x143731a23,0x143731f5e,0x143732433,0x143732ad3,0x143732ef3,0x143733313,0x14373372e,0x143733cab,0x143734173,0x143734593,0x1437349b3,0x143734f23,0x143735493,0x1437358b3,0x143735cd3,0x1437360f3,0x143736523,0x143736943,0x143736d63,0x143737186,0x143737956,0x1437381af,0x1437388a6,0x143739266,0x143739678,0x143739913,0x143739d33,0x14373a153,0x14373a6d3,0x14373ab16,0x14373b123,0x14373b78b,0x14373c217,0x14373c941,0x14373cf67,0x14373d624,0x14373dda6,0x14373e3af,0x14373e963,0x14373ee53,0x14373f283,0x14373f822,0x143740293,0x143740905,0x143740bd6,0x1437414d3,0x143741906,0x143741e13,0x1437423c5,0x1437426a3,0x143742ab3,0x143742f83,0x1437434ec,0x143743983,0x143743da3,0x1437441c3,0x1437445e3,0x143744a03,0x143744e13,0x1437452f3,0x143745716,0x1437461f3,0x14374687f,0x143746c76,0x1437474b3,0x1437478d3,0x143747cf3,0x14374853a,0x143748b26,0x143749143,0x143756d4d,0x143756ea8,0x14375873b,0x143759821,0x143759f83,0x14375a3b3,0x14375ac13,0x14375b053,0x14375b573,0x14375b9d6,0x14375bf33,0x14375c513,0x14375cae3,0x14375d6b0,0x14375dc06,0x14375ded3,0x14375e44b,0x14375e893,0x14375ecc3,0x14375f193,0x14375f5d3,0x14375fa13,0x143760063,0x14376580d,0x151207f2e,0x1512103f9",
+  "notes": "Constructor of the common stat-event context (vtable 0x145860b90, DummyUserId default): +8 vehicle id (param_2[0x55]), +0x2c byte, +0x30 type flag, +0xc from param_3+0x30, +0x28 class from thresholds, +0x20 session id via table 0x145874010[type-5], +0x24 count clamped to 5, +0x14/+0x18/+0x10/+0x1c from entrant param_5 (100 if unset), +0x34 game-mode category 0..0xb (9 when 0x1407bea70 is true, 0xb on setting 0x14605b068). Callers: every StatEvent handler (xref). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_init_common",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 CB 4D 89 C6",
+  "match": "0x14371fe70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14371fe70",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_InitCommon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x14371fe70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14371fe70.c;xref:0x1436ddf1d",
+   "notes": "V7594 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

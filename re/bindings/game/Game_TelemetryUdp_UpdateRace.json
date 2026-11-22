@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryUdp_UpdateRace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cf9820",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cf9820.c;decomp:re/decomp/142cfe4f0.c;xref:0x142d02c45,0x142d62fa0,0x142d8fd82,0x14e7730e2",
+  "notes": "Returns without player car (Sess_Get_PlayerVehicleIndex(state+0xd200)) or sender +0xd2a0. Sess_CopyOptionsToState, SyncLapData + UpdateCarSessionHistory for round-robin car +0xd32c, per-car telemetry at state+0x13ca+id*0x3b (gear GearBox+0x680-1, rpm Engine+0x2538*60/2pi, DRS F1Aero+0x1988&1), UpdateCarDrsAndDamage, BuildLapPositions(+0xd334); +0xd32c/+0xd334 advance modulo. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.telemetry_udp_update_race",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 0F B6 FB 80 3D",
+  "match": "0x142d02c45",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142cf9820",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryUdp_UpdateRace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x142cf9820",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142cf9820.c;xref:0x142d02c45,0x142d62fa0",
+   "notes": "V3467 Returns when player index (0xd9a0) == -1 or sender +0xd2a0 null; calls 0x142cfaec0, SyncLapData 0x142cfd6c0, packet fns 0x142cfe4f0/0x142cfec80/0x142d00060/0x142d01660/0x142d01e10, LapPositions 0x142d025a0 with +0xd334, +0xd32c advance mod count: all ok. Callers ok. But +0xd298 (lap times) never referenced in this function"
+  }
+ ],
+ "proofs": []
+}

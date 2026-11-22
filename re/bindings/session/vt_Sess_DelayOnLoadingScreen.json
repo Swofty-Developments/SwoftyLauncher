@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_DelayOnLoadingScreen",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457de6c0",
+  "type": "vtable[20]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142dbd000.c;pat:flow-state-type-record;decomp:re/decomp/142db2fb0.c;xref:0x142db2fbb,0x142dbd0e8",
+  "notes": "cxx=SessionStateDelayOnLoadingScreen; 20 slots (next vtable at +0xa0, lea 0x142d58629). Slot 0 -> type record 0x14607d568, +8=name set by static init 0x142df1ca0 at 0x142df35f0. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142d586a0/0x142d586c0/0x142d58d10. Ctor 0x142dbd000 (lea 0x142dbd0e8; mov [rsi],rax). Also loaded by 0x142db2fb0 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.delay_on_loading_screen",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 81 C1 80 0E 00",
+  "match": "0x142db2fbb",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457de6c0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_DelayOnLoadingScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457de6c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142db2fbe",
+   "notes": "V7440 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

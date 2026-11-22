@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_BitAllocator_AllocBit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140311ac0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140311ac0.c;xref:0x14014cbcf,0x1401713ef",
+  "notes": "Critical-section guarded bitset allocator: scans for first free bit starting at +0x20, sets it, returns index; fatal abort when full. Callers Render_Gfx2Device_Initialise, Render_Gfx2Buffer_Construct (descriptor/slot index allocation). Hypothesis on use."
+ },
+ "signature": {
+  "id": "core.bit_allocator_alloc_bit",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 49 28 FF 15",
+  "match": "0x140311ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140311ac0",
+  "kind": "func_start",
+  "names": [
+   "Ne_BitAllocator_AllocBit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140311ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140311ac0.c;xref:0x14014cbcf",
+   "notes": "V7990 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

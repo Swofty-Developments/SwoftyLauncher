@@ -34,8 +34,7 @@ struct IndexResult {
 
 IndexResult load_index(const std::string &swofty_dir);
 int load_data_file(const std::string &addon, const std::string &path, const std::string &text);
-int write_reports(const std::string &registry_dir,
-                  const std::function<void(Value &effective, Value &conflicts)> &extend = {});
+int write_reports(const std::string &registry_dir, const std::function<void(Value &effective, Value &conflicts)> &extend = {});
 
 using StatIdSource = std::function<int(const std::string &registry, const std::string &id, int64_t *out)>;
 void set_stat_id_source(StatIdSource fn);

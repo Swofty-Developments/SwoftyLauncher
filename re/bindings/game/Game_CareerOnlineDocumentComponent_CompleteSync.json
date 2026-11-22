@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineDocumentComponent_CompleteSync",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fcf560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fcf560.c;str:s_Championship_CareerOnlineDocumentComponent_CompleteSync;xref:0x140fd2dfa,0x140ff7a70,0x140ff7e0f,0x140ff7edf",
+  "notes": "If a sync step is active (+0x2c0 != 0): logs 'aborting sync while steps is client_sync/host_sync', 0x143104060([+0x2b8]), +0x2c0 = 0, clears the key vectors (+0x320 = +0x318, +0x340 = +0x338) and the hash set +0x2e8 (count +0x2f0 = 0, control bytes reset, +0x308 = 0x20). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_online_document_component_complete_sync",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 8B 81 C0 02 00 00 85 C0 0F 84",
+  "match": "0x140fcf560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fcf560",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineDocumentComponent_CompleteSync"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fcf560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fcf560.c;xref:0x140fd2dfa,0x140ff7a70",
+   "notes": "V4810 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

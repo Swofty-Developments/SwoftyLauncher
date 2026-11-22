@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TOPLevelUI_ThereOngoingReconnectingIgnore",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143883f60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143883f60.c;pat:log-channel-TOP_LEVEL_UI;xref:0x141a780c8,0x141abc3b4,0x141bb406f,0x141d11626,0x142fc6cd7,0x14388395b,0x143885e0d,0x14bccf556,0x14c1244eb",
+  "notes": "TopLevelUI tryReconnect: ignores while +0x98/+0x99 reconnecting; prohibited while signing out or invite_pending; if online/logged in restores immediately (0x143882ad0, +0x81); otherwise starts login (0x1432badd0) and busy spinner 6, or 'Try Fake Reconnect' (+0x90=5.0, +0x99). Callers are UI command handlers. (lane owner review requested) Better name: Game_TOPLevelUI_TryReconnect (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.top_level_ui_there_ongoing_reconnecting_ignore",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 80 B9 98 00 00 00 00",
+  "match": "0x143883f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143883f60",
+  "kind": "func_start",
+  "names": [
+   "Game_TOPLevelUI_ThereOngoingReconnectingIgnore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143883f60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143883f60.c;xref:0x141a780c8",
+   "notes": "V6356 tryReconnect logic (login, fake reconnect, invite_pending, signing out guards), log is one guard. Better Game_TOPLevelUI_TryReconnect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143883f60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143883f60.c;xref:0x141a780c8",
+   "notes": "V7126 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CelebrateParcferme02_script_Starting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14036eee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14036eee0.c;pat:log-message-cxx;xref:0x1455f6570",
+  "notes": "Vtable cell 0x1455f6570. Same as the 01 Starting without the render-message block: base 0x140237f40, driver-slot flags, 0x146ce89d8=1, vt+0x2f0 for +0x840..+0x870, mask +0x520=0xbfffffff ghost/unghost. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.celebrate_parcferme02_script_starting",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5E B8 4C 01 00 00 48 8D 0D ?? ?? ?? ?? 8B 14 81 85 D2 74 4B 81 FA 8C DE 03 08 74 30 83 C0 17 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 4C 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x14036eee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14036eee0",
+  "kind": "func_start",
+  "names": [
+   "Game_CelebrateParcferme02_script_Starting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14036eee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14036eee0.c",
+   "notes": "V4554 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

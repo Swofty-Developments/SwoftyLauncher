@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AdvanceSession_SetDestination_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bf9080",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bf9080.c;pat:log-channel-ADVANCE_SESSION;xref:0x140bf8dd4",
+  "notes": "Net message 0x93 receive handler (registered on ((+0x2a8)+0x3d0) vslot +8 in 0x140bf89c0 via lea 0x140bf8dd4; 0x93 is the id SetDestination sends). logs ADVANCE_SESSION 'Setting the destination to %s for sessionId: %s', msg+0x14 -> +0x310, (char)msg+0x15 -> +0x314, +0x324 = msg+0x16 (0x140bf7230 when 0), then posts bus message vt 0x1456896b8. (lane owner review requested) Better name: Game_AdvanceSession_OnNetSetDestination (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.advance_session_set_destination_3",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 48 89 D6 48 89 CF 0F BE 5A 15",
+  "match": "0x140bf9080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bf9080",
+  "kind": "func_start",
+  "names": [
+   "Game_AdvanceSession_SetDestination_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bf9080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bf9080.c",
+   "notes": "V4510 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

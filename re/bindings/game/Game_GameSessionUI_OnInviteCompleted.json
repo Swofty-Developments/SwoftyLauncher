@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionUI_OnInviteCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b0cc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430b0cc0.c;pat:log-message-cxx;xref:0x1430ad07b",
+  "notes": "Only ref: lea 0x1430ad07b (in 0x1430acca0). Own pretty-function string 0x145811f9e 'GameSessionUI::onInviteCompleted(NEbool, NeNetError)'. Success: resets UI timers +0x378..+0x3a8 and the pending invite, may clear the pending join (0x143150680), updates UI nodes +0x218/+0x1d8, calls delegate +0x250/+0x258. Failure: 0x1430b2db0, status 'Failed', then an error popup per NeNetError p3 via 0x143062630 (banned, doesnt_exist, session_full, denied, wrong_version, no_mp_privilege, matching_canceled, crossplay, session_closed, else generic). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_ui_on_invite_completed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 44 89 C7 89 D3",
+  "match": "0x1430b0cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b0cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionUI_OnInviteCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b0cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b0cc0.c;xref:0x1430ad07d",
+   "notes": "V5347 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

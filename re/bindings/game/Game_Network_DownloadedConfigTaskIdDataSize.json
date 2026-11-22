@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_DownloadedConfigTaskIdDataSize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f5ec0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430f5ec0.c;pat:log-channel-NETWORK;xref:0x1430f5d87",
+  "notes": "Only ref: the lea at 0x1430f5d87 in DownloadTitleConfig 0x1430f5a10. Logs '[CONFIG] downloaded config. taskId, dataSize, error', parses via 0x1430f6890, matches the download to a content domain, compares versions (more / not more recent logs), registers the new title config, logs '[CONFIG] new title config selected', 0x1430fa9b0. (lane owner review requested) Better name: Game_NetworkSubsystem_OnTitleConfigDownloaded (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_downloaded_config_task_id_data_size",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 85 D2 0F 84",
+  "match": "0x1430f5ec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f5ec0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_DownloadedConfigTaskIdDataSize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f5ec0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430f5ec0.c;xref:0x1430f5d89",
+   "notes": "V5412 better name Game_OnlineTitleConfiguration_OnTitleConfigDownloaded: 350-line handler: domain match, version compare, register new config, failure; first log is one part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430f5ec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f5ec0.c;xref:0x1430f5d89",
+   "notes": "V6977 350 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

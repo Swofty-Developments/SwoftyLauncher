@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionSeasonDocument_HandleSessionDocumentMessageDo_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143097740",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143097740.c;pat:log-message-cxx;xref:0x143095d7f",
+  "notes": "Only ref: lea 0x143095d7f (in 0x143095910, handler table). Logs NETWORK/F 'handleSessionDocumentMessageDocumentComponentImmediate()'. Ignores the message unless it came from the host (p3 == [[p1+0x420]+0xd8] vt+0x10) and the document state p1+8 >= 2. Copies the component list [[p1+0x420]+0x4f8]+0x1320..+0x1328, finds the component whose id (vt+600 -> +8) equals msg p2+0x10 and feeds it a bit reader over the payload (p2+0x28, bits p2+0x18) via vt+0x18 with value p2+0x14. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_season_document_handle_session_document_message_do_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 44 89 C3",
+  "match": "0x143097740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143097740",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionSeasonDocument_HandleSessionDocumentMessageDo_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143097740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143097740.c;xref:0x143095d81",
+   "notes": "V5301 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

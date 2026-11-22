@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_KickPlayerFromSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430c91a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430c91a0.c;pat:log-message-method;xref:0x1430c8d69,0x1430e1b09",
+  "notes": "Callers CastVoteInternal 0x1430c8430 and 0x1430e0560. Finds the player (0x144121bc0/0x14308d1d0); not found logs 'kickPlayerFromSession(%s) : kick target not found.'; else logs 'player: %s' and tail-jumps 0x1430670c0 (leave 0x1430605c0, Game_GameSessionManager_AddToBanList 0x143067220). The decomp prints 0x1430670c0's body after the label. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_kick_player_from_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 D7 48 89 CE 48 8B 41 20",
+  "match": "0x1430c91a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430c91a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_KickPlayerFromSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430c91a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430c91a0.c;xref:0x1430c8d69",
+   "notes": "V5360 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

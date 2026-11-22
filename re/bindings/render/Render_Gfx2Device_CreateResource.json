@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_CreateResource",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439d55d0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439d55d0.c;xref:0x14014f548,0x142bcfe43,0x14379c422",
+  "notes": "Under device CS (+0x2668): clamps desc width/height (+0x18/+0x1c) to >=4 for block-compressed format bytes (+0x30), allocates 0x2c0 bytes from allocator +0x150, runs Render_Gfx2Surface_Construct 0x1439d1b90, inserts it into the surface set (Ne_Gfx2_TrackResourceInsert_A on +0x3aa8/+0x3f50), calls Render_Gfx2Device_QueryVideoMemoryInfo. Callers 0x14014d230, 0x142bcfc30, 0x14379c250, 0x143bc2ff0. (lane owner review requested) Better name: Render_Gfx2Device_CreateSurface (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_device_create_resource",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 89 68 26 00 00 FF 15 ?? ?? ?? ?? 0F B6",
+  "match": "0x1439d55d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d55d0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_CreateResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439d55d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439d55d0.c;xref:0x14014f548",
+   "notes": "V7760 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

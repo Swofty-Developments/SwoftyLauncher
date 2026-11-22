@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_RemoveTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424720e0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424720e0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140c2f00e,0x141a20cea",
+  "notes": "(entrants, u32 key[, force]): kind 0 (ePreLoaded) refused -> 5; list [entrants+0x2c8+kind*0x10] missing -> 1; remover 0x142472510(list, key>>16) false -> 2; success posts bus msg 0x14578d678 (key + flag) via Ne_Post_BusMessage on [0x14618b3b8+8] and returns 0. Logs on ENTRANTS_SYSTEM. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_remove_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 89 D6",
+  "match": "0x1424720e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424720e0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_RemoveTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1424720e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424720e0.c;xref:0x140c2f00e",
+   "notes": "V5057 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

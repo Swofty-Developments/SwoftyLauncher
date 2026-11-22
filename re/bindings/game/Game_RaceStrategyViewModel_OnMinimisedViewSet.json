@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RaceStrategyViewModel_OnMinimisedViewSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d6f4c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d6f4c0.c;pat:log-message-cxx;xref:0x1457497f0",
+  "notes": "Virtual (vt cell 0x1457497f0): player vehicle slot = 0x1400fa590(this[199], this+0x26d0); with valid data in the this+0x630 lists and view mode [this+0x668]+0x40 != 2 copies the int of VM node this+0x2288 into record+0x18; else logs UI 'No valid vehicle data exists...'. Clears +0x628 bit1; if bit2: optional 'disable' event 0x144320fe0, clears bit2, vt+0xc8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.race_strategy_view_model_on_minimised_view_set",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 48 8B 89 38 06 00 00",
+  "match": "0x141d6f4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d6f4c0",
+  "kind": "func_start",
+  "names": [
+   "Game_RaceStrategyViewModel_OnMinimisedViewSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d6f4c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d6f4c0.c",
+   "notes": "V5198 name/cxx or log string and body match; body size consistent with name (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

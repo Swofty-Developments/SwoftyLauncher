@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Http_NeHttpBufferRORequestStreamBytes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1408535c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1408535c0.c;pat:log-channel-HTTP/V;xref:0x14565c960",
+  "notes": "NeHttpBufferRORequestStream vt cell 0x14565c960: this[4] += bytes; logs HTTP/V '%d bytes written (progress=%.2f %%)' as total / vt+0x10 size * 100. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.http_ne_http_buffer_ro_request_stream_bytes",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 C5 F8 29 74 24 20 48 8B 41 20",
+  "match": "0x1408535c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1408535c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Http_NeHttpBufferRORequestStreamBytes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1408535c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1408535c0.c",
+   "notes": "V4335 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

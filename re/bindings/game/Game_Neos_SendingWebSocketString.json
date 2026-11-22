@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Neos_SendingWebSocketString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144443b50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144443b50.c;pat:log-channel-NEOS;xref:0x1432ba8f6",
+  "notes": "Tail-jumped from update 0x1432ba840 after polling the transport. Clears +0x22c, polls WS [+0x248] vcall +0x10; pending HTTP reply -> 0x144444340 or error 'Http request error'. State +0x228==3 and WS open: logs NEOS 'Sending web socket string', sends '{\"protocol\":\"json\",\"version\":1}' (vcall +0x20), state 4, notifies 'eWaitForSignalRConnect'. Event 2: state 5, 'eWaitForWebSocketStarted', 0x1444433d0(this,3). Event 1: 0x1444440d0 URL; bad -> 'Invalid URL', else 0x1444420f0. WS error -> 'WS: %s'. (lane owner review requested) Better name: Game_Neos_SignalR_UpdateConnection (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.neos_sending_web_socket_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 78 01 00 00 C7 81 2C 02 00 00 00 00 00 00",
+  "match": "0x144443b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144443b50",
+  "kind": "func_start",
+  "names": [
+   "Game_Neos_SendingWebSocketString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144443b50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144443b50.c;xref:0x1432ba8f6",
+   "notes": "V6605 better name Game_Neos_ConnectWebSocketUpdate: state machine eWaitForSignalRConnect/WebSocketStarted, invalid URL, http error; sending string log is one step"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144443b50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144443b50.c;xref:0x1432ba8f6",
+   "notes": "V7213 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

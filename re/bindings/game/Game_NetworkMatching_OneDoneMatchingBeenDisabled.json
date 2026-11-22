@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatching_OneDoneMatchingBeenDisabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431588e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431588e0.c;pat:log-channel-NETWORK-MATCHING;xref:0x14581c898,0x14581cd98,0x14581d6e8",
+  "notes": "If One-And-Done is off (+0x40 == 0) logs 'has been disabled'; else gets the active weekend ([this+0x10]+0x4f8, vtbl+0x80), compares the current session index with the last, logs 'sees more sessions in the weekend. %d of %d' or 'sees the end of the last session' (then sets +0x41), or 'could not find an active weekend'. Vtable cells 0x14581c898, 0x14581cd98, 0x14581d6e8, 0x14581d9d8, 0x145824b48. (lane owner review requested) Better name: Game_NetworkMatching_OneAndDoneCheckWeekend (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_matching_one_done_matching_been_disabled",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 80 79 40 00 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x1431588e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431588e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatching_OneDoneMatchingBeenDisabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431588e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1431588e0.c",
+   "notes": "V5988 One-And-Done weekend evaluation: disabled / more sessions / end of last / no active weekend. Better: Game_NetworkMatching_OneAndDoneEvaluateWeekend; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431588e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431588e0.c",
+   "notes": "V6997 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

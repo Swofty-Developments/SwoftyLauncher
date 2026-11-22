@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_DelegateIgnoringFetch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430fcf20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430fcf20.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x1430744e8",
+  "notes": "Fetch completion callback (lea 0x1430744e8 in 0x143074060): logs '[FETCH] Session %s fetched: %s' (SUCCESS/ERROR from result+8), ignores the fetch when the delegate this+0x170 is null ('Invalid delegate'), else logs 'Found a session. Version: %d - DataBase64: %s', decodes it ('Decoded session data succeeded') and hands it to the delegate. (lane owner review requested) Better name: Game_NetworkOSSession_OnSessionFetched (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_os_session_delegate_ignoring_fetch",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 89 D3",
+  "match": "0x1430fcf20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430fcf20",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_DelegateIgnoringFetch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430fcf20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430fcf20.c;xref:0x1430744ea",
+   "notes": "V5429 better name Game_NetworkOSSession_OnSessionFetched: 203-line fetch result handler (fetched, found session version, base64 decode); invalid-delegate is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1430fcf20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430fcf20.c",
+   "notes": "V6981 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

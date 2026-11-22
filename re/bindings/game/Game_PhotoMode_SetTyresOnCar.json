@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_SetTyresOnCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bdd220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bdd220.c;xref:0x141d09556,0x142bdc1e6,0x142bdd216",
+  "notes": "Read in full (disasm of pdata 0x142bdd220-0x142bdd5ad; decomp PIC-polluted). 0x142ea1e30 on [[vm+0x278]+0x110+car*8]; car [0x146ce86e0+car*8]; four tyres [car+0x580]+0x70/+0x78/+0x80/+0x88: +0x88 <- arg+4.., +0x98 <- arg+0x14..; arg bytes +0x24..+0x27 toggle bit 2 via Car_Puncture_Add/Remove + Car_Tyre_UpdateDeflation; arg +0x28..+0x2b -> Car_Tyre_SetPunctureState. Callers Game_PhotoModeViewModel_SetTyresAllCars, Game_PhotoModeSystem_Disable, Game_PhotoMode_FindSelectedCarTyreSet. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_set_tyres_on_car",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 4C 8B 81 78",
+  "match": "0x142bdd220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bdd220",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_SetTyresOnCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142bdd220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bdd220.c;xref:0x141d09556",
+   "notes": "V7549 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomLiveryModel_OnMessagePlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a992f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a992f0.c;pat:log-message-method;xref:0x14db375a6,0x14db3a5eb",
+  "notes": "Registered by lea at 0x14db375a6 and 0x14db3a5eb. Returns 0; if msg byte +0x10 equals this component's vehicle index ([[p1+0x48]+0x58]+0xe8, -1 without vehicle) logs 'onMessagePlayerDroppedIn: setting up the custom livery on vehicle index %d' (CUSTOM_LIVERY_MODEL) and calls SetupVehicleLivery 0x142a99780(p1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_livery_model_on_message_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 41 48 48 85 C0 74 15",
+  "match": "0x142a992f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a992f0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomLiveryModel_OnMessagePlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a992f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a992f0.c;xref:0x14db375a8",
+   "notes": "V4990 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

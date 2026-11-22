@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_CornerCutting_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14356bb00",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14356bb00.c;xref:0x1411d57a7,0x1411d59a7,0x14356b4cf",
+  "notes": "(rm): clears rm+0x1ce0, drains the queue [rm+0x1bf8] (+0x58 head under CS +0xd8), resolves the car (+0x10) via [rm+0x1c30], switch on record +0x11 (~60 cases): case 0x22 'Corner_Cutting: Invalidate Current Lap!', post-race penalty, strict grid drops, parked-too-long OSD, tyre regulation reminders, drive-thru reminder, SC collision reset; calls Sess_Infringement_SubmitLogRecord 0x143572400. Callers Game_EngineMgmt_ClearRaceGridPenalties, Game_EngineMgmt_OnRaceSessionEnded, Sess_Rules_DisqualifyForPenaltyPoints. Better name: Sess_Infringement_ProcessQueue (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "session.corner_cutting_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C7 81 E0 1C 00 00 00 00 00 00",
+  "match": "0x14356bb00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14356bb00",
+  "kind": "func_start",
+  "names": [
+   "Sess_CornerCutting_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

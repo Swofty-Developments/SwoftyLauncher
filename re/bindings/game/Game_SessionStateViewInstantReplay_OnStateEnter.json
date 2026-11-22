@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateViewInstantReplay_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142da21e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142da21e0.c;pat:log-message-method;xref:0x1457e3940",
+  "notes": "Vtable cell 0x1457e3940. Logs SessionStateViewInstantReplay \"onStateEnter\"; vcall +0x70 on the [[+0xd78]+0xd2a0] entries, vcall +0x98(1), +0xed5 = 1, name \"instant_replay\" at +0xf00; unless +0xed4: waits on vcall +0x60, replay seek (0x1445cafc0, 0x1445d5c40 mode 4 under CS), HUD hide reasons 0/1, bus message 0x145754fb0, Game_SessionStateViewReplay_OnStateEnter (0x142d9d480), +0xed0 = 4. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_state_view_instant_replay_on_state_enter",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 A3 00 00 00",
+  "match": "0x142da21e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142da21e0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateViewInstantReplay_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142da21e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142da21e0.c",
+   "notes": "V5447 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

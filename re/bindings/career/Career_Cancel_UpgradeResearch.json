@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Cancel_UpgradeResearch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435320f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Cancel_UpgradeResearch(void *upgrades, uint32_t owner, void *inst, uint32_t day)",
+  "evidence": "decomp:re/decomp/1435320f0.c;xref:0x14124184e;doc:addons/career-editor/protocol/rnd.md#rnd-complete",
+  "notes": "U-level research cancel (Upgrades, owner, instance, day): 0x143523cc0 restores the state before InProgress and clears fitted, mode 2 mirrors it on the sibling tree, then availability refresh / owner cache reset. No RP: the component cancel 0x141241770 refunds before calling it."
+ },
+ "signature": {
+  "id": "career.cancel_upgrade_research",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0C 00 00 4C 89 C7",
+  "match": "0x1435320f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435320f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Cancel_UpgradeResearch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/rnd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Cancel_UpgradeResearch",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435320f0.c;decomp:re/decomp/143523cc0.c;decomp:re/decomp/141241770.c;xref:0x1412418f8",
+   "notes": "V0241 0x143523cc0 acts only when the latest state is InProgress/InDevelopment (or entry+9==3) and the owner matches; it clears +0x7e..+0x94, pushes the most recent earlier state that is neither InProgress nor InDevelopment (Invalid if none) and clears fitted; mode 2 mirrors onto the same-id instances of the other owners still InProgress; 0x141241770 refunds cost(+0x90)*upgrades+0x6c/100 RP first; also posts the upgrades-changed message"
+  }
+ ],
+ "proofs": []
+}

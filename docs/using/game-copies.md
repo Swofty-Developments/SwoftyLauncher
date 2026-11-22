@@ -70,9 +70,11 @@ Each store puts its own game files back:
 
 When files in the Steam copy were changed outside Swofty, the launch stops and **Your game files have been edited** offers **Verify game files in Steam**. See [Game files changed outside Swofty](/reference/launch#game-files-changed-outside-swofty).
 
-Play starts when `amd_fidelityfx_dx12.dll` is not Steam's copy, as with an FSR 4 drop-in. It stays as you put it, and Verify integrity of game files in Steam puts Steam's copy back. `F1_25.exe` and `steam_api64.dll` must still be Steam's.
+Play starts when one of the game's DLLs is not Steam's copy, as with an FSR 4 build of `amd_fidelityfx_dx12.dll`, a VR runtime's `openvr_api.dll` or a DLSS swap. It stays as you put it, and Verify integrity of game files in Steam puts Steam's copy back. A DLL missing from the game folder still stops the launch. `F1_25.exe` and `steam_api64.dll` must still be Steam's.
 
 An EA app copy is not checked against a list of its files. When the launcher finds files in its folder that it didn't put there, the same modal shows the EA app's repair steps instead.
+
+When a game file still holds the launcher's changes from an earlier session (`an entry with Name=... already exists`, or `menus: the game's databases.erp already holds the tooltip mod_menu, ...`), Play puts back the file's original backed up for an earlier game build and builds again; when no original is on record, the refusal ends with the repair steps above. See [The launcher's menus in a game original](/reference/restore#the-launcher-s-menus-in-a-game-original).
 
 ## A game folder only administrators can change
 
@@ -81,9 +83,29 @@ The EA app installs F1 25 in `C:\Program Files\EA Games\F1 25` by default, a fol
 - **Restart as administrator** opens Swofty Launcher again with administrator rights, after Windows asks you to allow it. This one minimizes and closes once the administrator copy has run for 6 seconds. If you decline, or the administrator copy closes before then, this one stays open and says so. `state/launcher-app.log` in the data folder records each step.
 - Or move F1 25 to a folder outside Program Files with **EA app** > **F1 25** > **Manage** > **Move**, not File Explorer, then press **Play** again.
 
-F1 25 started from the EA app can run without administrator rights even when Swofty Launcher runs as administrator and starts the EA app itself. The game then can't create files in its folder. The loader writes its log to `state/loader-fallback.log` in the data folder, and addons that save files through Swofty keep them in `addon-storage/<id>/` in the data folder for that session. The session says so on `[loader]` and `[warning]` lines in `state/wrapper-run.log`. An addon that writes in the game folder by itself can't save there; moving F1 25 out of Program Files with **EA app** > **F1 25** > **Manage** > **Move** fixes that. Restart as administrator from your own Windows account: an administrator account with a different user name has its own Swofty data folder.
+F1 25 started from the EA app can run without administrator rights even when Swofty Launcher runs as administrator and starts the EA app itself. The game then can't create files in its folder. The loader writes its log to `state/loader-fallback.log` in the data folder, and addons that save files through Swofty keep them in `addon-storage/<id>/` in the data folder for that session. The session says so on `[loader]` and `[warning]` lines in `state/wrapper-run.log`.
+
+Before a modded session in a game folder under Program Files, Swofty Launcher run as administrator makes the folders the mod loader builds archives in at boot, `swofty/addons/swofty.logos/` (team logos) and `swofty/addons/swofty.garage/` (garage art), and gives the Users group **Modify** on them. F1 25 run without administrator rights builds them there as in any other game folder. A folder the launcher can't open up gets an `[info] core caches:` line in `state/wrapper-run.log`. When F1 25 still can't create files in `swofty/addons/swofty.logos/`, the session runs without the team logos and badges your addons add, and the launcher shows **Your addons' team logos were not built** once the game closes (see [When F1 25 crashes](/using/send-logs#when-f1-25-crashes)).
+
+An addon that writes in the game folder by itself can't save there; moving F1 25 out of Program Files with **EA app** > **F1 25** > **Manage** > **Move** fixes that. Restart as administrator from your own Windows account: an administrator account with a different user name has its own Swofty data folder.
 
 `swofty run --apply` and `swofty apply` stop with the same message. Steam library folders can be changed without administrator rights.
+
+## Programs set to run as administrator
+
+On the EA app copy, **Play** stops before it changes anything and shows **A program is set to run as administrator** when Windows won't start a program the session needs. The EA app runs without administrator rights, and Windows starts a program set to **Run this program as an administrator** only for a program that has them (error 740). The dialog names each file, usually one of these:
+
+- `EALauncher.exe` or `EADesktop.exe` in `C:\Program Files\Electronic Arts\EA Desktop\EA Desktop`, the programs the launcher hands the launch link to
+- `F1_25.exe` or `EAAntiCheat.GameServiceLauncher.exe` in the game folder, for a modded session
+
+The EA app starts F1 25, so for the game's files running Swofty Launcher as administrator doesn't help. For each file the dialog names:
+
+1. Right-click it and select **Properties**.
+2. Open **Compatibility** and untick **Run this program as an administrator**.
+3. Select **Change settings for all users** and untick it there too.
+4. Select **OK**, then **Play** again.
+
+When Windows refuses one of them after the launch link, the same dialog ends the launch at once, and the game folder goes back to vanilla. See [Programs set to run as administrator](/reference/launch#programs-set-to-run-as-administrator).
 
 ## An EA app copy moved by hand
 
@@ -111,6 +133,7 @@ On Linux, the launcher hands the EA app a launch link through a command you set.
 ```
 
 - `ea_launch_command` runs with `sh -c`. With a link, it must reach the EA app that is already running, in the same Wine prefix.
+- A path with spaces written without quotes, such as `/home/me/.steam/steam/steamapps/common/Proton - Experimental/proton`, is put in quotes when the whole path is on disk. This covers the program, its arguments and the value of a leading `NAME=` setting, up to the first quote or other shell syntax. When the shell finds no program at the path, the launch log says so, and the shell's message is in `ea_handoff.log` in the session folder.
 - When the EA app is closed, **Play** runs `ea_launch_command` with `{url}` left out to start it, waits up to 90 seconds for `EADesktop.exe`, then 10 seconds more before it hands over the link. When that command exits with an error, the launch link starts the EA app instead.
 - The EA app must keep running after `swofty` exits. A sandbox that ends with its parent, such as `steam-run`, needs `setsid -f` in front of the command that starts the EA app.
 - `ea_prefix` is the EA app's Wine prefix: the folder with `user.reg`, or the Proton folder that holds `pfx`. Before it starts the EA app, the launcher writes the in-game loader's DLL setting there and leaves it in place. Wine reads it only when the EA app starts, so the first modded **Play** with the EA app open closes the EA app and starts it again.

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkABSystem_SendingABTeamDataMessageTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411e0480",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1411e0480.c;pat:log-channel-NETWORK-AB-System/V;xref:0x1456c8238",
+  "notes": "If this+0x2a0 < 2: for each team entry in this+0x380..0x388 builds an AB team data message (vtable 0x1456cf060, 0x28-byte items) and sends it via 0x14402e500; logs \"sending AB Team Data Message for Team\". (lane owner review requested) Better name: Game_NetworkABSystem_SendTeamDataMessages (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ab_system_sending_ab_team_data_message_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 88 54 24 33",
+  "match": "0x1411e0480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411e0480",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkABSystem_SendingABTeamDataMessageTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1411e0480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411e0480.c;xref:0x14d9ac315",
+   "notes": "V4658 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

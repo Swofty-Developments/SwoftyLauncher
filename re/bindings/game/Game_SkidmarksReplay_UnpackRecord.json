@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SkidmarksReplay_UnpackRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14471ce30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14471ce30.c;xref:0x144726044,0x144726602,0x144726ffe,0x14472737a",
+  "notes": "Unpacks one packed record param_1 into four vertex structs: param_2/param_4 (pair A) and param_3/param_5 (pair B) get positions and shared bytes (+0x1c..+0x27); then dir = normalize(p4-p2) / normalize(p5-p3), side = cross with up, both stored as bytes (v*0.5+0.5)*255 at +0x20..+0x26 of all four. All callers are in Game_SkidmarksReplay_Rewind. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.skidmarks_replay_unpack_record",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 8B 84 24",
+  "match": "0x14471ce30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14471ce30",
+  "kind": "func_start",
+  "names": [
+   "Game_SkidmarksReplay_UnpackRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14471ce30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14471ce30.c;xref:0x144726044",
+   "notes": "V7699 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

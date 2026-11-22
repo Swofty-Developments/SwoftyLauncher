@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Window_NeWindowWinSetDisplayModeAdapter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fa850",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439fa850.c;pat:log-channel-WINDOW;xref:0x1439f2e38,0x1439f2f86,0x1439f88ea",
+  "notes": "NeWindowWin::setDisplayMode itself (every log 0x14589cee2..0x14589d508 prefixed so). mode edx: 1 promoted to 2 when global+0x5068/+0x507c; enumerates adapters/outputs (logs Adapter/Monitor), swapchain (global+0xa50) GetDesc vt+0x60, output FindClosestMatchingMode vt+0x48, SetFullscreenState vt+0x50, ResizeTarget vt+0x70; SetWindowLongPtrW style/exstyle, SetWindowPos, ShowCursor; this+0x244 = mode, writes graphics_card.resolution displayMode '%u'; deferred res -> 0x1439f7d80. (lane owner review requested) Better name: Game_Window_NeWindowWin_SetDisplayMode (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.window_ne_window_win_set_display_mode_adapter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 03 00 00 C5 F8 29 B4 24 D0 03 00 00 44 89 4C 24 74",
+  "match": "0x1439fa850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439fa850",
+  "kind": "func_start",
+  "names": [
+   "Game_Window_NeWindowWinSetDisplayModeAdapter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439fa850",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439fa850.c;xref:0x1439f2e38",
+   "notes": "V6412 setDisplayMode: adapter + monitor enumeration, fallback monitor, hardware_settings_config; adapter log is part. Better Game_Window_NeWindowWinSetDisplayMode"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1439fa850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fa850.c;xref:0x1439f2e38",
+   "notes": "V7044 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

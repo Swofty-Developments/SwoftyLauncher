@@ -248,7 +248,7 @@ SWOFTY_UI_DIAG=1
 
 - No code on the screen-build or template path writes a log line on failure **[read]**. The template path has no channel to enable.
 - The existing channels give context, not errors. `verbose` lowers `UI`, `UI_*`, `*_UI*`, `*-UI*`, `UIRef`, `UICom`, `UINodeTreeMessages`, `VM`, `FLOW`, `FLOW/*`, `UI_FLOW`, `NeUI*`, `EGO_ERP_LOADER` and `NeAssetGroupLoader*` to info; that shows `UIRef LINK node1 …`, `OPEN SCREEN (…)`, `registerViewModelForViewModelBinding: […]` and `UI_ATTACHER` transitions. The environment variable replaces the channel rules, so keep `default` in it to keep the warnings and errors of every other channel ([The game's own log](/reference/std/logging#the-game-s-own-log)).
-- swofty_core's screen hooks (`native/src/core/ui.cpp`) cover screens only. Without `SWOFTY_UI_DIAG` it logs:
+- swofty_core's screen hooks (`native/src/core/frontend/ui.cpp` and `native/src/core/frontend/ui/`) cover screens only. Without `SWOFTY_UI_DIAG` it logs:
 
   ```text
   [ui] per-node screen build diagnostics off (set SWOFTY_UI_DIAG=1 or "diagnostics": true in the "ui" block to turn them on); the screen result hook stays on

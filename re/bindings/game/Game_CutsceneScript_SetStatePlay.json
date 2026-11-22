@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneScript_SetStatePlay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402374a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402374a0.c;pat:log-message-method;xref:0x140251f3a,0x140262528,0x140262a1d,0x1402738dc,0x1455eafd8,0x1455eb778,0x1455ed598,0x1455ee5e8",
+  "notes": "If flags this+0x538 bit0: when state +0x40 != 5 logs 'setStatePlay %p %s', under CS +0x118 resizes float vector +0xd8 to the actor count (+0xb8..+0xc0) and saves each actor+0x58, state = 5; if bit5 (replay) logs 'setStatePlay (m_replay)', clears bit5 and restores the saved floats to actor+0x58/+0x5c (0x14366b6c0). Returns bit0. Calls + vtable cells (subset). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_script_set_state_play",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 0F B6 81 38 05 00 00",
+  "match": "0x1402374a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402374a0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneScript_SetStatePlay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1402374a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1402374a0.c",
+   "notes": "V4453 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

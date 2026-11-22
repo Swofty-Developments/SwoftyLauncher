@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MultipartActor_AddPart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401cb030",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401cb030.c;pat:log-message-cxx;xref:0x1401a6845,0x1401ec5b6",
+  "notes": "If part name (string table 0x14618ce08, index *param_5) starts with '$': splits by ',' and for '$replace' looks up part (FUN_140194930) and regex-replaces (FUN_140322e60), logs ACTOR_REGEX 'MultipartActor::addPart %s', 'addPart srcString %s [%s%s] %s', 'unable to find a part to determine regex replacement logic - part [%s]'. Then grows part vector this+0x550/0x558/0x560, creates MultipartActorPart via FUN_140187560, part+0x580=this, part+0x588=connectionParent (null -> ACTOR_WARN 'connectionParent was null...', uses this), FUN_1401cce60; returns part or 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.multipart_actor_add_part",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 C5 F8 29 BC 24 30 02 00 00",
+  "match": "0x1401cb030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401cb030",
+  "kind": "func_start",
+  "names": [
+   "Game_MultipartActor_AddPart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401cb030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401cb030.c",
+   "notes": "V4362 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

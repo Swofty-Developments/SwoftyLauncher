@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Tonemap_AcesSplineParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e80e90",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e80e90.c;xref:0x143bc6681,0x143bc66ac,0x143bc66e0",
+  "notes": "ACES RRT segmented_spline_c5_fwd for the scalar in xmm0 (rename: it evaluates, it does not fill params): coefsLow -4,-4,-3.1573765,-0.48525,1.8477324,1.8477324, coefsHigh -0.7185482,2.0810306,3.6681242,4,4,4, points (5.49e-6,1e-4) (0.18,4.8) (47185.92,1e4); log10 (0x145357d30), segments split at -5.2601776 / -0.7447275 / 4.6738124, quadratic basis matrix 0x146c3b3f0, returns pow(10,y). Callers in Render_PostProcess_ComputeColorParams. (lane owner review requested) Better name: Render_Tonemap_AcesRrtSplineC5Fwd (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.tonemap_aces_spline_params",
+  "section": ".xtls",
+  "pattern": "48 81 EC 88 00 00 00 C5 F8 29 74 24 70 C5 F8 10",
+  "match": "0x143e80e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e80e90",
+  "kind": "func_start",
+  "names": [
+   "Render_Tonemap_AcesSplineParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143e80e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143e80e90.c;xref:0x143bc6681",
+   "notes": "V8354 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_StartLoadingFlow",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457e2690",
+  "type": "vtable[20]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/14efc6780.c;pat:flow-state-type-record;decomp:re/decomp/142db6480.c;xref:0x142db648b,0x14efc686f",
+  "notes": "cxx=SessionStateStartLoadingFlow; 20 slots (next vtable at +0xa0, lea 0x142df4051). Slot 0 -> type record 0x14607dd00, +8=name set by static init 0x142df1ca0 at 0x142df4032. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x142d90bc0/0x142d90ed0/0x1436af590. Ctor 0x14efc6780 (lea 0x14efc686f; mov [rsi],rax). Also loaded by 0x142db6480 (dtor, [rcx])."
+ },
+ "signature": {
+  "id": "session.start_loading_flow",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 81 C1 B0 0D 00",
+  "match": "0x142db648b",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457e2690",
+  "kind": "data",
+  "names": [
+   "vt_Sess_StartLoadingFlow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457e2690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142db648e",
+   "notes": "V7444 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

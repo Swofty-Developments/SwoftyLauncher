@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Bind_SessionCarsVm",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141489440",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141489440.c;str:s_session_cars;xref:0x1414a2090,0x1414a93e5",
+  "notes": "Creates/binds the session VM nodes on g_Vm_Registry: session.cars, session.players, session.current_car, session.guest_car, session.top_car (+ lng_dash default), session.top_car_team_name(_short), session.rival_ghost, session.numCars, session.numTier1/2/3Cars, session.currentCarEra, session.guestCarEra, session.last. Callers Game_Read_GameModeDataConfig, Game_SessionHud_OnSessionEnter."
+ },
+ "signature": {
+  "id": "session.bind_session_cars_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 8B 0D ?? ?? ?? ?? 48 8B 41 08",
+  "match": "0x141489440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141489440",
+  "kind": "func_start",
+  "names": [
+   "Sess_Bind_SessionCarsVm"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Bind_SessionCarsVm",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141489440.c;xref:0x1414a2090",
+   "notes": "V1879 UNK_1456f8d92=session.cars OK but UNK_1456e837c=session.players (not current_car); session.current_car=1456e838c is the 3rd node (param_1[8..0xb]); further keys guest_car, top_car, numCars, currentCarEra..."
+  }
+ ],
+ "proofs": []
+}

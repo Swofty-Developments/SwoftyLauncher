@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_RemoteNeNetVoicePlaybackStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403c9f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14403c9f0.c;pat:log-channel-NETWORK-VOICE;xref:0x1440395f8,0x14403fbbc",
+  "notes": "If not playing (+0x35 == 0) and buffer level (vslot +0x60) >= 0.05 or more than 0.1 s since +0x28: posts 'play_external_input_voice_chat' via [this+0x18] vslot +0x10, sets +0x35 from vslot +0x80, logs 'REMOTE *** NeNetVoicePlayback #%d (user 0x%x) started playing ***'; returns +0x35. Called from the decompress helper thread and Game_NetworkVoice_RemotePlaybackUpdate. (lane owner review requested) Better name: Game_NetworkVoice_RemotePlaybackTryStart (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_voice_remote_ne_net_voice_playback_started",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 79 35 00",
+  "match": "0x14403c9f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403c9f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_RemoteNeNetVoicePlaybackStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403c9f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403c9f0.c;xref:0x1440395f8",
+   "notes": "V6422 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

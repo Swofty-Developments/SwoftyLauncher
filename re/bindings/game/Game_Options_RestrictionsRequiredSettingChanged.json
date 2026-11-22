@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Options_RestrictionsRequiredSettingChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142abe3e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142abe3e0.c;pat:log-channel-OPTIONS/P;xref:0x142abe312,0x142abedcf",
+  "notes": "Preset restriction callback (lea in 0x142abe240, 0x142abed90). If active (+0x68) and preset value (vcall +0x10) != required +0x60: logs 'race condition', removes restrictions (0x142abefe0). Else checks the changed value against its restriction (list +0x20 stride 0x38, range kind 1 / bitmask kind 0) and other restrictions on that option; if none allows it: clears active, reapplies others (vcall +0x18), removes restrictions, sets preset fallback +0x64. (lane owner review requested) Better name: Game_OptionsPreset_OnRestrictedOptionChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.options_restrictions_required_setting_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 80 79 68 00",
+  "match": "0x142abe3e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142abe3e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Options_RestrictionsRequiredSettingChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142abe3e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142abe3e0.c;xref:0x142abe314",
+   "notes": "V5006 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

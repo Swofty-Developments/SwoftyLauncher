@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionSystem_OnHostMigrated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cf17d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cf17d0.c;pat:log-message-cxx;xref:0x1457d8b10",
+  "notes": "Vtable cell 0x1457d8b10 (secondary base, this-0x20). Logs NETWORK/T \"...onHostMigrated() checking results for authority\"; for each result in +0xe8..+0xf0 decides authority (id < 0x20: owner byte [x+0x101+id*2] == local id, else [x+0x28] < 2) and, if authoritative, posts message {0x1457e5d00,4,0xe} with the vehicle result (0x142c7c1e0) via 0x14402e500 on +0x248, logging \"Sending result data for vehicle %d, status is %s\". (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_system_on_host_migrated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142cf17d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cf17d0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionSystem_OnHostMigrated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142cf17d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cf17d0.c;xref:0x14ba7fa3e",
+   "notes": "V5073 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

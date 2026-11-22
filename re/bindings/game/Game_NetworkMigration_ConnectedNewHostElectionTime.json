@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMigration_ConnectedNewHostElectionTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143089810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143089810.c;pat:log-channel-NETWORK-MIGRATION;xref:0x14580e670",
+  "notes": "cxx=network::GameSessionMigrationManager::onHostMigrated() (virtual): logs '%s().', sets the peer status to Connected (setPeerStatus inlined, logs the status change) and logs 'connected to new host(%d, %s), election time ..., migration time ...'. Only ref: vtable cell 0x14580e670. (lane owner review requested) Better name: Game_NetworkMigration_OnHostMigrated (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_migration_connected_new_host_election_time",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143089810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143089810",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMigration_ConnectedNewHostElectionTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143089810",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143089810.c",
+   "notes": "V5696 GameSessionMigrationManager::onHostMigrated + setPeerStatus; election time log is one part. Better: Game_GameSessionMigrationManager_OnHostMigrated [vtable/indirect]"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143089810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143089810.c",
+   "notes": "V6961 94 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

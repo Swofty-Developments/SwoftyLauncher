@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TaskSchedulerSystem_StopTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432ddb60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432ddb60.c;str:s_TaskSchedulerSystem_StopTask;xref:0x141683f86,0x141aa0303,0x141cb9257,0x141cb92c9,0x141cb933b,0x141df97db,0x141dfba9b,0x141dfbb0d,0x141dfbb7f,0x141dfe4fb,0x141dfe56d",
+  "notes": "TaskSchedulerSystem::stopTask(WeakBaseTaskPtr): locks weak ptr, Game_OnlineSubsystemTaskBase_StopTask; if it is the current task (+0x88) logs, calls 0x1432dc0a0 with it and clears +0x88/+0x90; releases refs. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.task_scheduler_system_stop_task",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D6 48 89",
+  "match": "0x1432ddb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432ddb60",
+  "kind": "func_start",
+  "names": [
+   "Game_TaskSchedulerSystem_StopTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432ddb60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432ddb60.c;xref:0x141683f87",
+   "notes": "V5975 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_AllocNodePool_MaterialActorId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14032c940",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14032c940.c;xref:0x1401ed51d",
+  "notes": "(pool): node-pool chunk allocator: walks the chunk chain pool+8 to size the next chunk (4,8,..,0x2000 nodes), allocates n*0x10+8 bytes via allocator pool[2] vt+0x10 (containers file, line 0x34), links the chunk, threads its 16-byte nodes into a free list pushed on pool[0]; returns the first node. Fatal 0x1403139f0 on alloc failure. Only caller Game_SceneManager_ResolveMaterialActorIds."
+ },
+ "signature": {
+  "id": "core.hash_map_find_slot_material_actor_id",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 4C 24 58 48 89 C5 48 8B 45",
+  "match": "0x1401ed51d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14032c940",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_AllocNodePool_MaterialActorId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x14032c940",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14032c940.c;xref:0x1401ed51d",
+   "notes": "V8207 Ne_HashMap_AllocNodePool_MaterialActorId - allocs 0x34 node block and chains free list, not a lookup"
+  }
+ ],
+ "proofs": []
+}

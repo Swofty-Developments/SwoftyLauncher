@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Season_ApplyDamageModeFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143099190",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143099190.c;doc:re/db/subsystems/game.md;xref:0x1430993f2,0x14309d00a,0x14309d255,0x14309e37b",
+  "notes": "Rules-flag record = entry of [[x+0x2b0]+0x228..+0x230] whose id matches [x+0x2a8] (stride 0x20), else [x+0x2b0]+0x240 if +0x25c set, else x+0xe5c (x = [[this+0x420]+0x4f8]). Mode [this+0x3f0]: 0 -> byte +0x10 = (b&0xf0)|0x20, +0x13 bit1 cleared; 1/2/3 -> (b&0xd0)|0x27/0x23/0x2b, +0x13 bit1 set; record written back. Damage meaning of the bits from re/db/subsystems/game.md. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.season_apply_damage_mode_flags",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 81 20 04 00 00 48 8B",
+  "match": "0x143099190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143099190",
+  "kind": "func_start",
+  "names": [
+   "Game_Season_ApplyDamageModeFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "cf-verify",
+   "kind": "func",
+   "item": "Game_Season_ApplyDamageModeFlags",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143099190.c",
+   "notes": "V1767 claim 8; writes rules record not car"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "cf-verify",
+   "kind": "func",
+   "item": "Game_Season_ApplyDamageModeFlags",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143099190.c",
+   "notes": "V3935 claim 8; writes rules record not car"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x143099190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143099190.c",
+   "notes": "V4176 Mode [this+0x3f0] switch: 0 -> (b&0xf0)|0x20 and byte+3 bit1 cleared; 1/2/3 -> (b&0xd0)|0x27/0x23/0x2b and bit1 set; record found in [x+0x228..0x230], else x+0x250, else profile+0xe6c (piVar15 = lVar4+0xe5c +0x10)"
+  }
+ ],
+ "proofs": []
+}

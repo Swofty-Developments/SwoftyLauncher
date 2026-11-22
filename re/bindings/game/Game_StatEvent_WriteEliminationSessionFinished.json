@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteEliminationSessionFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143773ca0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143773ca0.c;pat:log-channel-STATEVENT;xref:0x14379363a",
+  "notes": "Providers this+8..+0x10; 4 entries: EliminationSessionsFinished, .DriverPosition.%d(arg2) (1.0), PositionsGainedInEliminationSession=(float)arg3 type 2, PointsScoredInEliminationSession=(float)arg4 type 0. Caller Game_StatEvent_OnRaceFinished 0x143790310. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_elimination_session_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 05 00 00 44 89 4C 24 2C",
+  "match": "0x143773ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143773ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteEliminationSessionFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143773ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143773ca0.c;xref:0x14379363a",
+   "notes": "V6240 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

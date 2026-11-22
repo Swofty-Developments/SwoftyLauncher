@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Terrain_TestBoxFrustum",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14395e1b0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14395e1b0.c;xref:0x143c35518,0x143df0a6c",
+  "notes": "Batch sphere culling: for each set bit of bitset param_4 (param_3 bits) loads sphere param_2[i] (xyz, w radius), tests it against 6 planes param_1, writes index + plane-crossing masks (<<16, <<20) to param_5 and advances only if not fully outside; returns entries written. Callers in 0x143c34bf0 and Render_TerrainPlugin_Render. (lane owner review requested) Better name: Render_Frustum_CullSpheresBitset (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.terrain_test_box_frustum",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC A0 00 00 00 C5 78 29 BC 24 90 00",
+  "match": "0x14395e1b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14395e1b0",
+  "kind": "func_start",
+  "names": [
+   "Render_Terrain_TestBoxFrustum"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x14395e1b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14395e1b0.c;xref:0x143c35518",
+   "notes": "V7646 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

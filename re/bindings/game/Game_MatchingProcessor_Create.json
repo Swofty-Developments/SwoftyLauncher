@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MatchingProcessor_Create",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143088100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143088100.c;pat:log-message-cxx;xref:0x1430e4da0,0x143151075",
+  "notes": "MatchingProcessor::create(): +0x5a = 0; registers callback 0x143088270 via 0x144062230([[+0x28]+0xd8], this+0x68); matching context [[+0x28]+0x4d8]: +0x44=1, +0x40=1, +0x38 from [[ctx+0x20]+0x390] vcall +0x38, +0x46 = [+0x20]+0x10d4 when session type 3, +0x49/+0x4a/+0x3c from [[+0x20]+0x3e8]+0xacc/+0xb16/+0xad0, +0x47=0, accumulates timer +0x78/+0x80; state -> 4 (0x143088010). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.matching_processor_create",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 48 89 CE 80 3D ?? ?? ?? ?? 01 75 60 B8 EF 00 00 00",
+  "match": "0x143088100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143088100",
+  "kind": "func_start",
+  "names": [
+   "Game_MatchingProcessor_Create"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143088100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143088100.c;xref:0x1430e4da1",
+   "notes": "V5637 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

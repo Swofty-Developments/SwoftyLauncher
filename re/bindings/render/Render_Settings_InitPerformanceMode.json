@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Settings_InitPerformanceMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14015d050",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14015d050.c;xref:0x140151fd9,0x140176af9",
+  "notes": "Applies mode (param_2, else 2 on platform id 10) if enabled (+0xab2) and changed (+0xab3): mode 1 caps frame rate at min(refresh [+0x39b0],120) into [+0x98]+0x43820 (log NeRenderSettingsPlugin::setDefaultFrameRate %u), picks 3840x2160/1280x720/2560x1440 by platform, reads Renderer.Gfx.PerformanceMode.width/.height (Ne_Get_SettingU32); floats +0xb54/+0xe54. Callers Game_Read_RendererGfxConfig, tail jmp in 0x140176530. (lane owner review requested) Better name: Render_Settings_ApplyPerformanceMode (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.settings_init_performance_mode",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 83 3D",
+  "match": "0x14015d050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14015d050",
+  "kind": "func_start",
+  "names": [
+   "Render_Settings_InitPerformanceMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14015d050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14015d050.c;xref:0x140151fd9",
+   "notes": "V7956 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

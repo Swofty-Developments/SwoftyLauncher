@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Ghost_SetCollisions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1cb00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f1cb00.c;pat:log-channel-GAME_GHOST;xref:0x142f1bf5d,0x142f1f69c,0x142f20df9",
+  "notes": "Old name wrong: VehicleGhostComponent::checkCollisions(comp,&veh,&world) (pretty-function string): world = (comp+0x4b0 & (comp+0x520[comp+0x628] | comp+0x518)) == 0, veh = 0x142f1ccf0(); logs only when they differ from car flags [comp+0x18]+0x130 bits 4/5; returns comp+0x18 != 0. Callers 0x142f1be60, 0x142f1e460, 0x142f20cf0. (lane owner review requested) Better name: Game_VehicleGhostComponent_CheckCollisions (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ghost_set_collisions",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 8B 71 18",
+  "match": "0x142f1cb00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1cb00",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghost_SetCollisions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f1cb00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f1cb00.c;xref:0x142f1bf5d",
+   "notes": "V5603 Computes/logs (checkCollisions pretty name) two out-flags, does not set anything; better Game_VehicleGhostComponent_CheckCollisions"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f1cb00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1cb00.c;xref:0x142f1bf5d",
+   "notes": "V6912 69 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

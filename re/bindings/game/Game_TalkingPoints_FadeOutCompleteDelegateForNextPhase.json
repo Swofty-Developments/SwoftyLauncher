@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TalkingPoints_FadeOutCompleteDelegateForNextPhase",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d96e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d96e30.c;pat:log-message-method;xref:0x14eb410b1",
+  "notes": "Delegate (lea at 0x14eb410b1): logs, resets +0xea8/+0xea6, +0xeac=0.3; copies phase list of +0xe88; if UI open (+0x72) posts close message 0x14565e950 with +0x71 and clears it; calls 0x140acc2b0(+0xe88). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.talking_points_fade_out_complete_delegate_for_next_phase",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 69 B8 4A 00 00 00",
+  "match": "0x142d96e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d96e30",
+  "kind": "func_start",
+  "names": [
+   "Game_TalkingPoints_FadeOutCompleteDelegateForNextPhase"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d96e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d96e30.c;xref:0x14eb410b2",
+   "notes": "V5434 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomisationReplicationManager_HandleDriverCustomisa",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14313c810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14313c810.c;pat:log-message-cxx;xref:0x14313c7e0,0x14313cf78,0x14febedd6",
+  "notes": "handleDriverCustomisationReplace(msg, conn): copies record msg+0xc0, looks up user id (msg+0x68..+0xa8) in map this+0x58 (mask +0x70) -> stat id u16 node+0x60; if default (0x1460605b8): resolve id from msg+0x18.. and call 0x14313baf0(this,msg+0x60,id,rec) + 0x143211340(this+0x30,msg+0x10); else if rec != default 0x1460a6fc0 -> Reconcile 0x14313c2e0. If conn byte == 0 forwards via 0x14402e500(this+0x20,1,msg,0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_customisation_replication_manager_handle_driver_customisa",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 C5 00 00",
+  "match": "0x14313c810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14313c810",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomisationReplicationManager_HandleDriverCustomisa"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14313c810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14313c810.c;xref:0x14313c7e0",
+   "notes": "V5904 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

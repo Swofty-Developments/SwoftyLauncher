@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UITooltipStack_NeUIToolTipStackScreenAttempted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144276860",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144276860.c;pat:log-channel-UI_TOOLTIP_STACK;xref:0x144276a62,0x144276b20,0x144276ba0,0x144276c20,0x153857d34,0x1538586e3",
+  "notes": "Real body ends at 0x1442769c7 (decomp merges tail 0x1441e39e0): logs UI_TOOLTIP_STACK 'attempted to unregister' (own name vt+0x18, screen = parent of type 0x43534955), unlinks itself from the list [this+0x58]+0x20, vt+0xd0(0, 0), this+0x50 = 0, tail-jumps 0x1441e39e0 (refresh). Callers 0x144276a62, 0x144276b20, 0x144276ba0, 0x144276c20, 0x153857d34, 0x1538586e3. (lane owner review requested) Better name: Game_UITooltipStack_Unregister (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_tooltip_stack_ne_ui_tool_tip_stack_screen_attempted",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 44 00 00 00",
+  "match": "0x144276860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144276860",
+  "kind": "func_start",
+  "names": [
+   "Game_UITooltipStack_NeUIToolTipStackScreenAttempted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144276860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144276860.c;xref:0x144276a62",
+   "notes": "V6575 size=364; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

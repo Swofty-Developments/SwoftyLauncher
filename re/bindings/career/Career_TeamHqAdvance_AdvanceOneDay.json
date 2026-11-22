@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_AdvanceOneDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422caed0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422caed0.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c7b75,0x1422c7b90",
+  "notes": "(VM) Logs ADVANCING ONE DAY; 0x14111cad0([this+0x6e0],1,1,0) advances the calendar; card check -> [this+0x759]; 0x1422bfef0; peer stop/finished signals (posts, day+1 at +0x768/+0x770 = AdvanceData+0x38/+0x40); on stop StopAdvance; else sets +0x75a, PopulateButtons, 0x1422bb5c0(this+0x730), 0x1422ca8a0. Callers: Career_TeamHqAdvance_OnTimer (call and jmp). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_advance_one_day",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 48 89 CE 0F B6 A9 59 07 00 00",
+  "match": "0x1422caed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422caed0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_AdvanceOneDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1422caed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422caed0.c;xref:0x1422c7b75",
+   "notes": "V5264 name/cxx or log string and body match; body size consistent with name"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1422caed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422caed0.c;str:\"ADVANCING ONE DAY, day: %d\"",
+   "notes": "V9215 Contains ADVANCING ONE DAY, Not advancing no cards, Day with no popups and the signalling strings."
+  }
+ ],
+ "proofs": []
+}

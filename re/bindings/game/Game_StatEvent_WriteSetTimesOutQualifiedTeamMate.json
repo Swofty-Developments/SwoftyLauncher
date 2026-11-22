@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteSetTimesOutQualifiedTeamMate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14371d440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14371d440.c;pat:log-channel-STATEVENT;xref:0x140b8b985",
+  "notes": "Direct writer (stat, info, count): keys \"NumTimesOutQualifiedTeamMateInSingleSeason\" and \".GameplayModeId.%d\" (info+8), value (float)count. Caller 0x140b8a6b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_set_times_out_qualified_team_mate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 44 89 C7 48 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 3D",
+  "match": "0x14371d440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14371d440",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteSetTimesOutQualifiedTeamMate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14371d440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14371d440.c;xref:0x140b8b985",
+   "notes": "V6163 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

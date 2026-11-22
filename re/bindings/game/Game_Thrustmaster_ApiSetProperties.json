@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Thrustmaster_ApiSetProperties",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14491d7a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14491d7a0.c;xref:0x143a9ddc6,0x14472fa00,0x14472fa26,0x14472fa4c,0x14472fa75,0x14472fa9b,0x14472fac1,0x14472faeb,0x14472fbde,0x14472fc08,0x14472fc2e,0x14472fc54,0x14472fc7a,0x14472fca4,0x14472fcce,0x14472fcf8,0x14472fd22,0x14472fd4f,0x14472fd7c,0x14472fda9,0x14472fdd6,0x14472fe03,0x14472fe30,0x14472fe5d,0x14472fe8a,0x14472feb7,0x14472fee0,0x14472ff0d,0x14472ff36,0x14472ff5f,0x14472ff8c,0x14472ffb9,0x14472ffee,0x144730023,0x144730058,0x14473008d,0x1447300c2,0x1447300f7,0x14473012c,0x144730161,0x144730196,0x1447301cb,0x144730200,0x144730235,0x14473025e,0x14473028b,0x1447302d7,0x14473030f,0x144730343,0x144730377,0x1447303ab,0x1447303df,0x144730413,0x144730452,0x14473047f,0x1447304ac,0x1447304d9,0x144730506,0x144730533,0x144730560,0x144730589,0x1447305b2,0x1447305df,0x14473060c,0x144730635,0x14473065e,0x144730687,0x1447306b0,0x1447306d9,0x144730702,0x14473072b,0x144730754,0x14473079b,0x1447307cb,0x144730807,0x144730830,0x144730859,0x144730886,0x1447308b3,0x1447308dc,0x144730925,0x14473096e,0x1447309b7,0x144730a00,0x144730a4c,0x144730a75,0x144730a9e,0x144730ac7,0x144730af0",
+  "notes": "Exported tm_api_set_properties(a,b,c): if TM API context (0x145fb8228) null calls 0x144d54420(0xc), else packs {a,b,c} and sends command 0xc via 0x144d53f00 (16 bytes). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.thrustmaster_api_set_properties",
+  "section": ".xtls",
+  "pattern": "48 83 EC 58 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 40 48 83 3D ?? ?? ?? ?? 00 75 21 45 33 C0 41 8D 50 FB 8D 4A 11 E8",
+  "match": "0x14491d7a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14491d7a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Thrustmaster_ApiSetProperties"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14491d7a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14491d7a0.c;xref:0x143a9ddc6",
+   "notes": "V7704 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

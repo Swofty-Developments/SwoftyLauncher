@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_InvalidateLap_Thunk",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x143574cd0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Rules_InvalidateLap_Thunk(void *rules, uint8_t car, uint8_t kind)",
+  "evidence": "decomp:own disasm 0x1505c44c0-0x1505c47d8;xref:0x14356bb64,0x1505c46bd,0x1505c47d3",
+  "notes": "5-byte jmp into .data1 body=0x1505c44c0 (plaintext in the KB file). The rules update 0x14356bb00 calls it at 0x14356bb64 for each queued event of [rules+0x1bf8] (event +0x10 car, +0x28 kind). Kind 0 returns. It finds the lap validity component (type node 0x146076480) in [[rules+0x1c38]+0x88]'s component list +0x238..+0x240. Kind 2 takes lap offset +1 and kind 3 offset -1; for car 0 with the component's +0x28b set they clear +0x288 (kind 2) or +0x289 (kind 3), and they make the lap record at index u8 +0x9c80 plus the offset invalid (0x1505c46b0) and report it. With +0x28b set, for car 0 it clears +0x28a, then sets bit 0 (not clean) of telemetry lap slot 0's summary flags +0x2c0 (0x1505c4720) when +0x28a or +0x288 is 0 and of slot 1's (0x1505c4752) when +0x289 is 0, and stores 1 in +0x289 and +0x28a. Every kind then makes the current lap's record invalid (0x1505c47b6) and tail-jumps Sess_LapTimes_ReportLapInvalidation_Thunk 0x142f2bda0 (lapTimes, car, lap, 0). Lap record: [[rules+0x1c48]+0x58][car] + index*200, index at most 199, valid while (u64 +0xe0 & 1) == u8 +0xd8; an invalid write stores +0xd8 = ((+0xe0 & 1) == 0). The KB body computes 200 and the component offset 0x18 from obfuscated constants (0x4c0000c8 - [0x1487314e6] = 0xc8, 0x508b49ca ^ [0x1528ec4b8] = 0x18). Steam 1.0.145 thunk 0x143577260 (body 0x15002f460) and EA 1.0.145 0x143567460 (body 0x14efc1eb0, restored dump): aligned 196 and 198 of 203 instructions, the differences only those constants (Steam: plain 0x18 and imul 0xc8; EA: 0xd9894ea1 - [0x153aa9d4c] = 0xc8) and nop encodings, every field use at the same place."
+ },
+ "signature": {
+  "id": "session.rules_invalidate_lap_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 28 21 E9 ?? ?? ?? ?? FE 0F 8B 4D 18",
+  "match": "0x143574cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143574cd0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_InvalidateLap_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-18",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143574cd0",
+    "target": "0x143574cd0"
+   },
+   "sigcheck": "passed",
+   "digest": "053a17bb2669ba673a43380c52753fd4fb7131f5a01650febd73b5ef5718f5d9"
+  }
+ ]
+}

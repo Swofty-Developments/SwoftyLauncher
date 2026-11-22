@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXOSQLittleBitRandomnessVariance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6a010",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f6a010.c;pat:log-channel-NETWORK/VX;xref:0x142f69482,0x142f6bafa",
+  "notes": "Callers 0x142f68b80, 0x142f6b170. Once reads virtual_session.human_difficulty_modifier (default 1.0) into 0x146095ee0; draws a factor in [g 0x146095ec4, g 0x146095ec0] with the RNG 0x143929b90 on this+0x158 and logs it; adds up to three random-event variances (0x146095ecc/ed4/edc) when the RNG modulo 0x146095ec8/ed0/ed8 hits; param 3 switches the lower clamp; returns the float multiplier. (lane owner review requested) Better name: Game_VirtualSession_GetRandomLapVariance (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_moxosq_little_bit_randomness_variance",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 44 89 C3",
+  "match": "0x142f6a010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6a010",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXOSQLittleBitRandomnessVariance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f6a010",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f6a010.c;xref:0x142f69482",
+   "notes": "V5652 Computes a random variance float (min/max + event variance, human_difficulty_modifier) not just one log; better Game_VirtualSession_ComputeRandomVariance"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f6a010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6a010.c;xref:0x142f69482",
+   "notes": "V6920 127 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

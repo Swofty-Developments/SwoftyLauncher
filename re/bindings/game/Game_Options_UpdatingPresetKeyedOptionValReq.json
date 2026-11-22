@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Options_UpdatingPresetKeyedOptionValReq",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142abe6d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142abe6d0.c;pat:log-channel-OPTIONS/P;xref:0x142abe39b,0x142abe3a0,0x142abe834,0x142abe89c,0x142abeda3",
+  "notes": "Preset keyed to an option: active = (param_3 == required +0x60) -> +0x68; logs 'Updating preset keyed to option' (OPTIONS/P). Inactive: optional 'Reset breakables' (+0x130 = +0x128) and 'Removing restrictions' (0x142a88df0). Active: registers itself as option callback (0x142abdde0, {fn,this,4} entry), counts +0x5c to +0x58 then applies restrictions (0x142abf160). Callers 0x142abe240 (call+lea), 0x142abed90 (lea), self. (lane owner review requested) Better name: Game_OptionsPreset_OnKeyOptionChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.options_updating_preset_keyed_option_val_req",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 45 89 C1",
+  "match": "0x142abe6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142abe6d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Options_UpdatingPresetKeyedOptionValReq"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142abe6d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142abe6d0.c;xref:0x142abe39b",
+   "notes": "V5007 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

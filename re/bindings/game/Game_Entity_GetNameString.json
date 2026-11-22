@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Entity_GetNameString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a13860",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a13860.c;xref:0x1415c2fa8,0x141fa1b1d,0x142c123a8,0x142d6d64e,0x142d85168,0x142da2cb1,0x142da39ec,0x142dfc64a,0x142dfdf4a,0x142dfef3c,0x142e06217,0x142e06be7,0x142f01ead,0x143612e7f",
+  "notes": "(out, entity e, ctx, u8 variant): custom name of component 0x146063fb0 (e+0x1030 vcall +0x10; +0x5b8, len +0x5b0) if non-empty. Else (needs e[0x56]) picks table 0x140ac14e0(ctx, e), keys from session type (types 0xf..0x11 -> record +0x68) and id [e[0x1c3]]+0xb0 (>=0x100 -> 0xff), walks the chain (+0x368), out = entry[variant+5]+0x10. Empty out for null e. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.entity_get_name_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 85 D2 0F 84",
+  "match": "0x142a13860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a13860",
+  "kind": "func_start",
+  "names": [
+   "Game_Entity_GetNameString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142a13860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a13860.c;xref:0x141fa1b1d,0x142d85168,0x142da2cb1",
+   "notes": "V3409 component type 0x146063fb0 via e[0x206] vtbl+0x10, name +0x5b0/+0x5b8 copied via 0x1441974e0, fallback e[0x1c3]+0xb0; named callers confirmed (incl. RedFlag*, AutoResetToTrack_StartTimer)"
+  }
+ ],
+ "proofs": []
+}

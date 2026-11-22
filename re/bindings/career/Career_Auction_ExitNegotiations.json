@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Auction_ExitNegotiations",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d9cbe0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d9cbe0.c;pat:log-channel-AUCTION;xref:0x140c4c08a",
+  "notes": "Driver param_2 exits negotiations with team param_3: if driver has no team (+0x5a==0x3fff) or is already on that team logs AUCTION 'attempted to exit negotiations' and returns 0; else logs 'Driver exited negotiations' and appends the team to the driver record's exit list (comp+0x368 +0x30) or, with gate 0x1484f1570, the driver to the team record's list (comp+0x348 +0x30); returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.auction_exit_negotiations",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 44 89 C7 89 D6",
+  "match": "0x140d9cbe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d9cbe0",
+  "kind": "func_start",
+  "names": [
+   "Career_Auction_ExitNegotiations"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d9cbe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9cbe0.c;xref:0x140c4c08a",
+   "notes": "V4740 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d9cbe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9cbe0.c",
+   "notes": "V9090 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

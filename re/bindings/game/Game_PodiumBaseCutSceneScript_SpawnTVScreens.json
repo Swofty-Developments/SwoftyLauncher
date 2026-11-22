@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_SpawnTVScreens",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140358d40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140358d40.c;pat:log-message-cxx;xref:0x14035a23c,0x14035a96c,0x14035b91c,0x14035c04c,0x14035c77c,0x14035d44c,0x14035dbbc,0x14035e20c,0x14035ea7c,0x14035f2ec,0x14035fb5c,0x14036076c,0x140364bec",
+  "notes": "(this, p2, p3): logs class string; takes podium result records 0x140248f90(this,0..2), resolves their team records ([0x14604c2c8+0x290]+1000, index byte +0xe) and copies material names (ACTOR_PODIUM 'material0/1/2 %s'); moves transform +0x4a0 by (0,0,0.05); spawns 3 TV screen scenes: p2=0,p3=0 pod_tv_screen_1st/2nd/3rd, p2=0,p3!=0 monz_pod_tv_screen_*, p2!=0 mon_pod_tv_screen_*. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_spawn_tv_screens",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 0C 00 00 44 88 44 24 67",
+  "match": "0x140358d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140358d40",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_SpawnTVScreens"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140358d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140358d40.c",
+   "notes": "V4515 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

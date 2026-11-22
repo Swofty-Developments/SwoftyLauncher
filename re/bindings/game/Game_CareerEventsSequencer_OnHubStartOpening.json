@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_OnHubStartOpening",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c78050",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c78050.c;pat:log-message-method;xref:0x142d510db",
+  "notes": "Logs 'onHubStartOpening' (CareerEventsSequencer) and, under the global state CS (lazy init of the 0x14604ed68 block), sets bit 0x8000 in its word at 0x14604ed98 and notifies via 0x14144d8b0 when it changed. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_on_hub_start_opening",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 65 B8 AD 00 00 00",
+  "match": "0x140c78050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c78050",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_OnHubStartOpening"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c78050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c78050.c;xref:0x142d510db",
+   "notes": "V4603 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

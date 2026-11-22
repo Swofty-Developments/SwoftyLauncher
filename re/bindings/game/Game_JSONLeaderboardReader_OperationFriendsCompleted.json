@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_JSONLeaderboardReader_OperationFriendsCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fbb880",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fbb880.c;pat:log-message-cxx;xref:0x142fbb2e0",
+  "notes": "Completion callback (fn ptr lea'd at 0x142fbb2e0 in StartOperation). Acts only if the fetched request (+0x78 name, +0xa0 ver, +0xa4) matches the requested one (+0xc0/+0xe8/+0xec) and mode +0x3c == 2: success -> total +0x38 = result+0xc8, rows via 0x142fbc080, log '...with %d results and %s player entry', 0x142fbc430(result+0xa0); error -> vcall +0x30(1), status 3. Calls delegate +0x110/+0x118 once, releases op +0x58/+0x60. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.json_leaderboard_reader_operation_friends_completed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 78 48 89 D7 48 89 CE 48 8B 49 78 48 8B 96 C0 00 00 00 E8 ?? ?? ?? ?? 85 C0 0F 85 ?? ?? ?? ?? 8B 86 A0 00 00 00 3B 86 E8 00 00 00 0F 85 ?? ?? ?? ?? 0F B6 86 A4 00 00 00 3A 86 EC 00 00 00 0F 85 ?? ?? ?? ?? 80 7E 3C 02",
+  "match": "0x142fbb880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fbb880",
+  "kind": "func_start",
+  "names": [
+   "Game_JSONLeaderboardReader_OperationFriendsCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fbb880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fbb880.c;xref:0x142fbb2e2",
+   "notes": "V5711 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

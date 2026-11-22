@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Options_OptionsValueOptionDeserialised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142abd800",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142abd800.c;pat:log-channel-OPTIONS;xref:0x142abd9b7,0x142ac1c1b,0x142ac1e54,0x142ad6fbc",
+  "notes": "(option, value): type byte +0x18: 6 returns value; 2 (int) returns value when inside range +0xb8 (lo,hi) else logs 'was not deserialised - value out of range' and returns lo-1; 1 (enum) returns index of the value entry (+0x80..+0x88 stride 0x50, id +8, aliases +0x40 count +0x48) or lo-1 when not found. Old name was a log fragment. (lane owner review requested) Better name: Game_Options_ResolveDeserialisedValue (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.options_options_value_option_deserialised",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 89 D0 48 89 CE 0F B6 49 18",
+  "match": "0x142abd800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142abd800",
+  "kind": "func_start",
+  "names": [
+   "Game_Options_OptionsValueOptionDeserialised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142abd800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142abd800.c;xref:0x142abd9b7",
+   "notes": "V5005 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

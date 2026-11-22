@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Build_WeekendFromName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140aee2b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140aee2b0.c;xref:0x140ae6149,0x140af2405,0x140b98fc5,0x140b9ecb0",
+  "notes": "Weekend ctor: seeds the global MT (0x146108c00), packs two randoms ^ param_6 as obfuscated id, calls base ctor 0x14364d570 (Ne_Construct_SaveDataContainer) with type name 'weekend' and name param_3/4, sets vtable 0x14566b5d0, zeroes vectors from +0x208, allocator param_2 at +0x218/+0x248/+0x250/+0x280/+0x480, byte +0x278 = param_7. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.build_weekend_from_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 4C 89 4C 24",
+  "match": "0x140aee2b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140aee2b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_WeekendFromName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140aee2b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140aee2b0.c",
+   "notes": "V4427 Weekend ctor: \"weekend\" name bytes passed to base ctor 0x14364d570, vtable store, +0x220 zeroed"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140aee2b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140aee2b0.c",
+   "notes": "V9041 Base ctor 0x14364d570 called with the literal \"weekend\" (0x646e656b656577), vtable 0x14566b5d0 set, +0x220 region zeroed, random seed words XORed."
+  }
+ ],
+ "proofs": []
+}

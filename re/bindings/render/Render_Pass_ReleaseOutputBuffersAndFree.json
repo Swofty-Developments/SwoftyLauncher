@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Pass_ReleaseOutputBuffersAndFree",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c84d70",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c84d70.c;xref:0x14014e835,0x14014e8da,0x14014e97f,0x14014ea24,0x14014eac9,0x14014eb6e",
+  "notes": "Destroys a 0x90 triple-buffer object param_2: 0x143e843b0, releases buffers +0x20/+0x18/+0x10 via Render_Gfx2Device_QueueDeferredRelease (device 0x14618caa8), Ne_Handle_ReleaseSlotWithErrorTrace, frees it with param_1 vcall +0x38. Same sequence as Render_Gfx2TripleBufferHolder_Destruct. Callers incl Game_Read_RendererGfxConfig 0x14014e835, 0x14014e8da, 0x14015d720 (0x14015e971). (lane owner review requested) Better name: Render_Gfx2TripleBuffer_Destroy (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.pass_release_output_buffers_and_free",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 89 D1",
+  "match": "0x143c84d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c84d70",
+  "kind": "func_start",
+  "names": [
+   "Render_Pass_ReleaseOutputBuffersAndFree"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c84d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c84d70.c;xref:0x14014e835",
+   "notes": "V7889 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

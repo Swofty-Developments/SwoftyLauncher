@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Vr_SetInterruptState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ee9e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ee9e0.c;pat:log-channel-VR;xref:0x1439ecab1,0x1439ecad4,0x1439ecd88,0x1439ece34",
+  "notes": "Read in full: (vr, push) ref-counts interrupts in +0x168: first push sends event 8 to queue 'InterruptQueue' (0x140799d20) and msg 0xd {1} to [0x146ca5e28+0x50] vcall +0x30; last pop sends event 9 and {0}; clamps at 0; logs 'Vr interrupt state = %i'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vr_set_interrupt_state",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 44 8B 81 68 01 00 00",
+  "match": "0x1439ee9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ee9e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Vr_SetInterruptState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439ee9e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ee9e0.c;xref:0x1439ecab1",
+   "notes": "V6404 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

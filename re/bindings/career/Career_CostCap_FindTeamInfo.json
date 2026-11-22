@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_CostCap_FindTeamInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c99fa0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c99fa0.c;pat:log-channel-COST_CAP;xref:0x140a8fd8b,0x140a98e35,0x140a99165,0x140a99485",
+  "notes": "COST CAP log. Looks the team (packed key param_3) up in the hash map comp+0x2d0..+0x304, then season param_4 in the team's map (+0x28..+0x5c); copies the record (+8, +0x10, allocator +0x18, u32 vector +0x20..+0x28) into out param_2; logs 'no cost cap info' when missing. callers. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.cost_cap_find_team_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC A0 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 D6",
+  "match": "0x140c99fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c99fa0",
+  "kind": "func_start",
+  "names": [
+   "Career_CostCap_FindTeamInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c99fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c99fa0.c;xref:0x140a8fd8b,0x140a98e35",
+   "notes": "V4633 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140c99fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c99fa0.c",
+   "notes": "V9056 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

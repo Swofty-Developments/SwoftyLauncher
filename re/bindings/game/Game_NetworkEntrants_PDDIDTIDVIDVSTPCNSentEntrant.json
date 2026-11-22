@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_PDDIDTIDVIDVSTPCNSentEntrant",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143114250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143114250.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x143109ace,0x1436d921c",
+  "notes": "Host only (this[1] < 2): sends a header message (vtable 0x145824350) via 0x14402e500, then for each 0x88-byte entrant in [[this[5]]+0x4f8]+0x2e0 builds an entrant message and sends it; logs \"PD..CN - Sent Entrant -\". (lane owner review requested) Better name: Game_NetworkEntrants_SendEntrants (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_entrants_pddidtidvidvstpcn_sent_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 88 54 24 53",
+  "match": "0x143114250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143114250",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_PDDIDTIDVIDVSTPCNSentEntrant"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143114250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143114250.c;xref:0x143109ace",
+   "notes": "V5778 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

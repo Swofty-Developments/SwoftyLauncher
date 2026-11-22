@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerSet_AddLockedEntryIfAbsent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14310f2e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14310f2e0.c;xref:0x140fe11a0,0x140fed538,0x1430ee6d1",
+  "notes": "Returns 0 when this+0x28 >= 2 or the id (+0x48, type +8, user ids) is already in this+0x58..+0x60; else adds via Game_PlayerSet_AddPlayer 0x14316ad80, sets isLocked (0x1431684a0(e,1)); if e+0x90 was clear sets it and dirty +0x69 and logs; notifies listeners this+0x78..+0x80 (vfunc +0x18); returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.player_set_find_or_add_locked_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 83 79 28 01 0F",
+  "match": "0x14310f2e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14310f2e0",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerSet_AddLockedEntryIfAbsent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x14310f2e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14310f2e0.c;xref:0x140fe11a0",
+   "notes": "V4177 Returns 0 if +0x28 >= 2 or player id already in list +0x58..+0x60; else Game_PlayerSet_AddPlayer (0x14316ad80), sets isLocked via 0x1431684a0, logs PLAYERSET '[PlayerSetEntry(%s, %s)] : isLocked = %s.' and ReportPlayerSetEntryChanged, returns 1; caller Game_CareerOnlineManager_ReconcilingNewListMembers seen"
+  }
+ ],
+ "proofs": []
+}

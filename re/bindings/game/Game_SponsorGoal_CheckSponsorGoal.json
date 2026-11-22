@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SponsorGoal_CheckSponsorGoal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411090c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1411090c0.c;pat:log-message-cxx;xref:0x14110ad91,0x14110cd16,0x1411090b2,0x14110c542",
+  "notes": "dl=trigger type (stubs 0x1411090b0 dl=4, 0x14110c540 dl=1). Per team [+0x298 stride 0x88] gathers drivers (+0x278+0x2e0), per active sponsor (+0x18, stride 0x160, +0x158) goals from 0x1411183a0 with goal+0x110==dl: cond +0x78 vcall +0x38; driver ids at +0x128, team at +0x148; award via 0x1410f7660, posts 0x1439876c0, 0x14110c290, loyalty 0x141106870. SPONSORS logs. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.sponsor_goal_check_sponsor_goal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 78 29 84 24 00 02 00 00",
+  "match": "0x1411090c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411090c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SponsorGoal_CheckSponsorGoal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1411090c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411090c0.c;xref:0x1401090ba",
+   "notes": "V4592 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

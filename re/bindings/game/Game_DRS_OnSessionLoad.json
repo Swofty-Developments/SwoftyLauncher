@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_DRS_OnSessionLoad",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bebd80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DRS_OnSessionLoad(void *drs)",
+  "evidence": "decomp:re/decomp/142bebd80.c;xref:0x1457cd9a0",
+  "notes": "vt_Game_DragReductionSystem slot +0x50: collects the zone markup of the main TrackSpace (Game_DRS_CollectZoneMarkup on drs+0x60; logs 'No Main Trackspace Property, DRS/X-Mode will not work.' without one), numbers drs_act (0x20) then x_mode (0x30) zones, sets drs+0x74 = 1.0f (the detection gap Game_DRS_UpdateZoneTracker reads at [g_Game_DrsLapState]+0x14) and drs+0x70 = RaceStart of the group the current game setup mode names: [[[drs+0x68]+0xb0]+0x88]+0x260 (EntrantsManager) +0x2b0 (GameSetupMode) +0x1e0 holder +0x10 label, looked up in the map at [drs+0x68]+0x118; a label not in the map gives 0 (0x142bec009) | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V1620)"
+ },
+ "signature": {
+  "id": "game.d_r_s_init_zones_from_trackspace",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 48 89 CE 48 8B 81",
+  "match": "0x142bebd80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bebd80",
+  "kind": "func_start",
+  "names": [
+   "Game_DRS_OnSessionLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "drs-v1",
+   "kind": "func",
+   "item": "Game_DRS_OnSessionLoad",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bebd80.c;decomp:re/decomp/142be7e10.c;xref:0x1457cd9a0,0x142bebf3f,0x142bebf4f",
+   "notes": "V1620 Slot +0x50 confirmed from the vtable. drs+0x74 = 0x3f800000 (1.0f) unconditionally; drs+0x70 = node+0x58 (RaceStart) of the group named by [[[drs+0x68]+0xb0]+0x88]+0x260 -> +0x2b0 -> +0x1e0 -> +0x10, 0 when any pointer on the chain is null or the label is not in the map. drs+0x68 is drs itself (constructor), so the map is the one slot +0x20 loads."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_DRS_OnSessionLoad",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bebd80.c;xref:0x142bebd80",
+   "notes": "V2834 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

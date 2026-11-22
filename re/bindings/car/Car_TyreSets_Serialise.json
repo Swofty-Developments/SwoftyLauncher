@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreSets_Serialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e8da20",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e8da20.c;pat:log-channel-TYRES/V;xref:0x140bd1685,0x140bd1d60,0x1432d4400",
+  "notes": "(alloc,writer): mirror of Car_TyreSets_Deserialise: version marker 3 (0x143924390, range 0x12), allocation choice alloc+4 as 0..3 (0x1439247d0); per group set count 0..15 then each 0x6c set via 0x142e88c30; finally 0x142e883f0 writes alloc+0xe0 (m_tyreSetToStartRaceOn). Logs TYRES/V lines. Callers in 0x140bd1290, 0x140bd1ac0, 0x1432d43e0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.tyre_sets_serialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D7 48 89 4C 24 28",
+  "match": "0x142e8da20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8da20",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreSets_Serialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e8da20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e8da20.c;xref:0x140bd1685",
+   "notes": "V5524 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

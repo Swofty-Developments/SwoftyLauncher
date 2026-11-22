@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeViewModel_OnWeatherChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d09040",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d09040.c;pat:log-message-cxx;xref:0x141cefeec",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int -> this+0x488; 10 restores saved weather (system+0x3d1) into (system+0x280)+0x26c4, else min(value,6) -> system+0x2da2 applied via 0x14461bb70 and +0x26c4 = 8; sets +0xb42b, refresh flags, (system+0x2a0)+0x5c = 5; dirty. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_view_model_on_weather_changed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 83 7A 08 0A",
+  "match": "0x141d09040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d09040",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeViewModel_OnWeatherChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d09040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d09040.c;xref:0x141cefeee",
+   "notes": "V5192 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

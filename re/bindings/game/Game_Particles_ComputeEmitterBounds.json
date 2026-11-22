@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_ComputeEmitterBounds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af7870",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af7870.c;xref:0x143af7453,0x143b0b1ea,0x143b0b20c",
+  "notes": "(mgr, effect, range): AABB over emitters (init +-1e10; emitter +0x130/+0x140 when +0x104 != 0 else pos +0x40 +-0.1), centre and radius; picks the best entry of list mgr+0x87b280 (stride 0xa0, radius < range) and up to 4 spheres from mgr+0xa5ce2c (count +0xa5be28) and mgr+0xa5be2c (count +0xa5be24) intersecting the bounds; packs indices into effect +0x68/+0x6c/+0x70. Tail of 0x143af7160 (jmp 0x143af7453) and calls in 0x143b06d90. (lane owner review requested) Better name: Game_Particles_ComputeBoundsAndVolumeLinks (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.particles_compute_emitter_bounds",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 68 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F2",
+  "match": "0x143af7870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af7870",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_ComputeEmitterBounds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143af7870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af7870.c;xref:0x143af7453",
+   "notes": "V7861 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

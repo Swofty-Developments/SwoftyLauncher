@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionManager_CallHandleStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143060fb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143060fb0.c;pat:log-message-cxx;xref:0x143058457,0x14305aca9,0x14305bb30",
+  "notes": "Logs 'GameSessionManager::callHandleStatus(%s).' (NETWORK) with the status text for param_2. Callers 0x143057720 (0x143058457), 0x14305abe0, 0x14305af60, 0x143062f90, 0x1430647a0 (0x1430649f0, 0x143064be1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_manager_call_handle_status",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5C",
+  "match": "0x143060fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143060fb0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionManager_CallHandleStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143060fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143060fb0.c;xref:0x143058458",
+   "notes": "V5506 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

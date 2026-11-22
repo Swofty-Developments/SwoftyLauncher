@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Copy_RndEntriesForDepartment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141248f00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int64_t Career_Copy_RndEntriesForDepartment(void *owner, void *out_arr, uint64_t dept_key, uint64_t kind)",
+  "evidence": "decomp:re/decomp/141248f00.c;xref:0x14123bb78,0x14180d76b,0x141811d0b",
+  "notes": "Clears out (+0xc00 count), runs Career_Collect_DeptUpgradesForRound (0x141249090) into a 0xc38-byte stack array for dept 0,1,2,3 in turn and appends each result to out; returns out. Callers 0x14123b640, 0x14180caf0, 0x141810ce0. (lane owner review requested) Better name: Career_Collect_RoundUpgradesAllDepts (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.copy_rnd_entries_for_department",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 40 0C 00 00",
+  "match": "0x141248f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141248f00",
+  "kind": "func_start",
+  "names": [
+   "Career_Copy_RndEntriesForDepartment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141248f00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141248f00.c;xref:0x14180d76b;xref:0x141811d0b",
+   "notes": "V9694 Calls the collector four times with a 5th mode argument 0..3 (not once) and appends each result list to out_arr; count at +0xc00 is right."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChampionshipQualifyingTyreComponent_Deserialize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b87b40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b87b40.c;pat:log-message-cxx;xref:0x145674548",
+  "notes": "Vtable cell 0x145674548. Own log 'ChampionshipQualifyingTyreComponent::deserialize()'. Optional tagged-stream check (ranged read must be 3), skips an 8-bit header, reads 10 entries via Ne_BitReader_ReadPackedEntryKey into this+0x30..+0x9c (step 0xc); sets stream error flag +0x28 on failure. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.championship_qualifying_tyre_component_deserialize",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 4C 89 C6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140b87b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b87b40",
+  "kind": "func_start",
+  "names": [
+   "Game_ChampionshipQualifyingTyreComponent_Deserialize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140b87b40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b87b40.c",
+   "notes": "V4435 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

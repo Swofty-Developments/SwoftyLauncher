@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_FindKeyInSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14146f980",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14146f980.c;xref:0x141429dba,0x1414319c5,0x14143392d,0x141967a51",
+  "notes": "Robin-hood set lookup (set: mul +0x20, slots +0x28, info bytes +0x30, mask +0x40, +0x50/+0x54 shifts) returning the slot index (end index when absent). Key: PlayerDescription at key+8 (flags +0x50 bit28, type byte +0x10: 7 -> +0x28^+0x30, else +0x18^+0x20, type 3 with +0x48 set -> -1) hash_combined (0x9e3779b9) with u16 (key+0x58<<14 | key+0x5a); equality = 0x1431146d0(key+8, slot+8) && +0x5a and +0x58 equal. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_compute_key_hash",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 8B 42 50 A9 00 00 00 10 74",
+  "match": "0x14146f980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14146f980",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_FindKeyInSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14146f980",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14146f980.c;xref:0x141429dba",
+   "notes": "V8048 Game_CustomisationDecals_FindKeyInSet: hash_combine (0x9e3779b9) followed by probe of hash set with compare 0x1431146d0, returns slot index; not only a hash"
+  }
+ ],
+ "proofs": []
+}

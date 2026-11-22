@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehiclePhysicsClock_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432602e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432602e0.c;pat:log-message-cxx;xref:0x143266b15,0x143266b9b,0x143266c6b,0x1432e2943",
+  "notes": "Read in full: for vehicle 0..0x1a frees record this+0xf8[i] (0x143273e60, then allocator vcall +0x38), resets the 0xc0-byte slot [this+0x40]+0x180 and the 12-byte entries of +0x1a0 to -1; calls Setup 0x143255d50 when +0x40 set; clears +0x200..+0x208, logs 'VehiclePhysicsClock::reset()' (NETWORK-PCLOCK), +0xe8 = +0xe0. 'this' is the VehicleProgressManager (clock and records). Callers 0x1432669b0 (0x143266c6b is a jmp), 0x1432e2740. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_physics_clock_reset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 48 89 CE 4C 8D 74 24 58",
+  "match": "0x1432602e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432602e0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehiclePhysicsClock_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432602e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432602e0.c;xref:0x143266b16",
+   "notes": "V5814 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

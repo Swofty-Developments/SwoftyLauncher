@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PitEvalListNext",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14369212e",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/143691df0.c;xref:0x14369212c,0x143692132,0x143692135",
+  "notes": "Same function: advance to the next list entry (add r15,8; cmp r15,r12; jne 0x143692000). Reached with bl bit 0 clear."
+ },
+ "signature": {
+  "id": "session.pit_eval_list_next",
+  "section": ".xtls",
+  "pattern": "F6 C3 01 75 1E 49 83 C7 08 4D 39 E7",
+  "match": "0x143692129",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14369212e",
+  "kind": "mid",
+  "expect": "49 83 C7 08 4D 39 E7",
+  "names": [
+   "site_Sess_PitEvalListNext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "pitguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-pit1",
+   "kind": "global",
+   "item": "0x14369212e",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143691df0.c;xref:0x14369212c,0x143692132,0x143692135",
+   "notes": "V3858 reached from 12c with bl bit0 clear; rbx=0 matches (final bl&1 false if last entry skipped); iterator r15 advanced here only, so skip does not stall the loop"
+  }
+ ],
+ "proofs": []
+}

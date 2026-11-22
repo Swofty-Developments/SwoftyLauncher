@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_BroadcastLargeInfoMessageViewModel_SetNextRowData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419d86f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1419d86f0.c;pat:log-message-cxx;xref:0x1419d8344,0x1419d853a",
+  "notes": "BroadcastLargeInfoMessageViewModel::setNextRowData(vm, header, value, listNode): row index = list size; capped -> TRACE log; else creates row \"%d\" with child nodes header/value (strings) and valueLocalise (bool), keeps the handles in vm and sets them (0x1407b10c0, 0x140973e20). Callers: 2 sites in 0x1419d7170. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.broadcast_large_info_message_view_model_set_next_row_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 4C 89 CE 4C 89 C3",
+  "match": "0x1419d86f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419d86f0",
+  "kind": "func_start",
+  "names": [
+   "Game_BroadcastLargeInfoMessageViewModel_SetNextRowData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1419d86f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419d86f0.c;xref:0x1419d8344",
+   "notes": "V4922 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

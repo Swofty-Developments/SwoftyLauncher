@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_RainFile_ParseMaterialEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d6d320",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d6d320.c;xref:0x143d6d218,0x143d6db9e",
+  "notes": "Reads weather_sequence_id (Ne_Config_ReadSize) as slot index; if empty reads 'name', hashes it (Ne_HashedName_FromString) and stores {hash, value} in param_3[idx]; once all counted slots are filled copies the table into the RainFile at +0x80 (count +0x75c8c) when param_5, else at +0 (count +0x75c88). Callers Render_RainFile_ParseMaterials 0x143d6d218, Render_RainFile_Load 0x143d6db9e. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.rain_file_parse_material_entry",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 4C 89 CF 4C 89 C3",
+  "match": "0x143d6d320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d6d320",
+  "kind": "func_start",
+  "names": [
+   "Render_RainFile_ParseMaterialEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d6d320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d6d320.c;xref:0x143d6d218",
+   "notes": "V7922 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

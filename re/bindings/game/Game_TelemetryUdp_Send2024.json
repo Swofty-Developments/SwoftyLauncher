@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TelemetryUdp_Send2024",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447333d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447333d0.c;xref:0x14473127d,0x14473811b",
+  "notes": "For each 2024 packet buffer gates with Game_TelemetryUdp_RateLimitTick (timers this+0x17040, +0x170a0, ...) and sends via 0x144737d30(this, buf, size, header) (e.g. 0x2f1, 0x546, 0x46d, 0x3b9, 0x5b4 bytes; session history cycles through up to 0x16 cars). Tail-jumped from Game_TelemetryOutputUDPUpdateable_Update, called from Game_TelemetryUdp_HandleEvent. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.telemetry_udp_send2024",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 81 C1 40 70 01 00 E8 ?? ?? ?? ?? 84 C0 74 48 48 8D 96 7D D2 00 00",
+  "match": "0x1447333d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447333d0",
+  "kind": "func_start",
+  "names": [
+   "Game_TelemetryUdp_Send2024"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x1447333d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447333d0.c;xref:0x14473127d",
+   "notes": "V6619 tail jmp from Update after Prepare2024; 22-car (0x16) clamp, sends 2024 packets via rate gate"
+  }
+ ],
+ "proofs": []
+}

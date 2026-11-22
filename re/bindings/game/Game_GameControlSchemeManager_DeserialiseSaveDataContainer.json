@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameControlSchemeManager_DeserialiseSaveDataContainer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a69b20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a69b20.c;pat:log-message-cxx;xref:0x1457bb748",
+  "notes": "Vtable cell 0x1457bb748 (secondary base, this-8). Resets state (0x142a59670/0x142a598c0/0x142a5c7f0, deferred callbacks +0x1f0..+0x1f8), reads list 'control_schemes' from container p2 (0x143931730, type check vs 0x146129cf0): each entry parsed by 0x142a63340 into vector +0x160, type 3 also into +0x1c0, else +0x1a0; missing -> error 0x57/0x58 and INPUT log 'control_schemes list is missing, old format'. Then for i 0..1 reads 'control_schemes_player_index_%d' into per-player sets +0x218+i*0x50; finally 0x142a6a560 per player and 0x142a5b910. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_control_scheme_manager_deserialise_save_data_container",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 54 24 48",
+  "match": "0x142a69b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a69b20",
+  "kind": "func_start",
+  "names": [
+   "Game_GameControlSchemeManager_DeserialiseSaveDataContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a69b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a69b20.c",
+   "notes": "V4950 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

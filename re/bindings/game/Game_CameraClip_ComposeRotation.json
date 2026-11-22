@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CameraClip_ComposeRotation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14019b260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14019b260.c;xref:0x14019a7d7",
+  "notes": "Pure math: builds a 4x4 rotation matrix at param_1 from three Euler angles param_2[0..2] (each wrapped to [-pi,pi] via x*0.15915494 rounded *6.2831855, sin/cos minimax polynomials); rows 0..2 rotation, row 3 = (0,0,0,1). No camera state read; caller in 0x140199cd0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.camera_clip_compose_rotation",
+  "section": ".xtls",
+  "pattern": "48 81 EC A8 00 00 00 C5 78 29 BC 24 90 00 00 00 C5 78 29 B4 24 80 00 00 00 C5 78 29 6C 24 70 C5 78 29 64 24 60 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 89 C8 C4",
+  "match": "0x14019b260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14019b260",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraClip_ComposeRotation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14019b260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14019b260.c;xref:0x14019a7d7",
+   "notes": "V7969 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

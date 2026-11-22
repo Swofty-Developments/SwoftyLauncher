@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DriverMarket_CheckAffordable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d982c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d982c0.c;pat:log-channel-DRIVER_MARKET;xref:0x1456939d8,0x140d97f9d",
+  "notes": "Affordability check, flags in out_flags param_4 (zeroed first): team budget = sum of +0x10 over 0x1b0-byte records of the team entry ([mkt+0x720]+0x298, 0x30 stride, key +0x28) scaled by float +0x374 (except player team with gate 0x1484f1570), driver cost from 0x140dbb690; budget<cost logs 'Team cannot afford driver' |=2; 0x140dcbde0 false logs Add-on cap |=0x80. Returns flags==0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.driver_market_check_affordable",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 4C 89 CE 4C 89 C3",
+  "match": "0x140d982c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d982c0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverMarket_CheckAffordable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d982c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d982c0.c;xref:0x140d97f9d",
+   "notes": "V4725 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d982c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d982c0.c",
+   "notes": "V9085 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

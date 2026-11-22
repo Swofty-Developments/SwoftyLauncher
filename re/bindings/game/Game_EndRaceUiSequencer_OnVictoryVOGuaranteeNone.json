@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EndRaceUiSequencer_OnVictoryVOGuaranteeNone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea3d60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ea3d60.c;pat:log-message-method;xref:0x142ea35b4,0x142ea3ed6",
+  "notes": "Bus handler: logs 'onVictoryVOGuaranteeNone() called'; if current state +0x58 == 0 sets next state +0x59 = 3 (skip victory VO). Returns 0. Fn ptr taken by lea in 0x142ea3330, 0x142ea3e80. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.end_race_ui_sequencer_on_victory_vo_guarantee_none",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4C B8 A1 00 00 00",
+  "match": "0x142ea3d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea3d60",
+  "kind": "func_start",
+  "names": [
+   "Game_EndRaceUiSequencer_OnVictoryVOGuaranteeNone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea3d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea3d60.c;xref:0x142ea35b6",
+   "notes": "V5544 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

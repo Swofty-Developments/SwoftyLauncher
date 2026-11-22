@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_ResourceEntry_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b12440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b12440.c;xref:0x143b13a76,0x143b14494",
+  "notes": "Particle resource pack ctor: vtable 0x1458b87f0, allocator param_2 at [9], copies 13 descriptor counts from param_5 (+0x50..+0x80) and allocates/zeroes one array per count (stride 8/4/0x7e8/0x78/0x38/0x90/0x50/0x40/0x54/0x2c), plus byte buffers from param_5[0xd]/[0xe]; init sentinels 9999, sets global 0x146294200 = this (used by Game_Particles_CreateEffectInstanceByName), copies name ptr param_5+0x50 into +0xd90. Callers in 0x143b13710. (lane owner review requested) Better name: Game_Particles_ResourcePack_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.particles_resource_entry_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 4C 8B 74",
+  "match": "0x143b12440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b12440",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_ResourceEntry_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b12440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b12440.c;xref:0x143b13a76",
+   "notes": "V7903 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Load_AudioBundle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144528310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144528310.c;imm:0x145be7cab;xref:0x14451c6af",
+  "notes": "Thread entry (fn ptr lea 0x14451c6af in Game_AudioEngineBundle_Initialise). Loops while the wait vcall +8(0x14) times out (0x3c): pops a 0xa8 request from +0x70..+0x78 (lock +0x18), opens '%s/bundles/%s' with '.bdl' forced (0x143f393a0), parses the header into a 0x110 record (rate 48000, flags 1/2/4 -> pairs of 0x1760 objects via 0x144524b30), publishes it to the waiters (+0x208) or clears bit 4 of +0x69 on failure. Returns 0. (lane owner review requested) Better name: Game_AudioBundle_LoaderThreadMain (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.load_audio_bundle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 F8 29 B4 24 50 02 00 00 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6",
+  "match": "0x144528310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144528310",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_AudioBundle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144528310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144528310.c;xref:0x14451c6b1",
+   "notes": "V6676 version +4, 0x73 threshold, +0x38/+0x3c/+0x40 verified"
+  }
+ ],
+ "proofs": []
+}

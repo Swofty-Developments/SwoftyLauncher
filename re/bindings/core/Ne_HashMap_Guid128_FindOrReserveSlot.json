@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Guid128_FindOrReserveSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cc4a70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cc4a70.c;xref:0x142c4e379,0x1540f30f4",
+  "notes": "(map, out, const u8 key[16]): robin-hood find-or-insert with a 16-byte key: FNV-1a 64 over the 16 bytes * seed map+0x10 * prime, h^=h>>33; 24-byte slots map+0x18 (16-byte key + value), info map+0x20, mask +0x30; state 1 found, else inserted; grows via Ne_HashMap_Guid128_Grow 0x142cc4e60 (fail -> state 0), at most 256 tries. Callers Game_TrackCameraShots_StopShot 0x142c4e379, .data1 0x1540f30f4."
+ },
+ "signature": {
+  "id": "core.hash_map_guid128_find",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 4C 89 C3 48 89 D6",
+  "match": "0x142cc4a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cc4a70",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Guid128_FindOrReserveSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142cc4a70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142cc4a70.c;xref:0x142c4e379",
+   "notes": "V7551 FNV-1a over 16 bytes right, but returns 1 found / 2 free slot reserved with rehash retry (FUN_142cc4e60), i.e. find-or-reserve ; better name Ne_HashMap_Guid128_FindOrReserveSlot"
+  }
+ ],
+ "proofs": []
+}

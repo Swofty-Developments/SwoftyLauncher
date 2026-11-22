@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_AttemptingGetTimeEndRollingStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f0f2a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f0f2a0.c;pat:log-channel-NETWORK;xref:0x1457f5068",
+  "notes": "Slot 25 (+0xc8) of vtable 0x1457f4fa0. Update(this, dt*): 26 vehicle records (0x28 B from +0x80), light object per index from hash map +0x4a8, lap progress 0x1446046a0 + vfuncs +0x138/+0x148 of +0x48 -> light count set via 0x142cf3a80, msg 0x145800ef8 posted for local index +0x490; OSQ logs 'Not Ready, so no lights'/'Out of monitor, lights are on'; Rolling/off via 0x1407b10c0. Better name: Game_RollingStartSystem_UpdateStartLights (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_attempting_get_time_end_rolling_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 78 29 BC 24 F0 00 00 00 C5 78 29 B4 24 E0 00 00 00 C5 78 29 AC 24 D0 00 00 00 C5 78 29 A4 24 C0 00 00 00 C5 78 29 9C 24 B0 00 00 00 C5 78 29 94 24 A0 00 00 00 C5 78 29 8C 24 90 00 00 00 C5 78 29 84 24 80 00 00 00 C5 F9 29 7C 24 70",
+  "match": "0x142f0f2a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f0f2a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_AttemptingGetTimeEndRollingStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f0f2a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f0f2a0.c;xref:0x1413ee310",
+   "notes": "V5569 510-line per-frame loop over rolling-start vehicles (MOX/OSQ lights); out-of-range log is one branch; better Game_RollingStartSystem_UpdateLights"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f0f2a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f0f2a0.c;xref:0x1413ee310",
+   "notes": "V6908 510 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

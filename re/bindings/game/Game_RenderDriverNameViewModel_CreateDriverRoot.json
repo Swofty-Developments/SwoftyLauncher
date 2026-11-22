@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RenderDriverNameViewModel_CreateDriverRoot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d7bce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d7bce0.c;pat:log-message-cxx;xref:0x14574a9b8",
+  "notes": "Clears root vector +0x280..+0x288 (0xc0 entries); if [+0x2b0]+0x88->+0x260->+0x2b0 byte +0x20b, per entrant ([+0x2a0]+0x1d8..+0x1e0, 0x98 stride) marks garage(<12)/slot(<2), adds root 'garage_%u_slot_%u' (0x141d7cff0), sets driverName/car_number fields (log GARAGE_BOARD_DEBUG createDriverRoot); then empty roots for unused garage/slot pairs; fires 'complete_sync_point' (0x144320fe0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.render_driver_name_view_model_create_driver_root",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 F8 29 BC 24 50 02 00 00 C5 F8 29 B4 24 40 02 00 00 48 89 CE",
+  "match": "0x141d7bce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d7bce0",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderDriverNameViewModel_CreateDriverRoot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d7bce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d7bce0.c;xref:0x141d80275",
+   "notes": "V5205 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

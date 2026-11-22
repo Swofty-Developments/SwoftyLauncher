@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatching_OneDoneMatchingStartsTimerAuto",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143154850",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143154850.c;pat:log-channel-NETWORK-MATCHING;xref:0x143152438,0x143156498,0x14315a70a,0x14581da68",
+  "notes": "One-And-Done matching tick: when armed (+0x41) starts the auto-disconnect timer ('starts the timer to auto-disconnection'); when +0x42 is set and the timeout param_1[0xe] elapsed, quits the client or the host from the game session (Game_Network_Leave 0x1430605c0). Callers 0x143152410, 0x143156490, 0x14315a700; vtable cells 0x14581da68, 0x145824bd8. (lane owner review requested) Better name: Game_NetworkMatching_OneAndDoneUpdate (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_matching_one_done_matching_starts_timer_auto",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 80 79 41 00",
+  "match": "0x143154850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143154850",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatching_OneDoneMatchingStartsTimerAuto"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143154850",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143154850.c;xref:0x143152438",
+   "notes": "V5974 Three branches: start auto-disconnect timer, quit client, quit host. Better: Game_NetworkMatching_OneAndDoneQuitSession"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143154850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143154850.c;xref:0x143152438",
+   "notes": "V6996 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

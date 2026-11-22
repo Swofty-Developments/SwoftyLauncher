@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Load_UpgradeTreeNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14353b030",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14353b030.c;kb:subsystems/rnd_ui.md;xref:0x14353abf1,0x14353ae08",
+  "notes": "If path (arg2+0x10) non-empty: loops the dept-code bytes 0x145735d60..0x145735d66 (skips code 5, names via 0x14584f880), opens '%s.%s' table (Gdb_Init_TableCursor 0x1445a25c0), per row reads grid_coordinates.x/y, links and other fields, node name '%s_%d' with engine param_3, appends 0x40-byte nodes to vector arg1+8..+0x18. No code-4 exclusion. Called twice by Career_Build_UpgradeTreeModel 0x14353abb0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.load_upgrade_tree_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 06 00 00 C5 78 29 84 24",
+  "match": "0x14353b030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14353b030",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_UpgradeTreeNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/rnd_suppliers_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14353b030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14353b030.c;xref:0x14353abf1",
+   "notes": "V6084 code table 0x145735d60 = 00 01 02 03 04 05, loop ends at 0x145735d66, code 5 skipped, 0-4 loaded (no 4 exclusion) verified; callers 0x14353abf1/0x14353ae09"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x14353b030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14353b030.c;xref:0x14353abf1;xref:0x14353ae08;str:\"grid_coordinates.x\"",
+   "notes": "V9244 Loops the 6-byte dept table with no code-4 exclusion; detail correction: code 5 is skipped (cmp rax,5 / je continue) rather than a break, with the same effect since it is the last byte."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DriverMarket_CheckEligibility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dccd30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140dccd30.c;pat:log-channel-DRIVER_MARKET;xref:0x1456939d0,0x140d8ddcf",
+  "notes": "Full eligibility check (vtable cell 0x1456939d0), flags in param_4: cannot afford (|=2, budget vs 0x140dbb690 cost), constructors championship level (vt+0x298 vs 0x140f46030, |=8), previous best finishing position (vt+0x2a0, |=0x10), performance index (vt+0x290 vs 0x1407c45d0, |=0x20), add-on cap 0x140dcbde0 (|=0x80); each logged on DRIVER_MARKET. Returns flags==0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.driver_market_check_eligibility",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 4C 89 CE 4C 89 C3 48 89 D7 49 89 CE 48 8B 89 10 02 00 00 49 C7 01 00 00 00 00 41 C7 41 08 00 00 00 00 49 8B 41 10 49 8B 51 18 49 89 51 20 48 39 C8 74 2E 48 83 7E 28 00 74 21 48 85 D2 74 0A 4C 8B 00 48 89 C1 41 FF 50 38 48 C7 46 18 00 00 00 00 48 C7 46 28 00 00 00 00 31 D2 48 89 56 20 EB 20 4C 8D 7E 18 48 85 D2 74 06 48 8B 01 FF 50 38 C5 F9 EF C0",
+  "match": "0x140dccd30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dccd30",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverMarket_CheckEligibility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140dccd30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dccd30.c;xref:0x14084a817,0x140d8ddcf",
+   "notes": "V4753 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140dccd30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dccd30.c",
+   "notes": "V9096 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

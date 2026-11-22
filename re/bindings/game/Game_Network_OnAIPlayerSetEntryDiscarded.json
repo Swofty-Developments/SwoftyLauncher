@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnAIPlayerSetEntryDiscarded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323a7f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14323a7f0.c;xref:0x14582aef8",
+  "notes": "Slot 1 (+0x8) of vtable 0x14582aef0; only that cell. (this, entry): if (entry+0x58 & 0x30000000) == 0, or bit 0x10000000 with byte entry+0x66 set: logs 'onPlayerSetEntryDiscarded: removing AI %s', calls Game_Network_RemoveAIPlayer(this-0x38, entry+0x10) and ORs the result into byte this+0x64. Meaning of the flag bits not decoded. (lane owner review requested) Better name: Game_Network_OnPlayerSetEntryDiscarded (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_on_a_i_player_set_entry_discarded",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D7 48 89 CE 8B 42 58",
+  "match": "0x14323a7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323a7f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnAIPlayerSetEntryDiscarded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_Network_OnAIPlayerSetEntryDiscarded",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14323a7f0.c;xref:0x14323a7f0",
+   "notes": "V2761 condition: (flags+0x58 & 0x30000000)==0 OR (flag 0x10000000 and byte +0x66); then log + FUN_14323a4d0(this-0x38, entry+0x10) result OR into +0x64. AI-vs-human meaning of flag bits unverified; maybe name Game_Network_OnPlayerSetEntryDiscarded"
+  }
+ ],
+ "proofs": []
+}

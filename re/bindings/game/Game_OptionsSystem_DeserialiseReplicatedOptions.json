@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsSystem_DeserialiseReplicatedOptions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ad6480",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ad6480.c;str:s_OptionsSystem_DeserialiseReplicatedOptions",
+  "notes": "Own string OptionsSystem::deserialiseReplicatedOptions(NeBitBuffer&). Clears restriction list +0x580..+0x588 (0x38 entries, unlinked from owner +0x108 list, 0x142ab5ea0); reads u16 count, per entry u32 djb2 option-name hash + u32 value; matched option -> 'replication restriction' prio 100 (type 2 clamp min/max, type 1 bitmask) via 0x142ad6360/0x142abf160. Returns 1 ok; 0x142ad54b0(this,0x20)."
+ },
+ "signature": {
+  "id": "game.options_system_deserialise_replicated_options",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 48 89 D6 49 89",
+  "match": "0x142ad6480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ad6480",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsSystem_DeserialiseReplicatedOptions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ad6480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ad6480.c;xref:0x140bb59e7",
+   "notes": "V5012 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

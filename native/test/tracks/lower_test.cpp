@@ -1,8 +1,8 @@
-#include "../../src/core/apply/tracks/boot.hpp"
-#include "../../src/core/apply/content/gvdb.hpp"
-#include "../../src/core/registry/declare_all.hpp"
-#include "../../src/core/registry/table.hpp"
-#include "../../src/core/registry/validate.hpp"
+#include "core/apply/tracks/boot.hpp"
+#include "core/apply/content/gvdb.hpp"
+#include "core/registry/declare_all.hpp"
+#include "core/registry/table.hpp"
+#include "core/registry/validate.hpp"
 
 #include <cstdio>
 #include <fstream>
@@ -140,7 +140,7 @@ static std::map<uint64_t, std::pair<int, std::string>> expected_of(const std::st
     if (auto a = doc["records"].if_array())
         for (auto &r : *a)
             out[std::stoull(std::string(r["key"].as_string()), nullptr, 16)] = {int(r["tag"].as_int()),
-                                                                                 std::string(r["text"].as_string())};
+                                                                                std::string(r["text"].as_string())};
     return out;
 }
 
@@ -148,7 +148,8 @@ static void parity_tests(const Fixture &f, const std::string &dir)
 {
     for (auto &c : CASES) {
         tk::Db db(fixture_read(f));
-        tk::Lowered l = tk::lower_track(db, tk::builtin_tables(), {c.code, c.code, c.from, c.slot, -1, true, c.ui_lists, c.sprint});
+        tk::Lowered l =
+            tk::lower_track(db, tk::builtin_tables(), {c.code, c.code, c.from, c.slot, -1, true, c.ui_lists, c.sprint});
         check(l.error.empty(), std::string(c.name) + ": lowers over the fixture (" + l.error + ")");
         bool found = false;
         auto want = expected_of(dir + "/fixture/expected/" + c.name + ".json", found);
@@ -184,10 +185,11 @@ static void parity_tests(const Fixture &f, const std::string &dir)
                         if (w.key == k)
                             first = "extra " + w.path + " = " + v.second;
             }
-        check(!missing && !extra && !differ,
-              std::string(c.name) + ": the core's " + std::to_string(got.size()) + " record(s) equal the launcher's " +
-                  std::to_string(want.size()) + " row for row (" + std::to_string(missing) + " missing, " +
-                  std::to_string(extra) + " extra, " + std::to_string(differ) + " differ" + (first.empty() ? "" : "; " + first) + ")");
+        check(!missing && !extra && !differ, std::string(c.name) + ": the core's " + std::to_string(got.size()) +
+                                                 " record(s) equal the launcher's " + std::to_string(want.size()) +
+                                                 " row for row (" + std::to_string(missing) + " missing, " +
+                                                 std::to_string(extra) + " extra, " + std::to_string(differ) + " differ" +
+                                                 (first.empty() ? "" : "; " + first) + ")");
     }
 }
 
@@ -199,10 +201,7 @@ static std::optional<std::string> written(const tk::Db &db, const std::string &s
     return std::nullopt;
 }
 
-static bool holds(const std::vector<std::string> &v, const std::string &s)
-{
-    return std::find(v.begin(), v.end(), s) != v.end();
-}
+static bool holds(const std::vector<std::string> &v, const std::string &s) { return std::find(v.begin(), v.end(), s) != v.end(); }
 
 static void weekend_format_tests(const Fixture &f)
 {
@@ -217,16 +216,18 @@ static void weekend_format_tests(const Fixture &f)
                 (w.text == "sprint" ? sprint : normal)++;
         check(sprint == 0 && normal > 0, "a track added on a sprint base runs normal weekends (" + std::to_string(sprint) +
                                              " sprint, " + std::to_string(normal) + " default)");
-        check(!holds(l.warnings, "sprint f1_2026: delhi has no weekend format in that data set, so it takes its parent data set's"),
-              "no sprint warning without a sprint list");
+        check(
+            !holds(l.warnings, "sprint f1_2026: delhi has no weekend format in that data set, so it takes its parent data set's"),
+            "no sprint warning without a sprint list");
     }
     {
         tk::Db db(fixture_read(f));
         tk::Lowered l = tk::lower_track(db, t, {"mod.x/delhi", "delhi", "zandvoort", "", -1, true, {}, {"f1", "f1_2025"}});
         check(l.error.empty(), "delhi lowers with a sprint list (" + l.error + ")");
         check(holds(l.lines, "weekend format: delhi runs sprint weekends in f1"), "the sprint data sets are logged");
-        check(holds(l.warnings, "sprint f1_2025: delhi has no weekend format in that data set, so it takes its parent data set's"),
-              "a sprint data set without a weekend format block is a warning");
+        check(
+            holds(l.warnings, "sprint f1_2025: delhi has no weekend format in that data set, so it takes its parent data set's"),
+            "a sprint data set without a weekend format block is a warning");
     }
 }
 
@@ -299,8 +300,9 @@ static void seed_tests(const Fixture &f, const std::string &regs)
             melb = &b;
     }
     check(melb && melb->value["laps"].as_int() > 0 && melb->value["fuel"]["burn_per_lap"].is_number(),
-          "a melbourne data block carries laps and fuel (" + (melb ? melb->set + ": " + std::to_string(melb->value["laps"].as_int()) : std::string("none")) +
-              " laps; " + std::to_string(with_laps) + " of " + std::to_string(s.blocks.size()) + " blocks hold laps)");
+          "a melbourne data block carries laps and fuel (" +
+              (melb ? melb->set + ": " + std::to_string(melb->value["laps"].as_int()) : std::string("none")) + " laps; " +
+              std::to_string(with_laps) + " of " + std::to_string(s.blocks.size()) + " blocks hold laps)");
 
     std::string older_json = R"({"version":1,"profile":"Classic Seasons","tracks":[
         {"addon":"mod.older","code":"okayama","name":"Okayama International Circuit","base":"game/suzuka","slot":null,"stat_id":44,"venue":"venue/okayama"},
@@ -320,7 +322,8 @@ static void seed_tests(const Fixture &f, const std::string &regs)
         return nullptr;
     };
     const Value *m = seed("track", "melbourne");
-    check(m && (*m)["time_trial"].as_bool() && (*m)["provides"][0].as_string() == "venue/albert_park" && (*m)["stat_id"].as_int() == 0,
+    check(m && (*m)["time_trial"].as_bool() && (*m)["provides"][0].as_string() == "venue/albert_park" &&
+              (*m)["stat_id"].as_int() == 0,
           "game/melbourne: time_trial, provides venue/albert_park, stat id 0");
     const Value *rev = seed("track", "silverstone_reverse");
     check(rev && rev->size() && (*rev)["provides"].size() == 0 && (*rev)["time_trial"].as_bool(),
@@ -361,7 +364,8 @@ static void seed_tests(const Fixture &f, const std::string &regs)
         "pinned": { "code": "pinned", "base": "game/zandvoort", "stat_id": 3 } } })j");
     st.end_register();
     for (auto &r : st.refusals())
-        std::printf("      refused: %s %s %s %s: %s\n", r.addon.c_str(), r.registry.c_str(), r.id.c_str(), r.reason.c_str(), r.message.c_str());
+        std::printf("      refused: %s %s %s %s: %s\n", r.addon.c_str(), r.registry.c_str(), r.id.c_str(), r.reason.c_str(),
+                    r.message.c_str());
     check(r1 == SWOFTY_ASSET_OK && r2 == SWOFTY_ASSET_OK, "the track records register");
     tk::declare_venues(st);
     tk::declare_seeds(st, seeded);
@@ -398,7 +402,8 @@ static void seed_tests(const Fixture &f, const std::string &regs)
     };
     check(done("mod.a/albert") && done("mod.a/albert")->stat_id == 254, "the first record track in load order takes stat id 254");
     check(done("mod.a/sepang") && done("mod.a/sepang")->stat_id == 253, "the next takes 253");
-    check(!done("mod.a/fill_sochi") && said("[registry] track mod.a/fill_sochi: slot game/sochi is already filled by mod.older/sochi; refused"),
+    check(!done("mod.a/fill_sochi") &&
+              said("[registry] track mod.a/fill_sochi: slot game/sochi is already filled by mod.older/sochi; refused"),
           "a slot an older track fills is refused");
     check(done("mod.b/a_bahrain24") && done("mod.b/a_bahrain24")->stat_id == 35 && !done("mod.b/a_bahrain24")->new_row,
           "a record filling a dormant row keeps the row's stat id");
@@ -427,9 +432,11 @@ static void seed_tests(const Fixture &f, const std::string &regs)
 
     std::vector<std::string> venues = st.list("track.venue", "");
     tk::Base b = tk::make_base(s, older.tracks, p, venues, [&st](const std::string &v) { return tk::venue_track(st, v); });
-    check(b.by_id("mod.a/sepang") && b.by_id("mod.a/sepang")->kind == tk::Kind::record && b.by_stat_id(253) == b.by_id("mod.a/sepang"),
+    check(b.by_id("mod.a/sepang") && b.by_id("mod.a/sepang")->kind == tk::Kind::record &&
+              b.by_stat_id(253) == b.by_id("mod.a/sepang"),
           "the base holds the record track by id and stat id");
-    check(b.by_id("mod.older/sochi") && b.by_id("mod.older/sochi")->kind == tk::Kind::older && b.by_stat_id(18) == b.by_id("mod.older/sochi"),
+    check(b.by_id("mod.older/sochi") && b.by_id("mod.older/sochi")->kind == tk::Kind::older &&
+              b.by_stat_id(18) == b.by_id("mod.older/sochi"),
           "the base holds the older track in the dormant row it fills");
     check(!b.by_code("okayama"), "an older track whose row the database lacks is not in the base");
     check(b.by_id("game/melbourne") && b.by_id("game/melbourne")->time_trial && !b.by_id("game/sochi"),
@@ -437,9 +444,11 @@ static void seed_tests(const Fixture &f, const std::string &regs)
     check(b.filled["game/sochi"] == "mod.older/sochi" && b.filled["game/bahrain24"] == "mod.b/a_bahrain24",
           "the filled dormant rows name their tracks");
     check(b.venue("venue/sepang") == b.by_id("mod.a/sepang"), "venue/sepang resolves to the record track");
-    check(b.venue("venue/albert_park") == b.by_id("mod.a/albert"), "venue/albert_park: the later provider (a record) wins over the stock row");
+    check(b.venue("venue/albert_park") == b.by_id("mod.a/albert"),
+          "venue/albert_park: the later provider (a record) wins over the stock row");
     check(b.venue("venue/okayama") == nullptr && b.venue("venue/sochi") == b.by_id("mod.older/sochi"),
-          "an older track provides its matched venue (" + std::string(b.venue("venue/sochi") ? b.venue("venue/sochi")->id : "none") + ")");
+          "an older track provides its matched venue (" +
+              std::string(b.venue("venue/sochi") ? b.venue("venue/sochi")->id : "none") + ")");
     check(b.venue("venue/red_bull_ring") == b.by_id("game/austria") && b.resolve("venue/hockenheimring?") == nullptr,
           "a stock venue resolves to its stock row; a venue with no provider resolves to nothing");
 }
@@ -468,7 +477,8 @@ static void venue_seed_tests(const std::string &regs)
             continue;
         }
         check(cal.status == registry::Status::ok, "with the stock tracks that provide the venues seeded, a Classic Seasons "
-                                                  "calendar is valid without the database (" + cal.why + ")");
+                                                  "calendar is valid without the database (" +
+                                                      cal.why + ")");
         registry::Record v = st.get("track.venue", "venue/albert_park");
         check(v.status == registry::Status::ok && v.value["track"].as_string() == "game/melbourne",
               "venue/albert_park resolves to game/melbourne");
@@ -478,9 +488,10 @@ static void venue_seed_tests(const std::string &regs)
         std::size_t providers = 0;
         for (auto &b : seeded.base)
             providers += b.registry == "track";
-        check(providers > 20 && providers < std::size(tk::VENUE_SEEDS), std::to_string(providers) +
-                                                                         " stock track(s) provide a venue; venues without one get none");
-        check(st.get("track.venue", "venue/sochi").status != registry::Status::ok || !st.get("track.venue", "venue/sochi").value["track"].is_string(),
+        check(providers > 20 && providers < std::size(tk::VENUE_SEEDS),
+              std::to_string(providers) + " stock track(s) provide a venue; venues without one get none");
+        check(st.get("track.venue", "venue/sochi").status != registry::Status::ok ||
+                  !st.get("track.venue", "venue/sochi").value["track"].is_string(),
               "venue/sochi has no provider");
     }
 }
@@ -495,7 +506,8 @@ static void boot_order_tests(const Fixture &f, const std::string &regs)
         st.set_validator(&registry::schema_validator());
         const SwoftyRegistry *t = registry::table();
         registry::declare_system_registries([t](const std::string &name, const std::string &schema) {
-            return name.rfind("track", 0) == 0 && t->declare(name.c_str(), SwoftyText{schema.data(), schema.size()}) == SWOFTY_ASSET_OK;
+            return name.rfind("track", 0) == 0 &&
+                   t->declare(name.c_str(), SwoftyText{schema.data(), schema.size()}) == SWOFTY_ASSET_OK;
         });
         std::vector<std::string> notes;
         st.set_log([&notes](const std::string &line) { notes.push_back(line); });

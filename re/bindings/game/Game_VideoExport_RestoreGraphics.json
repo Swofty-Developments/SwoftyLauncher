@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_RestoreGraphics",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f0a230",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f0a230.c;pat:log-channel-Video_Export;xref:0x14575bef0",
+  "notes": "Read in full; ref vt cell 0x14575bef0. Binds VM nodes 'current_row', 'last_focussed_save', list views 'theatre_recent_highlights_row' / 'theatre_saved_highlights_row'; when back from an export (0x146cb7b68): SetExportName 'highlights_export_left', 0x141f10870(saved 0x145f98b48) + 'reinstate graphics::%d', clears highlight_exporting; then 0x141f0eeb0 and '#ui_menu_data.theatre'. (lane owner review requested) Better name: Game_HighlightsTheatre_SetupScreen (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.video_export_restore_graphics",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 83 B9 70 09 00 00 00",
+  "match": "0x141f0a230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f0a230",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_RestoreGraphics"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f0a230",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141f0a230.c",
+   "notes": "V5231 468-line highlight-export screen handler (theatre recent/saved highlight rows focus, highlights_export_left, progress flag); reinstate-graphics log at line 366 is one step. Better Game_VideoExport_FinishExportRestoreUi (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141f0a230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f0a230.c",
+   "notes": "V7275 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

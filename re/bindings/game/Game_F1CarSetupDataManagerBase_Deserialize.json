@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1CarSetupDataManagerBase_Deserialize",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c0eb60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c0eb60.c;pat:log-message-cxx;xref:0x145672ab8,0x14568d7e8,0x1457afd38,0x1457b0d58",
+  "notes": "Vtable slot (cells listed; Construct puts 0x14568d7d0 at +8). Reads version byte (only 0 accepted), count byte, then per driver a 16-bit id (14-bit id + 2-bit type); finds a matching binding in vector +0x38..+0x40 or allocates 0x2048 bytes via allocator +0x28, inits it (0x140c05ce0) and pushes it; then calls BindingDeserialize 0x140c0f4a0. Logs NETWORK errors per failure. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_car_setup_data_manager_base_deserialize",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 4C 89 C6 48 89 CF",
+  "match": "0x140c0eb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c0eb60",
+  "kind": "func_start",
+  "names": [
+   "Game_F1CarSetupDataManagerBase_Deserialize"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c0eb60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c0eb60.c",
+   "notes": "V4564 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  }
+ ],
+ "proofs": []
+}

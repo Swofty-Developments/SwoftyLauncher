@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDProgressPausedText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141814320",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *card)",
+  "evidence": "decomp:re/decomp/141814320.c;xref:0x141803d53,0x141c8c693,0x141c8c767,0x141c8c83b",
+  "notes": "R&D upgrade/part card binder: name lng_rnd_%s (or lng_rnd_secret_upgrade_locked/unknown), dept lng_rnd_dept_%s, status (unavailable/available/in_progress/complete/failed/in_development/pending_fitting), part image/mask, state icons, cost (Career_Get_EffectiveUpgradeCost, rnd_cost_icons), remaining days (lng_days_abbrev_lower) and paused text (Career_Check_RndProgressPaused, Career_Rnd_GetPausedReason, lng_rnd_progress_paused). (lane owner review requested) Better name: Career_Bind_RnDUpgradePartCard (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.update_rn_dprogress_paused_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 44 89 4C 24 4C",
+  "match": "0x141814320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141814320",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDProgressPausedText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141814320",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141814320.c;xref:0x141803d53",
+   "notes": "V9812 huge card-text builder (1270 lines) like Career_Update_RnDUpgradeCardText; paused state is only one part (Career_Check_RndProgressPaused call), name too narrow"
+  }
+ ],
+ "proofs": []
+}

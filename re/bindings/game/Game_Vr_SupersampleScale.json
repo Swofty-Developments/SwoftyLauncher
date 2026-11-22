@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Vr_SupersampleScale",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439eb250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439eb250.c;pat:log-message-method;xref:0x1439ea39e,0x1439ec799",
+  "notes": "Read in full: refreshes cached OpenVR interfaces when VR_GetInitToken changed, gets 'IVRSettings_003' (VR_GetGenericInterface), returns GetFloat('steamvr','supersampleScale') (vcall +0x38), logs 'supersampleScale = %f'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vr_supersample_scale",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 C5 F8 29 74 24 30 8B 35",
+  "match": "0x1439eb250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439eb250",
+  "kind": "func_start",
+  "names": [
+   "Game_Vr_SupersampleScale"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439eb250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439eb250.c;xref:0x1439ea39e",
+   "notes": "V6399 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

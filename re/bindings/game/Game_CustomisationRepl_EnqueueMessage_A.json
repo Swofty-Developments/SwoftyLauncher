@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationRepl_EnqueueMessage_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143218a60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143218a60.c;xref:0x143188cfb,0x14318b6c8,0x14318ba51,0x14318d964",
+  "notes": "Queued bus post of one message type: every caller passes the message bus [0x14618b3b8]+8 as p1 (e.g. 0x143188ce8). Bus closed (p1+0x68 == 0) -> TLS error 0x58. Else under CriticalSection [p1+0x98] allocates a 0x60-byte message (allocator [p1+0x70], fail -> error 0xc), vtable 0x14579adf8, copies p2+8 and the PlayerDescription p2+0x18..+0x58, appends to the list +0x58/+0x60 and SetEvent([p1+0x90]) (error 6 -> 3). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_repl_post_message_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 44 24 38 48 8B 40 28 48 8B",
+  "match": "0x143188cfb",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143218a60",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationRepl_EnqueueMessage_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143218a60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143218a60.c;xref:0x143188cfb",
+   "notes": "V8113 Better name Game_CustomisationRepl_EnqueueMessage_A: logic inverted vs claim (flag +0x68 clear returns error 0x58); allocs 0x60-byte node under CS +0x98 copying 0x58-byte payload, queue +0x58/+0x60 plus SetEvent +0x90"
+  }
+ ],
+ "proofs": []
+}

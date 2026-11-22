@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_ResourcePointsIconsRnD",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c42b40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/141c42b40.c;xref:0x141c3fb65;xref:0x141c44008",
+  "notes": "myteam-g1: Binds the RP icons in an R&D view using Career_Get_RpWallet."
+ },
+ "signature": {
+  "id": "career.bind_resource_points_icons_rn_d",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 48 8B 81 70 02 00 00",
+  "match": "0x141c42b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c42b40",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_ResourcePointsIconsRnD"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c42b40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c42b40.c;xref:0x141c3fb65;xref:0x141c44008",
+   "notes": "V9957 Binds r_and_d_icon / r_and_d_amount with the resource_point_icons overrides."
+  }
+ ],
+ "proofs": []
+}

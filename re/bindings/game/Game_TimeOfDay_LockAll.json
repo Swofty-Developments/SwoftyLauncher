@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TimeOfDay_LockAll",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14460e820",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14460e820.c;xref:0x141cf0369,0x141cf0584,0x141cf0794,0x141d00877,0x142e107b7,0x1438b1ce0,0x1438bc108,0x1438c33fc,0x1438c42e8,0x14477a08e,0x144792258,0x14479ba08",
+  "notes": "Acquires 15 SRW locks of the tod owner (*param_1 + 0x2108, 0x1e80, 0x2390, 0x2618, 0x530 ... 0x1bf8 via 0x1449e2290) and stores (data, lock) pairs into param_1[1..0x1e] (skipping [5],[6]). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.time_of_day_lock_all",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 09 48 8D 81 A0",
+  "match": "0x14460e820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14460e820",
+  "kind": "func_start",
+  "names": [
+   "Game_TimeOfDay_LockAll"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14460e820",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14460e820.c;xref:0x1438bc108",
+   "notes": "V6794 Takes SRW locks of many sub-blocks, stores guarded pointers confirmed."
+  }
+ ],
+ "proofs": []
+}

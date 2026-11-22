@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewModule_Shutdown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14038cd90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14038cd90.c;pat:log-message-cxx;xref:0x14561b310",
+  "notes": "GarageCrewModule::shutdown(mod): unsubscribes MessageTriggerGarageCrewEvent handler 0x14038cc80 (0x143988350), destroys and frees the 32 instances mod+0x68 (0x140381380) under CS 0x146045a38, releases mod+0x28 (0x143ac3e60). Vtable cell 0x14561b310. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_crew_module_shutdown",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 F6 00 00 00",
+  "match": "0x14038cd90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14038cd90",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewModule_Shutdown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14038cd90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14038cd90.c",
+   "notes": "V4596 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

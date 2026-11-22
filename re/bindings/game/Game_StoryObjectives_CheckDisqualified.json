@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StoryObjectives_CheckDisqualified",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413bef40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1413bef40.c;pat:log-channel-STORY_OBJECTIVES;xref:0x1456e0b48",
+  "notes": "Objective results handler (vt cell 0x1456e0b48): when active (+0x68==1) finds the tracked vehicle (0x1400fa760) in results param_2+8..+0x10; result status !=3 logs \"Objective failed\" and fails vcall +0x70(this,0); reason ==2 (disqualified) logs Disqualified and fails with 1 (or vcall +0x68). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.story_objectives_check_disqualified",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 80 79 68 01 0F 85",
+  "match": "0x1413bef40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413bef40",
+  "kind": "func_start",
+  "names": [
+   "Game_StoryObjectives_CheckDisqualified"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1413bef40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413bef40.c",
+   "notes": "V4774 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

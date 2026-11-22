@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_FindSelectedCarTyreSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bdd150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bdd150.c;xref:0x141d0936d",
+  "notes": "Not a getter: if vm+0x390 < 2, takes entity [[[vm+0x250]+0x38]+0x98+idx*0x28]+0x2a0[0], finds it in list [[vm+0x250]+0x48]+0x28..+0x30, reads car id [[e]+0x58]+0xe8 (!= 0xff), walks tyre-choice array vm+0x3b8..+0x3c0 (stride 0x2c, byte 0 = car id) and on a match calls Game_PhotoMode_SetTyresOnCar 0x142bdd220; always sets vm+0x425 = 1. (lane owner review requested) Better name: Game_PhotoMode_ApplyTyresToSelectedCar (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.photo_mode_find_selected_car_tyre_set",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 8B 81 90 03 00 00 48 83",
+  "match": "0x142bdd150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bdd150",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_FindSelectedCarTyreSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142bdd150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bdd150.c;xref:0x141d0936d",
+   "notes": "V7548 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

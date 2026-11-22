@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Sess_StintTyreCheckPredictCall",
+ "table": "globals",
+ "author": "jonnoAUS",
+ "row": {
+  "addr": "0x1436a3b83",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own capstone disasm 0x1436a3ab0-0x1436a422c;xref:0x1436a3b74,0x1436a3b83,0x1436a3b88,0x1436a4500;doc:re/research/weather_strategy_bindings.md#sites",
+  "notes": "Call to Game_Predict_StrategyWetness in the tyre-choice helper 0x1436a3ab0 of Sess_RaceStrategy_EvaluateStintTyre; the result minus a start value read from the game's curve (0x1436a3b74) at site+5. Realistic Rain tells this caller apart by its return address."
+ },
+ "signature": {
+  "id": "session.stint_tyre_check_predict_call",
+  "section": ".xtls",
+  "pattern": "48 89 DA E8 ?? ?? ?? ?? C5 FA 5C FE",
+  "match": "0x1436a3b80",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436a3b83",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Sess_StintTyreCheckPredictCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "rr-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

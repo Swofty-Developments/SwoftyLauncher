@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Hud_QueueMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a50140",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a50140.c;xref:0x14356d5c9,0x1435753e3",
+  "notes": "(hud, value, type, arg, playerIdx): key via 0x142a4fc80; queue 'hud_main_queue' or 'hud_main_queue2' (second local player); template via 0x142a4cc50, built with 0x142a4eef0 if missing, else sets 'message' with 'number' or 'TIME' (type 0x11). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hud_queue_message",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 20 01 00 00 44 89 CB",
+  "match": "0x142a50140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a50140",
+  "kind": "func_start",
+  "names": [
+   "Game_Hud_QueueMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142a50140",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a50140.c;xref:0x14356d5c9,0x1435753e3",
+   "notes": "V3410 hud_main_queue/queue2, TIME/number/message strings ok; callers Sess_Infringement_ProcessQueue and SendBlackFlagTimerToOsd ok, but Sess_Rules_ApplyBlackFlag (0x14356ac30) is NOT a caller; no msgType 0x11 literal found in this function"
+  }
+ ],
+ "proofs": []
+}

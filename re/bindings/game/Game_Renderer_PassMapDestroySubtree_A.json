@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Renderer_PassMapDestroySubtree_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b452e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b452e0.c;xref:0x143b1be9a,0x143b1cb12,0x143b4159f,0x143b4499b,0x143b449b8,0x143b44c4d,0x143b44e6b,0x143b45310",
+  "notes": "(allocator holder, chunk): frees chunk buffer +0x10 via [chunk+0x20] vcall +0x38, recurses into next chunk +8, frees the chunk via allocator vcall +0x38 (chunk chain of pooled list A, 0xd0 nodes). Same code as 0x143b44640 and 0x141e6f830. Not a map/tree subtree destroy. (lane owner review requested) Better name: Game_Renderer_SlotListA_FreeChunkChain (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.renderer_pass_map_destroy_subtree_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 06 4C 89 F1 48 89 DA FF 50 38 48 89 BE F8 0C 0F 00",
+  "match": "0x143b1be9a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143b452e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Renderer_PassMapDestroySubtree_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143b452e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b452e0.c;xref:0x143b1be9a",
+   "notes": "V8134 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleSpawning_ObjectPreCreation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3e200",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f3e200.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x142f3c214",
+  "notes": "Read in full; callback (lea at 0x142f3c214 in 0x142f3b410). (sys, worldObj, req): only for classes F1Car/F1SafetyCar/F1ShowRoomCar; logs 'objectPreCreation for vehicle %d'; sets WorldObject.transform (0x14145d2b0, matrix from req+0x67a0 or car slot), Model.instanceDataSize=0x1c (0x142eefe50), CustomDecalModel.vehicleIndex/packedVehicleStatId/decalSetId, VehicleSpawnData, CarPhysics2, FrontendVehicleComponent, VehicleRegistration; marks entry +0x6908=1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_spawning_object_pre_creation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 48 85 D2",
+  "match": "0x142f3e200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3e200",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleSpawning_ObjectPreCreation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3e200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3e200.c;xref:0x142f3c216",
+   "notes": "V5621 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

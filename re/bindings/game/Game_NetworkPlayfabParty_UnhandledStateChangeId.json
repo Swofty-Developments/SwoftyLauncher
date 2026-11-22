@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkPlayfabParty_UnhandledStateChangeId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440a53f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440a53f0.c;pat:log-channel-NETWORK-PLAYFAB-PARTY/V;xref:0x1430e06c1",
+  "notes": "Starts and finishes PlayFab Party state-change processing ('Failed to start/finish processing state changes!: %hs') and switches over every state change id (CreateNewNetworkCompleted, RemoteDevice*, Endpoint*, ChatControl*, Invitation*, ...), redirecting to the active session; unknown ids log 'Unhandled state change Id: %d'. Caller 0x1430e0560. (lane owner review requested) Better name: Game_NetworkPlayfabParty_ProcessStateChanges (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_playfab_party_unhandled_state_change_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 8B 49 08",
+  "match": "0x1440a53f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440a53f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkPlayfabParty_UnhandledStateChangeId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440a53f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440a53f0.c;xref:0x1430e06c1",
+   "notes": "V6539 better name Game_NetworkPlayfabParty_HandleStateChange: 18 KB switch over all PlayFab Party state changes; Unhandled id is only the default branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1440a53f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440a53f0.c;xref:0x1430e06c1",
+   "notes": "V7155 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InviteManager_Fail",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143161f50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143161f50.c;pat:log-message-cxx;xref:0x1430e9dda,0x1430ecddf,0x1430ece68,0x1430ecf8b,0x143161e3e,0x143161e4b,0x1431626ab,0x143164732,0x1431651d9,0x1431652e7,0x143165c7d,0x143165d3d",
+  "notes": "InviteManager::fail(err): callback +0xb88, clears hud handle +0x388 of [+8]+0x460, +0xb70=0, timer +0xba0/+0xba8 restarted, bool prop +0x2e8=false, callback +0x148(err), invite fields reset, 0x143163200(this,0); if state +0x10 != 0 logs changeState, posts msg 0x143214f20, state=0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.invite_manager_fail",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 89 D7 48 89 CE",
+  "match": "0x143161f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143161f50",
+  "kind": "func_start",
+  "names": [
+   "Game_InviteManager_Fail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143161f50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143161f50.c;xref:0x1430e9dda",
+   "notes": "V5787 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

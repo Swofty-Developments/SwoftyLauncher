@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateCareerDataSync_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436b0390",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436b0390.c;str:s_StateCareerDataSync_OnStateEnter;xref:0x145859600",
+  "notes": "onStateEnter (own pretty-function, vt cell 0x145859600): +0xca4 = network mode [[+0xc98]+0x3c0]+0x1a8; offline: optional 0x140c8d430 on system 0x14605b068, log, +0xca8=1; not online career: log; else [+0xc88]+0x44 = +0xca0, synchroniser+0x28 = system 0x1460609a8, tail-jump 0x140ff7320 (CareerOnlineSynchroniser::start, inlined in the decomp). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.state_career_data_sync_on_state_enter",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 81 90 0C 00",
+  "match": "0x1436b0390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436b0390",
+  "kind": "func_start",
+  "names": [
+   "Game_StateCareerDataSync_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436b0390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436b0390.c",
+   "notes": "V6119 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

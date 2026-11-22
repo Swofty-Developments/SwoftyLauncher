@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_Discover",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410f43f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1410f43f0.c;doc:re/research/sponsors.md#career-sponsors;xref:0x140fc7e34,0x141101028,0x14110108a,0x1423f634e",
+  "notes": "discover(c, short sponsor_id, uint team_key): team from c+0x298 (0x88 stride, key +8), def from c+0x500 (id +0x28); returns if either is missing or the team records (+0x18..+0x20, 0x160) already hold the id. Else calls Add 0x1410f5590(team, c+0x390, +0x398, +0x3c8, +0x3e0, +0x3c0, def copy, day from [c+0x3b0]+0x2b0). If 0x1410f4270 is true posts 0x1456c55e0 (c+0x4e0 count minus records with +0xd8==1). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.sponsors_discover",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 01 00 00 44 89 C3",
+  "match": "0x1410f43f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410f43f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_Discover"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1410f43f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1410f43f0.c;xref:0x141100a80;xref:0x140fc7e10;xref:0x1423f6230",
+   "notes": "V9144 Lookup of team (c+0x298, 0x88 stride) and sponsor def (c+0x500) and the call to 1410f5590 plus 1410f4270 message gate all match; however the record push with 1410fe630 is not in this function (it is inside 1410f5590 at 0x1410f5933)."
+  }
+ ],
+ "proofs": []
+}

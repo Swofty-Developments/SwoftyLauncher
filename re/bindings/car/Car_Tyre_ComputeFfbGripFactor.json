@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_ComputeFfbGripFactor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b76f0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b76f0.c;xref:0x1409d61a0,0x1446b3517,0x1446dc097,0x144700981",
+  "notes": "(w=wheel+8,contact)->float: override [car+0x580]+0xa8 bit0 != +0xa0 -> XOR +0xb0^+0xb8; 0 if [car+0x558]+0x1a4 < 0.7; else contact+0x2a0 x curves 0x142e88290 of [w+0xb8]: +0x138, +0x970 (car+0x133 bits 2+3), +0x6c8 (temp), +0x3e0 (w+0x8c), +0xec0 (w+0x84*w+0x88), list +0xa0, puncture/burst, contact+0x1f0, per-surface [car+0x580]+0xc4; clamped TT+0x24..+0x28. FFB label from caller KB names only. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.tyre_compute_ffb_grip_factor",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 D6 48 89 CF 48 8B 59 08 48",
+  "match": "0x1446b76f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b76f0",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_ComputeFfbGripFactor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446b76f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b76f0.c;xref:0x1409d61a2",
+   "notes": "V3709 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

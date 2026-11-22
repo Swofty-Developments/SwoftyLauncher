@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_PoolAllocator_GrowChunk24_RttTasks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435d8300",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435d8300.c;xref:0x1434f31d6",
+  "notes": "(pool): node-pool chunk allocator for 24-byte nodes: walks the chunk chain pool+8 (4,8,..,0x2000 nodes), allocates n*0x18|8 bytes via allocator pool[2] vt+0x10 (containers file line 0x34), links the chunk and threads the nodes into the free list pool[0]. Fatal 0x1403139f0 on alloc failure. Only caller Game_RttTaskManager_QueueTask 0x1434f2eb0."
+ },
+ "signature": {
+  "id": "core.hash_map_free_bucket_chain",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C6 48 89 74 24 48 48 8D 43",
+  "match": "0x1434f31d6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1435d8300",
+  "kind": "func_start",
+  "names": [
+   "Ne_PoolAllocator_GrowChunk24_RttTasks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1435d8300",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435d8300.c;xref:0x1434f31d6",
+   "notes": "V8117 Better name Ne_PoolAllocator_GrowChunk24_RttTasks: identical to 14146b5a0 pool refill (chunk 4..0x2000 x 0x18, allocs and threads free list); does not release or size blocks"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreSystem_GetCompounds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e97670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e97670.c;pat:log-message-cxx;xref:0x1403b8e6a,0x1403b8ebc",
+  "notes": "TyreSystem::getCompounds(vehIdx, *a, *cur, *next, out u16[8+1]): idx < (this+0x118 - this+0x110)/8, entry null -> TRACE warning. Else cur = *[e+0x9930] or 0xff, next = *[e+0x9948] or 0xff, a = e+0x9910; per tyre set (count e+0x98d0, stride 0xde0) ORs three 5-bit fields (+0x238, +0xb78<<5, +0x6d8<<10) into out[map[set]]. Callers 0x1403b8e6a, 0x1403b8ebc. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_system_get_compounds",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 4C 89 C0 41 C6 00 00",
+  "match": "0x142e97670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e97670",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreSystem_GetCompounds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e97670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e97670.c;xref:0x1403b8e6a",
+   "notes": "V5535 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

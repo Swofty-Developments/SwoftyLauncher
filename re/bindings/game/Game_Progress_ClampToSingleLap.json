@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Progress_ClampToSingleLap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446034b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1446034b0.c;xref:0x142d68dd0,0x142f0c313,0x1446049a3,0x14f816a99",
+  "notes": "Whole per-vehicle progress update (formerly Game_Progress_ClampToSingleLap; clampToSingleLap is only the branch gated by self+0x2a9). Callers 0x142d68dd0, 0x142f0c313, 0x1446049a3, 0x14f816a99. Posts on bus 0x14618b3b8+8 via Ne_Post_BusMessage: vehicle_newlap (vtable 0x1457e6ec0, call 0x144603a7e), cachenewsector 0x145803318, newsector 0x145803340, post_vehicle_newlap 0x145bf4240; vehicle id self+0x2a8 at msg+0x10. (lane owner review requested) Better name: Game_Progress_UpdateVehicleRecord (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.progress_clamp_to_single_lap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 78 29 84 24 D0 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F9 7F B4 24 B0 00 00 00",
+  "match": "0x1446034b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446034b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Progress_ClampToSingleLap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1446034b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446034b0.c;xref:0x142d68dd0",
+   "notes": "V6702 0xc6a body calls Game_VehProgress_UpdatePoints, Game_VehicleProgress_Update, posts NEW SECTOR MESSAGE bus messages; clampToSingleLap is one log. Better: Game_VehicleProgress_TickAndPostSectorMessages"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1446034b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446034b0.c;xref:0x142d68dd0",
+   "notes": "V7236 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

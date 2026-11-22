@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Career_CopyConstructState_14096e580",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14096e580",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14096e580.c;xref:0x14096d8a9,0x140bc249c,0x140fe0b25,0x1410f65d3,0x14142d83a,0x141449e1b,0x14144a31c,0x141fda0b8,0x141fdb987,0x141fe23c0,0x14200deee,0x142011480,0x142011cc0,0x14201241d,0x142053efc,0x142082b34,0x1420830cb,0x142266e29,0x142477984,0x142477d8c,0x14247806c,0x142479b47,0x14250217b,0x14250239f,0x142e0b140,0x142ea8f73,0x143140165,0x143142f34,0x14314311d,0x14314326a,0x14314341b,0x143143563,0x14314550c,0x1431462d7,0x143146853,0x143146c44,0x143146ff9,0x143147274,0x1431c31be,0x1431c3342,0x1431c33d6,0x1431c3504,0x143235508,0x1432355a9,0x149b6f586,0x149b6f635,0x14c739068,0x14cc90a96,0x1507ee146",
+  "notes": "Copy constructor: vtables 0x145612f60 (+0) / 0x145613070 (+0x120); copies the 0x30-byte entry array +0x130 (count +0x1930), the 0x1820-byte block array +0x1940 (count +0x4980, inner 0x30-byte entries), the optional 128-byte string +0x49a8 (flag +0x4a28) and +0x4a30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_copy_construct_state_14096e580",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 48 8D 05",
+  "match": "0x14096e580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14096e580",
+  "kind": "func_start",
+  "names": [
+   "Game_Career_CopyConstructState_14096e580"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14096e580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14096e580.c;xref:0x14096d8a9",
+   "notes": "V8453 copy-constructs state object with vtables 145612f60/145613070 and 0x326 field; caller UpdateEntrantsWithSubstitutes"
+  }
+ ],
+ "proofs": []
+}

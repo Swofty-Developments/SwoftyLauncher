@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "FeFlow_Set_StateStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144423180",
+  "level": "L2",
+  "subsystem": "fe_flow",
+  "proto": "void(void *state,uint32_t status)",
+  "evidence": "decomp:re/decomp/144423180.c;xref:0x1444245cb,0x1444245f9,0x14442465b,0x1444247f1,0x144424c3d,0x144425095,0x1444250ab,0x14442511b,0x144425146,0x1444251c1,0x1543412c1,0x1543412e8;doc:addons/career-editor/protocol/bridge.md#state-detection",
+  "notes": "flow state status setter, 12 call sites: 10 in Vm_Update_FlowStateMachine plus 2 in .data1 0x154341130 (0x1543412c1, 0x1543412e8, advancing old+1 / 3->0); logs FLOW '[machine=\"%s\"] Transitioning \"%s\" %s -> %s' with names from the 4-entry table 0x145a96880 {None,Entering,Updating,Exiting}; state+0x20 name buffer length incl. NUL, +0x28 name chars (lazily XOR-decoded when djb2 != +0xb0), +0xb0 djb2 of the plain name (matches the type registry hashes in 0x1437c1990, e.g. StateTeamHQUpdate 0x0e245469), +0xb8 current status (written last, then +0xc08 = 0); see struct FlowState. Wording corrected per V0312 (ce-verify-3). Used by native/src/core/career/career.cpp through site_FeFlow_SetStateStatus"
+ },
+ "signature": {
+  "id": "fe_flow.set_state_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 41 89 D4",
+  "match": "0x144423180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144423180",
+  "kind": "func_start",
+  "names": [
+   "FeFlow_Set_StateStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-bridge",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "FeFlow_Set_StateStatus",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144423180.c;xref:0x1444245cb,0x1444245f9,0x14442465b,0x1444247f1,0x144424c3d,0x144425095,0x1444250ab,0x14442511b,0x144425146,0x1444251c1,0x1543412c1,0x1543412e8",
+   "notes": "V0312 Proto (rcx state, edx status, void), FLOW log, table 0x145a96880, djb2 +0xb0 (djb2(StateTeamHQUpdate)=0x0e245469, imm at 0x1437c2c1a in 0x1437c1990), XOR key 0x145890978, +0xb8 check. Wrong: not all callers are in Vm_Update_FlowStateMachine: .data1 0x154341130 (.pdata 0x154341130..0x154341395) calls it at 0x1543412c1 and 0x1543412e8 with status = old==3 ? 0 : old+1. Corrected: flow state status setter, 12 call sites: 10 in Vm_Update_FlowStateMachine plus 2 in .data1 0x154341130 (0x1543412c1, 0x1543412e8, advancing old+1 / 3->0); logs FLOW '[machine=\"%s\"] Transitioning \"%s\" %s -> %s' with names from the 4-entry table 0x145a96880 {None,Entering,Updating,Exiting}; state+0x20 name buffer length incl. NUL, +0x28 name chars (lazily XOR-decoded when djb2 != +0xb0), +0xb0 djb2 of the plain name (matches the type registry hashes in 0x1437c1990, e.g. StateTeamHQUpdate 0x0e245469), +0xb8 current status (written last, then +0xc08 = 0)"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "func",
+   "item": "FeFlow_Set_StateStatus",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144423180.c;decomp:re/decomp/144423ce0.c;decomp:re/decomp/154341130.c;decomp:re/decomp/1437c1990.c;xref:0x1444245cb,0x1444245f9,0x14442465b,0x1444247f1,0x144424c3d,0x144425095,0x1444250ab,0x14442511b,0x144425146,0x1444251c1,0x1543412c1,0x1543412e8,0x1437c2c1a;sig:fe_flow.set_state_status",
+   "notes": "V0875 sigcheck OK; exactly 12 E8 call sites: 10 in Vm_Update_FlowStateMachine and 2 in .data1 0x154341130 (status = old==3 ? 0 : old+1); FLOW log with machine string <unknown/state-machine>, names table 0x145a96880 None/Entering/Updating/Exiting; +0x20 size, +0x28 name, +0xb0 djb2 (StateTeamHQUpdate = 0x0e245469, imm at 0x1437c2c1a), +0xb8 written last then +0xc08 = 0; proto void(void *, uint32_t). The core career.cpp site usage exists (site_FeFlow_SetStateStatus)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tweakables_VectorEmplaceNamedEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14476c110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14476c110.c;xref:0x144656178,0x14465f148,0x144660b46,0x144676104,0x144677446,0x14467d368,0x14467e5a6,0x144688394,0x14468f376,0x1446a5de2,0x1446a7774,0x1446b41d8,0x1446b6b96,0x1446ca4e2,0x1446cd838,0x1446d1028,0x144770447",
+  "notes": "vector<0x1f8-byte tweakable entry>::emplace_back(&&entry) (begin/end/cap at this+8/+0x10/+0x18, allocator this+0): in place when capacity allows, else grows x1.5 (vt+0x18), move-constructs every old element (std::function at +0x20/+0x58 moved or cloned, vectors +0x80/+0xa0 stolen, both 128-char names copied), appends the new one, destroys the old elements and frees the buffer (vt+0x38). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tweakables_vector_emplace_named_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 49 89 CF 4C 8B 71 10",
+  "match": "0x14476c110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14476c110",
+  "kind": "func_start",
+  "names": [
+   "Game_Tweakables_VectorEmplaceNamedEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x14476c110",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14476c110.c;xref:0x144656178",
+   "notes": "V8401 element size is 0x1f8 (inverse of 63 >>3), not 0x68/13"
+  }
+ ],
+ "proofs": []
+}

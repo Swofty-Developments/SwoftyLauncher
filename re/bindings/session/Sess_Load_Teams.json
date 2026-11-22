@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Load_Teams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142469440",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Load_Teams(void *entrants_system, uint8_t set)",
+  "evidence": "decomp:re/decomp/142469440.c;decomp:re/decomp/140cdbd40.c;xref:0x142461443,0x142483002;kb:subsystems/teams.md#team-record;doc:research/grid24-cap.md#b26f;decomp:work/exe/b26crash/decomp/142469440.c",
+  "notes": "Team table loader. rcx = the entrants system, dl = the team set (0x142461443 passes 1, 0x142483002 passes 0). Replaces the set's slot vector at system+0x2c8+set*0x10 with a new empty one (allocator from system+0x10), then iterates the entrants.teams cursor (count _team_instancecount_, 358 stock) and for every row whose available is true builds a TeamRecord on the stack (rsp+0xfe0; structs/TeamRecord.h): the row label, display_name/_code/_short/_super_short, timing_tower_texture_path, livery_name, team_base (strings, empty when absent), audio_id, the 7 colours (signed ARGB int32 read without a null check, so a row missing a colour key crashes), show_team_badge, show_custom_badge_in_UI, team_colour_valid, nationality/team_boss/expression_label/animation_set as stat ids of their rows found by label (entrants.nationality, entrants.characters, entrants.expression_label, entrants.animation.driver_animation_sets), prestige, the optional <row>.paddockMarker, the first story_info row's description and hashtag (missing _story_info_instancecount_ = no story), the row path, and the key stat_id << 16; then Team_Insert_RecordByStatId (0x1424697f4) stores it at slots[stat_id] (a duplicate stat id is dropped). Posts a message (vt 0x14578d610) on g_Game_MessageBus at the end. Callers: census steam 0x2469440. | earlier L1 note: team table loader: Gdb_Init_TableCursor(entrants.teams), per available row reads 25 fields (display_name*, colours, livery_name, team_base, team_boss, prestige, stat_id...), resolves nationality/animation/character/expression_label rows by label, and walks the nested table <team row>.story_info_N (description, hashtag; missing count -> 0 rows)"
+ },
+ "signature": {
+  "id": "session.load_teams",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 19 00",
+  "match": "0x142469440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142469440",
+  "kind": "func_start",
+  "names": [
+   "Sess_Load_Teams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "func",
+   "item": "Sess_Load_Teams",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142469440.c;xref:0x142461443,0x142483002,0x14246c499",
+   "notes": "V1577 Role, callers (set 1 from Ent_EntrantsSystem_Construct 0x142461443 via mov dl,1; set 0 at 0x142483002 via xor edx,edx), the 7 mandatory colour reads (no null check) and the string/colour offsets agree. Correction: the record key is stat_id<<16 with no set byte for any set (0x14246c499), and the loader reads the same entrants.teams cursor for both sets. The note 'dl = the team set' also holds only for the vector choice (system+0x2c0+set*0x10)."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Load_Teams",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142469440.c;xref:0x142461443",
+   "notes": "V1880 entrants.teams cursor, 24 row fields + available, nationality/animation_sets/characters label lookups, story_info nested table (description, hashtag) guarded by count!=0"
+  }
+ ],
+ "proofs": []
+}

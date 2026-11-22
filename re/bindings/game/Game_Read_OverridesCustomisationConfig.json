@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesCustomisationConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14188f530",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14188f530.c;pat:log-channel--;xref:0x14188c939,0x14188ef71,0x14ba2e465",
+  "notes": "Picks the status icon of a customisation item VM: +0x50 equipped -> cstm_equipped; else by unlock type +0x78 (0..8) and owned flag +0x52: paddock_shop, tier_lock (price +0x8c as text to +0x498), cstm_money, cstm_racenet, cstm_lock, cstm_owned/cstm_fave (+0x60==0x11). Sets UIDB ref at +0x3c0, writes type name (table 0x14571bc10, else eNone) to +0x178. (lane owner review requested) Better name: Game_CustomisationItem_SetStatusIcon (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_overrides_customisation_config",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 79 50 00",
+  "match": "0x14188f530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14188f530",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesCustomisationConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14188f530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14188f530.c;xref:0x141886d07",
+   "notes": "V4909 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

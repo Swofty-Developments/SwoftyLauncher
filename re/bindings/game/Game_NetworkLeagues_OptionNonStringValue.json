@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_OptionNonStringValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143180aa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143180aa0.c;pat:log-channel-NETWORK-LEAGUES;xref:0x14317b764",
+  "notes": "Walks the 'options' JSON object: string values are stored via 0x142add1c0 into the map at this+0xc0, other types log '? Option \"%s\" has a non-string value.'; handles category (category_f1_2025 / category_multiplayer_car) and backfillLobbyWithAi ('* backFillLobbyWithAi present: set to %s'). Caller 0x1431717c0. (lane owner review requested) Better name: Game_NetworkLeagues_ParseOptions (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_leagues_option_non_string_value",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 C3 48 89 4C 24 38",
+  "match": "0x143180aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143180aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_OptionNonStringValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143180aa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143180aa0.c;xref:0x14317b764",
+   "notes": "V5853 NetworkLeagues_ParseLeagueOptions: parses league options (category, backfillLobbyWithAi); non-string is one error branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143180aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143180aa0.c;xref:0x14317b764",
+   "notes": "V7011 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

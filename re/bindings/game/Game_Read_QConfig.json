@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_QConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a78d40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a78d40.c;pat:log-channel--;xref:0x145d322d0",
+  "notes": "Static initializer (init table cell 0x145d322d0): SIMD constant block 0x14628f310.., CS 0x14628f498, 0x1447bc360 registers q.hotswap.chg/chgag/chgrs/lagr and q.mnifst.patch into 0x14628f5c8..0x14628f648; type descriptor NeResourceProcessingTimeBudgetAdaptive at 0x14628f668 (hash 0xe30bb075). Not a settings reader. (lane owner review requested) Better name: Game_StaticInit_HotswapQueryNames (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_q_config",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 FA 10 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 FB 12 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F9 6F 05 30 FD B5 01",
+  "match": "0x143a78d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a78d40",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_QConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a78d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a78d40.c",
+   "notes": "V6442 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

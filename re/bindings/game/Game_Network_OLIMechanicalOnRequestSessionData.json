@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OLIMechanicalOnRequestSessionData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143254e50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143254e50.c;pat:log-channel-NETWORK;xref:0x14582ce10",
+  "notes": "Slot 4 (+0x20) of vtable 0x14582cdf0; only that cell. Logs 'OLI/Mechanical: onRequestSessionData(%02d)', sends (0x14402e500), calls 0x1403b8960, then tail-jumps MechanicalSendSessionData 0x143254b60 (0x1432550ff). (lane owner review requested) Better name: Game_Network_MechanicalOnRequestSessionData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_oli_mechanical_on_request_session_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 B8 08 16 00 00",
+  "match": "0x143254e50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143254e50",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OLIMechanicalOnRequestSessionData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143254e50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143254e50.c",
+   "notes": "V5772 name and description match body; log string/pretty name present; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

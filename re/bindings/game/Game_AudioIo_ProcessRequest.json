@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AudioIo_ProcessRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fba2d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fba2d0.c;pat:log-channel-AUDIO_IO;xref:0x143fba18d",
+  "notes": "Not a single request handler: AudioIo worker thread loop (called from thread proc 0x143fba180). Waits (0x14391e3b0) on exit/request/op events; pops requests from io+0x560 (CS +0x578): type 0 processReadRequest (op map io+0x438, start/next chunk, save for later), 1 processCloseRequest (remove from map), 2 processCancelRequest; completes ops via 0x143fbc3c0; on taskExit cancels and frees all ops. (lane owner review requested) Better name: Game_AudioIo_WorkerThreadLoop (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.audio_io_process_request",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC 08 01 00 00 48 8D AC 24 80 00 00 00 C5 F8 29 75 70",
+  "match": "0x143fba2d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fba2d0",
+  "kind": "func_start",
+  "names": [
+   "Game_AudioIo_ProcessRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fba2d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fba2d0.c;xref:0x143fba18d",
+   "notes": "V6312 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ProLeaguesModule_OnPlayerSetEntryChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14317bf60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14317bf60.c;pat:log-message-cxx;xref:0x1455f33f8",
+  "notes": "Virtual (vt cell 0x1455f33f8) (this, entry): for a present playing human (entry+0x65, +0x91 != 2, +0x66 == 0, +0x5b bit4) logs the name and appends a 0x60-byte record (deadline = now ms + 300, entry id +0x18..+0x58, byte +0x63) to the vector at this+0xa8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pro_leagues_module_on_player_set_entry_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC B8 00 00 00 80 7A 65 00",
+  "match": "0x14317bf60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14317bf60",
+  "kind": "func_start",
+  "names": [
+   "Game_ProLeaguesModule_OnPlayerSetEntryChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14317bf60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14317bf60.c",
+   "notes": "V5835 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamFacilitiesScene_Deactivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142aae940",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142aae940.c;pat:log-channel-MyTeamFacilitiesSceneSystem;xref:0x142aae3c9,0x142ab09ab",
+  "notes": "(this, evt): name=evt+0x10 (+9) vs 'TeamHQV2' (0x14535d850). Not TeamHQV2 and +0x80 set: log 'Facilities Scene has been deactivated, cleaning up scene'/'Clearing up all Scene objects', +0x80=0, releases cars of +0xb0 list (0x1428dbb80 on +0x20 mgr). TeamHQV2 and +0x80 clear: +0x80=1, 'Facilities Scene has been activated...', fills tree +0x70 (types 0-8), spawns cars via FindOrCreateNewCustomCar 0x1428ea4c0 + 0x1428ea250, ends 0x142ab... (lane owner review requested) Better name: Game_MyTeamFacilitiesScene_OnSceneChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.my_team_facilities_scene_deactivate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 A4 01 00",
+  "match": "0x142aae940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142aae940",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamFacilitiesScene_Deactivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142aae940",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142aae940.c;xref:0x142aae3cb",
+   "notes": "V4998 7.9KB scene system handler for both deactivate and activate (setup) plus car component lookup; better Game_MyTeamFacilitiesScene_OnActiveChanged"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142aae940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142aae940.c;xref:0x142aae3cb",
+   "notes": "V6880 1516 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

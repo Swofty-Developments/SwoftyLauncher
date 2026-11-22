@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Load_MyTeamVehicleBases",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142507810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142507810.c;xref:0x140bc51af;xref:0x14248828b;xref:0x14257679c",
+  "notes": "myteam-g1: Registers manufacturer-themed My Team bases (myteam_ferrari, honda, mercedes, renault). CORRECTION(V9006): Data loader for a list of My Team vehicle bases: reads list/version/stat_id/file_name/display_name/display_description/engine_stat_id/base_vehicle_stat_id, and a switch on engine id picks myteam_renault/ferrari/mercedes/honda keys. Not simply a register of four manufacturer bases. Callers: census steam 0x2507810. | myteam-guard 2026-11-13: the save loader of the My Team vehicle bases (caller 0x142488290 under Game_SaveData_DeserialiseContainer). For each child of the save's 'list' it reads stat_id (u16, [rsp+0x44]) and file_name (chars at [rsp+0xb8]), resolves file_name in entrants.vehicles with Gdb_Find_RowByLabel (0x1425082f5, found flag not passed) and builds the base's AI config with Sess_Load_VehicleAiConfig (0x142508305) without checking the row, then reads the remaining fields and stores the base with Sess_VehicleTable_EmplaceAt (0x1425098d5). A file_name whose row is gone (an addon's My Team engine base such as myteam_mes_porsche_2026 with the addon off) leaves the row 'Invalid' (index -1) and faults in Sess_Load_VehicleAiConfig+0x2dd (4m7rul dump: row 'Invalid', label myteam_mes_porsche_2026). Guard sites: site_Game_MyTeamVehicleBases_AiConfigLoad, site_Game_MyTeamVehicleBases_NextBase.  Bosseboissss (1.9.19, MES on, crash at the boot profile load on the title screen, +0x452 form): dump shows base 3 (stat id 3) on 'myteam_mes_alfa_romeo_2026' with the row 'Invalid' (-1), same call at 0x142508305 under the boot Game_SaveData_DeserialiseContainer."
+ },
+ "signature": {
+  "id": "game.load_my_team_vehicle_bases",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 2B 00 00",
+  "match": "0x142507810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142507810",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_MyTeamVehicleBases"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x142507810",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142507810.c;xref:0x140bc51af;xref:0x14248828b;str:\"list\";str:\"stat_id\";str:\"engine_stat_id\";str:\"base_vehicle_stat_id\";str:\"myteam_ferrari\"",
+   "notes": "V9006 Data loader for a list of My Team vehicle bases: reads list/version/stat_id/file_name/display_name/display_description/engine_stat_id/base_vehicle_stat_id, and a switch on engine id picks myteam_renault/ferrari/mercedes/honda keys. Not simply a register of four manufacturer bases."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142507810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142507810.c",
+   "notes": "V10219 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

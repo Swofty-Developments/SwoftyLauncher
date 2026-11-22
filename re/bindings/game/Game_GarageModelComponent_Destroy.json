@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageModelComponent_Destroy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142b0f3a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142b0f3a0.c;pat:log-message-cxx;xref:0x1457bebd0",
+  "notes": "~GarageModelComponent(comp,free): removes comp from table 0x146078f50, releases the comp+0x20 proxy, unsubscribes the GaragesAssignedMessage / GaragesHiddenMessage handlers (0x143988350), frees comp when param_2. Slot 0 of vt 0x1457bebd0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_model_component_destroy",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142b0f3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142b0f3a0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageModelComponent_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142b0f3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142b0f3a0.c",
+   "notes": "V5016 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

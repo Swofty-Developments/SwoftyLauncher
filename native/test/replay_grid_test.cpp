@@ -1,4 +1,4 @@
-#include "replay_grid_logic.hpp"
+#include "core/guards/session/replay_grid_logic.hpp"
 
 #include <cstdio>
 #include <thread>
@@ -6,14 +6,14 @@
 
 static int failures;
 
-#define CHECK(cond, msg)                                                                                                \
-    do {                                                                                                                \
-        if (cond) {                                                                                                     \
-            printf("ok  : %s\n", msg);                                                                                  \
-        } else {                                                                                                        \
-            printf("FAIL: %s\n", msg);                                                                                  \
-            failures++;                                                                                                 \
-        }                                                                                                               \
+#define CHECK(cond, msg)                                                                                                         \
+    do {                                                                                                                         \
+        if (cond) {                                                                                                              \
+            printf("ok  : %s\n", msg);                                                                                           \
+        } else {                                                                                                                 \
+            printf("FAIL: %s\n", msg);                                                                                           \
+            failures++;                                                                                                          \
+        }                                                                                                                        \
     } while (0)
 
 int main()
@@ -32,6 +32,34 @@ int main()
     CHECK(rg::guards(-1), "an unknown car count is guarded");
     CHECK(!rg::outgrew(base + 0x20, base, rg::capacity_of(0xdead00000020ull)), "stale high bits do not shrink the capacity");
 
+    const uint64_t holder = 0x341efdf00, cur = holder + rg::HEADER, prev = cur + 0x480;
+    CHECK(rg::room_of(cur, prev, 0x400) == 0x480, "a holder's room is the distance from its current buffer to its previous one");
+    CHECK(rg::room_of(cur, cur, 0x400) == 0 && rg::room_of(prev, cur, 0x400) == 0,
+          "buffers that read out of order give no room, so the game's code runs unchanged");
+    CHECK(rg::room_of(cur, cur + 0x100, 0x400) == 0, "a room smaller than the capacity is no room");
+    const uint64_t canned_state = 1050, drs_lap_start = 22 * (13 + 2 * 7) + 5, drs_overrun = 22 * (13 + 5 * 6 + 2 * 7) + 5;
+    CHECK(!rg::outgrew(base + canned_state, base, rg::room_of(cur, prev, 0x400)),
+          "CannedEventsSystem a few bytes past a 1024 byte capacity stays in the game's code on a stock grid");
+    CHECK(!rg::outgrew(base + drs_lap_start, base, rg::room_of(cur, prev, 0x400)),
+          "DragReductionSystem with 7 DRS zones and 22 cars fits its holder at the start of a lap");
+    CHECK(rg::outgrew(base + drs_overrun, base, rg::room_of(cur, prev, 0x400)),
+          "DragReductionSystem after the sixth of 7 detection points with 22 cars outgrows its holder's room");
+    CHECK(!rg::outgrew(base + 0x480, base, rg::room_of(cur, prev, 0x400)) &&
+              rg::outgrew(base + 0x481, base, rg::room_of(cur, prev, 0x400)),
+          "a state of exactly the room is recorded and one byte more is not");
+    CHECK(!rg::outgrew(base + 22 * (13 + 7 * 4) + 5, base, 0x400), "4 DRS zones with 22 cars fit the stock capacity");
+    int drs = rg::grown_class(5, drs_overrun);
+    CHECK(drs >= 0 && rg::CLASSES[drs].cap >= 2 * drs_overrun && rg::CLASSES[drs].cap >= 22 * (13 + 7 * 7) + 5,
+          "the grown DragReductionSystem holder takes a full lap of 7 detection points");
+    CHECK(rg::room_line(22, "DragReductionSystem", 1215, 1152, 3072) ==
+              "[replay] session has 22 cars; DragReductionSystem needs 1215 bytes of replay state, more than the 1152 its "
+              "holder has room for (track or session data larger than the game sized it for), so the holder grew to 3072",
+          "the room line names the cars, the recordable, its state, the room and the grown capacity");
+    CHECK(rg::room_line(-1, "", 1215, 1152, 0).find("session has ? cars; ? needs 1215 bytes") != std::string::npos &&
+              rg::room_line(-1, "", 1215, 1152, 0).find("so it is not recorded (replay and flashback lose its state)") !=
+                  std::string::npos,
+          "the room line reads ? for an unknown count and name and says a cut state is not recorded");
+
     std::string l = rg::line(25, "VehicleSystem", 4096, 3072);
     CHECK(l == "[replay] session has 25 cars, the recorder holds 22; VehicleSystem needs 4096 bytes of replay state and its "
                "holder has 3072, so it is not recorded (replay and flashback lose its state; the session keeps all its cars)",
@@ -39,14 +67,17 @@ int main()
     CHECK(rg::line(-1, "", 8, 4).find("session has ? cars") != std::string::npos, "an unknown car count reads as ?");
     CHECK(rg::line(-1, "", 8, 4).find("; ? needs 8 bytes") != std::string::npos, "an unnamed recordable reads as ?");
 
-    CHECK(rg::class_of_rva(0x5660430) == 5 && rg::CLASSES[5].cap == 0x400, "the 1024 byte class (CannedEventsSystem) is found by vtable");
+    CHECK(rg::class_of_rva(0x5660430) == 5 && rg::CLASSES[5].cap == 0x400,
+          "the 1024 byte class (CannedEventsSystem) is found by vtable");
     CHECK(rg::class_of_rva(0x1234) == -1, "an unknown vtable is no class");
     int canned = rg::grown_class(5, 1032);
     CHECK(canned >= 0 && rg::CLASSES[canned].cap >= 2 * 1032, "a state 8 bytes over 1024 moves to a class with twice its size");
     CHECK(rg::CLASSES[canned].cap == 0xc00, "CannedEventsSystem at 1032 bytes takes the 3072 byte class");
     int canned_big = rg::grown_class(5, 1500);
-    CHECK(canned_big >= 0 && rg::CLASSES[canned_big].cap >= 3000, "a state that kept growing to 1500 bytes still gets twice its size");
-    const rg::HolderClass dyn[] = {{0x100, 0x400, 0x480}, {0x200, 0x2000, 0x2080}, {0x300, 0x800, 0x880}, {0x400, 0x1000, 0x1080}};
+    CHECK(canned_big >= 0 && rg::CLASSES[canned_big].cap >= 3000,
+          "a state that kept growing to 1500 bytes still gets twice its size");
+    const rg::HolderClass dyn[] = {
+        {0x100, 0x400, 0x480}, {0x200, 0x2000, 0x2080}, {0x300, 0x800, 0x880}, {0x400, 0x1000, 0x1080}};
     CHECK(rg::class_of_rva(dyn, 4, 0x300) == 2 && rg::grown_class(dyn, 4, 0, 1032) == 3,
           "an unordered table found at run time picks the smallest class with twice the state");
     CHECK(rg::grown_class(dyn, 4, 0, 0x3000) == -1, "a table with no class that holds the state picks none");

@@ -67,6 +67,8 @@ Database operations (`db/*.json`, `swofty::db`) are global: they write rows into
 - `career::calendars`: an event list (`career.calendar`);
 - `career::ratings`: a driver's ratings at the start of a season (`career.driver_ratings`).
 
+A year pack's season has no data group (`career.season` 1.1, launcher 1.9.55): no career races it as it is, and every career mode that covers the year makes it its own with a variant that sets its data group (see [Make a career mode](/make/career)). The core counts a season for a career only when its data group is the career's, so a pack's season never adds a year to a career by itself. A 1.0 core refuses a season with no data group.
+
 The rest: `characters`, `wizards`, `hub_tabs`, and the [R&D trees and the driver market](#r-d-trees-and-the-driver-market) (`rnd_trees`, `markets`).
 
 <template #example>
@@ -144,8 +146,8 @@ struct SeasonChange {
 SWOFTY_RECORD(SeasonChange, round, slot, seat, out, in, kind, until_round)
 
 struct Season {
-    static constexpr Version version{1, 0};
-    std::string data_group;
+    static constexpr Version version{1, 1};
+    std::string data_group;                    // left out of a year pack's season: a career mode makes it its own with a variant
     int year = 0;
     Ref<::swofty::content::Package> box;       // the box it races in: its cars, looks and rules; .or_else() names the fallback
     Ref<Calendar> calendar;                    // the season's real calendar; empty: the career's
@@ -328,6 +330,7 @@ Result set_driver_ratings(Ref<drivers::Identity> driver, const DriverRatings &ra
 Result set_car_number(Ref<drivers::Identity> driver, int number, bool swap = false);
 Result swap_drivers(Ref<drivers::Identity> a, Ref<drivers::Identity> b);   // the game's full move sequence
 Result set_dropped_scores(std::string_view data_group, int best);   // the loaded career counts each driver's best N results
+std::optional<Standings> standings();   // the drivers' championship in the game's order (table version 8)
 Result report_season(int year, int season_index);   // the career's owner: the season at season_index is year
 
 } // namespace swofty::career
@@ -532,6 +535,29 @@ A season's box supplies its cars, liveries, sounds and session rules. The box ea
 [registry] career season 2019: box swofty.classic-seasons-2019/f1_2019 is off (cars and looks only); using game/f1_2025
 ```
 
+### The season's rules
+
+At each session load of a Driver Career or My Team career, the core puts the rules of the season's box into the career's own setup mode, the same way a press of that box puts them into `swofty_f1` ([Rules per box](./sessions#rules-per-box)). The season is the career's `career.season` record for the career's year, of its data group. Its box is the first alternative of the record's `box` that is an installed `content.package`.
+
+| The box's rules | In the career |
+|---|---|
+| `drs`, `tyre_warmers`, `mandatory_tyre_change`, `race_time_limit_s`, `points` | written into the career's setup mode |
+| `refuelling`, `race_fuel_kg`, `refuel_stint_kg`, `quali_fuel_kg`, `race_start_fuel_from_quali`, `race_tyre_change`, `grid`, `qualifying_tyres` | handed to the session hooks, as for a box press |
+| `weekend_mode`, `safety_car`, `formation_lap`, `penalties`, `corner_cutting` | left out: the career keeps its own weekends and the player's race settings |
+
+A season whose box is a stock box, whose pack is off, or a career whose year isn't known yet races under the game's rules. The rules stay in the setup mode while the career's season and box stay the same, and the career's unload puts the game's rules back. A career of another data group never reads them. `SWOFTY_CAREER_RULES=0` turns it off.
+
+With `SWOFTY_CAREER_SAFETY_CAR=1` (experimental, off by default) the season's `safety_car` rule runs too: each session load sets the game's safety car option (`safety_car_frequency`) to the box's setting, the option a press of the box sets, so a 1950 season races without a safety car. The career's unload, or a load of a season without the rule, puts the player's value back when the option still holds the box's. The red flag option (`red_flag_frequency`) is a separate option and stays as the player set it. The game's safety car option covers the virtual safety car too; that `off` keeps the virtual safety car away is not seen in game yet.
+
+```text
+[career-rules] career f1_career_sw_progressive.driver_career:3f0a season 2010 (swofty.swofty-seasons-progressive/2010): box sw_f1_2010 (swofty.swofty-seasons-2010/sw_2010), rules drs; into <setup mode>
+[drs] career season 2010: box sw_f1_2010 (swofty.swofty-seasons-2010/sw_2010): <setup mode> DRS group swofty_drs_sw10_no_drs_5c1e9a20 (rules.drs swofty.swofty-seasons-2010/sw10_no_drs: race start lap 200, red flag restart 200, safety car end 200)
+[career-rules] career f1_career_sw_progressive.driver_career:3f0a season 2011 (swofty.swofty-seasons-progressive/2011): box sw_f1_2011 (swofty.swofty-seasons-2011/sw_2011), no rule a career runs
+[career-rules] the career unloaded: the career season's rules put back
+```
+
+Experimental: tested on the host only.
+
 ## Standings
 
 A season starts with every team on 0 points, listed in a start order. Progressive's start order is the real previous year's final constructors' order, then the slots that year doesn't list in slot order. A slot closed that year is left out.
@@ -619,9 +645,16 @@ The season's year comes from one of two places:
 - **The core works it out.** For a career no addon owns, such as the stock 2025 and 2026 careers, the core reads the Championship's `season_index` at an idle Team HQ once the season has its race weekends and a current weekend. The effective `career.season` records of the career's data group, sorted by year, give the year: index 0 is the first year, index 1 the second. With no records, two records for one year or a gap between years, nothing fires and the log says why.
 
 ```cpp
-// Progressive, at the first idle Team HQ of a season it hasn't applied, once the season has its weekends:
-// year is the career's first year plus season_index and its test seasons
+// Progressive, at the first idle Team HQ after each career load and of each new season, once the season has its
+// weekends: year is the career's first year plus season_index and its test seasons
 career::report_season(year, season_index);
+```
+
+A career loaded in a season that already started fires nothing, but the core still needs its year, for the [season's rules](#the-season-s-rules) among others. An owner's report for that season, or the idle Team HQ of a career no addon owns, dates the career: the core takes the year without a `career.season.start`. An owner reports at `career.loaded` or at the first idle Team HQ after each career load, as well as at each season's start. A `career.loaded` handler can run off the flow thread: its report answers `late`, and the core runs it at the next flow tick, before the session loads. A career resumed straight into a race weekend has its year that way:
+
+```text
+[registry] career::report_season(2010, 0) from swofty.swofty-seasons-progressive: ok, 2010 already started in career f1_career_sw_progressive.driver_career:3f0a
+[apply] career f1_career_sw_progressive.driver_career:3f0a: season 2010, which already started
 ```
 
 ```text
@@ -840,7 +873,7 @@ career::swap_drivers(drivers::identities["game/alex_albon"], drivers::identities
 career::report_season(2017, 1);
 ```
 
-The calls run on the core's career operations table (`SwoftyCoreCareerOps`, `SwoftyCareerOps` in `swofty_api.h`, `SWOFTY_CAREER_OPS_VERSION` 7). A call returns `unavailable` on a core whose table is older than the version that added it.
+The calls run on the core's career operations table (`SwoftyCoreCareerOps`, `SwoftyCareerOps` in `swofty_api.h`, `SWOFTY_CAREER_OPS_VERSION` 8). A call returns `unavailable` on a core whose table is older than the version that added it.
 
 | Table version | Adds | Header call |
 | --- | --- | --- |
@@ -851,6 +884,7 @@ The calls run on the core's career operations table (`SwoftyCoreCareerOps`, `Swo
 | 5 | `set_logo` | `teams::set_logo` |
 | 6 | `set_look` | `drivers::set_look` |
 | 7 | `current_round`, `team_stat`, `set_dropped_scores` | `career::current_round`, `career::set_slots` (by team references), `career::set_dropped_scores` |
+| 8 | `standings` | `career::standings` |
 
 `set_seat` takes a 1-based `slot` of the loaded career's data group, `set_seat_of_team` a team stat id; `set_car_number` takes `swap`, which gives the driver who held the number the caller's old one. `set_driver_ratings` writes experience, racecraft, awareness and pace by game stat id 0, 1, 3 and 4.
 
@@ -863,6 +897,7 @@ The calls run on the core's career operations table (`SwoftyCoreCareerOps`, `Swo
 - **What it refuses:** a driver not in the drivers table, a driver without a single career row, a driver named on two seats (the second), the player (never moved) and the player's seat (never given away). The refused seats keep their drivers.
 
 - **Mid-season changes:** `career::current_round()` (table version 7) says which race weekend the loaded career is at: `round` is 1-based and is the next race to run, `rounds` the season's weekend count. It returns nothing while no career is loaded, the season has no built weekends or the career is busy, so call it at an idle Team HQ (`career.hub`). `career::seats_at(season, round)` is the season's seats at that round, from the season's `changes` with `round` up to that round: `replace` puts `in` on the seat for the rest of the season, `swap` puts `in` on the seat and gives his old seat to the seat's previous driver, `move` puts `in` on the seat and leaves his old seat empty until another change fills it, and `stand_in` puts `in` on the seat from its round up to (not including) `until_round`, one race when it is absent, then the previous driver returns. `career::apply_round(season, round)` runs `apply_lineup` on those seats, so a seat already right is unchanged, the player's seat is never given away and the player is never moved. A driver an earlier round released has no seat and takes the next one as a free agent.
+- **Standings:** `career::standings()` (table version 8) is the loaded career's drivers' championship: the drivers in the game's order with the game's totals (dropped scores included), and each driver's points and finishes per round. See [Standings](/reference/std/standings).
 - **Team references:** `career::set_slots(data_group, teams)` takes team references (`game/<label>`, or an addon's `team.identity` id) and resolves them to the teams table's stat ids (`team_stat`, table version 7).
 
 A batch of seat changes follows the game's own sequence, in this order:
@@ -972,7 +1007,7 @@ swofty::events::on<career::events::Missing>().after(
 | `career.saved` | notify | after the containers block was written with no error (`site_Game_SaveData_ContainersDone`) |
 | `career.missing` | notify | after a profile load, a career the index knew has no slot in any mode (see below) |
 
-`career.saving` and `career.saved` fire only while the save splice is armed, on the thread that writes the profile. A handler stays short and uses no game calls. Both carry no payload: `saves::current()` names the career.
+`career.saving` and `career.saved` fire only while the save splice is armed, on the thread that writes the profile, and only for the profile save: the race highlights save (`savegame@highlights000`) and the game's other saves fire neither. A handler stays short and uses no game calls. Both carry no payload: `saves::current()` names the career.
 
 `career.missing` fires at the end of a good profile load, on the loading thread, when a career of the index has no slot in the `SaveSlotManager` of any mode after `Game_SaveSlotManager_Deserialise`. The core marks those careers missing in the index and `saves::missing()` lists them. A career is matched by its slot guid, or its slot id when the slot has no guid.
 
@@ -995,7 +1030,7 @@ A career content declares the addons its careers need beyond its own:
 }
 ```
 
-Before Play, the launcher checks every career in the index against the profile's addons. A career whose needed addon is off, missing or the wrong version adds one line to the Play log and a warning to the notice that already shows before Play:
+At each build, the launcher checks every career in the index against the profile's addons. A career whose needed addon is off, missing or the wrong version adds one line to the build log, and the game's Career list shows its row as `Missing` or `Mismatched`:
 
 ```text
 2 careers won't load in this profile: Progressive: Max Verstappen, 2016 needs Sochi Autodrom (mod.sochi), which is off; Driver Career: Lando Norris needs R&D: Tyres & Thermal Management (swofty.rnd-tyres-thermal), which is off

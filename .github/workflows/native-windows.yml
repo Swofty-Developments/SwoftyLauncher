@@ -4,27 +4,39 @@ on:
   pull_request:
     paths:
       - native/src/core/hooks/**
-      - native/src/core/mem_pages.cpp
+      - native/src/core/runtime/mem_pages.cpp
       - native/test/mem_pages_test.cpp
       - native/test/mem_addon_test.cpp
       - native/test/mem_addon_core.cpp
       - native/test/run_mem_pages_test.sh
       - native/test/hooks/**
       - native/test/run_guard_test.sh
+      - native/src/core/diagnostics/perf/pdh.*
+      - native/test/pdh_test.cpp
+      - native/test/run_pdh_test.sh
       - packages/sdk/include/swofty/mem.hpp
+      - native/include/pe_imports.h
+      - native/test/pe_imports_test.cpp
+      - native/test/run_pe_imports_test.sh
       - .github/workflows/native-windows.yml
   push:
     branches: [main, "perf/guarded-reads-*", "perf/mem-page-cache"]
     paths:
       - native/src/core/hooks/**
-      - native/src/core/mem_pages.cpp
+      - native/src/core/runtime/mem_pages.cpp
       - native/test/mem_pages_test.cpp
       - native/test/mem_addon_test.cpp
       - native/test/mem_addon_core.cpp
       - native/test/run_mem_pages_test.sh
       - native/test/hooks/**
       - native/test/run_guard_test.sh
+      - native/src/core/diagnostics/perf/pdh.*
+      - native/test/pdh_test.cpp
+      - native/test/run_pdh_test.sh
       - packages/sdk/include/swofty/mem.hpp
+      - native/include/pe_imports.h
+      - native/test/pe_imports_test.cpp
+      - native/test/run_pe_imports_test.sh
       - .github/workflows/native-windows.yml
   workflow_dispatch:
 
@@ -46,3 +58,11 @@ jobs:
         if: always()
         shell: bash
         run: bash native/test/run_mem_pages_test.sh
+      - name: Import table walk
+        if: always()
+        shell: bash
+        run: bash native/test/run_pe_imports_test.sh
+      - name: GPU Engine counter calls
+        if: always()
+        shell: bash
+        run: bash native/test/run_pdh_test.sh

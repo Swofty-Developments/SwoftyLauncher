@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_ApplyCameraSelection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bdcac0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bdcac0.c;xref:0x141d084f3,0x141d0863c",
+  "notes": "(system, cam): 0 = free cam: clears view slot ((+0x248)+0x80)[+0x390], rebinds camera +0x370 via 0x144534390 and resets free-cam state (+0x378 +0x220..+0x2a0, +0x120 = 1); 1..8 clear the slot and bind named car camera wing/nose/nose_alt/cockpit/pod/podoffset/chase/chasefar via 0x1445361a0(+0x250, name, +0x358, +0x390); sets dirty +0x425. Callers 0x141d08280, 0x141d08530. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_apply_camera_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 48 89 CE 83 FA 08 0F",
+  "match": "0x142bdcac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bdcac0",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_ApplyCameraSelection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142bdcac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bdcac0.c;xref:0x141d084f3",
+   "notes": "V7546 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

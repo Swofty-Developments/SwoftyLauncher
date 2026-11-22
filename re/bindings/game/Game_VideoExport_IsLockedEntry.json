@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_IsLockedEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f097d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f097d0.c;xref:0x141f0f275,0x141f0ff12,0x141f100ca,0x141f10c6c,0x141f111ee,0x141f11923,0x141f120de,0x141f122b4,0x141f1267c",
+  "notes": "Read in full: (nodeRef) looks up child 'is_locked_entry' (0x144252eb0), binds it (0x1409728b0), returns its byte != 0 when the type id matches bool type 0x146129dc0, else false; releases the ref. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.video_export_is_locked_entry",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 8B 41 08 48 8D 48 08 48 85",
+  "match": "0x141f097d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f097d0",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_IsLockedEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x141f097d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f097d0.c;xref:0x141f0f275",
+   "notes": "V7524 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

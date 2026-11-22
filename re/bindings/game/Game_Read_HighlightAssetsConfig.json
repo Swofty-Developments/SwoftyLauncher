@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_HighlightAssetsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14384ac50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14384ac50.c;pat:log-channel--;xref:0x14384a90a,0x14384aa14",
+  "notes": "Body read in full. Not a settings reader: gets the scene object named by string +0x1d8 (0x1441e04d0, bounds vt+0x88), walks the UI element tree [+0x240]+0x18 by the DJB2 hash of each segment of 'highlight_assets.point_of_interest' / top_left / top_right / bottom_left / bottom_right, shows the element (vt+0xd0), takes the matching corner or the centre of the target +0x1b8 bounds, and posts a position message (id 0x21, vtable 0x1457841a0) to the UI (0x1423bbd20 / 0x1442bfc50). Callers in 0x14384a5d0. Renamed from Game_Read_HighlightAssetsConfig. (lane owner review requested) Better name: Game_HighlightAssets_UpdateMarkerPositions (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_highlight_assets_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 49 89 CC",
+  "match": "0x14384ac50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14384ac50",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_HighlightAssetsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x14384ac50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14384ac50.c;xref:0x14384a90a",
+   "notes": "V6316 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

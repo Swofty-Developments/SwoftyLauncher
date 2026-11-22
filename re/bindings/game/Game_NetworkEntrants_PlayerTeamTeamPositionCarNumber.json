@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_PlayerTeamTeamPositionCarNumber",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14310c1d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14310c1d0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x14310adea,0x143111fb1,0x14306862a",
+  "notes": "registerEntrant (logged name): logs player/team/position/car number; unregisters an entrant with the same team info, pushes the 0x88-byte entrant (Sess_EntrantVec_PushBack), host sends it via 0x14402e500 and refills free AI seats via 0x143117630 (requestRegisterAIEntrant). (lane owner review requested) Better name: Game_NetworkEntrants_RegisterEntrant (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_entrants_player_team_team_position_car_number",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 44 89 CD",
+  "match": "0x14310c1d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14310c1d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_PlayerTeamTeamPositionCarNumber"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14310c1d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14310c1d0.c;xref:0x14218a237",
+   "notes": "V5748 762-line entrant registration (strings registerEntrant, duplicate team info unregister); log is one line. Better: Game_NetworkEntrants_RegisterEntrant"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14310c1d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14310c1d0.c;xref:0x14306862a",
+   "notes": "V6989 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteCompletedRaceWithManualGearbox",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437695b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437695b0.c;pat:log-channel-STATEVENT;xref:0x143781eed",
+  "notes": "STATEVENT sub-writer: keys via 0x1401009f0 + djb2, providers this+8..+0x10 vcall +0x18 (enabled) / +0x30 (write). (list, evt, position): 4 keys CompletedRaceWithManualGearbox, .DriverPosition.%d, .VehicleId.%d (evt+0x1c), .SectionId.%d (evt+0xc). Caller 0x143781eed. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_completed_race_with_manual_gearbox",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 04 00 00 44 89 C3",
+  "match": "0x1437695b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437695b0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteCompletedRaceWithManualGearbox"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x1437695b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437695b0.c;xref:0x143781eed",
+   "notes": "V6224 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

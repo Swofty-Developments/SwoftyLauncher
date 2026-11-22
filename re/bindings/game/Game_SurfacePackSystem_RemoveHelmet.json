@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SurfacePackSystem_RemoveHelmet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437a7ac0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437a7ac0.c;pat:log-channel-GameSurfacePackSystem;xref:0x1513c060b,0x1513c061b,0x1513c062b,0x1513c063b,0x1513c064b",
+  "notes": "Helmet twin of RemoveSuit: slot lookup/allocate in table +0x18380 (log calculateSlotInstanceIndexHelmet), id = min(param_2,7) | min(slot,31)<<3 | 0x200; appends id to removal vector +0x18148 unless already present. Callers are an unwound/obfuscated block at 0x1513c0580. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.surface_pack_system_remove_helmet",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 4D 89 C6 89 D3 48 89 CE",
+  "match": "0x1437a7ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437a7ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_SurfacePackSystem_RemoveHelmet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x1437a7ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437a7ac0.c;xref:0x1513c060b",
+   "notes": "V6318 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

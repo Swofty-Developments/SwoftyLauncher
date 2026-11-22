@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_HoldInPitBox",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434bd850",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434bd850.c;xref:0x1434b89b9,0x1434b8eae,0x1434b9e9b",
+  "notes": "Log channel PITLANE_SAFETYCAR: '%f %f %f - PitLaneMovementManager::holdInPitBox' L2 2026-11-14 (engine-re round 2): decomp read; 3 reference(s) (0x1434b89b9, 0x1434b8eae, 0x1434b9e9b); the body itself references 'PitLaneMovementManager::holdInPitBox' / 'PITLANE_SAFETYCAR' / '%f %f %f - PitLaneMovementManager::holdInPitBox'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_hold_in_pit_box",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 84 24 B0 00 00 00",
+  "match": "0x1434bd850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434bd850",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_HoldInPitBox"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434bd850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434bd850.c;xref:0x1434b89ba",
+   "notes": "V6016 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434bd850",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434bd850-0x1434bdd04;xref:0x1434b89b9,0x1434b8eae,0x1434b9e9b",
+   "notes": "V10502 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 3 callers in 0x1434b83e0. PITLANE_SAFETYCAR %f %f %f - holdInPitBox. 3 args (+xmm2)."
+  }
+ ],
+ "proofs": []
+}

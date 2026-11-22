@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Input_GeneratePresetControlSchemes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a598c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a598c0.c;pat:log-channel-INPUT;xref:0x142a69b57,0x142a6aa35,0x142a78478,0x14da34499",
+  "notes": "Per device slot (<=2, +0x40->+0x140 +0x1c0/+0x1c8) lists presets (0x143a8b090); existing in +0x188: log SPLITSCREEN_INPUT 'Scheme already created %d, %s'; else 'Adding Control Scheme', text 'preset.%s.display_text'/'preset.%s.index' (DEVICE_TYPE/INDEX), new 0x168 obj vtbl 0x1457bb690 '<unknown/control-scheme>', djb2 id, push +0x168/+0x188, 0x142a5e0c0; tail 0x142a5b910. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.input_generate_preset_control_schemes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 04 00 00 C5 78 29 84 24 50 04 00 00",
+  "match": "0x142a598c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a598c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_GeneratePresetControlSchemes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a598c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a598c0.c;xref:0x142a69b57",
+   "notes": "V5176 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tweakables_ConstructNamedEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144727d90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144727d90.c;xref:0x14465616d,0x14465f13d,0x144660b3b,0x1446760f9,0x14467743b,0x14467d35d,0x14467e59b,0x144688389,0x14468f36b,0x1446a5dd7,0x1446a7769,0x1446b41cd,0x1446b6b8b,0x1446ca4d7,0x1446cd82d,0x1446d101d,0x14477043c",
+  "notes": "Constructs a 0x1f8-byte tweakable entry (the element 0x14476c110 stores): +0 16-byte key (*param_4), +0x50 std::function slot (empty), +0x60 = {min, max, min, max} (param_5, param_6), +0x70 min, +0x78/+0x98 allocator param_9, +0xd0 128-char group name (param_2), +0x168 128-char entry name (param_3), +0x1e8 flags byte param_8; resizes the two u32 vectors +0x80/+0xa0 to param_7 elements and fills them with min / 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tweakables_construct_named_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 84 24",
+  "match": "0x144727d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144727d90",
+  "kind": "func_start",
+  "names": [
+   "Game_Tweakables_ConstructNamedEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x144727d90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144727d90.c;xref:0x14465616d",
+   "notes": "V8400 not a 0x68 record: large entry struct (vector element 0x1f8 per partner)"
+  }
+ ],
+ "proofs": []
+}

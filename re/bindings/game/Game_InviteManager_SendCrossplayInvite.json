@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InviteManager_SendCrossplayInvite",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143161610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143161610.c;pat:log-message-cxx;xref:0x141dfccc1,0x141dfe20a",
+  "notes": "'InviteManager::sendCrossplayInvite(NePresenceUserID, name, isFriend, cb)'. If crossplay enabled: logs invitee and EA user id (id^key), sends via 0x143fe0c90. If 'account_show_notifications' allows, toast 'social_msg_invite_sent_a_succeed' with player_name and platform_icon. Address loaded by lea in 0x141dfc830 and 0x141dfe090. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.invite_manager_send_crossplay_invite",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 4C 89 C6 48 89 D3",
+  "match": "0x143161610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143161610",
+  "kind": "func_start",
+  "names": [
+   "Game_InviteManager_SendCrossplayInvite"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143161610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143161610.c;xref:0x141dfccc3",
+   "notes": "V5781 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

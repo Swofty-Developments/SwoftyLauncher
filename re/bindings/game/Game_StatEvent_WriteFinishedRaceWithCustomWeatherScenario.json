@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteFinishedRaceWithCustomWeatherScenario",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14376f8c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14376f8c0.c;pat:log-channel-STATEVENT;xref:0x143792839",
+  "notes": "Providers this+8..+0x10; 2 entries 1.0 type 0: FinishedRaceWithCustomWeatherScenario, .GameplayModeId(+8). Caller 0x143790310. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_finished_race_with_custom_weather_scenario",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 BB C8 02 00 00 03 75 19 48 8B",
+  "match": "0x143792839",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14376f8c0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteFinishedRaceWithCustomWeatherScenario"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14376f8c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14376f8c0.c;xref:0x143792839",
+   "notes": "V7390 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

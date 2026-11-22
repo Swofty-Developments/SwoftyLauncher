@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLaptimes_DeserialiseNetwork",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14098b3d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14098b3d0.c;pat:log-message-method;xref:0x142f32898",
+  "notes": "Mirror of Game_NetworkLaptimes_SerialiseNetwork: logs 'deserialiseNetwork: Receiving part %u', lap/sector, speed trap, lap range and per lap/sector values while reading with bit-stream readers 0x143925660, 0x1439259f0, 0x1439242d0. Caller 0x142f327a0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_laptimes_deserialise_network",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 D6 48 89 CF 80 7A 29 00",
+  "match": "0x14098b3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14098b3d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLaptimes_DeserialiseNetwork"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x14098b3d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14098b3d0.c",
+   "notes": "V4341 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

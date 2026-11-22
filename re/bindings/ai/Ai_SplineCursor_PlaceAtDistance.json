@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_SplineCursor_PlaceAtDistance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060cd70",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_SplineCursor_PlaceAtDistance(void *c, float distance)",
+  "evidence": "decomp:re/decomp/14060cd70.c;xref:0x14060157b,0x140601587,0x140617588,0x1406175b8,0x140653635,0x1406536af,0x1406537b3,0x1406539b3,0x14801bf73,0x14801bf87",
+  "notes": "(SplineCursor *c, distance): like Ai_SplineCursor_PlaceAtPosition but by lap distance (xmm1): line c[4] by distance via 0x140679dd0 into c+0x210, then the other 8 lines c[0..3], c[5..8] via 0x14067a120 into +0x50, +0xc0, +0x130, +0x1a0, +0x280, +0x2f0, +0x360, +0x3d0, and the lateral distances c+0x440. Callers: Ai_BehaviourRecover_Evaluate, Sess_Build_AiSystem 0x1405ff750, 0x140614d70, 0x14801bee0 (10 call sites; corrected per V10467). L2 2026-11-14 (engine-re round 2): decomp read; 10 reference(s) (0x14060157b, 0x140601587, 0x140617588, 0x1406175b8, 0x140653635, 0x1406536af, ...). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.spline_cursor_place_at_distance",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 48 8B 49 20 48",
+  "match": "0x14060cd70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060cd70",
+  "kind": "func_start",
+  "names": [
+   "Ai_SplineCursor_PlaceAtDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060cd70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14060cd70.c;xref:0x140653635",
+   "notes": "V3543 by-distance placement via 0x140679dd0 + 0x14067a120 and +0x440 distances ok, but decomp makes 8 calls (splines 0,1,2,3,5,6,7,8), not 6 splines"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x14060cd70",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14060cd70-0x14060cfdc;xref:0x14060157b,0x140601587,0x140617588,0x1406175b8,0x140653635,0x1406536af,0x1406537b3,0x1406539b3,0x14801bf73,0x14801bf87",
+   "notes": "V10467 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 10 call refs (+1 non-instruction hit). 2 args (cursor, float distance in xmm1 passed to 0x140679dd0). DIFFERENCE: it samples 8 lines, not 6: c[4] by distance (0x140679dd0 -> c+0x210) and c[0..3],c[5..8] via 0x14067a120 into +0x50,+0xc0,+0x130,+0x1a0,+0x280,+0x2f0,+0x360,+0x3d0, then lateral distances c+0x440. Callers also Sess_Build_AiSystem 0x1405ff750, 0x140614d70, 0x14801bee0 (not only Ai_BehaviourRecover_Evaluate)."
+  }
+ ],
+ "proofs": []
+}

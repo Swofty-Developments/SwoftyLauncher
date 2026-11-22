@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Signal_FacilitiesStageSceneEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b68bd0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_Signal_FacilitiesStageSceneEvent(void *scene, void *ev, uint8_t flag)",
+  "evidence": "decomp:re/decomp/141b68bd0.c;xref:0x141a0f2d1,0x141a11401,0x141a266fa,0x141a342cd,0x141a5f27f,0x141a79a86,0x141abe9bf,0x141acd9a8",
+  "notes": "(queue,msg,wake): queue closed (+0x68==0) -> error 0x58; else under CS [+0xd8] allocs 0x30 bytes (alloc +0x70 vt+0x18; fail -> 0xc), message vt 0x145735ca0 copying msg+8,+0x10,+0x18 (u32),+0x20 (refcounted NeStr),+0x28 (byte); appends to list +0x58/+0x60, +0x6b|=wake, Ne_Event_Set(+0xc8) on first wake. Not static-init guarded (that is error-report TLS code): renamed. (lane owner review requested) Better name: Vm_MsgQueue_Post_Msg30 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "vm.signal_facilities_stage_scene_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 80 79 68 00",
+  "match": "0x141b68bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b68bd0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Signal_FacilitiesStageSceneEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b68bd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141b68bd0.c;xref:0x141a0f2d1;xref:0x141a11401",
+   "notes": "V9950 Generic thread-safe message post: copies a 0x30-byte event node into a locked queue at obj+0x58/0x60 and sets an event; facilities stage scene is only inferred from callers."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteCompleteChampionCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143745540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143745540.c;pat:log-channel-STATEVENT;xref:0x14372aba4,0x14374a7cb",
+  "notes": "Body read in full. Resolves the local entrant row ([[+0xb0]+0x88]+0x260 rows +0x2e0, 0x1431146d0), 0x14371fe70 common init, profile via 0x142a814c0 / 0x141b7af20 into +0x110/+0x118; walks nested lists 0x14255ba10 -> 0x142563830 (entries with +0xb0) -> 0x142562e60 -> 0x142563c70 and for the entry whose +8 == param_2+0x10 logs 'Executing EventWriteCompleteChampionCard', DJB2-hashes 'CompleteChampionCard' and calls each provider +0x50..+0x58 (vt+0x18 enabled check, vt+0x30 write). Refs: lea 0x14372aba4 (0x143720bc0), lea 0x14374a7cb (0x143749390). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_complete_champion_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 48 89 54 24 48",
+  "match": "0x143745540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143745540",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteCompleteChampionCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143745540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143745540.c;xref:0x14372aba6",
+   "notes": "V6198 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

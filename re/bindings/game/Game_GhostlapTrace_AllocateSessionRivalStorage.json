@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostlapTrace_AllocateSessionRivalStorage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f9eef0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f9eef0.c;pat:log-message-method;xref:0x142f9edf9",
+  "notes": "allocateSessionRivalStorage(h): allocates once 0xC800 bytes into h+0x320 and sets h+0x328 = 0xC800. Caller 0x142f9d860. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ghostlap_trace_allocate_session_rival_storage",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4A B8 62 00 00 00",
+  "match": "0x142f9eef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f9eef0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostlapTrace_AllocateSessionRivalStorage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f9eef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f9eef0.c;xref:0x142f9edf9",
+   "notes": "V5700 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

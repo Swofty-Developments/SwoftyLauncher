@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_ForceToLowestTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8f600",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d8f600.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d8eba0,0x140d93b98,0x140d94100,0x140ff4b55",
+  "notes": "CONTRACT_RENEWAL 'Driver removed from team, forced onto lowest': picks the lowest team (0x140d98c50, 0x140d8c8f0, 0x140d8d150), reserve backfill 0x140d8ecd0, signs via 0x140d8fcb0, 0x140d8f1f0, 0x1407b72e0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.contract_renewal_force_to_lowest_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 44 89 C3",
+  "match": "0x140d8f600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8f600",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_ForceToLowestTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d8f600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8f600.c;xref:0x140d8eba0,0x140d93b98",
+   "notes": "V4704 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d8f600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8f600.c",
+   "notes": "V9078 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutScene_SpawnCarForSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024c670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14024c670.c;xref:0x14033dcdf,0x14033f06f,0x14035a2e7,0x14035a427,0x14035a567,0x14035aa17,0x14035ab57,0x14035ac97,0x14035b9c7,0x14035bb07,0x14035bc47,0x14035c0f7,0x14035c237,0x14035c377,0x14035c827,0x14035c967,0x14035caa7,0x14035d5c7,0x14035d707,0x14035d847",
+  "notes": "(script, u32 slot, u16 a, u8 b, u8 c): driver stat id 0x140248f90, driver customisation by entrant 0x14024c460(slot), vehicle ResolveVehicleForSlot 0x14024c580(slot), driver customisation index 0x14024c370(slot); entrant (0x88 stride, byte +0x82 == slot byte) livery colours 40 bytes from registry [0x146064df0]+0x38 (value +0x20..+0x48); if driver, customisation (+0x310 set) and vehicle exist returns Game_CameraActor_Enable 0x1402474e0(script, ..., &colours, a, b, c, 1, 0, 0, 0, 0), else 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cut_scene_get_car_slot_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 44 89 CD 44 89 C3 41 89 D5",
+  "match": "0x14024c670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14024c670",
+  "kind": "func_start",
+  "names": [
+   "Game_CutScene_SpawnCarForSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14024c670",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14024c670.c;xref:0x14033dcdf",
+   "notes": "V7982 Game_CutScene_SpawnCarForSlot: gathers slot data then calls 0x1402474e0 with info struct and returns its result; not a getter"
+  }
+ ],
+ "proofs": []
+}

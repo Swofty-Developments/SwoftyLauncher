@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_GameSessionMatchingCareer_SearchSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143070f40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143070f40.c;pat:log-message-cxx;xref:0x14306f74b,0x1430e3d73",
+  "notes": "__FUNCTION__ GameSessionMatchingCareer::searchSession (NETWORK-SESSION); 0x1430711b0, reads MatchingClusterID attribute (strcmp, 0x14407dbe0), 0x1430715b0, 0x144064f50. Callers: joinCareerSession 0x14306f4d0, 0x1430e0560. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.game_session_matching_career_search_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D",
+  "match": "0x143070f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143070f40",
+  "kind": "func_start",
+  "names": [
+   "Career_GameSessionMatchingCareer_SearchSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143070f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143070f40.c;xref:0x14306f74c",
+   "notes": "V5558 name matches own log/pretty string and body; no broader behaviour found"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x143070f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143070f40.c;str:\"NEbool network::GameSessionMatchingCareer::searchSession()\"",
+   "notes": "V9219 searchSession cxx string on NETWORK-SESSION is present."
+  }
+ ],
+ "proofs": []
+}

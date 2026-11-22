@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreSets_ReadSetEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e897c0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e897c0.c;xref:0x142e8c3b4,0x142ea0810",
+  "notes": "(set,stream): set+0 0..0x13; 5 bits into set+9: bit0 DAMAGED, bit1 SAVED DAMAGE, bit2 MANDATORY, bit3 HANDED BACK, bit4 USED OUTSIDE GARAGE; per wheel w<4: floats set+0xc+w*0xc (0..1, step 0.001) and +0x10+w*0xc (0..1, step 0.1), bool +0x14+w*0xc; second block +0x3c/+0x40/+0x44+w*0xc. Logs 'wheel ix: %d, ok: %d, position: %d'. Callers 0x142e8c270, 0x142ea0500. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.tyre_sets_read_set_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 D6 48 89 CF 8B 01 89 44",
+  "match": "0x142e897c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e897c0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreSets_ReadSetEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142e897c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e897c0.c;xref:0x142e8c3b4",
+   "notes": "V7562 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

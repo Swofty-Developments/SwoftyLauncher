@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ErInput_PresetCreated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144704140",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144704140.c;pat:log-message-method;xref:0x1447030fe",
+  "notes": "Callback (binder, changed, preset): returns unless changed; if a connected device is listed in preset+0x40..+0x48 logs ER_INPUT 'presetCreated - preset action map priorities potentially changed', 'unbinding all input providers from their devices' (0x14442ea40 each), 'attempting to bind all connected devices...' and rebinds via Game_ErInput_BindToPlayer. Fn ptr lea in 0x144702c70. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.er_input_preset_created",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 84 D2",
+  "match": "0x144704140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144704140",
+  "kind": "func_start",
+  "names": [
+   "Game_ErInput_PresetCreated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144704140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144704140.c;xref:0x144703100",
+   "notes": "V6867 presetCreated log lines confirmed."
+  }
+ ],
+ "proofs": []
+}

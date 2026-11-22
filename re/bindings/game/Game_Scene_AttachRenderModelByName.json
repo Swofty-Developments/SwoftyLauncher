@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Scene_AttachRenderModelByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ef0150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ef0150.c;xref:0x142e82c5c,0x142e82c7f,0x142e82c9b,0x142f3e65f,0x142f3e682,0x142f3e69e,0x1437103bf,0x1437103e2,0x1437103fe,0x144591068,0x144591088,0x1445910a6",
+  "notes": "Walks the list [[param_1+200]+0x10] (entry: name +0, next +8, obj +0x10) by strcmp; found with obj -> vcall obj+0x20(param_3,&{0x1457f3480,param_4}); missing or null obj -> vcall [+200]+0x30(100,0,&obj) creates a type-100 object, vcall +0x28(name param_2,obj) registers it, then the same +0x20 call; errors go to the error ring. Old name claimed a render-model attach the body does not show. Callers incl. Game_VehicleSpawning_ObjectPreCreation. (lane owner review requested) Better name: Game_Scene_FindOrCreateNamedChild (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.scene_attach_render_model_by_name",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 44 24 40 00 4C 8D 2D",
+  "match": "0x142e82c5c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142ef0150",
+  "kind": "func_start",
+  "names": [
+   "Game_Scene_AttachRenderModelByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x142ef0150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ef0150.c;xref:0x142e82c5c",
+   "notes": "V8109 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

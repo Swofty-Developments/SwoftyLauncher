@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_CreateSetOpusSETForceChannels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14402eca0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14402eca0.c;pat:log-channel-NETWORK-VOICE;xref:0x144031c77,0x144031cd6,0x144031d35,0x144031d94,0x144031f8d",
+  "notes": "Memsets 0x1a90 bytes, creates the Opus encoder (24000 Hz, 1 ch, application 0x800) at +0x1a80 and sets ctls 4022 force channels=1, 4004 max bandwidth 1104, 4002 bitrate 16000, 4024 signal 3001 (each logs 'Unable to create set OPUS_SET_* ...' on error); creates the decoder (24000, 1 ch) at +0x1a88. Called from Game_NetworkVoice_CreateNetVoiceObject. (lane owner review requested) Better name: Game_NetworkVoice_InitOpusCodec (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_voice_create_set_opus_set_force_channels",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8D B9 90 1A 00 00",
+  "match": "0x14402eca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14402eca0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_CreateSetOpusSETForceChannels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14402eca0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14402eca0.c;xref:0x144031c77",
+   "notes": "V6392 partial: better name Game_NetworkVoice_CreateOpusCodec; creates Opus encoder and decoder and sets 4 encoder options"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14402eca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14402eca0.c;xref:0x144031c77",
+   "notes": "V7083 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

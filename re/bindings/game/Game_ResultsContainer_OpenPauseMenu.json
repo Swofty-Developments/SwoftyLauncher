@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ResultsContainer_OpenPauseMenu",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141e72b20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141e72b20.c;pat:log-channel-RESULTS_CONTAINER;xref:0x145752d60",
+  "notes": "Invoke slot (cell 0x145752d60) of the step-0 lambda queued by Exit (vt 0x145752d50), container = closure+8. +0x1070 = -1, 0x14155b9c0(+0x668); state +0x11a8 == 'pause': logs 'opening pause menu', fires 'vm_open_results' if '#ui_menu_data.ingame_screens.new_results_to_old_race_director' else 'vm_open_pause'; other states set '#session.post_race_next_state'. Stores callback to +0x10f8, logs 'close container start', fires 'vm_close_container'. (lane owner review requested) Better name: Game_ResultsContainer_ExitStep_CloseContainer (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.results_container_open_pause_menu",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 60 01 00 00 C5 F8 29 B4 24 50 01 00 00",
+  "match": "0x141e72b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e72b20",
+  "kind": "func_start",
+  "names": [
+   "Game_ResultsContainer_OpenPauseMenu"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141e72b20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141e72b20.c",
+   "notes": "V5229 296 lines: dispatcher; target==pause opens vm_open_pause/vm_open_results (logs opening pause menu) else vm_close_container (logs close container start). Better Game_ResultsContainer_OpenPauseOrCloseContainer (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141e72b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141e72b20.c",
+   "notes": "V7274 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

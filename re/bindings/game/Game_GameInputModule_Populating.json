@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameInputModule_Populating",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a7b130",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a7b130.c;pat:log-message-cxx;xref:0x14da3acdb",
+  "notes": "Only caller 0x14da3acdb (in 0x14da3abb0). UI node p1: if its 'axis' list is missing/empty (walks up to 0x62 children), copies the default '#input_device.di_device_default.axis' list into p1.axis (0x14083d100 + 0x140977b20); if p3 is non-empty and display_text is unset/empty, sets display_text = p3 (0x140971220/0x140828440). Logs INPUT 'GameInputModule::Populating UIDB for device:%s / %s' (p3, *p2). Renamed from the log fragment 'Populating'. (lane owner review requested) Better name: Game_GameInputModule_PopulateDeviceUIDB (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.game_input_module_populating",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 4C 89 C6 48 89 D7 48 89 CB 4C 8B 35",
+  "match": "0x142a7b130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a7b130",
+  "kind": "func_start",
+  "names": [
+   "Game_GameInputModule_Populating"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a7b130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a7b130.c;xref:0x14da3acdb",
+   "notes": "V4971 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

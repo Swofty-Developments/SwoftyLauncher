@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TalkingPoints_Stop",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140acae40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140acae40.c;xref:0x142d956e7,0x142d96c26",
+  "notes": "Sets state +0x2c=4, closes UI (msg 0x14565e950), resets video, posts 0x14566cc70, stops cutscene (Game_TalkingPoints_StopCutscene) and camera (msg 0x14566eed0), clears +0x80, resets speech VO finished/resumed delegates, re-enables cross-fades. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.talking_points_stop",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC B8 00 00 00 48 89 CE C7 41 2C 04",
+  "match": "0x140acae40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140acae40",
+  "kind": "func_start",
+  "names": [
+   "Game_TalkingPoints_Stop"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140acae40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140acae40.c;xref:0x142d956e7",
+   "notes": "V3842 strings resetSpeechVOFinishedDelegate, resetSpeechVOResumedDelegate, '[CAMERA][STOP]: [%s]', '[UI][CLOSE]', '[MISC][CROSS-FADES]: Enabled', channel TalkingPoints; caller Sess_StateTalkingPoints_OnStateEnter seen"
+  }
+ ],
+ "proofs": []
+}

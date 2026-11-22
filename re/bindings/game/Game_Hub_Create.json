@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Hub_Create",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fcd400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fcd400.c;pat:log-message-cxx;xref:0x145a44ca0",
+  "notes": "EadpModule vtable 0x145a44c80 slot +0x20. Env from 'EADP.serverEnvironment' (int=2,prod=1,lt=3,cert=4,test=5) -> +0x214; logs EadpSDK 'Calling eadp::foundation::Hub::create', hub -> +0x168/+0x170, sets 'eadp.authentication.useJwtToken'=true, env name -> global+0x3c8, 5 service objects into vector +0x228 (refs +0x240..+0x298), optional +0x110/+0x118 (flags +0x129/+0x12a), +0x210|=1, returns 0. (lane owner review requested) Better name: Game_EadpModule_InitHubAndServices (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.hub_create",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 CE C5 F8 10 05",
+  "match": "0x143fcd400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fcd400",
+  "kind": "func_start",
+  "names": [
+   "Game_Hub_Create"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fcd400",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143fcd400.c",
+   "notes": "V6324 partial: better name Game_EadpSDK_InitHub; 15 KB: server environment, JWT option, Hub::create and service setup"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143fcd400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fcd400.c",
+   "notes": "V7062 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

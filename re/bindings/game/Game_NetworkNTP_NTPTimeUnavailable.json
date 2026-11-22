@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkNTP_NTPTimeUnavailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ee9a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430ee9a0.c;pat:log-channel-NETWORK-NTP/V;xref:0x140765738,0x140b8bac8,0x1430fa281,0x143656819",
+  "notes": "Returns the network time: NTP time from the client at this+0x4e8 when synchronised (else logs 'NTP time unavailable'), compared with the first-party provider and OS server times ('... differs significantly ... (>= 1 day)'); optional out param param_3. Callers 0x1407656e0, 0x140b8ba00, 0x1430f8dc0, 0x143656210, 0x14fb40bb0. (lane owner review requested) Better name: Game_NetworkNtp_GetNetworkTime (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ntp_ntp_time_unavailable",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 4C 89 C7 48 89 D6 4D 85 C0 74 07",
+  "match": "0x1430ee9a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ee9a0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkNTP_NTPTimeUnavailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430ee9a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430ee9a0.c;xref:0x140765738",
+   "notes": "V5382 better name Game_NetworkNTP_GetNtpTime: 248-line NTP time getter comparing against first-party/OS network time with several warnings; unavailable log is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430ee9a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ee9a0.c;xref:0x140765738",
+   "notes": "V6974 248 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

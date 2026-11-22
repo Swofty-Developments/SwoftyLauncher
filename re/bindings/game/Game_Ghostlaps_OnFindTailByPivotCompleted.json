@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ghostlaps_OnFindTailByPivotCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f86210",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f86210.c;pat:log-message-method;xref:0x142f99621",
+  "notes": "GHOSTLAPS onFindTailByPivotCompleted '%s(%d, %s, %s, %d)'. Clears +0xb8. Own row (id vs request +0xd0) -> +0x750; first row rank!=1 -> +0x750 and +0x610, setState FindHead (+0xa0=5), resets the +0x4d0 slot; rank-1 own row -> all three, +0x9f0=1/1, Finish(1). Failure: Finish(4). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ghostlaps_on_find_tail_by_pivot_completed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 4C 89 CF 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 12 01 00 00 48 8D 0D ?? ?? ?? ?? 66 0F 1F 44 00 00 44 8B 0C 81 45 85 C9 0F 84",
+  "match": "0x142f86210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f86210",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghostlaps_OnFindTailByPivotCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f86210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f86210.c;xref:0x142f8614b",
+   "notes": "V5678 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

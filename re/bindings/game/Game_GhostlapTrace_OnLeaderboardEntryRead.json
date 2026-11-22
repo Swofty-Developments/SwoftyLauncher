@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostlapTrace_OnLeaderboardEntryRead",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fa53c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fa53c0.c;pat:log-message-method;xref:0x142f9ae64",
+  "notes": "Logs GHOSTLAP-TRACE onLeaderboardEntryRead success/failure. QPC time -> +0x70. Failed read/no entries -> state +0x1d8=4. Checks active presence vs param_3+8. Matching entry (0x144121bc0) copied to +0x1e8..+0x228; reads VehicleStatId, TeamStatId, VehicleCustomisationStatId, PerformanceState, CarSetup, DriverAssists, Sector1-3, GhostLap (+0x268), Date. Sector sum within +/-10 of lap -> state 1 (id +0x510), else 2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ghostlap_trace_on_leaderboard_entry_read",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 40 02 00 00 4C 89 CB",
+  "match": "0x142fa53c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa53c0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostlapTrace_OnLeaderboardEntryRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fa53c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fa53c0.c;xref:0x142f9ae66",
+   "notes": "V5703 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

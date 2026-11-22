@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressManager_HandleNetMessageVehicleResetToTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325f5a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14325f5a0.c;pat:log-message-cxx;xref:0x14325dc49",
+  "notes": "Read in full (this, msg): logs handleNetMessageVehicleResetToTrack(%d); for vehicle msg+0x10 <= 0x1a with record this+0xf8[id] whose +0x7c & 5 == 1, logs 'Ghosting vehicle %d because NetMessageVehicleResetToTrack', calls Ghost 0x142f1be60(record+0x60 component, reason 0x2f) and stores the current session time (from [0x1460815a8]+0x1a8) into component+0x68c. Registered by lea 0x14325dc49 in 0x14325c810. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_manager_handle_net_message_vehicle_reset_to_track",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 72 B8 5B 01 00 00",
+  "match": "0x14325f5a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325f5a0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressManager_HandleNetMessageVehicleResetToTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325f5a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325f5a0.c;xref:0x143244578",
+   "notes": "V5799 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

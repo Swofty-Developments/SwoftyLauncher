@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_ReleaseResourceDescArrays",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c20a30",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c20a30.c;xref:0x140100d59,0x140100ee9,0x140101089,0x140101219,0x1401013a9,0x1401047b9",
+  "notes": "Destructor of the builder with vtable 0x1458c3610 (set at entry): frees the arrays at idx 0x1a..0x1f, the small-buffer list idx 0x12..0x17, the vector idx 0xd..0x10 and list idx 5..0xa through their allocators (vcall +0x38). Pairs with Render_Gfx_DescBuilder_InitFromDesc on the same stack object. Callers incl 0x140100d59, Render_Gfx_InitResourceDescBuilder 0x140100ee9, Render_Gfx_BuildConfigObject 0x140109cff. (lane owner review requested) Better name: Render_Gfx_DescBuilder_Destruct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx_release_resource_desc_arrays",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 91 F8 00",
+  "match": "0x143c20a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c20a30",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_ReleaseResourceDescArrays"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143c20a30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c20a30.c;xref:0x140100d59",
+   "notes": "V8333 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

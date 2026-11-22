@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_GetLinkedDecalDirection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142c160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142c160.c;xref:0x14142c99d,0x14142cbea,0x14142e3f9,0x141fef0ed,0x141fef9f4,0x141ff0167,0x141ff05ad",
+  "notes": "(sys, out vec4, id*): finds the decal (+0x20 == *id) in sys+0x178..+0x180 and its area record in the sys+0x98 list (stride 0x108, +0xc == decal+0x28); normalises the area axes [[rec+0x80]]+0x10 and [[rec+0x88]]+0x10, builds their normal, projects decal pos +0x30 onto the plane through [[rec+0x58]]+0x10 and returns the two in-plane coordinates (dot with each axis). Zero if not found. (lane owner review requested) Better name: Game_DecalCustomisation_ProjectDecalToArea (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.decal_customisation_get_linked_decal_direction",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 89 D0 4C 8B",
+  "match": "0x14142c160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142c160",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_GetLinkedDecalDirection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14142c160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14142c160.c;xref:0x14142c99d",
+   "notes": "V8456 find id in list +0x178/+0x180, record in +0x98/+0xa0 stride 0x108, vec4 at (*(rec+0x80))+0x10 normalised; caller SyncLinkedDecalNode"
+  }
+ ],
+ "proofs": []
+}

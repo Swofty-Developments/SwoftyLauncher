@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsControlsScreenViewModel_DeviceConnectionStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d9efb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d9efb0.c;str:s_SettingsControlsScreenViewModel_DeviceConnectionStatusChanged;xref:0x141d9ea42,0x14c25e2a7",
+  "notes": "Handler registered by lea at 0x141d9ea42 and 0x14c25e2a7. Logs OPTIONS-UI deviceConnectionStatusChanged (name, connected/disconnected); if an update is in progress (0x14606a9d8) or view node +0x990 / +0x9d0 reports busy, logs \"screen is updating in progress\"; else logs \"updating screen when device status changed\" and vcall +0x138 (refresh). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.settings_controls_screen_view_model_device_connection_status",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 52 B8",
+  "match": "0x141d9efb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d9efb0",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsControlsScreenViewModel_DeviceConnectionStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d9efb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d9efb0.c;xref:0x141d9ea44",
+   "notes": "V5214 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

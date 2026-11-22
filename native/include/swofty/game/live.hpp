@@ -73,6 +73,26 @@ struct DriveThroughObject {
 static_assert(offsetof(DriveThroughObject, records_begin) == 0x68);
 static_assert(offsetof(DriveThroughObject, records_end) == 0x70);
 
+struct DriverSetRef {
+    uint8_t _pad_0x0[0x8];
+    DriverSlots *slots; // L2 experimental
+};
+static_assert(offsetof(DriverSetRef, slots) == 0x8);
+
+struct DriverSlot {
+    uint8_t _pad_0x0[0x8];
+    DriverRecord *record; // L2 experimental
+};
+static_assert(offsetof(DriverSlot, record) == 0x8);
+
+struct DriverSlots {
+    uint8_t _pad_0x0[0x8];
+    DriverSlot *begin; // L2 experimental
+    DriverSlot *end; // L2 experimental
+};
+static_assert(offsetof(DriverSlots, begin) == 0x8);
+static_assert(offsetof(DriverSlots, end) == 0x10);
+
 struct TeamSetRef {
     uint8_t _pad_0x0[0x8];
     TeamSlots *slots; // L2 experimental
@@ -80,9 +100,12 @@ struct TeamSetRef {
 static_assert(offsetof(TeamSetRef, slots) == 0x8);
 
 struct EntrantsSystem {
-    uint8_t _pad_0x0[0x2c0];
+    uint8_t _pad_0x0[0x260];
+    DriverSetRef driver_sets[3]; // L2 experimental
+    uint8_t _pad_0x290[0x30];
     TeamSetRef team_sets[3]; // L2 experimental
 };
+static_assert(offsetof(EntrantsSystem, driver_sets) == 0x260);
 static_assert(offsetof(EntrantsSystem, team_sets) == 0x2c0);
 
 struct GameManagerLive {
@@ -225,9 +248,12 @@ struct PitLaneTrack {
 static_assert(offsetof(PitLaneTrack, vehicle_slots) == 0x938);
 
 struct PitLaneVehicle {
-    uint8_t _pad_0x0[0x103];
+    uint8_t _pad_0x0[0xe0];
+    int32_t garage_index; // L2 experimental
+    uint8_t _pad_0xe4[0x1f];
     uint8_t in_lane; // L2 experimental
 };
+static_assert(offsetof(PitLaneVehicle, garage_index) == 0xe0);
 static_assert(offsetof(PitLaneVehicle, in_lane) == 0x103);
 
 struct RacingOwner {
@@ -286,10 +312,13 @@ static_assert(offsetof(SafetyCarLogicSystem, deployment) == 0x108);
 struct SessionEntrantView {
     uint8_t _pad_0x0[0x58];
     uint32_t team_stat_id; // L2 experimental
-    uint8_t _pad_0x5c[0x26];
+    uint8_t _pad_0x5c[0xc];
+    uint32_t badge_stat_id; // L2 experimental
+    uint8_t _pad_0x6c[0x16];
     uint8_t vehicle_id; // L2 experimental
 };
 static_assert(offsetof(SessionEntrantView, team_stat_id) == 0x58);
+static_assert(offsetof(SessionEntrantView, badge_stat_id) == 0x68);
 static_assert(offsetof(SessionEntrantView, vehicle_id) == 0x82);
 
 struct SessionSystem {
@@ -371,11 +400,19 @@ static_assert(offsetof(TyreSystem, vehicles_begin) == 0x110);
 static_assert(offsetof(TyreSystem, vehicles_end) == 0x118);
 
 struct VehicleHelperSystem {
-    uint8_t _pad_0x0[0x568];
+    uint8_t _pad_0x0[0x60];
+    char *player_name; // L2 experimental
+    uint8_t _pad_0x68[0x20];
+    VehicleHelperParticipant **participants_begin; // L2 experimental
+    VehicleHelperParticipant **participants_end; // L2 experimental
+    uint8_t _pad_0x98[0x4d0];
     DriveThroughObject *drive_through; // L2 experimental
     uint8_t _pad_0x570[0x8];
     StopGoObject *stop_go; // L2 experimental
 };
+static_assert(offsetof(VehicleHelperSystem, player_name) == 0x60);
+static_assert(offsetof(VehicleHelperSystem, participants_begin) == 0x88);
+static_assert(offsetof(VehicleHelperSystem, participants_end) == 0x90);
 static_assert(offsetof(VehicleHelperSystem, drive_through) == 0x568);
 static_assert(offsetof(VehicleHelperSystem, stop_go) == 0x578);
 
@@ -404,7 +441,9 @@ static_assert(offsetof(VehicleProgressEntry, total_a) == 0x98);
 static_assert(offsetof(VehicleProgressEntry, total_b) == 0xa0);
 
 struct VehicleTyreComponent {
-    uint8_t _pad_0x0[0x9bc0];
+    uint8_t _pad_0x0[0x20];
+    CarPhysicsRecord *physics; // L2 experimental
+    uint8_t _pad_0x28[0x9b98];
     void *compound_class; // L2 experimental
     uint8_t _pad_0x9bc8[0x8];
     TyreSlot slots[5]; // L2 experimental
@@ -415,6 +454,7 @@ struct VehicleTyreComponent {
     uint8_t *set_begin; // L2 experimental
     uint8_t *set_end; // L2 experimental
 };
+static_assert(offsetof(VehicleTyreComponent, physics) == 0x20);
 static_assert(offsetof(VehicleTyreComponent, compound_class) == 0x9bc0);
 static_assert(offsetof(VehicleTyreComponent, slots) == 0x9bd0);
 static_assert(offsetof(VehicleTyreComponent, slot_count) == 0x9c48);
@@ -448,5 +488,6 @@ inline constexpr data<"k_Live_SessionSystemKey", uint8_t> k_Live_SessionSystemKe
 inline constexpr data<"k_Live_SpectatorDirectorKey", uint8_t> k_Live_SpectatorDirectorKey{}; // L2 experimental
 inline constexpr data<"k_Live_TyreSystemKey", uint8_t> k_Live_TyreSystemKey{}; // L2 experimental
 inline constexpr data<"k_Live_VehicleHelperSystemKey", uint8_t> k_Live_VehicleHelperSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_VehicleLapTimesSystemKey", uint8_t> k_Live_VehicleLapTimesSystemKey{}; // L2 experimental
 
 }

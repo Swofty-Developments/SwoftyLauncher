@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Config_ProgramMap_FatalStub",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445bcca0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445bcca0.c;xref:0x1445b038b,0x1445bcef4",
+  "notes": "10-byte noreturn stub: call Ne_Crt_InvalidParameterAbort (0x145351784); int3. Callers 0x1445b038b (Render_Config_ProgramMap_InsertIfAbsent, insert result 0) and 0x1445bcef4 (map rehash 0x1445bccb0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.config_program_map_fatal_stub",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 90 48 83 C4 70 5B 5F 5E C3 CC CC CC CC CC CC CC 56 57 53",
+  "match": "0x1445b038b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1445bcca0",
+  "kind": "func_start",
+  "names": [
+   "Render_Config_ProgramMap_FatalStub"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1445bcca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445bcca0.c;xref:0x1445b038b",
+   "notes": "V8306 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

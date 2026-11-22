@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressManager_OnMessagePlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325fce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14325fce0.c;pat:log-message-cxx;xref:0x14325df24,0x1432e2775",
+  "notes": "Read in full: only when this+0x1f1; logs '%s: isLocal: %d, vehicleId: %d'; resolves two services (keys 0x146106b08, 0x1460fb708) from [[this+0x28]+0x40]+0x30; for vehicle msg+0x10 != 0xff owned by this machine logs 'creating human controller for vehicle %d', bumps svc1+0x48 if 0x1438971e0 succeeds, may set the ghost record svc2+0x298+0xa0[id] and calls thunk 0x1519eb350(svc1, id, 1, 0). Registered by lea 0x14325df24 (in 0x14325c810) and 0x1432e2775 (in 0x1432e2740). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_manager_on_message_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 80 B9 F1 01 00 00 00",
+  "match": "0x14325fce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325fce0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressManager_OnMessagePlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325fce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325fce0.c;xref:0x14325df27",
+   "notes": "V5805 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

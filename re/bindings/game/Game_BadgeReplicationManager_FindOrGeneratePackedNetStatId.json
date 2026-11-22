@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_BadgeReplicationManager_FindOrGeneratePackedNetStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143129d90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143129d90.c;pat:log-message-cxx;xref:0x140fe0ff6,0x140feec9e,0x1431be41d,0x1431be7dc",
+  "notes": "findOrGeneratePackedNetStatId(desc, badge): host only; finds the player in list mgr+0x58; existing id -> reconcile (0x143128410) when the badge differs; else allocates in the badge store (0x142471c60), packed id = (byte+0x160 << 14) | u16+0x162, adds player (0x143128d60) and sends msg 0x7d. Packed id: top 2 bits category (names 0x145612e60), low 14 bits index. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.badge_replication_manager_find_or_generate_packed_net_stat_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 02 00 00",
+  "match": "0x143129d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143129d90",
+  "kind": "func_start",
+  "names": [
+   "Game_BadgeReplicationManager_FindOrGeneratePackedNetStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143129d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143129d90.c;xref:0x140fe0ff6",
+   "notes": "V5867 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

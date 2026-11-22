@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDPieOverview",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f46eb0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f46eb0.c;kb:subsystems/rnd_ui.md#pie-object;xref:0x14575e398",
+  "notes": "Vtable slot +0x98 of class B (cell 0x14575e398). Allocs 0x900, Career_Construct_RnDPieObject, Career_MoveAssign_RnDPieObject into this+0x668 (4 Career_Destroy_RnDPieSlot calls on the moved-from temp). Then Career_Populate_RnDPieSlices, Career_Query_EnabledUpgrades, Career_Write_RnDPieTileCounts; registers callbacks 0x141f4a2e0 and 0x141f4a760; fires init_pie_sector/rnd_overview_activated. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.build_rn_d_pie_overview",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 0E 00 00 48",
+  "match": "0x141f46eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f46eb0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDPieOverview"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f46eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f46eb0.c",
+   "notes": "V5235 Verified: alloc 0x900 call, construct @0x141f46f94, move-assign @0x141f46fb8 into this+0x668, no E8 callers, vtable slot 0x98 of 0x14575e300 (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141f46eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f46eb0.c;xref:0x141f46f94;xref:0x141f46fb8;xref:0x141f4785c",
+   "notes": "V9200 vtable 0x14575e300 slot 0x13 is this function; allocs 0x900 at 0x141f46f75, constructs at 0x141f46f94, move-assigns into this+0x668 at 0x141f46fb8, then calls populate and tile-count writer."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownForm_FormatLevelName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419857a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *out, void *a, void *b, void *c)",
+  "evidence": "decomp:re/decomp/1419857a0.c;xref:0x141984ef0,0x14198715e,0x141987ce0,0x14232542a,0x142359b03,0x14235a05c,0x1423cefa0",
+  "notes": "param_4 null -> ''. Else param_3 vt+0x28 fills a float vector; string [param_3[1]+0x40] (weak ref param_3[2]) -> param_1, localised by param_4 vt+0x18. 8 arg slots (memset 0x380): float i -> key '%u'=i, value rounded int (type 4); 0x1401b9000 substitutes into param_1. Old note's 0x100 snprintf buffers wrong. Caller funcs 0x141983f10,0x1419867f0,0x141987910,0x1423252b0,0x142359360,0x1423cd630. (lane owner review requested) Better name: Career_FormatLocStringWithFloatArgs (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.renown_form_format_level_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 04 00 00 C5 F8 29 BC 24 40 04 00 00 C5 F8 29 B4 24 30 04 00 00 48 89 CE 4D 85 C9 74 69",
+  "match": "0x1419857a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419857a0",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownForm_FormatLevelName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419857a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1419857a0.c;xref:0x141984ef0",
+   "notes": "V9870 snprintf-based text formatter into a 0x100 buffer, but no level-name strings or renown data visible in this body; purpose as renown level name unprovable here"
+  }
+ ],
+ "proofs": []
+}

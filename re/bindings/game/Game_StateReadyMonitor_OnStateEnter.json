@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateReadyMonitor_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436e9680",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436e9680.c;str:s_StateReadyMonitor_OnStateEnter;xref:0x150fe949b,0x14585cf90",
+  "notes": "onStateEnter (vt cell 0x14585cf90; also call 0x150fe949b): first entry resets UI, 0x1436eb4b0/0x1436ec5f0; skips on pending interrupt; waits for clients to reach PreRace or super-clear (NETWORK-READY logs); then 0x143224ba0 and FUN_1436e9ca0 when +0xcb0 clear. Old xrefs were inside the body. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.state_ready_monitor_on_state_enter",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 B9 0C 0F 00 00",
+  "match": "0x1436e9680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436e9680",
+  "kind": "func_start",
+  "names": [
+   "Game_StateReadyMonitor_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436e9680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436e9680.c",
+   "notes": "V6141 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

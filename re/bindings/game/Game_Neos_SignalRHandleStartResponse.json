@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_Neos_SignalRHandleStartResponse",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144444340",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144444340.c;xref:0x1444410a8,0x144443caf",
+  "notes": "jmp 0x1444410a8, call 0x144443caf. Parses the JSON reply: negotiate path stores ConnectionToken / ConnectionId / Url (+0x22c = 1); mode +0x10738 == 1 compares 'Response'; mode 2 expects '{}' ('Unexpected SignalR handshake'); classic init via 0x144446600 and S check 0x144445db0; success sets +0x228 = 6 and notifies listeners +0x10720..+0x10728 with +0x106f0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.neos_signal_r_handle_start_response",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 01 00 00 48 85 D2 0F 84",
+  "match": "0x144444340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144444340",
+  "kind": "func_start",
+  "names": [
+   "Game_Neos_SignalRHandleStartResponse"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Osqghost_SetIsInCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403cec50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403cec50.c;pat:log-message-method;xref:0x14561e7f0",
+  "notes": "Vtable slot (cell 0x14561e7f0). When this+0x40 bit6 clear and +0x590 set: once (+0x5f0) logs 'setIsInCutscene %p true' and sets car +0x9f0a and the 4 wheel objects (+0x580 -> +0x70..+0x88) +0x164 = 1; then builds the world matrix of node +0x228 bone index +0x594, stores it at +0x5a0..+0x5d0, places car +0x588 via 0x144632740 and writes the matrix to +0x580 object +0x1070..+0x10a8. Old name was the log text only. (lane owner review requested) Better name: Game_OsqGhost_UpdateCutscenePose (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.osqghost_set_is_in_cutscene",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC C8 01 00 00 C5 78 29 BC 24 B0 01 00 00",
+  "match": "0x1403cec50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403cec50",
+  "kind": "func_start",
+  "names": [
+   "Game_Osqghost_SetIsInCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403cec50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403cec50.c;xref:0x3bfd52",
+   "notes": "V4656 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

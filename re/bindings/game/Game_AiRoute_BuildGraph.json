@@ -1,0 +1,72 @@
+{
+ "schema": 1,
+ "name": "Game_AiRoute_BuildGraph",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14067d510",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_AiRoute_BuildGraph(void *ai_manager)",
+  "evidence": "decomp:re/decomp/14067d510.c;xref:0x1405fed98;kb:subsystems/tracks.md#ai-and-track-markup-size-limits",
+  "notes": "Returns 0 at once unless ai_manager+0x10 == 2. Iterates the route vector ai_manager+0x60..+0x68 (count from data; main+pit = 2 is from AISplineData, not fixed in code). Per route: 9 lane objects at route+0x38..+0x78 (loop to 0x24/4); lane 4 (route+0x58) is used for marker classification against track config [[[[mgr+8]+0x68]+0x1a8]+0x30]+0x480/+0x488/+0x490; per lane a 512-bucket index lane+0x8c = 511/last_node+0xb0 and u16 lane+0x90[512] = first node per bucket (node distance range +0xb4..+0xb0). Creates channel-6 marker objects (0x30 bytes, vtable 0x145639630, type 6) at node+0xf8 and appends them to list ai_manager+0x140..+0x148. Finally sizes each lane with 0x140677910, allocates one buffer route+0x80 (memset 0x55) and compiles the 9 lanes into it with 0x140677ae0 (which walks the node channels +0xc8..+0xf8, 7 channels, 256-entry stack arrays). Also 0x14067af60 per route with mgr+0xf8 and 0x14066a980 with mgr+0x58. Caller Game_TrackSpline_ResolveRouteEnds (0x1405fed98). (corrected 2026-11-14: 0x140677ae0 is called once per LANE, 9 times per route, not once per channel.) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) Also generates 0x30-byte type-0 markers (vtable 0x145638c70, +0x20 = 0, +0x18 = gate, +0x28 = side byte) at gate+0xc8 (0x14067ebf2/0x14067ed76/0x14067eed1): on every corner start or corner end gate and where the side byte flips; and computes per node +0xb8/+0xbc = intersection parameters of the two averaged horizontal node normals (signed turn radius, FLT_MAX when parallel; 0x14067e075/0x14067e07e), read by Ai_Get_SegmentTurnRadius. AI line marker channels (engine-re 2026-11-16, static): Game_AiRoute_CompileMarkerChannel copies gate+0xc8+c*8 (c=0..6) into lane+0x490+c*8; channel = marker type (+0x20): 0 = generated side marker (BuildGraph, gate+0xc8), 1 = brake_line (gate+0xd0, 0xc8-byte element), 2 = corner_end_line (gate+0xd8), 3 = corner_start_line (gate+0xe0), 4 = writer not found (gate+0xe8), 5 = retire_line (gate+0xf0), 6 = generated class marker (gate+0xf8). So lane+0x490 = type-0 markers, +0x498 = brake lines, +0x4a0 = corner ends, +0x4a8 = corner starts, +0x4b8 = retire lines. edited by engine-re with --force 2026-11-16 at user request (lane owner review requested) Channel 4 (gate+0xe8): no writer found (2026-11-16 search: every [reg+0xe8] store in 0x140600000-0x1406b0000, all [reg+idx*8+0xc8] stores in .xtls/.data1, +0x20 = 4 element types); BuildGraph only tests it (0x14067d7e1, 0x14067d845), so type 4 looks unused by this build loaders. edited by engine-re with --force 2026-11-16 at user request (lane owner review requested) engine-re round B 2026-11-17 (static): the 9 lanes per route are the 9 gate waypoint types: lane k uses the waypoint world point gate+0xa8[k] (vec4 array read with index lane*4 floats, decomp re/decomp/14067d510.c line 388), so lane 0/1 racing limits, 2/3 track limits, 4 racing_line, 5/6 white lines, 7/8 run-offs (k_Game_AiGate_WaypointNames). | 2026-11-20 engine-re round L2 AI / track-markup size limits (static): node index width: the 512-bucket lane index stores u16 node numbers ((short) store in the fill loop, decomp line ~893; read movzx at line ~976), nodes = links of the route, so one route may have up to 65535 links before the start index wraps (a wrapped start only makes the forward scan longer; the scan loop has no end bound). Width-class markers (channel 6): per link the class 0..4 is taken from |gate lengths[5]| and |lengths[6]| (white lines, gate+0x88 floats +0x14/+0x18) of the to_gate against track-config thresholds [[...]+0x480/+0x488/+0x490]+8; a marker (0x30 bytes, vt 0x145639630, type 6) is created at every class change except into class 4. So their number grows with white-line width noise, i.e. with dense gates on uneven widths (Nordschleife r63x: 265 -> crash in 0x140677ae0). edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ai_route_build_graph",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 7E 28 03 75 36 48 8B 7E 78 48",
+  "match": "0x1405fed98",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14067d510",
+  "kind": "func_start",
+  "names": [
+   "Game_AiRoute_BuildGraph"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14067d510",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14067d510.c;xref:0x1405fed98",
+   "notes": "V7321 call sites of 0x140677ae0, 9 lanes, 512-bucket 0x1ff and list +0x140 confirmed; route count 2 not derivable here (route vector +0x60..+0x68 variable) and AISplineData-only unverified"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14067d510",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14067d510-0x14068024e;xref:0x1405fed98",
+   "notes": "V10620 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x1405fed98 in 0x1405fed10. 1 arg. cmp byte [mgr+0x10],2 / jne exit (0x14067d57d), route vector +0x60/+0x68, 0x1ff bucket index into lane+0x8c, 0x30-byte marker objects type 6 vtable 0x145639630 appended to mgr+0x140/+0x148, lane sizing 0x140677910."
+  },
+  {
+   "date": "2026-11-20",
+   "verifier": "ailim-verify",
+   "kind": "func",
+   "item": "0x14067d510",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "pat:disasm-0x14067e1dc;pat:disasm-0x14067e340;pat:disasm-0x14067e552;pat:disasm-0x14067e560;pat:disasm-0x14067f220;pat:disasm-0x14067f629;xref:0x14067f633,0x14067f7b1",
+   "notes": "V12203 table at obj+0x90..+0x490 (512 u16, scale 511/len at +0x8c, index clamped 0x1ff), node index stored as word; read movzx word at 0x14067e552/e6bf/e808; scan inc edx loop 0x14067e560..e589 with no end bound. Objects are 9 per route (puVar17[7..15]). Class 0..4 from abs(+0x14),abs(+0x18) of [to_gate+0x88] vs [[+0x480]]+8,[[+0x488]]+8,[[+0x490]]+8; markers 0x30 B vtable 0x145639630 type 6 at gate+0xf8, class 4 skipped."
+  }
+ ],
+ "proofs": []
+}

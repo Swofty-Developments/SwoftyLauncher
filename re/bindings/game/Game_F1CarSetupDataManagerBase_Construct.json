@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1CarSetupDataManagerBase_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b77890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b77890.c;pat:log-message-method;xref:0x140d04b93,0x1429090f1",
+  "notes": "Constructor: vtables 0x14568d750/0x14568d7d0 at +0/+8, serialization code 0x25e86493 at +0x10, allocator param_2 at +0x30/+0x38, InitializeCriticalSection, binding vector reserved to 0x1b, creates shared 0x50-byte map at 0x14605a400 once; logs NETWORK/F '%s: serialization code: %08X' with 'F1CarSetupDataManagerBase'. Callers in 0x140d04960 and 0x142908eb0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_car_setup_data_manager_base_construct",
+  "section": ".xtls",
+  "pattern": "56 57 53 B8 80 20 00 00 E8 ?? ?? ?? ?? 48 29 C4",
+  "match": "0x140b77890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b77890",
+  "kind": "func_start",
+  "names": [
+   "Game_F1CarSetupDataManagerBase_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140b77890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b77890.c",
+   "notes": "V4430 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_ReportStoryActivityDelete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143868e80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143868e80.c;str:s_ActivitiesUIDeeplinkManager_ReportStoryActivityDelete;xref:0x143863c44",
+  "notes": "Own pretty string reportStoryActivityDelete. PlayGo/trial gate; finds the story component (RTTI); other story slots left -> storymode_act_1..3 stay available, else logs 'all unavailable' and marks them unavailable (0x14386a5e0). When available submits a resume request (vt 0x14588ac10) for storymode_act_1 / act_1_chapter_0 via 0x144134d70. Caller OnSaveSlotDeleted. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_report_story_activity_delete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 80 79 63 00 74",
+  "match": "0x143868e80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143868e80",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_ReportStoryActivityDelete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143868e80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143868e80.c;xref:0x143863c44",
+   "notes": "V6350 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

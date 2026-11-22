@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_RenderGraph_CreateResourceDescC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdcfb0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdcfb0.c;xref:0x140101a31,0x140140637,0x14014084a,0x14029c8ef",
+  "notes": "Appends a 0x160-byte record of kind 3 with the 0x50-byte payload param_3 (stored at the record tail) to the vector param_1+0x48 (grow via Render_RenderGraph_PassVector_InsertRealloc) and returns its index. Used by 0x143bc6b10, 0x143bc74c0 and 0x143bdd2a0. Not a sibling of 0x143bdada0. (lane owner review requested) Better name: Render_RenderGraph_AddViewRecordKind3 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.render_graph_create_buffer_desc",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 06 B9 FF FF FF FF C7 46 08 FF FF FF FF 48 39 C8 0F 84",
+  "match": "0x140101a31",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143bdcfb0",
+  "kind": "func_start",
+  "names": [
+   "Render_RenderGraph_CreateResourceDescC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143bdcfb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bdcfb0.c;xref:0x140101a31",
+   "notes": "V8143 Better name Render_RenderGraph_CreateResourceDescC: same 0x160-byte record emplace (vector ctx+0x50, helper 143ecda30) as sibling 143bdccd0/143bdada0; buffer-specific purpose not shown"
+  }
+ ],
+ "proofs": []
+}

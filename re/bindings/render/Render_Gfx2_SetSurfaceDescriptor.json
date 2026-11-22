@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_SetSurfaceDescriptor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bed850",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bed850.c;xref:0x14014b81d,0x14014c944,0x142fab1ee,0x142fab447,0x142fab645,0x1437a4488",
+  "notes": "Copies a 21-qword resource desc into the holder (+0x28..+0xcf), replaces the desc name with the holder name (+0x20, FNV-1a + Ne_StringPool_InternByHash) and, when +0x198 is null, creates the GPU resource with Render_Gfx2Device_CreateResource(0x14618caa8, holder+0x28) into +8 (+0x1d0=1); failure pushes error 0xe. Callers incl 0x14014b81d, Ne_Gfx2Renderer_Initialise 0x143b68e11, 0x143bef06a. (lane owner review requested) Better name: Render_Gfx2_ResourceHolder_CreateFromDesc (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_set_surface_descriptor",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CF 48 8B 02 48",
+  "match": "0x143bed850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bed850",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_SetSurfaceDescriptor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bed850",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bed850.c;xref:0x14014b81d",
+   "notes": "V7830 Render_Gfx2_SetSurfaceDescriptor: copy is larger than claimed, goes past param_2[10]/+0x80 on to +0xc0 and beyond (param_2 up to 0x14+)"
+  }
+ ],
+ "proofs": []
+}

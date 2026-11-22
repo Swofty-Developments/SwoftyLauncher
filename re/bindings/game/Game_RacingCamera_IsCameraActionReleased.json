@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingCamera_IsCameraActionReleased",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144541150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144541150.c;xref:0x144540642,0x1445407e5,0x1445409c5",
+  "notes": "Twin of 0x1445412a0 with slot entry +4 == 0 and action desc 0x146cc1cf0+player*0x148 (else 0x146cc1de0+player*0x148), via Ne_InputMapper_IsActionReleased 0x1441165b0. Callers 0x144540642, 0x1445407e5, 0x1445409c5 (all in 0x144540050). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.racing_camera_is_camera_action_released",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 44 89 C6 0F B6 C2 48 8B 51 60 48 8B 49 68 48 29 D1 48 C1 F9 02 49 B8 CD CC CC CC CC CC CC CC 4C 0F AF C1 B3 01 49 39 C0 76 0C 48 8D 04 80 83 7C 82 04",
+  "match": "0x144541150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144541150",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingCamera_IsCameraActionReleased"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144541150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144541150.c;xref:0x144540642",
+   "notes": "V7684 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

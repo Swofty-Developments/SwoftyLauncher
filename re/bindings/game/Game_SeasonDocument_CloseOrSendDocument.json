@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonDocument_CloseOrSendDocument",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143095780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143095780.c;xref:0x143094e36",
+  "notes": "Only when role doc+8 < 2. Doc not open (+0x765 == 0): 0x143067d40(doc,0); if now open: logs NETWORK closeDocument(), +0x769 = 0, +0x766 = 1, Game_Network_MOXSeasonParametersBroadcasted(doc), +0x765 = 0, posts message {0x145823840,7,0x12} via 0x14402e500 on [[doc+0x420]+0x3d0]. Doc open: 0x1430a4b60(doc,param_3) (send document). Returns 1. Referenced by lea at 0x143094e36. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.season_document_close_document_and_notify",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 83 79 08 01 0F 8F ?? ?? ?? ?? 48 89 CE 80 B9 65 07 00 00 00 74 10 48",
+  "match": "0x143095780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143095780",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonDocument_CloseOrSendDocument"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

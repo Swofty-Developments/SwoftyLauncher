@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AssetGroup_BuildDataPathById",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a5aee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a5aee0.c;xref:0x140212bc8,0x140229330,0x140229400,0x140229550,0x140229ac3,0x140229c1b,0x140229fc5,0x14022a1cf,0x14022a625,0x14288db80,0x142899d46,0x142899f1c,0x1438c6ebe,0x143a5b8c9,0x143a5c480,0x143a5c6d5,0x143a5dd2d,0x143a5dd42,0x143a5e81e,0x143a5e98c,0x143a5ea68,0x143a5f504,0x143a5f5b3,0x143a5f5c8,0x143a64454,0x143a658a3,0x143a68048,0x143a688b7,0x143a68a00,0x143a692b5,0x143a694b5,0x143a6982d,0x143a69b05,0x143a6ab60,0x143a6ab82,0x143a6abe9,0x144429802,0x1444299cf,0x144429c4f,0x144429e1f,0x148bd4525,0x14d23341c,0x14d26cb07,0x14d26cbfd,0x1503c7ae9,0x1503cba79,0x1503cbabc,0x152126b6d,0x152155d5e,0x152155d84,0x15216fb45,0x15216fc9a,0x1521756e5,0x152175872",
+  "notes": "Builds an SSO string (cap 0x104) for an asset-group id: found in path map [0x14628f690]+0x208 -> prefix /data/ or /data_win/ (entry+8 sign bit), then path tokens from u16 table +0x1d8 (low 14 bits = segment string in +0x1c0, top 2 bits = separator from \"/._\", 3 ends). Not found: name from 0x143a5b5e0 printed with %s, else \"x%016I64x\". (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.asset_group_build_data_path_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D3 48 89 CE 48 8D",
+  "match": "0x143a5aee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a5aee0",
+  "kind": "func_start",
+  "names": [
+   "Game_AssetGroup_BuildDataPathById"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a5aee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a5aee0.c;xref:0x140212bc8",
+   "notes": "V7831 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

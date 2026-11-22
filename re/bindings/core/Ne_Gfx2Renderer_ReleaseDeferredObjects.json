@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2Renderer_ReleaseDeferredObjects",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3f5e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3f5e0.c;xref:0x143b78110,0x143d3b58d,0x143d3e5f9",
+  "notes": "Hypothesis: walks vectors at +0x250/+0x270 and releases each object via 0x143c243b0 (device vcall +0x260); called in RenderFrame. Named callers: Ne_Gfx2Renderer_RenderFrame."
+ },
+ "signature": {
+  "id": "core.gfx2_renderer_release_deferred_objects",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 48 C7 81 A8 01",
+  "match": "0x143d3f5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3f5e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2Renderer_ReleaseDeferredObjects"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d3f5e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3f5e0.c;xref:0x143b78110",
+   "notes": "V7916 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

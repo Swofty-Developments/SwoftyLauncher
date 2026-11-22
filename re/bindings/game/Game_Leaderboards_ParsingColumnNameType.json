@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Leaderboards_ParsingColumnNameType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144028680",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144028680.c;pat:log-channel-LEADERBOARDS;xref:0x144028448",
+  "notes": "Steam call-result handler (fn ptr stored at 0x144028448 in 0x144027dd0). For each entry i < count (result+0x10) and < rows: SteamUserStats vcall +0xf0 (64 details) -> row ids (0x14411fa90), rank +8, score +0x10, then per definition column (stride 0x58, type +0x50: 1 = 32-bit, 2 = 64-bit) row vcall +0x20(name, value) ('Parsing: Column...'). Total via vcall +0xc8 -> +0xc8, count -> +0xc4, state +0x128 = 6. Old name was a log fragment. (lane owner review requested) Better name: Game_SteamLeaderboards_OnScoresDownloaded (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.leaderboards_parsing_column_name_type",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 48 89 CE 48 8B 81 10 01 00 00",
+  "match": "0x144028680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144028680",
+  "kind": "func_start",
+  "names": [
+   "Game_Leaderboards_ParsingColumnNameType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144028680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144028680.c;xref:0x14402844a",
+   "notes": "V6390 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_PitCrewTrainingConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14102b110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14102b110.c;pat:log-channel--;xref:0x1456b85c0",
+  "notes": "Vtable slot +0x80 (table 0x1456b8540). GDB pit_crew_training.mistakes rows (stat_id,type,min/max_time_loss,VO/animation/event names) -> 0x480 objs +0x2e0; .probabilities (training level, stop time, mistake chance, Bad/Good/Perfect offsets/accuracy) -> hash map +0x338; .settings per 4 career modes -> +0x390; config floats +0x3d0..+0x434; mini_game AR sounds/VO +0x470/+0x638. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_pit_crew_training_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 0B 00 00 C5 78 29 BC 24 C0 0B 00 00",
+  "match": "0x14102b110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14102b110",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_PitCrewTrainingConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "sp-verify",
+   "kind": "func",
+   "item": "Game_Read_PitCrewTrainingConfig",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14102b110.c;xref:0x14102c6b1",
+   "notes": "V1711 claim 9"
+  }
+ ],
+ "proofs": []
+}

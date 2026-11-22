@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HudTyrePerformance_SetRowFraction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14152c470",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14152c470.c;xref:0x14152c02c,0x14152c03c,0x14152c04c,0x14152c05c",
+  "notes": "(rowProps, f): int prop (+8) = (int)(f*100) via 0x140972de0 and float prop (+0x28) = clamp(f,0,1) via 0x140b3c6d0, each only when loaded and of the matching type. Called from 0x14152be50. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hud_tyre_performance_set_row_fraction",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 C5 F8 28 F1 48 89 CE C5 F2 59 05",
+  "match": "0x14152c470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14152c470",
+  "kind": "func_start",
+  "names": [
+   "Game_HudTyrePerformance_SetRowFraction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14152c470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14152c470.c;xref:0x14152c02c",
+   "notes": "V8457 int(value*100) into property at +8, clamped 0..1 into +0x28; 4 calls from PopulateRow"
+  }
+ ],
+ "proofs": []
+}

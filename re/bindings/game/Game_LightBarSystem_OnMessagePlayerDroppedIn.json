@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_LightBarSystem_OnMessagePlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140990640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140990640.c;pat:log-message-cxx;xref:0x1409909d9,0x140993bcf",
+  "notes": "Bus handler (fn ptr lea 0x1409909d9 and 0x140993bcf). Logs NETWORK 'LightBarSystem::onMessagePlayerDroppedIn()'; local car index 0x1400fa590([+0x38], 0) -> byte +0x5c; if valid, vehicle record [[+0x30]+0x28][idx] -> component 0x143f9b3c0(rec+0x10, type 0x146096968) -> +0x28 (else 0). Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.light_bar_system_on_message_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 60 B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 43 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 00 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 4E 38",
+  "match": "0x140990640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140990640",
+  "kind": "func_start",
+  "names": [
+   "Game_LightBarSystem_OnMessagePlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140990640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140990640.c",
+   "notes": "V4343 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

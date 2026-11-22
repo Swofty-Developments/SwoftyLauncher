@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_HandleERPEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a65600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a65600.c;pat:log-message-method;xref:0x143a65356",
+  "notes": "(loader, timeout): waits (0x14391e3b0) on event +0x150 and, in state 1, file +0x338+0x20. Read done: logs 'handleERPEvent - read completed \"%s\"', file status OK -> time +0x390, state = 0x143a65bd0, else HandleError(code); state 3/4 -> 0x143a68490. Loader event: time +0x3b0, state 2 -> 0x143a65bd0/0x143a68380. Prunes finished pending ERPs (0x143a6bd20). Returns 0 on timeout. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_handle_erp_event",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 56 57 53 48 81 EC 28 01 00 00",
+  "match": "0x143a65600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a65600",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_HandleERPEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a65600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a65600.c;xref:0x143a65356",
+   "notes": "V6425 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

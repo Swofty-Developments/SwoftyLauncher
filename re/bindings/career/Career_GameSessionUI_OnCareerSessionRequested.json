@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_GameSessionUI_OnCareerSessionRequested",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ad4e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430ad4e0.c;pat:log-message-cxx;xref:0x1430ab755,0x1430dfa8d",
+  "notes": "__FUNCTION__ GameSessionUI::onCareerSessionRequested(NEuint). Ignores duplicate request when already joining (log), else hides network_create_custom_cancel_hopper, calls joinCareerSession 0x14306f4d0 (completion delegate 0x1430b2710) and shows network_career_searching. Refs: lea in 0x1430aa810 and 0x1430dda70 (delegate binding). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.game_session_ui_on_career_session_requested",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 41 89 D1",
+  "match": "0x1430ad4e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ad4e0",
+  "kind": "func_start",
+  "names": [
+   "Career_GameSessionUI_OnCareerSessionRequested"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430ad4e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ad4e0.c;xref:0x1430ab757",
+   "notes": "V5336 name/log strings and body consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1430ad4e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ad4e0.c;str:\"void network::GameSessionUI::onCareerSessionRequested(NEuint)\"",
+   "notes": "V9222 onCareerSessionRequested cxx string and the duplicate-request message are present."
+  }
+ ],
+ "proofs": []
+}

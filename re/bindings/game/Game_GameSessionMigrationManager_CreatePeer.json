@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMigrationManager_CreatePeer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143089ea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143089ea0.c;pat:log-message-cxx;xref:0x143089c59,0x143089c74,0x14308a6a2,0x14308ac91",
+  "notes": "Own pretty-function string 0x14580f162 'migration::Peer *...GameSessionMigrationManager::createPeer(NeNetConnectionID)'. Looks connection id p2 up in the robin-hood map p1+0x20 (hash x [p1+0x30], slots [p1+0x38] {id, Peer*}, metadata [p1+0x40]); existing -> returns that peer. Else allocates a 0x30-byte Peer via [[p1+0x18]+0x10] (owner, two {id,state} halves at +8/+0x18 with id p2), inserts it (grow/rehash 0x143202010, 'ne_hash_map.h' alloc, fatal 0x1403139f0 on failure), logs NETWORK-MIGRATION 'peer(%s) created.' and returns it. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_migration_manager_create_peer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 89 D3 48 89 CE 4C 8D 69 20",
+  "match": "0x143089ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143089ea0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMigrationManager_CreatePeer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143089ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143089ea0.c;xref:0x143089c5a",
+   "notes": "V5646 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

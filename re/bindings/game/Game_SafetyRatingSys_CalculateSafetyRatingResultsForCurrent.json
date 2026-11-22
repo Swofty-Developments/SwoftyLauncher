@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SafetyRatingSys_CalculateSafetyRatingResultsForCurrent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c66d90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c66d90.c;str:s_SafetyRatingSystem_CalculateSafetyRatingResultsForCurrentSession;xref:0x142c6d5a6,0x142c6eafb,0x142c6f70d,0x142c6fc54,0x14e59c5ea",
+  "notes": "Own pretty-function 0x1457d2939 is %s of its SAFETY_RATING log 0x1457d29a4. sret p2 SafetyRatingSessionResults (vptr 0x1457a67d0). Walks penalty records [this+0x4c0]+0x48..+0x50 (stride 0x30) for vehicle this+0x64, skips excluded/AI-control windows (grace this+0x360), deducts rec+0x2c from +8/+0xc; per-lap clean laps vs threshold this+0x364 -> +0x10, streak bonus table this+0x348..; writes +0x18/+0x1c. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.safety_rating_sys_calculate_safety_rating_results_for_current",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 78 29 94 24 00 01 00 00 C5 78 29 8C 24 F0 00 00 00 C5 78 29 84 24 E0 00 00 00 C5 F8 29 BC 24 D0 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 D7 48 8D 05",
+  "match": "0x142c66d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c66d90",
+  "kind": "func_start",
+  "names": [
+   "Game_SafetyRatingSys_CalculateSafetyRatingResultsForCurrent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c66d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c66d90.c;xref:0x142c6d5a6",
+   "notes": "V5051 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

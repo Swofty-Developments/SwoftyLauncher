@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineManager_OnlineCareerDeserialiseCareerSave",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fdc5d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fdc5d0.c;pat:log-channel-CAREER_ONLINE_MANAGER;xref:0x140fdc31b,0x1410072c7",
+  "notes": "Deserialises career param_2 (+8 id) found in map +0x330 (else errno 0x22): copies the property bag (0x14329b6c0), empty data -> 0x58; base64 decode 0x140fe61c0 (failure logged); reads online_version, saveId, SoC_version, SoC (0x143931730 typed lookups, 0x57/0x58 errors) and network_replicated_items; finishes via 0x140fecbb0/0x140fe7ab0, or 0x140fe7250 on error. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_online_manager_online_career_deserialise_career_save",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4D 89 C6",
+  "match": "0x140fdc5d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fdc5d0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineManager_OnlineCareerDeserialiseCareerSave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fdc5d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fdc5d0.c;xref:0x140fdc31b,0x1410072c7",
+   "notes": "V4833 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_PoolAllocator_GrowChunk80",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447757d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447757d0.c;xref:0x144712cba",
+  "notes": "Pool allocator refill for 0x50-byte nodes: walks chunk list for the next size (doubling 4..0x2000 nodes), allocates a chunk (alloc vcall +0x10, tag 0x145612f08, n*0x50+8), links it and threads the free list; ne_hash_map.h overflow -> Ne_Crt_InvalidParameterNoReturn. Caller Render_Skidmarks_Init (skidmark hash-map node pool)."
+ },
+ "signature": {
+  "id": "core.pool_allocator_grow_chunk80",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 08 49 89 0F 4A 89 04 E7 89",
+  "match": "0x144712cba",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1447757d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PoolAllocator_GrowChunk80"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1447757d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447757d0.c;xref:0x144712cba",
+   "notes": "V8184 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

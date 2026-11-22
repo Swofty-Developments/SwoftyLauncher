@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SinglePlayerPointsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14275af20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14275af20.c;pat:log-channel--;xref:0x14579e8c8",
+  "notes": "Vtable cell 0x14579e8c8 (slot 3 of table at 0x14579e8b0, right after string F1WTechLevelComponent). Reads 8 GDB ints single_player_points.{tech_level,difficulty}.{above,below}.range_{upper,lower} into +0xe4..+0x100, then 7 hashed tunables from global table 0x146cc4278: values to +0x218/+0x26c/+0x268/+0x274, objects to +0x108/+0x190, int arrays to +0x228 and +0x248. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_single_player_points_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 D7 48 89 CE 48 8D 15",
+  "match": "0x14275af20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14275af20",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SinglePlayerPointsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x14275af20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14275af20.c",
+   "notes": "V5107 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

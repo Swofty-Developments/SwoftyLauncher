@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_RequestedPublishSessionAs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143075440",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143075440.c;pat:log-channel-NETWORK-OS-SESSION;xref:0x1430e3f93,0x1430fd5cf",
+  "notes": "Logs '[PUBLISH] Requested to publish session %s as %s' (HOST/CLIENT), serialises the session data (addresses '%u.%u.%u.%u'), logs 'encoding session succeeded' or 'failed to encode session' and publishes it. Callers 0x1430e0560, 0x1430fd3c0. (lane owner review requested) Better name: Game_NetworkOSSession_PublishSession (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_os_session_requested_publish_session_as",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 C5 F8 29 B4 24 C0 02 00 00 4C 89 C7 48 89 D3",
+  "match": "0x143075440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143075440",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_RequestedPublishSessionAs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143075440",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143075440.c;xref:0x1430e3f94",
+   "notes": "V5581 664 lines: publish session to OS service (encode session, CLIENT/HOST, ip fmt); request log is only start. Better: Game_NetworkOSSession_PublishSession"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143075440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143075440.c;xref:0x1430e3f93",
+   "notes": "V6953 664 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

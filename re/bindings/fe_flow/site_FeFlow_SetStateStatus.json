@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_FeFlow_SetStateStatus",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144423193",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "fe_flow",
+  "evidence": "decomp:re/decomp/144423180.c;xref:0x144423193;doc:addons/career-editor/protocol/bridge.md#state-detection",
+  "notes": "trace-only: after the prologue of FeFlow_Set_StateStatus, rcx = flow state, edx = new status (0 None 1 Entering 2 Updating 3 Exiting); the state's +0xb8 still holds the old status. career-editor reads +0xb0 (djb2 name hash), +0xb8, +0x20/+0x28 (name, copied only when its djb2 matches +0xb0); writes nothing"
+ },
+ "signature": {
+  "id": "fe_flow.set_state_status_site",
+  "section": ".xtls",
+  "pattern": "48 81 EC D8 00 00 00 41 89 D4 48 89 CE",
+  "match": "0x14442318c",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144423193",
+  "kind": "mid",
+  "expect": "41 89 D4 48 89 CE",
+  "names": [
+   "site_FeFlow_SetStateStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-bridge",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "global",
+   "item": "site_FeFlow_SetStateStatus",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144423180.c;xref:0x144423193",
+   "notes": "V0296 Independent: at 0x144423193 (after 8 pushes + sub rsp,0xd8) rcx=state, edx=status untouched; +0xb8 is written only at the end (mov [state+0xb8],status, then +0xc08=0), so it holds the old status; +0xb0 is compared with djb2(5381,*33+c) of the +0x28 chars; status names table 0x145a96880 None/Entering/Updating/Exiting. Window mov r12d,edx + mov rsi,rcx (6 bytes, no riprel); no rel8/rel32 (.xtls/.data1) or table target in 0x144423194..0x144423197."
+  }
+ ],
+ "proofs": []
+}

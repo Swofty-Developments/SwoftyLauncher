@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverMarket_CheckBudgetFor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dcbde0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_DriverMarket_CheckBudgetFor(void *market, uint32_t *driver_key, char *out_ok)",
+  "evidence": "decomp:re/decomp/140dcbde0.c;xref:0x140d7ef7b,0x140d986fa,0x140dcd74a,0x140dd1b9b",
+  "notes": "If driver *param_2 is in the add-on driver set [mkt+0x4d8]+0xe8 (key at entry+0xca): returns true when the player's entrant (Sess_Match_EntrantIdentity) is on team param_3; otherwise counts AI-seated entrants (+0x5a != 0x3fff) whose driver is an add-on and returns false once count >= cap mkt+0x710. Non-add-on drivers return true. (lane owner review requested) Better name: Career_DriverMarket_CheckAddonDriverCap (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.driver_market_check_budget_for",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 8B 81 D8 04 00 00",
+  "match": "0x140dcbde0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dcbde0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverMarket_CheckBudgetFor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140dcbde0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140dcbde0.c",
+   "notes": "V9556 param_3 is read as a team key (compared with +0x58/+0x5a), not an out_ok pointer; roster lookup at (market+0x4d8)+0xe8 and global state checks match, returns bool."
+  }
+ ],
+ "proofs": []
+}

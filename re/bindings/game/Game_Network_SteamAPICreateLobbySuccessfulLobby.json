@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SteamAPICreateLobbySuccessfulLobby",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144097360",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144097360.c;pat:log-channel-NETWORK;xref:0x14409733a",
+  "notes": "Steam lobby-created call result: on failure (result != 1 or io failure) records an error entry in the error ring 0x146107900 (source hash Ne_Hash_Djb2Xor of the file path); on success logs \"Create Lobby Successful -> Lobby ID\" and continues lobby setup (0x14407eab0). (lane owner review requested) Better name: Game_Network_Steam_OnLobbyCreated (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_steam_api_create_lobby_successful_lobby",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 00 00 00 44 89 C3 48 89 D7 48 89 CE 48 8D 0D ?? ?? ?? ?? 31 D2 E8 ?? ?? ?? ?? 8B 0F 89 44 24 30 C7 44 24 34 B8 01 02 00",
+  "match": "0x144097360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144097360",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SteamAPICreateLobbySuccessfulLobby"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144097360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144097360.c;xref:0x14409733c",
+   "notes": "V6527 size=839; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

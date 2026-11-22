@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_UDPPreferencesOnMutableRoleChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143239290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143239290.c;pat:log-channel-NETWORK;xref:0x14582ab48",
+  "notes": "Slot 1 (+0x8) of vtable 0x14582ab40; only that cell. Same shape as Game_EsrPreferences_OnMutableRoleChanged: old role 0 -> rebuilds the 8-byte vector +0x30..+0x40 and logs 'setting my connectionId %d Preference to %d and showPlayerName to %d' (+0x20); newRole == 2 -> logs and sends the preference (NETWORK/F 'UDPPreferences::sendPreference', 0x14402e500). (lane owner review requested) Better name: Game_UdpPreferences_OnMutableRoleChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_udp_preferences_on_mutable_role_changed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 83 79 08 00",
+  "match": "0x143239290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143239290",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_UDPPreferencesOnMutableRoleChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143239290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143239290.c",
+   "notes": "V6028 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

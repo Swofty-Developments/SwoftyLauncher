@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ghostlaps_OnDownloadGhostlapCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f89530",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f89530.c;pat:log-message-method;xref:0x142f9c4d3",
+  "notes": "GHOSTLAPS onDownloadGhostlapCompleted(this,_,req,res) '%s(%s, %s, %d)'. Clears +0x378, restarts timer +0x58. res+4==0: optional filter cb +0xa8; copies 0xd4-byte entry +0x388 -> +0x890, 0x142ff88f0(+0x968,+0x460), +0x9c0=+0x4b8, Finish(2). Other non-2 status: Finish(4). Status 2 or no data: setState PickRival (+0xa0=8). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ghostlaps_on_download_ghostlap_completed",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 4C 89 CF 48 89 CE",
+  "match": "0x142f89530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f89530",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghostlaps_OnDownloadGhostlapCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f89530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f89530.c;xref:0x142f9c4d5",
+   "notes": "V5686 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

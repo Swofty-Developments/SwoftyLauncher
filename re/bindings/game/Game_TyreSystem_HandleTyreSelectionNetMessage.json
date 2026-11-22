@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreSystem_HandleTyreSelectionNetMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e900e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e900e0.c;pat:log-message-cxx;xref:0x14f401b95",
+  "notes": "TyreSystem::handleTyreSelectionNetMessage(this, msg, connId) (handler lea 0x14f401b95): logs; skipped unless this+0xa0 (in session). Vehicle e = m_tyreList[msg+0x18] (+0x110..+0x118): e+0x9c70 = msg+0x1c (also +0x9c78 when != -1), clears e+0x9c88 set vector, per record (count msg+0x3c30, stride 0x78 from msg+0x30) appends via 0x142e9fe40 and fills it from the allocation e+0x9c68 (0x6c-byte set) or the message; then 0x142e96a20(e) and 0x142ea2a90(e, 1, bit1 of [[e+0x28]+0x80]+0x13c, 0, 0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tyre_system_handle_tyre_selection_net_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 D7 48 89 CE 0F B6 81 A0 00 00 00",
+  "match": "0x142e900e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e900e0",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreSystem_HandleTyreSelectionNetMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e900e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e900e0.c;xref:0x143a100db",
+   "notes": "V5526 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

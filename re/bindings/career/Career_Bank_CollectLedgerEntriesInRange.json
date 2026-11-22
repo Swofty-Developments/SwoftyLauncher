@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_CollectLedgerEntriesInRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c689e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Bank_CollectLedgerEntriesInRange(void *bank, void *out_vec, uint32_t team_key, uint32_t time_from, uint32_t time_to)",
+  "evidence": "decomp:re/decomp/140c689e0.c;xref:0x140c68fee;xref:0x140c9d25b;xref:0x141ef80e9",
+  "notes": "myteam-g2: Finds the team account in bank+0x298..+0x2a0 (0x30 stride, key at +0x28) and, for each sub-account (0x1b0 stride at +0x10..+0x18), collects pointers to ledger entries (0x14 bytes each, timestamp at +0xc) with time in [time_from, time_to] into out_vec. Read-only; feeds the Team HQ finances view. Hook: this is the transaction history list."
+ },
+ "signature": {
+  "id": "career.bank_collect_ledger_entries_in_range",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 44 89 4C 24 2C",
+  "match": "0x140c689e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c689e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_CollectLedgerEntriesInRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x140c689e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c689e0.c;xref:0x140c68fee;xref:0x140c9d25b",
+   "notes": "V9019 Team account found in bank+0x298..+0x2a0 stride 0x30 by key at +0x28, sub-accounts 0x1b0 stride at +0x10..+0x18, ledger entries 0x14 stride (+0x40..+0x48 of sub-account) filtered on u32 at entry+0xc within [from,to], pointers appended to out vector. Read-only."
+  }
+ ],
+ "proofs": []
+}

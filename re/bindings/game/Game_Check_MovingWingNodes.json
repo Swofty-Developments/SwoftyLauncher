@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Check_MovingWingNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446379f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446379f0.c;imm:0x2fa4e2c6;xref:0x145bf79e8",
+  "notes": "Vtable cell 0x145bf79e8. Node ids frontwingmoving_fl/fr (+0x1308/+0x130c), rearwingmoving_top (+0x1300), rearwingmoving_top_2 (+0x1304), logs missing ones; normalised hinge axes from x0_frontwingmoving1/2_fixed_fl/fr dummies at +0x1310 / +0x1320; +0x1330 = both front nodes found and dummies present. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.check_moving_wing_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE E8 ?? ?? ?? ?? 48 8B 4E 38",
+  "match": "0x1446379f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446379f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Check_MovingWingNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1446379f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446379f0.c",
+   "notes": "V6715 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

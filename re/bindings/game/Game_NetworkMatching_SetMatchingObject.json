@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatching_SetMatchingObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307bb20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14307bb20.c;pat:log-message-method;xref:0x143065370,0x14307b11c,0x14307ba4b,0x14316417b",
+  "notes": "Logs '%s: matching matchingContext: %s' with setMatchingObject and the context name (table 0x14565e750). If a different matching object is active it resets it (vtbl+0x158) and session fields; context 0 clears this+0x28.. to defaults, else creates the new object (0x14411ac60). Callers 0x143065250, 0x143076eb0, 0x14307b950, 0x143163710, 0x143163e90. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_matching_set_matching_object",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14307bb20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307bb20",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatching_SetMatchingObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307bb20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307bb20.c;xref:0x143065371",
+   "notes": "V5597 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

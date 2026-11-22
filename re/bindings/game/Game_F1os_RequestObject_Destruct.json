@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_RequestObject_Destruct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1408265b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1408265b0.c;xref:0x140822aa1,0x14082686b,0x1408338f1",
+  "notes": "Dtor body of an F1os request object: vtable 0x14565f730, destroys the 0x40-byte field records in vector +0x280..+0x288 (string obj reset to 0x145612ec0, shared_ptr release), frees storage via allocator +0x278 vcall +0x38, then string members +0x10 and +0x38. Callers include 0x1408225a0, 0x140826860, 0x140b14610 (Game_F1os_Create_GetCalendar). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1os_request_object_destruct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 4C 8B B9 80 02 00",
+  "match": "0x1408265b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1408265b0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_RequestObject_Destruct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1408265b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1408265b0.c;xref:0x140822aa1",
+   "notes": "V8006 Game_F1os_RequestObject_Destruct: matches except field entries stride 0x40 (not 0x38)"
+  }
+ ],
+ "proofs": []
+}

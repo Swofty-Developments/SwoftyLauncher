@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_WorkforceUsageForTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f88ed0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Calc_WorkforceUsageForTeam(void *ctx)",
+  "evidence": "decomp:re/decomp/140f88ed0.c;xref:0x140f829b0,0x140f82bca,0x140f88c23,0x140f8a599",
+  "notes": "Same lookup as 0x140f88c60 with the attribute name at ctx+0x88: returns the clamped value +0x3e0 (float in xmm0), 0 when team or attribute is missing. (lane owner review requested) Better name: Career_Facility_GetTeamAttribute_88 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.calc_workforce_usage_for_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 C5 F8 29 74 24 20 48 8B 41 20",
+  "match": "0x140f88ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f88ed0",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_WorkforceUsageForTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f88ed0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140f88ed0.c;xref:0x140f829b0",
+   "notes": "V9597 Same attribute lookup (key node+0x18, name at node+0x88) returning a clamped float value; the workforce-usage meaning is unproven, it is a generic stat-by-name read."
+  }
+ ],
+ "proofs": []
+}

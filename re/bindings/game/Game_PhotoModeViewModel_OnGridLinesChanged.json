@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeViewModel_OnGridLinesChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d089c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d089c0.c;pat:log-message-cxx;xref:0x141cefe62",
+  "notes": "PhotoModeViewModel handler (this, cmd): acts only when cmd+8 == 10, reads \"value\" from cmd+0x10 (int or float by type check), logs PHOTO-MODE; registered by lea in 0x141cef700. int; writes bool (value == 1) into the two bound UI values at this+0x3b0 and +0x3d0 (0x140973e20). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.photo_mode_view_model_on_grid_lines_changed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 83 7A 08 0A 0F 85 ?? ?? ?? ?? 48 89 CE 4C 8B 42 10 49 83 38 00 74 6E 48 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 31 FF 45 31 C9 E8 ?? ?? ?? ?? 48 8B 18 48 85 DB 74 50 48 3B 1D ?? ?? ?? ?? 74 47 48 8B 03 48 89 D9 FF 50 20 84 C0 74 3A 48 8B 4B 58 48 8B 01 FF 50 08 48 8B 10 48 89 C1 FF 52 10 89 C5 48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 10 39 C5 75 10 48 8B 4B 58 48 8B 01 FF 50 38 8B 38 EB 02 31 FF 83 FF 01",
+  "match": "0x141d089c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d089c0",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeViewModel_OnGridLinesChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d089c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d089c0.c;xref:0x141cefe64",
+   "notes": "V5191 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

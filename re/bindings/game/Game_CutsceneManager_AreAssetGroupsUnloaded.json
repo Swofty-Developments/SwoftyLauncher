@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneManager_AreAssetGroupsUnloaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14022a530",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14022a530.c;pat:log-message-cxx;xref:0x140239710,0x1402521a2,0x140254a10,0x140261650,0x140262150,0x140262310,0x1402627f0,0x140263030,0x140263360,0x140263690,0x1402669c0,0x140268760,0x1402694d0,0x140269820,0x140269bf0,0x14026a050,0x14026a3a0,0x14026a720,0x14026aaa0,0x14026b600",
+  "notes": "Counterpart of 0x14022a110: same refresh and per-group scan of mgr[0x17..0x18]; any entry for the batch with loading (+0x18), loaded (+0x19) or unloading (+0x1a) set, or unloaded (+0x1b) clear, returns 0 with the matching 'CutsceneManager::areAssetGroupsUnloaded %s ... -> FALSE' log; otherwise 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_manager_are_asset_groups_unloaded",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 48 89 D3 48 89 CE 48 8B 09",
+  "match": "0x14022a530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14022a530",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneManager_AreAssetGroupsUnloaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14022a530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14022a530.c",
+   "notes": "V4422 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

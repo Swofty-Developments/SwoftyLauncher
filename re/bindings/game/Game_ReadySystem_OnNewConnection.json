@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReadySystem_OnNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143228220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143228220.c;pat:log-message-cxx;xref:0x145829568",
+  "notes": "Logs NETWORK-READY ReadySystem::onNewConnection; if this+8 < 2 sends via 0x14402e500(+0x30) msg 0x145836320 {pause +0x90, super-ready +0x55, +0x60, +0x68} (logs sendSuperReady) and msg 0x145836340 {+0x80}; then Game_NetworkReady_SendPlayerReady(this-0x28) for each player in [+0x38]+0x58..+0x60 with +0x60>=0 and +0x64 set. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ready_system_on_new_connection",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5C 89 D3",
+  "match": "0x143228220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143228220",
+  "kind": "func_start",
+  "names": [
+   "Game_ReadySystem_OnNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143228220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143228220.c",
+   "notes": "V5979 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

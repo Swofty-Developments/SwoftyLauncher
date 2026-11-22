@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleAssetManager_ChangeResidentAssets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140818e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140818e30.c;pat:log-channel-VEHICLE_ASSET_MANAGER;xref:0x1428af723,0x142d47ce8,0x142d4af61,0x142d4b5e8",
+  "notes": "Read in full (state*, list, u8 assetType, u32 sessionType, cb1, cb2): logs the change and 'car%u:%s' per 0x6780-byte entry; stores callbacks +0x68..+0x80; copies the list into slot assetType (0x140819a80); collects each entry's asset groups (+0x5c58, +0x5fa0, type 0 also +0x60b8/+0x62e8, +0x61d0, +0x6400, +0x6518, +0x6630). Changed set -> state 1 'waitingForLoader' and load via [+0x18] vcall +0x48 with OnLoadStarted 0x140818cf0 / OnLoadFinished 0x140818b90; else calls both callbacks. Callers 0x1428aed30, 0x142d47210, 0x142d4ae20, 0x142d4b4c0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_asset_manager_change_resident_assets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 44 89 CF 48 89 D3",
+  "match": "0x140818e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140818e30",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleAssetManager_ChangeResidentAssets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140818e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140818e30.c",
+   "notes": "V4333 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerSetSubsystem_HandlePlayerSetInfoMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431692f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431692f0.c;pat:log-message-cxx;xref:0x14316905c",
+  "notes": "PLAYERSET handlePlayerSetInfoMessage (lea in 0x143168d20): needs this+0x28>=2; finds entry in this+0x58..+0x60 by user id (0x144121bc0). info+0x66: discard + erase, listeners +0x78 vcall +8. Else create 0x98 entry (0x143167ef0), push; updates isLocal/userIx/isPlaying/isWatching/isLocked/playerIx, entry+0x69 dirty, listeners vcall +0x10 added / +0x18 changed. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.player_set_subsystem_handle_player_set_info_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1431692f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431692f0",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerSetSubsystem_HandlePlayerSetInfoMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431692f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431692f0.c;xref:0x14316905e",
+   "notes": "V5809 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

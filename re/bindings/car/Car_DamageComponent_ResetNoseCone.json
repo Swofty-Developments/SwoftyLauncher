@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_DamageComponent_ResetNoseCone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f146b0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f146b0.c;pat:log-channel-CARBON_DAMAGE;xref:0x142bf047d,0x142bf420c,0x142bf42a6,0x142bf433c,0x142bf43d6,0x142bf446c,0x142bf4506,0x142bf459c,0x142bf4636,0x142bf46cc,0x142bf4766,0x142bf47fc,0x142bf4896,0x142bf492c,0x142bf49c6,0x142bf4a5c,0x142bf4b21,0x142bf4bba,0x1503d6f0c,0x150474cb1",
+  "notes": "VehicleDamageComponent::resetNoseCone (own log strings, CARBON_DAMAGE; vehicle id [+0x30]+0xe8). Filters the impact list this+0xa0 (16-byte entries, count +0x3c, max 0x80): p2 keeps only entries with +0xc >= 0 and +0x8 < +0x98; p3..p6 drop entries in zones by +8 (1.5/-1.7) and +4 (0.4) bands; survivors compacted (0x1453784c0) and the count rewritten. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.damage_component_reset_nose_cone",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 54 56 57 53 48 81 EC 90 00 00 00",
+  "match": "0x142f146b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f146b0",
+  "kind": "func_start",
+  "names": [
+   "Car_DamageComponent_ResetNoseCone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f146b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f146b0.c;xref:0x142bf047d",
+   "notes": "V5585 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

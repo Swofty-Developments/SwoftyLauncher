@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Replay_LoadFullReplay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c4ade0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c4ade0.c;pat:log-message-method;xref:0x142c4656d,0x142c4cf61",
+  "notes": "Callers 0x142c4656d (in 0x142c460e0), 0x142c4cf61 (in 0x142c4cf40). Under CS [this+0xe8]; finds 'main' module, opens path (param_2) with L\"rb\", reads 0xa0-byte header, XOR-decodes it, checks magic 0xe32fcaa8 (warn 'Header magic number %I64u didn't match...'), allocs 2 MB-aligned buffer via [this+0x10], deserialises via 0x142c4a1e0/0x142c4c710, fills param_5/param_6, progress cb param_7; logs REPLAY 'loadFullReplay(path=%S, keepSaveSlot=%d, deserialiseReplay=%d) took %f seconds'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.replay_load_full_replay",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 0A 00 00 C5 F8 29 B4 24 80 0A 00 00 45 89 CE 44 89 C5",
+  "match": "0x142c4ade0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c4ade0",
+  "kind": "func_start",
+  "names": [
+   "Game_Replay_LoadFullReplay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c4ade0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c4ade0.c;xref:0x142c4656d",
+   "notes": "V5049 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

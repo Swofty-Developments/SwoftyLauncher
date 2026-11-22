@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamEntryPoint_ChosenText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14386e590",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/14386e590.c;xref:0x141a2bcbf",
+  "notes": "Switch on setting index param_2 (0..0x14) returns the lng key for the career wizard summary: career title/2P/my team, difficulty/entry point (lng_my_team_entry_point_chosen_easy/med/hard), F2 skip/start, season length (f2/normal medium/short), default/custom settings, invite friend, classic drivers, team/driver icons; reads wizard state +0x100..+0x108, +0x168, +0x180/+0x181, +0x1c8. (lane owner review requested) Better name: Career_Wizard_GetSettingSummaryText (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.my_team_entry_point_chosen_text",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 80 FA 1F",
+  "match": "0x14386e590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14386e590",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamEntryPoint_ChosenText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14386e590",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14386e590.c;xref:0x141a2bcbf",
+   "notes": "V10331 Builds a larger career-setup summary text (title, season length, classic drivers, create a team, entry point easy/med/hard), entry point is only one part."
+  }
+ ],
+ "proofs": []
+}

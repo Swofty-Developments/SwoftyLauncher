@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "name": "Ne_Set_FixedString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141600d80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Set_FixedString(void *dst, const char *src)",
+  "evidence": "decomp:re/decomp/144321670.c;xref:0x14149b57b,0x14149b598;doc:research/ui-native.md#12;decomp:re/decomp/141600d80.c",
+  "notes": "Writes src into an XOR-obfuscated fixed string of 0x108 bytes and returns dst (0x141602c7b), which the callers ignore. src is read before any null test (0x141600d8c), so a null src faults. dst[i] = src[i] ^ ((i+1) % 127) for i up to min(strlen, 0xfe), the NUL included, so the key is 0 at i = 0x7e and 0xfd (0x141601acf) and 1 at 0x7f and 0xfe (0x141601ae8, 0x141602c4e); the bytes after the string are plain 0 and dst[0xff] is 0 (0x141602c56). The qword at +0x100 holds min(strlen, 0xff) (0x141602c74), so a longer src is cut without a log. Used for VM names at vm+0x38/+0x148, among other destinations. Callers: census steam 0x1600d80."
+ },
+ "signature": {
+  "id": "core.set_fixed_string",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 0F B6 02 34",
+  "match": "0x141600d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141600d80",
+  "kind": "func_start",
+  "names": [
+   "Ne_Set_FixedString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_Set_FixedString",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141600d80.c;xref:0x140c72417",
+   "notes": "V1988 buffer 0x100 bytes, max 0xff chars copied, length u64 at +0x100 correct; obfuscation is per-byte XOR with (index+1) (byte0 ^1, byte1 ^2...), not a single key; callers incl 0x140c71e80, 0x14148a320"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_Set_FixedString",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141600d80.c;xref:0x140c72417",
+   "notes": "V3963 buffer 0x100 bytes, max 0xff chars copied, length u64 at +0x100 correct; obfuscation is per-byte XOR with (index+1) (byte0 ^1, byte1 ^2...), not a single key; callers incl 0x140c71e80, 0x14148a320"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x141600d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141600d80.c;xref:0x140c72417,0x1414cb02b",
+   "notes": "V4150 per-byte XOR with (index+1) into a 0x100-byte buffer, length at +0x100; 810 call sites"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Set_FixedString",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x141600d80-0x141602c85,0x14535e010-0x14535e0b8,1.0.145 0x141602370-0x141604275;xref:0x141600d8c,0x141601acf,0x141601ae8,0x141602c1f,0x141602c4e,0x141602c56,0x141602c74,0x141602c7b,0x14149b57b,0x14149b598",
+   "notes": "V100049 Blind: partial. 2 args: rcx dst, rdx const char* src, read before any null test (0x141600d8c). Returns dst (mov rax,rsi 0x141602c7b), not void; no caller uses it. Buffer +0..+0xff: dst[i]=src[i]^((i+1)%127) for i<=min(L,0xfe); the key wraps to 0 at i=0x7e/0xfd (0x141601acf,0x141602c1f) and 1 at 0x7f/0xfe (0x141601ae8,0x141602c4e), so (index+1) holds only below 0x7e. NUL encoded at i=L, plain 0 after, dst[0xff]=0. qword len at +0x100 = min(strlen,0xff) (0x141602c74); over 255 chars truncates silently. +0x38/+0x148 dsts seen (0x14149b570/0x14149b58a). Census row 807/188/.data1:286,.xtls:521/3/3/2/0/0/0 matches own scan. 1.0.145 twin 0x141602370 identical."
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Ne_Set_FixedString",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141600d80-0x141602c85,0x14535e010-0x14535e0b8,0x14149b559-0x14149b5b8,0x146fb7883-0x146fb788d,1.0.145 0x141602370-0x141604275;xref:0x141600d8c,0x141601acf,0x141601ae8,0x141602c35,0x141602c4e,0x141602c56,0x141602c74,0x141602c7b,0x14149b57b,0x14149b598",
+   "notes": "V100050 Blind: agree. Own disasm 0x141600d80-0x141602c85 (one .pdata chunk): dst[i]=src[i]^((i+1)%127) while strlen>=i, i<=0xfe (key 0 at 0x7e/0xfd 0x141601acf/0x141602c1f, 1 at 0x7f/0xfe 0x141601ae8/0x141602c4e), else plain 0; dst[0xff] always 0 (0x141602c56, or word store 0x141602c35 on the short path); qword min(strlen,0xff) at +0x100 (0x141602c74); returns dst (0x141602c7b). src deref at 0x141600d8c before the dead null test 0x141602c3e. 254 CRT strlen calls. 807 E8 in 188 fns + 3 thunks/3 calls/2 fns = stored census row; no caller reads rax. 1.0.145 twin 0x141602370 2305/2305 same."
+  }
+ ],
+ "proofs": []
+}

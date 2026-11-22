@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_MarketplaceOverlayDisplayedProductIdOverlayType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407320b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407320b0.c;pat:log-channel-TELEMETRY;xref:0x1406e4104,0x1406fea12",
+  "notes": "Bus handler(this,msg); subscribed 0x1406e4104 (0x1406d8470), unregistered 0x1406fea12. 0xa0-byte record: printf of msg+0x10 into local string, enum string by msg+0x14; log args productId/overlayType. Tag 'marketplace_overlay_displayed' via 0x14077a240, GUID+seq, 64-entry queue; logs 'Marketplace Overlay Displayed: productId=%s overlayType=%s' (TELEMETRY). (lane owner review requested) Better name: Game_Analytics_MarketplaceOverlayDisplayed (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_marketplace_overlay_displayed_product_id_overlay_type",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 48 89 D3 48 89 CE",
+  "match": "0x1407320b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407320b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_MarketplaceOverlayDisplayedProductIdOverlayType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407320b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407320b0.c",
+   "notes": "V4193 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

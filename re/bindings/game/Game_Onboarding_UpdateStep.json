@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Onboarding_UpdateStep",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143847410",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143847410.c;pat:log-channel-ONBOARDING;xref:0x145885528",
+  "notes": "vt cell 0x145885528. Dispatch on message id param_3+8: 0x14610378c step ready (state 5 -> 2 + 0x14384a5d0; state 0 -> 0x143847cc0); 0x146103790 -> 0x143848690; 0x146103780 skip (post vt 0x14566bc30 or 0x140a2a420); 0x146103784 resets speech-VO delegates; 0x14610377c command-hash switch (0x143848840 init, notify, ready_to_move_mask, tutorial complete). (lane owner review requested) Better name: Game_Onboarding_OnMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.onboarding_update_step",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 41 8B 40 08",
+  "match": "0x143847410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143847410",
+  "kind": "func_start",
+  "names": [
+   "Game_Onboarding_UpdateStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143847410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143847410.c;xref:0x143847373",
+   "notes": "V6307 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

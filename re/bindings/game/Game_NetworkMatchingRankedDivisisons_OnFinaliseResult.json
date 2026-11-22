@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMatchingRankedDivisisons_OnFinaliseResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315d500",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315d500.c;pat:log-message-cxx;xref:0x14581da58",
+  "notes": "cxx=network::NetworkMatchingRankedDivisisons::onFinaliseResult(NEbool) (virtual): logs its pretty name and finalises via 0x142746b60. Only ref: vtable cell 0x14581da58. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_matching_ranked_divisisons_on_finalise_result",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14315d500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315d500",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMatchingRankedDivisisons_OnFinaliseResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14315d500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315d500.c",
+   "notes": "V5763 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

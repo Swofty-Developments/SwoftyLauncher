@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateViewTerminalReplay_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142da5da0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142da5da0.c;pat:log-message-method;xref:0x1457e3e60",
+  "notes": "Vtable cell 0x1457e3e60. Logs SessionStateViewTerminalReplay \"onStateEnter\"; vcall +0x98(1); unless +0xed4: waits on vcall +0x60, finds replay track \"pr\" in 0x146ce5060 and rewinds it, sets replay [+0xd60] start/end times (+0x7c), replay mode 2 under CS, HUD hide reasons 0/1, Game_SessionStateViewReplay_OnStateEnter (0x142d9d480), +0xed0 = 4, posts task 0x1457e66c8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_state_view_terminal_replay_on_state_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 24 01 00 00",
+  "match": "0x142da5da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142da5da0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateViewTerminalReplay_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142da5da0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142da5da0.c",
+   "notes": "V5456 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

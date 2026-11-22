@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionResultsTooltips_RebuildTooltips",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422a9070",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422a9070.c;pat:log-message-method;xref:0x1422a87ea,0x1422a9055,0x1422a9f7d",
+  "notes": "Logs \"rebuildTooltips(), m_resultsInFocus = %s\" (+0x6b8); computes three bools (not in focus; selected-row flag when +0x6b9 and online; a [+0x670]+0x30 check) and pushes them to view nodes +0xa78, +0xab8, +0xa98 (0x140973e20); logs the m_dbShowSelect state of +0xa78. Callers OnTabActivated (0x1422a87ea), OnResultSelectionChanged (0x1422a9055), jmp at 0x1422a9f7d. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_results_tooltips_rebuild_tooltips",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 48 89 CE C6 44 24 27 00",
+  "match": "0x1422a9070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422a9070",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionResultsTooltips_RebuildTooltips"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1422a9070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422a9070.c;xref:0x1422a87ea",
+   "notes": "V5252 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

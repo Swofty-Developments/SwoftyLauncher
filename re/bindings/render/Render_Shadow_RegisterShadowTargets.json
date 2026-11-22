@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Shadow_RegisterShadowTargets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143db9e60",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143db9e60.c;xref:0x14015031f",
+  "notes": "Constructor of the shadow system (rename): stores args, zeroes two 0x250 blocks, hashes shadow resource names into globals 0x145f97xxx (spotShadow%dDsv/Srv, translucentSpotShadow%d*, skyShadowTexDsv_%d, gs_sky_shadow_map_*, eaid://ego_package/g_sky*/g_spotShadow* images) with Ne_StrBuf_Printf + Ne_HashedName_FromString, creates a 0x1c-slot bind layout named NeShadowSystem (Render_Gfx2_BindLayout_Create) at +0x10 and sets its slots. Caller 0x14015031f in Game_Read_RendererGfxConfig. (lane owner review requested) Better name: Render_ShadowSystem_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.shadow_register_shadow_targets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 89 CE 0F",
+  "match": "0x143db9e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143db9e60",
+  "kind": "func_start",
+  "names": [
+   "Render_Shadow_RegisterShadowTargets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143db9e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143db9e60.c;xref:0x14015031f",
+   "notes": "V7931 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DynamicObjective_Pass",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14115dbe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14115dbe0.c;pat:log-channel-DYNAMIC_OBJECTIVES;xref:0x1456c28e0,0x1456c3cb0,0x1456c3e60,0x1456c4040,0x1456c41b0,0x1456c4390,0x1456c4500,0x1456c4670,0x1456c47e0,0x1456c4950,0x1456c4ac0,0x1456c4c30,0x1456c4da0,0x1456c4f10,0x1456c5070,0x1456c51e0,0x1456c5350,0x1456c54c0,0x1456c6fe0,0x1456c7150,0x1456c72c0,0x1456c7430",
+  "notes": "Same as Fail but state=2, bus msg vt 0x1456c5a00 {id +0x40, type, 1, max(0, now - start +0x50)}, vcall +0x98(1), vcall +0x20; requires state +0x18 == 1 and vcall +0xf8 == 0. State != 1 logs \"Attempting to pass an objective that's not active.\" Refs are vtable cells of the objective classes. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.dynamic_objective_pass",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 F9 29 74 24 50 80 79 18 01 0F 85 ?? ?? ?? ?? 48 89 CE 48 8B 01 FF 90 F8 00 00 00 84 C0 0F 85 ?? ?? ?? ?? C6 46 18 02",
+  "match": "0x14115dbe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14115dbe0",
+  "kind": "func_start",
+  "names": [
+   "Game_DynamicObjective_Pass"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14115dbe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14115dbe0.c",
+   "notes": "V4631 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

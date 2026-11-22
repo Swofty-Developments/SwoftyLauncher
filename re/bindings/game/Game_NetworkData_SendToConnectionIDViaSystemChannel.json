@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkData_SendToConnectionIDViaSystemChannel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144073560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144073560.c;pat:log-message-method;xref:0x144063021,0x1440689d8,0x14406e47d",
+  "notes": "NeNetSystemCommon::sendToConnectionIDViaSystemChannel(conn,size,buf): logs '%s(%d, %d)'; if [this+0x110]==0 records error 0xe (TLS error slot + ring at 0x146107830) and returns 0xe; else err = 0x14406f280([this+0x130],conn,size,buf[0],buf[1],1); 0 -> logs 'send to: connection %d packet size: %d, error: %d', returns 0; nonzero -> recorded and returned. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_data_send_to_connection_id_via_system_channel",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 4C 89 CF 44 89 C6 89 D3",
+  "match": "0x144073560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144073560",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkData_SendToConnectionIDViaSystemChannel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144073560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144073560.c;xref:0x144063021",
+   "notes": "V6503 size=997; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

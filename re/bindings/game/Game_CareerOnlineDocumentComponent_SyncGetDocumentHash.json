@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineDocumentComponent_SyncGetDocumentHash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fcdad0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fcdad0.c;str:s_Championship_CareerOnlineDocumentComponent_SyncGetDocumentHash;xref:0x140fcd787",
+  "notes": "DataSynchroniser hash callback (lea at 0x140fcd787): if the hash set +0x2f0 is empty, recalculates via 0x140fd0990(this,keys,0) (logs). Empty key list -> copies the whole hash table (+0x2d8..+0x30c) into result param_2; else per key looks the hash up (missing -> 'key not found' fatal) and inserts {key,hash} (0x1410bcd50/0x1410bd010). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_online_document_component_sync_get_document_hash",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 89 CB 49",
+  "match": "0x140fcdad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fcdad0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineDocumentComponent_SyncGetDocumentHash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fcdad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fcdad0.c;xref:0x140fcd788",
+   "notes": "V4803 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

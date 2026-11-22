@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SendingTeleportMessageSafetyCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143609cf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143609cf0.c;pat:log-channel-NETWORK;xref:0x143609ce6,0x1436133d5,0x143644ad9",
+  "notes": "Applies a safety-car teleport payload: sets the session clock (Sess_SessionClock_SetTime), regroups cars (Sess_SafetyCar_BuildGroupedCarList, lap progress), posts bus messages (Ne_Post_BusMessage); when this+8 < 2 sends the teleport message via 0x14402e500 and logs \"sending teleport message\". (lane owner review requested) Better name: Game_Network_SafetyCar_ApplyTeleport (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_sending_teleport_message_safety_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 78 29 BC 24 70 01 00 00 C5 78 29 B4 24 60 01 00 00 C5 78 29 AC 24 50 01 00 00 C5 79 7F A4 24 40 01 00 00",
+  "match": "0x143609cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143609cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SendingTeleportMessageSafetyCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143609cf0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143609cf0.c;xref:0x143609ce6",
+   "notes": "V6093 2953-byte handler of the safety-car teleport message (called from the receive wrapper 0x143609c50 via tail jmp at 0x143609ce6): computes track offsets per vehicle, posts events, and only at the end sends msg 0xb1 + logs the sending line. Better: Game_Network_ApplySafetyCarTeleportMessage."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143609cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143609cf0.c;xref:0x143609ce6",
+   "notes": "V7077 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

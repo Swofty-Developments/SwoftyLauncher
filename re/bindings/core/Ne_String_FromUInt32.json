@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_String_FromUInt32",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140827dc0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140827dc0.c;xref:0x14082390d,0x1408239f5,0x1408273c1",
+  "notes": "(out std::string, u32 v): writes the decimal digits of v backwards into a stack buffer (v%10|0x30), then builds the string: SSO (cap 0xf) when short, else heap via the default allocator 0x14618b130 (alloc tag 'unknown'), Ne_Crt_Memcpy, NUL; throws string too long 0x14030f950. Returns out. 621 call sites."
+ },
+ "signature": {
+  "id": "core.string_from_u_int32",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 CE 45 31 FF B8",
+  "match": "0x140827dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140827dc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_String_FromUInt32"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140827dc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140827dc0.c;xref:0x140829004",
+   "notes": "V8007 Ne_String_FromUInt32: decimal conversion correct; the string unknown is the allocator tag (0x145612763), not an empty-input fallback"
+  }
+ ],
+ "proofs": []
+}

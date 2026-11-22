@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_BuildPlayHighlightEventA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1404b80f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1404b80f0.c;xref:0x140726de8",
+  "notes": "Constructor of protobuf message 'f1.proto.HighlightPlayedRecord': base ctor 0x144935190(this, type name built on the stack), vtable 0x145629170, zeroes the fields. Called right after the allocation in 0x140726d30. (lane owner review requested) Better name: Game_Analytics_HighlightPlayedRecord_Ctor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_build_play_highlight_event_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 46 10 89 43 60 48 8D 54 24 28 48 89 D9 E8 ?? ?? ?? ?? 48 8B 54 24 28 4C 8D 05 ?? ?? ?? ?? 48 89 F9 E8",
+  "match": "0x140726de8",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1404b80f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_BuildPlayHighlightEventA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1404b80f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1404b80f0.c;xref:0x140726de8",
+   "notes": "V8058 ctor of f1.proto.HighlightPlayedRecord; caller ok"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCareerTeamSelectViewModel_OnSelectedSameTeamFromMsg",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a6add0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a6add0.c;str:s_DriverCareerTeamSelectViewModel_OnSelectedSameTeamFromMessage;xref:0x141a6913b,0x141a6ac3d",
+  "notes": "UI-message result callback (lea'd in 0x141a690b0 at 0x141a6913b and in 0x141a6ac20 at 0x141a6ac3d). Logs pretty-function 0x14572a037 (onSelectedSameTeamFromMessage); if the button id string (*msg+9) equals 'confirm': when vm+0x2c0 == 0 posts bus message 0x145732ed0 via Ne_Post_BusMessage 0x1439876c0 on [0x14618b3b8]+8, else fires route 'open_confirm_selections' on [vm+0x28] (Vm_Fire_Route 0x1442c0e20). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_career_team_select_view_model_on_selected_same_team_from_msg",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 24 01",
+  "match": "0x141a6add0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a6add0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCareerTeamSelectViewModel_OnSelectedSameTeamFromMsg"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141a6add0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a6add0.c;xref:0x141a6913d",
+   "notes": "V4932 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

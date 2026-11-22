@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_SendVehicleCustomisa",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431430e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431430e0.c;pat:log-message-cxx;xref:0x14314155d",
+  "notes": "Read in full (this, dest, key, u16 *id, customisation, flag, int *kind, old key): copies the customisation and drops its decal node refs (no decals); kind 0 posts VehicleCustomisationAddNetMessage 0x145824950 (0x7700000007), 1 InfoUpdate 0x145824990 (0x7600000007), 2 Replace 0x1458249b0 (0x7800000007, carries the old key) via 0x14402e500(this+0x20, *dest) and logs the matching 'Sent ...NetMessage for player'. Caller 0x143141520 (0x14314155d). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_send_vehicle_customisa",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 58 96 00 00",
+  "match": "0x1431430e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431430e0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_SendVehicleCustomisa"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431430e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431430e0.c;xref:0x14314155d",
+   "notes": "V5932 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

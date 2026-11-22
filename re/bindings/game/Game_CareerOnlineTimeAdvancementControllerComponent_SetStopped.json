@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineTimeAdvancementControllerComponent_SetStopped",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143707cc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143707cc0.c;str:s_Championship_CareerOnlineTimeAdvancementControllerComponent_SetStopped;xref:0x14585fa90",
+  "notes": "Flow-state slot 8 (cell 0x14585fa90, vtable 0x14585fa50) with own log 'StateTeamHQUpdate::onStateEnter marking that time advancment stopped': clears comp(0x1460616c8)+0x2aa; inlined setStopped (time-advance comp 0x146060868 state 3 -> 4, posts message 7); resets +0xd28..+0xde8, clears bit 0x10 / sets 0x2000 in 0x14604ed68; 0x1437083c0, 0x143706ae0(1). (lane owner review requested) Better name: Game_StateTeamHQUpdate_OnStateEnter (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.career_online_time_advancement_controller_component_set_stopped",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8B 81 A0 0C 00 00 48 8B 80 88 00 00 00 48 85 C0 74 5C 48 8B B8",
+  "match": "0x143707cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143707cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineTimeAdvancementControllerComponent_SetStopped"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143707cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143707cc0.c",
+   "notes": "V6152 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

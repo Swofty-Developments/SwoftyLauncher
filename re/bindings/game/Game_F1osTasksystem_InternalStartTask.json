@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_InternalStartTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432d9780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432d9780.c;pat:log-message-method;xref:0x1432d951c,0x1432d9995",
+  "notes": "Task system internalStartTask (logged method name): '%s request on a nullptr task', 'calling start on %s', gates 'not_logged_in' / 'EA_not_logged_in' / 'user_signed_out' / 'no_internet_granted', 'raising an error for %s : code (%d)', 'calling end() on %s'; calls 0x1432c0610 and 0x1432dc910. Callers 0x1432d9420 (0x1432d951c) and itself (0x1432d9995). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_internal_start_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 4D 89 C5 48 89 D7",
+  "match": "0x1432d9780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432d9780",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_InternalStartTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432d9780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432d9780.c;xref:0x1432d951d",
+   "notes": "V5966 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

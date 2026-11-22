@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SaveData_ResetContainer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436523b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436523b0.c;pat:log-channel-SaveGame;xref:0x143652574,0x1436581e2,0x14d6ef3b8,0x150b20d63,0x150b20db0",
+  "notes": "Recursive container reset: if !param_4 or (param_1[0x1a]^param_1[0x19])&param_3, vcall +0x20(this,param_5) -> result[0]; on non-zero result stores the name hash of +0x80 (0x1439298f0); logs SaveGame \"Data container %s reset.\" (name +0x80); then walks the child bitset map +0x160/+0x168/+0x170 calling itself on child+0x58, stopping at the first error. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.save_data_reset_container",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 44 89 CB 4D 89 C4",
+  "match": "0x1436523b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436523b0",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveData_ResetContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436523b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436523b0.c;xref:0x143652574",
+   "notes": "V6108 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

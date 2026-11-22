@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_UpdateWear",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b79f0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b79f0.c;xref:0x1446b5a20;kb:subsystems/car.md#tyres",
+  "notes": "arg = CarTyreState+8 (t = TyreType, car, compound = arg[0x17]). Gate: car+0x132 bit 7, global 0x146ce89d8 == 0, car+0x128 != 1. inc = (ai ? arg+0x7c : 1) x arg+0x78 x TyreType.UpgradeWearFactor(+0x630) x min(TemperatureWearFactorMaximum, ((Offset+T1)/(Offset+T2))^2) x spline(compound+0xc18, wetness) x lerp(WearRateMin, WearRateMax, pressure ratio) x work(arg+0x74) / 1e6; wear arg+0x80 += inc, clamped 0..1. This is where radUpgradeTyreWear (UpgradeWearFactor x 0.825) lands. 0x1409d5443 holds an XOR-masked lea of this function (looks like an integrity table): do not hook it; change wear through the data (UpgradeWearFactor, CarTyreState +0x80/+0x84) (per V1299). | #471 verifier car2-verify (2026-10-28, partial on the PR's L1 notes): car2-verify: /1e6, clamp [0,1], stored ctx+0x80 (= wheel+0x88 since ctx = wheel+8)"
+ },
+ "signature": {
+  "id": "car.tyre_update_wear",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 C5 F8 29 74 24 20 48 8B 41 08 80",
+  "match": "0x1446b79f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b79f0",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_UpdateWear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "Car_Tyre_UpdateWear",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b79f0.c;xref:0x1446b5a20",
+   "notes": "V1299 Gate car+0x132 sign bit, byte 0x146ce89d8 == 0, car+0x128 != 1. inc = (ai ? +0x7c : 1) x +0x78 x [t+0x630] x min([t+0x658], ((t+0x654 + +0x6c)/(t+0x654 + +0xc4))^2) x spline(compound+0xc18, +0x84) x lerp(c+0x120, c+0x124, clamp ratio) x +0x74 / 1e6; added only if > 2^-23, +0x80 clamped 0..1 (0x1446b7b35 read, 0x1446b7b4c write). Caller 0x1446b5a20 passes lea rdi,[rsi+8] (0x1446b5906). The lea at 0x1409d5443 is an XOR-masked pointer, not a call."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "car2-verify",
+   "kind": "func",
+   "item": "Car_Tyre_UpdateWear",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1446b7afe,0x1446b7b4c",
+   "notes": "V3919 car2-verify: /1e6, clamp [0,1], stored ctx+0x80 (= wheel+0x88 since ctx = wheel+8)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446b79f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b79f0.c;xref:0x1409d5445",
+   "notes": "V6819 Wear formula with param1=wheel+8, gates and AI factor confirmed."
+  }
+ ],
+ "proofs": []
+}

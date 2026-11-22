@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingFFBEffectDirectInput_Release",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f2450",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f2450.c;pat:log-message-cxx;xref:0x1446f2ff5,0x145bff988",
+  "notes": "Virtual (vt cell 0x145bff988; also call 0x1446f2ff5 from 0x1446f2ec0): under counter 0x146108918 releases effects +0x1e8 and +0x1f0 (vt+0x10, RACING[FFB] 'Releasing effect via Release') and +0x1f8; if device +0x1e0 vt+0x38 true logs LOGITECH 'STOP TRUEFORCE releasing effect' and calls [[this+0xd0]+0x40]+0x80 -> +0x10 vt+0x228(obj,0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.racing_ffb_effect_direct_input_release",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 F0 FF 05 ?? ?? ?? ?? 48 89 CE 4C 8B 81 E8 01 00 00",
+  "match": "0x1446f2450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f2450",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingFFBEffectDirectInput_Release"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f2450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f2450.c;xref:0x1446f2ff5",
+   "notes": "V6842 release strings confirmed; caller ResetForceFeedback."
+  }
+ ],
+ "proofs": []
+}

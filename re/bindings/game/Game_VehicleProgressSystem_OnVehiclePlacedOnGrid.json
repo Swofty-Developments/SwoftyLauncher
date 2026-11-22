@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSystem_OnVehiclePlacedOnGrid",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f0c150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f0c150.c;xref:0x142f086b4,0x142f0916f",
+  "notes": "cxx=VehicleProgressSystem::onVehiclePlacedOnGrid; log channel PROGRESS: 'Partial lap set for vehicle %d from VehicleProgressSystem::onVehiclePlacedOnGrid()' L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x142f086b4, 0x142f0916f); the body itself references 'PROGRESS' / 'vehicle %d placed on grid' / 'Set partial lap for vehicle %d, num %d' / 'Partial lap set for vehicle %d from VehicleProgressSystem::onVehiclePlacedOnGrid()'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_system_on_vehicle_placed_on_grid",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 D7 48 89 CE 44 0F B6 42 10",
+  "match": "0x142f0c150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f0c150",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSystem_OnVehiclePlacedOnGrid"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142f0c150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f0c150.c;xref:0x142f086b6",
+   "notes": "V5579 body, strings and callees match name/description"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142f0c150",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f0c150-0x142f0c68b;xref:0x142f086b4,0x142f0916f",
+   "notes": "V10481 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs lea 0x142f086b4 / 0x142f0916f (handler registration). PROGRESS vehicle %d placed on grid, Partial lap set ... onVehiclePlacedOnGrid, Sending grid-based lap. 2 args."
+  }
+ ],
+ "proofs": []
+}

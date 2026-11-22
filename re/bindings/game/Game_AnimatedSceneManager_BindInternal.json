@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AnimatedSceneManager_BindInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018e420",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14018e420.c;pat:log-message-cxx;xref:0x14018e813,0x1402408fd,0x1402507ad,0x14025495d,0x140255100,0x140256b0d,0x14025c4f3,0x1402610ed,0x140261f2d,0x1402624ad,0x14026298d,0x1402631cd,0x1402634fd,0x14026382d,0x1402654ad,0x14026564d,0x140267cbd,0x140267e1d,0x1402696dd,0x140269aad,0x140269e9d,0x14026a25d,0x14026a5dd,0x14026a95d,0x14026b47d,0x14026b80d,0x14026bb8d,0x14026bedd,0x14026d9ad,0x14026f2e0,0x14026fe7d,0x140270dbd,0x14027158d,0x140271bbd,0x14027240d,0x140272bdd,0x14027320d,0x1402735dd,0x1402743ed,0x1402749fd,0x140275afd,0x1402775ed,0x14027b07d,0x14027c65d,0x14027d9ed,0x14027ea4d,0x14027fc3d,0x14028143d,0x14028197d,0x140282c9d,0x140283ffd,0x14028452d,0x14028588d,0x140286cad,0x1402882bd,0x1402887ed,0x140289b1d,0x14028b17d,0x14028c68d,0x14028d73d,0x14033674d,0x14033920d,0x140339b9d,0x14033a7bd,0x14033b14d,0x14033be5d,0x14033ca7d,0x14033d0ad,0x14033d6ed,0x14033e2dd,0x14033f53d,0x1403405bd,0x140340fed,0x1403413ad,0x140342b7d,0x1403431fd,0x14034350d,0x140345d5d,0x1403464bd,0x140347c5d,0x140348c3d,0x14034990d,0x14034a1dd,0x14034a4ad,0x14034b0dd,0x14034be9d,0x14034cb3d,0x14034d83d,0x14034e54d,0x14034f1dd,0x14034fedd,0x140350bed,0x1403513bd,0x140351d5d,0x14035241d,0x140352b1d,0x14035364d,0x1403541cd,0x140354c4d,0x140355f0d,0x1403568ed,0x14035a84d,0x14035af7d,0x14035bf2d,0x14035c65d,0x14035cd8d,0x14035da5d,0x14035e0ed,0x14035e8dd,0x14035f14d,0x14035f9bd,0x14036053d,0x14036114d,0x14036410d,0x14036422d,0x140364aad,0x140365b8d,0x1403663cd,0x14036659d,0x14036708d,0x1403672fd,0x14036770d,0x14036799d,0x140367dbd,0x14036858d,0x14036868d,0x14036969d,0x14036a1dd,0x14036bc8d,0x14036bd6d,0x14036d97d,0x14036da5d,0x1403713cd,0x14037207d,0x14037333d,0x14037461d,0x14037549d,0x140375c8d,0x14037604d,0x1403764ad,0x14038116d,0x141057903,0x1427ae513,0x1428a716d,0x1428b7360,0x1428b7afd,0x14d286b80,0x14d286bb4,0x14d286be6,0x14d286c13",
+  "notes": "AnimatedSceneManager::bindInternal(mgr, scene, binding): logs scene/binding names (ACTOR_BINDING), then binds every target of binding+0x18..+0x20 via 0x143669690 to the scene and to its track arrays scene+0x68/+0x70/+0x80/+0x88/+0x90 (counts [scene+0xa0]+0xf0..+0x118); children scene+0x78 through 0x14018e290. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.animated_scene_manager_bind_internal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 85 D2 0F 84 ?? ?? ?? ?? 4C 89 C6 4D 85 C0 0F 84 ?? ?? ?? ?? 48 89 D7 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14018e420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018e420",
+  "kind": "func_start",
+  "names": [
+   "Game_AnimatedSceneManager_BindInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14018e420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14018e420.c",
+   "notes": "V4317 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

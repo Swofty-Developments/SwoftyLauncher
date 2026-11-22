@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HandleRefused",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430c7300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430c7300.c;pat:log-message-method;xref:0x1430c547e",
+  "notes": "Registered by the lea at 0x1430c547e in 0x1430c4610. Logs 'handleRefused(%d, %s, %s).' with the Player text, logs 'vote (%s, %s) refused.' and notifies each listener (vt+0x18(listener, this, msg+0x70)). (lane owner review requested) Better name: Game_NetworkVoting_HandleRefused (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_handle_refused",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430c7300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430c7300",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HandleRefused"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430c7300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430c7300.c;xref:0x1430c5480",
+   "notes": "V5357 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

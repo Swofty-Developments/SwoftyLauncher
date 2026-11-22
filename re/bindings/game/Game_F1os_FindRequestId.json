@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_FindRequestId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143294550",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143294550.c;pat:log-channel-F1OS;xref:0x143293f7f,0x1432948b0,0x1432970ec",
+  "notes": "Hash-map lookup of request id param_2 (multiplier +0x38, slots +0x40 stride 0x10, control bytes +0x48, mask +0x58); not found -> 'Failed to find request with id=%d' (F1OS). Callers 0x143293e90, 0x1432948a0, 0x143297080, 0x1432b4440, 0x1432b7710. (lane owner review requested) Better name: Game_F1os_FindRequestById (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.f1os_find_request_id",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 41 89 D0 48 89 C8",
+  "match": "0x143294550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143294550",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_FindRequestId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143294550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143294550.c;xref:0x143293f80",
+   "notes": "V5869 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

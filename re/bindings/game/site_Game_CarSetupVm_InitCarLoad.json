@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_CarSetupVm_InitCarLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c1b92c",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c1b1a0.c;xref:0x140c1b91c,0x140c1b928",
+  "notes": "In the setup screen handler 0x140c1b1a0 (after PopulatePresets, ShowParcFerme, UpdateFuelRange). cmp dword [rax+0x9f40],0x64 on the car of the car setup screen: rax = [[vm+0x268]+0x28], 0 when the setup data has no car. [vm+0x268] is tested just before, [+0x28] is not. The jne after the cmp is the game's own path for a car that is not handling version 100; core jumps there when rax is 0. Crash: ACCESS_VIOLATION reading 0x9f40 at F1_25.exe+0xc1b92c, 5 and 16 s into a session."
+ },
+ "signature": {
+  "id": "game.car_setup_vm_init_car_load",
+  "section": ".xtls",
+  "pattern": "83 B8 40 9F 00 00 64 75 10 48 89 F1 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? C7 44 24 30 04 00 00 00",
+  "match": "0x140c1b92c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c1b92c",
+  "kind": "mid",
+  "expect": "83 B8 40 9F 00 00 64",
+  "names": [
+   "site_Game_CarSetupVm_InitCarLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "setup-vm",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/setup_vm_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

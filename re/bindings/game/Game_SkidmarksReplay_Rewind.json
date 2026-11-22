@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_SkidmarksReplay_Rewind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144725390",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144725390.c;pat:log-channel-SKIDMARKS_REPLAY;xref:0x1447277ef,0x144727802",
+  "notes": "Logs SKIDMARKS_REPLAY 'rewind frame %d' for ctx+0x2c, finds frame in index at ctx+0x46528, memcpy (0x1453784c0) header+sections (0x88 quads/marks, fades, 0x78 marks, 0x14 killers, 2-bit op stream +0x46454) from +0x49528. Under lock: ctx+0x28==0 plays ops forward (replay*Maker/Killer logs), else backward (rewind*). Queues cmds 0x13/99/0x23/0x30; if this+0x48 logs 'flush frame', calls 0x144723850. (lane owner review requested) Better name: Game_SkidmarksReplay_ApplyFrame (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.skidmarks_replay_rewind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 78 29 8C 24 B0 00 00 00 C5 78 29 84 24 A0 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CB",
+  "match": "0x144725390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144725390",
+  "kind": "func_start",
+  "names": [
+   "Game_SkidmarksReplay_Rewind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144725390",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144725390.c;xref:0x1447277ef",
+   "notes": "V6611 not only rewind: contains all 5 rewind and 5 replay handlers (replayQuadMaker/MarkMaker/FadeMaker/MarkKiller, rewindQuadKiller...) plus flush frame and read error logs; better name Game_SkidmarksReplay_StepFrame"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144725390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144725390.c;xref:0x1447277ef",
+   "notes": "V7273 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_GameValue_CountUpgradesForTimeAdvance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ab6770",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Career_GameValue_CountUpgradesForTimeAdvance(void *ctx, void *state_name)",
+  "evidence": "decomp:re/decomp/140ab6770.c;xref:0x140a78a6b,0x140a78a8b,0x140a78aab",
+  "notes": "Generic named int game value: same path as 0x140a83430 (component 0x14605c178 map +0x290 by name param_2, obj type 0x14605d618), evaluates obj vt+0xf0 for the local player's entrant row +0x50; returns out dword if out byte+4 set, else 0. Only callers: the three time-advance wrappers 0x140a78a60/80/a0 (upgrades failed/completed/researched). (lane owner review requested) Better name: Career_GameValue_GetIntForPlayerDriver (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.game_value_count_upgrades_for_time_advance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 48 8B 41 08 48 8B 80 88 00 00 00 31 F6",
+  "match": "0x140ab6770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ab6770",
+  "kind": "func_start",
+  "names": [
+   "Career_GameValue_CountUpgradesForTimeAdvance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140ab6770",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ab6770.c",
+   "notes": "V9486 Generic named stat reader: resolves component via +0x1030, looks the name up in the +0x290 hash (0x18 stride, same as net_weekly_income), then reads the stat value for the player entrant via vcall +0xf0. No upgrade-state counting is visible."
+  }
+ ],
+ "proofs": []
+}

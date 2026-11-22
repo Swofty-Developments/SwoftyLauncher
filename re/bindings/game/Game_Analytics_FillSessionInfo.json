@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_FillSessionInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14077a3d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14077a3d0.c;xref:0x14077a34b,0x14077bd4e",
+  "notes": "Fills analytics context param_2 read by 0x14077b4c0: this+0x202f0 at +0x10, counters this+0x20880..+0x208a0, +0x50 player id, +0x58 country, +0x68 mode string (story, driver_career, my_team_career, f1w_* switch, ranked/unranked/ce_multiplayer, pro_leagues, solo_grand_prix, time_trial, split_screen, online_career_coop/contracts), +0x7a..+0x84, +0xe0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_game_mode_to_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 D6 48 89 CF 48 8D 81 F0 02",
+  "match": "0x14077a3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14077a3d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_FillSessionInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14077a3d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14077a3d0.c;xref:0x14077a34b",
+   "notes": "V8447 fills a large session/event record (timestamps, entitlement + config lookups, game.trial) and picks a mode string among many; not a pure id-to-string mapping; better name Game_Analytics_FillSessionInfo"
+  }
+ ],
+ "proofs": []
+}

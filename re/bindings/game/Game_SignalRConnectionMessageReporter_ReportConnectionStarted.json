@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SignalRConnectionMessageReporter_ReportConnectionStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b9c20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432b9c20.c;pat:log-message-cxx;xref:0x1458341c8",
+  "notes": "Vtable cell 0x1458341c8. Logs SIGNALR \"%s: connection started, adding local method calls\" and NEOS_SIGNALR \"Connection started %s\"(param_2); walks the hash set this+0x30/+0x38 (count +0x40): per entry logs SIGNALR/V \"local method call for %s\" and invokes the stored functor (entry+0x40, vcall +0x10 with the key), then destroys the functor copy. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.signal_r_connection_message_reporter_report_connection_started",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1432b9c20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b9c20",
+  "kind": "func_start",
+  "names": [
+   "Game_SignalRConnectionMessageReporter_ReportConnectionStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432b9c20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432b9c20.c",
+   "notes": "V5896 name and description match body; log string/pretty name present; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

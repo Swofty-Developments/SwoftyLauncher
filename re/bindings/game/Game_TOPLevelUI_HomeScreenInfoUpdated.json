@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TOPLevelUI_HomeScreenInfoUpdated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143884e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143884e30.c;pat:log-channel-TOP_LEVEL_UI;xref:0x143882455,0x143882695",
+  "notes": "Bus handler (lea at 0x143882455,0x143882695). Sets +0x83, stops busy spinner type 6, +0xf0 from info+0x138; collects 0x158-byte news entries from two lists, for each new image URL (+0x78,+0xa0, non-.png check) requests download to eaid://ego_package/news_image_%d (0x14177bf90), then updates connect state via 0x143882d30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.top_level_ui_home_screen_info_updated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 49 89 CE 48 8B 71 30",
+  "match": "0x143884e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143884e30",
+  "kind": "func_start",
+  "names": [
+   "Game_TOPLevelUI_HomeScreenInfoUpdated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143884e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143884e30.c;xref:0x143882456",
+   "notes": "V6360 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

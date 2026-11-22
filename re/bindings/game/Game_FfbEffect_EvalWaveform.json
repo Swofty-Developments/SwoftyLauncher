@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbEffect_EvalWaveform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f0cc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f0cc0.c;xref:0x1446ee84d,0x1446ee8bb,0x1446ee905,0x1446ee94b,0x1446fdb10,0x1446fdb21,0x1446fe7eb,0x1447001eb,0x14470022a,0x15551e5eb",
+  "notes": "(effect, t) -> float: subtracts period +0xa0 until t <= period, evaluates the piecewise-linear curve +0x60..+0x68 ((x,y) float pairs) and multiplies by the envelope curve +0x80..+0x88 when present. Callers include MixAndSend 0x1446edf40. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_effect_eval_waveform",
+  "section": ".xtls",
+  "pattern": "56 C5 FA 10 81 A0 00 00 00 C5 F8 2E C8 76 0B 90",
+  "match": "0x1446f0cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f0cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbEffect_EvalWaveform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446f0cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f0cc0.c;xref:0x1446ee84d",
+   "notes": "V3725 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

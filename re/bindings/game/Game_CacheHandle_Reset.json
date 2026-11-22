@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CacheHandle_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cac290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cac290.c;str:s_Cache_CacheHandle_Reset;xref:0x142b9df2c,0x142b9e0a2,0x142c7d91d,0x142cac15b",
+  "notes": "CacheHandle<PaddockPassDataCacheEntry>::reset: locks the weak ref (+0x10 count); if the entry (+8) is valid and status +0x38 != 3 logs \"still valid, removing the handle\" and removes this handle from entry+0xe8 (0x1406abb90); releases refs and clears +8/+0x10. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cache_handle_reset",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 8C 24 38 02 00 00 48 85 C9 74 20 48 8D",
+  "match": "0x142b9df2c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142cac290",
+  "kind": "func_start",
+  "names": [
+   "Game_CacheHandle_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x142cac290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cac290.c;xref:0x142b9df2c",
+   "notes": "V7347 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

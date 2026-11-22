@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbPad_StopEffect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f3d70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f3d70.c;pat:log-channel-FFB_DEBUG;xref:0x145bffe70",
+  "notes": "Slot 2 of PS pad effect vtable 0x145bffe60 (cell 0x145bffe70; slot 1 = 0x1446f3660 start). If not running (+0x1e0 == 0) logs 'Called stop() on an already stopped PS pad effect' (FFB_DEBUG). Else vcall +0x50, if +0x1e2 sends zero motors/triggers through 0x143aa9cc0 (pad plugin singleton), notifies device audio-motion (0x1446f3f40 -> 0x14451e1b0) and clears +0x1e0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_pad_stop_effect",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 80 B9 E0 01 00 00 00",
+  "match": "0x1446f3d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f3d70",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbPad_StopEffect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f3d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f3d70.c",
+   "notes": "V6845 Stop-already-stopped log confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Avatars_ComparingVsVs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14412e9e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14412e9e0.c;pat:log-channel-AVATARS;xref:0x145a5c118",
+  "notes": "Get avatar image (vtable cell 0x145a5c118): cache lookup (0x144134120 on +0x220); if not cached and not in pending list +0x470 (12-byte {steamId,size}) calls ISteamFriends vt+0x128 (RequestUserInformation); false -> fetch now (0x144134250) and return the cache entry, else add to pending; already pending -> status 0x23. (lane owner review requested) Better name: Game_Avatars_GetOrRequestAvatarImage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.avatars_comparing_vs_vs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 48 89 D6 48 89 CF 44 8B 94 24 C0 01 00 00",
+  "match": "0x14412e9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14412e9e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Avatars_ComparingVsVs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14412e9e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14412e9e0.c",
+   "notes": "V6554 better name Game_Avatars_RequestAvatarImage: avatar lookup/cache/Steam request with 0xc-stride request list, compare log is one line (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14412e9e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14412e9e0.c",
+   "notes": "V7179 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

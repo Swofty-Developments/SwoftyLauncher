@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Info_ResolutionRestrictionRequired",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14401b2a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14401b2a0.c;pat:log-message-cxx;xref:0x14401b25c,0x1443c61f5",
+  "notes": "Full read. Reads desired mode from param_2 tree (graphics_card/resolution width,height,fullscreen; refreshRate rate; outputMonitor index), searches supported list this+0x10 for that monitor and width/height/rate; if rate not found writes '%u' 0 to desired rate. Returns restrictionRequired (only if fullscreen); logs WINDOW 'Info::resolutionRestrictionRequired: desired resolution %dx%d ...'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.info_resolution_restriction_required",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 49 89 CF 48 89 54 24 48",
+  "match": "0x14401b2a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14401b2a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Info_ResolutionRestrictionRequired"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14401b2a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14401b2a0.c;xref:0x14401b25c",
+   "notes": "V6375 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

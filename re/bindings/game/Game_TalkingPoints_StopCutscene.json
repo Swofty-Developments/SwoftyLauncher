@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TalkingPoints_StopCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ac93a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ac93a0.c;pat:log-channel-TalkingPoints;xref:0x140ac9f0f,0x140aca587,0x140acafd9,0x1493ac2f1",
+  "notes": "If cutscene ptr set: logs [CUTSCENE][STOP] and calls Game_CutsceneManager_StopInternal(global+0xc0, shared ptr); then releases the shared_ptr ref (+8). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.talking_points_stop_cutscene",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8B 09 48 85 C9 0F 84",
+  "match": "0x140ac93a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ac93a0",
+  "kind": "func_start",
+  "names": [
+   "Game_TalkingPoints_StopCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ac93a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ac93a0.c",
+   "notes": "V4403 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

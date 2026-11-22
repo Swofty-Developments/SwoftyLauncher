@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbLogitech_StopTrueforce",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f20e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f20e0.c;pat:log-channel-LOGITECH;xref:0x145bff980",
+  "notes": "Slot 2 of effect vtable 0x145bff970 (cell 0x145bff980). Trueforce device (vcall +0x38 true): logs 'STOPPING TRUEFORCE', calls vcall +0x228(0). Else under CS +0x228 Stop (vcall +0x40) constant/spring/friction +0x1e8/+0x1f0/+0x1f8, logs failures; HRESULT 0x8007000c/0x8007001e on any -> device +0x10 vcall +0x38 and sets lost flag +0x220. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_logitech_stop_trueforce",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE C7 81 B0 01 00 00 00 00 00 00 48 8D 4C 24 28",
+  "match": "0x1446f20e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f20e0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbLogitech_StopTrueforce"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f20e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f20e0.c;xref:0x1446f1f21",
+   "notes": "V6841 Stop strings confirmed; caller is StartTrueforce."
+  }
+ ],
+ "proofs": []
+}

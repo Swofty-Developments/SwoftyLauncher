@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesF1WorldConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1421c36c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1421c36c0.c;pat:log-channel--;xref:0x1421c09a9,0x1421c1102",
+  "notes": "Walks entries of *param_2 (+0x48..+0x50, 16-byte stride, backwards); entry type byte 2..6 -> goal, 1 -> members (param_4==0), other -> announce (param_4!=0): resolves overrides.f1_world.fz_room_info_icons.* / fz_activity_list_textures.tab_* via 0x1442b1b60, snprintf id into param_3+8 (counter param_3+0x28), PLAYER_NAME text, builds via 0x1421c4b10 ('fan_zone_rooms_entry_activity'), appends to param_1+0x5d0 (0x1423931a0); returns count. (lane owner review requested) Better name: Game_FanZone_BuildRoomActivityEntries (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_overrides_f1_world_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 C5 F8 29 B4 24 80 02 00 00 48 89 94 24 78 02 00 00",
+  "match": "0x1421c36c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1421c36c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesF1WorldConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1421c36c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1421c36c0.c;xref:0x1421c09a9",
+   "notes": "V5244 Builds a fan-zone room activity entry (goal/announce/members icons and tab textures, PLAYER_NAME substitution, fan_zone_rooms_entry_activity). Better Game_FanZone_BuildRoomActivityEntry"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1421c36c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1421c36c0.c;xref:0x1421c09a9",
+   "notes": "V7284 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionSettingsData_Dtor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e09950",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e09950.c;xref:0x14080a0b4,0x142cd1ea5,0x142d48633,0x142ece1eb,0x1436f903d",
+  "notes": "Sets vtable 0x1457ea868, destroys entries of +0xad8..+0xae0 (stride 0x98, vcall +0 dtor) and frees them via [+0xad0]; then for each 0x6780 entry of +0xab8..+0xac0 destroys nested arrays (+0x5c20 count of 0x4a50 records via 0x14030c740, +0x11c0 count of 0x4c0 records), frees via [+0xab0], clears +0xaa0. Callers Game_SessionSettings_Reset, Sess_Loader_UnloadSession, 0x14080a0b4, 0x142ece1eb, 0x1436f903d. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_settings_data_dtor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 C7 81",
+  "match": "0x142e09950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e09950",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionSettingsData_Dtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142e09950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e09950.c;xref:0x142cd1ea5,0x142d48633,0x1436f903d,0x14080a0b4",
+   "notes": "V3818 sets vtable 0x1457ea868, destroys entries [+0x15b..+0x15c] stride 0x98 (0x13 qwords) and frees via allocator +0x15a; 4 named callers confirmed"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_OfficeFacilityIcon",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142323d10",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/142323d10.c;xref:0x14577edd0",
+  "notes": "Vtable slot (cell 0x14577edd0). Writes default/debug texts into holders: lng_activities_header_owner, 'X Available', facility_icons.office, lng_activities_debug_name/_category/_activity_desc, 'Activity Time', activity_icons.activity_fan, benefit_%d rows with benefits_icons.time and benefit_positive background; 0x142324230. (lane owner review requested) Better name: Career_MyTeamActivities_SetPlaceholderActivityText (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.bind_office_facility_icon",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 89 CE 48 81 C1 20 06 00 00",
+  "match": "0x142323d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142323d10",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_OfficeFacilityIcon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142323d10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142323d10.c;xref:0x14577edd0",
+   "notes": "V10133 Builds an activity detail/benefit view (X Available, benefit_%d, debug name/category, time benefit icon), not only office facility icon."
+  }
+ ],
+ "proofs": []
+}

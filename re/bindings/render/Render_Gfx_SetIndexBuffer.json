@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_SetIndexBuffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a02900",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a02900.c;xref:0x143a012ea,0x143bcb609",
+  "notes": "Builds an index-buffer view {address, size = +0x28 * +0x30, format 0x2a (R32_UINT) for stride 4 else 0x39 (R16_UINT)}, residency insert, compares with cache ctx+0x1418/+0x1420/+0x1424 and calls list vcall +0x110 (null clears). Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143bcb450. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_set_index_buffer",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 48 89 CE 48 85 D2 0F 84 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x143a02900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a02900",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_SetIndexBuffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a02900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a02900.c;xref:0x141900447",
+   "notes": "V8515 index buffer cache +0x1418/+0x1420/+0x1424, null clears via vcall +0x110"
+  }
+ ],
+ "proofs": []
+}

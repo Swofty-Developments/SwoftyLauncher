@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_Multiplayer_vehicleEnteringPitLane",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d1ab0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434d1ab0.c;xref:0x1432542e5",
+  "notes": "logged method name multiplayer_vehicleEnteringPitLane (class from the log channel); log channel PITLANE: 'multiplayer_vehicleEnteringPitLane(%d:%s)' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x1432542e5); the body itself references 'PITLANE' / 'multiplayer_vehicleEnteringPitLane(%d:%s)'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pitlane_multiplayer_vehicle_entering_pit_lane",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 80 FA 1A 77 50",
+  "match": "0x1434d1ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d1ab0",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_Multiplayer_vehicleEnteringPitLane"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434d1ab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d1ab0.c;xref:0x1432542e6",
+   "notes": "V6039 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434d1ab0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434d1ab0-0x1434d1bbf;xref:0x1432542e5",
+   "notes": "V10515 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x1432542e5 (hit 0x1434d19a7 not an instruction). multiplayer_vehicleEnteringPitLane(%d:%s); tail jmp 0x1434cfc30."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleGhostComponent_GhostInViewport",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1e340",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f1e340.c;str:s_VehicleGhostComponent_GhostInViewport;xref:0x142d67a90,0x142d67aac",
+  "notes": "Read in full (sys, u8 vehicle, reason, u32 viewport): component = list sys+0x30[vehicle]; if bit reason is not set in comp+0x520[viewport] nor in comp+0x530, calls 0x142f1bd50, logs '%s: vehicle %d GHOSTED REASON(%s) in viewport %u.' (pretty name game::VehicleGhostComponent::ghostInViewport, GAME_GHOST) and sets the bit in comp+0x520[viewport]. Callers 0x142d672b0 (two calls). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_ghost_component_ghost_in_viewport",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 0F B6 C2 48 8B",
+  "match": "0x142f1e340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1e340",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleGhostComponent_GhostInViewport"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f1e340",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1e340.c;xref:0x142d67a90",
+   "notes": "V5605 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

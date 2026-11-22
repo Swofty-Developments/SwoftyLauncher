@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SpeechVo_RegisterDelegates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a2e9e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140a2e9e0.c;xref:0x142526d9d,0x142526ddc,0x142529270,0x142d59e0b",
+  "notes": "Once under lock this+0x18 (flag +0x10): if [this+8] vcall +0x90 (speech ready), registers 0x140a2eab0 as setSpeechVODurationDelegate (0x140a35510 on [owner+0xa0]+0xc30, slot +0x920) and 0x140a2ec00 as setSpeechVOFinishedDelegate (0x140a35c50, slot +0x960); sets the flag. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.speech_vo_register_delegates",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 8B 49 18 FF 15 ?? ?? ?? ?? 80 7E 10 00 0F 85",
+  "match": "0x140a2e9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a2e9e0",
+  "kind": "func_start",
+  "names": [
+   "Game_SpeechVo_RegisterDelegates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140a2e9e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a2e9e0.c;xref:0x142d59e0b",
+   "notes": "V3837 once-only (lock this+0x18, flag +0x10) registers setSpeechVODurationDelegate/setSpeechVOFinishedDelegate on [owner+0xa0]+0xc30; caller Sess_DoughnutSequence_Enter seen"
+  }
+ ],
+ "proofs": []
+}

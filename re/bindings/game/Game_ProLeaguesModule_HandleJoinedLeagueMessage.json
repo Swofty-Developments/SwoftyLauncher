@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ProLeaguesModule_HandleJoinedLeagueMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14317c6b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14317c6b0.c;pat:log-message-cxx;xref:0x143179864",
+  "notes": "Network message handler (lea 0x143179864 in 0x1431717c0): if no active league (this+0xb0 == 0) replaces the cached league-name string this+0xc0 with msg+0x10 (allocator this+0x98) and logs 'Notified of League name %s'; else logs 'Already in an active League.' (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pro_leagues_module_handle_joined_league_message",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 83 B9 B0 00 00 00 00",
+  "match": "0x14317c6b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14317c6b0",
+  "kind": "func_start",
+  "names": [
+   "Game_ProLeaguesModule_HandleJoinedLeagueMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14317c6b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14317c6b0.c;xref:0x143179866",
+   "notes": "V5840 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

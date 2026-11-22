@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationReplicationManager_OnPlayerSetEntryDiscarded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14318ad60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14318ad60.c;pat:log-message-cxx;xref:0x145821c48",
+  "notes": "Own pretty-function 0x145821e3f; ref = vtable cell 0x145821c48 (secondary base: state read at this-0x10). If entry != 0 and state < 2: logs 'discarded player: %s' (NETWORK), copies the PlayerDescription entry+0x18..+0x58; if its flags (+0x58) bit 28 set: 0x143217f30(this+0x60, &desc) removes it, then posts a message (vt 0x14579ad50) carrying the description via 0x143218150 on bus [0x14618b3b8]+8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_replication_manager_on_player_set_entry_discarded",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 10 01 00 00 48 85 D2 0F 84",
+  "match": "0x14318ad60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14318ad60",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationReplicationManager_OnPlayerSetEntryDiscarded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14318ad60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14318ad60.c",
+   "notes": "V5875 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

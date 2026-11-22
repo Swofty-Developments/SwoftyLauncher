@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkParty_UnreadableGameGameSessionActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140810be0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140810be0.c;pat:log-channel-NETWORK-PARTY;xref:0x148797a41",
+  "notes": "Party handler for Game.GameSessionActivity: size check against the claimed bits ('Unreadable Game.GameSessionActivity message'), then reads the activity with the bit reader 0x143925660 ('Unreadable GameSessionActivity in ...'). Handler stored by lea 0x148797a41 in 0x1487978e0 (.data1). (lane owner review requested) Better name: Game_NetworkParty_HandleGameSessionActivityMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_party_unreadable_game_game_session_activity",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 4C 89 C6 48 89 CB",
+  "match": "0x140810be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140810be0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkParty_UnreadableGameGameSessionActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140810be0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140810be0.c",
+   "notes": "V4327 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

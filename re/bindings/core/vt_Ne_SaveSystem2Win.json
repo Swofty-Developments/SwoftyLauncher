@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Ne_SaveSystem2Win",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145a5c640",
+  "type": "vtable[16]",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/144137890.c;xref:0x144137a40,0x144154c3f;kb:subsystems/core.md#save-sandbox",
+  "notes": "NeSaveSystem2Win (the PC save device) vtable, 16 slots: +0x00 dtor 0x144154c30, +0x08 Ne_SaveSystem2Win_Start, +0x10 Ne_SaveSystem_Terminate, +0x18 Ne_SaveSystem_Enumerate, +0x20 load (thunk to .data1 0x153102120), +0x28 save (thunk to 0x153115d80), +0x30 AutoSave, +0x38 ListLoad, +0x40 ListSave, +0x48 Delete, +0x50 ListDelete, +0x58 Ne_SaveSystem2Win_UploadCorruptSave 0x144141c00, +0x60 0x144143e80, +0x68/+0x70 thunks, +0x78 Game_Trace_WipeCloudSaves. Stored into the device at 0x144137a47 by Ne_SaveSystem_InitDevice."
+ },
+ "signature": {
+  "id": "core.save_system2_win",
+  "section": ".xtls",
+  "pattern": "48 89 47 20 48 8D 05 ?? ?? ?? ?? 48 89 07",
+  "match": "0x144137a3c",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x4",
+   "len": 7
+  },
+  "target": "0x145a5c640",
+  "kind": "data",
+  "names": [
+   "vt_Ne_SaveSystem2Win"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts3",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/save_sandbox.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "global",
+   "item": "0x145a5c640",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144137890.c;xref:0x144137a3c;pat:vtable-dump",
+   "notes": "V1472 Dumped 16 slots: dtor 0x144154c30, Start 0x14413af70, Terminate, Enumerate, +0x20 jmp 0x153102120 (load), +0x28 jmp 0x153115d80 (save), AutoSave, ListLoad, ListSave, Delete, ListDelete, +0x58 0x144141c00, +0x60 0x144143e80, +0x68 jmp 0x153120d00, +0x70 jmp 0x153127d50, +0x78 0x14413a6d0; slot 16 is string data. Stored by InitDevice."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "sig",
+   "item": "core.save_system2_win",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/144137890.c;xref:0x144137a3c",
+   "notes": "V1484 sigcheck: one match at 0x144137a3c (lea of the vtable stored to the device in InitDevice), riprel target 0x145a5c640 = vt_Ne_SaveSystem2Win."
+  }
+ ],
+ "proofs": []
+}

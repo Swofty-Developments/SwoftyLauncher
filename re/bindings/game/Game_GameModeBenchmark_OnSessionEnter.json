@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameModeBenchmark_OnSessionEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407a7880",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407a7880.c;pat:log-message-cxx;xref:0x145645e30",
+  "notes": "Vtable cell 0x145645e30. Logs BENCHMARK 'GameModeBenchmark::onSessionEnter'. Uses subsystem map p1[0x21a] (0x14030ffd0 by type key): starts [p1+0xf98] (0x1438acea0), finds the local player entrant in p1[0x5c..0x5d] (stride 0x88) and sets its driver slot (+0x82) via 0x1519eb350 and weight 1.0, caches type 0x146cc3ac0 at p1[0x21c], clears flags in 0x146ce8a60/0x1460fe000 systems, 0x14017b6c0(.,0) on 0x146044730, disables HUD items 0x16/0x19/0x1a/0x1b/0x1e (0x142f38f80), reads options virtual_rear_view_mirror (+0x1819eb) and benchmark_camera, then own vt+0x1f0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_mode_benchmark_on_session_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1407a7880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407a7880",
+  "kind": "func_start",
+  "names": [
+   "Game_GameModeBenchmark_OnSessionEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407a7880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407a7880.c",
+   "notes": "V4297 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

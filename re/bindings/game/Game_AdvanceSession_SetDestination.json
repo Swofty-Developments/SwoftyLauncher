@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AdvanceSession_SetDestination",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bf6eb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140bf6eb0.c;pat:log-channel-ADVANCE_SESSION;xref:0x142d54ef8,0x1436f810f",
+  "notes": "(this, dest, sessionId). Offline (+0x2b0 == 0): logs ADVANCE_SESSION 'Setting the destination to %s for sessionId: %s', stores +0x310 = dest, +0x314 = sessionId. Online: finds the local session member (0x140fdb170); if its role +0x30 == 1 logs, stores and sends net message 0x93 (dest/sessionId, vt 0x14567e630) via 0x14402e500. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.advance_session_set_destination",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 00 01 00 00 44 89 C7",
+  "match": "0x140bf6eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bf6eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_AdvanceSession_SetDestination"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bf6eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bf6eb0.c",
+   "notes": "V4508 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

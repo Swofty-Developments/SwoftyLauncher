@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteUnCleanLapCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143770ed0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143770ed0.c;pat:log-channel-STATEVENT;xref:0x143786a5a",
+  "notes": "Direct writer (stat, info, lapTime): 12 UnCleanLapsCompleted[.DriverStatId/.GameplayModeId/.SectionId/.TeamStatId/.WeatherId combos] keys value 1.0 and 8 FastestUnCleanLap[...] keys with raw value param_3; ids info +8/+0xc/+0x10/+0x18/+0x28. Caller 0x143785390. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_un_clean_lap_completed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 18 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 00 18 00 00 C5 F8 28 F2",
+  "match": "0x143770ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143770ed0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteUnCleanLapCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143770ed0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143770ed0.c;xref:0x143786a5a",
+   "notes": "V6236 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

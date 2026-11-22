@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_SendTo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144093a40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144093a40.c;pat:log-message-method;xref:0x1440939a1,0x144094c26",
+  "notes": "Logs 'SendTo' (null address check), FindOrCreateChannel without create and, if the channel state allows, AddPacketToBuilder 0x144049e30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_transport_send_to",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 89 CF 44 89 C5",
+  "match": "0x144093a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144093a40",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_SendTo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144093a40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144093a40.c;xref:0x14407f6b7",
+   "notes": "V6522 size=902; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

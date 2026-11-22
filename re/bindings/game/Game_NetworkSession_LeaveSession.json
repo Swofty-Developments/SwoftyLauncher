@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_LeaveSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440833a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440833a0.c;pat:log-message-method;xref:0x144082d0e,0x144083f65,0x145a52f28",
+  "notes": "Logs 'leaveSession' state; optionally vcall [+0x28]+0x70 (leave party), clears +0x320/+0x308 and, by state byte +0x8a8, fails pending create (+0x1a0) / join (+0x2f0) delegates with error 0x1e or sets m_requestLeaveSession +0x7a0. Vtable cell + direct calls. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_session_leave_session",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 C3 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1440833a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440833a0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_LeaveSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440833a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440833a0.c;xref:0x144082d0e",
+   "notes": "V6513 size=586; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

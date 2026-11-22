@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_BuildDecalTypeCarousel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416d2790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1416d2790.c;doc:re/research/sponsors.md#catalogue;xref:0x141feee97",
+  "notes": "in pdata bounds. Resets/creates VM list 'decal_types' (0x1442a1810 at this+0x50) and node ref 'selected_decal_type' (Vm_Set_NodeRef 0x14083c270) under param_2 node; reads 'ui_menu_data.customisation.context'; iterates decal type map, per entry node 'type_%d' with Vm_Set_String 'texture', Vm_Set_Bool 'show_texture'/'locked', Vm_Set_Int 'loyalty_required'; appends 0xC0-byte records to vector this+0x98..0xA8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decal_editor_build_decal_type_carousel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 F8 29 B4 24 B0 01 00 00 4D 89 CC 4C 89 C5",
+  "match": "0x1416d2790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416d2790",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_BuildDecalTypeCarousel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

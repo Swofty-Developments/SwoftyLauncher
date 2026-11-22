@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Handle_ReleaseSlotWithErrorTrace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403118b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403118b0.c;xref:0x140311809,0x142fa9725,0x1439ac381",
+  "notes": "(handle{ptr,u32 id}): no-op when *handle==0. TLS index 0x14618c688 == -1 -> errno 1 + trace ring, *handle=0. Else TlsGetValue: if the per-thread cache maps id (byte table tls+8) to a slot with tls+0x24[slot]==id it clears that entry (-1, +0x128 ptr 0, byte 0x40). Then, if id!=-1, under the critical section of 0x14618c690 (+0x28) clears bit id in bitmap +8 and byte +0x59. call sites. Not a SetEvent wrapper. Better name: Ne_SlotHandle_ReleaseTlsCached (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.sync_release_with_error_trace",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B BE C0 0C 00 00 48 85 FF 74",
+  "match": "0x142fa9725",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1403118b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Handle_ReleaseSlotWithErrorTrace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1403118b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1403118b0.c;xref:0x140311809",
+   "notes": "V8205 Ne_Handle_ReleaseSlotWithErrorTrace - clears slot bitmap under critical section, no SetEvent/Release Win32 call"
+  }
+ ],
+ "proofs": []
+}

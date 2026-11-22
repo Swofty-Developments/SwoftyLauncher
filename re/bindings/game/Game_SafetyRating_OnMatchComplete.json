@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SafetyRating_OnMatchComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c6f690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c6f690.c;pat:log-channel-SAFETY_RATING;xref:0x142c6ec0e,0x14e59b25b",
+  "notes": "(sys, results*, bonus): needs +0x388 and +0x3e8. Snapshot as OnEarlyQuit; CalculateSafetyRatingResultsForCurrent(sys, tmp) copied to results+8..+0x18; rating +0x40 = clamp(+0x40 + clamp(res, +0x100, +0x104) + +0x390, +0xe0, +0xe4); logs 'Lead player's safety rating went from %u to %u'; 0x142c6db00; bonus: +0x48 = clamp(+0x48 + +0x120, +0x114, +0x118); tail-jmp WriteOnlinePlayerData. Callers 0x142c6ec0e, 0x14e59b1d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.safety_rating_on_match_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 80 B9 88 03 00 00 00",
+  "match": "0x142c6f690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c6f690",
+  "kind": "func_start",
+  "names": [
+   "Game_SafetyRating_OnMatchComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c6f690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c6f690.c;xref:0x142c6ec0e",
+   "notes": "V5054 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_GetFrequency",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb8350",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *career, void *cfg)",
+  "evidence": "decomp:re/decomp/140cb8350.c;xref:0x145686ba8",
+  "notes": "Init slot (vtable ptr 0x145686ba8): resolves systems from the param_3 map (0x14606ecd8 -> +0x2e8, 0x146079b50 -> +0x2f0, 0x146079bd0 -> +0x308, 0x1460bed80 -> +0x2f8) and sibling components into +0x310..+0x358, calls 0x140fce2e0, stores the options entry 'department_event_frequency' ([+0x2f0]+0x270) at +0x360; returns 0x16 if one is missing. No frequency computed. (lane owner review requested) Better name: Career_DeptEvent_ResolveDependencies (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.dept_event_get_frequency",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C3 48 89 CF E8",
+  "match": "0x140cb8350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb8350",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_GetFrequency"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cb8350",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140cb8350.c;str:\"department_event_frequency\"",
+   "notes": "V9519 Reads the department_event_frequency config table into +0x2e8/+0x2f0/+0x308 and resolves sub-components at +0x310.. via +0x1030; it does not compute a frequency."
+  }
+ ],
+ "proofs": []
+}

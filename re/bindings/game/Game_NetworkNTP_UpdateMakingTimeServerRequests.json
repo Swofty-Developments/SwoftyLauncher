@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkNTP_UpdateMakingTimeServerRequests",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432928b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432928b0.c;pat:log-channel-NETWORK-NTP;xref:0x1430e06fd",
+  "notes": "NTP Requesting state: logs 'Update: making time server requests.', sends requests (0x143aed830); when done ('request process completed. Terminating socket.') averages the records ('%d time records, averaged current time') or reports too few, then changes state to Synchronised or Offline. Caller 0x1430e0560. (lane owner review requested) Better name: Game_NetworkNtp_UpdateRequesting (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ntp_update_making_time_server_requests",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC E0 00 00 00 48 89 CE",
+  "match": "0x1432928b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432928b0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkNTP_UpdateMakingTimeServerRequests"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432928b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432928b0.c;xref:0x1430e06fe",
+   "notes": "V5857 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

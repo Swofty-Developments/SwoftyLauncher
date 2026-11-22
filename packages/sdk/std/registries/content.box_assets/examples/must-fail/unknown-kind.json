@@ -1,0 +1,9 @@
+{
+  "content.box_assets": {
+    "menus": {
+      "package": "vmknolle.season-1950/f5_1950",
+      "kind": "menus",
+      "textures": "box_assets/menus"
+    }
+  }
+}

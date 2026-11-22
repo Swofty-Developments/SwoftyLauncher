@@ -58,7 +58,11 @@ These rules are for Team Simplified, who publish the addon at [TeamSimplified/si
 
 ## Addon updates
 
-The launcher compares your installed addons with the [Addon Browser](/using/addon-browser) when it opens, then every 30 minutes. When an addon that is on in your active profile has a newer version that works with your launcher, **Play** becomes **Update addons** with the number of updates, and the line next to it lists them. Updates for addons that are off do not change **Play**; they show as an update on the Addons page and in the Addon Browser, and become part of **Update addons** when you turn the addon on.
+The launcher compares your installed addons with the [Addon Browser](/using/addon-browser) when it opens, then every 30 minutes. When an addon that is on in your active profile has a newer version that works with your launcher, **Play** becomes **Update addons** with the number of updates, and the line next to it lists them. Updates for addons that are off do not change **Play**; they show as an update on the Addons page and in the Addon Browser, and become part of **Update addons** when you turn the addon on. With **Update turned-off addons** on in [Settings](/using/settings#general), **Update addons** also updates the installed addons that are off, in every profile including Vanilla.
+
+**Update addons** covers every installed addon that the Addon Browser has a newer version of, including an addon you installed from a file. A mod or track you imported keeps its own files even when an Addon Browser addon has the same id; its row on the **Addons** page shows **Kept separate**.
+
+To keep the versions you have, select **Skip this version** (**Skip these versions**) on the line next to **Update addons**. **Play** comes back, and the next version of each addon is offered again. A skipped version installs from the addon's Addon Browser page.
 
 1. Close F1 25. **Update addons** appears once the game exits.
 2. Select **Update addons**. Each update joins the [Downloads queue](/using/addon-browser#downloads), is checked against its SHA-256, and replaces the installed version. Its switch and settings stay as they were in every profile.
@@ -71,8 +75,18 @@ An addon that fails to update keeps its installed version. Retry it from **Downl
 | To update | Do |
 |---|---|
 | An addon from the Addon Browser | Select **Update addons**, as in [Addon updates](#addon-updates). |
-| An addon you installed from a file | [Install](/using/addons#install-an-addon) the new version. It replaces the addon with the same id and keeps its switch and settings in every profile. |
+| An addon you installed from a file | Select **Update addons** when the Addon Browser has a newer version of it, or [install](/using/addons#install-an-addon) the new version. Either replaces the addon with the same id and keeps its switch and settings in every profile. |
 | A mod or track | [Import](/using/mods#import-a-mod-or-track) the new version. It keeps its place and switch in every profile. |
+
+## After a game update
+
+When F1 25 updates to a version Swofty Launcher doesn't have yet, the line next to **Play** reads "This game version (1.0.145.2472) isn't supported by Swofty Launcher yet. Add-ons are off until a launcher update, so the game runs without them."
+
+The launcher identifies the game by the size and build time of `F1_25.exe`. For an exe it doesn't know, **Play** still works and starts F1 25 as the Vanilla profile does: no add-ons are loaded or applied, Launcher saves aren't used, and your Steam saves aren't touched. This is the same for every profile. The play bar's `Saves:` line reads `Steam's own save` with `this game version is not supported yet` under it; your launcher careers are not used on that run and are untouched. See [Which save Play will use](/using/career-saves#which-save-play-will-use).
+
+The line goes away by itself when you update the launcher to a release that supports the version. Don't verify or repair the game files: the update is correct.
+
+Developers porting the launcher to a new game build set `SWOFTY_ALLOW_UNSUPPORTED_BUILD=1` in the environment of `swofty run` to load add-ons into it anyway. The setting isn't in the launcher's settings. `swofty test shell` sets it for the sessions it starts.
 
 ## Next
 

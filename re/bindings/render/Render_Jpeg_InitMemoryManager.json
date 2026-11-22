@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_InitMemoryManager",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d55c8",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d55c8.c;xref:0x1449d3dae",
+  "notes": "libjpeg jinit_memory_mgr: max memory via jpeg_mem_init (0x144d93994), allocates the 0x98-byte manager (0x144d93960; on failure jpeg_mem_term and error 0x38), installs alloc_small/large/sarray/barray/request_virt/realize/access/free_pool/self_destruct (0x1449df8f4..0x1449e05b0), max_alloc_chunk 1000000000, clears the two pools. Caller 0x1449d3dae (Render_Jpeg_CreateCompress). Old note called it the main/master controller. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.jpeg_init_compress_main_modules",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 83 61 08 00 48 8B F9 E8",
+  "match": "0x1449d55c8",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d55c8",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_InitMemoryManager"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1449d55c8",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1449d55c8.c;xref:0x1449d3dae",
+   "notes": "V8423 Render_Jpeg_InitMemoryManager: 11 fn ptrs, 0x98 struct, 1000000000 default max mem, err 0x38 out-of-memory = jinit_memory_mgr, not main controller"
+  }
+ ],
+ "proofs": []
+}

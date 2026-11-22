@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_Insert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb1370",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cb1370.c;pat:log-channel-DEPARTMENT_EVENTS;xref:0x140cb0def,0x140cb443e",
+  "notes": "DEPARTMENT_EVENTS logs. Finds the entrant row of the event key (+0x60); with 0x140778420 true uses team schedules ([this+0x310]+0x410)[i]+0x60 (0xd8 stride, key +0xc0 = team key), else driver schedules +0x40 (200 stride, key = driver key); populates the instance 0x140cb1bd0, 0x14128a630, creates the event 0x140cb4480. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.dept_event_insert",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 80 00 00 00 4C 89 CE",
+  "match": "0x140cb1370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb1370",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_Insert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cb1370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb1370.c;xref:0x140cb0def,0x140cb443e",
+   "notes": "V4642 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140cb1370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb1370.c",
+   "notes": "V9059 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

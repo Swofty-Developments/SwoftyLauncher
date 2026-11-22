@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ErInput_BindToPlayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144703180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144703180.c;pat:log-message-method;xref:0x144703096,0x144703f4a,0x144704436,0x155520190,0x155523026",
+  "notes": "(binder, device {id, name +8, type +0x10, +0x20}): logs ER_INPUT 'bindToPlayer - device \"%s\" isDeviceAlreadyAssignedToAnyInputProvider=%d' after scanning providers [[this]+0x50]. First an unbound provider gets the device (preset priority from [this+8]+0xf8 under lock +0x468, 0x143a8ad70, bind 0x14442e890); else a lower-priority provider is unbound (0x14442ea40), rebound, and the displaced device rebound recursively. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.er_input_bind_to_player",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x144703180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144703180",
+  "kind": "func_start",
+  "names": [
+   "Game_ErInput_BindToPlayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144703180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144703180.c;xref:0x1446d00d5",
+   "notes": "V6866 bindToPlayer log lines confirmed."
+  }
+ ],
+ "proofs": []
+}

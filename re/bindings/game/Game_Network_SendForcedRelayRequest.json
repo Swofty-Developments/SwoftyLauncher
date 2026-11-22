@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SendForcedRelayRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14326a880",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14326a880.c;pat:log-message-method;xref:0x1432683af,0x143268412",
+  "notes": "Logs sendForcedRelayRequest(target, RELAY/no relay); if local is not host (this+0x18 != this+0x19) sends a relay-request message (vtable 0x145836670) to the host via 0x14402e500 and applies it locally with 0x140769aa0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_send_forced_relay_request",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 C3 89 D7 48 89 CE 0F B6 49 18",
+  "match": "0x14326a880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14326a880",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SendForcedRelayRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14326a880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14326a880.c;xref:0x1432683b0",
+   "notes": "V5830 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_DestroySceneObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b5c4b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b5c4b0.c;xref:0x143d888b2",
+  "notes": "Member teardown: destroys the functor at +0x468 (inline storage +0x430, vcall +0x20), then releases three shared pointers +0x400, +0x3f0, +0x3e0 (strong count +8 -> vcall +0, weak +0xc -> vcall +8). Caller Game_Rtt_RttGenerator. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.rtt_destroy_scene_object",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 68 04 00 00",
+  "match": "0x143b5c4b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b5c4b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_DestroySceneObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b5c4b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b5c4b0.c;xref:0x143d888b2",
+   "notes": "V7770 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

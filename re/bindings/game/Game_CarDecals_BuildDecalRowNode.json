@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CarDecals_BuildDecalRowNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14211f960",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14211f960.c;xref:0x14200014f,0x1420001ed,0x14200038c,0x142000432",
+  "notes": "Constructor of a 0x140-byte decal row VM item: under root node param_1+8 binds 'name' (+0x20), 'texture' (+0x40), 'current_texture' (+0x60, relative to texture), bools 'has_texture' (+0x80), 'is_new' (+0xa0), 'is_remove_button' (+0xc0), 'show_icon' (+0xe0), string 'icon_path' (+0x100); +0x120 = 0, key +0x130 = invalid (9, 0xffff, vt 0x145613520). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.car_decals_build_decal_row_node",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? BB 40 01 00 00 48 03 9E 68 03 00",
+  "match": "0x14200014f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14211f960",
+  "kind": "func_start",
+  "names": [
+   "Game_CarDecals_BuildDecalRowNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14211f960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14211f960.c;xref:0x14200014f",
+   "notes": "V8094 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

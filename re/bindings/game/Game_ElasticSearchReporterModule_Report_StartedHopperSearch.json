@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ElasticSearchReporterModule_Report_StartedHopperSearch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140770de0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140770de0.c;pat:log-message-cxx;xref:0x14307fe38",
+  "notes": "report_StartedHopperSearch(module, u32 a, u32 b): logs TELEMETRY 'report_StartedHopperSearch(%d)' with a; refreshes [+0x20a58]+0x168 vcall +0x40; builds a 0x68 event (0x1404dc520, +0x60 = a, +0x64 = b) and sends it via 0x140770f80(module, &ev, 0xff). Caller 0x14307fd70. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.elastic_search_reporter_module_report_started_hopper_search",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 44 89 C7 89 D3 48 89 CE",
+  "match": "0x140770de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140770de0",
+  "kind": "func_start",
+  "names": [
+   "Game_ElasticSearchReporterModule_Report_StartedHopperSearch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140770de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140770de0.c",
+   "notes": "V4285 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Obj_CheckVcall28Result",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14399b350",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14399b350.c;xref:0x140799530,0x14095a184,0x140c29b0d,0x142a6eb23,0x142c2b2c7,0x142c2b974,0x142c3150a,0x142c3164f,0x142c31aae,0x142c31b72,0x142c325b0,0x142c3267f,0x142c32764,0x142c3283f,0x142c32908,0x142c32a3e,0x142f8adb1,0x1430f6a30,0x14328ed4f,0x14328ee40,0x14398be5e,0x14398be7e,0x14398be9e,0x14398bebe,0x14398bede,0x14398befe,0x14398bf1e,0x14398bf3b,0x14398d748,0x1439e8d44,0x1439e8d87,0x1439e8d9a,0x143a790ca,0x143beded9,0x14426dd6b,0x14426ddbd,0x14445441e,0x1447d3e7c,0x145899580,0x145899780,0x145899860",
+  "notes": "(obj,a,expected): calls obj->vslot+0x28(obj,a,expected,&out); returns 0 when out == expected, otherwise pushes error 0x54 on the TLS error stack (with return address) and returns 0x54. Not a lazy default-object getter. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.replay_get_default",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 85 ?? ?? ?? ?? 81 7C 24 34 41 54 54",
+  "match": "0x140799530",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14399b350",
+  "kind": "func_start",
+  "names": [
+   "Game_Obj_CheckVcall28Result"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14399b350",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/14399b350.c;xref:0x140799530",
+   "notes": "V8123 Better name Ne_Obj_CheckVcall28Result: calls vcall +0x28 on param_1 and compares result with param_3, error 0x54 on mismatch; no lazily initialised default object or TLS static"
+  }
+ ],
+ "proofs": []
+}

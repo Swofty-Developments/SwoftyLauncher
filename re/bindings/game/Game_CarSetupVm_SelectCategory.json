@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_CarSetupVm_SelectCategory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c17250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c17250.c;xref:0x140c1b90f,0x140c1c265,0x140c1c74f,0x140c1ed7e,0x140c1ef18,0x149a3b507",
+  "notes": "Clears the selected bool (setter 0x140973e20) of the 6 category nodes (0x120 stride, +0x168..+0x828), binds the chosen category's (param_2) +0x68 node (or the default list when empty) to +0x48 (0x140977b20) and sets the chosen category's +0x168 selected = 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.car_setup_vm_select_category",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 89 D3 48 89 CF 4C 8D 61",
+  "match": "0x140c17250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c17250",
+  "kind": "func_start",
+  "names": [
+   "Game_CarSetupVm_SelectCategory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x140c17250",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c17250.c;xref:0x140c1c265,0x140c1ed7e",
+   "notes": "V3353 Clears 6 category nodes (0x120 stride, setter 0x140973e20) and selects param_2*0x120+0x68, callers ok; but clear loop covers +0x168..+0x708 (6 blocks), not ..+0x828"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x140c17250",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c17250.c;xref:0x140c1c265,0x140c1ed7e",
+   "notes": "V3979 Clears 6 category nodes (0x120 stride, setter 0x140973e20) and selects param_2*0x120+0x68, callers ok; but clear loop covers +0x168..+0x708 (6 blocks), not ..+0x828"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140c17250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c17250.c;xref:0x140c1c265,0x140c1ed7e",
+   "notes": "V4113 6 category blocks 0x120 at +0x168..+0x828 cleared via 0x140973e20, selects +0x68+idx*0x120; callers confirmed"
+  }
+ ],
+ "proofs": []
+}

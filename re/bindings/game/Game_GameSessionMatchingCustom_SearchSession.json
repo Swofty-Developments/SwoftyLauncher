@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingCustom_SearchSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307b750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14307b750.c;xref:0x14307bae7,0x1430e3706",
+  "notes": "GameSessionMatchingCustom::searchSession(): custom lobby browser search; sets usingDLC attribute, pushes filters to [[this+0x98]+0xd8]+0x768/0x770/0x778 (vfunc +0x38), then Ne_NetSystemClassicMatchmaking_SearchForSessions with callback OnCustomSearchComplete. Addon: custom-lobby browser search trigger. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2587)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_custom_search_session",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 F8 00",
+  "match": "0x14307b750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307b750",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingCustom_SearchSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_GameSessionMatchingCustom_SearchSession",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307b750.c;xref:0x14307b750",
+   "notes": "V2587 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

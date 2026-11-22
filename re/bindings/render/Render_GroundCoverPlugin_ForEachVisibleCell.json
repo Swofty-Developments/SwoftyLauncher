@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_GroundCoverPlugin_ForEachVisibleCell",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c5ff80",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c5ff80.c;xref:0x143c578a7,0x143cdcfc5,0x143cdcfdf,0x143cdcff9,0x143cdd013,0x143cdd02d",
+  "notes": "Iterates the occupied slots of a hash set (control words param_2+0x30, entries +0x28); for each entry's material (+8) walks its texture slot vector +0x160 and float vector +0x180 (from Render_Material_FillMeTextureSlots) calling Render_TexStream_UpdateEntryDemand(0x146c621e8, slot tex +0x1c8, demand param_1, slot float). Callers 0x143c53cb0 (0x143c578a7), Render_GroundCoverPlugin_Render 0x143cdcfc5. (lane owner review requested) Better name: Render_MaterialSet_UpdateTextureDemand (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.ground_cover_plugin_for_each_visible_cell",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 83 7A",
+  "match": "0x143c5ff80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c5ff80",
+  "kind": "func_start",
+  "names": [
+   "Render_GroundCoverPlugin_ForEachVisibleCell"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c5ff80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c5ff80.c;xref:0x143c578a7",
+   "notes": "V7878 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Read_CareerDepartmentEventsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ca0510",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ca0510.c;pat:log-channel--;xref:0x140ca0333",
+  "notes": "Reads career.department_events.<id>.* DB keys (department_event_groups, events, outcomes, outcome_values, outcome_modifiers, follow_up_event, min/max_event_outcomes, exit_delay, not_applicable_min/max_tag, priority_resource_threshold, resource_value, ui_value_string) via Gdb_Get_FieldInt and related readers into the event config containers. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.read_career_department_events_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 B8 17 00 00",
+  "match": "0x140ca0510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ca0510",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_CareerDepartmentEventsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140ca0510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ca0510.c;xref:0x140ca0333",
+   "notes": "V4636 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140ca0510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ca0510.c",
+   "notes": "V9057 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

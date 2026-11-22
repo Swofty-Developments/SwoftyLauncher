@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContracts_CalcBaseValues",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140db9300",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140db9300.c;pat:log-channel-DRIVER_CONTRACTS;xref:0x140db754b,0x140dbb87f,0x140dbb969,0x140dbeba1",
+  "notes": "Builds a contract result into param_2 for driver param_3 (driver slot found in comp+0x480, 0x68 stride, count +0x6f0): logs DRIVER_CONTRACTS base values and success/salary/bonus/clause calculation lines, writes +0x34, +0x44, isCounteroffer param_5 at +0x4c and contract_window_open (+0x834) at +0x4d; empty result with code 5 when the driver is missing. Returns param_2. (lane owner review requested) Better name: Career_DriverContracts_CalculateOffer (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.driver_contracts_calc_base_values",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0B 00 00 C5 78 29 BC 24 A0 0B 00 00",
+  "match": "0x140db9300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db9300",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContracts_CalcBaseValues"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140db9300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140db9300.c;xref:0x140db754b,0x140dbb87f",
+   "notes": "V4749 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140db9300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140db9300.c",
+   "notes": "V9095 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

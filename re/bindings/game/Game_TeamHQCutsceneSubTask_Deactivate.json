@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TeamHQCutsceneSubTask_Deactivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143711100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143711100.c;pat:log-message-cxx;xref:0x145860530",
+  "notes": "vtable cell 0x145860530. Logs deactivate and removes this+0x60 from the listener vector (+0x20..+0x28, swap-remove) of each entry in owner+0x70 ->+0xfe8..+0xff0; asserts if not found. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.team_hq_cutscene_sub_task_deactivate",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 71 00 00 00",
+  "match": "0x143711100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143711100",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamHQCutsceneSubTask_Deactivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143711100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143711100.c",
+   "notes": "V6156 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

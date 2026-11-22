@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_GameVoiceChatRestrictionListeners",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430407e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430407e0.c;pat:log-channel-NETWORK;xref:0x1436e078b",
+  "notes": "Caller 0x1436dff80. Computes the voice-chat listener limit: 0x10 or [NetSub+0x3c8]+0x48, by matching mode [[NetSub+0x4d8]+0x28]+8 (4 -> 2, 5 -> 0x14 or league +0x268, 7 -> 0x1430dc620), scaled by a bandwidth value from 0x143040120 when [NetSub+0xd8]+0x750 is not 1; writes VM node #network.chat_data.max_listeners (0x140d394f0), logs the restriction, returns it. (lane owner review requested) Better name: Game_NetworkVoice_UpdateMaxListeners (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_game_voice_chat_restriction_listeners",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 48 89 CE C7 44 24 30 00 00 00 00",
+  "match": "0x1430407e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430407e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_GameVoiceChatRestrictionListeners"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430407e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430407e0.c;xref:0x1436e078c",
+   "notes": "V5460 computes max voice chat listeners from game mode switch (0x40000 scale, mode cases 4,5,7) and logs the result. Better: Game_Network_ComputeVoiceChatMaxListeners"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430407e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430407e0.c;xref:0x1436e078b",
+   "notes": "V6938 172 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

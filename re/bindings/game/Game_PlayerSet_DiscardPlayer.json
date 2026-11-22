@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerSet_DiscardPlayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14316c790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14316c790.c;pat:log-channel-PLAYERSET;xref:0x14581f898",
+  "notes": "Body read in full; own pretty string 'updatePlayerSetIDs'. When mode +0x28 < 2: walks entries +0x58..+0x60, discards entries flagged for removal (logs 'being discarded' / 'has an invalid connection ID', listeners +0x78 vt+8, 0x14316e8a0 discarded message, free via +0x10 vt+0x38, vector erase), marks used Player IX; then gives entries without one (+0x60<0) a free Player IX (<0xff), logs 'assigned Player IX %d', listeners vt+0x10. Only ref vt cell 0x14581f898. Renamed from DiscardPlayer. (lane owner review requested) Better name: Game_PlayerSet_UpdatePlayerSetIds (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.player_set_discard_player",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 83 79 28 01",
+  "match": "0x14316c790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14316c790",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerSet_DiscardPlayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14316c790",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14316c790.c",
+   "notes": "V5820 PlayerSetSubsystem_UpdatePlayerSetIDs: updatePlayerSetIDs: discards, assigns Player IX, reports added/discarded, sends discard msg; not only discard"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14316c790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14316c790.c",
+   "notes": "V7006 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

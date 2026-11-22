@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageReturn_ComputeTimeSkip",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6d1f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f6d1f0.c;xref:0x142a3c63c,0x142a3d032",
+  "notes": "From Game_Garage_ReturnVehicleToGarage: estimates the time to drive back (lap time model [this+0xb8] vcall +0x148 for the remaining lap fraction from the progress entry, plus pit time table +0x220/+0x224) and, if inside the session clock (remaining - 5 s), sets a fast-forward rate = time/4 (max with +0x1f4/+0x1f8/+0x1fc) at +0x1d0 -> [this+0x48]+0x1f8 and [this+0x58]+0x370, +0x200 = 1, +0x208 = 4.0. Addon: session-clock skip used when teleporting back to the garage. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2486)"
+ },
+ "signature": {
+  "id": "game.garage_return_compute_time_skip",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 44 89",
+  "match": "0x142f6d1f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6d1f0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageReturn_ComputeTimeSkip"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_GarageReturn_ComputeTimeSkip",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6d1f0.c;xref:0x142f6d1f0",
+   "notes": "V2486 lap-time model vcall +0x148, pit table +0x220/+0x224, rate=min(time,remaining-5)*0.25 at +0x1f0, max(1,+0x1f0,+0x1f4,+0x1f8,+0x1fc) at +0x1d0 then [this+0x48]+0x1f8, [this+0x58]+0x370, +0x200=1, +0x208=4.0 (claim wording slightly loose)"
+  }
+ ],
+ "proofs": []
+}

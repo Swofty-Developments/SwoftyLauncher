@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_CannedEvents_PerformAccident_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409c1460",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_CannedEvents_PerformAccident_2(void *self, void *stream)",
+  "evidence": "decomp:re/decomp/1409c1460.c;xref:0x145664ff8",
+  "notes": "Virtual (vtable slot 0x145664ff8; the writer twin 0x1409c1240 in the previous slot stores the same fields into the stream). For each car object in (self+0xd0)->+0x198..+0x1a0: reads byte -> obj+0xa1; if stream+0x22 (counted mode) reads u64 counts and resizes vectors. Failure records (0x34 bytes at obj+0xc8): reads flags +0x18/+0x19 and int +0x10; flag 0 -> 0x1409b2f10(obj, rec, 1), flag set -> Game_Failure_Apply 0x1409b3190(obj, rec, 1). Canned-event records (0x18 bytes at obj+0xe8): reads +0x14/+0x15/+0x0c; logs CANNED_EVENTS 'fixAccident %d -> %s' or 'performAccident  %d -> %s' (car obj+0x78, type name table 0x14566bbf0) and applies. Then floats +0x108/+0x120/+0x130 and more. (corrected 2026-11-14: not 'PerformAccident'; it is the state-stream reader that fixes/performs accidents and failures.) Name kept (used in repo docs/code/signatures); a code-true name would be Game_CannedEvents_ReadState. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) Role: canned-events STATE DESERIALISER (vtable slot at 0x145664ff8, next to the writer 0x1409c1240); a code-true name would be Ai_CannedEvents_ReadState, the old name is kept because native/src/core/guards/session/replay_grid_guard.cpp refers to it (fixed 2026-11-14 after verifier ai-verify)."
+ },
+ "signature": {
+  "id": "ai.canned_events_perform_accident_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 8B 81 D0 00 00 00",
+  "match": "0x1409c1460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409c1460",
+  "kind": "func_start",
+  "names": [
+   "Ai_CannedEvents_PerformAccident_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409c1460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409c1460.c",
+   "notes": "V4379 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1409c1460",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1409c1460-0x1409c1f68;xref:0x145664ff8",
+   "notes": "V10573 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145664ff8 = slot 5 of the vtable whose slot 4 is 0x1409c1240. 2 args (rcx self, rdx stream; cursor stream+8 advanced per read, counted-mode byte stream+0x22). Notes/proto (state deserialiser: per-car bytes/floats, failure records -> 0x1409b2f10 / Game_Failure_Apply 0x1409b3190, fixAccident/performAccident logs) agree. Correction: the row NAME Ai_CannedEvents_PerformAccident_2 contradicts the role; should be Ai_CannedEvents_ReadState (as its proto already says)."
+  }
+ ],
+ "proofs": []
+}

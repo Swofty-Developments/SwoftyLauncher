@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Adjust_RpTeamWallet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143508540",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Adjust_RpTeamWallet(void *wallets, uint32_t team_key, int32_t delta)",
+  "evidence": "decomp:re/decomp/143508540.c;decomp:re/decomp/14122a070.c;decomp:re/decomp/141229e00.c;xref:0x14122a08c,0x141229f21,0x14122a011;doc:addons/career-editor/protocol/economy.md#resource-points-both-modes",
+  "notes": "per-team RP wallet adjust: wallets = ResourcePointsComponent+0x528 (rp+0x4b0 == 1); hash map by team key at +0x30 (seed; buckets +0x38, ctrl +0x40, mask +0x50; Get_RpWallet reads it at rp+0x4a8+0xb0); entry +4 i32 clamped >= 0 unless entry +8 locked; posts 0x14584e360 {+0x10 team,+0x14 0x3fff0000} and 0x14584e3a0 {+0x10 team,+0x14 delta} whenever the entry exists, locked or not. The MessageResourcePointsAwarded handler 0x14122a070 is exactly this call"
+ },
+ "signature": {
+  "id": "career.adjust_rp_team_wallet",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 44 89 C6 48 89 C8",
+  "match": "0x143508540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143508540",
+  "kind": "func_start",
+  "names": [
+   "Career_Adjust_RpTeamWallet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/economy.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Adjust_RpTeamWallet",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143508540.c;decomp:re/decomp/1435086c0.c;decomp:re/decomp/14122a070.c;xref:0x14122a08c,0x141229f21,0x14122a011",
+   "notes": "V0290 proto, rp+0x528 mode 1, clamp, lock, two messages, handler 0x14122a070 (subscribed with key MessageResourcePointsAwarded at 0x141226da4; gated mode==1, (msg+0x14 team, msg+0x10 delta)) correct. Wrong offset: the team map is 8 bytes lower than the driver map. Corrected: \"hash map by team key at +0x30 (seed; buckets +0x38, ctrl +0x40, mask +0x50; Get_RpWallet reads it at rp+0x4a8+0xb0); posts 0x14584e360 {+0x10 team,+0x14 0x3fff0000} and 0x14584e3a0 {+0x10 team,+0x14 delta} whenever the entry exists, locked or not\""
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-4",
+   "kind": "func",
+   "item": "Career_Adjust_RpTeamWallet",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143508540.c;decomp:re/decomp/14122a070.c;decomp:re/decomp/141226460.c;decomp:re/decomp/1435086c0.c;xref:0x141229f20,0x14122a08b,0x141226da4,0x141226db2",
+   "notes": "V0478 sigcheck OK. Proto (wallets, team_key, delta) matches. Map at +0x30 seed, +0x38 slots, +0x40 ctrl, +0x50 mask (+0x60/+0x64 probe params); Get_RpWallet reads the same map at wallets+0xb0 = rp+0x558; clamp >=0 unless +8 locked; posts 0x14584e360 {team, 0x3fff0000} and 0x14584e3a0 {team, delta} whenever the entry exists; 0x14122a070 is subscribed under MessageResourcePointsAwarded (0x1456bc68c) and is exactly the mode==1 call. Previous partial fully applied"
+  }
+ ],
+ "proofs": []
+}

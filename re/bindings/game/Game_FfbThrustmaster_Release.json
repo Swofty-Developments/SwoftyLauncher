@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbThrustmaster_Release",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f4ee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f4ee0.c;pat:log-channel-TM_FFB;xref:0x145bfff28",
+  "notes": "Slot 3 of TM effect vtable 0x145bfff10 (cell 0x145bfff28). Logs '::release', QPC stamp, zero-force configure (0x1446f4b80), logs '::stop', then tm_api_force_set_effect_state(handle, 0/1/2, {0xc,1}) for constant/spring/friction, logging failures; clears spring flag +0x2ac. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ffb_thrustmaster_release",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6E B8 0D 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 81 FA 21 6D 06 9D 74 34 85 D2 74 51 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 0D 01 00 00 75 C3 EB 21 4C 8B 86 E0 01 00 00 45 8B 88 00 0A 00 00 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? C7 86 B0 01 00 00 00 00 00 00",
+  "match": "0x1446f4ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f4ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbThrustmaster_Release"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f4ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f4ee0.c",
+   "notes": "V6850 Release/stop/unable-to-stop strings confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingCustom_Cancel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143076d10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143076d10.c;pat:log-message-cxx;xref:0x1422252d8,0x14222632d,0x142232b92,0x1430623af,0x1430adf25,0x1430b2e49,0x1430e3657,0x1430ef33e",
+  "notes": "Logs NETWORK-SESSION 'GameSessionMatchingCustom::cancel(%s)' (reason p2, names table 0x1458272d0, < 0x20). Completes pending requests as failed: search delegate +0x80/+0x88 -> OnCustomSearchComplete(p1,1,0,1); join delegate +0xc0/+0xc8 -> OnCustomJoinComplete(p1,0,p2); create delegate +0xe8/+0xf0 -> OnCustomCreateComplete(p1,0,p2). Then optional 0x143064ce0, 0x144065670([[p1+8]+0xd8]), 0x1430605c0([[p1+8]+0x3c0],1,p2,1), restarts timer +0x60/+0x68. Returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_custom_cancel",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7A",
+  "match": "0x143076d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143076d10",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingCustom_Cancel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143076d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143076d10.c;xref:0x1422252d9",
+   "notes": "V5588 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

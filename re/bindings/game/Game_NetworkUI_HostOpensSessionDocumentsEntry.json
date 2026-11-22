@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUI_HostOpensSessionDocumentsEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436e4880",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436e4880.c;pat:log-channel-NETWORK-UI;xref:0x14585cb10",
+  "notes": "State vtable cell: if host logs 'HOST opens the session documents on entry to the player lobby.', resets the MOX season lobby 0x143067d40, sends openDocument via 0x14402e500; for 'SpectatorLobby' logs 'onSessionLobby', SetMyRaceStatus(2), MatchingContext_OnSessionLobby. (lane owner review requested) Better name: Game_NetworkReadyState_OnEnterPlayerLobby (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_ui_host_opens_session_documents_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 CE 48 8B 81 80 0C 00 00",
+  "match": "0x1436e4880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436e4880",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUI_HostOpensSessionDocumentsEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436e4880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436e4880.c",
+   "notes": "V6139 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

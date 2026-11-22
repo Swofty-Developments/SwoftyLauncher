@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WString_SetCapacity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141459660",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141459660.c;xref:0x141434ae5,0x141434b2a,0x141f1455e",
+  "notes": "(wstr, n): set capacity of a wide string: cap (chars) +8, buffer +0x10, inline buffer +0x20, allocator +0x18. n=0 counts as 1; same cap -> 0. No allocator -> errno 0xe. From inline: alloc n*2 (vt+0x18), fail -> 0xc. Shrink: realloc vt+0x30 (n<2 frees vt+0x38, back to inline). Grow: alloc, copy chars, NUL, free old. Returns 0 or the errno. call sites."
+ },
+ "signature": {
+  "id": "core.block_pool_set_capacity",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 49 89 D6 48 83 FA 01",
+  "match": "0x141459660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141459660",
+  "kind": "func_start",
+  "names": [
+   "Ne_WString_SetCapacity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x141459660",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141459660.c;xref:0x141434ae5",
+   "notes": "V8044 Ne_WString_SetCapacity: u16-element small-buffer (inline +0x20) capacity set via allocator vcall +0x18; not a block pool"
+  }
+ ],
+ "proofs": []
+}

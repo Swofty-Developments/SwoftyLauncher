@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SplitscreenInput_AddCustomControlScheme",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a5d5f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a5d5f0.c;pat:log-message-method;xref:0x142a5cdb6",
+  "notes": "pdata ends 0x142a5de52; decomp lines 366-409 = tail-jmp target 0x142a5e0c0 (own pdata, 'onControlSchemeAdded to player %d'), jmp at 0x142a5ddda with (this,scheme,player [p5+0x18]). Logs 'addCustomControlScheme to player %d' (SPLITSCREEN_INPUT), allocs 0x168 scheme (vt 0x1457bb690), name from dev+0x150, id dev+0x138<<8|type, slot[player+0x1a]=dev, 0x142a58d30, push to this[0x2d] and p3 vectors. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.splitscreen_input_add_custom_control_scheme",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 44 89 CD 4C 89 C7",
+  "match": "0x142a5d5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a5d5f0",
+  "kind": "func_start",
+  "names": [
+   "Game_SplitscreenInput_AddCustomControlScheme"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a5d5f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a5d5f0.c;xref:0x142a5cdb6",
+   "notes": "V4941 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

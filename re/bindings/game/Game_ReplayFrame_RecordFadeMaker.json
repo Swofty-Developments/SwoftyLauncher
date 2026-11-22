@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayFrame_RecordFadeMaker",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14471c0b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14471c0b0.c;pat:log-message-cxx;xref:0x14472322a,0x1447232c7",
+  "notes": "recordFadeMaker(frame, maker, a, b, c, d) (log SKIDMARKS_REPLAY 'ReplayFrame::recordFadeMaker (%p)'): if fade count u16 +0xa < 0x1ff appends a 4-byte record at +0x8814 {maker+0x217d, flags (bit7 from c, bit6 if maker+0x217d == d) | maker+0x2174, a, b} and type code 2 into the 2-bit stream +0x46428 (count +4, max 0x340); else logs 'c_maxFadesMade needs increasing?'. Callers Render_Skidmarks_Update. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.replay_frame_record_fade_maker",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 CF 44 89 C3 49 89 D6 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14471c0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14471c0b0",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayFrame_RecordFadeMaker"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14471c0b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14471c0b0.c;xref:0x144712087",
+   "notes": "V6608 recordFadeMaker log + c_maxFadesMade overflow, same pattern as quad maker; callers Render_Skidmarks_Init/Update"
+  }
+ ],
+ "proofs": []
+}

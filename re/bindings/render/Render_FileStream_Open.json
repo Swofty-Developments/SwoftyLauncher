@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_FileStream_Open",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143999260",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143999260.c;xref:0x1406c40d8,0x1406c97da,0x1416ee367,0x144493684",
+  "notes": "Text-mode sibling of 0x143998b80: error 5 if already open (vcall +0xb8); mode 0 r, 1 w, 2 a via 0x14534890c(path, mode); FILE* at +8, mode at +0x10, clears +0x18; on failure error 5 into the TLS list and ring (returns 5 when param_4). Callers incl. Render_Screenshot_CaptureAndSave and non-render users. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.image_stream_read_header",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 44 89 CF 44 89 C3 49 89 D6 48 89 CE 48 8B 01",
+  "match": "0x143999260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143999260",
+  "kind": "func_start",
+  "names": [
+   "Render_FileStream_Open"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143999260",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143999260.c;xref:0x1406c40d8",
+   "notes": "V7735 better name Ne_FileStream_Open: wrapper over fopen with mode strings 'rb'/'w+b'/'a+b' chosen by param_3 (0/1/2); no image header parsing"
+  }
+ ],
+ "proofs": []
+}

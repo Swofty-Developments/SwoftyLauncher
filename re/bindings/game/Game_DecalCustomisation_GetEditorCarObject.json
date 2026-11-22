@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_GetEditorCarObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414290f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414290f0.c;xref:0x141428e75,0x141428eea,0x14142b06d,0x14142c56b",
+  "notes": "Car index byte this+0x1ac (-1 -> null); scans the shared_ptr list this+0x2d8..+0x2e0 (stride 0x10) for the car whose +0x10 byte matches and returns its +8 object; otherwise logs CUSTOMISATION_DECALS/V 'Editor car %d not ready yet' and returns null. Callers Game_DecalCustomisation_ApplyToEditorCar, 0x14142afe0, 0x14142c330. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decal_customisation_get_editor_car_object",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 0F B6 99 AC",
+  "match": "0x1414290f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414290f0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_GetEditorCarObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1414290f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414290f0.c;xref:0x141428e75",
+   "notes": "V8033 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

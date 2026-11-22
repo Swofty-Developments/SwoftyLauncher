@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Renderer_WaitRenderSignal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b86e00",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b86e00.c;xref:0x143b799b7,0x143b79acd,0x143b874b2,0x143b8754b",
+  "notes": "Drains a double-buffered command stream (param_2+0x10+(idx^1)*8, sentinel 0xcdcdcdcd): type 0 creates via handler map param_1+0x14448 vcall +8, type 1 is deferred to a list run at the end (handler vcall +0x10), others call the object's vcall +8; then builds/submits the signal job (Render_Gfx2Renderer_BuildSignalJob, 0x143abe3f0) and calls Ne_JobSignal_WaitWithTimeout. (lane owner review requested) Better name: Render_Gfx2Renderer_ExecuteCommandStream (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_renderer_wait_render_signal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 49 89 D6 48 89 CE 48 8B",
+  "match": "0x143b86e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b86e00",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Renderer_WaitRenderSignal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b86e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b86e00.c;xref:0x143b799b7",
+   "notes": "V7789 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Rtt_ReleaseGeneratorBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e93910",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e93910.c;xref:0x143db297f",
+  "notes": "Destructor body of a generator entry (rename): frees pointers +0xb68..+0xb88, +0x1e0..+0x1f0, +0x2a8..+0x2b8 via allocator [this+8] vcall +0x38, 0x143e8a830(+0x2c0), clears two list/block containers (+0x208..+0x238, +0x258..+0x288), releases device objects +0x68/+0x70/+0x78 via 0x1439e39a0 on 0x14618caa8, DeleteCriticalSection([+0x38]). Caller 0x143db297f in Render_Rtt_UnregisterGeneratorEntry before the free. (lane owner review requested) Better name: Render_Rtt_GeneratorEntry_Destroy (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.rtt_release_generator_buffers",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 91 68 0B 00 00",
+  "match": "0x143e93910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e93910",
+  "kind": "func_start",
+  "names": [
+   "Render_Rtt_ReleaseGeneratorBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143e93910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143e93910.c;xref:0x143db297f",
+   "notes": "V8357 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

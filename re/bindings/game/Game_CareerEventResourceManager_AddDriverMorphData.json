@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventResourceManager_AddDriverMorphData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c808e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c808e0.c;pat:log-message-method;xref:0x140c72eba,0x140c73114",
+  "notes": "Logs 'addDriverMorphData'; finds the driver (0x14246d700(param_2, id param_3+8)), resolves its two morph resources by name (0x14248be60 and 0x14248bb50 -> 0x143a59cd0) and adds each to *param_1 (0x143a599d0); a missing resource is fatal (0x1439182a0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_event_resource_manager_add_driver_morph_data",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 40 01 00 00 4C 89 C3 48 89 D7",
+  "match": "0x140c808e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c808e0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventResourceManager_AddDriverMorphData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c808e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c808e0.c;xref:0x140c72eba,0x140c73114",
+   "notes": "V4621 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

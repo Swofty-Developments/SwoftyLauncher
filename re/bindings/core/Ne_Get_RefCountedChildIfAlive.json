@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Get_RefCountedChildIfAlive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc5e50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Get(void *obj, void *out)",
+  "evidence": "decomp:re/decomp/140fc5e50.c;xref:0x1410186a4,0x141674820,0x1422e97cf",
+  "notes": "(this, u8 *out): weak_ptr lock on {obj this+8, ctrl this+0x10}: CAS-increments uses ctrl+8 only when non-zero; on success copies byte obj+0x38 to *out and drops the temporary ref (vt+0 dispose, weak ctrl+0xc, vt+8 destroy); expired/null -> *out=0. Returns out. Callers 0x141018480, Career_Bind_FacilityUpgradeNameStrings, Career_Bind_TeamHqPopupIcons. Better name: Ne_WeakPtr_ReadByte38IfAlive (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "core.get_ref_counted_child_if_alive",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 8B 51 10 48 85 D2 74 57 8B 42 08",
+  "match": "0x140fc5e50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc5e50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Get_RefCountedChildIfAlive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc5e50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140fc5e50.c;xref:0x1410186a4",
+   "notes": "V9613 Weak-to-strong promotion of (obj+8 ptr, obj+0x10 ctrl) is right, but it does not return the pointer: it copies the byte at target+0x38 into *out (0 if expired)."
+  }
+ ],
+ "proofs": []
+}

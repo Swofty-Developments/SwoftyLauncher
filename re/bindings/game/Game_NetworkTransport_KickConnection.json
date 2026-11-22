@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_KickConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406fa70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14406fa70.c;pat:log-message-method;xref:0x14306713c,0x1430fd736,0x1430ff459",
+  "notes": "Server side: sends a kick/disconnect message, logs 'server handle client disconnection, connection ID %d' with 'kickConnection' and calls HandleClientDisconnection 0x144070210. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_transport_kick_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 08 05 00 00",
+  "match": "0x14406fa70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406fa70",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_KickConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14406fa70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406fa70.c;xref:0x14306713c",
+   "notes": "V6499 size=1939; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

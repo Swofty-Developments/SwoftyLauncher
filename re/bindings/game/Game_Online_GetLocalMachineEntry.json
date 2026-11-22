@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Online_GetLocalMachineEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143067c10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143067c10.c;xref:0x142d526e7,0x142da7d2d,0x142da8e9b,0x14310a11f,0x1436ee170,0x14305bb61",
+  "notes": "(obj): s = [[obj+0x20]+0xd8]; if s == 0 or s vslot +0x18 returns 0 -> returns 0; else uses that byte (local machine id) as key into the robin-hood map obj+0x40..+0x74 and returns entry+4 of the 12-byte slot (0 if absent). Old note had the session test inverted. Callers incl. Sess_Loader_RequestTrackLoad/Unload, Sess_Loader_RequestCareerHubUnload, Game_EntrantsManager_ResolveEntrants. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_get_local_machine_entry",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 CE 48 8B 41 20 48 8B 88 D8 00 00 00 48 85",
+  "match": "0x143067c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143067c10",
+  "kind": "func_start",
+  "names": [
+   "Game_Online_GetLocalMachineEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143067c10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143067c10.c;xref:0x140fd3573,0x142ac9c5e",
+   "notes": "V3757 Robin-hood map lookup of local machine id (vcall +0x18) returning 12-byte entry +4 matches, but condition is inverted vs claim: returns 0 when session ([obj+0x20]+0xd8) is null or its vcall +0x18 returns 0; lookup only happens when that is non-zero."
+  }
+ ],
+ "proofs": []
+}

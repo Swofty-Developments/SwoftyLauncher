@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_F1wCollaborativeEventAcquired",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14075b850",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14075b850.c;pat:log-channel-TELEMETRY;xref:0x1406f33f4,0x14070da89",
+  "notes": "Bus handler(this,msg); subscribed 0x1406f33f4 (0x1406d8470), unregistered 0x14070da89. 0xc0-byte record: msg+0x10/+0x20 and three 0x18-strided triples msg+0x28..+0x68 as sub-records. Tag 'collaborative_event_acquired_record' via 0x14077a240, GUID+seq, 64-entry queue; logs 'f1w collaborative event acquired' (TELEMETRY). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_f1w_collaborative_event_acquired",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 48 89 D3",
+  "match": "0x14075b850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14075b850",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_F1wCollaborativeEventAcquired"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x14075b850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14075b850.c",
+   "notes": "V4267 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,63 +1,25 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
-mod addons;
-mod admin_needed;
-mod app_log;
-mod avatar;
-mod ban;
+mod app;
 mod blocks;
-mod browser;
-mod career_saves;
-mod colour;
-mod console;
-mod crash_modal;
-mod data_move;
-mod db;
-mod developer;
-mod dialog_keys;
-mod discord;
-mod download_dock;
-mod download_queue;
-mod ea_app;
-mod format;
-mod found_data;
-mod game;
-mod game_edited;
-mod importer;
-mod library;
-mod multiplayer;
-mod news;
-mod notices;
-mod onboarding;
-mod online;
-mod pages;
-mod play_bar;
-mod play_checks;
-mod profile_panel;
-mod profiles;
-mod reveal;
-mod scale;
-mod scroll;
-mod sections;
-mod send_logs;
-mod settings;
-mod setup;
-mod shaders;
+mod dialogs;
+mod features;
+mod services;
 mod shell;
-mod support;
-mod tasks;
-mod theme;
-mod time_trial;
-mod tools;
 mod ui;
-mod ui_mode;
-mod update;
+
+use app::{app_log, chart_demo, dialog_keys, fonts};
+use ui::theme;
 
 use gpui_kit::component::{TitleBar, v_flex};
 use gpui_kit::*;
 
 fn main() {
-    swofty_core::data_move::recover_at_start();
+    if std::env::args().any(|a| a == "--chart-demo") {
+        chart_demo::run();
+        return;
+    }
+    swofty_core::data::relocate::recover_at_start();
     app_log::start();
     app_log::step("starting the app runtime");
     let app = gpui_kit::application().with_assets(gpui_kit::assets::AllAssets);
@@ -65,6 +27,7 @@ fn main() {
     app_log::step("app runtime ready, entering the event loop");
     app.run(move |cx| {
         app_log::step("event loop running");
+        fonts::install(cx);
         gpui_kit::init(cx);
         app_log::step("ui kit ready");
         theme::init(cx);
@@ -76,10 +39,13 @@ fn main() {
                 size(px(1440.), px(900.)),
                 cx,
             ))),
-            window_min_size: Some(size(px(1024.), px(680.))),
+            window_min_size: Some(size(
+                px(ui::scale::MIN_WINDOW_WIDTH),
+                px(ui::scale::MIN_WINDOW_HEIGHT),
+            )),
             app_id: Some("net.swofty.ModLauncher".into()),
             titlebar: Some(TitlebarOptions {
-                title: Some("Swofty Launcher for F1 25".into()),
+                title: Some(swofty_i18n::tr("Swofty Launcher").into()),
                 ..TitleBar::title_bar_options()
             }),
             ..TitleBar::window_options()
@@ -146,7 +112,7 @@ impl Render for Launcher {
                     .items_center()
                     .justify_center()
                     .gap(px(20.))
-                    .child(pages::wordmark(220.))
+                    .child(ui::wordmark(220.))
                     .child(swofty_i18n::tr("Loading your launcher…")),
             )
             .into_any_element()

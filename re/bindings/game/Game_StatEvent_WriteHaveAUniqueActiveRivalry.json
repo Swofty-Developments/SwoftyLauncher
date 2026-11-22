@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteHaveAUniqueActiveRivalry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143748960",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143748960.c;pat:log-channel-STATEVENT;xref:0x14372bfe4,0x14374a9ba",
+  "notes": "Bus handler, providers mgr+0x50..+0x58, ctx FUN_14371fe70; player obj type check, msg+0x10 u16 (low 14 bits, top 2 bits) vs entry +0x52/+0x50; 1 entry HaveAUniqueActiveRivalry 1.0 type 0. RivalryPreStartedMessage: subscribe 0x14372bfe4, unsubscribe 0x14374a9ba. Provider vt+0x18 gate, vt+0x30({entries,n}); entry={key,djb2,f32 val,u32 type}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_have_a_unique_active_rivalry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 48 89 D7 48 89 CE 48 8B 81 B0 00 00 00",
+  "match": "0x143748960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143748960",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteHaveAUniqueActiveRivalry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143748960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143748960.c;xref:0x14372bfe6",
+   "notes": "V6202 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

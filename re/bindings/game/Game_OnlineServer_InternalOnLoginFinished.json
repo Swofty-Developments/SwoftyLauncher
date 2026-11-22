@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineServer_InternalOnLoginFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432bb6d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432bb6d0.c;str:s_OnlineServer_InternalOnLoginFinished;xref:0x145834550",
+  "notes": "Logs its pretty name game::OnlineServer::internalOnLoginFinished(shared_ptr<OnlineServerLogInTask>): 'Log in status = %s', 'Resetting log in data first' (Game_OnlineServer_ResetLoginData), 'Attempting to set log in data...', then posts a bus message. Only reference: vtable cell 0x145834550 (vtable 0x145834540 after the string OnlineServer, slot 2). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_server_internal_on_login_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 4C 8B 32 4D 85",
+  "match": "0x1432bb6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432bb6d0",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineServer_InternalOnLoginFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432bb6d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432bb6d0.c",
+   "notes": "V5899 name and description match body; log string/pretty name present; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

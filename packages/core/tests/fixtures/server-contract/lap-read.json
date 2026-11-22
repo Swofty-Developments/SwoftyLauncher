@@ -1,0 +1,43 @@
+{
+  "about": "A lap's details, read before its game replay or its lap file is fetched.",
+  "answer": {
+    "body": {
+      "board": {
+        "content": "game/f1_2025",
+        "track": "bahrain",
+        "weather": "dry"
+      },
+      "car": {
+        "team": "mclaren"
+      },
+      "game_replay": {
+        "setup": {
+          "box": "f1_2025",
+          "lap_ms": 91234,
+          "mode": "tt",
+          "tail_ms": 1500,
+          "team": "mclaren",
+          "track": "bahrain"
+        }
+      },
+      "id": "2949b7d7eaf78422",
+      "time_ms": 91234,
+      "user": {
+        "id": "1",
+        "name": "driver one"
+      }
+    },
+    "status": 200
+  },
+  "request": {
+    "body": null,
+    "headers": {
+      "accept": "*/*",
+      "accept-encoding": "identity",
+      "authorization": "Bearer <token>",
+      "user-agent": "swofty-launcher"
+    },
+    "method": "GET",
+    "path": "/v1/tt/laps/2949b7d7eaf78422"
+  }
+}

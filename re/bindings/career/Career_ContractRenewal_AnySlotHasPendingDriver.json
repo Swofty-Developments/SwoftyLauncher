@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_AnySlotHasPendingDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d98c50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint8_t Career_ContractRenewal_AnySlotHasPendingDriver(void *comp)",
+  "evidence": "decomp:re/decomp/140d98c50.c;xref:0x140d8c24d,0x140d8e67d,0x140d8fc4d,0x140d9904e",
+  "notes": "Walks entrants [comp+0x278]+0x2e0..+0x2e8 (0x88 stride); for entrants with byte +0x4b bit 0x10 looks up the approach record by driver key +0x50 in comp+0x368 (when 0x140778420([comp+0x278]) is false) or by team key +0x58 in comp+0x348, and ORs (record int +0 != 0). Returns that OR. (lane owner review requested) Better name: Career_ContractRenewal_AnyFlaggedEntrantHasRecord (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_any_slot_has_pending_driver",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 81 78 02 00 00 48 8B 98 E0 02 00 00",
+  "match": "0x140d98c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d98c50",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_AnySlotHasPendingDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d98c50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d98c50.c",
+   "notes": "V9543 Logic right (flag 0x10, lists +0x368/+0x348, ORs count!=0) but slots are 0x88 bytes apart, not 0x58."
+  }
+ ],
+ "proofs": []
+}

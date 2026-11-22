@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_FindEntrantUnattached",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143240b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143240b80.c;pat:log-message-method;xref:0x143240398",
+  "notes": "Caller FindEntrantToDropIn 0x14323fcb0. Scans the entrants [[this+0x20]+0x4f8]+0x2e0..+0x2e8 (0x88-byte records) for one with flag +0x4b & 0x20, vehicle +0x82 < 0x1b, a live vehicle record ([[this+0x20]+0x80]+0x148)[v]+0x18 == 1 and status 9 at [[this+0x50]+0x68+v*0x10]+4; logs 'findEntrantUnattached ... vehicle(%d)' and returns it, else 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_find_entrant_unattached",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 C8 48 8B 49 20",
+  "match": "0x143240b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143240b80",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_FindEntrantUnattached"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143240b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143240b80.c;xref:0x143240398",
+   "notes": "V6057 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

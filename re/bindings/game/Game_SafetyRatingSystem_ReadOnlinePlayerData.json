@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SafetyRatingSystem_ReadOnlinePlayerData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c66490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c66490.c;str:s_SafetyRatingSystem_ReadOnlinePlayerData;xref:0x14327f9c1",
+  "notes": "(sys): 0 if offline (+0x428). +0x521 = 0; online record 0x143276fc0([+0x4d8]+0x3d8) (none -> 0x57); no blob -> log, defaults +0x4c/+0x50/+0x54, 0x57; else rating blob+4, tier min(blob+8, 5), float blob+0xc into +0x40/+0x44/+0x48. Bus msgs on rating (vt 0x1457d41f8) / tier change (0x1457d4208), 0x142c701b0, net broadcast via 0x14402e500(+0x4f8), +0x521 = 1, queues vt 0x1457d4270. Caller 0x14327f4a0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.safety_rating_system_read_online_player_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 31 F6 80 B9",
+  "match": "0x142c66490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c66490",
+  "kind": "func_start",
+  "names": [
+   "Game_SafetyRatingSystem_ReadOnlinePlayerData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c66490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c66490.c;xref:0x14327f9c1",
+   "notes": "V5050 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

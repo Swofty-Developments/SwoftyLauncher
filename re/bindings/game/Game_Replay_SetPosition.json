@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Replay_SetPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445e2300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445e2300.c;pat:log-message-method;xref:0x145befca8,0x145befe38",
+  "notes": "ReplayBuffer vtable slot (cells 0x145befca8/0x145befe38, this = buffer+0x2d8): Game_PagedBuffer_UsePageAt(this-0x2d8, pos in rdx), then logs REPLAY_VERBOSE 'setPosition [%zu] [%zu]' with vcalls +0x30/+0x20. Class is ReplayBuffer. (lane owner review requested) Better name: Game_ReplayBuffer_SetPosition (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.replay_set_position",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 81 C1 28 FD FF FF",
+  "match": "0x1445e2300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445e2300",
+  "kind": "func_start",
+  "names": [
+   "Game_Replay_SetPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445e2300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445e2300.c",
+   "notes": "V6697 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

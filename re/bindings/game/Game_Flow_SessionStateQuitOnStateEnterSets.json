@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Flow_SessionStateQuitOnStateEnterSets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d87a30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d87a30.c;pat:log-channel-FLOW;xref:0x1457e56a0",
+  "notes": "Slot 4 (+0x20, onStateEnter) of state vtable 0x1457e5680 (cell 0x1457e56a0). Logs 'SessionStateQuit::onStateEnter() sets SessionExit to eFRONT_END_DISCONNECT' (FLOW); if net queue ([0x14618b3b8+8]+0x68) active posts a 0x10-byte message (vtable 0x1457e6620) under its CS and signals +0x88, else sets TLS error 0x58; then 0x142c76810(+0xc98+0x1fc, 4, 0); returns 1. (lane owner review requested) Better name: Game_SessionStateQuit_OnStateEnter (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.flow_session_state_quit_on_state_enter_sets",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 16 00 00 00",
+  "match": "0x142d87a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d87a30",
+  "kind": "func_start",
+  "names": [
+   "Game_Flow_SessionStateQuitOnStateEnterSets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d87a30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d87a30.c",
+   "notes": "V5416 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

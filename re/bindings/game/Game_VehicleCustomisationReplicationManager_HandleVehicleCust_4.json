@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_HandleVehicleCust_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143146160",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143146160.c;pat:log-message-cxx;xref:0x14313f05e",
+  "notes": "Read in full: logs 'Received VehicleCustomisationAddNetMessage for player'; copies msg+0x90 and calls replacePlayerVehicleCustomisation 0x1431400c0(this, msg+0x10, u16 msg+0x70); builds the player key; if a stored decal list for id msg+0x190 exists and is non-empty or complete: logs 'now applying the decals stored', applyPlayerVehicleCustomisationStoredDecals 0x1431448e0 and 0x143144f50, ready = 0; else logs 'now waiting for decals', ready = 1; then setIsPlayerVehicleCustomisationReadyToApplyDecals 0x143144370. Registered by lea 0x14313f05e in 0x14313f030. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_handle_vehicle_cust_4",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 4B 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 D7 48 89 CE 4C 8D 72 10 0F B7 5A 70 4C 8D BA 90 00 00 00",
+  "match": "0x143146160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143146160",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_HandleVehicleCust_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143146160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143146160.c;xref:0x14313f060",
+   "notes": "V5948 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

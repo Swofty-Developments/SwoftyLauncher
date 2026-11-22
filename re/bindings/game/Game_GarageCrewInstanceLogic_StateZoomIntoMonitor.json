@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstanceLogic_StateZoomIntoMonitor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140385b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140385b80.c;pat:log-message-cxx;xref:0x145622d48",
+  "notes": "StateZoomIntoMonitor::processEvent: only while logic+0x90 set; event 2 -> state 0xc (logic+0x28, transition flag set), event 4 -> state 7 (logic+0x10); else 'unexpected' log; pops the event. Vtable cell 0x145622d48. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_logic_state_zoom_into_monitor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CF 80 BA 90 00 00 00 00",
+  "match": "0x140385b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140385b80",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstanceLogic_StateZoomIntoMonitor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140385b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140385b80.c;xref:0x3959b9",
+   "notes": "V4581 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

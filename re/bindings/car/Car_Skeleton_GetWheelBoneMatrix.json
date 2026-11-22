@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Skeleton_GetWheelBoneMatrix",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144633230",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144633230.c;xref:0x142e84389,0x142e8553b,0x1445a76e5,0x1445a7707,0x1445a7729,0x1445a774b,0x1445ac374,0x1445ad132",
+  "notes": "(obj, out4x4, wheel, sub, live): idx = obj+0x5f4+wheel*0xfc+sub*4; idx<0 -> identity with y=-1000; else bone 3x4 at idx*0x30 from pose buffer (vcall [model+0x28]+8; buffer chosen by bitset when live) transposed to 4x4; fallback obj+0xb50+wheel*0x30 when no model/wheel or wheel damage obj flag +0x38. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.skeleton_get_wheel_bone_matrix",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D6 48 89 CF 45 89 C6",
+  "match": "0x144633230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144633230",
+  "kind": "func_start",
+  "names": [
+   "Car_Skeleton_GetWheelBoneMatrix"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144633230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144633230.c;xref:0x142e84389",
+   "notes": "V7688 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Resolve_DriverAnimSetId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14248ba90",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14248ba90.c;xref:0x1413d9a17,0x1413d9a21,0x142504727,0x1425057e9,0x14289b6d7,0x14289c9e8",
+  "notes": "GameDB query 0x1445a2bd0 on table 'entrants.animation.driver_animation_sets' keyed by column 'driver_animation_set' = arg; column 'stat_id' via 0x1445a2cf0; returns u8 at value+8 (movzx), 0 when the row/column is missing (not 0x3fff0000). Callers Sess_Parse_ContentSet x2, Sess_Load_VehicleAiConfig, Game_Read_VehiclePackageRow, 0x14289b240 x2."
+ },
+ "signature": {
+  "id": "session.resolve_driver_anim_set_id",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 04 00 00 49 89 C8 C7 84 24 28 02 00 00 FF FF FF FF C6 84 24 2C 02 00 00 01 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 44 24 28 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 44 24 38 48",
+  "match": "0x14248ba90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14248ba90",
+  "kind": "func_start",
+  "names": [
+   "Sess_Resolve_DriverAnimSetId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x14248ba90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14248ba90.c;xref:0x142504727,0x1425057e9,0x14289b6d7,0x1413d9a17",
+   "notes": "V3386 inline string entrants.animation.driver_animation_sets, returns u8 stat_id (default 0) not 0x3fff0000 on missing -> minor; callers all 4 named confirmed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x14248ba90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14248ba90.c;xref:0x142504727,0x1425057e9,0x14289b6d7,0x1413d9a17",
+   "notes": "V3387 CORRECTION of V3386: table string and the 4 callers ok, but function returns a u8 (stat_id low byte, 0 when missing), no 0x3fff0000 'missing' sentinel and no ref struct; table claimed stat_id lookup otherwise ok"
+  }
+ ],
+ "proofs": []
+}

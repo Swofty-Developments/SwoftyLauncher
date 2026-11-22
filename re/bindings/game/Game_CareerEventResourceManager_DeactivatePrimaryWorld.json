@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventResourceManager_DeactivatePrimaryWorld",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c7a820",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c7a820.c;pat:log-message-cxx;xref:0x140c7525a,0x140c76fb0",
+  "notes": "Logs 'activateExtraWorld %s', finds the world named param_1 in [[0x14601f5c8+0x30]+0xf0], then inlined deactivatePrimaryWorld (log, notifyInvalidateCrowdData, deactivates primary + 'primary_livery' worlds), activates the extra world (0x1444bcd80), prewarm log (CUTSCENE_TEXTURE_CONTROL), 0x144478ce0, and tail-jumps to 0x140177020 with [[0x14601f5c8+0x20]+0x208]. (lane owner review requested) Better name: Game_CareerEventResourceManager_ActivateExtraWorld (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.career_event_resource_manager_deactivate_primary_world",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 80 39 00",
+  "match": "0x140c7a820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7a820",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventResourceManager_DeactivatePrimaryWorld"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c7a820",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c7a820.c;xref:0x140c509de,0x140c7525a",
+   "notes": "V4609 better name Game_CareerEventResourceManager_ActivateExtraWorld: takes world name; logs activateExtraWorld %s, deactivatePrimaryWorld and preWarmTextures; deactivate is only one step"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140c7a820",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c7a820.c;xref:0x140c7525a",
+   "notes": "V7165 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

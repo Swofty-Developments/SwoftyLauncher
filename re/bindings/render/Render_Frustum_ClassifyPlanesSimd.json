@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Frustum_ClassifyPlanesSimd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14395d690",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14395d690.c;xref:0x14395dc95,0x14395dcfb",
+  "notes": "Classifies a triangle of three vec4 points param_2[0..2] against six planes param_1[0..5] (dpps): 0 if all three points are outside one plane, 1 if inside all planes, 2 if intersecting. Callers in 0x14395d980. (lane owner review requested) Better name: Render_Frustum_ClassifyTriangle (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.frustum_classify_planes_simd",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 C5 F9 6F 02 B8 00 00 80 3F C4",
+  "match": "0x14395d690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14395d690",
+  "kind": "func_start",
+  "names": [
+   "Render_Frustum_ClassifyPlanesSimd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14395d690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14395d690.c;xref:0x14395dc95",
+   "notes": "V8484 dpps of two plane/vec4 sets against 3 vectors with sign classification, callers TestPointAndBuildFovBasis x2"
+  }
+ ],
+ "proofs": []
+}

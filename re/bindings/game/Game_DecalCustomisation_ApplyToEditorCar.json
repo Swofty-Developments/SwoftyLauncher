@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_ApplyToEditorCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141428e60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141428e60.c;xref:0x14142c84c,0x14142d624,0x14142d7cc,0x14142e010,0x141ff0343",
+  "notes": "(sys, sharedPtr<decal>*, bool linked): car = Game_DecalCustomisation_GetEditorCarObject; if flag byte 0x146064623&0x80 and linked and decal+0x68 != -1, finds the linked entry in sys+0x178..+0x180 (+0x20 == decal+0x68) and posts it to car+0x188 (0x142b525b0, layer byte from the +0x98 list match on +0xc); then posts the decal itself the same way. 0x14142c84c/0x14142d624/0x14142d7cc are tail jmps. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decal_customisation_apply_to_editor_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 44 89 C5 48",
+  "match": "0x141428e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141428e60",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_ApplyToEditorCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x141428e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141428e60.c;xref:0x14142c84c",
+   "notes": "V8032 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

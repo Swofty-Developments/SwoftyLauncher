@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SurfacePackSystem_AssignSuit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437a65b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437a65b0.c;pat:log-channel-GameSurfacePackSystem;xref:0x1401a98ba,0x1428a313c,0x14db2f6eb",
+  "notes": "Under CS +0x18480: finds param_3 in 32-slot table +0x18280 (0x1449e2850), takes free slot (0) else logs 'RAN OUT OF SPACE!!!'; surface id = 0x160+min(param_2,4)+min(slot,31)*5; copies 0x104 path from param_5+0x18, pushes insert record via 0x1437a6b20 into +0x18100 and erases that id from pending-removal vector +0x18148..+0x18150. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.surface_pack_system_assign_suit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 02 00 00 48 8B 9C 24 F0 02 00 00",
+  "match": "0x1437a65b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437a65b0",
+  "kind": "func_start",
+  "names": [
+   "Game_SurfacePackSystem_AssignSuit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x1437a65b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437a65b0.c;xref:0x1401a98ba",
+   "notes": "V6298 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

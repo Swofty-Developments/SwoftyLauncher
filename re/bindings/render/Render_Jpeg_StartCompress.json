@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_StartCompress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d463c",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d463c.c;xref:0x14379cf7e,0x144bd9037",
+  "notes": "libjpeg jpeg_start_compress(cinfo, write_all_tables): error 0x15 unless state 100, optional jpeg_suppress_tables(FALSE) (0x1449d45c4), err reset (vcall +0x20), dest init_destination (+0x10), jinit_compress_master (0x1449d4e2c), master prepare_for_pass, next_scanline (+0x144) = 0, state 0x65 or 0x66 (raw data). Callers 0x14379cf7e (0x14379c250), 0x144bd9037 (0x144bd8ea0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.jpeg_start_compress",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 57 48 83 EC 20 83 79 24 64 40 8A",
+  "match": "0x1449d463c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d463c",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_StartCompress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1449d463c",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449d463c.c;xref:0x14379cf7e",
+   "notes": "V7710 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

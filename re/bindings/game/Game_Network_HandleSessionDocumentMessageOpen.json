@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HandleSessionDocumentMessageOpen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143097c10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143097c10.c;pat:log-message-method;xref:0x143095e2d",
+  "notes": "Registered by the lea at 0x143095e2d in 0x143095910. Logs 'handleSessionDocumentMessageOpen(%d)'; if [[this+0x420]+0xd8] vt+0x10 equals the arg byte sets +0x765=1 (document open) and tail-jumps 0x14309d6a0 (0x143097cc5). The decomp also prints 0x14309d6a0's body (clearDataCaches). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_handle_session_document_message_open",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 44 89 C3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 78 B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 4E 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 00 01 00 00 75 C3 EB 1E 44 0F B6 CB 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 86 20 04 00 00 48 8B 88 D8 00 00 00 48 8B 01 FF 50 10 38 D8 75 15",
+  "match": "0x143097c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143097c10",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HandleSessionDocumentMessageOpen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143097c10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143097c10.c;xref:0x143095e2f",
+   "notes": "V5303 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

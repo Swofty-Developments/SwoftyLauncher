@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreAllocation_ShiftWarmUpSets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e8d300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e8d300.c;xref:0x140bcea48",
+  "notes": "(preset, setsPerCompound): for count preset+0xd8 compound blocks (stride 0x28 from +0x10) sets vector end = begin (+0x28 = +0x20), then for each of up to 5 blocks calls 0x142e8a900(block, 0, size, 0) setsPerCompound times (re-adds default sets). Caller 0x140bcea48 passes the WarmUpSetsPerCompound tweak in edx. (lane owner review requested) Better name: Game_TyreAllocation_ResetCompoundSets (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.tyre_allocation_shift_warm_up_sets",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 8B 81 D8 00 00 00 48",
+  "match": "0x142e8d300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8d300",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreAllocation_ShiftWarmUpSets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x142e8d300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e8d300.c;xref:0x140bcea48",
+   "notes": "V8469 shifts 0x28-stride entries (+0x20 to +0x28, count +0xd8), runs clear helper 142e8a900 param_2 times; caller ValidateWarmUpSets"
+  }
+ ],
+ "proofs": []
+}

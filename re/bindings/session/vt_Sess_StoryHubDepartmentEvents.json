@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_StoryHubDepartmentEvents",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14585eee0",
+  "type": "vtable[21]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;decomp:re/decomp/140842410.c;xref:0x140842473",
+  "notes": "cxx=StateStoryHubDepartmentEvents; 21 slots (next vtable at +0xa8, lea 0x15102dabe). Slot 0 -> type record 0x146102420, +8=name set by static init 0x1437c1990 at 0x1437c2a6a. Slot 2 NeFlowState base 0x1436aef00; slots 8/9/10 onStateEnter/Update/Exit 0x1436fcfa0/0x1436fd220/0x1436fd270. Ctor 0x140842410 (lea 0x140842473; mov [rsi],rax)."
+ },
+ "signature": {
+  "id": "session.story_hub_department_events",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 C5 F8 57 C0 C5 F8 11 86 28 0D 00 00 48 C7",
+  "match": "0x140842473",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14585eee0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_StoryHubDepartmentEvents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14585eee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x140842476",
+   "notes": "V7496 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

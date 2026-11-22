@@ -481,7 +481,7 @@ several rules, one option   applied in priority order, each blending over the re
 
 ### Signals
 
-Every signal is for the player's car. The `car.*` signals read the player's own car, also in replays and while spectating. The `car.*` signals and `session.wetness` are read from the Steam copy of F1 25; on the EA app copy they have no value yet.
+Every signal is for the player's car. The `car.*` signals read the player's own car, also in replays and while spectating. They are read on Steam F1 25 1.0.141 and 1.0.145.2472 and on the EA app's 1.0.141 and 1.0.145. `car.surface`, `car.wetness` and `session.wetness` are read on Steam 1.0.141 only; on any other build they have no value.
 
 ```text
 in game now
@@ -508,7 +508,7 @@ car.wetness         number   0-1 water under the car's wheels: the wettest of th
 session.wetness     number   0 dry to 1 soaked: how wet the track is
 
 not read in game yet (works in the Preview)
-view.camera         name     cockpit tcam tcam_offset chase_near chase_far other
+view.camera         name     cockpit tcam tcam_offset chase_near chase_far other trackside reverse_pod
 car.impact          event    collision g
 car.damage          event    part damage increase, 0-1
 car.in_pit_lane     yes/no
@@ -606,8 +606,8 @@ A ref is `personal:<slug>` for a file in the launcher's `shaders/` folder, or `a
 The core logs each time the active config changes. `serial` counts the changes:
 
 ```text
-[shaders] config "Realistic" (serial 42): 5 effect(s), 11 pass(es)
-[shaders] config "Realistic" (serial 43): 4 effect(s), 9 pass(es)
+[shaders] config "Realistic" (serial 42): 5 effect(s), 11 pass(es), toggle key B
+[shaders] config "Realistic" (serial 43): 4 effect(s), 9 pass(es), toggle key B
 ```
 
 A parameter-only change updates the values and logs the new serial. The per-pass GPU time lines name the effect and its instance, like `ambient_light` or `glare.wide`. A pass whose average GPU time stays over its `budget_ms` is turned off, as in [post-process passes](./postfx#in-game).

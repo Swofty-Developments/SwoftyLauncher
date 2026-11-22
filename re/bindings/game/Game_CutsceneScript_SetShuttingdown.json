@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneScript_SetShuttingdown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140235fb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140235fb0.c;pat:log-message-method;xref:0x1455eaff0,0x1455eb790,0x1455ecf60,0x1455ed5b0,0x1455ee600,0x1455eea10,0x1455eede0,0x1455ef120",
+  "notes": "Logs CUTSCENE_SCRIPT_VERBOSE 'setShuttingdown %p %s' and sets state this+0x40 = 0xb. Cells = this slot in the cutscene script vtables (subset listed). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cutscene_script_set_shuttingdown",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4C B8 56 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 85 D2 74 36 81 FA 2C A8 D4 18 74 41 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 56 01 00 00 75 C3 83 7E 40 0B",
+  "match": "0x140235fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140235fb0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneScript_SetShuttingdown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140235fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140235fb0.c",
+   "notes": "V4440 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

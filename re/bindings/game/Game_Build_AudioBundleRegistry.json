@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Build_AudioBundleRegistry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409f1b50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1409f1b50.c;imm:0x14566e107;xref:0x14080a9e5",
+  "notes": "Walks every row of audio.audio_bundle_settings: bundle_name (\".bdl\" appended when missing), era, bools engine/exhaust/cabin -> flags 1/2/4; key = FNV-1a64 of the lowered name; registers via 0x1443e5f60(param_1, key, name, era, flags); failure logs. Caller 0x14080a720. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.build_audio_bundle_registry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 05 00 00 48 89 4C 24 30",
+  "match": "0x1409f1b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409f1b50",
+  "kind": "func_start",
+  "names": [
+   "Game_Build_AudioBundleRegistry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409f1b50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409f1b50.c",
+   "notes": "V4385 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

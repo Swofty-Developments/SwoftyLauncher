@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkF_ClearDataCaches",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14309d6a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14309d6a0.c;pat:log-message-method;xref:0x143067f13,0x1430a1fbd,0x143097cc5,0x1430a53d0",
+  "notes": "cxx=network::GameSessionSeasonDocument::clearDataCaches(). Returns with 'cancelled - still receiving initial data' while the doc is receiving; else clears entry flags, releases +0x450 objects, erases net progress records (+0x448), clears +0x460 and a set at session+0x470; tail jumps to 0x143242790 (clearVehicleSet, inlined in the decomp). Callers 0x143067d40, 0x1430a1e90; jumps from 0x143097c10, 0x1430a5170. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_f_clear_data_caches",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 5B 01 00 00",
+  "match": "0x14309d6a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14309d6a0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkF_ClearDataCaches"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x14309d6a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14309d6a0.c;xref:0x143067f13",
+   "notes": "V5311 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_CopySurfaceRows",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439bad30",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439bad30.c;xref:0x1439ba7bd,0x1439dcb04",
+  "notes": "UpdateSubresources pattern: GetDesc (+0x50) of dst and upload, size check, Map upload (+0x40), memcpy rows per subresource (footprints param_6, rows param_7, row size param_8, src param_9), Unmap (+0x48); buffer dst -> cmd list vcall +0x78 (buffer copy) else +0x80 per subresource. Callers in 0x1439ba070, Render_Gfx2Device_MapSurfaceViaUploadBuffer. (lane owner review requested) Better name: Render_Gfx2_UpdateSubresourcesFromUpload (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_device_copy_surface_rows",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 44 89 CD 4C",
+  "match": "0x1439bad30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439bad30",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_CopySurfaceRows"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439bad30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439bad30.c;xref:0x1439ba7bd",
+   "notes": "V8498 row-by-row memcpy loops with pitch strides; caller MapSurfaceViaUploadBuffer"
+  }
+ ],
+ "proofs": []
+}

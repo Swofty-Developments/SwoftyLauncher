@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteF1RaceSessionFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143767fc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143767fc0.c;pat:log-channel-STATEVENT;xref:0x143793388",
+  "notes": "Providers this+8..+0x10; 28 entries: F1RaceSessionsFinished.* (Section/RaceLength/ExitStatus arg3/Difficulty/Weather/Vehicle/DriverStat/DriverPosition/GameplayMode/TeamStat/GameSetupMode/CareerSessionIndex arg4/SessionType) 1.0, PositionsGainedInSession type 2, F1RaceSessionsFinishedUnique type 3, PointsScoredInRaceSession type 0. Caller 0x143790310. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_f1_race_session_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 21 00 00 E8 ?? ?? ?? ?? 48 29 C4 45 89 CC",
+  "match": "0x143767fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143767fc0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteF1RaceSessionFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143767fc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143767fc0.c;xref:0x143443ef5",
+   "notes": "V6222 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

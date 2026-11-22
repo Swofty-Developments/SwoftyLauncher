@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_RouteCmd_OpenScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143889310",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143889310.c;xref:0x14588a618",
+  "notes": "Route executor (self,NeStr **err,cmd), only ref vtable cell 0x14588a618: looks up the FIXED screen hash 0xc4d8d4ca in the screen table; missing -> err 'No screen called %u exists'; else finds the scene matching 'persistent_scene' and, if the screen is not in scene list +0x130, calls Vm_Open_Screen 0x144182660; sets 'value', self+0x98=0, +0x9c=4; *err = empty. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "vm.route_cmd_open_screen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4D 89 C7 48",
+  "match": "0x143889310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143889310",
+  "kind": "func_start",
+  "names": [
+   "Vm_RouteCmd_OpenScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143889310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143889310.c",
+   "notes": "V6364 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

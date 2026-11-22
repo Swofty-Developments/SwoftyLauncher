@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_DrainPendingBitset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434f4ee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434f4ee0.c;xref:0x142e243ef,0x14f320f30",
+  "notes": "Full body read (pdata 0x1434f4ee0-0x1434f5785). Returns if count +0x90==0. Walks open-addressing pending set (entries +0x80, ctrl bytes +0x88, tzcnt scan); per entry walks its key list (+0x18) and erases each key (FNV-1a 64 of node+0x10) from main map (slots +0x28 stride 0x18, ctrl +0x30, count +0x38), values freed via 0x1434f5790 (~RenderToTargetTexture log 0x14584691b) + allocator vtbl+0x38; clears entry list; entries to freelist +0x60, ctrl memset 0x145378b60, +0xa8=0x20. Not a bitset: old name misleading. Callers 0x142e232a0 (despawnWorldAssetsIfAble) and 0x14f320ed0 tail jmp, both pass (obj+0x28)+0x38. Site 0x142d0ce26 jle dropped as rel32 noise. (lane owner review requested) Better name: Game_ThumbnailSystem_DrainPendingSet (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.thumbnail_system_drain_pending_bitset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 83 B9 90 00 00",
+  "match": "0x1434f4ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434f4ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_DrainPendingBitset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1434f4ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434f4ee0.c;xref:0x142d0ce27",
+   "notes": "V7589 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

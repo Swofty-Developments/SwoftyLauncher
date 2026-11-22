@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem2Win_ProcessSerialiserActions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14414cdd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/14414cdd0.c;xref:0x14413f1e0,0x1441522c5",
+  "notes": "logged method name readSecurityInfoFile (class from the log channel); log channel NeSaveSystem2Win: 'readSecurityInfoFile claimed numFiles=%u' cb4-verify-a: 21 KB routine driving the save serialiser getNextAction (read/update/abort): read/write/delete save files, encryption, HMAC, header magic and size checks, decryption, security info file (readSecurityInfoFile inlined near the end); callers SelectAndLoad 0x14413ecd0 and writer 0x144152070 Cipher (proven offline on real saves, 2026-11-19): the data file is header (magic 65 ef 00 8a, then u32 LE file size xor 0xc3615f4e) + HMAC-SHA256 (32) + IV (16) + AES-256-CBC PKCS7 body; MAC and IV are xored with a 12-byte cycle at 0x145a5db02 (loops 0x14414da79-0x14414db2e); the HMAC covers IV||ciphertext; the 32-byte key is the first 8 outputs (u32 LE) of an MT19937 seeded 0x08086283 (build at 0x14414d483-0x14414d58a); the body decrypts to a 16-byte stream header then a zstd frame holding the inner bag stream. HMAC and CBC run through Windows CryptoAPI (0x1439560c0, 0x1439550f0), which is why a constants scan finds no SHA or AES tables; the IV is random (0x143954ef0). The 416-byte SECUINFO index is AES-256-ECB (cipher object vt 0x145a5f1f0/0x145a5f230, tables at 0x145a3e120) with a different key; its plaintext is a UTF-16 display name, LCG filler (x*0x343fd+0x269ec3), and a CRC32 table pass over the buffer (0x144151937-0x144151a2a); the +0x180 checksum is a standard CRC32 (table 0x1458904d0) over [0,0x180) then [0x184,0x1a0) with init = complement of a constant seed, final complement; it matches all 6 real indexes and does not depend on the data file."
+ },
+ "signature": {
+  "id": "core.save_system2_win_read_security_info_file",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 0E 00 00 C5 78 29 84 24 D0 0E 00 00",
+  "match": "0x14414cdd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14414cdd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem2Win_ProcessSerialiserActions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14414cdd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14414cdd0.c;xref:0x14413f1e0,0x1441522c5",
+   "notes": "V4116 readSecurityInfoFile string; callers SelectAndLoad 0x14413f1e0 and SaveSelected 0x1441522c5 confirmed"
+  }
+ ],
+ "proofs": []
+}

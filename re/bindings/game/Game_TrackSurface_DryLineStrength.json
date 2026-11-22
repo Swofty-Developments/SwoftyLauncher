@@ -1,0 +1,100 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSurface_DryLineStrength",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437cda00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_TrackSurface_DryLineStrength(void *sys, float elapsed, float *out, float *raw)",
+  "evidence": "decomp:re/decomp/1437cda00.c;xref:0x1436adf1c,0x1437cd027;doc:re/db/subsystems/game.md",
+  "notes": "w = wet_delta at (now - delay) (delay setting 0x146102c78 * 60 s, 0 in Time Trial); s = 0 (w<=0.001), A*w/0.33, lerp(A,B), B (w>0.66) with A = sys+0xfc4 or setting 0x146102c68, B = sys+0xfc8 or 0x146102c70; out = clamp(s*ramp)*TIS+0x3f0a6c -> TIS+0x3f0a64 (wx-drive round 5) | findings from PR #471 by vogtmarcel07-cloud L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x1436adf1c, 0x1437cd027). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) | re-bindings 2026-11-18: Steam 1.0.145 (sigport --witness): 0x1437cff90, 134/134 equal, with +0x3f0a6c at the same instruction."
+ },
+ "signature": {
+  "id": "game.track_surface_dry_line_strength",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 4C 89",
+  "match": "0x1437cda00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437cda00",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSurface_DryLineStrength"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1437cda00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437cda00.c",
+   "notes": "V4058 small dry-line function; offsets not individually re-read; low-confidence agree (vtable/indirect or no direct callsite checked)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1437cda00",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1437cda00-0x1437cdc85;xref:0x1436adf1c,0x1437cd027",
+   "notes": "V10527 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x1436adf1c (Sess_Build_VehicleTyreInfo) and 0x1437cd027 (+ non-instruction hit). 4 args (rcx, xmm1, r8, r9). Settings 0x146102c78 (*60), 0x146102c68 / sys+0xfc4, 0x146102c70 / sys+0xfc8, constants 0.001 / 0.33 / 0.66, * [TIS+0x3f0a6c] (0x1437cdc4a)."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437cda00",
+    "target": "0x1437cda00"
+   },
+   "sigcheck": "passed",
+   "digest": "9c3a5474dc58338c128035e0f30bf3c3c71bdadba71736340e6036657ffed39b"
+  },
+  {
+   "by": "re-bindings",
+   "date": "2026-11-18",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437cff90",
+    "target": "0x1437cff90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "666b8f2d83a8eaaa669ab370bb513dba1fadb2870af927861c33ac6688133f59"
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_TeamHasActiveDriverSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8d2f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractRenewal_TeamHasActiveDriverSlot(void *comp, uint32_t team_key)",
+  "evidence": "decomp:re/decomp/140d8d2f0.c;xref:0x140d8d683,0x140d8e0cb,0x140d8e151,0x140d95b55",
+  "notes": "Same walk as 0x140d8d150 but returns 1 if a matching entry has status byte +0x10 < 2. (lane owner review requested) Better name: Career_ContractRenewal_HasDayEntryWithStatusBelow2 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_team_has_active_driver_slot",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 89 D7 48 89 CE",
+  "match": "0x140d8d2f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8d2f0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_TeamHasActiveDriverSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d8d2f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d8d2f0.c",
+   "notes": "V9541 Same activity/stage walk as 140d8d150 with status < 2 test; driver-signed meaning is unproven."
+  }
+ ],
+ "proofs": []
+}

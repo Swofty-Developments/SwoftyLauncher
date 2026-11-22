@@ -1,17 +1,20 @@
 #pragma once
 
-#include "career_rows.hpp"
-#include "drs.hpp"
-#include "garage_lower.hpp"
-#include "liveries.hpp"
-#include "lower.hpp"
-#include "rows.hpp"
-#include "wear.hpp"
-#include "teams.hpp"
+#include "core/apply/content/career_rows.hpp"
+#include "core/apply/content/drs.hpp"
+#include "core/apply/content/points.hpp"
+#include "core/apply/content/box_assets_lower.hpp"
+#include "core/apply/content/garage_lower.hpp"
+#include "core/apply/content/sponsors_lower.hpp"
+#include "core/apply/content/liveries.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/apply/content/rows.hpp"
+#include "core/apply/content/wear.hpp"
+#include "core/apply/content/teams.hpp"
 
-#include "../ids.hpp"
-#include "../../career_ops/start_teams.hpp"
-#include "../../registry/store.hpp"
+#include "core/apply/ids.hpp"
+#include "core/career/ops/start_teams.hpp"
+#include "core/registry/store.hpp"
 
 #include <map>
 #include <memory>
@@ -26,12 +29,29 @@
 
 namespace swofty_core::apply::content {
 
-inline constexpr const char *ROW_REGISTRIES[] = {"engine_sound",   "vehicle.package",     "vehicle",         "livery",
-                                                 "team.identity",  "team.pit_times",   "team.garage",
-                                                 "helmet",         "suit",                "gloves",          "driver.head",
-                                                 "driver.look",    "driver.person",       "driver.identity", "driver.stats",
-                                                 "wearable.season_set", "rules.drs",   "content.package",
-                                                 "career.rnd.tree", "career.market"};
+inline constexpr const char *ROW_REGISTRIES[] = {"engine_sound",
+                                                 "vehicle.package",
+                                                 "vehicle",
+                                                 "livery",
+                                                 "team.identity",
+                                                 "team.pit_times",
+                                                 "team.garage",
+                                                 "track.sponsors",
+                                                 "content.box_assets",
+                                                 "helmet",
+                                                 "suit",
+                                                 "gloves",
+                                                 "driver.head",
+                                                 "driver.look",
+                                                 "driver.person",
+                                                 "driver.identity",
+                                                 "driver.stats",
+                                                 "wearable.season_set",
+                                                 "rules.drs",
+                                                 "session.points",
+                                                 "content.package",
+                                                 "career.rnd.tree",
+                                                 "career.market"};
 
 inline Lookup store_lookup(registry::Store &st, std::map<std::string, Value> &keep)
 {
@@ -51,8 +71,7 @@ inline Lookup store_lookup(registry::Store &st, std::map<std::string, Value> &ke
 inline std::vector<std::string> in_load_order(registry::Store &st, const std::string &reg)
 {
     std::vector<std::string> ids = st.list(reg, "");
-    ids.erase(std::remove_if(ids.begin(), ids.end(), [](const std::string &id) { return id.rfind("game/", 0) == 0; }),
-              ids.end());
+    ids.erase(std::remove_if(ids.begin(), ids.end(), [](const std::string &id) { return id.rfind("game/", 0) == 0; }), ids.end());
     std::vector<std::string> order = st.order();
     auto rank = [&](const std::string &id) {
         std::string owner = addon_of(id);
@@ -196,9 +215,9 @@ inline std::string row_label(const Lookup &lookup, std::string_view reg, const s
     if (reg == "content.package")
         return rec["entrant_list"].is_string() ? std::string(rec["entrant_list"].as_string()) : std::string();
     if (reg == "wearable.season_set")
-        return rec["team"].is_string() ? std::to_string(rec["season"].as_int()) + "-" +
-                                             label_of(lookup, "team.identity", rec["team"].as_string())
-                                       : std::string();
+        return rec["team"].is_string()
+                   ? std::to_string(rec["season"].as_int()) + "-" + label_of(lookup, "team.identity", rec["team"].as_string())
+                   : std::string();
     if (reg == "team.identity" || reg == "vehicle.package")
         return key_of(id);
     return record_label(lookup, std::string(reg).c_str(), id);
@@ -251,8 +270,8 @@ inline std::vector<Pin> pins(registry::Store &st)
 // operations') are held in the store. A record pinned on one of them, or kept on one in ids.json, for a row with
 // another label takes the next free id of its pool. The pins that land on nothing are placed first, so a moved
 // record never takes another record's pin. Returns the lines to log.
-inline std::vector<std::string> settle_ids(ids::Store &ids, registry::Store &st,
-                                           const std::map<std::string, PoolScan> &scans, const std::string &day)
+inline std::vector<std::string> settle_ids(ids::Store &ids, registry::Store &st, const std::map<std::string, PoolScan> &scans,
+                                           const std::string &day)
 {
     for (auto &[reg, scan] : scans)
         ids.hold(reg, scan.used);
@@ -269,8 +288,8 @@ inline std::vector<std::string> settle_ids(ids::Store &ids, registry::Store &st,
             lines.push_back(r.line);
     }
     for (auto &p : later) {
-        ids::Result r = p.stat_id >= 0 ? ids.pin(p.registry, p.id, p.stat_id, day, p.label)
-                                       : ids.recheck(p.registry, p.id, p.label, day);
+        ids::Result r =
+            p.stat_id >= 0 ? ids.pin(p.registry, p.id, p.stat_id, day, p.label) : ids.recheck(p.registry, p.id, p.label, day);
         if (!r.line.empty())
             lines.push_back(r.line);
     }
@@ -294,10 +313,19 @@ struct Expansion {
     std::map<std::string, std::vector<std::pair<std::string, std::string>>> texts;
     std::set<std::string> owners;
     std::map<std::string, std::map<std::string, int>> left_out;
+    std::map<std::string, std::vector<std::string>> status;
     std::vector<std::string> virtual_lists;
+    // A box with more teams than its world has garages gets a world of its own (box_world.hpp). The core turns it on
+    // unless SWOFTY_BOX_WORLDS=0; host tools pass it.
+    bool box_worlds = false;
+    // A box whose content.package names a world gets that one (box_world.hpp, choose_named) when box worlds are on
+    // and SWOFTY_BOX_OWN_WORLDS=1; world_tracks lists the track folders that hold a world (unset in host tools: not
+    // looked at).
+    bool own_worlds = false;
+    box_world::WorldTracks world_tracks;
 };
 
-// The runtime twin of the build's virtual-list step (packages/core/src/virtual_lists.rs) for content.package lists
+// The runtime twin of the build's virtual-list step (packages/core/src/games/f1_25/game_db/virtual_lists.rs) for content.package lists
 // with "virtual_list": true. After every record is lowered: adds the host list swofty_virtual_list (a copy of the
 // first virtual list, offered under swofty_f1) when no row has that label, then moves each virtual list's rows to
 // entrant_list_10000 and up, puts the table's last row in its place and lowers the count. Only rows this engine
@@ -327,8 +355,8 @@ inline void settle_virtual_lists(Expansion &x, const StatIds &stat)
         if (auto id = stat_of(stat, "content.package", std::string("swofty.core/") + VIRTUAL_HOST_LIST, -1))
             set["stat_id"] = std::to_string(*id);
         std::size_t mark = e.mark();
-        std::string why = e.apply(add_row("entrants.entrant_lists",
-                                          std::string(LISTS) + "[_metadata_=" + x.virtual_lists.front() + "]", set));
+        std::string why =
+            e.apply(add_row("entrants.entrant_lists", std::string(LISTS) + "[_metadata_=" + x.virtual_lists.front() + "]", set));
         for (const char *field : {"entrant_lists", "selectable_entrant_lists"})
             if (why.empty())
                 why = e.apply(append_op(std::string(SETUP_ROW) + "[_metadata_=swofty_f1]", field, VIRTUAL_HOST_LIST));
@@ -378,6 +406,69 @@ inline void settle_virtual_lists(Expansion &x, const StatIds &stat)
                     " lists left for the game)");
 }
 
+// Why a content.package's plan does not fit: one of the setup mode fields it appends its list to already names
+// SETUP_MODE_LISTS lists (one fewer in swofty_f1 while a virtual package needs the host there). Empty when it fits.
+inline std::string setup_mode_full(const rows::Engine &e, const Plan &plan, bool host)
+{
+    const std::string prefix = std::string(SETUP_ROW) + "[";
+    for (std::size_t i = 0; i < plan.ops.size(); i++) {
+        const Value &op = plan.ops[i];
+        std::string select(op["select"].as_string()), field(op["field"].as_string()), list(op["value"].as_string());
+        if (op["op"].as_string() != "list-append" || select.rfind(prefix, 0) != 0 ||
+            (field != "entrant_lists" && field != "selectable_entrant_lists"))
+            continue;
+        auto row = e.resolve(select);
+        if (!row)
+            continue;
+        std::vector<std::string> have = rows::Engine::items(e.text(*row + "." + field).value_or(""));
+        if (std::find(have.begin(), have.end(), list) != have.end())
+            continue;
+        std::string mode = e.text(*row + "._metadata_").value_or(*row);
+        bool hosts =
+            host && mode == "swofty_f1" && std::find(have.begin(), have.end(), std::string(VIRTUAL_HOST_LIST)) == have.end();
+        std::size_t room = SETUP_MODE_LISTS - (hosts ? 1 : 0);
+        if (have.size() >= room)
+            return "entrant setup mode " + mode + " already names " + std::to_string(have.size()) + " lists in " + field +
+                   (hosts ? " and keeps a slot for " + std::string(VIRTUAL_HOST_LIST) : std::string()) + "; the game loads " +
+                   std::to_string(SETUP_MODE_LISTS) + " at most";
+    }
+    return {};
+}
+
+// The backstop for lists the database brought: an entrant setup mode field naming more than SETUP_MODE_LISTS lists
+// keeps its first SETUP_MODE_LISTS, and the rest are logged.
+inline void cap_setup_mode_lists(Expansion &x)
+{
+    auto &e = x.engine;
+    auto n = e.instance_count("entrants.entrant_setup_modes", "entrant_setup_mode");
+    if (!n)
+        return;
+    for (int64_t i = 0; i < *n; i++) {
+        std::string row = std::string(SETUP_ROW) + "_" + std::to_string(i);
+        for (const char *field : {"entrant_lists", "selectable_entrant_lists"}) {
+            std::string path = row + "." + field;
+            auto old = e.get(gvdb::fnv64(path));
+            if (!old)
+                continue;
+            std::vector<std::string> have = rows::Engine::items(old->text);
+            if (have.size() <= SETUP_MODE_LISTS)
+                continue;
+            std::string kept, gone;
+            for (std::size_t k = 0; k < have.size(); k++) {
+                std::string &into = k < SETUP_MODE_LISTS ? kept : gone;
+                into += (into.empty() ? "" : ",") + have[k];
+            }
+            e.attribute("swofty.core", "content.package");
+            e.put_text(path, old->tag, kept);
+            std::string line = "entrant setup mode " + e.text(row + "._metadata_").value_or(row) + ": " + field + " named " +
+                               std::to_string(have.size()) + " lists, the game loads " + std::to_string(SETUP_MODE_LISTS) +
+                               "; left out " + gone;
+            x.lines["content.package"].push_back(line);
+            x.status["swofty.core"].push_back(line);
+        }
+    }
+}
+
 inline TeamRefs refs_of(registry::Store &st, const Lookup &lookup)
 {
     std::vector<std::pair<std::string, const Value *>> idents, ctors, pits;
@@ -425,7 +516,7 @@ inline std::map<std::string, std::vector<AddedSeat>> added_seats(registry::Store
             continue;
         for (auto &t : *teams) {
             std::string team(t["team"].as_string());
-            if (!career_ops::teams::added_team_id(team))
+            if (!career::ops::teams::added_team_id(team))
                 continue;
             for (std::size_t k = 0; k < 2; k++) {
                 std::string driver(t["seats"][k].as_string());
@@ -460,13 +551,15 @@ inline void lower_seat_entrants(registry::Store &st, Expansion &x, const Lookup 
         for (auto &[group, seat] : groups) {
             std::string why_seat = "a seat of the added team " + seat->team + " in " + std::to_string(seat->year) + " slot " +
                                    std::to_string(seat->slot) + " of " + group;
-            std::string career = read("career.career_setup.CareerSetupDataGroup[_metadata_=" + group + "].ComCareerSetup_0.entrant_list")
-                                     .value_or(std::string());
+            std::string career =
+                read("career.career_setup.CareerSetupDataGroup[_metadata_=" + group + "].ComCareerSetup_0.entrant_list")
+                    .value_or(std::string());
             if (career.empty() && read(std::string(LISTS) + "[_metadata_=" + group + "]._metadata_"))
                 career = group;
             std::string pool, from_entrant;
-            std::string refs = career.empty() ? std::string()
-                                              : read(std::string(LISTS) + "[_metadata_=" + career + "].entrant_list_references").value_or("");
+            std::string refs =
+                career.empty() ? std::string()
+                               : read(std::string(LISTS) + "[_metadata_=" + career + "].entrant_list_references").value_or("");
             std::size_t at = 0;
             while (pool.empty() && at <= refs.size()) {
                 std::size_t comma = refs.find(',', at);
@@ -495,8 +588,10 @@ inline void lower_seat_entrants(registry::Store &st, Expansion &x, const Lookup 
                 continue;
             Plan plan;
             plan.owner = addon_of(driver_id);
-            std::string look = (*rec)["look"].is_string() ? label_of(lookup, "driver.look", (*rec)["look"].as_string()) : std::string();
-            std::string number = (*rec)["number"].is_int() && (*rec)["number"].as_int() > 0 ? std::to_string((*rec)["number"].as_int()) : "255";
+            std::string look =
+                (*rec)["look"].is_string() ? label_of(lookup, "driver.look", (*rec)["look"].as_string()) : std::string();
+            std::string number =
+                (*rec)["number"].is_int() && (*rec)["number"].as_int() > 0 ? std::to_string((*rec)["number"].as_int()) : "255";
             if (!read(std::string(ENTRANTS) + "[_metadata_=" + entrant + "]._metadata_"))
                 push_row(plan, "entrants.entrant_lists.entrants", std::string(ENTRANTS) + "[_metadata_=" + from_entrant + "]",
                          Value::object({{"_metadata_", entrant},
@@ -582,6 +677,11 @@ inline void share_taken_switch(const std::string &id, const Value &rec, Plan &pl
 
 inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const std::set<std::string> &skip = {})
 {
+    struct Selectors {
+        rows::Engine &engine;
+        ~Selectors() { engine.index_selectors(false); }
+    } selectors{x.engine};
+    x.engine.index_selectors(true);
     std::map<std::string, Value> keep;
     Lookup lookup = own_lookup(st, keep);
     Source source = [&x](const std::string &key) -> std::optional<Stock> {
@@ -598,10 +698,13 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
     WearCtx wear = wear_context(st, lookup);
     TeamRefs refs = refs_of(st, lookup);
     std::map<std::string, std::pair<std::string, std::string>> vehicle_tower;
+    bool hosts = false;
     for (auto &pid : in_load_order(st, "content.package")) {
         const Value *pkg = lookup("content.package", pid);
         if (!pkg)
             continue;
+        if (!skip.count(addon_of(pid)) && (*pkg)["virtual_list"].is_bool() && (*pkg)["virtual_list"].as_bool())
+            hosts = true;
         const Value &entries = (*pkg)["teams"];
         for (std::size_t t = 0; t < entries.size(); t++) {
             if (!entries[t]["vehicle"].is_string() || !entries[t]["team"].is_string())
@@ -610,7 +713,8 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
             const Value *ident = lookup("team.identity", team);
             if (!ident)
                 continue;
-            const Value *logo = (*ident)["logo"].is_string() ? lookup("team.logo", std::string((*ident)["logo"].as_string())) : nullptr;
+            const Value *logo =
+                (*ident)["logo"].is_string() ? lookup("team.logo", std::string((*ident)["logo"].as_string())) : nullptr;
             TowerBadge badge = tower_badge(logo, label_of(lookup, "team.identity", team));
             if (!badge.key.empty())
                 vehicle_tower.emplace(std::string(entries[t]["vehicle"].as_string()), std::make_pair(team, badge.key));
@@ -642,8 +746,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                     lower_vehicle_team(*rec, read, plan);
                 else
                     lower_vehicle_team(*rec, read, plan, linked->second.first, linked->second.second);
-            }
-            else if (r == "livery")
+            } else if (r == "livery")
                 lower_livery(id, *rec, worn[id], lookup, read, plan, stat, &slot);
             else if (r == "helmet" || r == "suit" || r == "gloves")
                 lower_item(item_kind(r), id, *rec, lookup, read, plan, stat, wear);
@@ -665,14 +768,30 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 lower_pit_times(id, *rec, lookup, read, refs, plan);
             else if (r == "team.garage")
                 lower_garage(id, *rec, lookup, read, plan);
+            else if (r == "track.sponsors")
+                lower_sponsors(id, *rec, lookup, read, plan);
+            else if (r == "content.box_assets")
+                lower_box_assets(id, *rec, lookup, read, plan);
             else if (r == "rules.drs")
                 lower_drs_rule(id, *rec, plan);
+            else if (r == "session.points")
+                lower_session_points(id, *rec, plan);
             else if (r == "career.rnd.tree")
                 lower_rnd_tree(id, *rec, read, plan);
             else if (r == "career.market")
                 lower_market(id, *rec, lookup, read, refs, plan);
             else
-                lower_package(id, *rec, lookup, plan, stat, &wear.person_driver, read, &refs.constructor_team, &dropped);
+                lower_package(id, *rec, lookup, plan, stat, &wear.person_driver, read, &refs.constructor_team, &dropped,
+                              x.box_worlds, x.own_worlds, x.world_tracks ? &x.world_tracks : nullptr);
+            if (std::string full = r == "content.package" ? setup_mode_full(x.engine, plan, hosts) : std::string();
+                !full.empty()) {
+                x.refused[reg]++;
+                std::string list = (*rec)["entrant_list"].is_string() ? std::string((*rec)["entrant_list"].as_string()) : id;
+                x.status[owner].push_back("entrant list " + list + " left out: " + full +
+                                          ". Turn some season addons off to get it back");
+                lines.push_back(std::string(reg) + " " + id + ": not applied: " + full);
+                continue;
+            }
             x.engine.add_fields(plan.fields);
             x.engine.attribute(owner, reg, id);
             std::size_t mark = x.engine.mark();
@@ -684,16 +803,14 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 x.engine.rollback(mark);
                 if (r == "vehicle.package")
                     dropped.insert(id);
-                if (r == "vehicle" || r == "team.identity" ||
-                    (r == "content.package" && !dropped_ref(*rec, &dropped).empty()))
+                if (r == "vehicle" || r == "team.identity" || (r == "content.package" && !dropped_ref(*rec, &dropped).empty()))
                     x.left_out[owner][r]++;
                 if (r == "vehicle" || r == "team.identity")
                     dropped.insert(drop_key(reg, id));
                 x.refused[reg]++;
-                lines.push_back(std::string(reg) + " " + id + ": not applied: " +
-                                (why.empty() ? (plan.lines.empty() ? std::string("it lowers to nothing")
-                                                                   : plan.lines.back())
-                                             : why));
+                lines.push_back(
+                    std::string(reg) + " " + id + ": not applied: " +
+                    (why.empty() ? (plan.lines.empty() ? std::string("it lowers to nothing") : plan.lines.back()) : why));
                 continue;
             }
             x.engine.commit();
@@ -717,6 +834,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
     }
     lower_seat_entrants(st, x, lookup, read, skip);
     settle_virtual_lists(x, stat);
+    cap_setup_mode_lists(x);
     for (auto &l : x.engine.lines)
         x.lines["content.package"].push_back(l);
     for (auto &w : x.engine.writes())
@@ -733,8 +851,7 @@ struct Admission {
     std::vector<std::pair<std::string, std::size_t>> refused;
 };
 
-inline Admission admit(const std::vector<std::string> &order, const std::map<std::string, std::size_t> &fresh,
-                       uint64_t room)
+inline Admission admit(const std::vector<std::string> &order, const std::map<std::string, std::size_t> &fresh, uint64_t room)
 {
     Admission a;
     uint64_t left = room;

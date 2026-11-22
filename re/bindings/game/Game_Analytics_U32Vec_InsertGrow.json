@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_U32Vec_InsertGrow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140831670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140831670.c;xref:0x14074f4cf,0x14074f58f",
+  "notes": "Generic std::vector<4-byte> grow-and-insert: cap max(size+1,cap*1.5), alloc via allocator 0x14618b130 (aligned path >0x3ff), stores *param_3 at param_2, memcpy both halves, frees old. Not analytics-specific. (lane owner review requested) Better name: Game_U32Vec_InsertGrow (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_u32_vec_insert_grow",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 B8 FF FF FF FF FF FF FF 3F 4C 8B 29",
+  "match": "0x140831670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140831670",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_U32Vec_InsertGrow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140831670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140831670.c;xref:0x14074f4cf",
+   "notes": "V8012 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

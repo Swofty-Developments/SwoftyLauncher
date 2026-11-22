@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_PrepareWrite",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439153d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439153d0.c;xref:0x14379d3bd",
+  "notes": "Initialises write state (+0x16c, +0x21c, +0x284) and calls 0x143915000. Callers Game_ThumbnailSystem_RequestAndWriteScreenshot, Render_Write_PngFile, Render_Screenshot_CaptureAndSave. Hypothesis."
+ },
+ "signature": {
+  "id": "core.libpng_prepare_write",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 85 C9 74 6C",
+  "match": "0x1439153d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439153d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_PrepareWrite"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1439153d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439153d0.c;xref:0x14379d3bd",
+   "notes": "V7616 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

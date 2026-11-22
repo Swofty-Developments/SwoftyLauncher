@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehiclePhysicsClock_LogNewLap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143273e60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143273e60.c;xref:0x143260341",
+  "notes": "Read in full (record): if the event bus [0x14618b3b8+8] is not active (+0x68 == 0) sets TLS error code 0x58 (and the ring buffer 0x146107830); else unsubscribes 0x143273bd0 from event 'vehicle_newlap_recorded' (0x143988350). Then clears vehicle+0x558+0x3d0 (16 bytes), and frees the history block record[0xe] (critical section, 0x1d00 bytes of entries reset, delete) and nulls it. Caller Game_VehiclePhysicsClock_Reset (0x143260341). Rename: it is a record teardown, not a logger. (lane owner review requested) Better name: Game_VehicleProgressRecord_Teardown (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.vehicle_physics_clock_log_new_lap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 CE 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 80 79 68 00 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 48 89 74 24 28 48 8D 15 ?? ?? ?? ?? 4C 8D 44 24 20 E8 ?? ?? ?? ?? 48 8B 46",
+  "match": "0x143273e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143273e60",
+  "kind": "func_start",
+  "names": [
+   "Game_VehiclePhysicsClock_LogNewLap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143273e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143273e60.c;xref:0x143260341",
+   "notes": "V7576 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

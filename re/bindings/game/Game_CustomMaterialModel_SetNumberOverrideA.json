@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_CustomMaterialModel_SetNumberOverrideA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a90740",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a90740.c;xref:0x142a903b9,0x142a9047d,0x14dafe7f8",
+  "notes": "Lazily interns 'number' and 'carbon number' (0x143a3d780) and the keys me_logoMap / me_albedoMap (0x142a474b0) in function statics, then posts a 0x30-byte type-0x14 record to render node [[p1+0x20]+0x80] = {number id, carbon number id, logoMap key, albedoMap key, flags 0x10}. Called before the old override is released. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_material_model_set_number_override_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 4F 28 48 85 C9 74 0A 48 8D",
+  "match": "0x142a903b9",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142a90740",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomMaterialModel_SetNumberOverrideA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x142a90740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a90740.c;xref:0x142a903b9",
+   "notes": "V8095 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_NewsHubConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417dacc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1417dacc0.c;pat:log-channel--;xref:0x1417d9f5f,0x1417dd612",
+  "notes": "Sets flag 'news_first_boot' (0x1458814c2) via 0x14096b1e0 on [[this+0x128]+0x60]+0x228 if absent. Collects news items (0x158 stride) from [[[this+0x128]+0x30]+0x68]+0x28/+0x10, fills one 0x2a8 entry each in vector this+0x1a8 (copies item strings, id +0xf0); sets news_hub.bg_images/qr_codes/fe_images, 'lng_news_num_unclaimed' with NUM, panel '#overrides.fe_world.news_panel.default/trial' or 'fe_news.default'; binds display_name/subtitle; picks index this+0x178. (lane owner review requested) Better name: Game_NewsHub_PopulateItems (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_news_hub_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 05 00 00 C5 F8 29 B4 24 10 05 00 00 49 89 CE 48 8B B1 28 01 00 00",
+  "match": "0x1417dacc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417dacc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_NewsHubConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1417dacc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1417dacc0.c;xref:0x1417d9f5f",
+   "notes": "V4899 67 KB news hub VM builder (news_first_boot, lng_news, unclaimed count, panels, display_name/subtitle); not just 3 keys. Better: Game_Build_NewsHubViewModel"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1417dacc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417dacc0.c;xref:0x1417d9f5f",
+   "notes": "V7224 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

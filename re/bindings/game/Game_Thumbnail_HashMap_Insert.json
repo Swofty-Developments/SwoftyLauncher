@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Thumbnail_HashMap_Insert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ee49a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ee49a0.c;xref:0x142e316e3,0x142e32e19,0x142e346a0,0x142e34e52,0x142e37708,0x142e37bd3,0x142e389f3,0x142e38f13,0x142e396d1",
+  "notes": "Emplace-unique: node from freelist this+8 (or pool alloc 0x142ee5130): u32 key *param_3, +8 = val[0], +0x10 VM ref (vtable 0x14565f3d8, 0x1442bba60) from val[2], +0x30 VM ref (0x14565f670) from val[6], +0x50 = val[9]. Robin-hood probe (hash mult +0x20, meta +0x30, slots +0x28); key found -> releases node refs (0x1442b3d70), node back to freelist, inserted=0. Grow 0x142ee5280 / rehash, 256 tries then 0x142ee5120. Returns {slot, meta, inserted}. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.thumbnail_hash_map_insert",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4D 89 CD 4D 89 C7",
+  "match": "0x142ee49a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ee49a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Thumbnail_HashMap_Insert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142ee49a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ee49a0.c;xref:0x142e316e3",
+   "notes": "V7567 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

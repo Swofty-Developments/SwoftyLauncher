@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_CompleteTimedGoal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cbc3a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140cbc3a0.c;pat:log-channel-DEPARTMENT_EVENTS;xref:0x140cbb1e4,0x140cbcd91",
+  "notes": "Handler of team_hq_department_event_resolved_message (lea 0x140cbb1e4 / 0x140cbcd91): walks the event table this vt+0x268 (+0x1c0..+0x1d0), matches the msg+0x18 name, finds the schedule (0x140cb0e30) and erases the facility's entry from the timed-goal map +0xad8..+0xb24, logging 'has completed timed goal'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.dept_event_complete_timed_goal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 48 8B 01",
+  "match": "0x140cbc3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cbc3a0",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_CompleteTimedGoal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cbc3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cbc3a0.c;xref:0x140cafcb6,0x140cbb1e6",
+   "notes": "V4666 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140cbc3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cbc3a0.c",
+   "notes": "V9066 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

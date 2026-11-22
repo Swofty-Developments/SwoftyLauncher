@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqContractsVM_RebuildRows",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422ebd50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_TeamHqContractsVM_RebuildRows(void *vm)",
+  "evidence": "decomp:re/decomp/1422ebd50.c;xref:0x14577d198",
+  "notes": "myteam-g1: Big rebuild of the contract negotiation list: destroys old rows (0x9a8 bytes each, count vm+0xc88, array +0x2e0), re-queries drivers (Career_Get_DriverOverallRating, online turn gate 140ffc6e0), fills per-row stats, flags vm+0x2b0..0x2b2, then registers the StartContractNegotiationsFlow handler. 4306-line UI population function."
+ },
+ "signature": {
+  "id": "career.team_hq_contracts_vm_rebuild_rows",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 10 10 00 00 48 89 CE",
+  "match": "0x1422ebd50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422ebd50",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqContractsVM_RebuildRows"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422ebd50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422ebd50.c;xref:0x14577d198",
+   "notes": "V10101 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDPotentialPie",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f41d60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f41d60.c;xref:0x14575e098",
+  "notes": "Vtable slot +0x98 of class A (cell 0x14575e098). Allocs 0x900, Career_Construct_RnDPieObject, Career_MoveAssign_RnDPieObject into this+0x6a8. Loops dept codes: if code<4, break when idx>4; inline colours aero 0xffeead00, chassis 0xff3ec58d, maintenance 0xff16deff, engine 0xff7a2aed; slot = [this+0x6b0]+0x80+idx*0x220 via Career_MoveAssign_RnDPieSlot; Career_Get_TeamModifiers([this+0x690]+0xc90). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.build_rn_d_potential_pie",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 04 00 00 C5 F8 29 BC 24",
+  "match": "0x141f41d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f41d60",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDPotentialPie"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f41d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f41d60.c",
+   "notes": "V5233 Verified: code<4 guard, i>4 break, stride 0x220 at +0x6b0, 4 inline colours, construct @0x141f41e56 and move-assign @0x141f41e7d (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141f41d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f41d60.c;str:\"error_department\";str:\"lng_rnd_dept_%s_overview_description\"",
+   "notes": "V9197 Slot 0x13 (+0x98) of vtable 0x14575e000 is this function; the four colours and code-3 jump table are present, object constructed at 0x141f41e56 and move-assigned at 0x141f41e7d."
+  }
+ ],
+ "proofs": []
+}

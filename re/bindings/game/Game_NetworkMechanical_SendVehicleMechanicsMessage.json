@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMechanical_SendVehicleMechanicsMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143056460",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143056460.c;pat:log-message-method;xref:0x143059bf9,0x143054961",
+  "notes": "Logs '%s(%d, %p, %d)' with sendVehicleMechanicsMessage, dumps '[MP_VehicleMechanicsMessage] SEND/%c (to=%d..., %d bits)' on NETWORK-DATA/R and sends via 0x14406ed50. Caller Game_GameSessionManager_OnIncomingData 0x143058640; lea 0x143054961 in Game_GameSessionManager_Connect 0x143054470; self call 0x1430565e2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_mechanical_send_vehicle_mechanics_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 05 00 00 4C 89 CE",
+  "match": "0x143056460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143056460",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMechanical_SendVehicleMechanicsMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143056460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143056460.c;xref:0x143054964",
+   "notes": "V5478 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

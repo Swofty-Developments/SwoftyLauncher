@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_NewDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422bb390",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422bb390.c;pat:log-channel-TEAMHQ_ADVANCE;xref:0x1422c0e22,0x14232c703",
+  "notes": "(AdvanceData, day, ctx) If online byte +0x37: clears u16 +0x38 and u32 +0x3c (logs reset when +0x3a <= day). If ctx: logs New day, delay = cfg+8 if any card in ctx+0xa0..0xa8 has vslot +0x20 == day else cfg+4; restarts timer (+0x10/+0x18/+0x30); ctx+0x94 = day. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_new_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4C 89 C6 89 D7 48 89 CB",
+  "match": "0x1422bb390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422bb390",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_NewDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1422bb390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422bb390.c;xref:0x1422c0e22",
+   "notes": "V5254 name/cxx or log string and body match; body size consistent with name"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1422bb390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422bb390.c;str:\"TEAMHQ ADVANCE\"",
+   "notes": "V9205 Name matches the TEAMHQ ADVANCE log strings I resolved in the decompile."
+  }
+ ],
+ "proofs": []
+}

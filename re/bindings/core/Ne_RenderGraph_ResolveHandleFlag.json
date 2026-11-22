@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_ResolveHandleFlag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc52c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc52c0.c;xref:0x143c72cda",
+  "notes": "Hypothesis: maps pass handle (0xffffffff = invalid) to table entry stride 0x180 (+0xd0 type) with optional flag param_6. Named callers: Ne_CustomisationDecalRenderer_BakePasses."
+ },
+ "signature": {
+  "id": "core.render_graph_resolve_handle_flag",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 84 24 64 01 00 00 89 43 70 C6",
+  "match": "0x143c72cda",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143bc52c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_ResolveHandleFlag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143bc52c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc52c0.c;xref:0x143c72cda",
+   "notes": "V8139 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

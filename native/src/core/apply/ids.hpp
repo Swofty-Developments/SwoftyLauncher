@@ -6,6 +6,8 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -31,6 +33,14 @@ struct Clash {
 
 class Store {
 public:
+    Store() = default;
+    // A copy for work done ahead on another thread: everything but the lock. generation() moves on every call
+    // that can change the store, and commit() puts a copy's contents in place only while it has not moved since.
+    Store(const Store &other);
+    Store &operator=(const Store &) = delete;
+    uint64_t generation() const;
+    bool commit(Store &&ahead, uint64_t since);
+
     bool load(const std::string &text, std::string *why = nullptr);
     std::string dump() const;
     void clear();
@@ -44,6 +54,11 @@ public:
     bool has_pool(const std::string &registry) const;
     void set_live(const std::string &registry, const std::vector<std::string> &records);
 
+    // The ids the install's row-ids.json keeps for added rows (by pool registry): no allocation takes one.
+    void reserve(std::map<std::string, std::set<int64_t>> ids);
+    bool reserve_json(const std::string &text, std::string *why = nullptr);
+    bool reserved(const std::string &registry, int64_t id) const;
+
     void hold(const std::string &registry, std::map<int64_t, std::string> rows);
     bool database_holds(const std::string &registry, int64_t id, const std::string &label, std::string *row = nullptr) const;
 
@@ -52,8 +67,7 @@ public:
     Result allocate(const std::string &registry, const std::string &record, const std::string &today);
     Result pin(const std::string &registry, const std::string &record, int64_t id, const std::string &today,
                const std::string &label = {});
-    Result recheck(const std::string &registry, const std::string &record, const std::string &label,
-                   const std::string &today);
+    Result recheck(const std::string &registry, const std::string &record, const std::string &label, const std::string &today);
 
     CareerMap map_for_career(const std::string &career);
     std::vector<Clash> adopt(const std::string &career, const CareerMap &map, const std::string &today);
@@ -72,16 +86,25 @@ private:
         bool lent = false;
     };
 
+    // The ids of one registry that records hold (each with its first holder in record order) and that careers use,
+    // read once so an allocation asks each id in constant time instead of walking every record per id.
+    struct Taken {
+        std::unordered_map<int64_t, std::string> holder;
+        std::unordered_set<int64_t> careers;
+    };
+
+    Taken taken_index_locked(const std::string &registry) const;
     bool held_locked(const std::string &registry, int64_t id, std::string *holder) const;
     bool db_locked(const std::string &registry, int64_t id, const std::string &label, std::string *row) const;
     bool taken_locked(const std::string &registry, int64_t id, const std::string &record) const;
     int64_t next_free_locked(const std::string &registry, const std::string &record) const;
     std::string moved_line(const std::string &registry, const std::string &record, const char *how, int64_t id,
                            const std::string &row, int64_t to) const;
+    bool reserved_locked(const std::string &registry, int64_t id) const;
     bool career_uses_locked(const std::string &registry, int64_t id, const std::string &except = {}) const;
     bool live_locked(const std::string &registry, const std::string &record) const;
     std::string pool_text_locked(const std::string &registry) const;
-    std::size_t free_count_locked(const std::string &registry) const;
+    std::size_t free_count_locked(const std::string &registry, const Taken &taken, int64_t now_held) const;
 
     mutable std::mutex mu_;
     std::map<std::string, std::map<std::string, Entry>> ids_;
@@ -89,9 +112,11 @@ private:
     std::map<std::string, Pool> pools_;
     std::map<std::string, std::set<std::string>> live_;
     std::map<std::string, std::map<int64_t, std::string>> db_;
+    std::map<std::string, std::set<int64_t>> reserved_;
     std::size_t deduped_ = 0;
     bool dirty_ = false;
     bool lent_ = false;
+    uint64_t generation_ = 0;
 };
 
 Store &store();

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Text_AssignOrAppendRefString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14080efb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14080efb0.c;xref:0x14080ebf9,0x14080f6c8,0x14080fa28,0x140c1d2af,0x140c1d2e7,0x140c1da58,0x140c1da90,0x140c1e1f8,0x140c1e230,0x1414eb6cf,0x1416781ef,0x14167837a,0x1416785bc,0x1416c54d8,0x14234ab93,0x14234abe6,0x14248b7ef,0x1428a574a,0x14f36a148",
+  "notes": "If source string has flag 0x200000: mode 0 shares ref, mode 1 concatenates. Else expands '[name]' tokens using up to 5 name/variant pairs in param_1 (Ne_Variant_FormatToString), then assigns (mode 0) or appends (mode 1) to param_3. (lane owner review requested) Better name: Game_Text_ExpandPlaceholdersAssignOrAppend (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.character_append_package_path_part",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CF",
+  "match": "0x14080efb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14080efb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Text_AssignOrAppendRefString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14080efb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14080efb0.c;xref:0x14080ebf9",
+   "notes": "V8451 refcounted string assign/concat helper (recursive, atomics, Variant_FormatToString, RichText); callers incl CarSetupVm_UpdateFuelRange so not character package specific; better name Game_Text_AssignOrAppendRefString"
+  }
+ ],
+ "proofs": []
+}

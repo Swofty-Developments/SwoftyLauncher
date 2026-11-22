@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Inventory_SetCurrency",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425adcd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1425adcd0.c;pat:log-channel-INVENTORY;xref:0x14255c078,0x14255cc0c,0x1425ae7d5",
+  "notes": "(inv, wallet, currency, value) -> diff: wallet map lookup; if value >= 0 sets currency amount (+4) = value and returns value - old; logs 'Setting amount of currency %s to %d' / 'Difference: %d'. 0 if wallet or currency missing. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.inventory_set_currency",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 20 01 00 00 44 89 CE",
+  "match": "0x1425adcd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425adcd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Inventory_SetCurrency"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1425adcd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425adcd0.c;xref:0x14255c078",
+   "notes": "V5101 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

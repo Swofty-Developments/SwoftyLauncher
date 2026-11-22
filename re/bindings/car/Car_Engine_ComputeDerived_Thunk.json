@@ -1,0 +1,94 @@
+{
+ "schema": 1,
+ "name": "Car_Engine_ComputeDerived_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144689a70",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void (void *engine)",
+  "evidence": "decomp:re/decomp/144689a70.c;xref:0x1553fdffa,0x1553fe083,0x1553ff45e,0x142947694,0x142971ac0,0x14297f52c,0x14298dcea,0x142990314,0x1429a08c0,0x1429a238f,0x1429b1571",
+  "notes": "recomputes Engine +0x2508/+0x2518/+0x2528 (see Car_Engine_Init_Body). Called by the FuelECU Reset/SetMode bodies and 8 functions at 0x1429xxxxx that force FuelECU fuel_mode 1 (Standard) first (e.g. 0x142947400 checks [[x]+0x548]+0x128 != 1). body 0x1553f9a30"
+ },
+ "signature": {
+  "id": "car.engine_compute_derived",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F9 E8 ?? ?? ?? ?? C7 83 28 01 00 00 01 00 00 00 48 8B 96 08 02 00 00 0F B6 46 3B 48 8B 4A 30 48 8B 52 38 48 29 CA 48 C1 FA 03 48 39 C2 76 1D 48 8B 0C C1",
+  "match": "0x142971ac0",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144689a70",
+  "kind": "call",
+  "names": [
+   "Car_Engine_ComputeDerived_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "std-cars-live",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/car_live.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_Engine_ComputeDerived_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144689a70.c;decomp:re/decomp/1553f9a30.c;xref:0x142947694,0x142971ac0,0x14297f52c,0x14298dcea,0x142990314,0x1429a08c0,0x1429a238f,0x1429b1571,0x1553fdffa,0x1553fe083,0x1553ff45e",
+   "notes": "V1196 jmp to 0x1553f9a30, which writes +0x2528 = (+0x8b0^+0x8b8) x revs scale, +0x2508 obf = power scale x (+0x58^+0x60), +0x2518 obf = max over the +0x30..+0x38 points (stride 0x20) of (y x power)/(x x revs) using FuelECU [car+0x548] +0x140/+0x150. Fresh rel32 scan gives exactly the 11 cited calls; 0x142947400 checks [x+0x548]+0x128 != 1, copies the mode-1 pairs into +0x130..+0x160, calls this and 0x1446a5130, stores 1."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "ap-verify",
+   "kind": "func",
+   "item": "Car_Engine_ComputeDerived_Thunk",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1553f9a6a",
+   "notes": "V1670 ap-verify: engine+0x2528 plain = limiter XOR * revs scale XOR; names not string-checked"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "carlive-fv-b",
+   "kind": "sig",
+   "item": "car.engine_compute_derived",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;xref:0x142971ac0,0x144689a70,0x1553f9a30",
+   "notes": "V2422 sigcheck OK hits=1 match=0x142971ac0 target=0x144689a70; match is an E8 call (kind call, rel32 at anchor 1) to a 5-byte jmp thunk -> 0x1553f9a30 whose body writes Engine +0x2508/+0x2518/+0x2528 from FuelECU=[car+0x548] = ComputeDerived; site is followed by call 0x1446a5130 and the fuel_mode=1 store, as the pattern says."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "ap-verify",
+   "kind": "func",
+   "item": "Car_Engine_ComputeDerived_Thunk",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1553f9a6a",
+   "notes": "V3907 ap-verify: engine+0x2528 plain = limiter XOR * revs scale XOR; names not string-checked"
+  },
+  {
+   "date": "2026-11-18",
+   "verifier": "re-bindings-blind",
+   "kind": "func",
+   "item": "Car_Engine_ComputeDerived_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x144689a70-0x144689a75,0x1553f9a30-0x1553f9b55,0x1553f5460-0x1553f5586,0x1553fdf60-0x1553fe0a4,0x1553ff3d0-0x1553ff47b,1.0.145 0x14468c2e0-0x14468c2e5,1.0.145 0x154b13860-0x154b13985;xref:0x1553fdffa,0x1553fe083,0x1553ff45e,0x142947694,0x142971ac0,0x14297f52c,0x14298dcea,0x142990314,0x1429a08c0,0x1429a238f,0x1429b1571,0x1553f9a6a,0x1553f9aa2,0x1553f9b4a",
+   "notes": "V100011 Blind: agree. 0x144689a70 jmp -> body 0x1553f9a30-0x1553f9b55, leaf, 1 arg rcx=engine A, void. C=[[A+8]+0x548]. Writes A+0x2528 = dec(A+0x8b0)*dec(C+0x150) as a plain float (0x1553f9a6a); A+0x2508 = dec(C+0x140)*dec(A+0x58) ^ key +0x2510 (0x1553f9aa2); A+0x2518 = encoded 0.0, then the max over 32-byte elements of [A+0x30,A+0x38) of C140*e10/(e0*C150), only where e0*C150>0 (jbe 0x1553f9b0e), key +0x2520 (0x1553f9b4a). Same math as Car_Engine_Init_Body 0x1553f5460. Exactly 11 callers, as listed; the js at 0x154777abf is never taken. 1.0.145 twin 0x14468c2e0->0x154b13860 is byte-identical."
+  }
+ ],
+ "proofs": []
+}

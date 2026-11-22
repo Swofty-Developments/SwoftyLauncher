@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_IsEditorCarReady",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142bc30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142bc30.c;xref:0x14142ebb7,0x1428b37de",
+  "notes": "(sys, char* carIdx): finds the car whose +0x10 byte == *carIdx in the shared_ptr list sys+0x2d8..+0x2e0 and returns (car+0xd8 == 9 && car+0x160 == 0) (generation state eReady, no pending regeneration params); -1 or not found -> 0. Callers Game_DecalCustomisation_SwapAssetGroup (0x14142ebb7), tail jmp in 0x1428b36d0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.decal_customisation_is_editor_car_ready",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 0F B6 2A 40",
+  "match": "0x14142bc30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142bc30",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_IsEditorCarReady"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14142bc30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14142bc30.c;xref:0x14142ebb7",
+   "notes": "V8035 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

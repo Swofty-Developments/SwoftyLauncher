@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Vr_ExecuteTransition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438ac4f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438ac4f0.c;pat:log-channel-VR;xref:0x1406b4c7d,0x1406bfef9,0x1406c1416,0x141bc0bac,0x141bc52ac,0x141bc554e,0x142d56398,0x142d694f0,0x142d8a23b,0x142d9b3ec,0x142d9d665,0x143610d18,0x1436f777d,0x14370a833,0x14bf1b9c5,0x14c5fa5c4,0x14e87f489",
+  "notes": "Read in full; pretty-fn 0x145882d42 'requestEnableVirtualMonitor(NEbool, VirtualMonitorDelegate, ExclusivityToken)' - the old name came from its log format only. No VR: +0x49 = 1 and delegate invoked; else queues request {1, fade, token, delegate} via 0x143905e80(this+0x50), starts it via 0x1438ac870 when first. (lane owner review requested) Better name: Game_VrVirtualMonitorSystem_RequestEnableVirtualMonitor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.vr_execute_transition",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC E8 01 00 00 4D 89 CF 4C 89 C6",
+  "match": "0x1438ac4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438ac4f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Vr_ExecuteTransition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438ac4f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1438ac4f0.c;xref:0x1406b4c7d",
+   "notes": "V6382 body holds pretty string requestEnableVirtualMonitor (sibling of RequestDisable at 0x1438acea0). Better Game_VrVirtualMonitorSystem_RequestEnableVirtualMonitor"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1438ac4f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438ac4f0.c;xref:0x1406b4c7d",
+   "notes": "V7038 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

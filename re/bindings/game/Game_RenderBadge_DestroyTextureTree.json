@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RenderBadge_DestroyTextureTree",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410c5a70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1410c5a70.c;xref:0x140feee19,0x140feefc9,0x1410c5ab4,0x1411073cc,0x141403dee,0x141403ffe,0x14140420e,0x14140441e,0x14140459e,0x14140471d,0x141404ade,0x141404cee,0x141404f0e,0x14140512e,0x14140533d,0x14141b0dc,0x1414751a8,0x142ea9345,0x14ac5e499,0x14ac5f1d9",
+  "notes": "Generic recursive red-black-tree subtree destroy: recurse right (+0x10), keep left (+0), free node via allocator vcall +0x38, loop until nil (byte +0x19). Twin of Game_StdMap_CloneSubtreeNode30; many map destructors call it. (lane owner review requested) Better name: Game_StdMap_DestroySubtreeNode30 (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.render_badge_destroy_texture_tree",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 54 24 38 48 85 D2 74 10 48 8B 4C 24 30 48 85 C9 74 06 48 8B 01 FF 50 38 48 89 F8 48 83 C4 48 5F 5E C3 48 39 D0 74 CD 80 78 20 07 77 C7",
+  "match": "0x140feee19",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1410c5a70",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderBadge_DestroyTextureTree"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1410c5a70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410c5a70.c;xref:0x140feee19",
+   "notes": "V8213 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingF1WSocialGP_SearchSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307d7b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14307d7b0.c;pat:log-message-cxx;xref:0x14307c287,0x1430e4043",
+  "notes": "Own pretty-function string 0x14580d0a1 'NEbool ...F1WSocialGP::searchSession()'. If no download/busy state ([p1+8]+0x338/+0x33c zero and [[..+0xd8]+0x148] vt+0x38 false): +0x58 = 2, builds search attribs (0x1430711b0, type 5), overrides MatchingClusterID (+0xa8), Track (+0xac), SafetyRating (+0xb0) via 0x14407dbe0, 0x1430715b0, pushes rating to three filters ([..+0xd8]+0x768/+0x770/+0x778 vt+0x38), starts the search 0x144064f50 with callback 0x14307c2c0. Else logs NETWORK-SESSION/V 'still waiting download or session is busy' and returns 1. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.game_session_matching_f1_w_social_gp_search_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D",
+  "match": "0x14307d7b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307d7b0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingF1WSocialGP_SearchSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307d7b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307d7b0.c;xref:0x14307c288",
+   "notes": "V5602 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

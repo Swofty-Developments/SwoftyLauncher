@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkConnectionQuality_OnSessionConnectionLeft",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430538b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430538b0.c;pat:log-message-method;xref:0x14580a3c0",
+  "notes": "Logs onSessionConnectionLeft(connId); erases the connection id from the u16 hash set at this+0x80 (shifts following entries, decrements count this+0xa8). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_connection_quality_on_session_connection_left",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 0F B6 FA 75 73",
+  "match": "0x1430538b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430538b0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkConnectionQuality_OnSessionConnectionLeft"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430538b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430538b0.c;xref:0x14bfdf230",
+   "notes": "V5473 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineContractNegotiationsV_DoAllHumanPlayersHaveCurrentCon",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffed70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ffed70.c;pat:log-message-method;xref:0x140ffc6f5,0x140ffd95a,0x140ffde09,0x141001e10,0x141002c50",
+  "notes": "Checks that every human player has a current contract and logs 'doAllHumanPlayersHaveCurrentContracts() - %s'. Called from Career_OnlineNegotiations_CheckPlayerTurnGate, _SortCandidatesByState, Game_OnlineContract_ProgressNegotiations, Career_OnlineNegotiationsB_ProcessContractSent/Recv. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_contract_negotiations_v_do_all_human_players_have_current_con",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 89 CF 48 8B 89 70 02 00 00",
+  "match": "0x140ffed70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffed70",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineContractNegotiationsV_DoAllHumanPlayersHaveCurrentCon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ffed70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffed70.c;xref:0x140ffc6f5",
+   "notes": "V4538 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

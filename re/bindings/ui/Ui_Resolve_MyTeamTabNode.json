@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Resolve_MyTeamTabNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14431f6b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Resolve(void *vm, void **out)",
+  "evidence": "decomp:re/decomp/14431f6b0.c;xref:0x141871380;xref:0x1418714ce;xref:0x1419f9efe",
+  "notes": "myteam-g2: Resolves a registry node (Vm_Resolve_RegistryNode), assigns to vm+0x398 (Vm_MoveAssign_NodeHandle) and releases; used by TeamHq container actions and menu transitions."
+ },
+ "signature": {
+  "id": "ui.resolve_my_team_tab_node",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 83 3A 00",
+  "match": "0x14431f6b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14431f6b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Resolve_MyTeamTabNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14431f6b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14431f6b0.c;xref:0x141871380",
+   "notes": "V10355 Resolves registry node, MoveAssign into vm+0x398, string current_tab."
+  }
+ ],
+ "proofs": []
+}

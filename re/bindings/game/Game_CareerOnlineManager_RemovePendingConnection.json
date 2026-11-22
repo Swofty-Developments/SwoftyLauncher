@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineManager_RemovePendingConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fe3d20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fe3d20.c;pat:log-message-method;xref:0x1456b3a98",
+  "notes": "removePendingConnection(id) on the manager sub-object (cell 0x1456b3a98): logs, computes the equal_range of the byte id in set +0xd0 and erases it (whole tree cleared via 0x1410c28e0 when the range covers everything, else per node 0x1410c6b30 + free via +200). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_online_manager_remove_pending_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 72 B8 51 01 00 00",
+  "match": "0x140fe3d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fe3d20",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineManager_RemovePendingConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fe3d20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fe3d20.c;xref:0x140fe3c8f",
+   "notes": "V4837 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

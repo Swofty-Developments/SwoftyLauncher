@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_JoinResultCode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430837c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430837c0.c;pat:log-channel-NETWORK-SESSION;xref:0x14308203c",
+  "notes": "__FUNCTION__ 'GameSessionMatchingHopperCommon::onSessionJoinComplete(NEbool, NeNetError)'; lea'd as join callback in 0x143081160. Logs join result, enters via GameSessionManager_Enter 0x1430647a0, changeState StateJoined, else EvaluateGameInvite 0x143086410. (lane owner review requested) Better name: Game_GameSessionMatchingHopperCommon_OnSessionJoinComplete (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_session_join_result_code",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 44 89 C7",
+  "match": "0x1430837c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430837c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_JoinResultCode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430837c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430837c0.c;xref:0x14308203f",
+   "notes": "V5627 HopperCommon::onSessionJoinComplete (join result, enter result, entered/failed->evaluate next game, changeState). Better: Game_GameSessionMatchingHopperCommon_OnSessionJoinComplete"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430837c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430837c0.c;xref:0x14308203e",
+   "notes": "V6959 178 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

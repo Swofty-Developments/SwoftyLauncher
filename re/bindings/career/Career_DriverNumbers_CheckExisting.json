@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_DriverNumbers_CheckExisting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c01c30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_DriverNumbers_CheckExisting(void *car_numbers, uint32_t driver)",
+  "evidence": "pat:log-channel-DRIVER_NUMBERS;decomp:re/decomp/140c01c30.c;decomp:re/decomp/140c01280.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/140db70a0.c;xref:0x140d7814e,0x140db7418,0x140d929df,0x140c2b0c0,0x140c2bc19,0x140c2bdcd;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "named from its log messages (channel DRIVER_NUMBERS): 'Driver ALREADY HAS A VALID DRIVER number %d used by entrant %s'. rcx = CarNumberComponent (vtable 0x14567f4d0, desc 0x14605ade0), edx = the driver key by value (mov esi,edx; mov rdi,rcx at entry). It gets the championship's entrant pointers from the owner registry at comp+0x270 (vtable +0x1c8, body 0x1486bd730: every row of entity+0x2e0..+0x2e8, allocated through entity+0x208) and looks for the driver's row (+0x52 stat id, +0x50 kind byte). A row with a number (+0x83 != 0xff) is only logged; for a row with 0xff, no row, or a driver key whose stat id is 0x3fff it calls Career_DriverNumbers_AssignFree(comp, &entrants, driver) (0x140c01d1a), then frees the list through its allocator (vtable +0x38). AssignFree writes the drawn number with Career_Set_EntrantData_Thunk and on the identity-matching entrant row of the current session (entity registry vtable +0xa8 returns the Session; its rows +0x20..+0x28); it writes nothing when the stat id is 0x3fff, the driver has no row, or no free number is left (V1033). Callers: the Driver Career signing 0x140d766b0 with [manager+0x368] and the queued signing's driver (+0x2c) after that signing's entrant writes and contract (0x140d7814e); Career_Assign_EntrantTeamSlot with [DriverContractsMyTeamComponent+0x2e8] and the row's driver (+0x50) when the row's +0x83 is 0xff after its write (0x140db7418); Career_Sign_DriverToTeam with [component+0x2d8] (0x140d929df); the career setup 0x140c2a870 (3 sites). drivers.swap calls it the same way for a swapped driver whose row ends with a team and 0xff (ce-swap-number, the lead authorised --force) Callers: census steam 0xc01c30."
+ },
+ "signature": {
+  "id": "career.driver_numbers_check_existing",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC A0 00 00 00 89 D6 48 89 CF 48 8B 89 70 02 00 00",
+  "match": "0x140c01c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c01c30",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverNumbers_CheckExisting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-25",
+   "verifier": "ce-verify-numbers",
+   "kind": "func",
+   "item": "Career_DriverNumbers_CheckExisting",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c01c30.c;decomp:re/decomp/140c01280.c;decomp:re/decomp/1486bd730.c;decomp:re/decomp/140b9cd70.c;decomp:re/decomp/140af0460.c;xref:0x140d7814e,0x140db7418,0x140d929df,0x140c2b0c0,0x140c2bc19,0x140c2bdcd;xref:0x1407c41e0,0x140d84025,0x140c31b59;imm:0x3fff0000;sig:career.driver_numbers_check_existing",
+   "notes": "V1033 Re-decompiled and disassembled 0x140c01c30: entry does mov esi,edx and mov rdi,rcx; edx is a 32-bit key (low byte compared with row +0x50, high 16 bits with the row's +0x52 short, and an and 0xffff0000 / cmp 0x3fff0000 check); rax is never set for a return, so the proto (void, void *, uint32_t) is right. It calls [comp+0x270] vtable +0x1c8 into a stack list {allocator, begin, end, cap}. The CareerEntity registry vtable 0x145646cb0 (stored at entity+0x1030 by 0x1407d2820 at 0x1407d3a81) has slot +0x1c8 = 0x1407c41e0, which is jmp 0x1486bd730. With this = entity+0x1030, that body pushes a pointer to every 0x88-stride row of this-0xd50..this-0xd48 (entity+0x2e0..+0x2e8) and allocates through this-0xe28 (entity+0x208). For a matching row with +0x83 != 0xff the function only writes the DRIVER_NUMBERS log, and only when g_Ne_LogGate allows it. Otherwise (row +0x83 == 0xff, no row, or stat id 0x3fff) it calls 0x140c01280(comp, &list, driver), then frees the list through the allocator's +0x38. I re-listed callers with a riprel scan over all executable sections: exactly the six claimed call sites and no pointer refs. Register setup at each one matches the claim: rcx=[r14+0x368] null-checked with edx=[rbx+0x2c]; rcx=[r12+0x2e8] (r12 = context +8 = the DriverContractsMyTeamComponent) with edx=[rsi+0x50], only when [rsi+0x83]==0xff; rcx=[component+0x2d8] null-checked; setup rcx=[r15+0x440]. The +0x2d8 (0x140d84025) and +0x440 (0x140c31b59) fields are also registry gets of descriptor 0x14605ade0. sigcheck OK, one hit at 0x140c01c30. One detail is wrong: AssignFree's second write does not go to the current weekend's row. Entity registry slot +0xa8 (0x140820960) returns a Session. 0x140b9cd70 switches on that object's +8 as the session type (1-4 PracticeSession, 5-14 QualifyingSession, 15-17 RaceSession). Weekend::start 0x140af0460 keeps the weekend's 0xa0-byte sessions at +0x220..+0x228 (current index at +0x238), each with its 0x88-stride entrant vector at session+0x18..+0x30, and that vector is the +0x20..+0x28 range AssignFree scans. So the wording should say it writes the number to the matching entrant row of the current session. Also note that AssignFree writes nothing when the stat id is 0x3fff, when the driver has no row, or when the free list is empty."
+  },
+  {
+   "date": "2026-10-25",
+   "verifier": "ce-verify-numbers",
+   "kind": "func",
+   "item": "Career_DriverNumbers_CheckExisting",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c01c30.c;decomp:re/decomp/140c01280.c;decomp:re/decomp/1486bd730.c;decomp:re/decomp/140b9cd70.c;decomp:re/decomp/140af0460.c;xref:0x140d7814e,0x140db7418,0x140d929df,0x140c2b0c0,0x140c2bc19,0x140c2bdcd;xref:0x140c01489,0x140c014a3;sig:career.driver_numbers_check_existing",
+   "notes": "V1038 Re-check of the corrected notes after V1033. The new wording on AssignFree matches the code. It draws an index into the free list with the RNG seeded from comp+0x280 and passes that byte as the flag to Career_Set_EntrantData_Thunk (call 0x140c01489). It then calls entity registry vtable +0xa8 (0x140c014a3), which returns the current Session (its +8 is the session type in 0x140b9cd70, and its +0x18..+0x30 hold the per-session 0x88-stride entrant vector filled by Weekend::start 0x140af0460). It walks that object's +0x20..+0x28 rows with the identity matcher and writes +0x83 = the number on the first match. It returns before any write when the stat id is 0x3fff, the driver has no row in the list, or the free list is empty, and it also skips the session write when +0xa8 returns null. Everything I accepted in V1033 is unchanged: the proto, the +0x1c8 entrant list, the log-only path for +0x83 != 0xff, the six callers and their arguments, and sigcheck OK."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140c01c30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c01c30.c",
+   "notes": "V4513 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

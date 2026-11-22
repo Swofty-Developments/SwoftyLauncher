@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_CustomisationDecal_SetupBakeBindings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ee6060",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ee6060.c;xref:0x143c72044",
+  "notes": "Fills 0x28-byte binding descriptors (interned name via 0x14392a0c0 + 64-bit hash): g_bindlessResourcesLookupTable, g_scene, projectionAreaMap, g_customisationDecalsRenderingInfo, g_customisationDecalsProjectionAreasData, g_customisationDecalsData, g_customisationDecalsPlacementUV, g_customisationDecalsPlacementTexelDensity, bakedDecalsOut. Caller 0x143c72044 in Ne_CustomisationDecalRenderer_BakePasses. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.customisation_decal_setup_bake_bindings",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 C7 01 00 00 00 00 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 BF 40 55 48",
+  "match": "0x143ee6060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ee6060",
+  "kind": "func_start",
+  "names": [
+   "Render_CustomisationDecal_SetupBakeBindings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143ee6060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ee6060.c;xref:0x143c72044",
+   "notes": "V7942 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

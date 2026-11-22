@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Datasync_SyncSessionEnded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143104060",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143104060.c;pat:log-channel-DATASYNC;xref:0x140fcf60a,0x143103ef9,0x1436dd66f,0x1436fed10",
+  "notes": "(session): state +0x24 == 4 (Finished) -> logs DATASYNC '[%s] Sync session ended'; any non-zero state is logged 'State %s -> None' and set to 0. Callers 0x140fcf560, Game_Datasync_StartingSyncAs, 0x1436dd020, 0x1436fe500. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.datasync_sync_session_ended",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 8B 41 24 83 F8 04",
+  "match": "0x143104060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143104060",
+  "kind": "func_start",
+  "names": [
+   "Game_Datasync_SyncSessionEnded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143104060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143104060.c;xref:0x140fcf60a",
+   "notes": "V5739 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverActorSpawner_MakeCustomDriverSetup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401b0880",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1401b0880.c;xref:0x142890cd6",
+  "notes": "Called at 0x142890cd6 (in 0x142890400). Logs makeCustomDriverSetup + driver/team/badge flag (arg6). Clears old setup if [this+0x360], copies arg5 via 0x1401afb50 into this+0x20, [this]=team arg4, byte +0x18=[team+0x4a]. If arg6: from Wear_Get_DriverCustomisation_Thunk result copies 0x28-byte entries (src +0x270 count +0x328) to this+0x370 (count +0x438) and (src +0x1a0 count +0x258) to this+0x450 (count +0x518); source = online_custom mode driver or player customisation. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.driver_actor_spawner_make_custom_driver_setup",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 4D 89 CF",
+  "match": "0x1401b0880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401b0880",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverActorSpawner_MakeCustomDriverSetup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401b0880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401b0880.c",
+   "notes": "V4336 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

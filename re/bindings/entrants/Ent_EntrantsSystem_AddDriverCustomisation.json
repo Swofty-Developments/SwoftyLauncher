@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddDriverCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142470620",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142470620.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe91d3,0x141020420,0x1416e5570,0x1416e6414,0x142047340",
+  "notes": "AddDriverCustomisation for type 1 eUserDefined: array this+0x2a8; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Builds the record on a large stack frame (0x144c897d0 probe, 0x14248efc0), inserts via 0x140cddb50, destroys temp 0x1401b0540. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_driver_customisation",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 B8 70 C5 00 00 E8",
+  "match": "0x142470620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142470620",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddDriverCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142470620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142470620.c;xref:0x140fe91d3",
+   "notes": "V5284 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

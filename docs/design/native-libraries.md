@@ -19,10 +19,11 @@ You'll find the engine addresses below in `re/db/functions.tsv`. They're VAs for
 
 ## Feature gates
 
-The feature table lives in `native/src/core/stage.cpp` (`FEATURES`); `native/build.sh` writes it to
-`swofty/addons/core/features.json`. Stable features are always on. An experimental feature is on
-when `"features"` in `swofty/assets.json` lists it. The build writes it there while an addon in the
-profile lists it under `experimental_features` in its `swofty.json`.
+The feature table lives in `native/src/core/runtime/stage.cpp` (`FEATURES`); `native/build.sh` writes it to
+`swofty/addons/core/features.json`. Stable features are always on, except the two loading features
+`loading_skip_minimum_time` and `loading_skip_session_transition`, which SwoftyMod's `shorter_loading_waits` toggle turns
+off. An experimental feature is on when `"features"` in `swofty/assets.json` lists it. The build writes it there while an
+addon in the profile lists it under `experimental_features` in its `swofty.json`.
 
 | Feature | Default | Library |
 |---|---|---|
@@ -73,7 +74,7 @@ Hooks: the per-frame tick is `Vm_Update_FlowStateMachine` 0x144423ce0. Lifecycle
 `Game_SessionStateFinaliseResultsSync_OnStateUpdate` 0x142d5c9b0) for `state`, `screen` and
 `session.end`. The `lap`, `flag`, `pause` and `resume` sources are found in the events lane.
 
-Status: stub. `native/src/core/events.cpp` returns `unavailable` from every call.
+Status: stub. `native/src/core/events/events.cpp` returns `unavailable` from every call.
 
 ## 2. Overlay / draw
 
@@ -104,7 +105,7 @@ the texture is multiplied by a tint (`0xffffffff` for none).
 You can call `on_paint`, `remove` and `load_image` at any time. Draw calls, though, are valid only
 inside a paint callback, using that callback's `paint` handle.
 
-The core's D3D12 and DXGI hooks live in one layer, `native/src/core/d3d12_hooks.{hpp,cpp}`. Features
+The core's D3D12 and DXGI hooks live in one layer, `native/src/core/render/d3d12_hooks.hpp` and `native/src/core/render/d3d12/`. Features
 subscribe to it instead of hooking the same entry points:
 
 | Call | Does |
@@ -118,7 +119,7 @@ subscribe to it instead of hooking the same entry points:
 | `on_barrier(fn)` | Observer in subscription order. One that returns `true` has made the call itself through `barrier_original`, and the rest are skipped |
 | `on_setname(fn)` | `fn(object, name)` before the original `SetName` |
 
-The overlay (`hud.cpp`) and shader packs (`grade.cpp`) subscribe to it.
+The overlay (`hud.cpp` and `hud/overlay/`) and shader packs (`grade.cpp`) subscribe to it.
 
 The overlay records each swapchain's creation queue and the modules on the creation call stack, and draws only on
 swapchains it saw created, on their creation queue. A swapchain a frame generation module created or presents, or whose
@@ -180,8 +181,8 @@ Hooks: session and participant data come from the session witnesses `Sess_Veh_Up
 0x142e90560, `Sess_ParticipantVec_PushBack` 0x140af2ab0, `Sess_Select_Entrants` 0x1424a2350,
 `Sess_Startup_VehicleAiLoop` 0x142505f30 and `Game_GameModule_OnSessionEnter` 0x14080c300. The
 per-car physics/telemetry struct isn't catalogued. The car, participant and session fields are decoded
-from the game's own UDP packets in the `sendto` hook (`native/src/core/udp_ids.cpp`,
-`native/src/core/udp_telemetry_logic.hpp`), so they fill while the game's UDP telemetry output is on.
+from the game's own UDP packets in the `sendto` hook (`native/src/core/telemetry/udp_ids.cpp`,
+`native/src/core/telemetry/udp_telemetry_logic.hpp`), so they fill while the game's UDP telemetry output is on.
 
 Status: implemented for the session clock, the UDP-fed fields and the overtake, collision and retirement events;
 see the [telemetry reference](/reference/std/telemetry).
@@ -211,10 +212,10 @@ You can read once the database has loaded. Before then, reads return `unavailabl
 Hooks: `Gdb_Lookup_Key` 0x1445a22f0 (fnv1a64 key lookup), `Gdb_Init_TableCursor` 0x1445a25c0,
 `Gdb_Get_RowByIndex` 0x1445a28f0, `Gdb_Find_RowByLabel` 0x1445a2bd0, `Gdb_Get_FieldInt`
 0x1445a2cf0 and `Gdb_Get_RowName` 0x1445a3900, over the database `Gdb_Load_GameDatabase`
-0x1445a0350 resolves. `native/src/core/gamedb.cpp` already resolves this database for writes; the
+0x1445a0350 resolves. `native/src/core/assets/gamedb.cpp` already resolves this database for writes; the
 read path reuses the pointer.
 
-Status: stub. `native/src/core/dbread.cpp` returns `unavailable` from every call.
+Status: stub. `native/src/core/assets/dbread.cpp` returns `unavailable` from every call.
 
 ## 5. Storage
 
@@ -233,11 +234,11 @@ Status: stub. `native/src/core/dbread.cpp` returns `unavailable` from every call
 Your addon reads and writes under `swofty/addons/<id>/`, using paths relative to that folder.
 The core rejects absolute paths, drive letters and any path that climbs above the folder.
 To keep each addon in its own folder, it identifies the calling DLL the same way the assets API
-does (`settings_addon` in `native/src/core/settings.cpp`). Writes go to a temp file, then rename it.
+does (`settings_addon` in `native/src/core/runtime/settings.cpp`). Writes go to a temp file, then rename it.
 
 You can make storage calls at any time.
 
-Status: stub. `native/src/core/storage.cpp` returns `unavailable` from every call.
+Status: stub. `native/src/core/runtime/storage.cpp` returns `unavailable` from every call.
 
 ## Files
 
@@ -247,8 +248,8 @@ Status: stub. `native/src/core/storage.cpp` returns `unavailable` from every cal
 | `packages/sdk/include/swofty/{events,overlay,telemetry,db,storage}.hpp` | C++ wrappers |
 | `packages/sdk/src/lib.rs` | Rust mirror and the layout test |
 | `templates/addon/native/include/` | the copy addons compile against |
-| `native/src/core/{events,hud,telemetry,dbread,storage}.cpp` | per-library stubs wired into `manager.cpp` |
-| `native/src/core/stage.cpp` | the feature table |
+| `native/src/core/{events/events,hud/hud,telemetry/telemetry,assets/dbread,runtime/storage}.cpp` | per-library stubs wired into `runtime/manager.cpp` |
+| `native/src/core/runtime/stage.cpp` | the feature table |
 
 The wrapper headers and the mixin, settings and logging helpers are the native half of the
 [standard library](/reference/std/).

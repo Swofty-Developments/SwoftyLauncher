@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineSubsystemTaskOnServiceBase_OnEnd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c2420",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432c2420.c;str:s_OnlineSubsystemTaskOnServiceBase_OnEnd;xref:0x14565b770,0x14565b890,0x14565cbf0,0x1457f1c40,0x1457f1d60,0x1457f30e0",
+  "notes": "Logs '%s() %s' with virtual game::OnlineSubsystemTaskOnServiceBase::onEnd (forced flag), cleans up the request (Game_F1os_CleanUpRequest) and may start a follow-up task (Game_F1os_StartTask). Referenced from many task vtables, e.g. cells 0x14565b770, 0x14565b890, 0x1457f1c40, 0x145837f80 (cell before Game_F1osTask_SetFinished). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_subsystem_task_on_service_base_on_end",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 80",
+  "match": "0x1432c2420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c2420",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineSubsystemTaskOnServiceBase_OnEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432c2420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c2420.c",
+   "notes": "V5916 name and description match body; log string/pretty name present; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

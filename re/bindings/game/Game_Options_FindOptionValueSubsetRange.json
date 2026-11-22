@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Options_FindOptionValueSubsetRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ab60b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ab60b0.c;pat:log-channel-OPTIONS;xref:0x142ab6b9e,0x142acabb8,0x142acaf88,0x142acc688,0x142ad35fe",
+  "notes": "Builds keys '<name>.value_subset' and '<name>.value_subrange' and walks both arrays: subset entries go to 0x142a1a0b0; subrange entries read 'option' (looked up in options map +0x270), 'min_value'/'max_value' clamped to option range +0xb8, kept as int range (type 2) or enum bitmask (type 1) via 0x142ad89b0; each result appended to param_1 by 0x1428764b0. Logs 'Failed to find option ... value subset range'. (lane owner review requested) Better name: Game_Options_ParseValueSubsetsAndRanges (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.options_find_option_value_subset_range",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 07 00 00 4C 89 4C 24 48",
+  "match": "0x142ab60b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ab60b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Options_FindOptionValueSubsetRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ab60b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ab60b0.c;xref:0x142ab6b9e",
+   "notes": "V5002 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

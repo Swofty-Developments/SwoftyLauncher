@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkData_VoiceDataBytes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143066a00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143066a00.c;pat:log-channel-NETWORK-DATA;xref:0x143059970",
+  "notes": "Incoming voice data: without payload forwards an EVoiceMessageID (Game_NetworkVoice_EVoiceMessageID); else finds the player by index *param_3 in the player set, logs \"Voice data from %d (player ix %d)\" or \"(unknown?)\" and passes the data to Game_NetworkVoice_ReceiveVoiceData. (lane owner review requested) Better name: Game_NetworkData_HandleVoiceData (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_data_voice_data_bytes",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 70 48 89 CB",
+  "match": "0x143066a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143066a00",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkData_VoiceDataBytes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143066a00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143066a00.c;xref:0x143059971",
+   "notes": "V5537 receive voice data handler (player ix lookup, two log variants). Better: Game_NetworkData_OnReceiveVoiceData"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143066a00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143066a00.c;xref:0x143059970",
+   "notes": "V6942 112 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

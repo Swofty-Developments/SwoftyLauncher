@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneParams_SetupDriverDataOnlyFromDriverStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14022fb70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14022fb70.c;pat:log-message-cxx;xref:0x1402673e0,0x140267556",
+  "notes": "(params, u32 driverStatId): logs 'setupDriverDataOnlyFromDriverStatId(driverStatId %s) [%s]'; id u16 0x3fff -> return. Stores the id at params+8, finds the session entrant ([[[0x14604c2c8]+0xc0]+0x88]+0x260, list +0x2e0..+0x2e8 stride 0x88, byte +0x50 / u16 +0x52 == id) and calls 0x14022d920(params, entrant, 1, 0, 0); no game mode or no entrant -> WARN 'failed to find game mode' / 'failed to find entrant'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cut_scene_params_setup_driver_data_only_from_driver_stat_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 89 D7 48 89 CE",
+  "match": "0x14022fb70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14022fb70",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneParams_SetupDriverDataOnlyFromDriverStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14022fb70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14022fb70.c",
+   "notes": "V4429 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

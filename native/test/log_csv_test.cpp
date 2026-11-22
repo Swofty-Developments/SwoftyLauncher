@@ -1,8 +1,8 @@
-// Host-native unit test for the core's CSV recorder ring (native/src/core/log_csv_logic.hpp): row building,
+// Host-native unit test for the core's CSV recorder ring (native/src/core/diagnostics/log_csv_logic.hpp): row building,
 // formatting and quoting, drop counting on a full ring, and that rows come out in order.
-// Built and run by native/test/run_log_csv_test.sh.
+// Built and run by native/test/run_tests.sh log_csv.
 
-#include "log_csv_logic.hpp"
+#include "core/diagnostics/log_csv_logic.hpp"
 
 #include <cstdio>
 
@@ -10,12 +10,12 @@ namespace lc = runtime::log_csv;
 
 static int g_fail;
 
-#define CHECK(c)                                                                                                       \
-    do {                                                                                                               \
-        if (!(c)) {                                                                                                    \
-            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
-            g_fail++;                                                                                                  \
-        }                                                                                                              \
+#define CHECK(c)                                                                                                                 \
+    do {                                                                                                                         \
+        if (!(c)) {                                                                                                              \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                              \
+            g_fail++;                                                                                                            \
+        }                                                                                                                        \
     } while (0)
 
 int main()

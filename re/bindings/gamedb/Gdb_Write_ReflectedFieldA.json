@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Write_ReflectedFieldA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143932a40",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "uint64_t Write(void *writer, uint8_t *key, void *value, void *out)",
+  "evidence": "decomp:re/decomp/143932a40.c;xref:0x1402ad838,0x1402ad8b1,0x1402ad91b,0x1402ad98b,0x1402afc78,0x1402afcf1,0x1402afd5b,0x1402afdcb",
+  "notes": "Adds a named field object to a container: fails with 0x11 when the name already exists (0x143931730), grows the u16-counted pointer array, allocates the type's size/align (type vtbl+0x20/+0x30) + 8 bytes, stores the FNV-1a 64 hash of the name after the object (string pool 0x14392a0c0) and returns it in *param_4. call sites (save writers). Better name: Gdb_Add_ReflectedField (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "gamedb.write_reflected_field_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 CE",
+  "match": "0x143932a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143932a40",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Write_ReflectedFieldA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143932a40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143932a40.c;xref:0x1402ad838",
+   "notes": "V10334 Allocates a new child node: checks key not present (error 0x11 on duplicate), grows the pointer array and creates the field; generic child-field creator rather than reflected-class writer."
+  }
+ ],
+ "proofs": []
+}

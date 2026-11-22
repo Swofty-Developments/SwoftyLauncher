@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomLiveryModel_SetInstanceColours",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a9a310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a9a310.c;pat:log-message-method;xref:0x14db487e7,0x14db48884",
+  "notes": "(comp, out, u32 colours[4]): logs the 4 RGBA colours + vehicle index (CUSTOM_LIVERY_MODEL); converts each u32 (bytes 0,1,2 sRGB -> linear: c/12.92 below 0.04045 else pow((c+0.055)/1.055, 2.4); byte 3 /255 as w) into float4 at out+0xb0, +0xc0, +0xd0, +0xe0. Both calls from 0x14db487b0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_livery_model_set_instance_colours",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 78 29 8C 24 E0 00 00 00 C5 78 29 84 24 D0 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 4C 89 C7 48 89 D6",
+  "match": "0x142a9a310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a9a310",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomLiveryModel_SetInstanceColours"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a9a310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a9a310.c;xref:0x14db487e7",
+   "notes": "V4992 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Renderer_DestroyGeneratorEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b437a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b437a0.c;xref:0x143b18aba,0x143b1d48d,0x143b412fe",
+  "notes": "(allocator, vec*): for each 0x70-byte entry: model +0x38 -> Render_Model_ReleaseGpuResources then free via entry allocator +0; generator +0x60 -> Game_Renderer_DestroyGenerator(renderer +0x68, gen); frees the buffer and the vector object itself via allocator vcall +0x38. Callers Game_Renderer_CreateRenderPasses, Game_Renderer_InitPassGroups, 0x143b40e20. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.renderer_destroy_generator_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D6 48 89 CF 4C 8B 6A",
+  "match": "0x143b437a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b437a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Renderer_DestroyGeneratorEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b437a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b437a0.c;xref:0x143b18aba",
+   "notes": "V7753 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Parse_EventRestrictionJson",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1427b80d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1427b80d0.c;xref:0x142584bd4,0x1427928ab",
+  "notes": "Each JSON member key = option name (options system 0x146079258 +0x270). Null removes that option's restriction from list param_3 (stride 0x38); else 'values' [first,last] by name (aliases 0x1457a0e98: auto->automatic, 2d->two_d, 3d->three_d) or 'min'/'max', 'priority' (default param_5), clamped to option range +0xb8 -> range (type 2) or bitmask (type 1), replaced/appended via 0x142880ac0. Returns 0 (0x16 bad type). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.parse_event_restriction_json",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 94 24",
+  "match": "0x1427b80d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1427b80d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Parse_EventRestrictionJson"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x1427b80d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1427b80d0.c;xref:0x142584bd4,0x1427928ab",
+   "notes": "V4037 Strings values, auto, priority, 'Unable to find value for %s in JSON' and string tables 0x1457a0e98/ea8/eb8; call sites pass name 'featured_event_restriction' with dst event+0x4aa0 (0x1427928ab in 0x14278bcf0) and 0x142584bd4 in 0x142584880 (safety preset loader); dst is vector with 0x38-byte elements"
+  }
+ ],
+ "proofs": []
+}

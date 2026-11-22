@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_VehicleEnteringInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434cfc30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-PITLANE;decomp:re/decomp/1434cfc30.c;xref:0x142a4216d,0x1434cf9af,0x1434d0249,0x1434d1bba,0x1434d1ec0",
+  "notes": "Pit lane: car idx < 27 entering the pit lane. Only acts when the car's pit status ([self+0x68+idx*16]+4) is 1. Online: posts pit message (vtable 0x145843a50, 0x260000000a) when the lobby slot matches. Calls 0x1434cf650(self, idx, status+8). Then decides: pit-stop record state 99, or self+0x300 (forced box), or (car not in state 2 and no stop requested 0x142f294d0 and no request flag) -> either posts 'drive-through' msg 0x145845958 (when [self+0x298]+0x38) or releases the garage slot (0x142e96f30 on [self+0x2e0]) and sets pit status 2 (Game_Pitlane_SetVehicleStatus) plus, when forced, bus msg 0x145624020 payload idx|6<<32; otherwise sets pit status 15. Callers 0x142a4216d, 0x1434d0249 and tail jumps 0x1434cf9af, 0x1434d1bba, 0x1434d1ec0. (used by vmknolle race-start)"
+ },
+ "signature": {
+  "id": "game.pit_lane_vehicle_entering_internal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 89 D3 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1434cfc30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434cfc30",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_VehicleEnteringInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x1434cfc30",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_b/decomp/1434cfc30.c;xref:0x142a4216d,0x1434d0249,0x1434cf9af,0x1434d1bba,0x1434d1ec0",
+   "notes": "V1032 log strings 'PitLaneSystem::vehicleEnteringPitLaneInternal(%d...)' (not active / driving-through due to penalty / skipping crew animation / prep garage crew) printed with param_2 = vehicle index; (system,uint vehicle) - no proto in KB"
+  }
+ ],
+ "proofs": []
+}

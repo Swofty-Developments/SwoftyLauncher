@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_RenderGraph_AddPassNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdd920",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdd920.c;xref:0x143baf65b,0x143bc0a05,0x143bc745d,0x143bc871e",
+  "notes": "Lock-free bump allocation (CAS arena +0x20, base +0x18, limit +0x10, Ne_FatalAbort when full) of an 8-aligned 0xa0-byte pass node: colour scale 1.0 x4, node index from the vector +0x70..0x78, looks up the pass by hash in map +0x130 and links the node into the pass list (+0x90..0xa0). Callers incl. Render_Tonemap_Execute, Render_RenderGraph_AddPassWithConst12. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.render_graph_alloc_pass_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 4D 89 CE 49 89 D4",
+  "match": "0x143bdd920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bdd920",
+  "kind": "func_start",
+  "names": [
+   "Render_RenderGraph_AddPassNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143bdd920",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bdd920.c;xref:0x143baf65b",
+   "notes": "V8326 Render_RenderGraph_AddPassNode: bump-alloc is only the start; also pushes node to pass list +0x90/+0x98 and applies bindings"
+  }
+ ],
+ "proofs": []
+}

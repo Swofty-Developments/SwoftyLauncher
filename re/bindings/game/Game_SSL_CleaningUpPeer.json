@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SSL_CleaningUpPeer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440acfd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440acfd0.c;pat:log-channel-SSL;xref:0x145a4e740",
+  "notes": "Scalar deleting destructor (slot 0 of vtable 0x145a4e740): frees the SSL object +0xd8 (0x144c60540) and clears +0xd8..+0xe8, logs SSL '[OpenSSL] [%u] Cleaning up Peer' (peer id +0x10), base vt 0x145a564b0, destroys functors +0xd0, +0x90, +0x50; flag != 0 frees this via the default allocator. (lane owner review requested) Better name: Game_SslPeer_Destroy (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ssl_cleaning_up_peer",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 89 D8 00 00 00",
+  "match": "0x1440acfd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440acfd0",
+  "kind": "func_start",
+  "names": [
+   "Game_SSL_CleaningUpPeer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440acfd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440acfd0.c",
+   "notes": "V6543 size=444; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

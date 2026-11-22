@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_MfdConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414c7cd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414c7cd0.c;pat:log-channel--;xref:0x141c117fe,0x141c1c4db",
+  "notes": "Not a config reader. If param_4==0: 0x144165f20(this[0x55],path) lists layout nodes; per node djb2 hash (0x1505) of path+name, switch on type hash *(int*)node[2] allocs a HUD VM (base ctor 0x1414ded70), some subscribe Message* (FlashbackUsed, CheckpointLoaded, DisplayHud*Notification) via 0x143987810; MFD VM builds 8 mfd.attacher.* panels; push to this[0x51]. Then queues path msg on this[5]+0x30, posts 0x1456f54b8, stores path at this+0x2c0/0x2d0. (lane owner review requested) Better name: Game_Hud_CreateChildViewModels (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_mfd_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 78 29 84 24 70 01 00 00 C5 F8 29 BC 24 60 01 00 00 C5 F8 29 B4 24 50 01 00 00 44 89 CB",
+  "match": "0x1414c7cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414c7cd0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_MfdConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1414c7cd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1414c7cd0.c;xref:0x141c117fe",
+   "notes": "V4876 226 KB HUD/MFD view model init: flashback/checkpoint/hud notification messages, tutorial notifications, osd_visibility timing, pit_stop_minigame; mfd.* keys small part. Better: Hud_Init_MfdOsdViewModel"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1414c7cd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414c7cd0.c;xref:0x141c117fe",
+   "notes": "V7215 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

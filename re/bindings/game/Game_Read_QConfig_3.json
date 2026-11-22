@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_QConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445068a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445068a0.c;pat:log-channel--;xref:0x145d32798",
+  "notes": "Static initializer (init table cell 0x145d32798): SIMD constants 0x146cb8790.., type descriptors Spline (0xd1a2ef90), SplineEditable (0xc3f7400a), SplineResource (0x274da278); names q.spl.insknot/remknot/setknot/setsize/camdlta via 0x1447bc360 into 0x146cb8a10..0x146cb8a90. Not a settings reader. (lane owner review requested) Better name: Game_StaticInit_SplineTypes (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_q_config_3",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 FA 10 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 FB 12 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F9 6F 05 CE 21 0D 01",
+  "match": "0x1445068a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445068a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_QConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445068a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1445068a0.c",
+   "notes": "V6673 static initialiser: sets constant tables and registers Spline/SplineEditable/SplineResource type descriptors plus 5 q.spl.* command handlers via 0x1447bc360; no settings read. Better: Game_StaticInit_SplineTypesAndCommands (vtable/indirect; no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1445068a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445068a0.c",
+   "notes": "V7226 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineTitleConfiguration_OnGlobalConfigDownloaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f8110",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430f8110.c;pat:log-message-cxx;xref:0x14fe9e5db",
+  "notes": "Logs its pretty name network::OnlineTitleConfiguration::onGlobalConfigDownloaded(TaskId, NeBufferRO&, NEerrno): '%s - failed, error %d' or '%s - success, %zu bytes received.', then parses the JSON (version, rules, active_filters) and applies filters (Game_Network_OTCABFilterSteamIDBitSet). Address taken (lea) in 0x14fe9e580. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.online_title_configuration_on_global_config_downloaded",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 05 00 00 C5 F8 29 B4 24 00 05 00 00 39 91 1C 01 00 00",
+  "match": "0x1430f8110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f8110",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineTitleConfiguration_OnGlobalConfigDownloaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f8110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f8110.c;xref:0x14fe9e5dd",
+   "notes": "V5414 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

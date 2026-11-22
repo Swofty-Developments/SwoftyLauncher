@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineSystemGetFriendR_ListReceivedFriendRequestQueued",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432cea90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432cea90.c;pat:log-channel-OnlineSystemGetFriendRequestListTask;xref:0x145835500",
+  "notes": "Same vtable slot as EADPAsyncTask_OnStart (cell 0x145835500, next cell Game_OnlineSystemGetFriendRequestListTask_Update). Checks NetworkSubsystem, EADP login and non-zero EA user id (eLogicError + StopTask otherwise), queues the received-friend-request list with its finished callback, logs 'List received friend request queued, requestID = %I64u, error = %d'. (lane owner review requested) Better name: Game_OnlineSystemGetFriendRequestListTask_OnStart (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.online_system_get_friend_r_list_received_friend_request_queued",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 48 89 CF 48 83 79 38 00 0F 84 ?? ?? ?? ?? 48 8B 15",
+  "match": "0x1432cea90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432cea90",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineSystemGetFriendR_ListReceivedFriendRequestQueued"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432cea90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1432cea90.c",
+   "notes": "V5939 Better name Game_OnlineSystemGetFriendRequestListTask_OnStart: task start with validations then queue received-friend-request list; queued log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1432cea90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432cea90.c",
+   "notes": "V7057 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

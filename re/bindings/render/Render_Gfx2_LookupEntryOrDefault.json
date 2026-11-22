@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_LookupEntryOrDefault",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143993770",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143993770.c;xref:0x14012c28f,0x140141073,0x14014a5fc",
+  "notes": "Counterpart of 0x1439932e0: finds the slot for key param_2 in this+0x30 (0x143993660); if it holds an object (slot+0x28) calls listeners fn(ctx,key,&slot,1) under CS this+0x38, clears slot+0x28 and returns the object; on miss returns 0 and, if param_3, records error 2 in the TLS error list/ring. Callers incl. Ne_Rtt_RegisterCameras. (lane owner review requested) Better name: Render_Gfx2_UnregisterResourceNotify (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_lookup_entry_or_default",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 44 89 C3",
+  "match": "0x143993770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143993770",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_LookupEntryOrDefault"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143993770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143993770.c;xref:0x14012c28f",
+   "notes": "V7664 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

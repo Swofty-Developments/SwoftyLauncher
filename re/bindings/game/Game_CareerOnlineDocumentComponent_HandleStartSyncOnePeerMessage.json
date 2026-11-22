@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineDocumentComponent_HandleStartSyncOnePeerMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fd3640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fd3640.c;str:s_Championship_CareerOnlineDocumentComponent_HandleStartSyncOnePeerMessa;xref:0x140fd3eb7",
+  "notes": "Under CS +0x3e0, on peer message type +0x10: 1 request (busy if flags +0x410 & 3 -> reply 4, else reply 2 + flag 8), 2 allowed (reply 3), 3 agreed, 4 busy; updates +0x410. When ready (bit 0x10) and host (low bits == 2) sets callback 0x140fd2dc0 on +0x2b8 and runs inlined startHostSync/startClientSync (+0x2c0 = 2/1, 0x140fce790, 0x143103eb0); then 0x14079c940. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.career_online_document_component_handle_start_sync_one_peer_message",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 48 44 89 C3 48 89 D7 48 89",
+  "match": "0x140fd3640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fd3640",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineDocumentComponent_HandleStartSyncOnePeerMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fd3640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fd3640.c;xref:0x140fd3eb8",
+   "notes": "V4821 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

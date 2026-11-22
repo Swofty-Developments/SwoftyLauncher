@@ -1,15 +1,15 @@
 ---
 title: Laps
-description: The lap files the core records in Time Trial, and the two events around writing one.
+description: The lap files the Time Trial plugin records, and the two events around writing one.
 ---
 
 # Laps
 
-While Time Trial boards are on, the core records every completed Time Trial lap to a file under `laps/` in the launcher's data folder. When the core can't write the data folder, the file goes under `swofty/laps/` in the game folder instead. An addon reads those files, adds a section to one before it is written, or reacts when one lands.
+While Time Trial boards are on and the player is signed in with Discord, every completed Time Trial lap is recorded to a file under `laps/` in the launcher's data folder. When the data folder can't be written, the file goes under `swofty/laps/` in the game folder instead. An addon reads those files, adds a section to one before it is written, or reacts when one lands.
 
-The recorder runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car at 60 Hz. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
+The recorder is part of the [Time Trial plugin](#the-time-trial-plugin). It runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car at 60 Hz. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
 
-On the build the core's lap offsets are from, the core also hooks the game's own lap record (`Sess_LapTimes_ReportNewLapTime`). A completed lap then waits up to two seconds after its line crossing for the game's lap result and, when the lap is valid, for the ghost blob the game commits on a personal best. The file is written when both have arrived or when the two seconds have passed. When the hook is not available the file is written at once and the lap's time comes from the clock. The ghost blob comes from the one hook on the game's personal best commit, a byte-scan hook of the in-game boards code that is armed whenever `tt_boards` is on, with or without `tt_bridge`. `SWOFTY_LAP_GAME_RESULT=0` turns the lap result off and `SWOFTY_LAP_GHOST=0` the ghost blob.
+A completed lap waits up to two seconds after its line crossing for the game's lap result and, when the lap is valid, for the ghost blob the game commits on a personal best. The file is written when both have arrived or when the two seconds have passed. Without the game's lap result the lap's time comes from the clock. `SWOFTY_LAP_GAME_RESULT=0` turns the lap result off and `SWOFTY_LAP_GHOST=0` the ghost blob.
 
 ## The file
 
@@ -117,25 +117,58 @@ The mailbox request's `board.track` carries the same key. The core takes the req
 
 A board is the core's own when its descriptor is 6 or higher or when its track is custom. The request redirect and the guards use that one rule. A request for a stock descriptor on a custom track goes to the mailbox like an addon board, and with guards on a lap on a custom track in the game's own season does not reach the publisher's boards.
 
+## The Time Trial plugin
+
+The launcher places `swofty.tt` for a session in which the player is signed in with Discord: a closed-source DLL that Swofty's server publishes. The launcher reads the offer from `GET /v1/modules`, downloads the file from the CDN link in the offer when the offer has one (`https`, no sign-in sent) and from `GET /v1/modules/file` otherwise or when the CDN copy doesn't arrive or doesn't match, and checks its size, its sha256 and an Ed25519 signature over `swofty-module-v1\0 || name || \0 || platform || \0 || version || \0 || abi || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `modules/tt-game/<platform>/<version>/` in the launcher's data folder. When Swofty's server answers a download with `too many requests` or a server error, times out or can't be reached, the launcher uses the newest cached copy that still verifies. The session places it as `swofty/addons/swofty.tt/swofty_tt.dll`, and the session's rollback removes it with every other placed file. It is not an addon in any profile.
+
+The plugin attaches to the core's lap host, `SwoftyCoreLapHost` in `swofty_api.h`:
+
+```
+[tt] attached to the core's lap host (version 1)
+module tt-game: not loaded for this session: none published
+```
+
+Without the plugin no lap is recorded and the in-game boards are off.
+
+The plugin records laps and runs the in-game boards on Steam F1 25 1.0.141 and 1.0.145.2472 and on the EA app's 1.0.141 and 1.0.145. On any other build of the game, a game update included, `loader.log` says `[boards] off: ...` and, in a Time Trial, `[laps] NO LAP IS RECORDED IN THIS SESSION: ...`.
+
 ## The integrity module
 
-The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher fetches it from `GET /v1/tt/integrity`, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder, the newest two versions, with `offer.json` beside it: the offer it came with and `offered`, the unix time the server last offered it. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
+The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher reads the offer from `GET /v1/tt/integrity`, downloads the file from the CDN link in the offer when the offer has one and from `GET /v1/tt/integrity/file` otherwise, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder with the offer it came with, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
+
+The integrity module and the Time Trial plugin are fetched the same way. When Swofty's server times out, can't be reached, answers `too many requests` or a server error, the launcher uses the newest cached copy whose kept offer and bytes still verify; for the integrity module, only one the server offered in the last 14 days. With no such copy, the launcher asks again after 1 and 2 seconds, within 12 seconds in all.
 
 It is not an addon in any profile, the addon list, the load order or the addon set a lap is uploaded with. It is named in `loader.log` as an addon DLL and in the launcher's session log:
 
 ```
 integrity: swofty_integrity.dll 2026.11.10.1 under swofty/addons/swofty.integrity
+integrity module: asking for the offer failed (couldn't reach https://...); trying again in 1 s (try 2 of 3)
+integrity module: the server's copy could not be had (couldn't reach https://...); using the cached copy 2026.11.10.1, verified offline
 integrity module: not loaded for this session: couldn't reach https://...
 ```
 
-The offer and the download are tried again after a timeout, a connection error or a 5xx answer: up to three tries each, 1 s and 3 s apart, within 18 s in all. A 4xx answer and a failed size, hash or signature check are not tried again.
+When the offer is missing, unreachable or fails a check and no cached copy can stand in, the session starts without the module and the core blocks Time Trial in game (below). The launcher then says so in a dialog at Play.
+
+Each lap's upload meta says what the session did about the module, under `integrity`:
+
+```json
+{"state": "loaded", "version": "2026.11.10.1", "source": "cdn"}
+{"state": "loaded", "version": "2026.11.10.1", "source": "cache", "detail": "couldn't reach https://..."}
+{"state": "loaded", "version": null, "source": "env"}
+{"state": "fetch_failed", "version": null, "source": null, "detail": "couldn't reach https://...: timeout: global"}
+```
+
+`state` is `loaded`, `no_offer` (the server answered 404), `fetch_failed` (no answer and no cached copy), `bad_offer` (the signature, size or sha256 did not verify), `signed_out` (the server did not take the sign-in) or `refused` (any other refusal, in the server's words). `source` says where the bytes came from: `server`, `cdn`, `cache` or `env` (`SWOFTY_TT_INTEGRITY_DLL`). `detail` is at most 200 characters. A launcher that does not know leaves `integrity` out.
+
+At `laps.sealing` the module appends the `ATST` section: a length-prefixed JSON document and a 32-byte HMAC-SHA256 of it.
 
 ```
-integrity module: asking the server for the module failed (couldn't reach https://...: timeout); trying again in 1 s (try 2 of 3)
-integrity module: the server's copy could not be had (couldn't reach https://...: timeout); using the cached copy 2026.11.10.1, verified offline, last offered 3 h ago
+ATST = u32 json_len, json bytes, 32 bytes mac
+json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...", "time_ms": 91234,
+         "values": { ... }, "db": { ... }, "modules": [ { "name": "swofty_core.dll", "sha256": "..." } ], ... }
 ```
 
-When the server's module cannot be had, the launcher uses the cached copy the server offered last. Its `offer.json` signature is checked against the pinned key and its size and sha256 against the DLL, and `offered` is at most 14 days old.
+`body_sha256` is the hash of the lap file before the section, `values` and `db` are the handling values and database rows read for the player's car, and `modules` lists the DLLs loaded from the game folder. The key of the MAC is held by the server.
 
 ### Time Trial blocked
 
@@ -155,7 +188,7 @@ The launcher tells the core what the session did through `swofty/tt.json` and ta
 }
 ```
 
-`tt_module` names the module the session placed. `tt_blocked` is written when Time Trial boards is on, the player is signed in, the profile loads the core and no verified module could be placed. Neither key is written with Time Trial boards off, signed out or in a vanilla profile.
+`tt_module` names the module the session placed, `local` for `SWOFTY_TT_INTEGRITY_DLL`. `tt_blocked` is written when Time Trial boards is on, the player is signed in, the profile loads the core and no verified module could be placed, whatever the upload meta's `state` says. Neither key is written with Time Trial boards off, signed out or in a vanilla profile.
 
 The core blocks Time Trial while `tt_boards` is `true` and either `tt_blocked` is there, or `tt_module` is there and, from the first main menu on, `swofty_integrity.dll` is not in the process or `laps.sealing` has no handler. The main menu's Time Trial card and the activity container's `time_trial` command (F1 World > Play > Time Trial) are refused, and the game's own message popup says why:
 
@@ -173,32 +206,53 @@ The main menu's Time Trial card reads `Unavailable: the integrity module did not
 
 The launcher's session log says `integrity module: Time Trial is blocked in game this session, ...`, and the launcher's Time Trial page shows a notice while that session runs.
 
-At `laps.sealing` the module appends the `ATST` section: a length-prefixed JSON document and a 32-byte HMAC-SHA256 of it.
+## Server-timed laps
+
+At each timing line of a lap (the start line, sector 1, sector 2 and the finish) the Time Trial plugin calls the lap host's `mark` with the lap's number, the line and the game's lap clock there. The plugin numbers each lap at its start line: 1 for the first lap and one more for each lap started. A discarded lap keeps its number, so the `lap_index` of the lap files has gaps after a discard. The number is the lap file's `lap_index`. The core stamps the moment and writes one file per mark into `tt/ticks/` of the launcher's data folder (`swofty/tt/ticks/` when it can't write there):
+
+```json
+{"seq": 12, "lap": 3, "mark": "s1", "game_ms": 28411, "at_ms": 1795000123456}
+```
+
+While the game runs, the launcher sends each mark, in the order they were made, to `POST /v1/tt/sessions/{nonce}/ticks` on a thread of its own:
+
+```json
+{"lap": 3, "mark": "s1", "game_ms": 28411, "since_ms": 12, "attempt": 1, "prev": "<the receipt of lap 3's start>"}
+```
+
+`prev` is the receipt of the same lap's previous line mark, and is left out at `start`. A mark goes only once that receipt is in hand. The server answers with a receipt, `{"receipt": "tk1...."}`, which the launcher keeps as it is under `timetrial/ticks/` in its data folder. When a lap is collected into the outbox it takes the receipts of its `lap_index` with it, and its upload meta carries them in mark order:
+
+```json
+"timing": {"lap": 3, "receipts": ["tk1....", "tk1....", "tk1....", "tk1...."]}
+```
+
+A lap's pauses are marked too, up to four: `p1` as the game pauses, chained to the lap's start, and `r1` as it resumes, chained to `p1`, then `p2` and `r2`, up to `p4` and `r4`. `game_ms` is the game's lap clock, which stands still while it is paused. The server leaves the pause out of the lap's real time. A pause mark the server refuses, or one with no receipt of its chain, is dropped alone: that pause stays in the lap's time and the lap's other receipts and timing stay. A core before 1.10.0 refuses the pause marks.
+
+| Answer | The launcher |
+|---|---|
+| no answer, 408 or a server error | sends the mark again after 0.5, 1, 2, 4, 8 and 16 s, then every 30 s, with `attempt` and `since_ms` updated |
+| 429 | sends it again after the server's `Retry-After` |
+| 400, 409 or another refusal | drops that lap's timing |
+| 404 or 401 | stops ticking for the session |
+
+A mark the server can't be reached for is kept for 10 minutes; one the server answered with an error is tried until a minute after its lap's finish. Then that lap's timing is dropped. A lap without receipts uploads without `timing`, as do laps from launchers or plugins without timing marks. The launcher sends at most 12 ticks a minute. A new lap waits up to 5 seconds for marks still being sent. The run log says when a mark couldn't be sent:
 
 ```
-ATST = u32 json_len, json bytes, 32 bytes mac
-json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...", "time_ms": 91234,
-         "values": { ... }, "db": { ... }, "modules": [ { "name": "swofty_core.dll", "sha256": "..." } ], ... }
+timing: lap 3 s1 not sent (couldn't reach https://...); trying again
+timing: lap 3 end not sent within 600 s; that lap is untimed
 ```
 
-`body_sha256` is the hash of the lap file before the section, `values` and `db` are the handling values and database rows read for the player's car, and `modules` lists the DLLs loaded from the game folder. The key of the MAC is held by the server.
+## Session challenge
+
+The launcher asks for the session nonce with the sha256 of the game's exe, `{"game_build": "<sha256>"}`, when it knows it. When Swofty's server sends a `challenge` with the nonce, the launcher writes it into `swofty/tt.json` as `tt_challenge`, next to `tt_nonce`, for the integrity module. A challenge that is not a JSON object or is larger than 16 KB is left out. Older servers send none, and the key is then absent.
 
 ## In-game boards
 
-The core can show addon content on the game's own Time Trial leaderboard screen. It is off until the launcher writes `"tt_bridge": true` into `swofty/tt.json`, which it does when Time Trial boards in the game is on. It runs only on the game build the core's hook points were taken from. Each step logs one `[boards]` line, so one Time Trial session shows which steps worked.
+The Time Trial plugin shows addon content on the game's own Time Trial leaderboard screen, the Time Trial track select's View Leaderboards. It is off until the launcher writes `"tt_bridge": true` into `swofty/tt.json`, which it does when Time Trial boards in the game is on. Each step logs one `[boards]` line.
 
-The game names a board `LBV` + the descriptor id (2 digits) + the track (2 digits) + `D` or `W`: `LBV0605D` is descriptor 6, track 5, dry. Descriptors 0 to 5 are the game's own. Descriptors 6 and up are the ids the core assigned to addon boards. The game knows a board only if `system/leaderboard.xml` defines it.
+The game names a board `LBV` + the descriptor id (2 digits) + the track (2 digits) + `D` or `W`: `LBV0605D` is descriptor 6, track 5, dry. Descriptors 0 to 5 are the game's own. Descriptors 6 and up are addon boards.
 
-Board definitions. When the game loads `leaderboard.xml` the core appends one copy of a stock `<leaderboard>` element per addon descriptor, per track the stock boards name and per custom track's stat id, per weather. It also appends the custom tracks' stat ids under every stock descriptor the file uses. A board name the file already defines is not added again, so a custom track on a dormant stock row whose board exists adds nothing under that descriptor. The copies get new `id` and `name` values, ids above every id in the file, and keep the template's other attributes and children. The file's line endings and quoting are kept. The core logs the template element once.
-
-```
-[boards] bridge on (tt.json tt_bridge); OnResult resolved for all five methods
-[boards] board definitions armed at base+0x30daa2a
-[boards] board definitions: 2918 bytes, template element LBV0001D: <leaderboard id="10" name="LBV0001D" ...
-[boards] board definitions: appended 96 board(s) for 2 addon descriptor(s) over 24 track(s) (ids 41..136, 0 already defined), 12 of them for 2 custom track(s) (all addon descriptors and 1 stock descriptor(s)), buffer 2918 -> 41872 bytes
-```
-
-Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsTTLeaderboard`, `GetBinaryDataForUser`, `AddLeaderboardEntry`, `UpdateLeaderboardEntryBinaryData`. When one names an addon board the core does not send it. It writes the request to `tt/outbox/<seq>.json` in the launcher's data folder (`swofty/tt/outbox/` in the game folder when the core can't write the data folder):
+A request for an addon board or a custom track's board goes to the launcher instead of the game's servers. The plugin writes it to `tt/outbox/<seq>.json` in the launcher's data folder (`swofty/tt/outbox/` in the game folder when it can't write the data folder):
 
 ```json
 { "seq": 12, "method": "GetTTLeaderboard",
@@ -207,37 +261,9 @@ Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsT
   "player": { "ghost_id": "<base64 of the 0x30-byte id block, once a personal best was committed>" } }
 ```
 
-`args` holds every key of the method's argument struct the core could read. Binary data is not copied into it. The answer is `tt/inbox/<seq>.json` beside it, `{ "seq": 12, "status": 200, "body": "<JSON text>" }`. Both sides write a `.tmp` file and rename it, and both ignore files older than 60 seconds. The core deletes an answer it used. The flow tick finds the answer and gives the game's `OnResult` for that method a response with that status and body. A request with no answer after 8 seconds completes with status 504 and the body `{"Message":"The request timed out","Data":null}`. Every other request goes to the game's servers unchanged.
+The launcher answers with `tt/inbox/<seq>.json` beside it, `{ "seq": 12, "status": 200, "body": "<JSON text>" }`. Both sides write a `.tmp` file and rename it, and both ignore files older than 60 seconds. A request with no answer after 8 seconds completes with status 504 and the body `{"Message":"The request timed out","Data":null}`. Requests for the game's own boards go to the game's servers unchanged.
 
-```
-[boards] request GetTTLeaderboard LBV0605D redirected (seq 1789200100, to the mailbox, string form NeStr*@word0)
-[boards] request 1789200100 GetTTLeaderboard LBV0605D written to the mailbox (412 bytes)
-[boards] completion 1789200100 GetTTLeaderboard LBV0605D: status 200, 1880 body bytes, answered after 310 ms (OnResult returned)
-[boards] request GetTTLeaderboard LBV0105D passes (stock board, string form NeStr*@word0)
-[boards] request GetTTLeaderboard: LeaderboardID not readable as a board name (slot bytes: ...); passed through
-```
-
-Personal bests. When the game commits a personal best, the core keeps the 0x30-byte id block of the ghost's description. `ghost_id` carries it in later requests.
-
-```
-[boards] personal best committed (time word 0x3f3a1b2c): player id block 0700000000000000 ...
-```
-
-Guards. They are off. `"tt_guards": true` in `swofty/tt.json` or `SWOFTY_TT_GUARDS=1` turns them on, and the core logs `[boards] guards off: enable with tt_guards after the in-game confirmation` at arm time when they are off. The facts they use are not confirmed in the running game. With guards on, with or without `tt_bridge`, while the session's content is an addon's or the session's track is custom, the core returns at the entry of the game's remote storage upload, remote storage download and Racenet post. A lap in addon content or on a custom track does not reach the publisher's boards. With the bridge off and guards on, `AddLeaderboardEntry` and `UpdateLeaderboardEntryBinaryData` for an addon board or a custom track's board are answered locally with `{"Rank":0}` and `{}`.
-
-```
-[boards] guard: remote storage upload guard armed at base+0x2fa3de0: it returns for addon content
-[boards] guard: remote storage upload skipped for addon content swofty.swofty-2022/f1_2022
-[boards] guard: remote storage upload skipped for a custom track in the game's own content
-```
-
-`SWOFTY_TT_UPLOAD_GUARD=0`, `SWOFTY_TT_DOWNLOAD_GUARD=0`, `SWOFTY_TT_RACENET_GUARD=0` and `SWOFTY_TT_REQUEST_GUARD=0` turn single guards off. A step whose hook point does not resolve logs `off, needs <name>` and the rest keep running. Each kind of line is logged a few times and then goes quiet.
-
-Online-state gate. In a session without the platform session (the launcher's offline component), the game's own Time Trial requests stop at the checks that open every online method: a missing presence record, the platform state words, the session token. The leaderboard screen then shows the Platform Client Overlay popup and no request reaches the push hook. With the bridge on, for the five Time Trial methods and a request of an addon board or a custom track's board, the core skips those checks at the start of the method, so the request is built and handed to the push hook, which answers it. Other methods and the publisher's boards keep the game's checks. The core logs `[boards] gate <method> armed at base+0x...` per method at arm time and `[boards] gate <method> <board>: online-state checks skipped (would have failed with ...)` per request.
-
-With the bridge on, the game's rival search (inside the ghost handler's update) also counts an addon board or custom track board as online: the core logs `[boards] rival finder gate armed at base+0x...` and one `rival finder gate of handler ...` line per distinct state. The leaderboard screen is the front end's Time Trial track select, View Leaderboards; there is no in-session leaderboard entry in the game.
-
-`SWOFTY_TT_DIAG=1` turns on a logging-only mode, with the bridge on or off: each gate with its values and caller (`[boards] diag: online-state gate of ...`), every request pushed to the game's request ring, the board file the game loaded, the account-state error handler with a short backtrace (the popup's trigger) and the ghost handler of the storage system. Nothing changes in that mode.
+Guards are off. `"tt_guards": true` in `swofty/tt.json` or `SWOFTY_TT_GUARDS=1` turns them on. A lap in addon content or on a custom track then does not reach the publisher's boards.
 
 ## Barred addons
 

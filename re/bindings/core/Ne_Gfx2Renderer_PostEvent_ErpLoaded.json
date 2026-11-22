@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2Renderer_PostEvent_ErpLoaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a6fdd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a6fdd0.c;xref:0x143a6e2cf",
+  "notes": "Event-posting thunk installed by Ne_Gfx2Renderer_ConstructQueueState: if the queue (param_1+0x68) is active it allocates a 0x10-byte payload (param_3, param_2) from allocator +0x78 and enqueues it on the event descriptor named 'ERPLoaded' via 0x14398c450 (descriptor in .rdata 0x1458a35xx); on allocation failure sets error 0xc (ENOMEM) in the TLS error trace, when inactive returns 0x58. Addon: hook point for the ERPLoaded event."
+ },
+ "signature": {
+  "id": "core.gfx2_renderer_post_event_erp_loaded",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 48 89 F0 C5 F8",
+  "match": "0x143a6e2cf",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a6fdd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2Renderer_PostEvent_ErpLoaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143a6fdd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a6fdd0.c;xref:0x143a6e2cf",
+   "notes": "V8265 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

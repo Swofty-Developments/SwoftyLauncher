@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Input_GenerateCustomControlSchemes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a5c7f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a5c7f0.c;pat:log-channel-SPLITSCREEN_INPUT;xref:0x142a69b6d,0x142a784b3,0x1434d63fd",
+  "notes": "generateCustomControlSchemes: refresh counter +0x210; snapshots schemes +0x1a8/+0x1c8 (0x142b38850), refreshCustomControlSchemes 0x142a59670 x2, per local player (+0x40+0x140 slots +0x1c0/+0x1c8) adds schemes 0x142a5d5f0 or binds existing ones; 0x142a5b910; then 0x142a5d050 per player and deferred callbacks +0x1f8. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.input_generate_custom_control_schemes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 CE FF 81 10 02 00 00",
+  "match": "0x142a5c7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a5c7f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_GenerateCustomControlSchemes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a5c7f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a5c7f0.c;xref:0x142a69b6d",
+   "notes": "V5177 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

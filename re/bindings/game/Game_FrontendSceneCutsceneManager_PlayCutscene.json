@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCutsceneManager_PlayCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428b3fc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428b3fc0.c;xref:0x1428b52c0,0x14d30022b",
+  "notes": "PlayCutscene(cutMgr, desc): finds script by name desc+0x10 (case-insensitive) or preloads it, stops previous, plays new ('Requesting to play cutscene'). Callers 0x1428b52c0, 0x14d30022b. Addon: play any front-end cutscene by name. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2983)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_cutscene_manager_play_cutscene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CB 48 8B 41 48 48",
+  "match": "0x1428b3fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428b3fc0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCutsceneManager_PlayCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneCutsceneManager_PlayCutscene",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428b3fc0.c;xref:0x1428b52c0",
+   "notes": "V2983 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

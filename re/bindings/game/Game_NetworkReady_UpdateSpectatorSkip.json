@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_UpdateSpectatorSkip",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436ea400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436ea400.c;pat:log-message-method;xref:0x1436f07af,0x1436f11e1,0x14585cf98",
+  "notes": "Ready-monitor state update (vtable cell + direct calls): calls GatherUILegacy 0x1436ec5f0 and EnterReadyMonitor 0x1436e9ca0, sums 0x144074da0 results into [param_1[400]+0x98], logs 'StateReadyMonitor detects SUPER-READY' and the numbered '%s: N. hostRaceStatus...' lines with method string 'updateSpectatorSkip'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_ready_update_spectator_skip",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F9 29 74 24 40 48 89 D6 48 89 CF 0F B6 99 14 0F 00 00",
+  "match": "0x1436ea400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436ea400",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_UpdateSpectatorSkip"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436ea400",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436ea400.c;xref:0x1436f07af",
+   "notes": "V6143 3656-byte StateReadyMonitor update (interrupt handling, SUPER-READY, link 1/skip, archetype ready) with updateSpectatorSkip inlined. Better: Game_StateReadyMonitor_OnStateUpdate."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1436ea400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436ea400.c;xref:0x1436f07af",
+   "notes": "V7101 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

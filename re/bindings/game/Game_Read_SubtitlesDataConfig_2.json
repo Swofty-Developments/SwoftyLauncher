@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SubtitlesDataConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144353880",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144353880.c;pat:log-channel--;xref:0x145a76218",
+  "notes": "Factory (vtable cell): allocates 0x200-byte subtitles VM from this+0x20 (vtable 0x145a6a740), stores [this+8] in 0x146ca5500, binds subtitles_data.show_subtitle, speech_duration, display_text, reset_to_start (1), paused; display_text watch at +0xf8 with cb 0x14425e730; increments this+0x18. (lane owner review requested) Better name: Game_SubtitlesVM_Create (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_subtitles_data_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 CE 48 83 C1 20",
+  "match": "0x144353880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144353880",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SubtitlesDataConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144353880",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144353880.c;xref:0x149abefa2",
+   "notes": "V6585 better name Vm_Bind_SubtitlesDataNodes: resolves VM registry nodes (Ne_VmRegistry_ResolveNode, ResolveStringNode) for subtitles_data.*, not settings/game DB keys"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144353880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144353880.c;xref:0x149abefa2",
+   "notes": "V7198 name fits, facts hold; prefix: finding suggests Vm_Bind_, name fits"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_ApplyBindingsByType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdd360",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdd360.c;xref:0x143bcfa7e,0x143bddd03,0x143bde049",
+  "notes": "Hypothesis: switch over binding type of a bindings array to fill descriptor sets. Named callers: Ne_CustomisationDecalRenderer_BakePasses."
+ },
+ "signature": {
+  "id": "core.render_graph_apply_bindings_by_type",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 83 7A",
+  "match": "0x143bdd360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bdd360",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_ApplyBindingsByType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bdd360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bdd360.c;xref:0x143bcfa7e",
+   "notes": "V7822 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

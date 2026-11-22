@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_ScDebrisAccumulator_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143640f10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_ScDebrisAccumulator_Update(void *acc)",
+  "evidence": "decomp:re/decomp/143640f10.c;xref:0x145854820;xref:0x1436312d0;doc:re/db/subsystems/session.md",
+  "notes": "SC debris accumulator update (vtable slot ptr 0x145854820). Skipped when self+0x18 > 1. When dirty (self+0x48): sums count and box volume of the track's debris-capable parts (car model +0xc20 lists via 0x142f18a30 / 0x142f18fa0 / 0x142f192a0 with part tables 0x1457f5880/0x1457f58c0/0x1457f58e0, plus [[+0x58]+0x58]+0x5c8 / +0x5e0 boxes) and sets the per-volume weight self+0x50 = (g 0x145f96990 / n) / (volume / n). Every update: debris amount self+0x4c = sum over detached parts ([self+0x40]+0x88..+0x90, enabled when +0x48 -> +0xd) of part vcall +0x20 (volume) * weight; when it changed posts msg 0x145857de0 (0xcd000000cd, +0x4c/+0x50) on self+0x28 - the SC decision reads this debris amount. (used by vmknolle parts-detach: detached parts count as debris) | sd-verify D2 (CORRECTED): debris points (vtable 0x145854810, +0x38 -> 0x1436312d0 mov eax,[rcx+0x4c]; +0x40/+0x48 return 0 = SC/VSC only): factor +0x50 = 350/sum of AABB volumes of the car's parts (general_properties.per_vehicle_debris_points 0x990 = 350); points +0x4c = sum over detached parts (flag +0xd) of vfunc+0x20(part) * factor = 350 * detached volume fraction; drops only when parts despawn"
+ },
+ "signature": {
+  "id": "session.sc_debris_accumulator_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 83 79 18 01",
+  "match": "0x143640f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143640f10",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScDebrisAccumulator_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x143640f10",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/143640f10.c;xref:0x145854820",
+   "notes": "V1052 when dirty recomputes points-per-part from debris part volumes (diffuser_bm etc), sums live parts x pointsPerPart into +0x4c and on change sends 'DeploymentPointsAccumulatorDebris' network message (log string names the class); void(acc)"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "sd-verify",
+   "kind": "func",
+   "item": "Sess_ScDebrisAccumulator_Update",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x1436312d0",
+   "notes": "V1793 D2; 350 * detached volume fraction"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "re-bindings",
+   "kind": "func",
+   "item": "Sess_ScDebrisAccumulator_Update",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm of the archived 1.0.141 exe (PE 1789118616) 0x143640f10-0x14364134d;xref:0x145854820,0x1436312d0",
+   "notes": "V20007 Re-verified after V1793, whose D2 correction is now in the notes: vtable 0x145854810 slot 2 (abs 0x145854820, only reference); skip when [+0x18] > 1; dirty +0x48: part counts and volumes via 0x142f18a30/0x142f18fa0/0x142f192a0 with tables 0x1457f5880/0x1457f58c0/0x1457f58e0 plus [[+0x58]+0x58]+0x5c8/+0x5e0 boxes; weight +0x50 = (g/n)/(volume/n) with g = dword [0x145f96990] read at run time (350 is its database value, not checked here); +0x4c = sum over [+0x40]+0x88..+0x90 parts with [[e+8]+0x48]+0xd set of vcall +0x20 * weight; posts 0x145857de0 with 0xcd000000cd on +0x28 when changed; slot +0x38 = 0x1436312d0 returns +0x4c."
+  }
+ ],
+ "proofs": []
+}

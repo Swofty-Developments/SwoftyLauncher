@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_WeeklyEventPrizeReceivedRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14072d220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14072d220.c;pat:log-channel-TELEMETRY;xref:0x1406e2134,0x1406fe6cf",
+  "notes": "Bus handler: lea 0x1406e2134 in subscribe-all 0x1406d8470 (->0x143987810), lea 0x1406fe6cf in unsubscribe-all 0x1406fd6c0. Allocs 0x70 record (ctor 0x1405ead20), copies msg fields, baseCtx by 0x14077bb90 'weekly_event_prize_received_record', pushed to static queue (guard 0x14604d9b0) under CS; logs TELEMETRY 'WeeklyEventPrizeReceivedRecord'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_weekly_event_prize_received_record",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 D3 48 89 CE 48 8B 81 58 0A 02 00 48 8B 88 70 01 00 00 48 85 C9 74 0D F0 FF 41 08 48 8B B8 70 01 00 00 EB 02 31 FF 48 8B 88 68 01 00 00 48 8B 01 FF 50 40 48 85 FF 74 1D F0 FF 4F 08 75 17 48 8B 07 48 89 F9 FF 10 F0 FF 4F 0C 75 09 48 8B 07 48 89 F9 FF 50 08 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 0F 8F ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 8B 01 48 C7 44 24 20 10 00 00 00 48 8D 15 ?? ?? ?? ?? 41 B9 70 00 00 00 45 31 C0 FF 50 10 48 89 C7 48 8D 54 24 30 48 89 C1 E8 ?? ?? ?? ?? 8B 43 10 89 47 60 48 63 43 14",
+  "match": "0x14072d220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14072d220",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_WeeklyEventPrizeReceivedRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14072d220",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14072d220.c;xref:0x6e2136",
+   "notes": "V4818 name and event correct; logged text is the bare event string (no 'EA analytics event: ' prefix exists in the binary)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TextureStreaming_FreeEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bf3320",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bf3320.c;xref:0x143befec1,0x143eb88fd",
+  "notes": "Destroys a texture-streaming entry param_2: frees vectors +0xd8/+0xb8 and strings +0x60/+0x88 (allocator vcall +0x38), decrements the refcount at [entry+0x58]+0x18, then frees the entry via param_1 vcall +0x38 (tail jump). Callers Render_Texture_CreateFromResourceCore 0x143befec1, Game_TextureStreamingVerbose_Clearing 0x143eb88fd. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.texture_streaming_free_entry",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 8D 9A D8",
+  "match": "0x143bf3320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bf3320",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureStreaming_FreeEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bf3320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bf3320.c;xref:0x143befec1",
+   "notes": "V7839 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

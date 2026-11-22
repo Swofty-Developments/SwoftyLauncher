@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Entrants_GetDriverCustomisationByEntrantIdx",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024c370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14024c370.c;xref:0x14024c6b0,0x140356ff2,0x140361813",
+  "notes": "(this, entrant index): same participant lookup (car id +0x82), key rec+0x54 {type, u16 idx} or fallback {0, entrant idx}, then calls 0x14246d940([0x14604c2c8]+0x290, key): tables +0x298+type*0x10 (stride 0x10), log ENTRANTS_SYSTEM 'Driver customisation with stat id %s not found' (decomp merges that callee). Callers 0x14024c670, 0x140356a20, 0x140361670. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.entrants_get_driver_customisation_by_stat_id",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C7 48 8B 05 ?? ?? ?? ?? 48 8B 90 B0 00",
+  "match": "0x14024c6b0",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14024c370",
+  "kind": "func_start",
+  "names": [
+   "Game_Entrants_GetDriverCustomisationByEntrantIdx"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14024c370",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14024c370.c;xref:0x14024c6b0",
+   "notes": "V7724 BetterName Game_Entrants_GetDriverCustomisationByEntrant: param is entrant index (same prologue as FindDriverStatId); strings ENTRANTS_SYSTEM ok"
+  }
+ ],
+ "proofs": []
+}

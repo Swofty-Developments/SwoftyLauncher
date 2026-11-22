@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_AttemptingSwitchIntoCrossPlayMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430e0560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430e0560.c;pat:log-channel-NETWORK;xref:0x145814118",
+  "notes": "NetworkSubsystem vtable 0x145814050 slot +0xc8 (cell 0x145814118) per-frame tick, dt from param_2+8 (two helpers, overlapping halves): CrossPlay switch (+0x10f0, ChangeMPMode 0x1430ed330), NTP, '[EVENT] network cable unplugged/plugged', online service lost/restored, voting manager, GameSessionMatching Custom/Hopper/Career/F1WSocialGP + MatchingProcessor, GameSessionManager drop-in/vehicle registration, kick-reason UI msgs, OnlineTitl... (lane owner review requested) Better name: Game_NetworkSubsystem_Update (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_attempting_switch_into_cross_play_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 1B 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 7F BC 24 60 1B 00 00",
+  "match": "0x1430e0560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430e0560",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_AttemptingSwitchIntoCrossPlayMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430e0560",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430e0560.c",
+   "notes": "V5380 better name Game_NetworkSubsystem_Update: 8224-line main update (cable/online events, matching, invite manager state machine, kicks, leaderboards cache, restrictions); CrossPlay switch is one tiny part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430e0560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430e0560.c",
+   "notes": "V6973 8224 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

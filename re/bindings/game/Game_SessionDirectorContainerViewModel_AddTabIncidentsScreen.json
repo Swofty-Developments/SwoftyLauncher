@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_SessionDirectorContainerViewModel_AddTabIncidentsScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422a0990",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422a0990.c;str:s_SessionDirectorContainerViewModel_AddTabIncidentsScreen;xref:0x14229f9dd,0x14229f9f8,0x14229fa48,0x14229fa5e,0x14229feec,0x14229ff05",
+  "notes": "Logs UI addTabIncidentsScreen(pill); allocates a 0x840 tab VM from [+0x2a0], base init 0x1414bdac0 with \"session_director_incidents\"/\"lng_incidents\", vtables 0x145778aa0 (+0), 0x145778b90/0x145778bc0, pill byte at +0x678; pushes it to vector +0x288..+0x298 and (pill<<16)|1 to the u32 vector +0x868..+0x878. Callers in 0x14229f6a0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.session_director_container_view_model_add_tab_incidents_screen",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F1 89 DA EB 7F 48 89 F1 B2",
+  "match": "0x14229f9dd",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1422a0990",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionDirectorContainerViewModel_AddTabIncidentsScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1422a0990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422a0990.c;xref:0x14229f9dd",
+   "notes": "V7338 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

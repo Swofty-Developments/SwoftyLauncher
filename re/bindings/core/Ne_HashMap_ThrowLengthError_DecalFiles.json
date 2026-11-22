@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_ThrowLengthError_DecalFiles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14146e320",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14146e320.c;xref:0x14146e30f",
+  "notes": "10-byte length-error stub. Callers Game_DecalFiles_HashMap_Emplace_B (0x14146e30f), 0x14146eab0."
+ },
+ "signature": {
+  "id": "core.hash_map_throw_length_error_decal_files",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC 48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC 56 57 53 48 83 EC 30 48 89 CE 48 8D 79 08 BA 04",
+  "match": "0x14146eab0",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14146e320",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_ThrowLengthError_DecalFiles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x14146e320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14146e320.c;xref:0x14146e30f",
+   "notes": "V8218 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

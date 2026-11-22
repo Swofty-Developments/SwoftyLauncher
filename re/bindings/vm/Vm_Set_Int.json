@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_Int",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d38fd0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Set_Int(void *registry, void *parent, const char *name, int64_t *value, int overwrite)",
+  "evidence": "decomp:re/decomp/140d38fd0.c;doc:research/ui-native.md#12;xref:0x140c1f905,0x1414a1353,0x1414a1446,0x1414ad275,0x1414ad3ac,0x1414adbb4,0x1414b5fda,0x1414c2407",
+  "notes": "(reg,parent*,cstr name,value,mode): name null or containing '#', '.', '[' -> empty int handle 0x146054810; finds child (parent vt+0x28 / vt+0x10 paths); found: type must be int 0x146129d40, mode==1 -> Ne_Property_SetS32IfChanged(node,value,0,1); not found: djb2(name), allocs 0x68 node, ctor 0x140d392d0(node,alloc,0,&hash,value), attaches (0x1442b32b0/0x1442b3770); returns node+8 handle. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "vm.set_int",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 7C 24 30 C5 F8 57 C0 C5 F8 11 44 24 38 48 C7 44 24 48 00 00 00 00 48 8B 00 48 89 44 24 38 48 85 C0 74 24 48 8B 48 28 48 89 4C 24 40 48 C7 44 24 48 00 00 00 00 48 85 C9 74 04 4C 89 71 10 4C 89 70 28 66 F0 FF 40 24 4C 8D 3D ?? ?? ?? ?? 4C 89 7C 24 30 48 8D 8D E8 03 02",
+  "match": "0x1414a1353",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140d38fd0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_Int"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x140d38fd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d38fd0.c;xref:0x140c1f905",
+   "notes": "V7326 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

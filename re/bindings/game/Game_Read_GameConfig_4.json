@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GameConfig_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e22c60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e22c60.c;pat:log-channel--;xref:0x1457eb490",
+  "notes": "Thumbnail system init (vt cell 0x1457eb490): resolves 8 systems from the registry (0x14030ffd0) into +0x28..+0x70 and services 0x1460449f0 (+0x58), 0x146cb8158 (+0x60), 0x146cb8278; Game.Thumbnails.enableThumbnailGeneration -> bool +0x144 (default 0), preloadTimeoutInSeconds -> float +0x198 (7.5), driverPreloadTimeoutInSeconds -> float +0x19c (20.0); error 0x16 when a dependency is missing. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_game_config_4",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C3 48 89 D6 48 89 CF 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 4C 89 C1 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 43 18 48 3B 43 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 47 28 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 48 89 D9 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 43 18 48 3B 43 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 47 30",
+  "match": "0x142e22c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e22c60",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GameConfig_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e22c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e22c60.c",
+   "notes": "V5463 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

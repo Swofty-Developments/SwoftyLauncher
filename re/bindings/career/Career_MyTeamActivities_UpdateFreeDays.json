@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_UpdateFreeDays",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14231f990",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/14231f990.c;xref:0x142313e57,0x142319054",
+  "notes": "Logs 'Function: onSelectedActivityBlockChanged'; reads priority via Ne_Property_ResolveBindingChain, then Career_MyTeamActivities_ApplyActivityToSelectedBlock and 0x142321f80. Refs are lea (callback registration) in 0x142313850 and 0x142319010. (lane owner review requested) Better name: Career_MyTeamActivities_OnSelectedBlockChanged (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.my_team_activities_update_free_days",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 D7 48 89 CE",
+  "match": "0x14231f990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231f990",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_UpdateFreeDays"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14231f990",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14231f990.c;xref:0x142313e57",
+   "notes": "V10127 Handler for onSelectedActivityBlockChanged/priority; free-days role unproven."
+  }
+ ],
+ "proofs": []
+}

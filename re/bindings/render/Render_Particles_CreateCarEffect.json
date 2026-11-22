@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_CreateCarEffect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af5620",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af5620.c;pat:log-channel-PARTICLES;xref:0x1458b7ff8",
+  "notes": "Slot 1 of the secondary vtable 0x1458b7ff0 (interface at object+0x90; installed by Game_Particles_CreateEffectNode at 0x143b029fc and the dtor at 0x143af5363). Switch on message id *param_2 (2..0x15), payload param_3: 2 = create effect by name (Game_Particles_FindEffectDefByName, log 'Couldn't create effect'), 5 logs 'Car start %u', 0xc logs 'USED!!'. (lane owner review requested) Better name: Render_Particles_EffectNode_HandleMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.particles_create_car_effect",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 78 29 9C 24 90 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 8B 02 83 C0 FE",
+  "match": "0x143af5620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af5620",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_CreateCarEffect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143af5620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af5620.c;xref:0x142f32e6f",
+   "notes": "V6459 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

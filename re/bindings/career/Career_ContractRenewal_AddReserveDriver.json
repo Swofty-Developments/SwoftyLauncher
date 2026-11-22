@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_AddReserveDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d94140",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d94140.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d94b36,0x140d9595a,0x140d962f8",
+  "notes": "Reserve-driver swap for team param_2: collects entrants ([comp+0x278]+0x2e0, 0x88 stride) of the team (+0x58/+0x5a); for an entrant (+0x81 set) whose driver (+0x50) is in the u16 list comp+0x308 logs CONTRACT_RENEWAL 'Need to add reserve driver', then for a reserve entrant (+0x80>1, +0x5e==0x3fff) logs 'replaced with reserve driver', calls 0x140d8f1f0 (kinds 2 and 4), 0x1407b72e0 and 0x140d9de30. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.contract_renewal_add_reserve_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 F8 29 B4 24 50 02 00 00 48 8B 81 78 02 00 00",
+  "match": "0x140d94140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d94140",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_AddReserveDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d94140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d94140.c;xref:0x140d94b36,0x140d9595a",
+   "notes": "V4710 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d94140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d94140.c",
+   "notes": "V9080 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

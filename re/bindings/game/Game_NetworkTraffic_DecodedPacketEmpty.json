@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTraffic_DecodedPacketEmpty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14404a860",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14404a860.c;pat:log-channel-NETWORK-TRAFFIC/T;xref:0x144046675,0x1440466b5,0x1440469f2,0x144046ced",
+  "notes": "Packet reader: reads a 2-byte message header at offset +0xc (11-bit length, 2-bit extra-byte count, flag bits 5/6), fills the message view p2 (ptr, len, flags) and advances; logs 'Decoded packet empty!' or 'Not enough data left' and sets error byte +0x15. (lane owner review requested) Better name: Game_NetworkTraffic_ReadNextMessage (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_traffic_decoded_packet_empty",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 D6 80 79 15 00",
+  "match": "0x14404a860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14404a860",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTraffic_DecodedPacketEmpty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14404a860",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14404a860.c;xref:0x144046675",
+   "notes": "V6472 partial: better name Game_NetworkTraffic_DecodePackets; decode loop over buffer; empty packet is one error branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14404a860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14404a860.c;xref:0x144046675",
+   "notes": "V7103 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

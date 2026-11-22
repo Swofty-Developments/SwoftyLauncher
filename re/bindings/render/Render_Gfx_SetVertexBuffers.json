@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_SetVertexBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a02720",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a02720.c;xref:0x143a012ce,0x143bcb599",
+  "notes": "Per stream: packed handle low 48 bits = buffer, bits 48-52 = byte offset, bits 53-59 = stride; address from buffer+0xe0 or the per-frame +0xd0 table, size = +0x28 * +0x30 - offset; writes 16-byte views at ctx+0x1318+slot*16 and on change calls list vcall +0x108(start, count, views). Callers Render_Gfx_SubmitDraw 0x143a007e0, 0x143bcb450. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx_set_vertex_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 45 85 C0 0F",
+  "match": "0x143a02720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a02720",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_SetVertexBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a02720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a02720.c;xref:0x143a012ce",
+   "notes": "V8514 packed handle low 48 bits ptr, bits 48-52 offset, 53+ 7-bit stride; cache at +0x1324"
+  }
+ ],
+ "proofs": []
+}

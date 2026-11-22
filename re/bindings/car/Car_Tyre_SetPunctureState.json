@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_SetPunctureState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144656f80",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144656f80.c;xref:0x142bdd346,0x142bdd411,0x142bdd4df,0x142bdd5a8,0x14324bb11,0x14470e143",
+  "notes": "(w,on): acts only when on differs from bit0 of w+0x18. off: clear bit0, w+0x90 = bit1 ? 1 : 0. on, bits0/1 clear: 0x14464e200([[w+8]+0xd8]+0x3f70, car idx [w+8]+0xe8, w) ok -> bit1 (puncture), w+0x90 = max(1,w+0x90), w+0x2c = w+0x30. on with bit1 set -> bit0 (burst). Then inlined Car_Tyre_UpdateDeflation. Callers in 0x142bdd220, 0x1432495e0, 0x14470d760. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.tyre_set_puncture_active",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 0F B6 41 18 A8 01 0F 94",
+  "match": "0x144656f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144656f80",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_SetPunctureState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144656f80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144656f80.c;xref:0x14324bb11",
+   "notes": "V6800 Is a puncture/burst state machine: bit1 set via Car_Puncture_Add check, bit0 set only when bit1 already set, then recomputes tyre geometry inline (same block as UpdateDeflation); better name Car_Tyre_SetPunctureState."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144656f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144656f80.c;xref:0x142bdd346",
+   "notes": "V7242 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_UIVisualNavigation_VeHitOurPreviouslyFocusedNodeLet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144289cc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144289cc0.c;pat:log-channel-UI_VISUAL_NAVIGATION;xref:0x14428a941,0x14428aa33,0x14428aa72,0x14428aac0,0x14428aafb,0x153969b81",
+  "notes": "Full read. (nav,screen,dir float[2],flag): gets nodes via 0x14428ac40, steps grid pos this+0x70/+0x74 by dir (wrap +0x78/+0x7c if +0x80/+0x81), cell +0x10/+0x14, origin +0x20/+0x24, rect +0xa0, max 0x32 steps; hit: set pos, id +0x90, node vt+0x98(1), event 0x519 type 5, log 'NEW NODE FOCUSED'/'previously focused node'; miss: type 6 + 'Failed to find a node to focus'. Returns bool. (lane owner review requested) Better name: Game_UIVisualNavigation_FocusNodeInDirection (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ui_visual_navigation_ve_hit_our_previously_focused_node_let",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 78 29 BC 24 60 01 00 00 C5 78 29 B4 24 50 01 00 00 C5 78 29 AC 24 40 01 00 00 C5 78 29 A4 24 30 01 00 00 C5 78 29 9C 24 20 01 00 00 C5 78 29 94 24 10 01 00 00 C5 78 29 8C 24 00 01 00 00 C5 78 29 84 24 F0 00 00 00 C5 F8 29 BC 24 E0 00 00 00 C5 F8 29 B4 24 D0 00 00 00 44 88 4C 24 2B",
+  "match": "0x144289cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144289cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_UIVisualNavigation_VeHitOurPreviouslyFocusedNodeLet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144289cc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144289cc0.c;xref:0x14428a941",
+   "notes": "V6576 better name Game_UIVisualNavigation_FindNextFocusNode: focus search loop: previously focused hit, NEW NODE FOCUSED, failed to find node"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144289cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144289cc0.c;xref:0x14428a941",
+   "notes": "V7191 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

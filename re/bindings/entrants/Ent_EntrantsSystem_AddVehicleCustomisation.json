@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddVehicleCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142477cb0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142477cb0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe92c2,0x14143c65f,0x1416e536a,0x14200af62,0x142057025,0x142265d54",
+  "notes": "AddVehicleCustomisation for type 1 eUserDefined: array this+0x398; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Stack-built record (0x144c897d0, 0x14096e580), inserts via 0x140cdd730, temp destroyed 0x14030c740. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_vehicle_customisation",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 B8 70 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 4C 89 C3 48 8B B1 98 03 00 00",
+  "match": "0x142477cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142477cb0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddVehicleCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142477cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142477cb0.c;xref:0x140fe92c2",
+   "notes": "V5081 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

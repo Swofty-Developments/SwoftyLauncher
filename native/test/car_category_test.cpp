@@ -1,6 +1,6 @@
 // Host unit test for the LAN Car Category addon boxes (car_category_logic.hpp): the press commands, the
-// option value name decoding, the value match and the handle release. run_events_test.sh builds and runs it.
-#include "../src/core/car_category_logic.hpp"
+// option value name decoding, the value match and the handle release. native/test/run_tests.sh car_category builds and runs it.
+#include "core/boxes/car_category_logic.hpp"
 
 #include <cstdio>
 #include <string>
@@ -43,8 +43,8 @@ int main()
     expect(cc::decode_name(enc.data(), cc::VALUE_NAME_MAX + 1, key).empty(), "an oversized length decodes to nothing");
     expect(cc::decode_name(nullptr, 5, key).empty(), "no source decodes to nothing");
 
-    std::vector<cc::Value> values = {{"f1_generic", "multiplayer_car_25"}, {"f1_generic_2026", "multiplayer_car_26"},
-                                     {"cs_f1_2016", "lng_cs_f1_2016"}};
+    std::vector<cc::Value> values = {
+        {"f1_generic", "multiplayer_car_25"}, {"f1_generic_2026", "multiplayer_car_26"}, {"cs_f1_2016", "lng_cs_f1_2016"}};
     expect(cc::value_of(values, "cs_f1_2016") == 2, "a box finds its category value by game name");
     expect(cc::value_of(values, "cs_f1_2017") == -1, "a box without a value finds none");
     std::vector<cc::Scenario> scenarios = {{0, "f1"}, {5, "f1_generic_2026"}, {15, "cs_f1_2016"}};

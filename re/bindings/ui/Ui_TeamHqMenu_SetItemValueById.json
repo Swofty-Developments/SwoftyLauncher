@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_TeamHqMenu_SetItemValueById",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141871390",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TeamHqMenu_SetItemValueById(void *menu, int32_t item_id, int32_t value)",
+  "evidence": "decomp:re/decomp/141871390.c;xref:0x141c44d83,0x141c44f97,0x1422d682c,0x1422d687a,0x1422d6f51,0x1422d7691,0x1422d7e37",
+  "notes": "(menu,id,sub): focuses item id like 0x141871230, then on the item submenu (vcall +0xd0) checks and focuses sub-item sub (0x14431faa0 / 0x14431fb10) and calls submenu vcall +0xd8(index). (lane owner review requested) Better name: Ui_TeamHqMenu_FocusItemAndSubItem (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "ui.team_hq_menu_set_item_value_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D7 48 8B 41 10",
+  "match": "0x141871390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141871390",
+  "kind": "func_start",
+  "names": [
+   "Ui_TeamHqMenu_SetItemValueById"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141871390",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141871390.c;xref:0x141c44d83",
+   "notes": "V9825 finds item by id (stride 0x18) and updates tab node; the int value param_3 is only matched against item ids, no clear value write proven"
+  }
+ ],
+ "proofs": []
+}

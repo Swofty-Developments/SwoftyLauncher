@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OsdVisibilityOptionHudNotificationsDynamicConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141510f00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141510f00.c;pat:log-channel--;xref:0x1414c911a,0x141c13eed",
+  "notes": "Ctor: base 0x1414ded70, vtables 0x1456ebcb0/0x1456ebd50/0x1456ebd80. Allocates three child VMs bound to osd_visibility_option.hud_notifications_dynamic.{safety_car,red_flag,safety_rating}_notifications.hud_message.content, Vm_Register_ViewModel each, pushes them into vector +0x300; 13 resource handles from +0x390 (stride 0xe8) get callbacks 0x141513090..0x141513150. (lane owner review requested) Better name: Game_HudNotificationsDynamicVM_Construct (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_osd_visibility_option_hud_notifications_dynamic_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4C 89 C8",
+  "match": "0x141510f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141510f00",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OsdVisibilityOptionHudNotificationsDynamicConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141510f00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141510f00.c;xref:0x1414c911a",
+   "notes": "V4880 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

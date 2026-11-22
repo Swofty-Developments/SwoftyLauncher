@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Proto_RecursionOptionErrorRecord_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140502200",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140502200.c;xref:0x140be95a4",
+  "notes": "Proto message ctor: builds std::string 'f1.proto.OptionsSystem.RecursionOptionErrorRecord', base ctor 0x144935190(this, name), sets vtable 0x14562b970, zeroes +0x48..+0x78 and sets +0x78 = 0xf (empty SSO string at +0x60). Caller 0x140be95a4 (0x140be9370). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.proto_recursion_option_error_record_type_name",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 96 28 02 00 00 48 89 F9 E8",
+  "match": "0x140be95a4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140502200",
+  "kind": "func_start",
+  "names": [
+   "Game_Proto_RecursionOptionErrorRecord_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140502200",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/140502200.c;xref:0x140be95a4",
+   "notes": "V3420 Not a GetTypeName: constructs a message object (name f1.proto.OptionsSystem.RecursionOptionErrorRecord into base ctor 0x144935190, vtable 0x14562b970, string field +0x60 cap 0xf at +0x78). Better: Game_Proto_RecursionOptionErrorRecord_Ctor"
+  }
+ ],
+ "proofs": []
+}

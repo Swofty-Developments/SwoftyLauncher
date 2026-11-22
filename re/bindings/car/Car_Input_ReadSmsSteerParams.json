@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Input_ReadSmsSteerParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446ccbc0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446ccbc0.c;xref:0x1446ce251,0x144755132,0x144755141,0x14475515d",
+  "notes": "(rowName, out): Gdb_Find_RowByLabel on table 'assists.sms_steer' (stack string), then Gdb_Get_FieldInt for 1_angle.* into out[0..0x14], 3_rate.* into out[0x16..0x1e], 2_alignment.* into out[0x1f..0x30] (bytes for useDynamicMaxSteerCalc/useMaxPeakSlip/useTrackAndWetnessGripInEst). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.input_read_sms_steer_params",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 04 00 00 48 89 D6 49 89 C8 C7",
+  "match": "0x1446ccbc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446ccbc0",
+  "kind": "func_start",
+  "names": [
+   "Car_Input_ReadSmsSteerParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446ccbc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446ccbc0.c;xref:0x1446ce251",
+   "notes": "V6828 1_angle/2_alignment/3_rate keys read confirmed."
+  }
+ ],
+ "proofs": []
+}

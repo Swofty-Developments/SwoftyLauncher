@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_SetVehicleEffectIdentity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444721b0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444721b0.c;xref:0x144640d08",
+  "notes": "Body read fully. Only when bit 4 of byte this+0x30: builds a stack record (identity rotation rows, four 1.0 scales, empty 0x40-char name buffer vt 0x145613548, flag words 0x10100, owner = this) and under EnterCriticalSection([[0x146cb6808]+0x20]+0xf10d0) passes it to 0x143b35310 on list [+0x78]+0x20 (or +0 when byte +0x40 set). Caller 0x144640d08 in 0x14463da30. Better name: Render_Particles_QueueEffectRecord (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.particles_set_vehicle_effect_identity",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 00 01 00 00 F6 41 30 04 0F 84",
+  "match": "0x1444721b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444721b0",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_SetVehicleEffectIdentity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1444721b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444721b0.c;xref:0x144640d08",
+   "notes": "V7680 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

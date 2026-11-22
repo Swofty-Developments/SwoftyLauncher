@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomiser_ApplySuitDecals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401a9390",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401a9390.c;pat:log-channel-DRIVER_ACTOR_CUSTOMISER/DECALS;xref:0x1401b8e48,0x14288f9ed,0x142893b71,0x1428a31e3",
+  "notes": "Own log 'applySuitCustomisation - Index, Material'. Resolves suit material from arg2, sets +0x11 (no texture name or arg5 given); applies it to the actor and Driver::BodyLogos (0x14019c560) and to Driver::Feet boots and Driver::Head cap slots (0x14019cf30), else cap via 0x1401aa1b0; 0x1401a7e40. For each arg5 entry: SurfacePackSystem_AssignSuit 0x1437a65b0, helmet/suit slot indices, logs applySuitDecals, sets node matrices 0x143d3d8e0. Tail 0x1401aa450. (lane owner review requested) Better name: Game_DriverActorCustomiser_ApplySuitCustomisation (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.driver_customiser_apply_suit_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 06 00 00 C5 F8 29 B4 24 90 06 00 00",
+  "match": "0x1401a9390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401a9390",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomiser_ApplySuitDecals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401a9390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401a9390.c",
+   "notes": "V4330 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

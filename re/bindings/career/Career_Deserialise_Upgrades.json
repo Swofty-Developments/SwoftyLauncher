@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Deserialise_Upgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143536000",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143536000.c;pat:per-tree-0x143524c20-find-by-node-hash;kb:subsystems/rnd_ui.md#instances;xref:0x14123fbb0",
+  "notes": "Save load of the Upgrades model (caller Game_UpgradesComponent_Deserialise 0x14123f930). Single slot (+0x1960==1): Career_Read_UpgradesList 0x143524c20 on +0xe0. Reads supplier_history/history_size {day, supplier} into hash +0x1ac8.., percentage_of_upgrades_allowed_to_adapt -> +0x1a98, damage_based_delays/delay (or damage_based_delay) -> shorts +0x1a9c..+0x1aa2; 'upgrades' array -> 0x143524c20 per slot (+0xe0 + k*0xc40). Per-instance replace logic lives in 0x143524c20 (not read). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.deserialise_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4D 89 C6 48 89 D3 48 89 CF 4C 8D B9",
+  "match": "0x143536000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143536000",
+  "kind": "func_start",
+  "names": [
+   "Career_Deserialise_Upgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143536000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143536000.c;xref:0x14123fbb0",
+   "notes": "V6083 per-tree 0x143524c20 (looks up upgrades node, hash +0x58) verified; no dept guard seen; 0x143523fd0 serialise claim not checked"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x143536000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143536000.c;xref:0x14123fbb0;str:\"upgrades\";str:\"supplier_history\"",
+   "notes": "V9242 Calls 0x143524c20 per tree, which matches instances by node hash at +0x58 and has no department check; the serialiser 0x143523fd0 is a separate function not called here."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_RegisterHandleUsage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bccba0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bccba0.c;xref:0x143bcd52f,0x143bddc4d,0x143c73202,0x143d0d871",
+  "notes": "(graph,u32 handles[17]): for handles [1..8] and [9..16] (0xffffffff = none) builds a 40-byte usage record from resource table graph+0x50 (stride 0x160; fields +0x30/+0x48/+0x58 resp. +0xd8/+0xf8/+0x108) with state 4 resp. 8, and for handle [0] (+0x80/+0xa0/+0xb0, state 0x10+0x10*byte +0x98); appends each via Ne_Vector_InsertGrow_Elem40. Callers incl. Render_RenderGraph_AddPassNode, Ne_CustomisationDecalRenderer_BakePasses."
+ },
+ "signature": {
+  "id": "core.render_graph_copy_entry_fields",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 89 D7 48 89 CE 41 BE 04",
+  "match": "0x143bccba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bccba0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_RegisterHandleUsage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bccba0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bccba0.c;xref:0x143bcd52f",
+   "notes": "V7809 Ne_RenderGraph_RegisterHandleUsage: reads 0x160-stride pass-table fields for 8+ handles (+0x30/+0x48/+0x58 and +0xd8/+0x108/+0xf8) and emits each via 0x1424dca00 with type 4/8; not a copy into the table"
+  }
+ ],
+ "proofs": []
+}

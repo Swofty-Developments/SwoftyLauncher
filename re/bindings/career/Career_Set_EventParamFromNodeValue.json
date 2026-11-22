@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Set_EventParamFromNodeValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417eaa50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Set(void **params, void *key, void *node, void **out)",
+  "evidence": "decomp:re/decomp/1417eaa50.c;xref:0x1417e9cec,0x14184d38a,0x141883eeb,0x1418ae39f,0x1418ae73b,0x14197f4a4,0x1419abf3b,0x141c9f986,0x141d80112,0x141db54a7,0x141e036bf,0x1420a719b,0x1421b9139,0x1421b9b03,0x1421bb05c,0x1421bb69e,0x14233efc5,0x1423e093a,0x1424024a8,0x1427a5553",
+  "notes": "Body read in full. Builds a params block (0x14192eb80 with param_3 and param_3+0x20); without localiser param_4 calls 0x1416673e0(params, string param_1, param_2); with it first translates param_1 via param_4 vt+0x18 into a temp string and passes that; releases the temp string refs. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.set_event_param_from_node_value",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 10 01 00 00 4C 89 CF",
+  "match": "0x1417eaa50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417eaa50",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_EventParamFromNodeValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1417eaa50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1417eaa50.c;xref:0x1417e9cec;xref:0x14184d38a",
+   "notes": "V9789 Builds event params from two 0x20-byte node pairs (FUN_14192eb80) and sends via callback/FUN_1416673e0; facility/cost-cap specifics not provable."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeed_FetchCarDataFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c1b630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c1b630.c;xref:0x142bcf148,0x142bd4182,0x142c18db4,0x142c19737,0x142c19a02,0x142c19cbd,0x142c19d9f,0x142c19ec7,0x142c19f8a,0x142c1a02b,0x142c1a081,0x142c1a1f6,0x142c1a2b5,0x142c1b3cb,0x142c1b567,0x142c2ef36",
+  "notes": "Dispatch on feed mode +0x168: 0 -> InterpolateUDP 0x142c2f250, 1 -> InterpolateRealWorld 0x142c2f980, 2 -> InterpolateSimulator 0x142c31280 (only if +0x1a4 clear or +0x1a5 set; then copies the result into frame +0x18b470.., sets +0x18b52c and +0x18dec4 = time). Returns 0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_data_feed_fetch_car_data_frame",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 58 01 00 00 48 89 D6 48 89 CF 8B",
+  "match": "0x142c1b630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c1b630",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeed_FetchCarDataFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142c1b630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c1b630.c;xref:0x142bcf148",
+   "notes": "V7550 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

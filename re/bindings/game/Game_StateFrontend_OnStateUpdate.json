@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateFrontend_OnStateUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d2120",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436d2120.c;pat:log-message-cxx;xref:0x14585adf8",
+  "notes": "StateFrontend::onStateUpdate (TEMP_LOG strings), vt cell 0x14585adf8. Counter 0x146101dcc; network beta offline/mod messages to InterruptQueue; frontend_transition_state game_completed -> fade reasons clear/fade in on +0xce0+0x7b8; posts bus msg 0x145873690; exit-state 1/2/0xf -> fade out, result 0xfa95b51 (LINK:intro); 0xe -> eLinkExit; recalculateFrontEndTransition path -> 0x7c95dbc6; else beta_control_button counter. Returns *param_2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.state_frontend_on_state_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 89 D6 48 89 CF",
+  "match": "0x1436d2120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d2120",
+  "kind": "func_start",
+  "names": [
+   "Game_StateFrontend_OnStateUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436d2120",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436d2120.c",
+   "notes": "V6124 Name/function right (StateFrontend::onStateUpdate, TEMP_LOG Calling...), but claimed channel is wrong: that log is FLOW/V, FADE_REQUESTS is only the fade log. (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FfbDebug_M_lastPadIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f5610",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f5610.c;pat:log-message-method;xref:0x1446f5eea,0x1446f5f94,0x1554da791",
+  "notes": "Own logs 'RacingFFBEffectXInput::setWindowsGamingInputGamepadVibration pad %d' / 'setGamepadVibration happened FORCEFEEDBACK'. Skips if same pad (+0x2b0) and same 4 motor values (+0x2c0); sleeps 10 ms if last send <10 ms ago (Xbox One driver workaround); calls fnptr [0x14604e1a0]+0x20(pad, doubles); stores pad/values and time +0x298. Old name was a log fragment. (lane owner review requested) Better name: Game_RacingFFBEffectXInput_SetGamepadVibration (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.ffb_debug_m_last_pad_index",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 4C 8B 35",
+  "match": "0x1446f5610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f5610",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbDebug_M_lastPadIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f5610",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446f5610.c;xref:0x1446f5eea",
+   "notes": "V6852 Is RacingFFBEffectXInput::setWindowsGamingInputGamepadVibration (strings: set vibration pad, 10 ms Xbox One workaround, setGamepadVibration FORCEFEEDBACK); the named string is only a debug expression; better name Game_RacingFFBEffectXInput_SetGamepadVibration."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1446f5610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f5610.c;xref:0x1446f5eea",
+   "notes": "V7263 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_SetD3DObjectName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439b8890",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439b8890.c;xref:0x1439b0f38,0x1439b9556,0x1439bb2f6,0x1439bbef0",
+  "notes": "If param_1 non-null: lstrlenA + MultiByteToWideChar into an alloca buffer, then vcall +0x30 on param_1 (SetName slot of ID3D12Object) with the wide string. Used after heap/resource creation (0x1439b9cc0, 0x1439bbd20, 0x1439bb0f0). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "render.gfx2_set_d3_d_object_name",
+  "section": ".xtls",
+  "pattern": "55 41 56 56 57 53 48 89 E5 48 85 C9 0F 84",
+  "match": "0x1439b8890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439b8890",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_SetD3DObjectName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439b8890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439b8890.c;xref:0x1439b0f38",
+   "notes": "V7739 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SpawnSceneSystem_Activate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140380d70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140380d70.c;pat:log-message-cxx;xref:0x145619db0",
+  "notes": "Vtable cell 0x145619db0. (this, slot, transform[8 qwords], scene, sequence, name): copies the transform to actor [this+0x38][slot] +0x470..+0x4af, looks up NeActorSceneDataResource for scene and sequence names via [[0x14601db08]+0x70]+0x70 vcall +8 (logs ACTOR on failure), spawns via Game_CameraActorEnable_SpawnScene 0x14023f920, sets the actor name from the string table, 0x140240410, binds components (0x14018e420, 0x14018eb70, 0x14018eca0) under the actor lock, vcall +0x1c0, releases both resources. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.spawn_scene_system_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC A0 02 00 00",
+  "match": "0x140380d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140380d70",
+  "kind": "func_start",
+  "names": [
+   "Game_SpawnSceneSystem_Activate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140380d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140380d70.c",
+   "notes": "V4563 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

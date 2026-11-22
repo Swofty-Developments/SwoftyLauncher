@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StoryMode_LoadSnapshot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141349630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141349630.c;pat:log-channel-GAME;xref:0x14f28d799",
+  "notes": "Loads the story snapshot: path from 0x141331c70([+0x2c0]), logs GAME \"Loading story mode snapshot file\", copies participants ([+0x2c8]+0x298 +0x1d8, stride 0x98), builds id pairs, 0x1403c2490, loads file 0x142c13f80(path,1,1,1), posts msg 0x1456de360, finds the player driver and posts msg 0x1456de658 with computed values. Caller 0x14f28d780. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.story_mode_load_snapshot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 CD",
+  "match": "0x141349630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141349630",
+  "kind": "func_start",
+  "names": [
+   "Game_StoryMode_LoadSnapshot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141349630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141349630.c;xref:0x141349383",
+   "notes": "V4758 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

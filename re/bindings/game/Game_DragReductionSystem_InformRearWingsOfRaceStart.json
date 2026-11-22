@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DragReductionSystem_InformRearWingsOfRaceStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142becf90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142becf90.c;pat:log-message-cxx;xref:0x142bebcd5,0x142bebd65",
+  "notes": "Runs when neither Sess_FormationLapLogic_IsActiveType0 0x1436183e0 nor IsActiveOtherType 0x1436184e0 is true for [this+0x108] or byte [this+0x108]+0x42 is set: logs GAME 0x1457cdb9e, then per wing in this+0x30..+0x38 sets byte 0x14607a566=1 and, if w+0xa7 and int 0x14607a560-15 < 3, sets +0xb=1 on every 12-byte record in [w+0x28,w+0x30) whose +8 byte is set. Callers: OnStartLightsComplete 0x142bebc60, OnRollingStartCutsceneFinished 0x142bebcf0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.drag_reduction_system_inform_rear_wings_of_race_start",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 CE 48 8B B9 08 01 00 00",
+  "match": "0x142becf90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142becf90",
+  "kind": "func_start",
+  "names": [
+   "Game_DragReductionSystem_InformRearWingsOfRaceStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142becf90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142becf90.c;xref:0x142bebcd5",
+   "notes": "V5037 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

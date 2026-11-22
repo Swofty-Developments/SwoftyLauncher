@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_BuildStartLightsEventPayload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1404f6c40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1404f6c40.c;xref:0x14076d14b",
+  "notes": "Constructor of protobuf message 'f1.proto.NetDelayedStartMessage': base ctor 0x144935190(this, type name built on the stack), vtable 0x14562b4b0, zeroes the fields. Called right after the allocation in 0x14076d090 (start-lights sequence). (lane owner review requested) Better name: Game_Analytics_NetDelayedStartMessage_Ctor (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_build_start_lights_event_payload",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 FA 11 77 60 48 8B 86 D8 09 02",
+  "match": "0x14076d14b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1404f6c40",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_BuildStartLightsEventPayload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1404f6c40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1404f6c40.c;xref:0x14076d14b",
+   "notes": "V8059 ctor of f1.proto.NetDelayedStartMessage; caller SetSequenceStartTime ok"
+  }
+ ],
+ "proofs": []
+}

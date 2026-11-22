@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_RnDUpgradeFinishedRecord_SetStringField_C",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14058ec00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14058ec00.c;xref:0x14071e6ed,0x14071e981",
+  "notes": "Same body as 0x14058e930 but std::string at rec+0x80; callers pass UNK_14564a0b8[part+0x71]. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.analytics_build_part_upgrade_event_c",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 47 10 0F B6 40 70 48 8D 0D",
+  "match": "0x14071e6ed",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14058ec00",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_RnDUpgradeFinishedRecord_SetStringField_C"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14058ec00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14058ec00.c;xref:0x14071e6ed",
+   "notes": "V8062 Better name Game_Analytics_RnDUpgradeFinishedRecord_SetStringField_C: C-string setter for member at this+0x80, not a payload builder"
+  }
+ ],
+ "proofs": []
+}

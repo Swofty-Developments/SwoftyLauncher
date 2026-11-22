@@ -1,7 +1,7 @@
-// Host-native unit test for the core's garage slot guard (native/src/core/garage_slots_logic.hpp).
-// Built and run by native/test/run_garage_slots_test.sh.
+// Host-native unit test for the core's garage slot guard (native/src/core/guards/garage/garage_slots_logic.hpp).
+// Built and run by native/test/run_tests.sh garage_slots.
 
-#include "garage_slots_logic.hpp"
+#include "core/guards/garage/garage_slots_logic.hpp"
 
 #include <cstdio>
 

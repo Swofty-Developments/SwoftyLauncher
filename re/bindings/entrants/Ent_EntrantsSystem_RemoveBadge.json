@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_RemoveBadge",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142470be0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142470be0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe602f,0x141a20c20,0x141fd15fc,0x14205585d,0x14226789a,0x142573a3a,0x143129c4a",
+  "notes": "(entrants, u32 key): kind 0 (ePreLoaded) refused -> 5; list [entrants+0x3b8+kind*0x10] missing -> 1; remover 0x142470f00(list, key>>16) false -> 2, true -> 0; each case logs on ENTRANTS_SYSTEM (kind names ePreLoaded/eUserDefined/eNetworkReplicated from table 0x145612e60). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_remove_badge",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 89 D6 C1 EE 10 81 E2 FF 00 00 00 0F 84 ?? ?? ?? ?? 89 D3 48 89 D8 48 C1 E0 04 48 8B 8C 01 B8 03 00 00",
+  "match": "0x142470be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142470be0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_RemoveBadge"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142470be0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142470be0.c;xref:0x140fe602f",
+   "notes": "V5285 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

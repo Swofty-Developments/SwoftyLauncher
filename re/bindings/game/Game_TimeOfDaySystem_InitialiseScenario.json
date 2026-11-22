@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TimeOfDaySystem_InitialiseScenario",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14461ac50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14461ac50.c;pat:log-message-method;xref:0x14461e671,0x14462020b,0x14462065f,0x144620df8,0x144620e23,0x1552445ff,0x15524461e,0x155255847",
+  "notes": "initialiseScenario(type, name, ...): selects tod data slot (+0x1c18+type*0x288, type 1 uses +0x2c8 slot param_7), finds scenario by djb2 hash or name, toggles enable flag, Game_TodData_SetScenario_Thunk, notifies callback +0xb2f8; optional random start_%u selection seeded by +0xb33c. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.time_of_day_system_initialise_scenario",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0B 00 00 C5 F8 29 B4 24 40 0B 00 00",
+  "match": "0x14461ac50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14461ac50",
+  "kind": "func_start",
+  "names": [
+   "Game_TimeOfDaySystem_InitialiseScenario"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14461ac50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14461ac50.c;xref:0x14299283c",
+   "notes": "V6707 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

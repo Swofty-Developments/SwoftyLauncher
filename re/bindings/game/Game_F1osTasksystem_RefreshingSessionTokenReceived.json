@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_RefreshingSessionTokenReceived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14336b390",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14336b390.c;pat:log-channel-F1OS-TASKSYSTEM;xref:0x14583c348",
+  "notes": "Read in full. Virtual (cell 0x14583c348). Child-task result handler: done flag param_2+0x21 -> state +0x1b8=2, 'Network.ForceMPMode' check, logs 'setting finished on %s : %s'. Failed child == this[0x35] with error matching 0x145f95838/0x145f95840 -> 'Trying to log in instead', 0x1432bb360 + 0x1432c0ea0; HTTP 200 + 0x145f95888/0x145f95848 -> 'Logging out', 0x143884c00, may push eInterruptErrorOnlineServices. Else state reset from 0x1460c3e98. Better name: Game_OnlineServerTask_OnChildTaskDone (bound record keeps its name). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_refreshing_session_token_received",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 D6 4C 8B 32 4D 85 F6",
+  "match": "0x14336b390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14336b390",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_RefreshingSessionTokenReceived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14336b390",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14336b390.c",
+   "notes": "V5987 Better name Game_OnlineServerLogInTask_HandleSessionTokenRefresh: 2KB handler: on refresh response retries login or logs out (triggerLogout, ForceMPMode, interrupt queue, eInterruptErrorOnlineServices); the logging-out message is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14336b390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14336b390.c",
+   "notes": "V7061 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Renderer_QueueCallback_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d90000",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d90000.c;xref:0x143b7cadc,0x143b7cbab",
+  "notes": "If sink +0x10 is null runs the request at once (vcall +8). Else under critical section +0x20 stores {thunk 0x143ec0810 (calls vcall +8), request param_2, id from vcall +0x10} in a 32-slot table (stride 0x28 at +0x368, count +0x868) linked into +0x58 (count +0x360); at 32 entries flushes via 0x143abe3f0(+0x10, +0x58). Full: error 0xc. Caller Ne_Gfx2Renderer_RenderFrame 0x143b7cadc, 0x143b7cbab. (lane owner review requested) Better name: Render_Gfx2_RequestBatch_Push_A (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.gfx2_renderer_queue_callback_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 66 2E 0F 1F 84 00 00 00 00 00 85 FF 0F 84",
+  "match": "0x143b7cadc",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143d90000",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Renderer_QueueCallback_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143d90000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d90000.c;xref:0x143b7cadc",
+   "notes": "V8153 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

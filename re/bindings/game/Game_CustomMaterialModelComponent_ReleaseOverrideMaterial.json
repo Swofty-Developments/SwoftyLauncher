@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomMaterialModelComponent_ReleaseOverrideMaterial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a90980",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a90980.c;pat:log-message-method;xref:0x142a9042f,0x142a904ee,0x14dafe800",
+  "notes": "If an override material is set (p1+0x48): logs 'releaseOverrideMaterial ...' (CustomMaterialModelComponent), under allocator 0x146c621e0 scope 0x1464d1d08 posts a type-6 0x10-byte record {p1+0x48,p1+0x50} (NeMultiSubMaterialResourceFactory 'destroyOverrideMaterialAsync'), then clears p1+0x48 = 0, p1+0x50 = 0x1456135b2. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_material_model_component_release_override_material",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 8B 41 48 48 85 C0",
+  "match": "0x142a90980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a90980",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomMaterialModelComponent_ReleaseOverrideMaterial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a90980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a90980.c;xref:0x142a9042f",
+   "notes": "V4986 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

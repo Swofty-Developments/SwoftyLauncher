@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ResultsContainer_Exit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d7dcd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d7dcd0.c;pat:log-channel-RESULTS_CONTAINER;xref:0x141d2321e,0x141d24ad6,0x141d7e0c0",
+  "notes": "(c, state string&): stores it to +0x11a8; returns if a type-0 step is pending; logs 'exit container: %hs'; drops queued steps after the first type-2 one; unless state == 'complete' queues steps 3 and 6; then queues steps 4, 1, 0 (lambda vts 0x145752c90..0x145752d50) via 0x141d7d7e0(c+0x1178). Callers 0x141d23040, jmp 0x141d24ad6, 0x141d7e040. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.results_container_exit",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 68 01 00 00 48 89 D7 48 89 CE",
+  "match": "0x141d7dcd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d7dcd0",
+  "kind": "func_start",
+  "names": [
+   "Game_ResultsContainer_Exit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d7dcd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d7dcd0.c;xref:0x141d2321e",
+   "notes": "V5206 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

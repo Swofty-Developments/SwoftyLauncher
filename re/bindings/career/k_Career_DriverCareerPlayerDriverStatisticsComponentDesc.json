@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "k_Career_DriverCareerPlayerDriverStatisticsComponentDesc",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146061748",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1411c5120.c;decomp:re/decomp/1402629f0.c;xref:0x1411c5b16,0x140262ae7;doc:addons/career-editor/protocol/economy.md#components-helper",
+  "notes": "static ECS type descriptor of DriverCareerPlayerDriverStatisticsComponent: the registration at 0x1411c5b16 writes the class-name pointer at +8; the game passes &desc as the key to the entity component registry get (entity+0x1030 vtable slot +0x10), as at 0x140262ae7"
+ },
+ "signature": {
+  "id": "career.driver_career_player_driver_statistics_component_desc",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? 4C 89 F1 41 B8 01 00 00 00 FF 50 10 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 C7 49 8B 06",
+  "match": "0x140262ae7",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146061748",
+  "kind": "data",
+  "names": [
+   "k_Career_DriverCareerPlayerDriverStatisticsComponentDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/components.cpp",
+   "native/src/core/career/career.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "global",
+   "item": "k_Career_DriverCareerPlayerDriverStatisticsComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411c5120.c;decomp:re/decomp/1402629f0.c;xref:0x1411c5b16,0x140262ae7",
+   "notes": "V0266 desc is a 0x20-byte static object {+0 vtbl 0x145890940, +8 class-name ptr, +0x10 u32 name hash, +0x18 parent desc+8} filled at static init; registration writes the name at +8; class name unique among the 26; the address is the key passed in rdx with r8d=1 to registry vtbl+0x10 (entity+0x1030 at most sites), result cached/null-checked; GetType vfuncs return &desc. \"void *\" names only the first field"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_BecauseCareerSessionDoesExist",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430727e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430727e0.c;pat:log-channel-NETWORK-SESSION;xref:0x143072c85,0x1430765b4,0x1430e3dc9,0x143166750",
+  "notes": "__FUNCTION__ 'GameSessionMatchingCareer::onJoinSessionComplete(NEbool, NeNetError)': on failure Leave (0x1430605c0) and either schedules a retry ('career session does not exist anymore, delay the retry') or reports via notifyJoinCareerSessionResult. (lane owner review requested) Better name: Game_GameSessionMatchingCareer_OnJoinSessionComplete (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.network_session_because_career_session_does_exist",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 59 B8 F8 00 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 3A 81 FA 88 72 74 16 0F 84 ?? ?? ?? ?? 83 C0 18 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D F8 00 00 00 75 BF 48 83 7E 48 00",
+  "match": "0x1430727e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430727e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_BecauseCareerSessionDoesExist"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430727e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430727e0.c;xref:0x143072c88",
+   "notes": "V5565 GameSessionMatchingCareer::onJoinSessionComplete (success log, retry delay on missing career session, notifyJoinCareerSessionResult). Better: Career_GameSessionMatchingCareer_OnJoinSessionComplete"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430727e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430727e0.c;xref:0x143072c87",
+   "notes": "V6948 111 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_FlushPendingSpawnsA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018eb70",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14018eb70.c;xref:0x14024093d,0x1402507d4,0x140254988,0x140255122,0x140256b38,0x14025c51f,0x140261114,0x140261f54,0x1402624d8,0x1402629b8,0x1402631f8,0x140263528,0x140263858,0x1402654d8,0x14026566d,0x140267e48,0x140269708,0x140269ad8,0x140269ec8,0x14026a288",
+  "notes": "(list block): under CriticalSection [p1+0xc8] appends every pointer of the pending vector [p1+0x28,+0x30) to the active vector p1+0x68/+0x70/+0x78 (1.5x growth via allocator [p1+0x60] vt+0x18, old block freed vt+0x38), then empties the pending vector. Called with script+0x50 (e.g. EnableCamerasChainFirstNextScene). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_flush_pending_spawns_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 48 8B 89 C8 00 00 00 FF 15 ?? ?? ?? ?? 48 8B 46 30 49",
+  "match": "0x14018eb70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018eb70",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_FlushPendingSpawnsA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14018eb70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14018eb70.c;xref:0x1402507d4",
+   "notes": "V7966 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

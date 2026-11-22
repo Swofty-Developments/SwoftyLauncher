@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ESRPreferences_HandlePreference",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143192a20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143192a20.c;pat:log-message-cxx;xref:0x143055de1",
+  "notes": "(this, msg): grows byte vector +0x30/+0x38 (cap +0x40, allocator +0x28) with zeros until it covers connection id msg+0x10; logs NETWORK 'ESRPreferences::handlePreference() setting remote connectionId %d showPlayerName to %d'; vec[id] = msg+0x11; posts msg vt 0x145825ba8 {id} via 0x14321cbf0. Fn ptr taken by lea in 0x143054470 (handler table). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.esr_preferences_handle_preference",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CF 48 8B 59 30 4C 8B 79 38",
+  "match": "0x143192a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143192a20",
+  "kind": "func_start",
+  "names": [
+   "Game_ESRPreferences_HandlePreference"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143192a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143192a20.c;xref:0x143055de3",
+   "notes": "V5902 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

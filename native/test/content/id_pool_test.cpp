@@ -1,6 +1,7 @@
-#include "../../src/core/apply/content/boot.hpp"
-#include "../../src/core/apply/ids.hpp"
+#include "core/apply/content/boot.hpp"
+#include "core/apply/ids.hpp"
 
+#include <chrono>
 #include <cstdio>
 #include <set>
 
@@ -27,16 +28,77 @@ static void pool(ids::Store &s, const char *registry, int64_t lo, int64_t hi, in
     s.define_pool(registry, p);
 }
 
-static std::string name(int i)
-{
-    return "season-" + std::to_string(i) + "/team";
-}
+static std::string name(int i) { return "season-" + std::to_string(i) + "/team"; }
 
 static content::StatIds allocator(ids::Store &s, const char *registry)
 {
     return [&s, registry](const std::string &, const std::string &id, int64_t) -> int64_t {
         return s.allocate(registry, id, DAY).id;
     };
+}
+
+static uint64_t next(uint64_t &seed)
+{
+    seed = seed * 6364136223846793005ull + 1442695040888963407ull;
+    return seed >> 33;
+}
+
+// Every allocate outcome (id, how and line) of a long mixed run: kept ids, ids above the ceiling, overlapping ranges,
+// database rows, career holders, holders that come and go from the live set, reclaims and a full pool. The digest was
+// taken from the allocator before it indexed the held ids, so any change to an outcome shows.
+static void allocations_keep_their_outcomes()
+{
+    ids::Store s;
+    s.load(R"({"version":1,"ids":{"vehicle":{"old/high":{"id":5000},"old/a":{"id":503},"old/b":{"id":504},
+        "old/c":{"id":530},"old/d":{"id":612}}},
+        "careers":{"c1":{"vehicle":{"old/a":503,"gone/x":512,"gone/y":540}},"c2":{"vehicle":{"z/q":515,"old/d":612}}}})");
+    ids::Pool p;
+    p.ranges = {{500, 560}, {600, 620}, {610, 615}};
+    p.cap = 4095;
+    s.define_pool("vehicle", p);
+    s.hold("vehicle", {{501, "stock_a"}, {520, "stock_b"}, {605, "stock_c"}});
+    std::vector<std::string> live;
+    uint64_t seed = 7, digest = 0xcbf29ce484222325ull;
+    int full = 0, reclaimed = 0, allocated = 0;
+    for (int i = 0; i < 600; i++) {
+        uint64_t r = next(seed);
+        std::string rec = "a" + std::to_string(r % 13) + "/r" + std::to_string((r >> 8) % 97);
+        if (r % 4 != 0) {
+            live.push_back(rec);
+            s.set_live("vehicle", live);
+        }
+        if (r % 97 == 0) {
+            live.clear();
+            s.set_live("vehicle", live);
+        }
+        ids::Result res = s.allocate("vehicle", rec, DAY);
+        full += res.how == "full", reclaimed += res.how == "reclaimed", allocated += res.how == "allocated";
+        std::string row = std::to_string(res.id) + "|" + res.how + "|" + res.line + "\n";
+        for (unsigned char c : row)
+            digest = (digest ^ c) * 0x100000001b3ull;
+    }
+    std::printf("allocate outcomes: %d allocated, %d reclaimed, %d full; digest %016llx\n", allocated, reclaimed, full,
+                (unsigned long long)digest);
+    check(allocated > 50 && reclaimed > 5 && full > 5, "the run allocates, reclaims and fills the pool");
+    check(digest == 0x99dde41561906687ull, "every allocate outcome is the one the first-fit scan gave");
+}
+
+static void allocations_stay_quick_in_a_big_pool()
+{
+    std::string text = R"({"version":1,"ids":{"vehicle":{)";
+    for (int i = 0; i < 4000; i++)
+        text += (i ? "," : "") + std::string("\"held/r") + std::to_string(i) + "\":{\"id\":" + std::to_string(500 + i) + "}";
+    text += "}}}";
+    ids::Store s;
+    s.load(text);
+    pool(s, "vehicle", 500, 16382, 16382);
+    auto t0 = std::chrono::steady_clock::now();
+    int64_t last = -1;
+    for (int i = 0; i < 300; i++)
+        last = s.allocate("vehicle", "new/r" + std::to_string(i), DAY).id;
+    double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    std::printf("300 allocations next to 4000 held ids in a pool of 15883: %.1f ms\n", ms);
+    check(last == 4799, "the 300th new record takes the 300th free id");
 }
 
 int main()
@@ -102,16 +164,19 @@ int main()
         check(p.ops.size() == 0 && p.refused == 1 && p.lines.back().find("left out") != std::string::npos,
               "a vehicle that can't get an id lowers to no row and is refused");
         content::Plan big;
-        content::lower_vehicle("a/big", car, lookup, source, big, [](const std::string &, const std::string &, int64_t) -> int64_t { return 16383; });
+        content::lower_vehicle("a/big", car, lookup, source, big,
+                               [](const std::string &, const std::string &, int64_t) -> int64_t { return 16383; });
         check(big.ops.size() == 0 && big.refused == 1, "a vehicle given an id above 16382 is left out");
         content::Plan wide;
-        content::lower_vehicle("a/wide", car, lookup, source, wide, [](const std::string &, const std::string &, int64_t) -> int64_t { return 1334; });
+        content::lower_vehicle("a/wide", car, lookup, source, wide,
+                               [](const std::string &, const std::string &, int64_t) -> int64_t { return 1334; });
         check(wide.refused == 0 && wide.ops.size() > 0, "a vehicle given an id above 1023 gets its row");
 
         content::Dropped dropped = {content::drop_key("vehicle", "a/three")};
-        Value list = Value::object({{"entrant_list", Value("f_1986")},
-                                    {"teams", Value::array({Value::object({{"key", Value("a")}, {"vehicle", Value("a/one")}}),
-                                                            Value::object({{"key", Value("b")}, {"vehicle", Value("a/three")}})})}});
+        Value list =
+            Value::object({{"entrant_list", Value("f_1986")},
+                           {"teams", Value::array({Value::object({{"key", Value("a")}, {"vehicle", Value("a/one")}}),
+                                                   Value::object({{"key", Value("b")}, {"vehicle", Value("a/three")}})})}});
         check(content::dropped_ref(list, &dropped) == "vehicle a/three", "a list naming the left-out vehicle is found");
         content::Plan lp;
         content::lower_package("a/list", list, lookup, lp, {}, nullptr, {}, nullptr, &dropped);
@@ -162,7 +227,8 @@ int main()
         check(s.allocate("content.package", "swofty.s23/sw_2023", DAY).id == 116, "allocating a lent record gives the lent id");
         int64_t moved = s.get("content.package", "swofty.other/pack").id;
         check(moved >= 15 && moved != 116 && moved != 115, "an unrelated record on the lent id moves to a free one");
-        check(s.allocate("content.package", "new/pack", DAY).id != 116 && s.allocate("content.package", "new/pack", DAY).id != moved,
+        check(s.allocate("content.package", "new/pack", DAY).id != 116 &&
+                  s.allocate("content.package", "new/pack", DAY).id != moved,
               "a new record never takes a lent id");
         check(s.pin("content.package", "swofty.s23/sw_2023", 40, DAY).id == 116, "an explicit pin does not undo a lent id");
         check(!s.dirty() && s.lent(), "a lent store is never written back");
@@ -189,5 +255,7 @@ int main()
         std::string why;
         check(!clean.lend_json("nope", nullptr, &why) && !why.empty() && !clean.lent(), "unreadable lent ids lend nothing");
     }
+    allocations_keep_their_outcomes();
+    allocations_stay_quick_in_a_big_pool();
     return failures ? 1 : 0;
 }

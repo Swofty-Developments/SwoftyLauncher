@@ -183,12 +183,15 @@ When a box is pressed, every `swofty_f1` entrant setup mode offers only that box
 [era] swofty_f1 offers only cs_f1_2017 (of 9 lists)
 ```
 
-The grid size follows the pressed list. A list with more cars than the setup mode's `max_entrants` (20 in `swofty_f1`) raises `max_entrants` to the list's car count, up to the stock 22 cars; a Grand Prix career resumed with Continue gets the same raise for its list. Both put the value back when the session ends or another box is pressed:
+The grid size follows the pressed list. A list with more cars than the setup mode's `max_entrants` raises `max_entrants` to the list's car count, up to the stock 22 cars. A box whose `content.package` seats more than 22 goes up to its seats, at most the 24 cars of My Team's stock grid: SWOFTY 2010, 2011 and 2012 race 24 cars. `swofty_f1`'s `max_entrants` is 20, or what the boot left: each `content.package` of more than 20 seats sets it to its seats, the last in load order last. A Grand Prix career resumed with Continue gets the same raise for its list. Both put the value back when the session ends or another box is pressed:
 
 ```text
-[era] cs_f1_2024 pressed: max_entrants 20 -> 24 for a list of 24 cars
+[era] sw_f1_2010 pressed: max_entrants 22 -> 24 for a list of 24 cars
 [era] bdx_s5_2012 pressed: max_entrants 20 -> 22 for a list of 24 cars; clamped to 22 cars, the stock grid
+[era] ex_grid26 pressed: max_entrants 22 -> 24 for a list of 26 cars; clamped to 24 cars, the stock My Team grid
 ```
+
+A box's rules go into `swofty_f1` with the press. A career's session load puts them back, and a career whose season names a box then runs that box's rules in its own setup mode ([The season's rules](/std/systems/career#the-season-s-rules)).
 
 ## Availability
 

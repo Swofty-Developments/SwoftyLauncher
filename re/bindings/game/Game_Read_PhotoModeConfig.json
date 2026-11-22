@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_PhotoModeConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141cea5d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141cea5d0.c;pat:log-channel--;xref:0x145744ba8",
+  "notes": "Module init (vtable cell 0x145744ba8): resolves ~20 dependencies (+0x10..+0xa0, +0x650); PhotoMode.devEnabled->+0x358 (forces +0x3e0,+0x35b,+0x359=1), showLogoPositionOffOption->+0x3e0, allowAllWeatherChanges->+0x359, showCaptureTypeMenuOptions->+0x35a, allow360VideosWithAnyReplayDuration->+0x35b. Error 0x16. (lane owner review requested) Better name: Game_PhotoModeModule_Init (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.read_photo_mode_config",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D3 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 47 10 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 03",
+  "match": "0x141cea5d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141cea5d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_PhotoModeConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141cea5d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141cea5d0.c",
+   "notes": "V4963 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

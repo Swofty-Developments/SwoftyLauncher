@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_ReplacePlayerNetwork",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143141710",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143141710.c;pat:log-message-cxx;xref:0x140fe0bdf,0x140fee9d4",
+  "notes": "Read in full: only when [this+0x10]+8 < 2; optional removePlayerReplicatedData 0x1431402a0 when param_5; builds the player key, finds it in map this+0x40 (0x143141940), id = node+0x70; missing -> logs 'Failed to find the network replicated vehicle customisation to replace!'; else if the new info differs from a static empty one (0x1424f9da0) calls reconcile 0x143141190. Returns id. Callers 0x140fdd630, 0x140fee8e0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_replace_player_network",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 00 00 00 48 8B 41 10",
+  "match": "0x143141710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143141710",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_ReplacePlayerNetwork"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143141710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143141710.c;xref:0x140fe0bdf",
+   "notes": "V5926 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

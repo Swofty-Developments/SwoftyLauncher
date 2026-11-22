@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1AMPRuleset_FixupOnFinalLapStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d29c60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d29c60.c;pat:log-message-cxx;xref:0x1457db9f0",
+  "notes": "Logs F1-ARCADE-MP 'F1AMPRuleset::fixupOnFinalLapStatus()'; unless vcall +0xf8, for each racing participant (+0x18 == 2) in [+0x2e0]: laps 0x1446046a0([+0x338], id); final lap = total (vcall +0x170) - 1 == lap + offset; logs '  %02d: Vehicle Id %d still active on lap %d ... - %s' ('FINAL LAP'); byte this+id*0x18+8 = (final xor +0x10) & 1. Ref: vtable cell 0x1457db9f0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.f1_amp_ruleset_fixup_on_final_lap_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 DB 00 00 00",
+  "match": "0x142d29c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d29c60",
+  "kind": "func_start",
+  "names": [
+   "Game_F1AMPRuleset_FixupOnFinalLapStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d29c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d29c60.c",
+   "notes": "V5378 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

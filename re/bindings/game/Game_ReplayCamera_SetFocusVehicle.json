@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayCamera_SetFocusVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406ae650",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406ae650.c;xref:0x1406ae141,0x1406ae506,0x1406aec60,0x1406aee10,0x1406aef68,0x1406af0b5,0x142c05d17",
+  "notes": "pdata 0x1406ae650..0x1406ae904 = dispatcher; decomp lines 104-380 are merged tail-jmp targets. (cam,idx,mode,comp): +0x15=mode. idx 0xff: unless +0x29, bit +0xc set in [cam+0x48]+0x60 (stride 0x14) for old idx, 0x144534390 preset 'spectator_default_1', +0x29=1, +0x14=0xff, vcall [cam+0x78]. mode 0: jmp 0x1406af0c0(cam,idx); mode 1: comp (lookup if 0) then jmp 0x1406af3d0(cam,idx,comp). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.replay_camera_set_focus_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 48 89 CE 44 88",
+  "match": "0x1406ae650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406ae650",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayCamera_SetFocusVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1406ae650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406ae650.c;xref:0x1406ae141",
+   "notes": "V8001 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

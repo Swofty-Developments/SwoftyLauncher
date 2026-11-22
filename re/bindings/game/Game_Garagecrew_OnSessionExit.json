@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Garagecrew_OnSessionExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14038f270",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14038f270.c;pat:log-message-method;xref:0x14561b540",
+  "notes": "GarageCrew onSessionExit: logs, destroys and frees all 32 crew instances of module 0x146045a88 (+0x68) under CS 0x146045a38 (0x140381380). Vtable cell 0x14561b540. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garagecrew_on_session_exit",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 5E B8 11 00 00 00",
+  "match": "0x14038f270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14038f270",
+  "kind": "func_start",
+  "names": [
+   "Game_Garagecrew_OnSessionExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14038f270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14038f270.c",
+   "notes": "V4602 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

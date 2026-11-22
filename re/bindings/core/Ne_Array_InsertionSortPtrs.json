@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Array_InsertionSortPtrs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14098d560",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14098d560.c;xref:0x140e43877,0x14125abbb",
+  "notes": "(cmp, T **arr, count, mode) Sort helper for pointer arrays (insertion for <= 0x20 elements, else chunked with 0x140b39080 / 0x140b36900 / 0x140b37cc0); uses comparator delegates. 30 callers. Hypothesis."
+ },
+ "signature": {
+  "id": "core.array_insertion_sort_ptrs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 B8 50 10 00 00",
+  "match": "0x14098d560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14098d560",
+  "kind": "func_start",
+  "names": [
+   "Ne_Array_InsertionSortPtrs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14098d560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14098d560.c;xref:0x142f2eebc",
+   "notes": "V3807 pointer array sort with insertion path for <0x21 elements and larger path calling FUN_140b39080/140b36900/140b37cc0; 31 xrefs; hypothesis wording ok"
+  }
+ ],
+ "proofs": []
+}

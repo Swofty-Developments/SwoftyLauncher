@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorHud_HandleCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c244e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(HudSpectatorScreen*, Command*)",
+  "evidence": "decomp:re/decomp/141c244e0.c;xref:0x14573ca70",
+  "notes": "vtable 0x14573ca20 slot 10 (+0x50). Command hash *[param_2]: 0x80dd4a2b toggles [[vm+0x278]+0xe0] 1<->2; 0xd882e01c cycles layout [vm+0xb60] 0..3 (0 removes hide reason 6, others add it, logs 'HUD hide reason added/removed'); 0x12fa308b / 0x85844069 select next/prev car from [[vm+0x280]+0x108] (state 2/3) into [dir+0xdc]; 0x6bc5e912 further case."
+ },
+ "signature": {
+  "id": "session.spectator_hud_handle_command",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 1B E0 82 D8",
+  "match": "0x141c244e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c244e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorHud_HandleCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Hud_PenaltyTypeToLocKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a4fc80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142a4fc80.c;xref:0x142a4ef5d,0x142a50195,0x14d9c4732",
+  "notes": "(hud, type, out) -> 0, or 0x16 when hidden (+0x38+0xd1). Switch type 0..0x12: penalty_* or safety_rating_* key (+0x58: +0x388/+1000), tt_lap_invalid, tt_this_next/previous_lap_invalid, penalty_speed_limit; 0x11 -> 'penalty_black_flag_timer'; default '<INVALID>'. Key written to out+0x18. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.hud_penalty_type_to_loc_key",
+  "section": ".xtls",
+  "pattern": "48 81 EC 98 00 00 00 48 8B 41 38 44 0F B6 88 D1",
+  "match": "0x142a4fc80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a4fc80",
+  "kind": "func_start",
+  "names": [
+   "Game_Hud_PenaltyTypeToLocKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x142a4fc80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a4fc80.c;xref:0x142a4ef5d",
+   "notes": "V8463 maps penalty type to safety_rating_/penalty_/tt_ keys; callers BuildInfringementMessage, QueueMessage"
+  }
+ ],
+ "proofs": []
+}

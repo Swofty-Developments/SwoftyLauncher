@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_RemoveAll_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14248ac00",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14248ac00.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x14578b050",
+  "notes": "Renamed: same clear pattern as 0x14245f590 but logs 'eUserDefined', bus msgs carry kind 1, and also clears team customisations. Its lists +0x258,+0x288,+0x2b8,+0x2e8,+0x318,+0x348,+0x378,+0x3a8 equal the kind-1 lists of the 0x14245f590 layout if this = entrants+0x20 (layout match, not proven). Only static ref: vtable cell 0x14578b050 (neighbours 0x142487c50, 0x142487eb0). (lane owner review requested) Better name: Ent_EntrantsSystem_RemoveAllUserDefined (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "entrants.entrants_system_remove_all_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 48 89 CE 48 8B B9 58 02 00 00",
+  "match": "0x14248ac00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14248ac00",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_RemoveAll_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x14248ac00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14248ac00.c",
+   "notes": "V5084 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

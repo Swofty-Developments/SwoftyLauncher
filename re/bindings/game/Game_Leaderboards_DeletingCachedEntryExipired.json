@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Leaderboards_DeletingCachedEntryExipired",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14314c210",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14314c210.c;pat:log-channel-LEADERBOARDS;xref:0x1430e6e24,0x1430e7786",
+  "notes": "(mgr, name): walks the cache list +0x238 for an entry whose name [entry+0x18] equals name. Age Ne_Crt_Time64(0) - entry+0 < 0x709 s -> returns cached result entry+0x40. Else logs LEADERBOARDS 'Deleting cached entry from %s. Exipired.' and 'LB CACHE - Removed cached entry...', destroys result and entry (allocator +0x208), unlinks the node (free list +0x230, count +0x248), returns 0. Old name was a log fragment. (lane owner review requested) Better name: Game_LeaderboardCache_GetFresh (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.leaderboards_deleting_cached_entry_exipired",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 4C 8D A1 38 02 00 00",
+  "match": "0x14314c210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14314c210",
+  "kind": "func_start",
+  "names": [
+   "Game_Leaderboards_DeletingCachedEntryExipired"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14314c210",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14314c210.c;xref:0x1430e6e24",
+   "notes": "V5968 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

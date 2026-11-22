@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_CustomisationDecal_AddPassWithConst12",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c74670",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c74670.c;xref:0x143c73415",
+  "notes": "Bump-allocates a 12-byte constant {0, 1.0, 2.0} (cmpxchg +0x20, align 4), appends a 0x180-byte command (type 0x16, name 'FSQ' hash 0xf2ff93199cccab3d) to the vector +0x28..+0x38 (Ne_Vector_GrowEmplace_E when full), then allocates a 0xd0-byte binding block; Ne_FatalAbort on arena overflow. Caller Ne_CustomisationDecalRenderer_BakePasses 0x143c73415 (input xref 0x143c69db8 is not a call). (lane owner review requested) Better name: Render_CustomisationDecal_AddFsqCommand (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "render.customisation_decal_alloc_pass_params",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 45 31 ED B0 01 48 8B 9C 24 48 01",
+  "match": "0x143c73415",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143c74670",
+  "kind": "func_start",
+  "names": [
+   "Render_CustomisationDecal_AddPassWithConst12"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143c74670",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143c74670.c;xref:0x143c69db8",
+   "notes": "V8148 Better name Render_CustomisationDecal_AddPassWithConst12: same template as 143bc6f50 (12-byte bump alloc plus pass record build and 143bdd920 call), not only a param block allocator"
+  }
+ ],
+ "proofs": []
+}

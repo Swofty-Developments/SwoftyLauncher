@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_RetireDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d958b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d958b0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x145690b50",
+  "notes": "Vtable method of the contract-renewal component (only ref: vtable cell 0x145690b50). Works on day index ([comp+0x2a0]+0x2b0>>5)/0x2d: retirement pass (log 'Driver Retired'), reserve-driver swaps via 0x140d94140 (2 calls), driver record moves (0x140d89370/89550/89740), then an inlined copy of the approach simulation of 0x140d99210 (CONTRACT_RENEWAL_ADVANCED logs, 0x140d9a7b0, 0x140d9dac0). (lane owner review requested) Better name: Career_ContractRenewal_UpdateForDay (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_retire_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 84 D2 0F 85",
+  "match": "0x140d958b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d958b0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_RetireDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d958b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d958b0.c",
+   "notes": "V4716 better name Career_ContractRenewal_DailyUpdate: 1957-line per-day tick (this,char) with retire pass, replace-with-reserve, add/remove renewal events, AddReserveDriver, PickDriverToApproach; Driver Retired is one small part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140d958b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d958b0.c",
+   "notes": "V7174 name fits; finding facts hold; vtable/indirect (no direct call)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d958b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d958b0.c",
+   "notes": "V9082 85KB function: has Driver Retired but also CONTRACT_RENEWAL_ADVANCED approach simulation strings (Team has no seats, Simulate approaches, Team officialy approached), i.e. retire plus inlined approach simulation; name covers only part."
+  }
+ ],
+ "proofs": []
+}

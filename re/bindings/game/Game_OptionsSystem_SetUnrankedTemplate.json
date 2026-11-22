@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsSystem_SetUnrankedTemplate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ad42e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ad42e0.c;pat:log-message-cxx;xref:0x142ac93bc,0x143065472,0x143159a2a,0x14315ddf8",
+  "notes": "Logs 'Resetting template restrictions!', detaches every template restriction (+0x5a8..+0x5b0, 0x38 entries) from its option list and re-evaluates it, clears the vector; for a non-null store adds one 'multiplayer_template' restriction per stored option (int range, or bitmask of allowed list values) and applies it (0x142abf160). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.options_system_set_unranked_template",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D7 48 89 CE 48 8D 99 80 04 00 00",
+  "match": "0x142ad42e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ad42e0",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsSystem_SetUnrankedTemplate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ad42e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ad42e0.c;xref:0x142ac93bc",
+   "notes": "V5011 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

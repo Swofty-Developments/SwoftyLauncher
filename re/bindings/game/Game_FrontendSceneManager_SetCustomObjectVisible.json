@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneManager_SetCustomObjectVisible",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428ecf20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428ecf20.c;pat:log-message-method;xref:0x14254cbbb,0x14254d06b",
+  "notes": "Own body (pdata to 0x1428ed076): logs '%s()' setCustomObjectVisible (FRONTEND_SCENE_MANAGER/OBJECT), finds object component by id in this+0x6ff8 (stride 0x130, id +0xb8) and tail-jumps (0x1428ed051) to 0x1428ed080 (component setVisible: ready -> comp+0x100 = flag + node visibility +0x311; else pending map +0x7108); else logs 'Failed to find Custom Object Component Id'. Decomp merged with the tail target. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_manager_set_custom_object_visible",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 44 89 C3 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1428ecf20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428ecf20",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneManager_SetCustomObjectVisible"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428ecf20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428ecf20.c;xref:0x14254cbbb",
+   "notes": "V5151 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

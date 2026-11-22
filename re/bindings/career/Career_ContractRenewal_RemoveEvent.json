@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_RemoveEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8e0a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d8e0a0.c;pat:log-channel-CONTRACT_RENEWAL;xref:0x140d992bf,0x140d9a61b",
+  "notes": "CONTRACT_RENEWAL 'Removing a renewal event on current/next day' / 'from driver': checks 0x140d8d2f0 for today and tomorrow, removes via 0x140d8e1e0 / 0x141267e30 (branch 0x1484f1570). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.contract_renewal_remove_event",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 81 A0 02 00 00",
+  "match": "0x140d8e0a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8e0a0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_RemoveEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d8e0a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8e0a0.c;xref:0x140d992bf,0x140d9a61b",
+   "notes": "V4698 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d8e0a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8e0a0.c",
+   "notes": "V9076 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

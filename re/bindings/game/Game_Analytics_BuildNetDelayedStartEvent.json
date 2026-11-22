@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_BuildNetDelayedStartEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14076d230",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14076d230.c;xref:0x14076d1c6",
+  "notes": "(this, unique_ptr<NetDelayedStartMessage>, priority): payload via 0x1404f7430, serialise 0x14077bb90(this, payload, 'net_delayed_start', param_3), then moves the message into the static 'net_delayed_start' queue under CS (max 0x40, oldest dropped). Caller 0x14076d090 (start lights). (lane owner review requested) Better name: Game_Analytics_SubmitNetDelayedStartEvent (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.analytics_build_net_delayed_start_event",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 F8 28 74 24 40 48 83 C4 50 5B 5F 5E C3 48",
+  "match": "0x14076d1c6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14076d230",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_BuildNetDelayedStartEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14076d230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14076d230.c;xref:0x14076d1c6",
+   "notes": "V8065 posts event net_delayed_start via 14077bb90 with guid key; caller ok"
+  }
+ ],
+ "proofs": []
+}

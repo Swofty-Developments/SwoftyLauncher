@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_LensStreak",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f81288",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/142f810a0.c;xref:0x142f81288",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'lensStreak' (name loaded at 0x142f8123c) in reader 0x142f810a0; the reader stores (result == 0) as the bool; xanpavle.re-optimization redirects it to pin the value"
+ },
+ "signature": {
+  "id": "core.hw_bool_lens_streak",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 94 46 24 4C 8B 77 58",
+  "match": "0x142f81288",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f81288",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwBool_LensStreak"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_LensStreak",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f810a0.c;xref:0x142f81288,0x142f8123c,0x142f81273,0x142f8128f;sig:core.hw_bool_lens_streak",
+   "notes": "V0944 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'lensStreak' from lea 0x142f8123c, r8d 0x1f) at 0x142f81273; on 0 it sets rcx = [attr+0x50], rdx = \"true\" (0x145612a6a) and the E8 at 0x142f81288 calls 0x14534d918 (.xtls, .pdata 0x142f810a0-0x142f81422). sete stores (result == 0) to this+0x24 at 0x142f8128f. sigcheck: one hit, target 0x142f81288"
+  }
+ ],
+ "proofs": []
+}

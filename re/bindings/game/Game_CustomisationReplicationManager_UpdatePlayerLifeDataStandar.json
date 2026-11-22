@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationReplicationManager_UpdatePlayerLifeDataStandar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14318b430",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14318b430.c;pat:log-message-cxx;xref:0x14318cfc7,0x14318d4c7",
+  "notes": "Pretty-function 0x145821f64 = updatePlayerLifeDataStandardVehicleWithoutDecals. Looks up the player record by PlayerDescription hash in the map p1+0x88/+0xa0/+0xb8 (type 7/3 compares, 0x144121bc0); on hit copies the standard-vehicle groups p3+0x10 -> rec+0xd60 and p3+0x130 -> rec+0xe80 (0x141935da0) and posts message vt 0x14579adf8 with the description via EnqueueMessage_A on bus [0x14618b3b8]+8; logs 'Updating/Updated player (%s) life data standard vehicle'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.customisation_replication_manager_update_player_life_data_standar",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC C8 00 00 00 4C 89 C7 48 89 D6",
+  "match": "0x14318b430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14318b430",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationReplicationManager_UpdatePlayerLifeDataStandar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14318b430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14318b430.c;xref:0x14318cfc7",
+   "notes": "V5879 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

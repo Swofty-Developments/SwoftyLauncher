@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineSystemGetFriends_ListBlockedUsersQueuedRequestID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c8100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432c8100.c;pat:log-channel-OnlineSystemGetFriendsListTask;xref:0x145835100",
+  "notes": "Vtable cell 0x145835100 (same slot as the other task OnStart methods). Checks NetworkSubsystem and online presence (eLogicError + StopTask), queues the EADP blocked-users list with its finished callback, logs 'List blocked users queued, requestID = %I64u, error = %d'; on failure 'Failed to get list of blocked EA players'. (lane owner review requested) Better name: Game_OnlineSystemGetFriendsListTask_OnStart (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.online_system_get_friends_list_blocked_users_queued_request_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 00 00 00 48 89 CE 48 8B 41 38",
+  "match": "0x1432c8100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c8100",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineSystemGetFriends_ListBlockedUsersQueuedRequestID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432c8100",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1432c8100.c",
+   "notes": "V5922 Better name Game_OnlineSystemGetFriendsListTask_OnStart: task start: checks NetworkSubsystem/online presence, queues blocked-users request, error stop paths; queued log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1432c8100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c8100.c",
+   "notes": "V7053 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

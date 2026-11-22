@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneWorld_DespawnWorldAssetsIfAble",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e232a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e232a0.c;pat:log-message-method;xref:0x1457eb548",
+  "notes": "Vtable cell 0x1457eb548 (system vtable, stub neighbours). Strings THUMBNAIL_SYSTEM/THUMBNAIL_TASK. Walks thumbnail-set map p1+0xc8 (state +0x28: 0 NotGenerated, 1 GenerationPending, 3 Cancelling, 4 cleared) and pending id list +0xe0..+0xe8; starts up to 0x16 generations (task init, state 1), calls result delegates (+0x20/+0x28), releases cancelled sets. Tail inlines despawnWorldAssetsIfAble: unloads RTT worlds in list +0x158 (logs Unloading RTT World / Despawn World) unless sets pending. Old name was only the inlined tail. (lane owner review requested) Better name: Game_ThumbnailSystem_ProcessThumbnailSets (bound record keeps its name)."
+ },
+ "signature": {
+  "id": "game.frontend_scene_world_despawn_world_assets_if_able",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CB 4C 8D A1 C8 00 00 00",
+  "match": "0x142e232a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e232a0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneWorld_DespawnWorldAssetsIfAble"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e232a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e232a0.c;xref:0x1439a329b",
+   "notes": "V5464 963-line thumbnail task/system update (start generation, pending list cleanup, Unload RTT World, Despawn World); better Game_ThumbnailSystem_UpdateTasks"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142e232a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e232a0.c;xref:0x1439a329b",
+   "notes": "V6899 963 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

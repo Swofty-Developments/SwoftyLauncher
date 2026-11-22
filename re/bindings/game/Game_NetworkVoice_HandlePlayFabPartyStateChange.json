@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_HandlePlayFabPartyStateChange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403cc50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14403cc50.c;pat:log-message-method;xref:0x144032b88",
+  "notes": "Logs '%s: Received state change: %hs' with its own name handlePlayFabPartyStateChange and dispatches PlayFab Party state changes (CreateChatControlCompleted, SetChatAudioInput/OutputCompleted, TTS and transcription events), calling Game_NetworkVoice_SetTextToSpeechProfile and _TextReceivedHelper. Address taken (lea) in Game_NetworkVoice_CreateNetVoiceObject. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_voice_handle_play_fab_party_state_change",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 8B 02",
+  "match": "0x14403cc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403cc50",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_HandlePlayFabPartyStateChange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403cc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403cc50.c;xref:0x14402dc27",
+   "notes": "V6424 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

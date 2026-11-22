@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PressInterview_SendFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fd4a90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fd4a90.c;pat:log-channel-PRESS_INTERVIEWS;xref:0x140fd45c4,0x140fd507e",
+  "notes": "(this, ev): builds net message (vtable 0x1456b74e0, 0x12/0x9e) with key (ev+0x10<<14 | ev+0x12), sends via 0x14402e500([this+0x290]+0x3d0, 1, msg), logs 'Press interview finished network message sent'. Returns 0. lea refs in 0x140fd42c0 and 0x140fd4fa0. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.press_interview_send_finished",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 B8 12 00 00 00 9E 00 00 00",
+  "match": "0x140fd4a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fd4a90",
+  "kind": "func_start",
+  "names": [
+   "Game_PressInterview_SendFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fd4a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fd4a90.c;xref:0x140fd45c6,0x140fd5080",
+   "notes": "V4824 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_SpawnManager",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024bb60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14024bb60.c;pat:log-message-cxx;xref:0x14026811e,0x14027aebc,0x14027c46e,0x140283ea1,0x140286b5b,0x140287fcd,0x14028af25,0x14028bf87,0x1403403be,0x14034bc79,0x14034c8b7,0x14034d5ab,0x14034e2bb,0x14034ef57,0x14034fc4b,0x14035095b,0x140351cb1,0x140353230,0x140353db0,0x14037514b",
+  "notes": "(script, flag): team index byte script+0x31a (< 3) and manager index u16 +0x31c select an entry of [[0x14604c2c8]+0x290]+0x2c8 tables; its id is matched in the list [[0x14601f5c8]+0xa8]+0x50..+0x58 to a model name, which is looked up in +0x90..+0x98 (0x20 stride, string compare); found -> SpawnCameraSceneByName(script, name, 0, flag, 0, 0, 1); else WARN 'spawnManager %s JohnS - team manager not found'. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_spawn_manager",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 0F B6 81 1A 03 00 00",
+  "match": "0x14024bb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14024bb60",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_SpawnManager"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14024bb60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14024bb60.c",
+   "notes": "V4465 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

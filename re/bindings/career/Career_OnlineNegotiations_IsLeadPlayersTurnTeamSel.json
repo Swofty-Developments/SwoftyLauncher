@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_IsLeadPlayersTurnTeamSel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffc450",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ffc450.c;xref:0x140ffd84a,0x140ffe57c",
+  "notes": "Second isLeadPlayersTurn check (logs 'isLeadPlayersTurn : %s') used by the team-selection path: Career_OnlineNegotiations_StartFlow, Game_OnlineContract_FirstPlayerFinishedTeamSelection. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3039)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_is_lead_players_turn_team_sel",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC B8 00 00 00 48 8B 81 D0 02 00 00",
+  "match": "0x140ffc450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffc450",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_IsLeadPlayersTurnTeamSel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_OnlineNegotiations_IsLeadPlayersTurnTeamSel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffc450.c;xref:0x140ffc450",
+   "notes": "V3039 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}
