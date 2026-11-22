@@ -41,7 +41,18 @@
   "made_on_target": "0x14578f640",
   "twin": "made on steam-26566308; the target 0x14578f640 is KB 0x14578d510 (V100077 and V100075 name it on d873a1c8; vt_Game_F1WorldActivityContainerVm and k_Career_RnDCardColourTable sit 0x2130 above their KB addresses too); the match 0x142461ed4 (the lea in Ent_Fill_EntrantsFromList) is KB 0x1424602d4: Ent_Fill_EntrantsFromList itself sits 0x1c00 above its KB address 0x142460230"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "vt_Game_EntrantsDocumentClosedMsg",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1424602c4-0x1424602f3 and the slots 0x1424cf170,0x1424cf220;xref:0x1424602d4",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8, cross-checked on 46009bd3. 0x14578d510 holds 2 slots: 0x1424cf170 (jmp to the scalar deleting destructor 0x14cc0b6a0) and 0x1424cf220 (lea rax 'EntrantsDocumentClosed' 0x14568d520; ret); the next qword 0x14578d520 starts the NationalityListLoaded message's vtable, so vtable[2] is right. On 26566308 the vtable is 0x14578f640, slots 0x1424d0d70/0x1424d0e20, name 0x14568f540. Ent_Fill lea's it at 0x1424602d4 into the stack message (+0x10 = mode_entity+0x2d8) posted with Game_MessageBus_PostEntrantChangeEnd."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",
@@ -61,6 +72,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "b7e11dfa73c8c68f72d0f3389f044484102a41fe5f2b5fe34f9edca4891ee68f"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424602d4",
+    "target": "0x14578d510"
+   },
+   "sigcheck": "passed",
+   "digest": "05a82e0b0271faa9555ac41321e87bd19811f53020e964ea0736f4e5d9381b10"
   }
  ]
 }

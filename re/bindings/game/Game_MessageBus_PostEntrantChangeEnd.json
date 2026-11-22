@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void Game_MessageBus_PostEntrantChangeEnd(void *bus, void *message)",
   "evidence": "decomp:own disasm 0x1424e4b00 (thunk into protected code) and its callers;xref:0x1407a0192,0x140bb1eff",
-  "notes": "posts the message whose vtable is vt_Game_EntrantChangeEndMsg (message+0x10 = mode entity+0x2d8) after the player's entrant changed; a jmp into protected code"
+  "notes": "posts the message whose vtable is vt_Game_EntrantsDocumentClosedMsg (message+0x10 = mode entity+0x2d8) after the player's entrant changed; a jmp into protected code"
  },
  "signature": {
   "id": "game.message_bus_post_entrant_change_end",

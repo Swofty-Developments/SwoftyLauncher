@@ -4340,6 +4340,12 @@ pub type Ent_Deserialise_EntrantVector_t =
     unsafe extern "C" fn(vector_object: *mut c_void, bag: *mut c_void) -> c_int;
 pub type Ent_EntrantsSystem_ReplaceVehicle_t =
     unsafe extern "C" fn(entrants: *mut c_void, handle: u32, vehicle: *const c_void) -> c_int;
+pub type Ent_Fill_EntrantsFromList_t = unsafe extern "C" fn(
+    entrants_system: *mut c_void,
+    mode_entity: *mut c_void,
+    params: *mut c_void,
+    entrant_list: *mut c_void,
+);
 pub type FeHome_Add_CareerTile_t = unsafe extern "C" fn(list: *mut TileList, index: u8);
 pub type FeHome_Handle_Command_t =
     unsafe extern "C" fn(vm: *mut FEHomeViewModel, cmd: *mut *mut NeStr) -> u64;
@@ -4519,6 +4525,7 @@ pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
 ) -> c_int;
 pub type Game_GameModeEntity_SetSetupMode_t =
     unsafe extern "C" fn(mode_entity: *mut c_void, setup_mode: *mut c_void, flags: c_int);
+pub type Game_GameMode_IsGrandPrix_t = unsafe extern "C" fn(mode: *mut c_void) -> bool;
 pub type Game_GameModes_FindByPredicate_t =
     unsafe extern "C" fn(modes: *mut c_void, predicate: *mut *mut c_void) -> *mut c_void;
 pub type Game_Game_HandleInterruptEvent_t =
@@ -4558,6 +4565,8 @@ pub type Game_Load_TrackDatabaseFull_t = unsafe extern "C" fn(
     a4: *mut c_void,
     a5: *mut c_void,
 );
+pub type Game_MessageBus_PostEntrantChangeBegin_t =
+    unsafe extern "C" fn(bus: *mut c_void, message: *mut c_void);
 pub type Game_MessageBus_PostEntrantChangeEnd_t =
     unsafe extern "C" fn(bus: *mut c_void, message: *mut c_void);
 pub type Game_Mfd_FuelMixUp_t = unsafe extern "C" fn(mfd_car_settings_vm: *mut c_void) -> c_int;
@@ -5067,6 +5076,7 @@ pub type Vm_GetOrCreate_ListChild_t =
     unsafe extern "C" fn(registry: *mut c_void, parent: *mut c_void, hash: *const u32) -> *mut *mut c_void;
 pub type Vm_Init_UpgradeLoadoutSlot_t = unsafe extern "C" fn(self_: *mut c_void) -> *mut c_void;
 pub type Vm_List_AppendChild_t = unsafe extern "C" fn(list: *mut c_void) -> *mut *mut c_void;
+pub type Vm_Node_Clear_t = unsafe extern "C" fn(unused: *mut c_void, node: *mut c_void) -> bool;
 pub type Vm_NotificationButton_BuildNameCommand_t =
     unsafe extern "C" fn(out: *mut c_void, src: *mut c_void, a3: *mut c_void, a4: *mut c_void) -> *mut c_void;
 pub type Vm_Release_FinanceTabNodes_t = unsafe extern "C" fn(self_: *mut c_void);
@@ -8651,6 +8661,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ent_Fill_EntrantsFromList: Binding = Binding {
+        id: "Ent_Fill_EntrantsFromList",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const FeFlow_Set_StateStatus: Binding = Binding {
         id: "FeFlow_Set_StateStatus",
         kind: "func",
@@ -10946,6 +10961,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_GameMode_IsGrandPrix: Binding = Binding {
+        id: "Game_GameMode_IsGrandPrix",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_GameModes_BuildMode: Binding = Binding {
         id: "Game_GameModes_BuildMode",
         kind: "func",
@@ -11488,6 +11508,11 @@ pub mod bindings {
     };
     pub const Game_MatchingContext_SetupRankedGameSession: Binding = Binding {
         id: "Game_MatchingContext_SetupRankedGameSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MessageBus_PostEntrantChangeBegin: Binding = Binding {
+        id: "Game_MessageBus_PostEntrantChangeBegin",
         kind: "func",
         status: Status::Experimental,
     };
@@ -21061,6 +21086,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Vm_Node_Clear: Binding = Binding {
+        id: "Vm_Node_Clear",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Vm_NotificationButton_BuildNameCommand: Binding = Binding {
         id: "Vm_NotificationButton_BuildNameCommand",
         kind: "func",
@@ -21731,6 +21761,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const k_Game_CustomTrackListComponentDesc: Binding = Binding {
+        id: "k_Game_CustomTrackListComponentDesc",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const k_Game_TrackListComponentDesc: Binding = Binding {
         id: "k_Game_TrackListComponentDesc",
         kind: "data",
@@ -21843,6 +21878,11 @@ pub mod bindings {
     };
     pub const k_Sess_TyreComponentType: Binding = Binding {
         id: "k_Sess_TyreComponentType",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Sess_WeekendSetupComponentDesc: Binding = Binding {
+        id: "k_Sess_WeekendSetupComponentDesc",
         kind: "data",
         status: Status::Experimental,
     };
@@ -22693,6 +22733,11 @@ pub mod bindings {
     };
     pub const site_Career_WeekendsTrackRecordLoad: Binding = Binding {
         id: "site_Career_WeekendsTrackRecordLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_FeFlow_AfterStateLink: Binding = Binding {
+        id: "site_FeFlow_AfterStateLink",
         kind: "site",
         status: Status::Experimental,
     };
@@ -23618,6 +23663,16 @@ pub mod bindings {
     };
     pub const vt_Game_DriverCareerSlotPredicate: Binding = Binding {
         id: "vt_Game_DriverCareerSlotPredicate",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Game_EntrantsDocumentClosedMsg: Binding = Binding {
+        id: "vt_Game_EntrantsDocumentClosedMsg",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Game_EntrantsDocumentOpenedMsg: Binding = Binding {
+        id: "vt_Game_EntrantsDocumentOpenedMsg",
         kind: "vtable",
         status: Status::Experimental,
     };

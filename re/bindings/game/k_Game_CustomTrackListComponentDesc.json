@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "name": "k_Game_ChampionshipRoundsComponentDesc",
+ "name": "k_Game_CustomTrackListComponentDesc",
  "table": "globals",
  "author": "Moorzii",
  "row": {
@@ -9,10 +9,10 @@
   "level": "L2",
   "subsystem": "game",
   "evidence": "decomp:own disasm 0x140d6a8a3-0x140d6a8be in the static init and around 0x140b9dd69;xref:0x140d6a8aa,0x140b9dd69",
-  "notes": "CustomTrackListComponent's 0x20-byte component type descriptor: the static init stores its name 'CustomTrackListComponent' at +8 (0x140d6a8aa) and its hash at +0x10; passed as the key to the mode entity's component registry get (+0x1030, vtable +0x10) at 0x140b9dd69, the result stored at +0x550 there (V100078/V100079: a maintainer rename to k_Game_CustomTrackListComponentDesc would fit)"
+  "notes": "CustomTrackListComponent's 0x20-byte component type descriptor: the static init stores its name 'CustomTrackListComponent' at +8 (0x140d6a8aa) and its hash at +0x10; passed as the key to the mode entity's component registry get (+0x1030, vtable +0x10) at 0x140b9dd69, the result stored at +0x550 there (V100079)"
  },
  "signature": {
-  "id": "game.championship_rounds_component_desc",
+  "id": "game.custom_track_list_component_desc",
   "section": ".xtls",
   "pattern": "48 8D 15 ?? ?? ?? ?? FF 50 10 48 89 83 50 05 00 00",
   "match": "0x140b9dd89",
@@ -25,7 +25,7 @@
   "target": "0x14605ad40",
   "kind": "data",
   "names": [
-   "k_Game_ChampionshipRoundsComponentDesc"
+   "k_Game_CustomTrackListComponentDesc"
   ],
   "verified": [
    {
@@ -46,11 +46,21 @@
    "date": "2026-11-23",
    "verifier": "re-bindings-ir-blind",
    "kind": "global",
-   "item": "k_Game_ChampionshipRoundsComponentDesc",
+   "item": "retired:k_Game_ChampionshipRoundsComponentDesc",
    "claimed": "L2",
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x140d69d23-0x140d69d49 in the static init 0x140d69490 and 0x140b9dd86-0x140b9dd9a;xref:0x140d69d2a,0x140b9dd89",
    "notes": "V100079 Blind re-derivation on d873a1c8. The use holds: 0x14605ad40 is a 0x20-byte component type descriptor passed as the key to a component registry get (vt+0x10) at 0x140b9dd89, with the result stored at +0x550. Its class is CustomTrackListComponent: the static init stores the name 0x145676008 'CustomTrackListComponent' at +8 (0x140d69d2a) and its djb2 0x418348a4 at +0x10 (0x140d69d31). The KB has the class's creator as Trk_CustomTrackListComponent_Create. Fix: name it after the class, e.g. k_Game_CustomTrackListComponentDesc."
+  },
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "k_Game_CustomTrackListComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x140d69d23-0x140d69d3b in the static init and 0x140b9dd86-0x140b9dd9d;xref:0x140d69d2a,0x140b9dd89",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8, cross-checked on 46009bd3. The static init stores 'CustomTrackListComponent' (0x145676008) at 0x14605ad48 (+8) and djb2 0x418348a4 at +0x10 (0x140d69d2a/0x140d69d31; 0x140d6a8aa on 26566308, name 0x145678008, desc 0x14605cd40); 0x140b9dd89 passes it to the registry vt+0x10 and stores the result at +0x550. The class matches Trk_CustomTrackListComponent_Create, so the V100079 name issue is fixed by the rename."
   }
  ],
  "proofs": [
@@ -72,6 +82,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "8410dc8676e718e7f81d44f7b7a7db7a43ea0c06ef5808708d35093116c56767"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140b9dd89",
+    "target": "0x14605ad40"
+   },
+   "sigcheck": "passed",
+   "digest": "66341de93e4641559396d0228c6c7489e35228d077faa9195656c1e3660fcf10"
   }
  ]
 }

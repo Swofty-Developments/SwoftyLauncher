@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "name": "k_Sess_WeekendServiceComponentDesc",
+ "name": "k_Sess_WeekendSetupComponentDesc",
  "table": "globals",
  "author": "Moorzii",
  "row": {
@@ -9,10 +9,10 @@
   "level": "L2",
   "subsystem": "session",
   "evidence": "decomp:own disasm 0x140d6af58-0x140d6af73 in the static init and around 0x1421f5aba;xref:0x140d6af5f,0x1421f5aba,0x141124ca5",
-  "notes": "WeekendSetupComponent's 0x20-byte component type descriptor (game::championship::WeekendSetupComponent): the static init stores its name 'WeekendSetupComponent' at +8 (0x140d6af5f) and its hash at +0x10; passed as the key to the mode entity's component registry get (+0x1030, vtable +0x10, r8d 1) to get the weekend setup component (V100078/V100079: a maintainer rename to k_Sess_WeekendSetupComponentDesc would fit)"
+  "notes": "WeekendSetupComponent's 0x20-byte component type descriptor (game::championship::WeekendSetupComponent): the static init stores its name 'WeekendSetupComponent' at +8 (0x140d6af5f) and its hash at +0x10; passed as the key to the mode entity's component registry get (+0x1030, vtable +0x10, r8d 1) to get the weekend setup component (V100078)"
  },
  "signature": {
-  "id": "session.weekend_service_component_desc",
+  "id": "session.weekend_setup_component_desc",
   "section": ".xtls",
   "pattern": "74 6E 48 8B 81 30 10 00 00 48 81 C1 30 10 00 00 48 8D 15",
   "match": "0x1421f3eaa",
@@ -25,7 +25,7 @@
   "target": "0x14605ada0",
   "kind": "data",
   "names": [
-   "k_Sess_WeekendServiceComponentDesc"
+   "k_Sess_WeekendSetupComponentDesc"
   ],
   "verified": [
    {
@@ -46,11 +46,21 @@
    "date": "2026-11-23",
    "verifier": "re-bindings-ir-blind",
    "kind": "global",
-   "item": "k_Sess_WeekendServiceComponentDesc",
+   "item": "retired:k_Sess_WeekendServiceComponentDesc",
    "claimed": "L2",
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x140d6a3d8-0x140d6a3fe in the static init 0x140d69490 and 0x1421f3eac-0x1421f3ec7;xref:0x140d6a3df,0x1421f3eba",
    "notes": "V100078 Blind re-derivation on d873a1c8. The use holds: 0x14605ada0 is a 0x20-byte component type descriptor filled at static init and passed as the key to the +0x1030 registry get (vt+0x10, r8d 1) at 0x1421f3eba. Its class is WeekendSetupComponent, not a weekend service: the static init stores the name 0x14567dc0d 'WeekendSetupComponent' at +8 (0x140d6a3df) and its djb2 0xe4104bac at +0x10 (0x140d6a3e6), the parent at +0x18 and the vtable at +0. The KB already names the class (Sess_WeekendSetup_LayoutWeekends: game::championship::WeekendSetupComponent). Fix: name it after the class, e.g. k_Sess_WeekendSetupComponentDesc."
+  },
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "k_Sess_WeekendSetupComponentDesc",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x140d6a3d8-0x140d6a3f0 in the static init and 0x1421f3eac-0x1421f3ec7;xref:0x140d6a3df,0x1421f3eba",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8, cross-checked on 46009bd3. The static init stores 'WeekendSetupComponent' (0x14567dc0d) at 0x14605ada8 (+8) and djb2 0xe4104bac at +0x10 (0x140d6a3df/0x140d6a3e6; 0x140d6af5f on 26566308, name 0x14567fc3d, desc 0x14605cda0); 0x1421f3eba passes it to the mode entity's +0x1030 registry vt+0x10 with r8d 1. The class name matches the name the KB already uses for it (Sess_WeekendSetup_LayoutWeekends), so the V100078 name issue is fixed by the rename."
   }
  ],
  "proofs": [
@@ -72,6 +82,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "2dda77b8af1ea5c2861dae3fe7a13ac7a470413b66337fb65c1726947ffd1317"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1421f3eaa",
+    "target": "0x14605ada0"
+   },
+   "sigcheck": "passed",
+   "digest": "191ba44797d5e56f57563b8644c8d0a75f3232c451f50d1d12ede6f1d10cfa60"
   }
  ]
 }

@@ -67,5 +67,7 @@ using Ent_Deserialise_EntrantVector_t = int(void *vector_object, void *bag);
 inline constexpr fn<"Ent_Deserialise_EntrantVector", Ent_Deserialise_EntrantVector_t> Ent_Deserialise_EntrantVector{}; // L2 experimental
 using Ent_EntrantsSystem_ReplaceVehicle_t = int(void *entrants, uint32_t handle, const void *vehicle);
 inline constexpr fn<"Ent_EntrantsSystem_ReplaceVehicle", Ent_EntrantsSystem_ReplaceVehicle_t> Ent_EntrantsSystem_ReplaceVehicle{}; // L2 experimental
+using Ent_Fill_EntrantsFromList_t = void(void *entrants_system, void *mode_entity, void *params, void *entrant_list);
+inline constexpr fn<"Ent_Fill_EntrantsFromList", Ent_Fill_EntrantsFromList_t> Ent_Fill_EntrantsFromList{}; // L2 experimental
 
 }

@@ -772,6 +772,8 @@ inline constexpr fn<"Game_FullRaceReplaySystem_Init", Game_FullRaceReplaySystem_
 inline constexpr address<"Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap"> Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap{}; // L2 experimental, GameInputModule::applyRebindableGameplayActionsToActionMap
 using Game_GameModeEntity_SetSetupMode_t = void(void *mode_entity, void *setup_mode, int flags);
 inline constexpr fn<"Game_GameModeEntity_SetSetupMode", Game_GameModeEntity_SetSetupMode_t> Game_GameModeEntity_SetSetupMode{}; // L2 experimental
+using Game_GameMode_IsGrandPrix_t = bool(void *mode);
+inline constexpr fn<"Game_GameMode_IsGrandPrix", Game_GameMode_IsGrandPrix_t> Game_GameMode_IsGrandPrix{}; // L2 experimental
 inline constexpr address<"Game_GameModes_BuildMode"> Game_GameModes_BuildMode{}; // L2 experimental
 using Game_GameModes_FindByPredicate_t = void *(void *modes, void *const *predicate);
 inline constexpr fn<"Game_GameModes_FindByPredicate", Game_GameModes_FindByPredicate_t> Game_GameModes_FindByPredicate{}; // L2 experimental
@@ -893,6 +895,8 @@ inline constexpr address<"Game_MatchingContext_OnSessionRestart"> Game_MatchingC
 inline constexpr address<"Game_MatchingContext_OnStartRematch"> Game_MatchingContext_OnStartRematch{}; // L2 experimental
 inline constexpr address<"Game_MatchingContext_SetRankedSearchParams"> Game_MatchingContext_SetRankedSearchParams{}; // L2 experimental
 inline constexpr address<"Game_MatchingContext_SetupRankedGameSession"> Game_MatchingContext_SetupRankedGameSession{}; // L2 experimental
+using Game_MessageBus_PostEntrantChangeBegin_t = void(void *bus, void *message);
+inline constexpr fn<"Game_MessageBus_PostEntrantChangeBegin", Game_MessageBus_PostEntrantChangeBegin_t> Game_MessageBus_PostEntrantChangeBegin{}; // L2 experimental
 using Game_MessageBus_PostEntrantChangeEnd_t = void(void *bus, void *message);
 inline constexpr fn<"Game_MessageBus_PostEntrantChangeEnd", Game_MessageBus_PostEntrantChangeEnd_t> Game_MessageBus_PostEntrantChangeEnd{}; // L2 experimental
 using Game_Mfd_FuelMixUp_t = int(void *mfd_car_settings_vm);
@@ -1442,6 +1446,7 @@ inline constexpr data<"g_Game_TrackLength", float> g_Game_TrackLength{}; // L2 e
 inline constexpr data<"g_Game_VehicleRecordManager", void *> g_Game_VehicleRecordManager{}; // L2 experimental
 inline constexpr data<"g_Game_VehicleStateRoot", void *> g_Game_VehicleStateRoot{}; // L2 experimental
 inline constexpr data<"g_Game_WeatherSurfaceState", void*> g_Game_WeatherSurfaceState{}; // L2 experimental
+inline constexpr data<"k_Game_CustomTrackListComponentDesc", void> k_Game_CustomTrackListComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Game_TrackListComponentDesc", void *> k_Game_TrackListComponentDesc{}; // L2 experimental, TrackListComponent
 inline constexpr site<"site_Game_AcclimPenalty_Entry"> site_Game_AcclimPenalty_Entry{}; // L2 experimental
 inline constexpr site<"site_Game_AcclimPenalty_Return"> site_Game_AcclimPenalty_Return{}; // L2 experimental
@@ -1525,6 +1530,8 @@ inline constexpr vtable<"vt_Game_CareerDLCSelectViewModel", 19> vt_Game_CareerDL
 inline constexpr vtable<"vt_Game_CareerWizardSettingsSelectViewModel", 19> vt_Game_CareerWizardSettingsSelectViewModel{}; // L2 experimental, CareerWizardSettingsSelectViewModel.
 inline constexpr vtable<"vt_Game_DriverCareerDriverSelectViewModel", 22> vt_Game_DriverCareerDriverSelectViewModel{}; // L2 experimental
 inline constexpr vtable<"vt_Game_DriverCareerSlotPredicate", 6> vt_Game_DriverCareerSlotPredicate{}; // L2 experimental
+inline constexpr vtable<"vt_Game_EntrantsDocumentClosedMsg", 2> vt_Game_EntrantsDocumentClosedMsg{}; // L2 experimental
+inline constexpr vtable<"vt_Game_EntrantsDocumentOpenedMsg", 2> vt_Game_EntrantsDocumentOpenedMsg{}; // L2 experimental
 inline constexpr vtable<"vt_Game_FECareerViewModel", 19> vt_Game_FECareerViewModel{}; // L2 experimental, game::FECareerViewModel,
 inline constexpr vtable<"vt_Game_SaveDataRootContainer", 7> vt_Game_SaveDataRootContainer{}; // L3 stable
 inline constexpr vtable<"vt_Game_TrackInformationModule", 17> vt_Game_TrackInformationModule{}; // L2 experimental, TrackInformationModule:

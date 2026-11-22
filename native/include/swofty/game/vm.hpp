@@ -51,6 +51,8 @@ inline constexpr address<"Vm_MyTeamUpgradeScreen_Bind"> Vm_MyTeamUpgradeScreen_B
 inline constexpr address<"Vm_MyTeamWeekendSummary_Bind"> Vm_MyTeamWeekendSummary_Bind{}; // L2 experimental
 inline constexpr address<"Vm_MyTeamWorkforce_Bind"> Vm_MyTeamWorkforce_Bind{}; // L2 experimental
 inline constexpr address<"Vm_NodeSet_Bool"> Vm_NodeSet_Bool{}; // L2 experimental
+using Vm_Node_Clear_t = bool(void *unused, void *node);
+inline constexpr fn<"Vm_Node_Clear", Vm_Node_Clear_t> Vm_Node_Clear{}; // L2 experimental
 using Vm_NotificationButton_BuildNameCommand_t = void *(void *out, void *src, void *a3, void *a4);
 inline constexpr fn<"Vm_NotificationButton_BuildNameCommand", Vm_NotificationButton_BuildNameCommand_t> Vm_NotificationButton_BuildNameCommand{}; // L2 experimental
 inline constexpr address<"Vm_Register_CustomisationAndMenuViewModelTypes"> Vm_Register_CustomisationAndMenuViewModelTypes{}; // L2 experimental

@@ -50,6 +50,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x144424c57-0x144424c88 and FeFlow_State_OnStateUpdate_Wrapper 0x1436af6e0-0x1436af749;xref:0x144424c75",
    "notes": "V100076 Blind re-derivation on d873a1c8. The site is right: in the flow state machine update 0x144423ce0, when state+0xb8 == 2 it calls the state's vt+0x20 (FeFlow_State_OnStateUpdate_Wrapper, which runs +0x58 and then OnUpdate +0x48 with rdx = &link) at 0x144424c75 with rdx = rsp+0x40, and 0x144424c78 loads that link for the compare with g_Game_FlowLinkStay; rdi = the state. The expect bytes do not hold here: 8B 44 24 40 39 05 2E D0 88 02 carries the 26566308 disp32 of the g_Game_FlowLinkStay compare, this build has 8B 44 24 40 39 05 FE D5 88 02, so the KB set fails the expect check. Fix: expect only the load, 8B 44 24 40."
+  },
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "site_FeFlow_AfterStateLink",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x144424c60-0x144424c88;xref:0x144424c75",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8, cross-checked on 46009bd3. expect is now 8B 44 24 40 (mov eax,[rsp+0x40]), the same on both builds; the rip-relative cmp with g_Game_FlowLinkStay that differed (FE D5 88 02 vs 2E D0 88 02, V100076) is only wildcarded in the pattern. The site is right after call [rax+0x20] with rcx = rdi = the state and rdx = rsp+0x40 at 0x144424c75 (0x144427245 on 26566308)."
   }
  ],
  "proofs": [
@@ -71,6 +81,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "8fd5357f156b1c36b4c64a2191cd15b8f789bb8ffb193dd7421af38fc8a2b7b0"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144424c78",
+    "target": "0x144424c78"
+   },
+   "sigcheck": "passed",
+   "digest": "62c13232fbce66983116148180b134a2120751d7ebd8aa735fcda7bb240a7875"
   }
  ]
 }

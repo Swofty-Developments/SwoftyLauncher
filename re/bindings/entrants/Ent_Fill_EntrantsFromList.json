@@ -49,6 +49,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x142460230-0x14246030d;xref:0x141127646,0x14245eace",
    "notes": "V100077 Blind re-derivation on d873a1c8. The role holds: (a1, mode_entity, params, list) posts the EntrantChangeBegin message (vtable 0x14578d4e8) on [g_Game_MessageBus]+8, sets mode_entity+0x2f8 = 1, resets +0x2e8 to +0x2e0, calls Sess_Select_Entrants(a1, mode_entity, params, list+8, 0), posts EntrantChangeEnd (vtable 0x14578d510, +0x10 = mode_entity+0x2d8) and clears +0x2f8; a1 and params are only passed through. The fourth argument is not int flags: it is a pointer to an entrant list, where null means mode_entity+0xe18 (the list Game_GameModeEntity_SetSetupMode stores) and a null list skips the select; any non-null value is used as a pointer. Both callers pass 0. Fix: proto void Ent_Fill_EntrantsFromList(void *entrants_system, void *mode_entity, void *params, void *entrant_list)."
+  },
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Ent_Fill_EntrantsFromList",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142460230-0x142460442;xref:0x142460287,0x1424602ee",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8, cross-checked on 46009bd3 (0x142461e30, 55 of 55 instructions equal). r9 is a pointer: test r9 then r14 = [mode_entity+0xe18] when null; with a list, Sess_Select_Entrants(a1, mode_entity, params, list+8, 0); with no list either, the params path walks params+0x180 entries of 0xc0 from params+0xa8 and pushes them onto mode_entity+0x2d8 with Sess_EntrantVec_PushBack. Begin/End posts, +0x2f8 and +0x2e8 = +0x2e0 as the notes say; the V100077 proto issue is fixed."
   }
  ],
  "proofs": [
@@ -70,6 +80,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "6e703fe054d2ed9b4d1582a9cab9cac845c25ed821d6576c9c2ba94a0d26ef48"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142460230",
+    "target": "0x142460230"
+   },
+   "sigcheck": "passed",
+   "digest": "e0a3b5f9dcb060cb4b97b5bfa814779c8c4d789dc0c3590bfe0f0a736445e5d7"
   }
  ]
 }

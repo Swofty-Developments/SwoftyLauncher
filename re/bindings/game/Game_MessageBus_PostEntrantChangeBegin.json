@@ -50,6 +50,16 @@
    "verdict": "partial",
    "evidence": "decomp:own capstone disasm 0x1424e2b90 (jmp) and its .data1 body 0x14cc4ea20-0x14cc4eab8;xref:0x142460287,0x1407a010f",
    "notes": "V100075 Blind re-derivation on d873a1c8. The claim holds: 0x1424e2b90 is a 5-byte jmp to 0x14cc4ea20, (bus, message): when bus+0x68 is set, under the lock at +0x98 it allocates 0x10 bytes from the allocator at +0x70, copies message+8, sets the vtable 0x14578d4e8, queues it at +0x58/+0x60 and signals +0x88; Ent_Fill_EntrantsFromList posts it at 0x142460287 and then sets mode entity+0x2f8. On 26566308 the body 0x14c91b2f0 sets 0x14578f618. The signature does not hold on this build: its pattern ends in protector filler after the jmp (05 4A E8 6A B3 0F 84), here AD E9 E1 64 58 01 3C, so it matches 0 times in .xtls. Fix: a call-kind signature like Game_MessageBus_PostEntrantChangeEnd's."
+  },
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Game_MessageBus_PostEntrantChangeBegin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142460230-0x142460442 and the body 0x14cc4ea20 behind the jmp 0x1424e2b90;xref:0x142460287",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8, cross-checked on 46009bd3. The call signature resolves the call at 0x142460287 in Ent_Fill_EntrantsFromList (rcx = [g_Game_MessageBus]+8, rdx = the stack message with vtable 0x14578d4e8, then byte +0x2f8 = 1) to 0x1424e2b90 on KB and to 0x1424e4790 at 0x142461e87 on 26566308; Ent_Fill is instruction-identical on both builds, so the V100075 filler issue is gone. (bus, message) as in V100075."
   }
  ],
  "proofs": [
@@ -71,6 +81,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "aa9a9bc649eee49b0776ee7727be24bbd439323c444d1fad9813ca16ecb08ef5"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142460272",
+    "target": "0x1424e2b90"
+   },
+   "sigcheck": "passed",
+   "digest": "9cbcd5035dcd88172817c0dce5d12bde68ea7403875f44e06e7ec82b3a1af184"
   }
  ]
 }

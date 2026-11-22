@@ -18,6 +18,7 @@ static_assert(offsetof(FlowState, name_hash) == 0xb0);
 static_assert(offsetof(FlowState, status) == 0xb8);
 
 inline constexpr address<"FeFlow_Set_StateStatus"> FeFlow_Set_StateStatus{}; // L2 experimental
+inline constexpr site<"site_FeFlow_AfterStateLink"> site_FeFlow_AfterStateLink{}; // L2 experimental
 inline constexpr site<"site_FeFlow_SetStateStatus"> site_FeFlow_SetStateStatus{}; // L2 experimental
 
 }

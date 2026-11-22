@@ -41,7 +41,18 @@
   "made_on_target": "0x14578f618",
   "twin": "made on steam-26566308; the target 0x14578f618 is KB 0x14578d4e8 (V100077 and V100075 name it on d873a1c8; vt_Game_F1WorldActivityContainerVm and k_Career_RnDCardColourTable sit 0x2130 above their KB addresses too); the match 0x142461e72 (the lea in Ent_Fill_EntrantsFromList) is KB 0x142460272: Ent_Fill_EntrantsFromList itself sits 0x1c00 above its KB address 0x142460230"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "vt_Game_EntrantsDocumentOpenedMsg",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142460272-0x142460287 and the slots 0x1424cf0b0,0x1424cf160;xref:0x142460272",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8, cross-checked on 46009bd3. 0x14578d4e8 holds 2 slots: 0x1424cf0b0 (jmp to the scalar deleting destructor 0x14cc02220, frees through the allocator when edx is set) and 0x1424cf160 (lea rax 'EntrantsDocumentOpened' 0x14578d4f8; ret), the name string right after the vtable. On 26566308 the vtable is 0x14578f618, slots 0x1424d0cb0/0x1424d0d60 (same 28-instruction destructor), name 0x14578f628. Ent_Fill lea's it at 0x142460272 into the stack message posted with Game_MessageBus_PostEntrantChangeBegin."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",
@@ -61,6 +72,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "3ee67cd4d0508944fe2f3d4ca000e7c2c5f443a9aeaabef8c830e85c6a3fb52e"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142460272",
+    "target": "0x14578d4e8"
+   },
+   "sigcheck": "passed",
+   "digest": "da01d31e4ae15e452c60541e27f31baf6b68a4e4f5a7811e48aaa7beabc8925a"
   }
  ]
 }
