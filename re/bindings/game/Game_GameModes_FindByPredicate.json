@@ -39,7 +39,18 @@
   "made_on_target": "0x1407d22c0",
   "twin": "made on steam-26566308; the target 0x1407d22c0 is KB 0x1407d2280: Game_Game_SetCurrentGameMode (0x7d07e0) and Career_Find_CareerSaveByPredicate (0x7d2310) on either side both sit 0x40 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Game_GameModes_FindByPredicate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1407d2280-0x1407d22cb,0x1407d22d0-0x1407d240d,0x1409762d0-0x1409762d7;xref:0x141a78341,0x141bb6a39",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8. (modes, predicate): wraps the predicate pointer in a std::function-like object on the stack (vtable 0x145658390; its call slot +0x10 at 0x1409762d0 jumps to *predicate with rcx = the entity), then 0x1407d22d0 walks the hash map at modes+0x58..+0x68, passes [[entry]+0x38]+0x260 to the predicate, skips entities whose byte +0x2ac is set, keeps the last match and returns it only when its type (vt+0x28) derives from 0x14604ec60, else 0. The solo_gp command (djb2 0xa2f65c38) of Game_F1WorldActivityContainer_HandleCommand calls it at 0x141a78341 with Game_GameMode_IsGrandPrix and makes the result's +0xf08 the current game mode (Game_Game_SetCurrentGameMode); 0x141bb6a39 passes 0x1407c5ff0. Same code on 26566308 at 0x1407d22c0. Proto agrees."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",
@@ -59,6 +70,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "446e3d64f6f4e4bb6f33c62ce83346d5d9a83b485afbaa9b2fba9f27c5c3d051"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407d2280",
+    "target": "0x1407d2280"
+   },
+   "sigcheck": "passed",
+   "digest": "ab7b57b6b065111b0496ecd602193572aba79d6a635d83496671d914603c7c9d"
   }
  ]
 }

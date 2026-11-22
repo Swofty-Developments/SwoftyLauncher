@@ -376,6 +376,8 @@ inline constexpr address<"Game_ChallengeEvent_OnTabActivated"> Game_ChallengeEve
 inline constexpr address<"Game_ChallengeEvent_OnTabDeactivated"> Game_ChallengeEvent_OnTabDeactivated{}; // L2 experimental
 inline constexpr address<"Game_ChampSession_Reset"> Game_ChampSession_Reset{}; // L2 experimental
 inline constexpr address<"Game_ChampionshipGameMode_BuildSessionSettings"> Game_ChampionshipGameMode_BuildSessionSettings{}; // L2 experimental
+using Game_ChampionshipRounds_AddTrack_Thunk_t = void(void *comp, void *track_desc);
+inline constexpr fn<"Game_ChampionshipRounds_AddTrack_Thunk", Game_ChampionshipRounds_AddTrack_Thunk_t> Game_ChampionshipRounds_AddTrack_Thunk{}; // L2 experimental
 inline constexpr address<"Game_Championship_AddSessionDefaultLength"> Game_Championship_AddSessionDefaultLength{}; // L2 experimental
 inline constexpr address<"Game_Championship_AddSessionFromDef"> Game_Championship_AddSessionFromDef{}; // L2 experimental
 inline constexpr address<"Game_Championship_AddSessionWithFormat"> Game_Championship_AddSessionWithFormat{}; // L2 experimental
@@ -565,6 +567,8 @@ inline constexpr address<"Game_F1WLoadout_Initialise"> Game_F1WLoadout_Initialis
 using Game_F1WRankedComponent_Init_t = int(void *self, void *serviceProvider, void *componentMap);
 inline constexpr fn<"Game_F1WRankedComponent_Init", Game_F1WRankedComponent_Init_t> Game_F1WRankedComponent_Init{}; // L2 experimental, F1WRankedComponent
 inline constexpr address<"Game_F1WorldActivityContainer_GoHome"> Game_F1WorldActivityContainer_GoHome{}; // L2 experimental
+using Game_F1WorldActivityContainer_HandleCommand_t = void(void *container, void *message, void *data);
+inline constexpr fn<"Game_F1WorldActivityContainer_HandleCommand", Game_F1WorldActivityContainer_HandleCommand_t> Game_F1WorldActivityContainer_HandleCommand{}; // L2 experimental
 inline constexpr address<"Game_F1WorldActivityContainer_OnExit"> Game_F1WorldActivityContainer_OnExit{}; // L2 experimental
 using Game_F1WorldActivityContainer_SelectEntrantList_t = void(void *container, const char *entrant_list);
 inline constexpr fn<"Game_F1WorldActivityContainer_SelectEntrantList", Game_F1WorldActivityContainer_SelectEntrantList_t> Game_F1WorldActivityContainer_SelectEntrantList{}; // L2 experimental
@@ -765,7 +769,11 @@ inline constexpr address<"Game_FuelDynamicObjective_Activate_2"> Game_FuelDynami
 using Game_FullRaceReplaySystem_Init_t = int(void *self, void *serviceProvider, void *componentMap);
 inline constexpr fn<"Game_FullRaceReplaySystem_Init", Game_FullRaceReplaySystem_Init_t> Game_FullRaceReplaySystem_Init{}; // L2 experimental
 inline constexpr address<"Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap"> Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap{}; // L2 experimental, GameInputModule::applyRebindableGameplayActionsToActionMap
+using Game_GameModeEntity_SetSetupMode_t = void(void *mode_entity, void *setup_mode, int flags);
+inline constexpr fn<"Game_GameModeEntity_SetSetupMode", Game_GameModeEntity_SetSetupMode_t> Game_GameModeEntity_SetSetupMode{}; // L2 experimental
 inline constexpr address<"Game_GameModes_BuildMode"> Game_GameModes_BuildMode{}; // L2 experimental
+using Game_GameModes_FindByPredicate_t = void *(void *modes, void *const *predicate);
+inline constexpr fn<"Game_GameModes_FindByPredicate", Game_GameModes_FindByPredicate_t> Game_GameModes_FindByPredicate{}; // L2 experimental
 inline constexpr address<"Game_GameReplaySystem_SubscribeRewindTutorial"> Game_GameReplaySystem_SubscribeRewindTutorial{}; // L2 experimental
 inline constexpr address<"Game_GameSessionConfig_Destroy"> Game_GameSessionConfig_Destroy{}; // L2 experimental
 inline constexpr address<"Game_GameSessionManager_Connect"> Game_GameSessionManager_Connect{}; // L2 experimental
@@ -884,6 +892,8 @@ inline constexpr address<"Game_MatchingContext_OnSessionRestart"> Game_MatchingC
 inline constexpr address<"Game_MatchingContext_OnStartRematch"> Game_MatchingContext_OnStartRematch{}; // L2 experimental
 inline constexpr address<"Game_MatchingContext_SetRankedSearchParams"> Game_MatchingContext_SetRankedSearchParams{}; // L2 experimental
 inline constexpr address<"Game_MatchingContext_SetupRankedGameSession"> Game_MatchingContext_SetupRankedGameSession{}; // L2 experimental
+using Game_MessageBus_PostEntrantChangeEnd_t = void(void *bus, void *message);
+inline constexpr fn<"Game_MessageBus_PostEntrantChangeEnd", Game_MessageBus_PostEntrantChangeEnd_t> Game_MessageBus_PostEntrantChangeEnd{}; // L2 experimental
 using Game_Mfd_FuelMixUp_t = int(void *mfd_car_settings_vm);
 inline constexpr fn<"Game_Mfd_FuelMixUp", Game_Mfd_FuelMixUp_t> Game_Mfd_FuelMixUp{}; // L2 experimental
 inline constexpr address<"Game_MidSession_SaveReplaySnapshot"> Game_MidSession_SaveReplaySnapshot{}; // L2 experimental

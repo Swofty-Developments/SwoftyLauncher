@@ -40,7 +40,18 @@
   "made_on_target": "0x14079f340",
   "twin": "made on steam-26566308; the target 0x14079f340 is KB 0x14079f300: Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices (0x793910) and Game_BenchmarkGameMode_BuildSessionSettings (0x7a48a0) on either side both sit 0x40 above their KB addresses; the match 0x141897599 is KB 0x141895db9: site_Career_RnDPerfGotoName (0x18965e3) and Career_RenownForm_BuildRenownText (0x18aea30) on either side both sit 0x17e0 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Game_GameModeEntity_SetSetupMode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14079f300 (jmp) and its .data1 body 0x148596c20-0x148596f8d;xref:0x140b7be9f,0x141126568",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8. 0x14079f300 is a 5-byte jmp to 0x148596c20. (mode_entity, setup_mode, force): unless r8b is set, setup_mode must be null or in the entity's allowed list (vt+0x1d0, vector +8..+0x10), else it logs and returns; when it differs from mode_entity+0x2b0 it stores it there, rebuilds +0xe10 and +0xe18 through vt+0x1d8 and calls vt+0x1c8. Only the low byte of the third argument is read: a bool that skips the allowed-mode check; 0, as the caller at 0x140b7be9f passes, is the checked path. Same body on 26566308 (0x14079f340 -> 0x1483bbac0: +0x2b0, vt+0x1d0/0x1d8/0x1c8, +0xe10/+0xe18)."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",
@@ -60,6 +71,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "41c713abfb6a4d96e5ef9e0f16d90f976785981664884c93719611e8fdfdd19e"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141895db9",
+    "target": "0x14079f300"
+   },
+   "sigcheck": "passed",
+   "digest": "d6efcbf2a0a10c5e8958c39a190006e7af8126023b529b833fb870d9f42e91eb"
   }
  ]
 }

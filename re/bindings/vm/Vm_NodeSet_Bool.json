@@ -75,6 +75,16 @@
    "verdict": "agree",
    "evidence": "decomp:own disasm 0x140973e70-0x14097415f;xref:0x14079e0d7,0x1407a1c1f,0x1407bacdb",
    "notes": "gh:Moorzii found independently by its own pattern in Instant Race; sets a bool on a view model node (used to complete the session load sync)"
+  },
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Vm_NodeSet_Bool",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140973e20-0x1409740f0;xref:0x14079e097,0x1407a1bdf",
+   "notes": "gh:re-bindings-ir-blind Blind L2 re-derivation on d873a1c8. (node, value, reason, force): returns 0 when node+0x26 bit 0 is set; reads the current value through the holder node+0x58 vt+0x38 and, unless r9b (force) is set, returns 1 without writing when its first byte equals *value; otherwise ClearTargetDirty when +0x60 bit 1, clones the old value when +0x40 != +0x48, writes through vt+0x40(value), applies the float NaN guard for type 0x146129be0 (writes 1.0f), MarkTargetDirty, then Ne_VmBinding_InvokeListeners with {0x14565f3d0, reason, node+8, 1, old}; returns 1. value points at one byte (a bool). Agrees with the row."
   }
  ],
  "proofs": [
@@ -96,6 +106,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "1f29d23ede0363ffffa741f46d6d9339a1f513b84bdcc93a218348162170c203"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140973e20",
+    "target": "0x140973e20"
+   },
+   "sigcheck": "passed",
+   "digest": "328cdd1edcd73a5db03e179a8b2184474f905d82166b1aa7f8ecfcdf4500b0c4"
   }
  ]
 }

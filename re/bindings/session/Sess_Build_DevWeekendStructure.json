@@ -1,0 +1,79 @@
+{
+ "schema": 1,
+ "name": "Sess_Build_DevWeekendStructure",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b025f0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b025f0.c;xref:0x141127d96",
+  "notes": "(this, src, practiceFmt, qualiFmt, race1, race2, ...): clears session vector +0x18..+0x20; practice 4..6 -> session types 1,2,3, 1..3 -> type 4 (0x28 objs vt 0x14566e5c0, 0x140affa10); +0x30 = practiceFmt; quali 2/3 -> type 8, 1 -> 9, 4 -> 5,6,7 (vt 0x14566e620, 0x140affb80); race1/race2 (not 0/0xd/0xff) -> 0x38 objs type 0xf/0x10 (vt 0x14566e680, ids src+0xb4/+0xc0, 0x140affcf0). Types match the telemetry session enum. (lane owner review requested)"
+ },
+ "signature": {
+  "id": "session.build_dev_weekend_structure",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 45 89 C6",
+  "match": "0x140b025f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b025f0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Build_DevWeekendStructure"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-23",
+    "by": "re-bindings-ir",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140b025f0",
+    "target": "0x140b025f0"
+   },
+   "sigcheck": "passed",
+   "digest": "efea94e888adecce0d30d7e5b685c585fdcd32032d8d69fdebd5efada0f07517"
+  },
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140b02640",
+    "target": "0x140b02640"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1f3ba875e6a380294eac47c402f8e7fa131682e17b258c3763ba625ac1ba24c4"
+  }
+ ]
+}

@@ -39,7 +39,18 @@
   "made_on_target": "0x1424e4790",
   "twin": "made on steam-26566308; the target 0x1424e4790 is KB 0x1424e2b90: Sess_Parse_EntrantTemplateRef (0x24dffe0) and Sess_SortEntrantsByGarageOrder (0x24e9250) on either side both sit 0x1c00 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Game_MessageBus_PostEntrantChangeBegin",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1424e2b90 (jmp) and its .data1 body 0x14cc4ea20-0x14cc4eab8;xref:0x142460287,0x1407a010f",
+   "notes": "V100075 Blind re-derivation on d873a1c8. The claim holds: 0x1424e2b90 is a 5-byte jmp to 0x14cc4ea20, (bus, message): when bus+0x68 is set, under the lock at +0x98 it allocates 0x10 bytes from the allocator at +0x70, copies message+8, sets the vtable 0x14578d4e8, queues it at +0x58/+0x60 and signals +0x88; Ent_Fill_EntrantsFromList posts it at 0x142460287 and then sets mode entity+0x2f8. On 26566308 the body 0x14c91b2f0 sets 0x14578f618. The signature does not hold on this build: its pattern ends in protector filler after the jmp (05 4A E8 6A B3 0F 84), here AD E9 E1 64 58 01 3C, so it matches 0 times in .xtls. Fix: a call-kind signature like Game_MessageBus_PostEntrantChangeEnd's."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",

@@ -1,0 +1,90 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldActivityContainer_HandleCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a77d60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1WorldActivityContainer_HandleCommand(void *container, void *message, void *data)",
+  "evidence": "decomp:re/decomp/141a77d60.c;decomp:re/decomp/141a753c0.c;xref:0x14572acc0",
+  "notes": "Command switch of F1WorldActivityContainerViewModel (vtable 0x14572ac70 slot 10 at 0x14572acc0; ctor 0x141a753c0), keyed by the djb2 hash of the command name. entrant_list_selected (0x22f71644): Game_F1WorldActivityContainer_SelectEntrantList(container, data text), 0x141a79480 (championship row for the list: F1_2026 / F2 2024-2026 by hash, else F1_Championship_Season), 0x1424b3640(container[0x62])."
+ },
+ "signature": {
+  "id": "game.f1_world_activity_container_handle_command",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC B0 00 00 00 48 8B 02",
+  "match": "0x141a77d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a77d60",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldActivityContainer_HandleCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-23",
+    "by": "re-bindings-ir",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-23",
+   "verifier": "verify-seasons-2",
+   "kind": "func",
+   "item": "Game_F1WorldActivityContainer_HandleCommand",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a77d60.c;decomp:re/decomp/141a79480.c;decomp:re/decomp/141a753c0.c;decomp:re/decomp/141a76130.c;xref:0x14572acc0,0x141a755ac,0x141ba2b7e,0x141a77f93,0x141a77fbb,0x141a77fc6,0x141a77fd2",
+   "notes": "V1010 Re-check of the renamed row (was V1008 under Game_F1WorldActivityTab_HandleCommand). The row now says what the code shows. Slot 10 (vt+0x50) of vtable 0x14572ac70: the qword at 0x14572acc0 is its only reference, and there is no rel32 caller in .xtls or .data1. Ctor 0x141a753c0 installs the vtable at [rsi] (0x141a755ac) and names the VM f1_world_activity_container. The OnCommandRaised caller claim is gone. The proto is now void with 3 args (container, message, data). The switch key is the djb2 hash at *message, and 0x22f71644 is compared at 0x141a77f93. That branch calls SelectEntrantList(container, *(data+0x10)+9 or k_Ne_EmptyStrChars), 0x141a79480(container, data+0x10) and 0x1424b3640([container+0x310]). The 0x141a79480 summary is right: F1_2026 and F2_2024/2025/2026 by hash, everything else (f2_2023 too) F1_Championship_Season. Nit: the notes still say view_model in two places where the proto says container"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a77d60",
+    "target": "0x141a77d60"
+   },
+   "sigcheck": "passed",
+   "digest": "d9f5aa8b4268eeb9816541e65fa1744363663cf4543cc592025adfe99a2fae66"
+  },
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a79540",
+    "target": "0x141a79540"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0846a452959d0b489164ff6d1860e1b001f4e143f167be0948d86748be2710c"
+  }
+ ]
+}

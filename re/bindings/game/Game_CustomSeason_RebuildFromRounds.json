@@ -1,0 +1,79 @@
+{
+ "schema": 1,
+ "name": "Game_CustomSeason_RebuildFromRounds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141207290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141207290.c;xref:0x1456c9f58",
+  "notes": "Ref = vtable cell 0x1456c9f58 (neighbours 0x140b0b0f0/0x141207300 code). 0x14420cd60(p1, [p1+0x290]+0x298), 0x140b99450([p1+0x290], [[p1+0x298]+0x18]); registry [p1+0x270]: vt+0x78 != 1 -> vt+0x40, season = vt+0x88; none -> vt+0x50('custom_season') + vt+0x70 creates it, else destroys every weekend in season+0x288..+0x290 (0x140aece00, 0x1436521b0, dtor + free via +0x280) and zeroes +0x2a0; then 0x140b98cb0([p1+0x290], season), 0x140ae4750(season). (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.custom_season_rebuild_from_rounds",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE BA 98 02 00 00",
+  "match": "0x141207290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141207290",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomSeason_RebuildFromRounds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-23",
+    "by": "re-bindings-ir",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141207290",
+    "target": "0x141207290"
+   },
+   "sigcheck": "passed",
+   "digest": "5d1c15f12d94a755e4e844d2065dcf439d6fd4910f6b77b7337c8ca6a87241d1"
+  },
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1412078d0",
+    "target": "0x1412078d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "468a698162210fcb9c21237fbcc0d58d67799135e04b9790224cb92d29e9eb2b"
+  }
+ ]
+}

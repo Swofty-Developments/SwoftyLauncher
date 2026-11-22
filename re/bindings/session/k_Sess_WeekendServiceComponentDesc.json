@@ -41,7 +41,18 @@
   "made_on_target": "0x14605cda0",
   "twin": "made on steam-26566308; the target 0x14605cda0 is KB 0x14605ada0: k_Career_ChampionshipComponentDesc (0x60564f0) and k_Career_WeatherAndTimeOfDayComponentDesc (0x605cfc0) on either side both sit 0x2000 above their KB addresses; the match 0x1421f5aaa is KB 0x1421f3eaa: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "k_Sess_WeekendServiceComponentDesc",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x140d6a3d8-0x140d6a3fe in the static init 0x140d69490 and 0x1421f3eac-0x1421f3ec7;xref:0x140d6a3df,0x1421f3eba",
+   "notes": "V100078 Blind re-derivation on d873a1c8. The use holds: 0x14605ada0 is a 0x20-byte component type descriptor filled at static init and passed as the key to the +0x1030 registry get (vt+0x10, r8d 1) at 0x1421f3eba. Its class is WeekendSetupComponent, not a weekend service: the static init stores the name 0x14567dc0d 'WeekendSetupComponent' at +8 (0x140d6a3df) and its djb2 0xe4104bac at +0x10 (0x140d6a3e6), the parent at +0x18 and the vtable at +0. The KB already names the class (Sess_WeekendSetup_LayoutWeekends: game::championship::WeekendSetupComponent). Fix: name it after the class, e.g. k_Sess_WeekendSetupComponentDesc."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",

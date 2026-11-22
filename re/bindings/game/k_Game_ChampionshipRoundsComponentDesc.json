@@ -41,7 +41,18 @@
   "made_on_target": "0x14605cd40",
   "twin": "made on steam-26566308; the target 0x14605cd40 is KB 0x14605ad40: k_Career_ChampionshipComponentDesc (0x60564f0) and k_Career_WeatherAndTimeOfDayComponentDesc (0x605cfc0) on either side both sit 0x2000 above their KB addresses; the match 0x140b9dd69 is KB 0x140b9dd89: Game_EventListGridSetupComponent_SetupStartingGrid (0xb9cd50) and Game_InstantRace_SetupTrackList (0xba28b0) on either side both sit -0x20 below their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "k_Game_ChampionshipRoundsComponentDesc",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x140d69d23-0x140d69d49 in the static init 0x140d69490 and 0x140b9dd86-0x140b9dd9a;xref:0x140d69d2a,0x140b9dd89",
+   "notes": "V100079 Blind re-derivation on d873a1c8. The use holds: 0x14605ad40 is a 0x20-byte component type descriptor passed as the key to a component registry get (vt+0x10) at 0x140b9dd89, with the result stored at +0x550. Its class is CustomTrackListComponent: the static init stores the name 0x145676008 'CustomTrackListComponent' at +8 (0x140d69d2a) and its djb2 0x418348a4 at +0x10 (0x140d69d31). The KB has the class's creator as Trk_CustomTrackListComponent_Create. Fix: name it after the class, e.g. k_Game_CustomTrackListComponentDesc."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",

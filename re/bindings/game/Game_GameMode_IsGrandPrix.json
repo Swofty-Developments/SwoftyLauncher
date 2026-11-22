@@ -39,7 +39,18 @@
   "made_on_target": "0x14077d030",
   "twin": "made on steam-26566308; the target 0x14077d030 is KB 0x14077cff0: Game_Career_IsDriverCareerMode (0x77cd80) and Ne_Steam_OnEncryptedAppTicket (0x77d5d0) on either side both sit 0x40 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Game_GameMode_IsGrandPrix",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14077cff0 (jmp) and its .data1 body 0x148504200-0x148504441;xref:0x141a78330",
+   "notes": "V100073 Blind re-derivation on d873a1c8. The claim holds: 0x14077cff0 is a 5-byte jmp to 0x148504200, bool(mode_entity), true only when the entity's type derives from 0x14604ec60 and its +0x1030 component registry lacks 0x146063fb0, k_Career_CareerComponentDesc and 0x14605b168, has 0x14605b188, 0x14605b148 and 0x14605b1a8, and lacks 0x146062fc0; the solo_gp command (djb2 0xa2f65c38) of Game_F1WorldActivityContainer_HandleCommand loads it at 0x141a78330 for Game_GameModes_FindByPredicate. The signature does not hold on this build: the pattern's bytes after the jmp (C8 CC D2 12 8D 4F E9) are protector filler from 26566308, here they are 43 2C 1E 42 09 A1 37, so it matches 0 times in .xtls and the KB set cannot resolve it. Fix: a call-kind signature through one of its direct call sites whose bytes match on both builds."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",

@@ -39,7 +39,18 @@
   "made_on_target": "0x14420f330",
   "twin": "made on steam-26566308; the target 0x14420f330 is KB 0x14420cd60: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Ne_Listener_DetachFromOwner (0x421cbc0) on either side both sit 0x25d0 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Game_ChampionshipRounds_Clear",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14420cd60 (jmp) and its .data1 body 0x153417330-0x1534173b8;xref:0x1412072a4,0x140b99104",
+   "notes": "V100074 Blind re-derivation on d873a1c8. 0x14420cd60 is a 5-byte jmp to 0x153417330, a generic VM node clear rather than a championship one: rcx is never read; rdx points at a node handle; a list node (vt+0x10) that is not read-only (+0x26 bit 0) is emptied by calling 0x1442bc9c0(node, 0) until +0x40 == +0x48, a set node (vt+0x28) goes to Ne_FlatHashSet_RemoveAllNotify, any other node calls vt+0x20; it returns a bool (0 for a read-only node). Call sites all over the game use it (FeTile_Clear_EraTileSet_Thunk's body clears an era tile list with it), so the name and notes should describe the node clear (a Vm_ or Ne_ name, proto bool (void *unused, void **node)) with the rounds list at +0x298 as one caller. The signature fails here too: the bytes after the jmp (0F 8D ?? ?? ?? ?? C8 88 B4 E9) are 26566308 protector filler, this build has E9 8F 74 80 01 D5 8B AC 4A 30, 0 matches in .xtls."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",

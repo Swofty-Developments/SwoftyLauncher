@@ -40,7 +40,18 @@
   "made_on_target": "0x1424e4b00",
   "twin": "made on steam-26566308; the target 0x1424e4b00 is KB 0x1424e2f00: Sess_Parse_EntrantTemplateRef (0x24dffe0) and Sess_SortEntrantsByGarageOrder (0x24e9250) on either side both sit 0x1c00 above their KB addresses; the match 0x140bc8a1f is KB 0x140bc8a3f: Game_EntrantsManager_ResolveAndCloseDocument (0xbb3680) and Game_SeasonLength_PushCalendarEntry (0xbc9d60) on either side both sit -0x20 below their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Game_MessageBus_PostEntrantChangeEnd",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1424e2f00 (jmp) and its .data1 body 0x14cc56980-0x14cc56a28;xref:0x1424602ee,0x140bc8a3f",
+   "notes": "gh:re-bindings-ir-blind Blind re-derivation on d873a1c8. 0x1424e2f00 is a 5-byte jmp to 0x14cc56980. (bus, message): when bus+0x68 is set, under the bus lock (+0x98) it allocates 0x18 bytes from the allocator at +0x70, copies message+8 and +0x10 into it, sets its vtable to 0x14578d510, appends it to the queue at +0x58/+0x60 and signals +0x88 (Ne_Event_Set). Ent_Fill_EntrantsFromList posts it at 0x1424602ee on [g_Game_MessageBus]+8 with +0x10 = mode entity+0x2d8, after the Begin message (vtable 0x14578d4e8), then clears mode entity+0x2f8. On 26566308 the body 0x14c91b8a0 sets 0x14578f640."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",
@@ -60,6 +71,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "32fc77f6558eb3e8851a1539392430cec1633f98a6eff2621c0fd923eeafb806"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140bc8a3f",
+    "target": "0x1424e2f00"
+   },
+   "sigcheck": "passed",
+   "digest": "427d351c218e2c0f517a2a899b02ca403b776207da54a6443db4e8c41a14b28e"
   }
  ]
 }

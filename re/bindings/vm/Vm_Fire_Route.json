@@ -1,0 +1,80 @@
+{
+ "schema": 1,
+ "name": "Vm_Fire_Route",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442c0e20",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void(longlong router,longlong vm,void *route_name,int flag)",
+  "evidence": "decomp:re/decomp/1442c0e20.c;xref:0x1419ce074,0x141a0be26,0x141a0cba1;doc:research/exe.md#3.3",
+  "notes": "fires a route in the VM route grouping (robin-hood map router+0x48); finds the UISE route-group element and calls Vm_Run_Route(uiSys vt[0x1c0],node,name,group,...); callers: census steam 0x42c0e20"
+ },
+ "signature": {
+  "id": "vm.fire_route",
+  "section": ".xtls",
+  "pattern": "4C 8D 4C 24 48 E8 ?? ?? ?? ?? 48 8B 4E 68",
+  "match": "0x1419ce06e",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1442c0e20",
+  "kind": "call",
+  "names": [
+   "Vm_Fire_Route"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-23",
+    "by": "re-bindings-ir",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419ce06e",
+    "target": "0x1442c0e20"
+   },
+   "sigcheck": "passed",
+   "digest": "8f6940c6e38b3dda265d7c7d1b09a2ff7995c9d7f688427bf5cfeda0807bcc24"
+  },
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419cf84e",
+    "target": "0x1442c33f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "54c4897fdd6b16941544358e285b87c815bc80f6227e25fd35bab111a02283ed"
+  }
+ ]
+}

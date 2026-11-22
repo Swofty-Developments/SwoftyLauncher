@@ -39,7 +39,18 @@
   "made_on_target": "0x142461e30",
   "twin": "made on steam-26566308; the target 0x142461e30 is KB 0x142460230: Sess_Collect_GameModeSetupModes (0x245dcf0) and Sess_Load_Teams (0x246b040) on either side both sit 0x1c00 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Ent_Fill_EntrantsFromList",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142460230-0x14246030d;xref:0x141127646,0x14245eace",
+   "notes": "V100077 Blind re-derivation on d873a1c8. The role holds: (a1, mode_entity, params, list) posts the EntrantChangeBegin message (vtable 0x14578d4e8) on [g_Game_MessageBus]+8, sets mode_entity+0x2f8 = 1, resets +0x2e8 to +0x2e0, calls Sess_Select_Entrants(a1, mode_entity, params, list+8, 0), posts EntrantChangeEnd (vtable 0x14578d510, +0x10 = mode_entity+0x2d8) and clears +0x2f8; a1 and params are only passed through. The fourth argument is not int flags: it is a pointer to an entrant list, where null means mode_entity+0xe18 (the list Game_GameModeEntity_SetSetupMode stores) and a null list skips the select; any non-null value is used as a pointer. Both callers pass 0. Fix: proto void Ent_Fill_EntrantsFromList(void *entrants_system, void *mode_entity, void *params, void *entrant_list)."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",

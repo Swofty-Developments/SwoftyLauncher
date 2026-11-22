@@ -8,6 +8,7 @@ rva	calls	callers	sections	thunks	thunk_calls	thunk_callers	jumps	lea	pointers
 0x63e370	0	0	-	0	0	0	0	1	0
 0x7b7b90	0	0	-	0	0	0	0	0	1
 0x977b20	772	481	.data1:33,.xtls:739	1	0	0	5	0	0
+0xb99450	9	8	.xtls:9	0	0	0	0	0	0
 0xc01c30	6	4	.xtls:6	0	0	0	0	0	0
 0xc71e80	0	0	-	0	0	0	0	0	1
 0x1600d80	807	188	.data1:286,.xtls:521	3	3	2	0	0	0
@@ -62,6 +63,7 @@ rva	calls	callers	sections	thunks	thunk_calls	thunk_callers	jumps	lea	pointers
 0x4141c00	0	0	-	0	0	0	0	0	1
 0x4145650	2	2	.xtls:2	0	0	0	0	0	0
 0x42b3d70	31254	5031	.data1:605,.xtls:30649	86	24	10	0	1	0
+0x42c0e20	275	231	.data1:13,.xtls:262	2	1	1	4	0	0
 0x45a0350	2	2	.data1:2	0	0	0	0	0	0
 0x45cd9d0	15	7	.data1:4,.xtls:11	0	0	0	0	0	0
 0x465fdc0	0	0	-	0	0	0	0	1	0

@@ -4426,6 +4426,8 @@ pub type Game_CareerWizard_StartsInF1_t = unsafe extern "C" fn(
 ) -> bool;
 pub type Game_Career_IsDriverCareerMode_t = unsafe extern "C" fn(championship: *const c_void) -> bool;
 pub type Game_ChallengeCareer_BuildTrackTiles_t = unsafe extern "C" fn(vm: *mut c_void);
+pub type Game_ChampionshipRounds_AddTrack_Thunk_t =
+    unsafe extern "C" fn(comp: *mut c_void, track_desc: *mut c_void);
 pub type Game_Championship_VirtualisePendingSessions_t = unsafe extern "C" fn(self_: *mut c_void) -> u64;
 pub type Game_Check_ReturnToGarageTimeLimit_t = unsafe extern "C" fn(self_: *mut c_void) -> bool;
 pub type Game_ContractTeamSelect_OnEnter_t = unsafe extern "C" fn(state: *mut c_void) -> u64;
@@ -4495,6 +4497,8 @@ pub type Game_F1WRankedComponent_Init_t = unsafe extern "C" fn(
     serviceProvider: *mut c_void,
     componentMap: *mut c_void,
 ) -> c_int;
+pub type Game_F1WorldActivityContainer_HandleCommand_t =
+    unsafe extern "C" fn(container: *mut c_void, message: *mut c_void, data: *mut c_void);
 pub type Game_F1WorldActivityContainer_SelectEntrantList_t =
     unsafe extern "C" fn(container: *mut c_void, entrant_list: *const c_char);
 pub type Game_F1WorldHub_HandleCommand_t =
@@ -4513,6 +4517,10 @@ pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
     serviceProvider: *mut c_void,
     componentMap: *mut c_void,
 ) -> c_int;
+pub type Game_GameModeEntity_SetSetupMode_t =
+    unsafe extern "C" fn(mode_entity: *mut c_void, setup_mode: *mut c_void, flags: c_int);
+pub type Game_GameModes_FindByPredicate_t =
+    unsafe extern "C" fn(modes: *mut c_void, predicate: *mut *mut c_void) -> *mut c_void;
 pub type Game_Game_HandleInterruptEvent_t =
     unsafe extern "C" fn(game: *mut c_void, event: *const c_void) -> u64;
 pub type Game_Game_SetCurrentGameMode_t = unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void);
@@ -4550,6 +4558,8 @@ pub type Game_Load_TrackDatabaseFull_t = unsafe extern "C" fn(
     a4: *mut c_void,
     a5: *mut c_void,
 );
+pub type Game_MessageBus_PostEntrantChangeEnd_t =
+    unsafe extern "C" fn(bus: *mut c_void, message: *mut c_void);
 pub type Game_Mfd_FuelMixUp_t = unsafe extern "C" fn(mfd_car_settings_vm: *mut c_void) -> c_int;
 pub type Game_MusicOptions_CreateOption_t =
     unsafe extern "C" fn(mgr: *mut c_void, optionId: u64) -> *mut c_void;
@@ -9176,6 +9186,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_ChampionshipRounds_AddTrack_Thunk: Binding = Binding {
+        id: "Game_ChampionshipRounds_AddTrack_Thunk",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Championship_AddSessionDefaultLength: Binding = Binding {
         id: "Game_Championship_AddSessionDefaultLength",
         kind: "func",
@@ -9963,6 +9978,11 @@ pub mod bindings {
     };
     pub const Game_F1WorldActivityContainer_GoHome: Binding = Binding {
         id: "Game_F1WorldActivityContainer_GoHome",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_F1WorldActivityContainer_HandleCommand: Binding = Binding {
+        id: "Game_F1WorldActivityContainer_HandleCommand",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10916,8 +10936,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_GameModeEntity_SetSetupMode: Binding = Binding {
+        id: "Game_GameModeEntity_SetSetupMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_GameModes_BuildMode: Binding = Binding {
         id: "Game_GameModes_BuildMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GameModes_FindByPredicate: Binding = Binding {
+        id: "Game_GameModes_FindByPredicate",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11453,6 +11483,11 @@ pub mod bindings {
     };
     pub const Game_MatchingContext_SetupRankedGameSession: Binding = Binding {
         id: "Game_MatchingContext_SetupRankedGameSession",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_MessageBus_PostEntrantChangeEnd: Binding = Binding {
+        id: "Game_MessageBus_PostEntrantChangeEnd",
         kind: "func",
         status: Status::Experimental,
     };
@@ -21003,6 +21038,11 @@ pub mod bindings {
     };
     pub const Vm_MyTeamWorkforce_Bind: Binding = Binding {
         id: "Vm_MyTeamWorkforce_Bind",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Vm_NodeSet_Bool: Binding = Binding {
+        id: "Vm_NodeSet_Bool",
         kind: "func",
         status: Status::Experimental,
     };

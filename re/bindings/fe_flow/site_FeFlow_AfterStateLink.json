@@ -40,7 +40,18 @@
   "made_on_target": "0x144427248",
   "twin": "made on steam-26566308; the target 0x144427248 is KB 0x144424c78: site_FeFlow_SetStateStatus (0x4425763) and Ne_FlowStateInterruptManager_ConsumeInterrupt (0x4428b00) on either side both sit 0x25d0 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "site_FeFlow_AfterStateLink",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x144424c57-0x144424c88 and FeFlow_State_OnStateUpdate_Wrapper 0x1436af6e0-0x1436af749;xref:0x144424c75",
+   "notes": "V100076 Blind re-derivation on d873a1c8. The site is right: in the flow state machine update 0x144423ce0, when state+0xb8 == 2 it calls the state's vt+0x20 (FeFlow_State_OnStateUpdate_Wrapper, which runs +0x58 and then OnUpdate +0x48 with rdx = &link) at 0x144424c75 with rdx = rsp+0x40, and 0x144424c78 loads that link for the compare with g_Game_FlowLinkStay; rdi = the state. The expect bytes do not hold here: 8B 44 24 40 39 05 2E D0 88 02 carries the 26566308 disp32 of the g_Game_FlowLinkStay compare, this build has 8B 44 24 40 39 05 FE D5 88 02, so the KB set fails the expect check. Fix: expect only the load, 8B 44 24 40."
+  }
+ ],
  "proofs": [
   {
    "by": "Moorzii",

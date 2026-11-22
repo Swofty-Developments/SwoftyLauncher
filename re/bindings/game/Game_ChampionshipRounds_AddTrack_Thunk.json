@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "name": "Game_ChampionshipRounds_AddTrack_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b99450",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_ChampionshipRounds_AddTrack_Thunk(void *comp, void *track_desc)",
+  "evidence": "decomp:re/decomp/140b99450.c;decomp:re/decomp/1497c8dd0.c;xref:0x141127406,0x1412062a8,0x1412072bb,0x141bebd36,0x141de8f48,0x1424b2f26,0x14258c286,0x14258c606,0x142c2a665",
+  "notes": "was Game_ChampionshipRounds_AddTrack (renamed 2026-11-14 to the thunk rule; only functions.tsv used it). 5-byte jmp to body=0x1497c8dd0 Game_ChampionshipRounds_AddTrack_Body. callers: census steam 0xb99450, among them the GP track select commit (0x141c068f0 callback 0x141c09900) and the dev session. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.championship_rounds_add_track_thunk",
+  "section": ".xtls",
+  "pattern": "48 8B 50 18 E8 ?? ?? ?? ?? 48 89 F1",
+  "match": "0x1412072b7",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4"
+  },
+  "target": "0x140b99450",
+  "kind": "call",
+  "names": [
+   "Game_ChampionshipRounds_AddTrack_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-23",
+    "by": "re-bindings-ir",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x140b99450",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140b99450;xref:0x141127406,0x1412062a8,0x1412072bb,0x141bebd36,0x141de8f48,0x1424b2f26,0x14258c286,0x14258c606,0x142c2a665",
+   "notes": "V10378 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Body is the single insn jmp 0x1497c8dd0 (5 bytes). My rel32 scan finds exactly these 9 call sites (plus one non-instruction hit at 0x14b304a67). Thunk name/rename supported."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1412072b7",
+    "target": "0x140b99450"
+   },
+   "sigcheck": "passed",
+   "digest": "a80c7eb241570e8427fc3c1132e5811268a6b8f480db6c4bf95b98936fba07df"
+  },
+  {
+   "by": "re-bindings-ir",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1412078f7",
+    "target": "0x140b99430"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "aacabee141266e9b3c77ab93c75eeb0cc061cfc6101171e2a426e7edcdb8ec51"
+  }
+ ]
+}
