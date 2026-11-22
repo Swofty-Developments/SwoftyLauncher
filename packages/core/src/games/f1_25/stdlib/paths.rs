@@ -168,6 +168,10 @@ const SCHEMAS: &[(&str, &str)] = &[
         include_str!("../../../../../sdk/std/registries/track.venue/1.0.json"),
     ),
     (
+        "ui.per_package",
+        include_str!("../../../../../sdk/std/registries/ui.per_package/1.0.json"),
+    ),
+    (
         "vehicle",
         include_str!("../../../../../sdk/std/registries/vehicle/1.1.json"),
     ),
@@ -413,6 +417,8 @@ mod tests {
               "helmet": { "hamilton_2017": { "archive": "helmets/hamilton_2017.erp", "colours": null } },
               "driver.head": { "senna": { "archive": "heads/senna/", "rig_from": "game/male_ls222" } },
               "team.garage": { "renault_2020": { "package": "swofty.classic-seasons-2020/f1_2020", "entry": "lotus", "textures": "garage/renault_2020" } },
+              "ui.per_package": { "f1_1950_ui": { "package": "mod.s/f1_1950", "textures": { "erp": "ui/f1_1950.erp", "resources": ["eaid://x"] },
+                                                  "archives": ["2025_asset_groups/ui_package/flow_race.erp"] } },
               "someone.own": { "x": { "file": "not/a/schema/path.bin" } },
               "career.season": { "y": { "name": "sounds/v10_screamer.bdl" } }
             }"#,
@@ -428,7 +434,8 @@ mod tests {
                 "heads/senna/",
                 "helmets/hamilton_2017.erp",
                 "logos/williams_hud.png",
-                "sounds/v10_screamer.bdl"
+                "sounds/v10_screamer.bdl",
+                "ui/f1_1950.erp"
             ]
         );
     }

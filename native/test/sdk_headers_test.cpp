@@ -556,6 +556,14 @@ static void schemas()
     CHECK(swofty::to_json(garage_rec).find("\"root\":\"eaid://environment_package/core_assets/objects/textures/\"") !=
               std::string::npos &&
           garage_rec.srgb);
+    std::string box_ui = content::package_ui.schema();
+    CHECK(box_ui.find("\"x-registry\":\"ui.per_package\"") != std::string::npos &&
+          box_ui.find("\"x-applies\":\"content\"") != std::string::npos);
+    CHECK(box_ui.find("\"x-ref\":\"content.package\"") != std::string::npos &&
+          content::package_ui.at_major() == "ui.per_package@1");
+    content::PackageUi ui_rec;
+    CHECK(swofty::to_json(ui_rec).find("\"root\":\"eaid://ui_package/art/\"") != std::string::npos && ui_rec.srgb &&
+          ui_rec.archives.empty());
     std::string tree = career::rnd_trees.schema();
     CHECK(tree.find("\"x-applies\":\"boot\"") != std::string::npos && tree.find("\"x-key\":[\"label\"]") != std::string::npos);
     CHECK(tree.find("\"enum\":[\"aerodynamics\",\"chassis\",\"durability\",\"engine\"]") != std::string::npos);

@@ -78,8 +78,26 @@ struct EraBox {
 };
 SWOFTY_RECORD(EraBox, package, title, image, order, time_trial, only)
 
+// One box's own UI textures (ui.per_package 1.0, experimental): textures named like stock ui_package resources (a
+// folder of .dds / .png files below root, or resources of an archive in the addon). While the box is the pressed one,
+// the core routes each listed ui_package archive to its own copy with those resources swapped in; leaving the box
+// puts the game's archives back. Archives the game keeps loaded from boot (persistent.erp, flow_persistent.erp,
+// fonts) are refused: the game never opens them again, so a copy would not be read.
+struct PackageUi {
+    static constexpr Version version{1, 0};
+    Ref<Package> package;
+    Path textures;
+    std::string root = "eaid://ui_package/art/";
+    bool srgb = true;
+    std::vector<std::string> archives;
+    json::Value extra;
+};
+SWOFTY_RECORD(PackageUi, package, textures, root, srgb, archives)
+SWOFTY_RECORD_REGISTRY(PackageUi, "ui.per_package")
+
 inline Registry<Package> packages{"content.package", {.applies = Applies::content}};
 inline Registry<EraBox> era_boxes{"era.box", {.applies = Applies::read}};
+inline Registry<PackageUi> package_ui{"ui.per_package", {.applies = Applies::content}};
 
 }
 

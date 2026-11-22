@@ -576,6 +576,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Liveries", link: "/std/systems/liveries", icon: "file" },
               { text: "Teams", link: "/std/systems/teams", icon: "file" },
               { text: "Garage art", link: "/std/systems/garage", icon: "file" },
+              { text: "Box UI textures", link: "/std/systems/box-ui", icon: "file" },
               { text: "Drivers", link: "/std/systems/drivers", icon: "file" },
               { text: "Helmets, suits and gloves", link: "/std/systems/wearables", icon: "file" },
               { text: "Sounds", link: "/std/systems/sounds", icon: "file" },

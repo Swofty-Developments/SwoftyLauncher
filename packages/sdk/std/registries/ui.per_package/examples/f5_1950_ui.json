@@ -1,0 +1,14 @@
+{
+  "ui.per_package": {
+    "f5_1950_ui": {
+      "package": "vmknolle.season-1950/f5_1950",
+      "textures": "ui/f5_1950",
+      "archives": [
+        "2025_asset_groups/ui_package/flow_race.erp",
+        "2025_asset_groups/ui_package/screens/broadcast_persistent.erp",
+        "2025_asset_groups/ui_package/flow_race_intro.erp",
+        "2025_asset_groups/ui_package/screens/broadcast_intros.erp"
+      ]
+    }
+  }
+}

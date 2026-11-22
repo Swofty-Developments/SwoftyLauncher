@@ -253,6 +253,7 @@ CONTENT = [
     Program('logo_cache_test', [Objects(['test/content/logo_cache_test.cpp'], CONTENT_FLAGS)]),
     Program('logo_build_test', [Objects(['test/content/logo_build_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off', '-Ithird_party/zstd']), ZSTD]),
     Program('garage_test', [Objects(['test/content/garage_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off', '-Ithird_party/zstd']), ZSTD]),
+    Program('box_ui_test', [Objects(['test/content/box_ui_test.cpp'], CONTENT_FLAGS + ['-ffp-contract=off', '-Ithird_party/zstd', SDK]), ZSTD]),
     Program('logo_deliver_test', [Objects(['test/content/logo_deliver_test.cpp'],
                                           CONTENT_FLAGS + ['-ffp-contract=off', '-Ithird_party/zstd', SDK]), ZSTD]),
     Program('bc7_test.windows.o', [Objects(['test/content/bc7_test.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra',

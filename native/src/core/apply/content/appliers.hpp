@@ -15,6 +15,8 @@
 namespace swofty_core::apply::content {
 
 void register_appliers();
+// ui.per_package (box_ui.cpp): the box's own UI textures, routed while the box is pressed.
+void register_box_ui();
 // Starts the boot expansion ahead on a worker once the database load is hooked; SWOFTY_BOOT_AHEAD=0 turns it off.
 void start_boot_ahead();
 void undress_teams(const char *why);

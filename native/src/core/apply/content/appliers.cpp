@@ -1188,6 +1188,7 @@ void register_appliers()
         make<Boxes>();
         make<Constructors>();
         make<Logos>();
+        register_box_ui();
         tracks::register_appliers();
         tracks::register_box_appliers();
         set_up_dresser();
