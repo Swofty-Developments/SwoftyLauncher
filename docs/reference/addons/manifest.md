@@ -366,6 +366,26 @@ Each row shows the option's label and its current value. Launchers up to 1.5.26 
 
 Development switches in the game's environment: `SWOFTY_MFD_TEST=open` opens the ADDONS page every `SWOFTY_MFD_TEST_EVERY` seconds (6 by default) through the game's own MFD open call, and `SWOFTY_MFD_TEST=next` also steps the first row's option each time, which saves the value as a change in ADDON SETTINGS does. `SWOFTY_MFD_TEST_PANEL` opens another page of the main group by name, such as `car_settings_panel`. The launcher builds the page into the game's UI files when the addon is on; the core updates a row whenever the option changes. Rows from every addon with `hud.mfd` share the one page, at most 8 in all, in load order. Changing a value from the MFD is not built yet: players change the options in ADDON SETTINGS or on the **Addons** page.
 
+### hud.pit_rows
+
+`hud.pit_rows` adds rows to the race MFD's pit page, below the game's front wing repair row.
+
+```json
+"hud": {
+  "pit_rows": [
+    { "id": "serve_penalty", "label": "SERVE PENALTY" }
+  ]
+}
+```
+
+| Field | Type | Value |
+|---|---|---|
+| `pit_rows` | array | 1 or 2 rows. |
+| `pit_rows[].id` | string | 1 to 32 of `a-z`, `0-9` and `_`, unique in the addon. Your native code names the row by it. |
+| `pit_rows[].label` | string | 1 to 24 characters, shown as written. The game's own rows are in capitals. |
+
+Each row shows NO or YES and starts on NO. Your addon reads and drives it through the core API `swofty::hud::pit_rows`, described in the [std HUD reference](/reference/std/hud). The page holds 2 addon rows in all: the rows of the addons that are on, in load order, and the rows past the second are left out. Launchers before 1.10.25 reject `hud.pit_rows`.
+
 ## operations
 
 `operations` lists your data edits and code. The build applies them to the game's files, or the game applies them in memory while it boots. [Operations](/reference/data/operations) explains what each one changes. Write source paths relative to your addon folder, using `/`, and target paths relative to the game folder.
