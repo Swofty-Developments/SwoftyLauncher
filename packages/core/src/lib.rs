@@ -48,6 +48,9 @@ pub enum Error {
     Map(String),
     #[error("{0}")]
     Resolve(String),
+    /// Two addons on in a profile where one declares a conflict with the other, by their names.
+    #[error("{addon} conflicts with {other}. Turn one of them off on the Addons page")]
+    AddonConflict { addon: String, other: String },
     #[error("{erp}: {resource}: not found")]
     ResourceMissing { erp: String, resource: String },
     #[error("{}", leftovers(.0))]

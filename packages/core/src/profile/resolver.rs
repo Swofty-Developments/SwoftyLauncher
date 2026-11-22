@@ -173,8 +173,8 @@ pub fn resolve(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -
             }
         }
         for c in m.conflicts.iter().filter(|c| c.touches.is_none()) {
-            if let Some(other) = addons.keys().find(|o| **o != m.id && glob_match(&c.id, o)) {
-                return Err(Error::Resolve(format!("{} conflicts with {other}", m.id)));
+            if let Some(other) = addons.values().find(|o| o.id != m.id && glob_match(&c.id, &o.id)) {
+                return Err(conflict(m, other));
             }
         }
         if m.conflicts.iter().any(|c| c.touches.is_some()) {
@@ -309,6 +309,19 @@ pub fn launcher_refusal(m: &AddonManifest, launcher: &semver::Version) -> Option
         "{} needs Swofty Launcher {req}; this is {launcher}. Update the launcher, or turn the addon off",
         m.id
     ))
+}
+
+/// The conflict between two addons that are on, by their names; two addons with the same name also show
+/// their ids.
+fn conflict(addon: &AddonManifest, other: &AddonManifest) -> Error {
+    let label = |m: &AddonManifest| match addon.name == other.name {
+        true => format!("{} ({})", m.name, m.id),
+        false => m.name.clone(),
+    };
+    Error::AddonConflict {
+        addon: label(addon),
+        other: label(other),
+    }
 }
 
 fn check_launcher<'a>(
@@ -491,6 +504,55 @@ mod tests {
             ),
             "{err}"
         );
+    }
+
+    #[test]
+    fn a_conflict_names_both_addons_and_the_fix() {
+        let named = |id: &str, name: &str, extra: &str| {
+            let (_, mut a) = m(id, extra);
+            a.name = name.into();
+            (id.to_owned(), a)
+        };
+        let installed = BTreeMap::from([
+            m(CORE_ID, ""),
+            named(
+                "william09leo.heavier-damage-realism",
+                "Heavier Damage + 2026 Realism Performance",
+                r#","conflicts":[{"id":"formula-nascar.*"}]"#,
+            ),
+            named("formula-nascar.handling", "Formula NASCAR", ""),
+        ]);
+        let both = profile(&["william09leo.heavier-damage-realism", "formula-nascar.handling"]);
+        let err = resolve(&both, &installed).unwrap_err();
+        assert!(
+            matches!(&err, Error::AddonConflict { addon, other }
+                if addon == "Heavier Damage + 2026 Realism Performance" && other == "Formula NASCAR"),
+            "{err:?}"
+        );
+        assert_eq!(
+            err.to_string(),
+            "Heavier Damage + 2026 Realism Performance conflicts with Formula NASCAR. Turn one of them off on \
+             the Addons page"
+        );
+        assert!(resolve(&profile(&["william09leo.heavier-damage-realism"]), &installed).is_ok());
+
+        let twins = BTreeMap::from([
+            m(CORE_ID, ""),
+            named("a.rain", "Rain", r#","conflicts":[{"id":"b.rain"}]"#),
+            named("b.rain", "Rain", ""),
+        ]);
+        assert_eq!(
+            resolve(&profile(&["a.rain", "b.rain"]), &twins)
+                .unwrap_err()
+                .to_string(),
+            "Rain (a.rain) conflicts with Rain (b.rain). Turn one of them off on the Addons page"
+        );
+        let touching = BTreeMap::from([
+            m(CORE_ID, ""),
+            named("a.x", "X", r#","conflicts":[{"id":"b.y","touches":"db:a.b"}]"#),
+            named("b.y", "Y", ""),
+        ]);
+        assert!(resolve(&profile(&["a.x", "b.y"]), &touching).is_ok());
     }
 
     #[test]
