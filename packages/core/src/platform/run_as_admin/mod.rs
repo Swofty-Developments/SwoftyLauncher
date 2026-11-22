@@ -14,6 +14,7 @@ mod compat;
 mod ea;
 mod elevation;
 mod tools;
+mod unelevated;
 mod write_access;
 
 pub use compat::{

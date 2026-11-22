@@ -10,7 +10,7 @@ const LOGOS_LOG: &str = "\
 
 #[test]
 fn logos_the_game_could_not_write_name_the_folder_and_the_error() {
-    let d = unbuilt_logos(&ev(LOGOS_LOG, &[])).expect("the logo line is recognised");
+    let d = unbuilt_logos(&ev(LOGOS_LOG, &[]), || false, "").expect("the logo line is recognised");
     assert_eq!(d.id, "logos_not_built");
     assert!(
         d.what
@@ -26,6 +26,27 @@ fn logos_the_game_could_not_write_name_the_folder_and_the_error() {
 }
 
 #[test]
+fn a_launcher_that_already_runs_as_administrator_says_to_move_the_game() {
+    let hint = " with EA app > F1 25 > Manage > Move, not File Explorer";
+    let d = unbuilt_logos(&ev(LOGOS_LOG, &[]), || true, hint).expect("the logo line is recognised");
+    assert_eq!(d.id, "logos_not_built");
+    assert!(
+        !d.steps[0].contains("run Swofty Launcher as administrator"),
+        "{:?}",
+        d.steps
+    );
+    assert!(
+        d.steps[0].starts_with("Swofty Launcher already runs as administrator")
+            && d.steps[0].ends_with(
+                "Move F1 25 to a folder outside Program Files with EA app > F1 25 > Manage > Move, not File \
+                 Explorer, then press Play."
+            ),
+        "{}",
+        d.steps[0]
+    );
+}
+
+#[test]
 fn built_or_cached_logos_are_not_a_problem() {
     for log in [
         "2026-11-17 19:04:28.928 [1] [apply] team.logo: 713 slice(s) built into 34 archive(s) in 8183 ms\n",
@@ -33,6 +54,9 @@ fn built_or_cached_logos_are_not_a_problem() {
         "2026-11-17 19:04:28.928 [1] [apply] team.logo: 2025_asset_groups/ui_package/flow_race.erp could not be rewritten\n",
         "",
     ] {
-        assert!(unbuilt_logos(&ev(log, &[])).is_none(), "{log}");
+        assert!(
+            unbuilt_logos(&ev(log, &[]), || panic!("elevation is read only for a match"), "").is_none(),
+            "{log}"
+        );
     }
 }

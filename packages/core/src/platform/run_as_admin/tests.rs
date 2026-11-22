@@ -448,31 +448,53 @@ fn a_run_as_admin_failure_round_trips() {
     );
 }
 
-#[test]
-fn opens_every_core_cache_and_names_the_one_that_stays_closed() {
-    let game = std::env::temp_dir().join(format!("swofty-core-caches-{}", std::process::id()));
+fn cache_game(tag: &str) -> PathBuf {
+    let game = std::env::temp_dir().join(format!("swofty-core-caches-{tag}-{}", std::process::id()));
     std::fs::remove_dir_all(&game).ok();
+    std::fs::create_dir_all(&game).unwrap();
+    game
+}
+
+#[test]
+fn opens_every_core_cache_the_unelevated_game_cannot_create_files_in() {
+    let game = cache_game("closed");
     let granted = std::cell::RefCell::new(Vec::new());
-    let lines = open_core_caches_with(&game, |dir| {
-        granted.borrow_mut().push(dir.to_path_buf());
-        Ok(())
-    });
-    assert!(lines.is_empty(), "{lines:?}");
+    let lines = open_core_caches_with(
+        &game,
+        |_| Ok(false),
+        || true,
+        |dir| {
+            granted.borrow_mut().push(dir.to_path_buf());
+            Ok(())
+        },
+    );
     let made: Vec<PathBuf> = CORE_CACHES.iter().map(|rel| core_cache_dir(&game, rel)).collect();
     assert_eq!(*granted.borrow(), made);
     assert!(made.iter().all(|d| d.is_dir()));
     assert!(made.contains(&game.join("swofty").join("addons").join("swofty.logos")));
-
-    let lines = open_core_caches_with(&game, |dir| {
-        if dir.ends_with("swofty.logos") {
-            Err("Access is denied.".to_owned())
-        } else {
-            Ok(())
-        }
-    });
-    assert_eq!(lines.len(), 1, "{lines:?}");
+    assert_eq!(lines.len(), CORE_CACHES.len(), "{lines:?}");
     assert!(
-        lines[0].contains("swofty/addons/swofty.logos") && lines[0].ends_with(": Access is denied."),
+        lines[0].starts_with("core caches: gave the Users group Modify on swofty/addons/swofty.logos"),
+        "{}",
+        lines[0]
+    );
+
+    let lines = open_core_caches_with(
+        &game,
+        |_| Ok(false),
+        || true,
+        |dir| {
+            if dir.ends_with("swofty.logos") {
+                Err("Access is denied.".to_owned())
+            } else {
+                Ok(())
+            }
+        },
+    );
+    assert_eq!(lines.len(), 2, "{lines:?}");
+    assert!(
+        lines[0].contains("can't create files in swofty/addons/swofty.logos")
+            && lines[0].ends_with(": Access is denied."),
         "{}",
         lines[0]
     );
@@ -480,54 +502,109 @@ fn opens_every_core_cache_and_names_the_one_that_stays_closed() {
 }
 
 #[test]
-fn a_core_cache_that_cannot_be_made_is_named() {
-    let game = std::env::temp_dir().join(format!("swofty-core-caches-file-{}", std::process::id()));
-    std::fs::remove_dir_all(&game).ok();
-    std::fs::create_dir_all(&game).unwrap();
-    std::fs::write(game.join("swofty"), b"a file where the folder goes").unwrap();
-    let lines = open_core_caches_with(&game, |_| Ok(()));
-    assert_eq!(lines.len(), CORE_CACHES.len(), "{lines:?}");
-    assert!(lines.iter().all(|l| l.starts_with("core caches: ")));
-    std::fs::remove_dir_all(&game).ok();
-}
-
-#[test]
-fn a_game_folder_outside_program_files_keeps_its_caches_as_they_are() {
-    let game = std::env::temp_dir().join(format!("swofty-core-caches-off-{}", std::process::id()));
-    std::fs::remove_dir_all(&game).ok();
-    std::fs::create_dir_all(&game).unwrap();
-    assert!(open_core_caches(&game).is_empty());
+fn a_game_folder_the_unelevated_game_can_create_files_in_keeps_its_caches_as_they_are() {
+    let game = cache_game("open");
+    let probed = std::cell::RefCell::new(Vec::new());
+    let asked = std::cell::Cell::new(false);
+    let lines = open_core_caches_with(
+        &game,
+        |dir| {
+            probed.borrow_mut().push(dir.to_path_buf());
+            Ok(true)
+        },
+        || {
+            asked.set(true);
+            true
+        },
+        |dir| panic!("{} was opened", dir.display()),
+    );
+    assert!(lines.is_empty(), "{lines:?}");
+    assert!(
+        !asked.get(),
+        "a folder the game can change needs no administrator check"
+    );
+    assert_eq!(*probed.borrow(), vec![game.clone(); CORE_CACHES.len()]);
     assert!(!game.join("swofty").exists());
     std::fs::remove_dir_all(&game).ok();
 }
 
 #[test]
-fn tells_a_folder_in_program_files_from_one_beside_it() {
-    let roots = [
-        PathBuf::from(r"C:\Program Files"),
-        PathBuf::from(r"C:\Program Files (x86)\"),
-    ];
-    for inside in [
-        r"C:\Program Files\EA Games\F1 25",
-        r"c:\program files\EA Games\F1 25\",
-        r"C:/Program Files (x86)/Steam/steamapps/common/F1 25",
-        r"C:\Program Files",
-    ] {
-        assert!(in_program_files(Path::new(inside), &roots), "{inside}");
-    }
-    for outside in [
-        r"C:\Program Files Games\F1 25",
-        r"D:\Program Files\EA Games\F1 25",
-        r"D:\SteamLibrary\steamapps\common\F1 25",
-        r"C:\Program",
-    ] {
-        assert!(!in_program_files(Path::new(outside), &roots), "{outside}");
-    }
-    assert!(!in_program_files(Path::new(r"C:\Program Files\EA Games"), &[]));
-    assert!(!in_program_files(
-        Path::new(r"C:\Program Files\EA Games"),
-        &[PathBuf::new()]
-    ));
+fn only_the_cache_the_unelevated_game_cannot_create_files_in_is_opened() {
+    let game = cache_game("one");
+    std::fs::create_dir_all(core_cache_dir(&game, "swofty/addons/swofty.garage")).unwrap();
+    let probed = std::cell::RefCell::new(Vec::new());
+    let granted = std::cell::RefCell::new(Vec::new());
+    let lines = open_core_caches_with(
+        &game,
+        |dir| {
+            probed.borrow_mut().push(dir.to_path_buf());
+            Ok(dir.ends_with("swofty.garage"))
+        },
+        || true,
+        |dir| {
+            granted.borrow_mut().push(dir.to_path_buf());
+            Ok(())
+        },
+    );
+    assert_eq!(
+        *probed.borrow(),
+        [
+            game.join("swofty").join("addons"),
+            game.join("swofty").join("addons").join("swofty.garage")
+        ]
+    );
+    assert_eq!(
+        *granted.borrow(),
+        [core_cache_dir(&game, "swofty/addons/swofty.logos")]
+    );
+    assert_eq!(lines.len(), 1, "{lines:?}");
+    std::fs::remove_dir_all(&game).ok();
+}
+
+#[test]
+fn a_cache_whose_access_cannot_be_read_is_opened() {
+    let game = cache_game("unread");
+    let granted = std::cell::RefCell::new(0);
+    let lines = open_core_caches_with(
+        &game,
+        |_| Err("GetFileSecurityW: The request is not supported.".to_owned()),
+        || true,
+        |_| {
+            *granted.borrow_mut() += 1;
+            Ok(())
+        },
+    );
+    assert_eq!(*granted.borrow(), CORE_CACHES.len());
+    assert_eq!(lines.len(), CORE_CACHES.len(), "{lines:?}");
+    std::fs::remove_dir_all(&game).ok();
+}
+
+#[test]
+fn a_closed_cache_stays_as_it_is_without_administrator_rights() {
+    let game = cache_game("unelevated");
+    let lines = open_core_caches_with(
+        &game,
+        |_| Ok(false),
+        || false,
+        |dir| panic!("{} was opened", dir.display()),
+    );
+    assert!(lines.is_empty(), "{lines:?}");
+    assert!(!game.join("swofty").exists());
+    std::fs::remove_dir_all(&game).ok();
+}
+
+#[test]
+fn a_core_cache_that_cannot_be_made_is_named() {
+    let game = cache_game("file");
+    std::fs::write(game.join("swofty"), b"a file where the folder goes").unwrap();
+    let lines = open_core_caches_with(&game, |_| Ok(false), || true, |_| Ok(()));
+    assert_eq!(lines.len(), CORE_CACHES.len(), "{lines:?}");
+    assert!(
+        lines
+            .iter()
+            .all(|l| l.starts_with("core caches: ") && l.contains("can't create files in"))
+    );
+    std::fs::remove_dir_all(&game).ok();
 }
 
 #[cfg(windows)]
@@ -567,4 +644,79 @@ fn the_grant_gives_the_users_group_modify_on_the_folder_and_every_file_in_it() {
         assert!(acl.contains("(A;ID;0x1301bf;;;BU)"), "{}: {acl}", file.display());
     }
     std::fs::remove_dir_all(&dir).ok();
+}
+
+/// Gives only the Administrators group access to `dir`, as Program Files
+/// gives writes, with nothing inherited.
+#[cfg(windows)]
+fn administrators_only(dir: &Path) {
+    windows_tool_within(
+        "icacls",
+        &[
+            dir.to_str().unwrap(),
+            "/inheritance:r",
+            "/grant:r",
+            "*S-1-5-32-544:(OI)(CI)F",
+            "/Q",
+        ],
+        std::time::Duration::from_secs(30),
+    )
+    .unwrap();
+}
+
+#[cfg(windows)]
+#[test]
+fn the_unelevated_game_cannot_create_files_in_a_folder_only_administrators_can_change() {
+    let dir = std::env::temp_dir().join(format!("swofty-unelevated-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    std::fs::create_dir_all(&dir).unwrap();
+    administrators_only(&dir);
+    assert_eq!(
+        super::unelevated::can_create_in(&dir),
+        Ok(false),
+        "{}",
+        saved_acl(&dir)
+    );
+    if elevated() {
+        assert!(can_create_in(&dir), "the administrator copy itself can");
+    }
+    grant_users_modify(&dir).unwrap();
+    assert_eq!(
+        super::unelevated::can_create_in(&dir),
+        Ok(true),
+        "{}",
+        saved_acl(&dir)
+    );
+    assert!(super::unelevated::can_create_in(&dir.join("missing")).is_err());
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[cfg(windows)]
+#[test]
+fn an_elevated_launcher_opens_the_caches_of_a_game_folder_only_administrators_can_change() {
+    if !elevated() {
+        eprintln!("skipped: this test needs administrator rights");
+        return;
+    }
+    let game = std::env::temp_dir().join(format!("swofty-core-caches-admin-{}", std::process::id()));
+    std::fs::remove_dir_all(&game).ok();
+    std::fs::create_dir_all(&game).unwrap();
+    administrators_only(&game);
+    let lines = open_core_caches(&game);
+    assert_eq!(lines.len(), CORE_CACHES.len(), "{lines:?}");
+    assert!(
+        lines.iter().all(|l| l.starts_with("core caches: gave")),
+        "{lines:?}"
+    );
+    for rel in CORE_CACHES {
+        let dir = core_cache_dir(&game, rel);
+        assert_eq!(
+            super::unelevated::can_create_in(&dir),
+            Ok(true),
+            "{}",
+            saved_acl(&dir)
+        );
+    }
+    assert!(open_core_caches(&game).is_empty());
+    std::fs::remove_dir_all(&game).ok();
 }

@@ -114,7 +114,14 @@ pub fn tyres(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Opt
 /// Why `session`, which ended without a crash, ran without its addons' team
 /// logos, when its log says the game could not write them.
 pub fn logos(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
-    unbuilt_logos(&evidence(session, game, store))
+    let move_hint = game.map_or("", |g| {
+        crate::game_folder::copies::move_hint(crate::install::Source::detect(g))
+    });
+    unbuilt_logos(
+        &evidence(session, game, store),
+        crate::platform::run_as_admin::elevated,
+        move_hint,
+    )
 }
 
 /// Why `session`, which ended without a crash, could not save the profile,

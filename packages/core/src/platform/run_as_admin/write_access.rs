@@ -103,44 +103,22 @@ pub const CORE_CACHES: &[&str] = &["swofty/addons/swofty.logos", "swofty/addons/
 const USERS_MODIFY: &str = "*S-1-5-32-545:(OI)(CI)M";
 
 /// Makes each of [`CORE_CACHES`] in `game` one F1 25 can create files in,
-/// when `game` is under Program Files and this process runs as
-/// administrator. F1 25 started by the EA app runs without administrator
-/// rights even then, and a folder the administrator copy makes under Program
-/// Files lets it only read. Returns a line for each folder that stays closed
-/// to the game.
+/// when F1 25 run without administrator rights can't and this process runs
+/// as administrator. F1 25 started by the EA app runs without administrator
+/// rights even then, and a folder the administrator copy makes in a game
+/// folder only administrators can change, such as one under Program Files on
+/// any drive, lets it only read. Returns a line for each folder it opens and
+/// each that stays closed to the game.
 pub fn open_core_caches(game: &Path) -> Vec<String> {
-    if !cfg!(windows) || !in_program_files(game, &program_files_roots()) || !elevated() {
+    if !cfg!(windows) {
         return Vec::new();
     }
-    open_core_caches_with(game, grant_users_modify)
-}
-
-/// The Program Files folders of this Windows.
-fn program_files_roots() -> Vec<PathBuf> {
-    ["ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"]
-        .iter()
-        .filter_map(std::env::var_os)
-        .map(PathBuf::from)
-        .collect()
-}
-
-/// Whether `dir` is one of `roots` or inside one, compared as Windows does:
-/// without case, either slash.
-pub(super) fn in_program_files(dir: &Path, roots: &[PathBuf]) -> bool {
-    let norm = |p: &Path| {
-        let mut s = p.to_string_lossy().replace('/', "\\").to_lowercase();
-        while s.ends_with('\\') {
-            s.pop();
-        }
-        s
-    };
-    let dir = norm(dir);
-    roots.iter().map(|r| norm(r)).any(|root| {
-        !root.is_empty()
-            && dir
-                .strip_prefix(&root)
-                .is_some_and(|rest| rest.is_empty() || rest.starts_with('\\'))
-    })
+    open_core_caches_with(
+        game,
+        super::unelevated::can_create_in,
+        elevated,
+        grant_users_modify,
+    )
 }
 
 /// The folder `rel`, one of [`CORE_CACHES`], in `game`, with the separator
@@ -150,25 +128,50 @@ pub fn core_cache_dir(game: &Path, rel: &str) -> PathBuf {
         .fold(game.to_path_buf(), |dir, part| dir.join(part))
 }
 
-/// [`open_core_caches`] with the call that opens one folder to the game.
+/// [`open_core_caches`] with the calls that tell whether F1 25 run without
+/// administrator rights can create files in a folder, whether this process
+/// runs as administrator, and that open one folder to the game. A cache
+/// folder that is not there yet counts as open when the game can create
+/// files in the nearest folder above it, and one whose access can't be read
+/// counts as closed.
 pub(crate) fn open_core_caches_with(
     game: &Path,
+    open: impl Fn(&Path) -> std::result::Result<bool, String>,
+    elevated: impl FnOnce() -> bool,
     grant: impl Fn(&Path) -> std::result::Result<(), String>,
 ) -> Vec<String> {
-    CORE_CACHES
+    let closed: Vec<&str> = CORE_CACHES
         .iter()
-        .filter_map(|rel| {
+        .copied()
+        .filter(|rel| {
             let dir = core_cache_dir(game, rel);
-            std::fs::create_dir_all(&dir)
+            let nearest = dir
+                .ancestors()
+                .take_while(|d| d.starts_with(game))
+                .find(|d| d.is_dir())
+                .unwrap_or(game);
+            open(nearest) != Ok(true)
+        })
+        .collect();
+    if closed.is_empty() || !elevated() {
+        return Vec::new();
+    }
+    closed
+        .into_iter()
+        .map(|rel| {
+            let dir = core_cache_dir(game, rel);
+            match std::fs::create_dir_all(&dir)
                 .map_err(|e| e.to_string())
                 .and_then(|()| grant(&dir))
-                .err()
-                .map(|why| {
-                    format!(
-                        "core caches: F1 25 run without administrator rights can't create files in {rel}, \
-                         and the archives the mod loader builds there at boot stay out of the game: {why}"
-                    )
-                })
+            {
+                Ok(()) => format!(
+                    "core caches: gave the Users group Modify on {rel}, for F1 25 run without administrator rights"
+                ),
+                Err(why) => format!(
+                    "core caches: F1 25 run without administrator rights can't create files in {rel}, \
+                     and the archives the mod loader builds there at boot stay out of the game: {why}"
+                ),
+            }
         })
         .collect()
 }
