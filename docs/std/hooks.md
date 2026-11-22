@@ -118,6 +118,8 @@ session.fuel.load                the race fuel lookup                   Progress
 team.logo.resolve                the logo key lookups                   Progressive, Classic Seasons
 ```
 
+`team.logo.resolve` is defined from 1.10.29 on its two menu sites (driver select, team select), with a mid hook on each `Ne_Format_String` call; the HUD, broadcast and hub sites follow. It is not hot yet: it fires each time a menu builds a logo key.
+
 `career.season.process` covers a function at L0 in the KB. It needs reverse engineering to L2 before it ships.
 
 The core installs a game hook point's mixin only once an addon subscribes to it. With no subscriber, the game's code is untouched.

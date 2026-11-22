@@ -117,6 +117,7 @@ inline constexpr Event EVENTS[] = {
     {"hud.spectator.visible", M, "swofty::spectator::events::HudVisible", 1, false, Fired::game, nullptr},
 
     {"audio.bundle.resolve", M, "swofty::sounds::events::BundleResolve", 1, false, Fired::no, nullptr},
+    {"team.logo.resolve", M, "swofty::teams::events::LogoResolve", 1, false, Fired::game, nullptr},
 
     {"speech.line", N, "swofty::speech::events::Line", 1, false, Fired::yes, nullptr},
     {"speech.line.timed", N, "swofty::speech::events::Timed", 1, false, Fired::yes, nullptr},

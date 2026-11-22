@@ -13,6 +13,7 @@
 #include "core/runtime/build.hpp"
 #include "core/career/ops/stats.hpp"
 #include "core/apply/content/teams.hpp"
+#include "core/hooks/hooks.hpp"
 #include "core/registry/table.hpp"
 #include "core/career/ops/track_fuel.hpp"
 #include "core/career/ops/entrants.hpp"
@@ -402,7 +403,11 @@ int api_set_logo(const char *team_id, const char *logo_id)
                     !stock && st.get("team.identity", team_id).status != reg::Status::ok ? "team.identity" : "team.logo");
         return SWOFTY_REFUSED;
     }
-    swofty_core::apply::content::live().logo_override[team_id] = logo_id;
+    {
+        std::lock_guard<std::recursive_mutex> g(swofty_core::apply::content::live_mutex());
+        swofty_core::apply::content::live().logo_override[team_id] = logo_id;
+    }
+    swofty_core::hooks::keep_logo_point();
     swofty::log("[career-ops] set_logo %s -> %s: the team's logo for this session", team_id, logo_id);
     return SWOFTY_ASSET_OK;
 }

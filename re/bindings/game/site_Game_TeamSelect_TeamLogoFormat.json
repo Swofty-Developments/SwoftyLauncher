@@ -35,7 +35,8 @@
    }
   ],
   "used_by": [
-   "addons/progressive/native/src/ui/cards.cpp"
+   "addons/progressive/native/src/ui/cards.cpp",
+   "native/src/core/hooks/game_points.cpp"
   ]
  },
  "verify": [

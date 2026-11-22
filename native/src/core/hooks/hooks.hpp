@@ -27,6 +27,8 @@ Table &core();
 GameOps game_ops();
 void declare_game_points(Table &t);
 void arm_game_points();
+// Keeps team.logo.resolve's sites hooked for a teams::set_logo override (game_points.cpp).
+void keep_logo_point();
 void declare_session_points(Table &t);
 void declare_car_points(Table &t);
 void arm_session_points();

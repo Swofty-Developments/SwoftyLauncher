@@ -334,7 +334,7 @@ career::SeasonTeam slot = { .slot = 7, .team = teams::identities["constructor/to
 
 Each logo record holds one image per context. A context takes a single image of any size: the core scales it to the slice size of every array that context feeds (the team select context feeds two arrays of different sizes). The core builds the texture arrays from every logo record, slice by slice. Classic Seasons, car ports and season packs each change their own teams' slices, and all of them apply.
 
-Progressive changes logos per season through `team.logo.resolve`. The game formats logos every frame on the HUD and in menus. The hook point runs when content becomes active or a session loads, once per team and context. The core builds a table from the results, and the game reads the table each frame.
+Progressive changes logos per season through `team.logo.resolve`. From 1.10.29 the core defines it on the two menu sites that format a team logo key: the Choose Driver details panel (`driver_select`, `site_Game_DriverSelect_TeamLogoFormat`) and the Driver Career team select carousel (`team_select`, `site_Game_TeamSelect_TeamLogoFormat`). The event fires each time the game builds one of them, with the team's row label as `key()`: the label every logo slice is named by, a `team.identity`'s label for its own logos. `set_key` names another label, and the game shows that team's slice. The HUD, broadcast and hub contexts do not fire yet (experimental, in-game check pending). A site an addon already patches stays with that addon.
 
 <template #example>
 <Example root="swofty.progressive" code-file="native/src/logos.cpp" files="swofty.json, logos/williams_2017_driver_select.png">
