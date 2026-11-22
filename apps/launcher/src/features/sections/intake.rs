@@ -139,6 +139,23 @@ pub(super) fn import_all(
                 let Some(importer) = registry.get(&id).and_then(|e| e.addon.importer()) else {
                     continue;
                 };
+                let mut kept = Vec::new();
+                for path in paths {
+                    match import::other_game(&path) {
+                        Some(why) => {
+                            crate::app::app_log::action("import")
+                                .addon(&id)
+                                .file(&path)
+                                .failed(&why);
+                            failed.push(why);
+                        }
+                        None => kept.push(path),
+                    }
+                }
+                if kept.is_empty() {
+                    continue;
+                }
+                let paths = kept;
                 let game = game_files.get_or_insert_with(|| game(store, install));
                 let result = host(store, &id, profile, game.as_ref()).and_then(|h| {
                     importer

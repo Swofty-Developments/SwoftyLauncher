@@ -189,6 +189,9 @@ impl Store {
         if let Some(why) = crate::profile::resolver::launcher_refusal(&m, launcher) {
             return Err(Error::Other(why));
         }
+        if let Some(why) = crate::addons::other_game::install_refusal(src, &m) {
+            return Err(Error::Other(why));
+        }
         crate::game_folder::busy::refuse_change(&self.root, &id, &m.name)?;
         let dest = self.addons_dir().join(&id);
         let fresh = !dest.exists();

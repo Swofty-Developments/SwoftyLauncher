@@ -21,6 +21,8 @@ Anything that already has a `swofty.json` is an addon; install it on the [Addons
 
 The game folders can sit at the top of the mod, up to three folders down, or in a folder named like `F1 25`. The Simplified Importer leaves out `.exe`, `.dll` and `.asi` files and names them in the result. It can't read encrypted archives.
 
+The launcher doesn't import a mod made for another F1 game, such as one with a `2020_asset_groups` folder or an `F1_2020.exe`, that has its own `game.dat` or `game.daf`, the files that hold F1 25's packed game data. The error names the mod's file, the game it's made for and the file it would replace.
+
 Importing the same mod again replaces its addon and keeps its place and switch in every profile.
 
 A mod is compared with the game's clean files, so the Simplified Importer can't import one until the launcher has found F1 25; a track zip needs no game files. A mod that can't be imported or converted is left out, with the reason, such as `Scuderia AlphaTauri ORLEN was not imported. Mods turn into addons once Swofty Launcher finds F1 25.`

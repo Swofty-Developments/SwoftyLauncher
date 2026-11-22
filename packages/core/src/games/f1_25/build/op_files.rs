@@ -3,7 +3,8 @@ use std::path::Path;
 use super::buildhash::BuildHash;
 use crate::addons::builtin::{CORE_ID, CORE_INTRO, stage_intro};
 use crate::addons::settings::{OnAddons, render_ops};
-use crate::asset::{AssetOp, FileKind, OpFile};
+use crate::asset::other_game;
+use crate::asset::{AssetOp, FileKind, FileOp, OpFile};
 use crate::dbedit::driver_manager;
 use crate::erp::unsupported;
 use crate::manifest::AddonManifest;
@@ -104,6 +105,35 @@ pub(super) fn refuse_by<T>(
         }
         None => true,
     });
+}
+
+/// When the `file.put`s in an addon's op `lists` put F1 25's packed game data and the files they put are made for
+/// another F1 game, takes every `file.put` out of them, and gives the warning that names the addon `name`.
+pub(super) fn leave_out_other_game(name: &str, lists: &mut [&mut Vec<AssetOp>]) -> Option<String> {
+    let targets: Vec<String> = lists
+        .iter()
+        .flat_map(|ops| ops.iter())
+        .filter_map(|op| match op {
+            AssetOp::File(FileOp::Put { target, .. }) => Some(target.clone()),
+            _ => None,
+        })
+        .collect();
+    let packed = other_game::packed_in(targets.iter().map(String::as_str));
+    if packed.is_empty() {
+        return None;
+    }
+    let other = other_game::made_for(targets.iter().map(String::as_str))?;
+    for ops in lists.iter_mut() {
+        ops.retain(|op| !matches!(op, AssetOp::File(_)));
+    }
+    Some(format!(
+        "{name} is made for {}, not F1 25 (it has {}), and it replaces {}, F1 25's packed game data, which F1 25 \
+         can't start with replaced; the build left out all {} of its files. Turn {name} off in the profile",
+        other.game,
+        other.sign,
+        packed.join(" and "),
+        targets.len()
+    ))
 }
 
 pub(super) fn unbuilt<'a>(ops: impl IntoIterator<Item = &'a AssetOp>) -> Option<&'static str> {

@@ -393,6 +393,103 @@ fn files_in_an_asset_group_folder_at_the_game_root_are_flagged() {
     std::fs::remove_dir_all(&root).ok();
 }
 
+#[test]
+fn an_addon_never_replaces_game_dat_and_a_mod_for_another_game_is_left_out() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("swofty-build-game-dat-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let dir = root.join("game");
+    std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+    std::fs::create_dir_all(dir.join("2025_asset_groups")).unwrap();
+    std::fs::create_dir_all(dir.join("videos")).unwrap();
+    std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+    std::fs::write(dir.join(GVDB), Gvdb::default().to_bytes()).unwrap();
+    std::fs::write(dir.join("game.dat"), "stock packed data").unwrap();
+    std::fs::write(dir.join("videos/attract.bk2"), "stock video").unwrap();
+    let game = Game {
+        identity: Identity::detect(&dir, Some(1)).unwrap(),
+        dir,
+        user_reg: None,
+    };
+    let store = Store::new(root.join("data"));
+    let put = |target: &str| format!(r#"{{"op":"file.put","source":"f.bin","target":"{target}"}}"#);
+    let own = [put("game.dat"), put("videos/attract.bk2")].join(",");
+    install_ops(
+        &store,
+        &root,
+        "t.own",
+        "Own",
+        &own,
+        &[("f.bin", b"addon".to_vec())],
+    );
+    let other = [
+        put("2020_asset_groups/ui_package/flow_frontend.erp"),
+        put("2020_asset_groups/ui_package/textures/track_maps/sepang.erp"),
+        put("game.dat"),
+        put("videos/f1_sting.bk2"),
+    ]
+    .join(",");
+    let src = root.join("src").join("imported-mod.pastoot");
+    std::fs::create_dir_all(&src).unwrap();
+    std::fs::write(
+        src.join("swofty.json"),
+        r#"{ "schema_version": 1, "id": "imported-mod.pastoot", "name": "Pastoot", "version": "1.0.0", "author": "t",
+             "compat": { "game": "f1_25" }, "operations": { "assets": ["ops.json"] } }"#,
+    )
+    .unwrap();
+    std::fs::write(
+        src.join("ops.json"),
+        format!(r#"{{ "schema_version": 1, "ops": [{other}] }}"#),
+    )
+    .unwrap();
+    std::fs::write(src.join("f.bin"), "2020").unwrap();
+    let refused = store.install_addon(&src).unwrap_err().to_string();
+    assert_eq!(
+        refused,
+        "Pastoot is made for F1 2020, not F1 25 (it has 2020_asset_groups), and it replaces game.dat, F1 25's \
+         packed game data. F1 25 can't start with that replaced, so Pastoot was not installed"
+    );
+    let installed = store.addons_dir().join("imported-mod.pastoot");
+    std::fs::create_dir_all(&installed).unwrap();
+    for file in ["swofty.json", "ops.json", "f.bin"] {
+        std::fs::copy(src.join(file), installed.join(file)).unwrap();
+    }
+    store
+        .update_profile("default", |p| p.set_enabled("imported-mod.pastoot", true))
+        .unwrap();
+    let built = build(&store, "default", &game).unwrap();
+    assert!(!built.plan.data.contains_key("game.dat"), "{:?}", built.plan.data);
+    assert!(
+        built.plan.data.contains_key("videos/attract.bk2"),
+        "{:?}",
+        built.plan.data
+    );
+    assert!(
+        !built
+            .plan
+            .added
+            .keys()
+            .any(|rel| rel.starts_with("2020_asset_groups") || rel == "videos/f1_sting.bk2"),
+        "{:?}",
+        built.plan.added
+    );
+    for line in [
+        "t.own: ops.json: refused file.put game.dat: F1 25 can't start with its game.dat replaced",
+        "Pastoot is made for F1 2020, not F1 25 (it has 2020_asset_groups), and it replaces game.dat, F1 25's \
+         packed game data, which F1 25 can't start with replaced; the build left out all 4 of its files. Turn \
+         Pastoot off in the profile",
+    ] {
+        assert!(
+            built.warnings.iter().any(|w| w == line),
+            "{line}\n{:#?}",
+            built.warnings
+        );
+    }
+    std::fs::remove_dir_all(&root).ok();
+}
+
 fn missing_resource_game(tag: &str) -> (PathBuf, Game, Store, String, String) {
     let root = std::env::temp_dir().join(format!("swofty-build-{tag}-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();

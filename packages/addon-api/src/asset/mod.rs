@@ -9,6 +9,8 @@ use crate::manifest::{Operations, relative_inside};
 use crate::ops::{DbOp, ErpOp, SideData};
 use crate::{Error, Result};
 
+pub mod other_game;
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum Kind {
@@ -106,10 +108,12 @@ pub enum ItemOp {
 }
 
 impl AssetOp {
-    /// Why the op is refused at validation ([`ErpOp::refusal`]).
+    /// Why the op is refused at validation: a refused ERP edit ([`ErpOp::refusal`]), or a `file.put` of F1 25's
+    /// packed game data ([`other_game::refusal`]).
     pub fn refusal(&self) -> Option<String> {
         match self {
             AssetOp::Erp(op) => op.refusal(),
+            AssetOp::File(FileOp::Put { target, .. }) => other_game::refusal(target),
             _ => None,
         }
     }

@@ -3,7 +3,9 @@ use std::collections::BTreeMap;
 use super::Built;
 use super::buildhash::BuildHash;
 use super::hooks::{self, Hooks};
-use super::op_files::{core_intro, package_ops, refuse_by, refuse_placements, render_file, unbuilt};
+use super::op_files::{
+    core_intro, leave_out_other_game, package_ops, refuse_by, refuse_placements, render_file, unbuilt,
+};
 use super::registry::added_tables;
 use super::run::Run;
 use crate::addons::builtin::{CORE_DB, CORE_ID, core_db_ops};
@@ -12,7 +14,7 @@ use crate::addons::settings::when_holds;
 use crate::asset::Features;
 use crate::asset::{AssetOp, FileKind, Op, OpFile, Origin, Root, Source};
 use crate::content::runtime_assets::Runtime;
-use crate::manifest::AddonManifest;
+use crate::manifest::{AddonManifest, MANIFEST_FILE};
 use crate::online::multiplayer::fingerprint::{self, OutputBuilder};
 use crate::planner::Planner;
 use crate::stdlib::manifest::RegistryManifest;
@@ -90,8 +92,8 @@ impl Gather<'_, '_, '_> {
                 ops.files.push((FileKind::Assets, intro));
             }
         }
-        self.op_files(m, &mut ops, gathered)?;
-        let declared: Vec<AssetOp> = m.operations.file_ops().collect();
+        let mut declared: Vec<AssetOp> = m.operations.file_ops().collect();
+        self.op_files(m, &mut ops, &mut declared, gathered)?;
         self.hash.sources(run.store, id, &declared)?;
         if let Some(op) = unbuilt(ops.files.iter().flat_map(|(_, f)| &f.ops)) {
             self.built
@@ -161,11 +163,20 @@ impl Gather<'_, '_, '_> {
         }
     }
 
-    fn op_files(&mut self, m: &AddonManifest, ops: &mut AddonOps, gathered: &mut Gathered) -> Result<()> {
+    /// Reads the addon's op files into `ops`, and leaves out the `file.put`s among them and in `declared`
+    /// that put F1 25's packed game data, or every one of them for an addon made for another F1 game.
+    fn op_files(
+        &mut self,
+        m: &AddonManifest,
+        ops: &mut AddonOps,
+        declared: &mut Vec<AssetOp>,
+        gathered: &mut Gathered,
+    ) -> Result<()> {
         let run = self.run;
         let id = m.id.as_str();
         let dir = run.addon_dir(id);
         let package = self.packages.contains_key(id);
+        let mut read = Vec::new();
         for (kind, rel) in m.operations.op_files() {
             if package && kind == FileKind::Database {
                 continue;
@@ -180,7 +191,19 @@ impl Gather<'_, '_, '_> {
                 ));
                 continue;
             }
-            let mut file = render_file(&dir.join(rel), kind, m, run.settings, run.on, self.hash)?;
+            read.push((
+                kind,
+                rel,
+                render_file(&dir.join(rel), kind, m, run.settings, run.on, self.hash)?,
+            ));
+        }
+        let mut lists: Vec<&mut Vec<AssetOp>> = read.iter_mut().map(|(_, _, f)| &mut f.ops).collect();
+        lists.push(&mut *declared);
+        if let Some(line) = leave_out_other_game(&m.name, &mut lists) {
+            self.built.warnings.push(line);
+        }
+        refuse_placements(id, MANIFEST_FILE, declared, &mut self.built.warnings);
+        for (kind, rel, mut file) in read {
             refuse_placements(id, rel, &mut file.ops, &mut self.built.warnings);
             self.hash.sources(run.store, id, &file.ops)?;
             ops.files.push((kind, file));

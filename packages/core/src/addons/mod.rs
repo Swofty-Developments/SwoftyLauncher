@@ -6,6 +6,7 @@ pub mod files;
 pub mod helper;
 pub mod import;
 pub mod imported;
+pub mod other_game;
 pub mod package;
 pub mod registry;
 pub mod settings;

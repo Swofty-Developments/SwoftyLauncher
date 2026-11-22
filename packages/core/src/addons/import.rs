@@ -76,6 +76,48 @@ pub fn addon_claim(path: &Path) -> Claim {
     claim(archive_names(path).is_some_and(|n| holds_addon(&n)))
 }
 
+/// Why the mod at `path`, an archive or a folder for an importer, is not imported: it holds F1 25's packed
+/// game data and its files are made for another F1 game ([`crate::addons::other_game::import_refusal`]).
+pub fn other_game(path: &Path) -> Option<String> {
+    let names = match path.is_dir() {
+        true => folder_names(path),
+        false => archive_names(path)?,
+    };
+    let file = path.file_name()?.to_string_lossy();
+    crate::addons::other_game::import_refusal(&file, &names)
+}
+
+/// The files and folders in `dir` down to [`MAX_DEPTH`] folders below its own top folders, with `/`
+/// separators, as an archive lists them; an asset folder is listed without what it holds.
+fn folder_names(dir: &Path) -> Vec<String> {
+    fn walk(dir: &Path, rel: &str, depth: usize, out: &mut Vec<String>) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for e in entries.flatten() {
+            let name = e.file_name().to_string_lossy().into_owned();
+            let at = if rel.is_empty() {
+                name.clone()
+            } else {
+                format!("{rel}/{name}")
+            };
+            let path = e.path();
+            if path.is_dir() {
+                if name.to_ascii_lowercase().ends_with("_asset_groups") {
+                    out.push(format!("{at}/"));
+                } else if depth < MAX_DEPTH {
+                    walk(&path, &at, depth + 1, out);
+                }
+            } else {
+                out.push(at);
+            }
+        }
+    }
+    let mut out = Vec::new();
+    walk(dir, "", 0, &mut out);
+    out
+}
+
 pub fn is_package(path: &Path) -> bool {
     has_extension(path, ADDON_EXTENSION) || has_extension(path, ADDON_EXTENSION_LEGACY)
 }
@@ -357,6 +399,55 @@ mod tests {
             route(&reg, &profile, &root.join("livery.serps")),
             Some(Route::Importer("t.mods".into()))
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_mod_for_another_game_that_replaces_game_dat_is_not_imported() {
+        let root = std::env::temp_dir().join(format!("swofty-import-other-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        std::fs::create_dir_all(&root).unwrap();
+        zip_of(
+            &root.join("pastoot.zip"),
+            &[
+                "Pastoot/F1_2020.exe",
+                "Pastoot/game.dat",
+                "Pastoot/2020_asset_groups/ui_package/a.erp",
+            ],
+        );
+        zip_of(&root.join("livery.zip"), &["2020_asset_groups/livery.erp"]);
+        let folder = |name: &str, files: &[&str]| {
+            for f in files {
+                let path = root.join(name).join(f);
+                std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                std::fs::write(path, "x").unwrap();
+            }
+            root.join(name)
+        };
+        let old = folder(
+            "Pastoot",
+            &["game.dat", "2020_asset_groups/ui_package/flow_frontend.erp"],
+        );
+        let own = folder(
+            "F1 25",
+            &["game.dat", "2025_asset_groups/ui_package/flow_frontend.erp"],
+        );
+        assert_eq!(
+            other_game(&root.join("pastoot.zip")).as_deref(),
+            Some(
+                "pastoot.zip is made for F1 2020, not F1 25 (it has F1_2020.exe), and it replaces game.dat, F1 25's \
+                 packed game data. F1 25 can't start with that replaced, so it was not imported"
+            )
+        );
+        assert!(
+            other_game(&old).is_some_and(
+                |w| w.starts_with("Pastoot is made for F1 2020, not F1 25 (it has 2020_asset_groups)")
+            ),
+            "{:?}",
+            other_game(&old)
+        );
+        assert_eq!(other_game(&own), None);
+        assert_eq!(other_game(&root.join("livery.zip")), None);
         std::fs::remove_dir_all(&root).ok();
     }
 
