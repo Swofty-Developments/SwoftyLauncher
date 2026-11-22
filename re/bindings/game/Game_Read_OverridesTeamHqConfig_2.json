@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419ad560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1419ad560.c;pat:log-channel--;xref:0x145721ec8",
-  "notes": "Team HQ cost cap card VM: card_title/description, spent, on_target/under/over budget visibility and labels, cost_cap_* card textures."
+  "notes": "Team HQ cost-cap card VM (vtable cell 0x145721ec8). +0x350 = event byte 0x1a; values via FUN_140c99fa0/FUN_140c9a720. If +0x348 releases old bindings; rebinds +0x1a8..+0x328: background, card_title, card_description, cost_cap, cost_cap_label, spent, on/under/over_budget_visible, over_budget_label, budget_value, positive/negative_text_style; lng_cost_cap_* titles; texture overrides.team_hq.card_textures.cost_cap_on_target/under/over_budget (-5% band); FUN_1419a4c50 at end. (lane owner review requested) Better name: Game_TeamHq_CostCapCard_Refresh (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_team_hq_config_2",

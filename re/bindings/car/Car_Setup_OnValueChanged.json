@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140c1e690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-CAR_SETUP",
-  "notes": "Log channel CAR_SETUP: 'setup value %s changed from %f to %f'"
+  "evidence": "decomp:re/decomp/140c1e690.c;pat:log-channel-CAR_SETUP;xref:0x140c1ba09,0x149a354c6",
+  "notes": "Car-setup VM node-changed handler (lea 0x140c1ba09, 0x149a354c6): finds slider i of 42 by node (stride 0x2c0), reads float; if not locked ([+0x268]+8 bit i): log CAR_SETUP 'setup value %s changed...'; slot 5 -> Car_Setup_SetSliderValue; else parc-ferme masks, preset overwrite dialog 'overwrite_custom_cs_with_preset_cs_msg'; updates fuel/diff ranges; 'percentage' sliders mirror 100-x. (lane owner review requested)"
  },
  "signature": {
   "id": "car.setup_on_value_changed",

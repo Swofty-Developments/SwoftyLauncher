@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14476a560.c;xref:0x144629614,0x14473d1e6",
-  "notes": "Resets object (vtable 0x145bff4d0): frees vectors at +0x13d..+0x147 qwords. Used by Car_Chassis_Build. (2 xref site(s), fb.py callers.) lb24-verify partial/disagree"
+  "notes": "Resets object (vtable 0x145bff4d0): frees vectors at +0x13d..+0x147 qwords. Used by Car_Chassis_Build. lb24-verify partial/disagree"
  },
  "signature": {
   "id": "car.chassis_reset_vtf_buffers",

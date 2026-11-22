@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Game_PhysicsObjects_LoadResource",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144454260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_PhysicsObjects_LoadResource(void *loader, void *a2, void *a3, const void *chunks, uint64_t chunk_count)",
+  "evidence": "decomp:re/decomp/144454260.c;xref:0x145a8f620",
+  "notes": "Loader for the per-track physics objects resource (the barrier/tyre-wall prop systems), slot 7 of the vtable at 0x145a8f5e8 (cell 0x145a8f620, its only reference; next to the strings tecpro, cDeformableRubberLateral, cDeformableTyreWallLateral, PhysicsModule). Runs at track load before the bodies exist. chunks = array of 0x20-byte records (+0 data, +8 size, +0x10 u32 tag), chunk_count of them; it takes the last chunk tagged 'syst' (0x74737973). a2 and a3 are not read. Allocates a 0x30-byte container through the loader's allocator [loader+8] vt+0x18 (vtable 0x145a8f580; +0x18..+0x28 vector of 0x28-byte system entries), reads the chunk with a byte reader (vtable 0x145899750, big-endian swap when its flag != 1): version u32 must be 0x20000, then the system count; per system: +0 name, +8 body count with a 0xd0-byte body array at +0x10, +0x18 joint count with a 0x60-byte joint array at +0x20; a body whose name (+0x98) contains tecpro and whose u32 type field reads 1 gets 2. Constraint/body templates are matched by name against the template library [loader+0x10] (vector<Template *> +0x38..+0x40, name at template+8, compare 0x14535d850). Returns the container, or null after destroying it (vt+8) and freeing it (allocator vt+0x38) when a read fails."
+ },
+ "signature": {
+  "id": "game.physics_objects_load_resource",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 78 29 B4 24 90 01 00 00",
+  "match": "0x144454260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144454260",
+  "kind": "func_start",
+  "names": [
+   "Game_PhysicsObjects_LoadResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144454260",
+    "target": "0x144454260"
+   },
+   "sigcheck": "passed",
+   "digest": "05102a44f2da5cf4a31e25c95bdfbad3081851631a7410ddc61a8ed141e733ca"
+  }
+ ]
+}

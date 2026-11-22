@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14379fe50.c;pat:log-channel--;xref:0x145872320",
-  "notes": "Streamed install VM update with streamed_install.* properties and two environment_package texture paths."
+  "notes": "Vtable slot (0x145872320). Allocs 0xe0 group objects (vtable 0x145613548, init 0x14379efb0): 'full_game', then one per entry of [+0x1c0]+0x28 named by entry+0x78 with bound props streamed_install.is_available/install_progress_percentage/install_progress_fract; adds 2 environment_package textures; groups per 'game_setup_modes' entry; lists into +0x70,+0x248,+0x208,+0x228; registers +0x20 at [0x14604e9e0]+0x58; +0x278=-1.0. Better name: Game_StreamedInstall_BuildInstallGroups (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_streamed_install_config_2",

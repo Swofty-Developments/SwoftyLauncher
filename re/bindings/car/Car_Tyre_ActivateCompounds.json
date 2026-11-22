@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e96390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-PITSTOP_TYRES",
-  "notes": "Log channel PITSTOP_TYRES: 'TyreComponent::activateTyreCompounds %p - PITLANE ENTER' | 'MOX/Tyres: activateTyreCompounds() new type %d, old type %d'"
+  "evidence": "decomp:re/decomp/142e96390.c;pat:log-channel-PITSTOP_TYRES;xref:0x140239de7,0x142e91199,0x142e941f2,0x1434cff36",
+  "notes": "TyreComponent::activateTyreCompounds (string, PITSTOP_TYRES). Calls 0x142e96a20; needs +0x20 and +0x9920 != -1; refreshes 12 part-node flag caches for slots +0x30, +0x4d0 and the current one (byte table [+0x9bc0]+0x1d8, stride 0xde0); 0x142e83e80 per slot (count +0x98d0); 0x142e9e6c0 on +0x9bd0; 0x142e83d20 on the matching slot +0x940. Logs new type +0x9938, old +0x9920. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_activate_compounds",

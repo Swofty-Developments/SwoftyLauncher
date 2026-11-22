@@ -481,3 +481,87 @@ fn the_games_records_and_modes_without_a_career_are_not_careers() {
     );
     std::fs::remove_dir_all(&d).ok();
 }
+
+/// 20261121-024026: an older core wrote generation 63 at a race highlights save (its root registers only
+/// `ReplayHighlights_ReplayHighlights`), with the profile's kept containers in it.
+fn highlights_gen<'a>(n: u64) -> Gen<'a> {
+    let mut containers = vec![("ReplayHighlights_ReplayHighlights", "game", Vec::new())];
+    containers.extend(pair("driver_career_progressive", "kept", vec![("0x0a", "Jacob")]));
+    containers.extend(pair("driver_career_1990", "kept", Vec::new()));
+    Gen {
+        n,
+        event: "save",
+        session: Some("s1"),
+        containers,
+    }
+}
+
+#[test]
+fn a_highlights_save_generation_is_not_a_profile_save() {
+    let d = dir("highlights");
+    let p = Plain::at(d.join("plain"));
+    let mut profile = career_gen(1, "save", Some("s1"), &[("0x0a", "Jacob")]);
+    profile.containers.extend(records());
+    write(&p, &profile);
+    write(&p, &highlights_gen(2));
+    current(&p, 2);
+    let highlights = p.manifest(2).unwrap();
+    assert!(!highlights.is_profile() && !highlights.is_session_save());
+    assert!(p.manifest(1).unwrap().is_profile());
+    assert_eq!(
+        p.newest_session_save().map(|m| m.generation),
+        Some(1),
+        "the core puts back from the newest profile save, not the highlights one"
+    );
+
+    write(&p, &career_gen(3, "load", None, &[("0x0a", "Jacob")]));
+    current(&p, 3);
+    assert!(
+        p.loss_between(&highlights, &p.manifest(3).unwrap(), &[])
+            .is_some(),
+        "judged against the highlights generation, the 1990 mode the profile never had would be lost"
+    );
+    assert!(
+        p.loss(&[]).is_none(),
+        "the highlights generation is never the last good save a load is judged against"
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_generation_without_registered_containers_or_with_only_records_is_a_profile_save() {
+    let kept_only = Gen {
+        n: 1,
+        event: "save",
+        session: Some("ea"),
+        containers: pair("driver_career_progressive", "kept", Vec::new()),
+    };
+    let d = dir("profile-shapes");
+    let p = Plain::at(d.join("plain"));
+    write(&p, &kept_only);
+    write(
+        &p,
+        &Gen {
+            n: 2,
+            event: "save",
+            session: Some("s1"),
+            containers: records(),
+        },
+    );
+    current(&p, 2);
+    assert!(
+        p.manifest(1).unwrap().is_session_save(),
+        "the EA app copy's save generations list only kept containers"
+    );
+    assert!(
+        p.manifest(2).unwrap().is_session_save(),
+        "the options container marks the profile"
+    );
+    assert!(is_mode_half("gm_dev") && is_mode_half("dev_SaveSlotGameModeComponent"));
+    assert!(
+        !is_mode_half("gm_")
+            && !is_mode_half("_SaveSlotGameModeComponent")
+            && !is_mode_half("options_options")
+    );
+    std::fs::remove_dir_all(&d).ok();
+}

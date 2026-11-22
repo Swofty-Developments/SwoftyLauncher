@@ -393,48 +393,6 @@ fn inputs_and_assists_are_understood() {
     assert!(!Assists::default().none());
 }
 
-fn board_key(track: &str) -> BoardKey {
-    BoardKey {
-        content: "s".into(),
-        track: track.into(),
-        weather: "dry".into(),
-    }
-}
-
-#[test]
-fn a_track_opens_in_place_one_at_a_time_and_reads_its_board_once() {
-    let mut peek: Peek<u32> = Peek::default();
-    assert!(
-        peek.toggle(board_key("bahrain")),
-        "a track never read asks for its board"
-    );
-    assert!(peek.is_open(&board_key("bahrain")));
-    peek.put(board_key("bahrain"), 1);
-    assert!(
-        peek.toggle(board_key("monza")),
-        "opening another closes the first"
-    );
-    assert!(!peek.is_open(&board_key("bahrain")));
-    assert!(
-        !peek.toggle(board_key("bahrain")),
-        "a board read before shows at once"
-    );
-    assert_eq!(peek.page(&board_key("bahrain")), Some(&1));
-    assert!(!peek.toggle(board_key("bahrain")), "the open track closes");
-    assert!(!peek.is_open(&board_key("bahrain")));
-}
-
-#[test]
-fn a_reload_forgets_the_boards_but_keeps_the_open_track_to_read_again() {
-    let mut peek: Peek<u32> = Peek::default();
-    assert_eq!(peek.reset(), None);
-    peek.toggle(board_key("suzuka"));
-    peek.put(board_key("suzuka"), 7);
-    assert_eq!(peek.reset(), Some(board_key("suzuka")));
-    assert_eq!(peek.page(&board_key("suzuka")), None);
-    assert!(peek.is_open(&board_key("suzuka")));
-}
-
 fn lap_row(driver: &str, lap: &str) -> Row {
     Row {
         rank: 1,
@@ -486,20 +444,7 @@ fn a_full_board_pins_the_own_lap_only_when_its_rows_lack_it() {
 }
 
 #[test]
-fn a_debug_start_names_a_track_and_its_weather() {
-    let key = |track: &str, weather: &str| BoardKey {
-        content: "s".into(),
-        track: track.into(),
-        weather: weather.into(),
-    };
-    assert_eq!(start_track("bahrain", "s"), Some(key("bahrain", "dry")));
-    assert_eq!(start_track(" spa/wet ", "s"), Some(key("spa", "wet")));
-    assert_eq!(start_track("", "s"), None);
-    assert_eq!(start_track("spa/", "s"), None);
-}
-
-#[test]
-fn the_hub_lists_the_picked_season_else_the_last_viewed_else_the_first() {
+fn the_time_trial_card_lists_the_season_viewed_last_else_the_first() {
     let season = |id: &str| SeasonCard {
         id: id.into(),
         name: id.into(),
@@ -513,18 +458,17 @@ fn the_hub_lists_the_picked_season_else_the_last_viewed_else_the_first() {
         name: id.into(),
     };
     let seasons = [season("2016"), season("2017"), season("2018")];
-    let recents = [recent("gone"), recent("2018")];
     let id = |s: Option<&SeasonCard>| s.map(|s| s.id.clone());
     assert_eq!(
-        id(hub_season(&seasons, Some("2017"), &recents)).as_deref(),
-        Some("2017")
-    );
-    assert_eq!(
-        id(hub_season(&seasons, Some("gone"), &recents)).as_deref(),
+        id(preview_season(&seasons, &[recent("gone"), recent("2018")])).as_deref(),
         Some("2018")
     );
-    assert_eq!(id(hub_season(&seasons, None, &[])).as_deref(), Some("2016"));
-    assert_eq!(hub_season(&[], Some("2017"), &recents), None);
+    assert_eq!(
+        id(preview_season(&seasons, &[recent("gone")])).as_deref(),
+        Some("2016")
+    );
+    assert_eq!(id(preview_season(&seasons, &[])).as_deref(), Some("2016"));
+    assert_eq!(preview_season(&[], &[recent("2018")]), None);
 }
 
 #[test]
@@ -533,33 +477,4 @@ fn the_time_trial_card_shows_the_players_best_against_the_record() {
     assert_eq!(own_gap(Some(90_000), Some(90_000)), OwnGap::Record);
     assert_eq!(own_gap(Some(91_234), Some(90_000)), OwnGap::Behind(1_234));
     assert_eq!(own_gap(Some(91_234), None), OwnGap::Record);
-}
-
-#[test]
-fn time_trial_looks_as_in_1_10_without_access_and_linked_with_the_rooms_with_it() {
-    let classic = TrialLook::of(false);
-    assert_eq!(classic, TrialLook::Classic);
-    assert!(classic.lists_seasons());
-    assert!(!classic.opens_in_place());
-    assert!(classic.trail_at_root());
-    let linked = TrialLook::of(true);
-    assert_eq!(linked, TrialLook::Linked);
-    assert!(!linked.lists_seasons());
-    assert!(linked.opens_in_place());
-    assert!(!linked.trail_at_root());
-}
-
-#[test]
-fn a_track_opens_its_board_page_without_access_and_in_place_with_it() {
-    use crate::features::online::Target;
-    use crate::features::online::tracks::track_item;
-    let t = card("Bahrain", Some(90_000), 3, 9, "dry");
-    match track_item(TrialLook::of(false).opens_in_place(), &t) {
-        Target::Board(c, name) => assert!(c.key == t.key && name == "Bahrain"),
-        other => panic!("expected the board page, got {other:?}"),
-    }
-    match track_item(TrialLook::of(true).opens_in_place(), &t) {
-        Target::Track(key) => assert!(key == t.key),
-        other => panic!("expected the track in place, got {other:?}"),
-    }
 }

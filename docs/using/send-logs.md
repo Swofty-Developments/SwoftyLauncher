@@ -55,6 +55,7 @@ A session that ended without a crash opens the same screen for a known problem t
 | Cause | What the launcher looks for |
 |---|---|
 | Your addons' team logos were not built | `team.logo: the game can't create files in swofty/addons/swofty.logos/ (error N)`: F1 25 couldn't write the team logo archives, and the logos and badges addons add were missing. The screen names the folder and the Windows error. `state/wrapper-run.log` gets a `[warning] known problem logos_not_built: ...` line |
+| F1 25 could not save your profile | `[saves] profile save: writing back the kept save containers failed with code N`: the game failed the save and showed its corrupted save prompt. With an older mod loader's `[saves] put back ReplayHighlights_ReplayHighlights` line in the same log, the race highlights had gone into the profile save and made it too big to write; the screen says to update Swofty Launcher. It also says that Continue Without Saving and Cancel on the prompt both leave the save file as it is, and that only the progress since the last save that worked is not kept. `state/wrapper-run.log` gets a `[warning] known problem profile_not_saved: ...` line |
 | Your career is stuck at the start of a race weekend | The session's last Team HQ weekend line is `[career] weekend already started, session never ran: round N/M, ...`, with no `StateLoadSession` after it: the career was saved inside a race weekend before any session of it ran. The screen names the round and the track and points to **Restore** on the Career saves page. A session that then hit F1 25's error on closing shows this instead of **F1 25 hit an error as it closed**. `state/wrapper-run.log` gets a `known problem stuck_weekend: ...` line |
 
 A game that stopped itself with exit code `0xc0000409`, `0xc0000602` or `0xc0000417` (a fast-fail) shows as a crash. The screen and the **Crash** section of `summary.txt` say it in one sentence, with the last lines of the session's `loader.log` when no crash report was written:
@@ -100,8 +101,6 @@ The logs go to the developers' Discord as one zip file, `swofty-logs-<username>-
 | `game/career-editor/snapshot.json` | The Career Mode Editor's snapshot, when the game folder has one |
 
 The logs can include folder paths with your computer's user name, your hardware, and your installed mods and profiles. Passwords, tokens and keys in `config.json`, in addon settings and in each session's `env.txt` are replaced with `[redacted]`. Each file is cut to its last 5 MB, and the whole zip holds at most 40 MB before compression.
-
-A bot in the developers' Discord reads each report with Anthropic's Claude API to suggest a cause, so the zip's contents are also sent to Anthropic.
 
 ## From the command line
 

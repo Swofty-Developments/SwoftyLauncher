@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1436fe500",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1436fe500.c;pat:log-channel-NETWORK;xref:0x14585f358",
-  "notes": "State update: detects host migration; as host closes the entrants document (Game_NetworkEntrants_FinaliseEntrants at 0x1436fe760, setRemoveDepartedPlayers), then the season document; datasync start/finish; logs \"Documents are all closed\"; returns the next state id. Better name: Game_StateSynchroniseCloseDocument_Update (bound record keeps its name)."
+  "notes": "Vtable-cell state update (+0xca0). Step 0: season doc ([+0xc88]+0x418)+0x765 or entrants doc (+0x428)+0xdc open -> host-migration log; as host (+0x3c0)+0x1a8==1: 0x1430928a0, Game_NetworkEntrants_FinaliseEntrants 0x143109ae0, setRemoveDepartedPlayers, Game_SeasonDocument_CloseDocument 0x14309cdb0. Else 'Documents are all closed', datasync start 0x143103eb0 if +0xc9c, step 1. Step 1: 0x14309e220, datasync finish 0x1431041a0/0x143104060, 0x143038620, 'Season started!', step 2. Returns 0x146cb2284 at step 2 else 0x146cb2280. (lane owner review requested) Better name: Game_StateSynchroniseCloseDocument_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_state_synchronise_close_document",

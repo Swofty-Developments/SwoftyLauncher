@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143268620",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143268620.c;pat:log-message-method;xref:0x1430e57ba",
-  "notes": "createPacket (logged name): builds the per-connection vehicle sync packet, logs \"Creating packet for %02d at %1.3f\" and createPacket(conn, actors, bits); writes actors with Ne_BitStream_WriteBits and calls Game_Network_SendVehicleLodUpdates (0x143268c87)."
+  "notes": "Vehicle-sync tick (param+0x18 = own conn id, state = *(param+0x40)). 15 Hz 30-slot ring of bytes; every puVar4[3] ms rebuilds 32x64 per-vehicle/peer relevance+LOD bitfield (+0xba..), update rate lerped by squared distance between min/max (+0x44/+0x47), visibility via FUN_143256380; logs NETWORK-CALCULATION \"C VID[%02u] %s\" fmt '%02d%c%c%c%c%c%x%x'. Then per peer byte list (+0x3c0)+0x130..0x138 != self: bitstream with 64-bit time (+0x... (lane owner review requested) Better name: Game_NetworkSync_UpdateRelevanceAndSendPackets (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_data_create_packet",

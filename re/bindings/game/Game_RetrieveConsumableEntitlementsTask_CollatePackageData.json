@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140794a00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140794a00.c;str:s_RetrieveConsumableEntitlementsTask_CollatePackageData;xref:0x140793a76,0x140794982,0x140795e09",
-  "notes": "Pretty-function game::RetrieveConsumableEntitlementsTask::collatePackageData; 5 KB body. Callers Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices, 0x140793e70, 0x140795df0."
+  "notes": "Pretty-function 'void game::RetrieveConsumableEntitlementsTask::collatePackageData()' (ENTITLEMENTS/F, '%zu OS packages, %zu platform packages'). Clears out array this+0x120 (0x1e0 stride, count [this+0x7920]); for each OS package ([this+0x7958..0x7960], 0x190 stride) builds entry via 0x142b92040, matches platform package ([this+0x7938..0x7940], 0xe0 stride) by id for price, else logs '! %s - no price, discarding.'; logs 'setting finished on %s : %s' (OK!/with error), sets this+0xa1 = 1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.retrieve_consumable_entitlements_task_collate_package_data",

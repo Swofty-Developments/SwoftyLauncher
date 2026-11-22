@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1405029b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1405029b0.c;xref:0x140be95c7,0x140d3350e",
-  "notes": "(obj, out): lazily creates a 400-byte ref-counted block (vtable 0x145623f90, counts 0x100000001), constructs the payload via 0x1403f7cd0(block+0x10, obj+0x40), caches +0x50/+0x58 (releases old), returns a shared_ptr copy in out. Callers 0x140be95c7 (same object as the RecursionOptionErrorRecord ctor) and 0x140d3350e (0x140d334f0, object [rdx+0x10])."
+  "notes": "Body read in full. If obj+0x50 null: lazily inits the allocator singleton (0x14618b130), allocates 400 bytes (counts 0x100000001, vtable 0x145623f90), constructs the payload 0x1403f7cd0(block+0x10, obj+0x40), stores +0x50 payload / +0x58 control block and releases the old block. Returns shared_ptr {+0x50, +0x58 ref++} in out. Callers in 0x140be9370 and 0x140d334f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.proto_recursion_option_error_record_get_shared",

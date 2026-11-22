@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1447279c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1447279c0.c;xref:0x144642c87,0x144740037",
-  "notes": "(chan, t): calls the channel's sampler fn, stores value/time in ring buffers (+0x80/+0xa0, index +0x1ec), updates min +0x60/max +0x64/last +0x70/running mean +0x74 and count +0x1f0; second path for derived channels. Caller: Car_Update."
+  "notes": "(chan,t): sampler fn [+0]/[+8] set -> value into ring [+0x80][idx +0x1ec], t into ring [+0xa0]; max +0x64, min +0x60, last +0x70, running mean +0x74, count +0x1f0 capped at ring size, idx wraps. Else derived fn [+0x10] returns a value vector, appended with times lerped from the last stored time to t; temp buffer freed via allocator vcall +0x38. Callers in 0x144642ab0, 0x14473fd80. (lane owner review requested)"
  },
  "signature": {
   "id": "car.telemetry_channel_sample",

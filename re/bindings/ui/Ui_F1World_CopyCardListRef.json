@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141af3fe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void Ui_F1World_CopyCardListRef(void *self, void *list)",
-  "evidence": "decomp:re/decomp/141af3fe0.c;xref:0x141aed577;xref:0x141aed8f4;xref:0x141b91cc7",
-  "notes": "myteam-g2: Copies a refcounted list reference (self+0x298 / +0x2e8) into a local, then processes it for the F1 World upgrade card list; used by BuildUpgradeCardScreen and ShowMaxUpgradeLevelWarning. Level 1."
+  "evidence": "decomp:re/decomp/141af3fe0.c;xref:0x141aed577,0x141aed8f4,0x141b91cc7",
+  "notes": "Renamed: builds an entry list from set param_2 via 0x141724b90 (alloc this+0x298, ctx +0x2e0/+0x2e8), resets the 0xe0-byte card slots (base this+0x330 if +0x11c0, slots +0x3e0, count +0x680) with 0x1417219c0, fills slot i from entry i (u8 kind, u32 id) via 0x1417216a0(slot, kind, id, +0x2e0, this+0x300); clears param_2. (lane owner review requested) Better name: Ui_F1World_FillUpgradeCardSlots (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.f1_world_copy_card_list_ref",

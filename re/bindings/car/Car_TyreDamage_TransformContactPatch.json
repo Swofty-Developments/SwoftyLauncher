@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144663930.c;xref:0x14470daa6,0x14470ddcd",
-  "notes": "Large SIMD routine used by Car_TyreDamage_Update: inverts wheel transform param_3 (3x3 + translation param_3[3]) and transforms contact patch points into tyre space for damage evaluation. Callers: Car_TyreDamage_Update."
+  "evidence": "decomp:re/decomp/144663930.c;xref:0x14470daa6,0x14470ddcd,0x14470effa,0x14470f543",
+  "notes": "Large SIMD routine: inverts wheel transform param_3 (3x3 + translation param_3[3]) and transforms contact patch points into tyre space. All call sites are in 0x14470d760 (KB: Car_State_Read_Snapshot), not in a tyre-damage update."
  },
  "signature": {
   "id": "car.tyre_damage_transform_contact_patch",

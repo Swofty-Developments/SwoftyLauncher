@@ -4,7 +4,7 @@ use swofty_core::dbedit::package::{Imported, PackageInfo};
 
 use super::draft::DraftBook;
 use super::import::imported_text;
-use super::save::saved_new_text;
+use super::save::{overrides_text, parts_text, saved_new_text};
 use super::state::Autosave;
 
 fn changed() -> Autosave {
@@ -169,4 +169,16 @@ fn an_imported_addons_notice_reports_the_import_a_rename_and_the_profile() {
         imported_text(&first, None),
         "DB Editor addon\n3 imported · 1 unchanged"
     );
+}
+
+#[test]
+fn the_driver_manager_popup_names_the_profile_and_each_drivers_values() {
+    use swofty_core::dbedit::driver_manager::Part;
+    assert_eq!(
+        overrides_text("Main"),
+        "Driver Manager is on in Main. When you play, its Game drivers changes replace these values from this addon:"
+    );
+    assert_eq!(parts_text(&[Part::Head]), "Head");
+    assert_eq!(parts_text(&[Part::Helmet]), "Helmet");
+    assert_eq!(parts_text(&[Part::Head, Part::Helmet]), "Head and helmet");
 }

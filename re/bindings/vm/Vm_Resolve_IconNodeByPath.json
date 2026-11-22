@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414c65b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void *ResolveIcon(void *owner, void *path)",
-  "evidence": "decomp:re/decomp/1414c65b0.c;xref:0x1414c6475;xref:0x1414c64a4;xref:0x14150b8c6",
-  "notes": "myteam-g2: Looks up an entry in the UI registry (_DAT_146ca54f8) by path and sets a cached S64 property if changed (Ne_Property_SetUIDBRefIfChanged); returns the node handle. Used by every icon binder (department events, resource points, popups)."
+  "evidence": "decomp:re/decomp/1414c65b0.c;xref:0x1414c6475,0x1414c64a4,0x14150b8c6,0x14151572b,0x141515815,0x141515846,0x1415158d6,0x141515dd4",
+  "notes": "(holder,cstr path): Vm_Resolve_RegistryNode(g_reg 0x146ca54f8,path,empty,0) into a temp handle; holder node +8 live (not 0x146065080, +0x26 bit0 clear, vt+0x20) and node-ref type 0x146ca5550 -> Ne_Property_SetUIDBRefIfChanged(node,&h,0,0); temp released (Vm_Release_Node); returns holder. Same as 0x1416864d0 with a C string path. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.resolve_icon_node_by_path",

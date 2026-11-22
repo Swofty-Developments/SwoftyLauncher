@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141dbd9d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141dbd9d0.c;pat:log-channel-OPTIONS-UI;xref:0x14574d530",
-  "notes": "vt cell 0x14574d530. 5 KB SettingsEditScreenViewModel update (enable_list, cat_ea_trax, INPUT)."
+  "notes": "Slot +0x60 of vtable 0x14574d4d0 (settings_edit_screen VM); xmm1 = dt. Clears dynamic-textures flag [+0x8b0] (OPTIONS-UI log); ticks children [+0xbc0]+0xd0 vt+0x20. In state [+0xa08]==3 runs input-capture: timer +0xbf0 up to 5 s ('Snap SettingsEditScreenViewModel' INPUT), else ends and fires 'enable_list'; scans device inputs for an axis change > 0.2 (stores +0xc08.., +0xcbc, +0xcb9) and calls callbacks [+0xbd8..+0xbe0]. Also updates countdown text and, for category 'cat_ea_trax', a progress value +0xd70 = 1-(end-now)/len. (lane owner review requested) Better name: Game_SettingsEditScreenVm_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_ui_set_dynamic_textures_update",

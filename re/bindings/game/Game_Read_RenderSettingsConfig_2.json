@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142d222a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142d222a0.c;pat:log-channel--;xref:0x1457e7558",
-  "notes": "Checkpoint/gate challenge settings: time_between_checkpoints, min/max time, render_settings.* fade and gate colour; VEHICLE_PLACEMENT 'Invalid slot (%d)'."
+  "notes": "Vtable cell 0x1457e7558; old name misleading. Reads config via 0x1445a2cf0: time_between_checkpoints +0x420, max_time +0x424, min_time +0x428, render_settings.* (height +0x4cc, near fade +0x4dc/+0x4e0, gate colour +0x5a4, fade_enabled +0x504, render_gates +0x5a0, width +0x5a8/+0x5b0, y_offset +0x5ac). Per slot byte: spline pos -> 4x4 matrix into vehicle; VEHICLE_PLACEMENT 'Invalid slot (%d)'. (lane owner review requested) Better name: Game_CheckpointGenerator_LoadSettingsPlaceCars (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_render_settings_config_2",

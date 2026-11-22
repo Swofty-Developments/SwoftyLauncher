@@ -325,7 +325,7 @@ impl Shell {
                 let page = if this.navigation.page.tab() == Some(tab) {
                     this.navigation.page
                 } else {
-                    this.tab_home(tab)
+                    tab.home()
                 };
                 this.open_page(page, cx);
             }))
@@ -363,7 +363,7 @@ impl Shell {
                                         let page = if s.navigation.page.tab() == Some(tab) {
                                             s.navigation.page
                                         } else {
-                                            s.tab_home(tab)
+                                            tab.home()
                                         };
                                         s.open_page(page, cx);
                                     })

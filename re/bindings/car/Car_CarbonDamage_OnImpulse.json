@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-CARBON_DAMAGE",
+  "evidence": "decomp:re/decomp/142f13de0.c;pat:log-channel-CARBON_DAMAGE;xref:0x142f1b58b,0x14f688910",
   "notes": "Log channel CARBON_DAMAGE: 'Vehicle %d - impulse %f (max impulse %f)'"
  },
  "signature": {

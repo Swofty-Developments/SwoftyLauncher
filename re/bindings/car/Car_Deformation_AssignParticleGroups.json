@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144110ca0.c;xref:0x14410b1f3",
+  "evidence": "decomp:re/decomp/144110ca0.c;xref:0x14410b1f3,0x14410c48e",
   "notes": "vector assign/copy over a list of 0x30-byte nodes each holding a vector<ptr> (node allocator vcall +0x18). Callers Car_Deformation_BuildTyreParticles, Car_TyreDeformation_BuildTyreParticleGrid."
  },
  "signature": {

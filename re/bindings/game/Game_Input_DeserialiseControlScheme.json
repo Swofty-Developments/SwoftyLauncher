@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a63340",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a63340.c;pat:log-channel-INPUT;xref:0x142a6a276,0x142a6ee19",
-  "notes": "INPUT 'Deserialising control scheme: name=' (log string)."
+  "notes": "Reads control-scheme object (param_3) keys id, name, is_ugc, device_types[device_type_name], actions[action_id, axes[calibrator_type, deadZone, saturation, axis_id, device_type_id]], calibration{version, steering/throttle/brake deadzone/linearity/saturation}, ffb{ffb_enabled..ffb_trueforceIntensity}, published_file_id; allocates 0x168-byte scheme (vtbl 0x1457bb690, default name '<unknown/control-scheme>') into *param_2. Errors 0x57/0x58/0xc. INPUT log. (lane owner review requested)"
  },
  "signature": {
   "id": "game.input_deserialise_control_scheme",

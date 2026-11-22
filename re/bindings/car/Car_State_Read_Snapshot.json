@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14470d760.c;doc:re/research/fuel_mix_five.md#sites",
-  "notes": "Per-car state deserializer: reads a packed snapshot from the stream param_2 (cursor +8, version gate +0x20/+0x22) and applies it to the car: adds/removes punctures (Car_Puncture_Add/Remove), switches the tyre deformation model (Car_TyreDeformation_SetTyre), restores damage, fuel mix (Car_FuelEcu_SetMode_Thunk at 0x14470e082), CarErs.ers_mode (+0x1a68, only when +0x1a70 == 0; store at 0x14470e0a9) and the F1Aero drs_flags +0x1988 bits 1 (fault) and 0 (open request). Renamed from Car_TyreDamage_Update (mislabelled; V8816/V8811 osd-vc, re-read by car-re 2026-11-11). Tyre damage is only one section of it | engine-re fuel-mix-5 2026-11-20 (static): fuel mode is a 2-bit field: shr edx,4 / and edx,3 (0x14470e07c) before SetMode, so a stored mode 4 comes back as 0 (Lean) after a flashback or replay restore. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
+  "evidence": "decomp:re/decomp/14470d760.c;doc:re/research/fuel_mix_five.md#sites;xref:0x142f50a80",
+  "notes": "Per-car snapshot deserializer (punctures, tyre deformation, damage, fuel mix, ERS mode, DRS flags); caller 0x142f50a80 (fn 0x142f50a00)."
  },
  "signature": {
   "id": "car.tyre_damage_update",

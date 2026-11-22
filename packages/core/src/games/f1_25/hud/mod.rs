@@ -20,6 +20,7 @@ pub mod motion;
 pub mod scene;
 pub mod screen_build;
 pub mod screens;
+pub mod slots;
 pub mod stock_edit;
 pub mod template;
 pub mod textures;

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f4eed0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "uint64_t(VehicleAntiStallSystem*, Message*)",
   "evidence": "decomp:re/decomp/142f4eed0.c;xref:0x142f4bf74,0x142f4ca1d",
-  "notes": "Denuvo body 0x14f8de0f0 (thunk 0x142f4eed0): bounds-check of car msg+0x10 against entries +0x48..+0x50, resets entry +0x18..+0x3c, vehicle +0x9f18 = 0, +0x30 = 1; else WARN 'VehicleRaceStartSystem::onRollingStartBegin failed to find component'. lea refs in 0x142f4ba40 and 0x142f4c990."
+  "notes": "Thunk to Denuvo body 0x14f8de0f0. If msg+0x10 (u8 id) < count of ptr vector +0x48..+0x50: entry +0x18 = time (0x1592088d8 based), +0x1c/+0x20/+0x28/+0x2c/+0x34/+0x3c = 0, [entry+0x50]+0x9f18 = 0, +0x30 = 1. Else WARN 'Anti Stall System: vehicle id %u is out of bounds'; null entry -> WARN 'VehicleRaceStartSystem::onRollingStartBegin failed to find component for %d'. lea refs in 0x142f4ba40, 0x142f4c990. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_anti_stall_system_on_rolling_start",

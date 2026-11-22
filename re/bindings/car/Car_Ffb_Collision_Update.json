@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Car_Ffb_Collision_Update",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1446fc6f0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "float *Car_Ffb_Collision_Update(void *plugin, float *out_lanes, float dt)",
+  "evidence": "decomp:re/decomp/1446fc6f0.c;decomp:own capstone disasm 0x1446fc5d0-0x1446fc6ec;xref:0x145c01078",
+  "notes": "Update (slot 1) of the FFB collision plugin vtable 0x145c01070 (slot 2 0x1446fbce0 reads the settings noCollisionUpper / timeToDepleteMax); the cell 0x145c01078 is its only reference. effect = [plugin+0x38], vehicle = g_Sess_VehicleTable[effect+0x128] (index < g_Sess_VehicleCount). First call with a vehicle registers the contact listener {0x1446fc5d0, plugin} through Car_Collision_AddListener and sets plugin+0x71. The listener adds the contact impulse (contact+0x38) to plugin+0x6c, clamped to [0, plugin+0x64], when the contact point speed is at least plugin+0x60 and dot(velocity, normal) / speed <= 0.0872 (0x3db27eb0, a lazily set static). Update: amplitude = plugin+0x6c * dt * gain plugin+0x50 * max(e+0x10, e+0x8) of the per-vehicle entry 0x144773160(effect-table [plugin+0x30]+0x110, vehicle index); the sign flips every call (plugin+0x70 toggles), the impulse decays by dt * plugin+0x68 * plugin+0x64 (flushed to 0 below 2^-23); out = amplitude broadcast ANDed with the lane mask plugin+0x40..+0x4c; returns out."
+ },
+ "signature": {
+  "id": "car.ffb_collision_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 C5 F8 29 74 24 40 C5 F8 28 F2",
+  "match": "0x1446fc6f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446fc6f0",
+  "kind": "func_start",
+  "names": [
+   "Car_Ffb_Collision_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1446fc6f0",
+    "target": "0x1446fc6f0"
+   },
+   "sigcheck": "passed",
+   "digest": "66e6f5869b9d7373313f56d84f7c47bf48486c5ed7de8efb69e3c53e7d2b6724"
+  }
+ ]
+}

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143bfed50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143bfed50.c;pat:log-message-cxx;xref:0x1459bf970",
-  "notes": "MipmapLoadTask::doJob (vtable cell 0x1459bf970): TEXTURE_STREAMING_VERBOSE 'Decompressed mip %d from %s'; errors 'decompression out of memory \"%s\"', 'decompression failed \"%s\"', 'UNSUPPORTED MIPMAP COMPRESSION METHOD for %s'."
+  "notes": "MipmapLoadTask::doJob: job=[this+0x10]; sums sizes of mip chunks +0x180 (0x10 stride, +0x19c..+0x198-1), allocs via +0x18 vcall+0x18; per chunk: type 7 = palette/bit-packed decode (16/8/32-byte), type 3 = 0x1447bf1d0, else 'UNSUPPORTED MIPMAP COMPRESSION METHOD'; raw = memcpy. Swaps buffer +0x30/+0x38; status +0x1b4 = 0/5 (failed)/0xc (OOM)/0x55. (lane owner review requested)"
  },
  "signature": {
   "id": "game.mipmap_load_task_do_job",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14142c860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14142c860.c;xref:0x14142c831,0x14142d5e3,0x14142d793,0x14142dfd2,0x14142e750,0x141ff032d",
-  "notes": "Called from 0x14142c6f0, 0x14142d290, 0x14142d630, 0x14142dc70, 0x14142e220, 0x141ff0070."
+  "notes": "Body read in full. Gate 0x146064623 bit7. Finds node *param_2 in +0x178 list, its link node (+0x68) and template in +0x98 (stride 0x108) by +0x28; copies decal fields +0x10..+0x65 to the linked node, recomputes its position from template axes (+0x58/+0x80/+0x88) and the 0x14142c160 scale, mirrors +0x50 when the entrant flag +0x48 is set, else sets rotation +0x40 (deg->rad, wrapped to +-pi). (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_customisation_handle_asset_event",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e83fe0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e83fe0.c;xref:0x142e94d20",
-  "notes": "(wing, int part (<12), model): cached (+0x128+part*4, 0xfffffffe = unresolved) node id of a front-wing damage part by name table 0x145f946e0: frontspoiler_fm, frontfin_fr/fl, frontwing_fr_01/02, frontflap_fr, frontwing_fl_01/02, frontflap_fl, frontwingmoving_fl/fr, nosecone (djb2 hash into name registry 0x14618ce18). Called from 0x142e94d20. Addon: part ids for detach/damage mods."
+  "evidence": "decomp:re/decomp/142e83fe0.c;xref:0x142e87bb9,0x142e87c48,0x142e95658,0x142e95758,0x142e964d8,0x142e965d9,0x142e96729,0x142e96839,0x142e971b8,0x142e972b9,0x142e973f9,0x142e97508",
+  "notes": "(wing, part, model): cache +0x128+part*4 (0xfffffffe = unresolved). part<12: name table 0x145f946e0[part] (frontspoiler_fm .. frontwingmoving_fr, nosecone); part>=12: table[part-12]+'_'+[[+0x240]+0x10]. djb2 hash -> 0x143a3df70 under lock 0x14618ce18, then 0x143cfc8f0([model+0x38]) -> node id, -1 if missing. (lane owner review requested)"
  },
  "signature": {
   "id": "car.front_wing_resolve_part_node_id",

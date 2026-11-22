@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ai_DriverState_AtLightsUpdate",
+ "table": "functions",
+ "author": "msyeett",
+ "row": {
+  "addr": "0x1406682b0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "uint32_t Ai_DriverState_AtLightsUpdate(void *state, float seconds, void *driver)",
+  "evidence": "decomp:own disasm 0x1406682f0-0x140668331;xref:0x14563a8a8",
+  "notes": "AI driver race start state 'at the lights', slot 3 update: adds seconds to state+8 and returns the next state id from a global once it passes the wait ([[[[driver+0x18]+0x10]+0x30]+0x70]+0x68) or when [driver+0x30]+0x17d bit 7 is set; 0 (stay) while [driver+0x50]+0x18 bit 1 is set. Only reference: the vtable cell"
+ },
+ "signature": {
+  "id": "ai.driver_state_at_lights_update",
+  "section": ".xtls",
+  "pattern": "49 8B 40 30 F6 80 7D 01 00 00 80 75 2D",
+  "match": "0x1406682b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406682b0",
+  "kind": "func_start",
+  "names": [
+   "Ai_DriverState_AtLightsUpdate"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-22",
+    "by": "msyeett",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1406682f0",
+  "made_on_target": "0x1406682f0",
+  "twin": "made on steam-26566308; the target 0x1406682f0 is KB 0x1406682b0: Ai_Resolve_HashedSettingBlocks (0x663bc0) and Ai_StateMachine_SetStateById (0x668d70) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "msyeett",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1406682f0",
+    "target": "0x1406682f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "159d1b13674d6fd42ed4cb8ed39fa56222e1d0abe508e4d2916f39707b013738"
+  }
+ ]
+}
