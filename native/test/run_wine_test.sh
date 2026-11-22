@@ -1306,7 +1306,7 @@ doc['build']['size'] += 1
 json.dump(doc, open(sys.argv[1], 'w'), indent=1)
 EOF2
 local hangs=0 other=0 i t rc what
-for i in $(seq 16); do
+for i in $(seq 10); do
     t=$SECONDS rc=0
     if ((i % 2)); then
         what=stages
@@ -1318,13 +1318,12 @@ for i in $(seq 16); do
         SWOFTY_TEST_TRAP_STALL_MS=300 SWOFTY_EARLY_STAGE=1 game_run -t 30 "$OUT/filled/F1_25.exe" >"$OUT/stress.out" 2>&1 || rc=$?
         LOG=$OUT/filled/swofty/loader.log
     fi
-    grep '^knob:' "$OUT/stress.out" | sed "s/^/  stress $i /"
-    grep -E 'still runs|pe_stack: pc sample 1' "$OUT/stress.out" | sed "s/^/  stress $i /"
+    grep '^knob:' "$OUT/stress.out" | sort -u | sed "s/^/  stress $i /" || :
     echo "stress $i $what rc=$rc $((SECONDS - t))s; $(grep -E 'arm runs (on a|in the)|game exits while|test: the exit waited' "$LOG" | cut -c25-200 | tr '\n' '|')"
     ((rc == 124 || rc == 137)) && hangs=$((hangs + 1))
     ((rc != 0 && rc != 124 && rc != 137)) && other=$((other + 1))
 done
-echo "stress summary: $hangs hang(s), $other other nonzero exit(s) of 16 runs"
+echo "stress summary: $hangs hang(s), $other other nonzero exit(s) of 10 runs"
 }
 case_stages() {
 echo "==== stages"

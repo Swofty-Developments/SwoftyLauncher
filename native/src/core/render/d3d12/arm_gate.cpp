@@ -88,6 +88,28 @@ void knob_say(const char *fmt, ...)
     WriteFile(GetStdHandle(STD_ERROR_HANDLE), buf, DWORD(n), &w, nullptr);
 }
 
+volatile LONG knob_avs = 0;
+
+LONG CALLBACK knob_veh(EXCEPTION_POINTERS *e)
+{
+    if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && InterlockedIncrement(&knob_avs) <= 4) {
+        void *at = e->ExceptionRecord->ExceptionAddress;
+        HMODULE m = nullptr;
+        GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           reinterpret_cast<LPCWSTR>(at), &m);
+        char name[MAX_PATH] = {};
+        if (m)
+            GetModuleFileNameA(m, name, MAX_PATH);
+        MEMORY_BASIC_INFORMATION mbi{};
+        VirtualQuery(at, &mbi, sizeof mbi);
+        knob_say("knob: access violation on %lu at %p (%s+0x%llx), kind %llu, address %p, page protect 0x%lx",
+                 GetCurrentThreadId(), at, name, (unsigned long long)((uint8_t *)at - (uint8_t *)m),
+                 (unsigned long long)e->ExceptionRecord->ExceptionInformation[0],
+                 (void *)e->ExceptionRecord->ExceptionInformation[1], mbi.Protect);
+    }
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
 unsigned test_stall_ms()
 {
     char v[16] = {};
@@ -335,6 +357,21 @@ void wait_arm_before_exit()
     DWORD r = WaitForSingleObject(safetyhook::trap_stalled, 3000);
     knob_say("knob: exit on %lu: waited %lu ms for the stall (%s); ExitProcess goes on", GetCurrentThreadId(),
              GetTickCount() - from, r == WAIT_OBJECT_0 ? "it began" : "it did not begin");
+    for (int i = FACTORY; i < EXPORTS; i++) {
+        MEMORY_BASIC_INFORMATION mbi{};
+        void *t = exports[i].hook->target();
+        if (t && VirtualQuery(t, &mbi, sizeof mbi))
+            knob_say("knob: %s at %p, page protect 0x%lx", exports[i].name, t, mbi.Protect);
+    }
+    if (HMODULE dx = GetModuleHandleW(L"dxgi.dll")) {
+        auto *nt = reinterpret_cast<IMAGE_NT_HEADERS *>(reinterpret_cast<uint8_t *>(dx) +
+                                                        reinterpret_cast<IMAGE_DOS_HEADER *>(dx)->e_lfanew);
+        void *entry = reinterpret_cast<uint8_t *>(dx) + nt->OptionalHeader.AddressOfEntryPoint;
+        MEMORY_BASIC_INFORMATION mbi{};
+        VirtualQuery(entry, &mbi, sizeof mbi);
+        knob_say("knob: dxgi.dll entry point %p, page protect 0x%lx", entry, mbi.Protect);
+    }
+    AddVectoredExceptionHandler(1, knob_veh);
     swofty::log("[d3d12] test: the exit waited %lu ms for the worker to stall inside its factory unhook (%s)",
                 GetTickCount() - from, r == WAIT_OBJECT_0 ? "it did" : "it did not");
 }
