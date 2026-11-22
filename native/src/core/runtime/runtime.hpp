@@ -240,6 +240,8 @@ void load_stall_game_line(const char *line);
 void load_stall_setup();
 // The session loader entry probes behind the load-stall report's session loader section (session_loader.cpp).
 void session_loader_setup();
+// Finds the route record behind the load-stall report's front end boot route section (boot_route.cpp).
+void boot_route_setup();
 void tyre_models_tick();
 void tyre_models_drop();
 void garage_placement_reset();

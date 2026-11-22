@@ -21,6 +21,7 @@
 #include "core/diagnostics/crash/stall_report.hpp"
 #include "core/diagnostics/crash/stall_walk.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
+#include "core/diagnostics/boot_route.hpp"
 #include "core/diagnostics/session_loader.hpp"
 #include "core/runtime/loader/introspection.hpp"
 
@@ -395,6 +396,8 @@ bool stall_report(int index, int max, const char *why, const char *state)
           process.wine_version ? process.wine_version() : "");
     if (t.n + 1 < t.cap)
         t.n += runtime::session_loader_report(t.b + t.n, t.cap - t.n, stall_frame);
+    if (t.n + 1 < t.cap)
+        t.n += runtime::boot_route_report(t.b + t.n, t.cap - t.n, stall_frame);
     if (n < 0)
         t.put("\n== Threads\n  the thread list is not available (error %lu)\n", GetLastError());
     else {

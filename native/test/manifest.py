@@ -142,6 +142,7 @@ UNITS = [
     Unit('session_enter', 'Session enter guard unit test'),
     Unit('session_job_probe', 'Session job list scan probe unit test'),
     Unit('session_loader', 'Load-stall report session loader section unit test'),
+    Unit('boot_route', 'Load-stall report front end boot route section unit test'),
     Unit('setup_vm', 'Setup screen car guard unit test'),
     Unit('srv_clamp', 'Shader resource view clamp unit test'),
     Unit('srv_hook', 'Shader resource view addon callbacks unit test'),

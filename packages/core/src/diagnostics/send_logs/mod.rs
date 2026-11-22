@@ -53,6 +53,9 @@ const MIN_TAIL: u64 = 64 << 10;
 /// A cut loader.log keeps this much of its start, the boot header: versions, loaded modules,
 /// hardware settings, bindings and the addon list. The rest of the file's cap goes to its end.
 const LOADER_KEEP: u64 = 2560 << 10;
+/// A cut loader.log whose window stage falls in the part the cut leaves out keeps this much from the
+/// stage's first line: the core's window-stage hooks and every addon's hook installs.
+const WINDOW_KEEP: u64 = 512 << 10;
 const GAP_NOTE: u64 = 128;
 const PERF_READ: u64 = 1 << 20;
 const DUMP_CAP: u64 = 24 << 20;

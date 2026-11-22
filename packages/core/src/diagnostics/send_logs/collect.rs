@@ -200,6 +200,13 @@ impl Collector {
                         size(tail),
                         size(len)
                     )),
+                    Cut::Window { head, window, tail } => Some(format!(
+                        "first {}, {} from the window stage and last {} of {}",
+                        size(head),
+                        size(window),
+                        size(tail),
+                        size(len)
+                    )),
                 };
                 let note = match (kept, changed) {
                     (Some(kept), true) => Some(format!("{kept}, secrets redacted")),
