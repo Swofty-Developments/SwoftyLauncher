@@ -1411,6 +1411,8 @@ void find_me() {
 
 static std::mutex virtual_protect_mutex;
 
+thread_local unsigned trap_stall_ms = 0;
+
 // Swofty: only the allocation bases of find_me and from are compared below. VirtualQuery walks the page table to the
 // end of the region it lands in, which in the game's code section takes a millisecond and more on Windows for every hook
 // installed; an address inside a loaded module has that module's base as its allocation base, which the loader's
@@ -1487,6 +1489,10 @@ void trap_threads(uint8_t* from, uint8_t* to, size_t len, const std::function<vo
 
     VirtualProtect(from, len, new_protect, &from_protect);
     VirtualProtect(to, len, new_protect, &to_protect);
+
+    if (trap_stall_ms) {
+        Sleep(trap_stall_ms);
+    }
 
     if (run_fn) {
         run_fn();

@@ -66,6 +66,17 @@ game_run_report() {
             echo "    thread ${task##*/} '$(cat "$task/comm" 2>/dev/null)' state ${stat%% *} in $(cat "$task/wchan" 2>/dev/null || echo '?')"
         done
     done
+    local gpid
+    for gpid in $(pgrep -f "^$exe" 2>/dev/null); do
+        if command -v gdb >/dev/null && sudo -n true 2>/dev/null; then
+            echo "game_run: gdb threads of pid $gpid:"
+            sudo -n timeout 30 gdb -q -nx -p "$gpid" -batch -ex 'info threads' \
+                -ex 'thread apply all printf "rip %lx rsp %lx\n", $pc, $sp' \
+                -ex 'thread apply all bt 8' 2>&1 | grep -v 'New LWP\|^$' | sed 's/^/  gdb: /' | head -n 160
+        fi
+        echo "game_run: dxgi, d3d12 and core mappings of pid $gpid:"
+        grep -E 'dxgi|d3d12|swofty_core|kernelbase|ntdll' "/proc/$gpid/maps" 2>/dev/null | sed 's/^/  map: /' | head -n 80
+    done
     log=$(dirname "$exe")/swofty/loader.log
     if [ -f "$log" ]; then
         echo "game_run: the last lines of $log:"

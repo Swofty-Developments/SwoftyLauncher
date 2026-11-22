@@ -11,7 +11,7 @@ set -Eeuo pipefail
 trap 'line=$LINENO' ERR
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-CASES=(modes crash close perf_ro acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
+CASES=(stages_stress modes crash close perf_ro acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
 if [[ ${1:-} == --list ]]; then
     printf '%s\n' "${CASES[@]}"
     exit 0
@@ -1296,6 +1296,24 @@ for skip in 0 1; do
         parse_report "Fake_Crash_Here" "[the header is cut short: the writer hit BREAKPOINT (0x80000003) at ,Fake_Crash_Here,writing 0x10" || status=1
     fi
     [[ $code != 0 ]] && echo "ok  : int3: process ended with $code" || { echo "FAIL: int3: process exited 0"; status=1; }
+done
+}
+case_stages_stress() {
+if [[ -n ${CI:-} ]] && ! command -v gdb >/dev/null; then
+    sudo -n apt-get install -y -qq gdb >/dev/null 2>&1 || echo "stress: gdb did not install"
+fi
+LOG=$SG/swofty/loader.log
+local stall hangs other n=4 i t rc
+for stall in 0 300 0 300; do
+    hangs=0 other=0
+    for i in $(seq $n); do
+        t=$SECONDS rc=0
+        SWOFTY_EARLY_STAGE=1 SWOFTY_TEST_TRAP_STALL_MS=$stall game_run -t 40 "$SG/F1_25.exe" stages >/dev/null || rc=$?
+        echo "stress stall=$stall $i rc=$rc $((SECONDS - t))s; last loader lines: $(tail -n 3 "$LOG" | cut -c1-160 | tr '\n' '|')"
+        ((rc == 124 || rc == 137)) && hangs=$((hangs + 1))
+        ((rc != 0 && rc != 124 && rc != 137)) && other=$((other + 1))
+    done
+    echo "stress summary stall=$stall: $hangs hang(s), $other other nonzero exit(s) of $n runs"
 done
 }
 case_stages() {
