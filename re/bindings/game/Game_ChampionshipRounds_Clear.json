@@ -1,0 +1,76 @@
+{
+ "schema": 1,
+ "name": "Game_ChampionshipRounds_Clear",
+ "table": "functions",
+ "author": "Moorzii",
+ "row": {
+  "addr": "0x14420cd60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_ChampionshipRounds_Clear(void *unused, void *node)",
+  "evidence": "decomp:own disasm 0x14420f330 (jmp) and the callers 0x1412078d0-0x14120790d, 0x140b990d5-0x140b990f3;xref:0x1412078e4,0x140b990e4",
+  "notes": "a generic VM node clear, not championship-specific (V100074; a maintainer rename to Vm_Node_Clear would fit): rcx unused, rdx = the node handle; a list node is emptied unless read-only, a set node is cleared through Ne_FlatHashSet_RemoveAllNotify, any other node through its vt+0x20; returns false for a read-only node. Game_CustomSeason_RebuildFromRounds clears the custom season's track list with it ([self+0x290]+0x298); a jmp into protected code, so the signature resolves that call"
+ },
+ "signature": {
+  "id": "game.championship_rounds_clear",
+  "section": ".xtls",
+  "pattern": "BA 98 02 00 00 48 03 91 90 02 00 00 E8 ?? ?? ?? ?? 48 8B 8E 90 02 00 00",
+  "match": "0x141207298",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xc"
+  },
+  "target": "0x14420cd60",
+  "kind": "call",
+  "names": [
+   "Game_ChampionshipRounds_Clear"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-22",
+    "by": "Moorzii",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1412078d8",
+  "made_on_target": "0x14420f330",
+  "twin": "made on steam-26566308; the target 0x14420f330 is KB 0x14420cd60 (V100074); the match 0x1412078d8 (Game_CustomSeason_RebuildFromRounds +8, the call at 0x1412078e4) is KB 0x141207298, the call V100074 names at 0x1412072a4"
+ },
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "func",
+   "item": "Game_ChampionshipRounds_Clear",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14420cd60 (jmp) and its .data1 body 0x153417330-0x1534173b8;xref:0x1412072a4,0x140b99104",
+   "notes": "V100074 Blind re-derivation on d873a1c8. 0x14420cd60 is a 5-byte jmp to 0x153417330, a generic VM node clear rather than a championship one: rcx is never read; rdx points at a node handle; a list node (vt+0x10) that is not read-only (+0x26 bit 0) is emptied by calling 0x1442bc9c0(node, 0) until +0x40 == +0x48, a set node (vt+0x28) goes to Ne_FlatHashSet_RemoveAllNotify, any other node calls vt+0x20; it returns a bool (0 for a read-only node). Call sites all over the game use it (FeTile_Clear_EraTileSet_Thunk's body clears an era tile list with it), so the name and notes should describe the node clear (a Vm_ or Ne_ name, proto bool (void *unused, void **node)) with the rounds list at +0x298 as one caller. The signature fails here too: the bytes after the jmp (0F 8D ?? ?? ?? ?? C8 88 B4 E9) are 26566308 protector filler, this build has E9 8F 74 80 01 D5 8B AC 4A 30, 0 matches in .xtls."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1412078d8",
+    "target": "0x14420f330"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bfad4401ae05a11993269dc2e7990464c40b9b33570c16f0cad624d2133f811b"
+  }
+ ]
+}

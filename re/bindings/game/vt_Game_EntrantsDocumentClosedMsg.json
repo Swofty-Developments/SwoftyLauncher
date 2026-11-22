@@ -42,5 +42,25 @@
   "twin": "made on steam-26566308; the target 0x14578f640 is KB 0x14578d510 (V100077 and V100075 name it on d873a1c8; vt_Game_F1WorldActivityContainerVm and k_Career_RnDCardColourTable sit 0x2130 above their KB addresses too); the match 0x142461ed4 (the lea in Ent_Fill_EntrantsFromList) is KB 0x1424602d4: Ent_Fill_EntrantsFromList itself sits 0x1c00 above its KB address 0x142460230"
  },
  "verify": [],
- "proofs": []
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142461ed4",
+    "target": "0x14578f640"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b7e11dfa73c8c68f72d0f3389f044484102a41fe5f2b5fe34f9edca4891ee68f"
+  }
+ ]
 }

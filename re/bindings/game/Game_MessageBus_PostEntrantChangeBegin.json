@@ -52,5 +52,25 @@
    "notes": "V100075 Blind re-derivation on d873a1c8. The claim holds: 0x1424e2b90 is a 5-byte jmp to 0x14cc4ea20, (bus, message): when bus+0x68 is set, under the lock at +0x98 it allocates 0x10 bytes from the allocator at +0x70, copies message+8, sets the vtable 0x14578d4e8, queues it at +0x58/+0x60 and signals +0x88; Ent_Fill_EntrantsFromList posts it at 0x142460287 and then sets mode entity+0x2f8. On 26566308 the body 0x14c91b2f0 sets 0x14578f618. The signature does not hold on this build: its pattern ends in protector filler after the jmp (05 4A E8 6A B3 0F 84), here AD E9 E1 64 58 01 3C, so it matches 0 times in .xtls. Fix: a call-kind signature like Game_MessageBus_PostEntrantChangeEnd's."
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142461e72",
+    "target": "0x1424e4790"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "aa9a9bc649eee49b0776ee7727be24bbd439323c444d1fad9813ca16ecb08ef5"
+  }
+ ]
 }

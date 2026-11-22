@@ -33,6 +33,7 @@ inline constexpr address<"Vm_FinanceHistoryGraph_UpdateCostCapLabelPosition"> Vm
 inline constexpr address<"Vm_FinancePeriod_Bind"> Vm_FinancePeriod_Bind{}; // L2 experimental
 inline constexpr address<"Vm_FinanceTransactionEntry_Bind"> Vm_FinanceTransactionEntry_Bind{}; // L2 experimental
 inline constexpr address<"Vm_FinanceTransactionRow_SetIcon"> Vm_FinanceTransactionRow_SetIcon{}; // L2 experimental
+inline constexpr address<"Vm_Fire_Route"> Vm_Fire_Route{}; // L2 experimental
 inline constexpr address<"Vm_Format_LoyaltyRewardIncomeText"> Vm_Format_LoyaltyRewardIncomeText{}; // L2 experimental
 using Vm_GetOrCreate_ListChild_t = void **(void *registry, void *parent, const uint32_t *hash);
 inline constexpr fn<"Vm_GetOrCreate_ListChild", Vm_GetOrCreate_ListChild_t> Vm_GetOrCreate_ListChild{}; // L2 experimental

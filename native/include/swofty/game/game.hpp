@@ -420,6 +420,7 @@ inline constexpr address<"Game_CustomDriverNetworkMessageHandler_RemoveCustomDri
 inline constexpr address<"Game_CustomDriverNetworkMessageHandler_RemovePlayerReplData"> Game_CustomDriverNetworkMessageHandler_RemovePlayerReplData{}; // L2 experimental
 inline constexpr address<"Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver"> Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver{}; // L2 experimental
 inline constexpr address<"Game_CustomDriverNetworkMessageHandler_UpdateReplicatedDriver"> Game_CustomDriverNetworkMessageHandler_UpdateReplicatedDriver{}; // L2 experimental
+inline constexpr address<"Game_CustomSeason_RebuildFromRounds"> Game_CustomSeason_RebuildFromRounds{}; // L2 experimental
 inline constexpr address<"Game_CustomisationDecals_DeleteFiles"> Game_CustomisationDecals_DeleteFiles{}; // L2 experimental
 inline constexpr address<"Game_CustomisationDecals_Destroy"> Game_CustomisationDecals_Destroy{}; // L2 experimental
 inline constexpr address<"Game_CustomisationDecals_DestroyMaterialOverride"> Game_CustomisationDecals_DestroyMaterialOverride{}; // L2 experimental

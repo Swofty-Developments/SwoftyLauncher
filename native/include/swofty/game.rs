@@ -9356,6 +9356,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_CustomSeason_RebuildFromRounds: Binding = Binding {
+        id: "Game_CustomSeason_RebuildFromRounds",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_CustomisationDecals_DeleteFiles: Binding = Binding {
         id: "Game_CustomisationDecals_DeleteFiles",
         kind: "func",
@@ -18026,6 +18031,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Build_DevWeekendStructure: Binding = Binding {
+        id: "Sess_Build_DevWeekendStructure",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Build_GroupResult: Binding = Binding {
         id: "Sess_Build_GroupResult",
         kind: "func",
@@ -20973,6 +20983,11 @@ pub mod bindings {
     };
     pub const Vm_FinanceTransactionRow_SetIcon: Binding = Binding {
         id: "Vm_FinanceTransactionRow_SetIcon",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Vm_Fire_Route: Binding = Binding {
+        id: "Vm_Fire_Route",
         kind: "func",
         status: Status::Experimental,
     };

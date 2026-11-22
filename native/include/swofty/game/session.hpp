@@ -401,6 +401,7 @@ using Sess_Assign_GarageSlotsByTeamOrder_t = void(void *out_assignments, void *e
 inline constexpr fn<"Sess_Assign_GarageSlotsByTeamOrder", Sess_Assign_GarageSlotsByTeamOrder_t> Sess_Assign_GarageSlotsByTeamOrder{}; // L2 experimental
 inline constexpr address<"Sess_AutoCrossRuleset_PlaceVehicles"> Sess_AutoCrossRuleset_PlaceVehicles{}; // L2 experimental
 inline constexpr address<"Sess_Build_ChampionshipEntrantSelection"> Sess_Build_ChampionshipEntrantSelection{}; // L2 experimental
+inline constexpr address<"Sess_Build_DevWeekendStructure"> Sess_Build_DevWeekendStructure{}; // L2 experimental
 using Sess_Build_GroupResult_t = void(void *weekend, uint8_t group, void *result);
 inline constexpr fn<"Sess_Build_GroupResult", Sess_Build_GroupResult_t> Sess_Build_GroupResult{}; // L2 experimental
 inline constexpr address<"Sess_Build_SafetyCarLogicGraph"> Sess_Build_SafetyCarLogicGraph{}; // L2 experimental

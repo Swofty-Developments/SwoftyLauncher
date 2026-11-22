@@ -36,7 +36,18 @@
   ],
   "used_by": []
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "Moorzii",
+   "kind": "func",
+   "item": "Vm_Fire_Route",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1442c33f0 (jmp) and its body 0x15329de80-0x15329e03e;xref:0x1419cf853",
+   "notes": "gh:Moorzii checked on 26566308 (twin 0x1442c33f0, called at 0x1419cf853): hashes vm+0x250 into the robin-hood map at router+0x48, walks the found node's parents (+0x20) to the UISE element (vt+0x80 == 0x45534955), then calls the run-route function 0x14418a940 with the UI system from [[router+0x48]] vt+0xe0, the node, the route name, the group element and the 4th argument; the notes' vt[0x1c0] is that slot (offset 0xe0, index 0x1c)"
+  }
+ ],
  "proofs": [
   {
    "by": "re-bindings-ir",
@@ -60,6 +71,25 @@
   {
    "by": "re-bindings-ir",
    "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419cf84e",
+    "target": "0x1442c33f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "54c4897fdd6b16941544358e285b87c815bc80f6227e25fd35bab111a02283ed"
+  },
+  {
+   "by": "Moorzii",
+   "date": "2026-11-22",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

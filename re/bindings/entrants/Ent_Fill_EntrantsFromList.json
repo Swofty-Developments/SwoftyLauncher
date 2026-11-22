@@ -54,7 +54,7 @@
  "proofs": [
   {
    "by": "Moorzii",
-   "date": "2026-11-21",
+   "date": "2026-11-22",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

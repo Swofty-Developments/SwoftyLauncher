@@ -35,7 +35,18 @@
   ],
   "used_by": []
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-22",
+   "verifier": "Moorzii",
+   "kind": "func",
+   "item": "Game_CustomSeason_RebuildFromRounds",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1412078d0-0x14120790d and the tail-called body 0x149568500-0x149568657 (jmp at 0x140b98b40);xref:0x1456cc078",
+   "notes": "gh:Moorzii checked on 26566308 (twin 0x1412078d0, vtable cell 0x1456cc078): clears [self+0x290]+0x298 (Vm_Node_Clear), adds [[self+0x298]+0x18] (Game_ChampionshipRounds_AddTrack_Thunk), then tail-calls the rebuild: registry [self+0x270] vt+0x78 == 1 returns, else vt+0x40 and season = vt+0x88; none creates 'custom_season' through vt+0x50/+0x70, else destroys every weekend in season+0x288..+0x290 (0x140aece50, 0x143654740, dtor, free through +0x280) and zeroes +0x2a0; then 0x140b98c90([self+0x290], season) and 0x140ae47a0(season)"
+  }
+ ],
  "proofs": [
   {
    "by": "re-bindings-ir",
@@ -59,6 +70,25 @@
   {
    "by": "re-bindings-ir",
    "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1412078d0",
+    "target": "0x1412078d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "468a698162210fcb9c21237fbcc0d58d67799135e04b9790224cb92d29e9eb2b"
+  },
+  {
+   "by": "Moorzii",
+   "date": "2026-11-22",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

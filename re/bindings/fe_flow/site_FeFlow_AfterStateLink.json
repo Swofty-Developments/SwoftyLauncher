@@ -55,7 +55,7 @@
  "proofs": [
   {
    "by": "Moorzii",
-   "date": "2026-11-21",
+   "date": "2026-11-22",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
@@ -70,7 +70,7 @@
     "target": "0x144427248"
    },
    "sigcheck": "skipped (not the KB build)",
-   "digest": "abf9e3f5783d3f4a51a16ba3dda9536ee9986d1d138ff737aeb7a4599a3e82e5"
+   "digest": "8fd5357f156b1c36b4c64a2191cd15b8f789bb8ffb193dd7421af38fc8a2b7b0"
   }
  ]
 }
