@@ -13,6 +13,7 @@ The changes you make are a draft until you save them. The launcher saves the dra
 
 - **Save as Addon** turns a new draft into an addon. Give it a name, an author, a category and a description. The new addon is turned on in the active profile, and the launcher switches to **Addons** with the addon highlighted. **Vanilla** stays stock, so an addon saved there stays off.
 - **Save** writes your changes into the addon you're editing and switches to **Addons**.
+- With Driver Manager on, **Save** and **Save as Addon** first ask when the draft changes a head or helmet Driver Manager sets: see [Heads and helmets Driver Manager sets](#heads-and-helmets-driver-manager-sets).
 - **Discard changes** puts the addon back to how it was last saved, or a new draft back to no changes.
 - **Edit in DB Editor** on an addon's row on **Addons** opens it here. With unsaved changes to another addon, the DB Editor asks whether to save them, discard them or stay.
 - **New addon** starts a new draft from the game's stock values.
@@ -67,6 +68,26 @@ Driver Manager adds its drivers when the profile builds. The DB Editor's pages d
 With Driver Manager installed, the choices of a field that picks a driver or an entrant also list its drivers, after the game's, such as **Jacob Swofty (Driver Manager)**. These fields include a seat's **Entrant** and **Driver override** on **Line-ups**, an entrant's **Driver** on **Entrants**, **Driver** on **Driver looks** and on **Retirements**. A retired driver shows as **(Driver Manager, retired)**. A driver Driver Manager leaves out isn't listed, apart from one left out for a head or kit that isn't installed. Each driver's value is its label, `dm_` and its driver id, such as `dm_208`.
 
 A value that picks a Driver Manager driver needs Driver Manager on in the profile. When Driver Manager is off, or doesn't add the driver, the launch log names the addon and the driver. **Export game files** names them too: the game files have no Driver Manager drivers.
+
+## Heads and helmets Driver Manager sets
+
+Driver Manager's **Game drivers** sets the head and helmet of the game's own drivers, and Driver Manager builds after every other addon. In a profile with Driver Manager on, its head or helmet for a driver replaces the one a DB Editor addon sets.
+
+**Save** and **Save as Addon** check the draft first. When Driver Manager is on in the active profile and the draft changes a head or helmet that **Game drivers** also sets, the DB Editor asks before it saves. The popup names each driver and the value, such as **Mika Häkkinen** and **Head**, and offers:
+
+- **Save anyway** saves the addon. For a new draft it opens **Save as Addon**.
+- **Open Driver Manager** opens the **Driver Manager** page. The draft stays unsaved.
+- **Cancel** keeps the draft unsaved.
+
+The popup doesn't appear when Driver Manager is off, isn't installed, or sets none of the draft's heads and helmets, and never in **Vanilla**. It checks **Head model** on **Drivers** and **Helmet** on each of the driver's rows on **Driver looks**. Changes to names, numbers and other values don't bring it up. A head or helmet Game drivers picks that isn't installed when you play leaves the addon's value in place, and the popup still appears.
+
+To use the addon's head or helmet, open **Driver Manager**, then **Game drivers**, press **Edit** on the driver and **Use the stock head and helmet**. After a build, `swofty conflicts` and **Conflicts** on **Addons** list the value under Driver Manager:
+
+```text
+$ swofty conflicts
+Driver Manager overrides Hakkinen head on 1 database value
+  entrants.drivers.driver[_metadata_=mika_hakkinen].head
+```
 
 ## Copy a row from someone else
 
