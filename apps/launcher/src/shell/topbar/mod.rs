@@ -61,6 +61,10 @@ impl Shell {
         self.account.allowed() || (cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_MP").is_some())
     }
 
+    pub(crate) fn tab_home(&self, tab: Tab) -> Page {
+        tab.home_with(self.nav_mp())
+    }
+
     pub(crate) fn sub_nav(&self, layout_width: f32) -> Option<SubNav> {
         let tab = self.navigation.page.tab();
         let (links, fixed) = match tab {
@@ -250,7 +254,7 @@ impl Shell {
                     let page = if self.navigation.page.tab() == Some(tab) {
                         self.navigation.page
                     } else {
-                        tab.home()
+                        self.tab_home(tab)
                     };
                     self.open_page(page, cx);
                 }
