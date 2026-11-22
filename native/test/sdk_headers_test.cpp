@@ -32,6 +32,7 @@
 #include <swofty/systems/liveries.hpp>
 #include <swofty/systems/power.hpp>
 #include <swofty/systems/pitlane.hpp>
+#include <swofty/systems/pit_rows.hpp>
 #include <swofty/systems/race_control.hpp>
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/sounds.hpp>
@@ -699,6 +700,45 @@ static int fake_disqualify(uint32_t car)
 {
     return car == 6 ? SWOFTY_ASSET_LATE : car == 2 ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
 }
+static double g_penalty = 5.0;
+static float g_hold;
+static int fake_time_penalty(uint32_t car, double *s)
+{
+    if (car == 9)
+        return SWOFTY_ASSET_LATE;
+    *s = g_penalty;
+    return SWOFTY_ASSET_OK;
+}
+static int fake_set_time_penalty(uint32_t car, double s)
+{
+    if (s < 0 || s > 3600)
+        return SWOFTY_ASSET_INVALID;
+    return car == 9 ? SWOFTY_ASSET_LATE : (g_penalty = s, SWOFTY_ASSET_OK);
+}
+static int fake_set_pit_hold(uint32_t car, float s) { return car < 27 ? (g_hold = s, SWOFTY_ASSET_OK) : SWOFTY_ASSET_INVALID; }
+static int fake_pit_hold(uint32_t car, SwoftyPitHold *h)
+{
+    if (car >= 27 || h->size < sizeof(SwoftyPitHold))
+        return SWOFTY_ASSET_INVALID;
+    h->armed = g_hold;
+    h->holding = 0;
+    h->served = 4.5f;
+    h->serves = 2;
+    h->crew = SWOFTY_PIT_CREW_FREEZE;
+    return SWOFTY_ASSET_OK;
+}
+static uint32_t g_row_value;
+static int g_row_locked;
+static int fake_row_find(const char *id, uint32_t *h)
+{
+    if (std::strcmp(id, "serve"))
+        return SWOFTY_ASSET_UNAVAILABLE;
+    *h = 1;
+    return SWOFTY_ASSET_OK;
+}
+static int fake_row_value(uint32_t h, uint32_t *v) { return h == 1 ? (*v = g_row_value, SWOFTY_ASSET_OK) : SWOFTY_ASSET_INVALID; }
+static int fake_row_set(uint32_t h, uint32_t v) { return h == 1 && v < 2 ? (g_row_value = v, SWOFTY_ASSET_OK) : SWOFTY_ASSET_INVALID; }
+static int fake_row_lock(uint32_t h, int l) { return h == 1 ? (g_row_locked = l, SWOFTY_ASSET_OK) : SWOFTY_ASSET_INVALID; }
 static int fake_active(int on) { return g_on = on, SWOFTY_ASSET_OK; }
 static int fake_follow(uint32_t car) { return g_follow = int(car), SWOFTY_ASSET_OK; }
 static int fake_camera(int32_t c) { return g_camera = c, c == 1 || c == 2 ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID; }
@@ -733,6 +773,21 @@ static void content_ownership()
     swofty::detail::set_content_ops_table(nullptr);
 }
 
+static void pit_rows()
+{
+    CHECK(!swofty::hud::PitRow::find("serve"));
+    SwoftyPitRowOps ops{SWOFTY_PIT_ROWS_VERSION, fake_row_find, fake_row_value, fake_row_set, fake_row_lock};
+    swofty::detail::set_pit_rows_table(&ops);
+    CHECK(!swofty::hud::PitRow::find("other"));
+    auto row = swofty::hud::PitRow::find("serve");
+    CHECK(row && !row->yes());
+    CHECK(row->set(true) && row->yes() && g_row_value == 1);
+    CHECK(row->lock(true) && g_row_locked == 1 && row->lock(false) && g_row_locked == 0);
+    ops.version = 0;
+    CHECK(!swofty::hud::PitRow::find("serve"));
+    swofty::detail::set_pit_rows_table(nullptr);
+}
+
 static void session_operations()
 {
     cars::live::Car car(3);
@@ -747,15 +802,32 @@ static void session_operations()
                          fake_follow,
                          fake_camera,
                          fake_current,
-                         fake_disqualify};
+                         fake_disqualify,
+                         fake_time_penalty,
+                         fake_set_time_penalty,
+                         fake_set_pit_hold,
+                         fake_pit_hold};
     CHECK(sessions::disqualify(car) == sessions::Result::unavailable);
+    CHECK(!sessions::time_penalty(car) && sessions::set_pit_hold(car, 5) == sessions::Result::unavailable);
     swofty::detail::set_session_ops_table(&ops);
     CHECK(sessions::disqualify(cars::live::Car(2)) == sessions::Result::ok);
     CHECK(sessions::disqualify(cars::live::Car(6)) == sessions::Result::late);
     CHECK(sessions::disqualify(cars::live::Car(9)) == sessions::Result::invalid);
     ops.version = 1;
     CHECK(sessions::disqualify(cars::live::Car(2)) == sessions::Result::unavailable);
+    ops.version = 2;
+    CHECK(!sessions::time_penalty(car) && sessions::set_time_penalty(car, 0) == sessions::Result::unavailable);
+    CHECK(!sessions::pit_hold(car) && sessions::set_pit_hold(car, 3) == sessions::Result::unavailable);
     ops.version = SWOFTY_SESSION_OPS_VERSION;
+    CHECK(sessions::time_penalty(car) == 5.0);
+    CHECK(!sessions::time_penalty(cars::live::Car(9)));
+    CHECK(sessions::set_time_penalty(car, 2.5) == sessions::Result::ok && sessions::time_penalty(car) == 2.5);
+    CHECK(sessions::set_time_penalty(car, -1) == sessions::Result::invalid);
+    CHECK(sessions::set_time_penalty(cars::live::Car(9), 1) == sessions::Result::late);
+    CHECK(sessions::set_pit_hold(car, 7.5f) == sessions::Result::ok);
+    auto hold = sessions::pit_hold(car);
+    CHECK(hold && hold->armed == 7.5f && hold->serves == 2 && hold->served == 4.5f && hold->crew == sessions::PitCrew::freeze);
+    CHECK(!sessions::pit_hold(cars::live::Car(30)));
     CHECK(sessions::set_control(car, sessions::Control::ai) == sessions::Result::ok && g_mode == 1);
     g_flags = 1;
     auto st = car.control();
@@ -882,6 +954,7 @@ int main()
     game_assets_wrappers();
     unavailable_without_core();
     session_operations();
+    pit_rows();
     content_ownership();
     liveries_records();
     payload_accessors();

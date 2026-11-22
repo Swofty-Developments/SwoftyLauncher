@@ -90,6 +90,62 @@ inline Result disqualify(cars::live::Car car)
     return swofty::detail::session_result(t->disqualify(car.index()));
 }
 
+// The seconds of time penalty in the car's race result (standard library 1.12): the game adds them to the car's race
+// time. Empty before the session has a rule manager or a result for the car, and on a core without session
+// operations version 3.
+inline std::optional<double> time_penalty(cars::live::Car car)
+{
+    auto t = swofty::detail::live_session_ops();
+    double s = 0;
+    if (!t || t->version < 3 || !t->time_penalty || t->time_penalty(car.index(), &s) != SWOFTY_ASSET_OK)
+        return std::nullopt;
+    return s;
+}
+
+// Replaces the car's time penalty (0 to 3600 s). Only the machine that runs the car's race writes the result that
+// counts: offline the player's own game, online the car's own game.
+inline Result set_time_penalty(cars::live::Car car, double seconds)
+{
+    auto t = swofty::detail::live_session_ops();
+    if (!t || t->version < 3 || !t->set_time_penalty)
+        return Result::unavailable;
+    return swofty::detail::session_result(t->set_time_penalty(car.index(), seconds));
+}
+
+enum class PitCrew { none, stretch, freeze };
+
+struct PitHold {
+    float armed;     // seconds the next stop holds on top of the crew's work and any stop-go
+    float holding;   // seconds the stop in the box now holds; 0 outside the box
+    float served;    // extra seconds of the last stop that held the car to the end
+    uint32_t serves; // stops this session that held the car to the end
+    PitCrew crew;    // how the crew waited at that stop
+};
+
+// Arms the car's next pit stop with seconds it stays in the box (0 to 600, 0 disarms). The core fixes the number when
+// the car enters the pit lane; the crew waits through it, then works.
+inline Result set_pit_hold(cars::live::Car car, float seconds)
+{
+    auto t = swofty::detail::live_session_ops();
+    if (!t || t->version < 3 || !t->set_pit_hold)
+        return Result::unavailable;
+    return swofty::detail::session_result(t->set_pit_hold(car.index(), seconds));
+}
+
+inline std::optional<PitHold> pit_hold(cars::live::Car car)
+{
+    auto t = swofty::detail::live_session_ops();
+    SwoftyPitHold h{};
+    h.version = 1;
+    h.size = sizeof h;
+    if (!t || t->version < 3 || !t->pit_hold || t->pit_hold(car.index(), &h) != SWOFTY_ASSET_OK)
+        return std::nullopt;
+    PitCrew crew = h.crew == SWOFTY_PIT_CREW_STRETCH ? PitCrew::stretch
+                   : h.crew == SWOFTY_PIT_CREW_FREEZE ? PitCrew::freeze
+                                                      : PitCrew::none;
+    return PitHold{h.armed, h.holding, h.served, h.serves, crew};
+}
+
 namespace events {
 
 struct PlayerControl {

@@ -39,6 +39,7 @@ std::string profile;
 std::wstring requests;
 std::vector<AddonSettings> addons;
 std::vector<MfdRow> mfd_rows;
+std::vector<std::pair<std::string, std::string>> pit_rows;
 std::unordered_map<uint32_t, Command> commands;
 std::unordered_map<HMODULE, Owner> owners;
 std::set<std::string> warned;
@@ -270,6 +271,9 @@ void settings_attach(SwoftyApi *a, const std::wstring &dir)
             for (size_t j = 0; on && j < m.options.size(); j++)
                 if (m.options[j].id == r.str() && mfd_rows.size() < 8)
                     mfd_rows.push_back({addons.size(), j});
+        for (auto &r : jm["pit_rows"].a)
+            if (on && pit_rows.size() < PIT_ROWS_MAX && !r["id"].str().empty())
+                pit_rows.push_back({m.id, r["id"].str()});
         addons.push_back(std::move(m));
     }
     for (size_t i = 0; i < addons.size(); i++) {
@@ -289,6 +293,21 @@ void settings_attach(SwoftyApi *a, const std::wstring &dir)
 }
 
 size_t settings_mfd_rows() { return mfd_rows.size(); }
+
+size_t settings_pit_rows() { return pit_rows.size(); }
+
+int settings_pit_row(const std::string &addon, const std::string &id)
+{
+    for (size_t k = 0; k < pit_rows.size(); k++)
+        if (pit_rows[k].first == addon && pit_rows[k].second == id)
+            return int(k);
+    return -1;
+}
+
+std::string settings_pit_row_name(size_t k)
+{
+    return k < pit_rows.size() ? pit_rows[k].first + "." + pit_rows[k].second : std::string();
+}
 
 bool settings_mfd_step(size_t row, int dir)
 {

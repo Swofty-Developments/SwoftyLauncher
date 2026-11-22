@@ -25,6 +25,7 @@
 #include "core/hooks/context.hpp"
 #include "core/hooks/core_events.hpp"
 #include "core/hooks/hooks.hpp"
+#include "core/hooks/pit_hold.hpp"
 #include "core/hooks/player_facts.hpp"
 #include "core/hooks/race_fuel_rules.hpp"
 #include "core/frontend/view_state.hpp"
@@ -266,6 +267,7 @@ void d_pit_status(void *lane, uint8_t vehicle, uint32_t status)
     g_pit->original<void>(lane, vehicle, status);
     if (!known || !read_entry(after, stops_after) || after == before)
         return;
+    pit_hold::on_status(vehicle, before, after);
     events::session_pit(vehicle, before, after);
     if (stops_after != stops_before)
         events::session_pit_stop(vehicle, stops_after);
