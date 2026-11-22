@@ -727,8 +727,8 @@ for mode in crash exit heap abort overflow; do
         [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : heap: the process aborted ($code)" || { echo "FAIL: heap: the process did not abort on its own (exit $code)"; status=1; }
     elif [[ $mode == overflow ]]; then
         check "overflow: the overflowing thread hands its exception to the writer" '\[crash\] thread [0-9]+ hit STACK_OVERFLOW \(0xc00000fd\) with [0-9]+ KB of its stack left; it logs nothing itself, the crash report writer logs it'
-        check "overflow: the writer logs the first-chance line with the faulting thread's frame" '\[crash\] #[0-9]+ first-chance .*STACK_OVERFLOW \(0xc00000fd\) on thread [0-9]+, .* at F1_25\.exe\+0x[0-9a-f]+ \.text Fake_Overflow_Here\+0x'
-        check "overflow: a report with a minidump is written" '\[crash\] crash report .*crash-.*\.txt: STACK_OVERFLOW \(0xc00000fd\) at .*Fake_Overflow_Here.*minidump crash-.*\.dmp'
+        check "overflow: the writer logs the first-chance line for the faulting thread" '\[crash\] #[0-9]+ first-chance .*STACK_OVERFLOW \(0xc00000fd\) on thread [0-9]+, '
+        check "overflow: a report with a minidump is written" '\[crash\] crash report .*crash-.*\.txt: STACK_OVERFLOW \(0xc00000fd\) at .*minidump crash-.*\.dmp'
         parse_report "STACK_OVERFLOW (0xc00000fd) at" "Fake_Overflow_Here" || status=1
         [[ $code != 0 && $code != 124 && $code != 137 ]] && echo "ok  : overflow: the process ended ($code)" || { echo "FAIL: overflow: the process ended with $code"; status=1; }
     else

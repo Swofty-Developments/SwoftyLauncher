@@ -181,11 +181,11 @@ std::string unhandled_reason(const EXCEPTION_RECORD *r, uintptr_t ip)
     return why + " at " + where(ip);
 }
 
+// The writer sets text_event no later than done_event. Single-handle waits take the least stack.
 void wait_for_writer()
 {
     SetEvent(report_writer.go_event);
-    HANDLE text[2] = {report_writer.text_event, report_writer.done_event};
-    WaitForMultipleObjects(2, text, FALSE, TEXT_WAIT_MS);
+    WaitForSingleObject(report_writer.text_event, TEXT_WAIT_MS);
     WaitForSingleObject(report_writer.done_event, report_writer.dump_mode == DUMP_FULL ? FULL_DUMP_WAIT_MS : DUMP_WAIT_MS);
 }
 
