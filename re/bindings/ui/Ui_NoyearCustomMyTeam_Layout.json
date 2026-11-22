@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143703180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void f(void *self)",
-  "evidence": "decomp:re/decomp/143703180.c;xref:0x143700012;xref:0x143701835;xref:0x14370348b",
-  "notes": "myteam-g1: Layout for noyear-custom-myteam."
+  "evidence": "decomp:re/decomp/143703180.c;xref:0x143700012,0x143701835,0x14370348b",
+  "notes": "If player (this+0xca0) is My Team mode (0x140778420): 0x142513450(this+0xd70,2,0,0), VideoWall video noyear-custom-myteam (0x1428bea50), tail-jmp 0x1428bed50(this+0xd50,0,0,5); else only 0x142513450(..,2,1,0). (lane owner review requested)"
  },
  "signature": {
   "id": "ui.noyear_custom_my_team_layout",

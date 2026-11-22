@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14316eca0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14316eca0.c;pat:log-message-cxx;xref:0x14581f8b8",
-  "notes": "cxx=PlayerSetSubsystem::onMutableRoleChanged; log channel PLAYERSET: 'virtual void network::PlayerSetSubsystem::onMutableRoleChanged(IMutableRole::eRole) | %s(%s).'"
+  "notes": "Vtable cell. Logs cxx name + role (table 0x145f94690: offline/local/remote/discarded). Role 2 (remote): erase all local player IDs - entries in +0x38..+0x40 with +0x64 set and id +0x60 != -1 get id -1, +0x69 dirty, listeners +0x58..+0x60 vcall +0x18. Role 1 (local): if +8==0 re-evaluate entries (0x143168110) and report all, else +0x74=1. Role 0 (offline): non-local entries flagged discarded (0x1431684a0), clear isPlaying +0x65/isWatching +0x67/isDroppingIn +0x68, report changes. (lane owner review requested)"
  },
  "signature": {
   "id": "game.player_set_subsystem_on_mutable_role_changed",

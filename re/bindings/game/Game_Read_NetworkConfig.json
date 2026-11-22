@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143040da0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143040da0.c;pat:log-channel--;xref:0x1430d182e",
-  "notes": "NETWORK-CONFIG ConfigParser: about 260 Network.* registerVar log lines (Transport, Dev, NetStats, ConnectionQuality) and GameSessionConfig."
+  "notes": "Constructor (called at 0x1430d182e in 0x1430d11b0): vtable 0x145813d40 then 0x145809d40, allocs 3 maps via allocator param_2+0x10, writes defaults (e.g. +0x282 \"progress_logs\", +0x3d8 \"realistic\", +0x400 \"equal\", +0x420 \"clear\"), registers Network.* vars (0x145807aba Network.Transport.DeveloperID .. 0x145809d08 Network.Prediction.*) via FUN_1430ce030(this+0x10 map,name,{ptr,type,len}) with NETWORK-CONFIG ConfigParser registerVar logs, 9x NetStats.BandwidthBucket_%d; applies overrides from param_2+0x200 by type 0..8 (FUN_143a43b90/44280/44700/42f10/43240/43550/43880/44090/43ea0); stores this in 0x1460bff80; logs \"Matchmaking Developer Code: 0x%08x\" via FUN_14304cb60; returns this. (lane owner review requested) Better name: Game_GameSessionConfig_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_network_config",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ace510",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142ace510.c;str:s_OptionsSystem_LoadContextTags;xref:0x1413e5267",
-  "notes": "Only caller 0x1413e5267. 23 KB; pretty function OptionsSystem::loadContextTags(), options_system.* keys."
+  "notes": "pdata matches decomp. options_system.context children by djb2: game_mode_tag->+0x3a0, game_setup_mode_tag->+0x3c0, multiplayer_context_tag->+0x3e0, general_tag->+0x400/+0x420, game_state Locked->+0x4c4/+0x4d8, else tag folder 0x142ace3d0 + loadContextTags log; then watchedOption->+0x6d0, options_system.restrictions, options_system.presets (requirement/fallback/settings ->+0x378), posts 0x1439876c0. (lane owner review requested) Better name: Game_OptionsSystem_LoadContextTagsAndPresets (bound record keeps its name)."
  },
  "signature": {
   "id": "game.options_system_load_context_tags",

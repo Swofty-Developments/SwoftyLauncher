@@ -9,7 +9,7 @@
   "subsystem": "ui",
   "proto": "void FUN(void *view, void *ctx)",
   "evidence": "decomp:re/decomp/141a62670.c;xref:0x145729bf8",
-  "notes": "myteam-g1: UI binding code; rnd_challenger_icons. Static, string-key driven."
+  "notes": "Screen vtable slot (cell 0x145729bf8). Binds entries, entry_selection, select_available, advance_available, unlock_description_to_display; global label 0x145f96d10 = drs or x_mode by component 0x146063160 +0x6e8; one 0xf0-byte entry per 0x38-byte record of component 0x146062f80 +0x2b8, icon %s.%s.%s rnd_challenger_icons, text lng_locked_until_end_of_season / SEASON. Better name: Ui_RnDChallengers_InitEntries (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.rnd_set_challenger_icons",

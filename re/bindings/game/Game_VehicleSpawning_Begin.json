@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f3b410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f3b410.c;pat:log-channel-VEHICLE_SPAWNING_SYSTEM;xref:0x1457f7c68",
-  "notes": "Only ref: absolute vtable cell 0x1457f7c68 (code neighbours). 1609-line decomp; registers callbacks 0x142f3dc90 / ObjectPreCreation 0x142f3e200 / OnWorldStarted 0x142f3e7c0 (lea at 0x142f3c214/0x142f3c22b) and calls SetState 0x142f3d970(..,2/5). Likely the spawning system per-frame update, not only 'begin'."
+  "notes": "Per-tick VEHICLE_SPAWNING_SYSTEM update. Once (state at blk+0x18: 0->1->2) loads system/layer_blacklist.xml, collects 'name' of Layer / Layer_SessionCar / Layer_ShowroomCar into 3 vectors. Requests vec this+0xa0: state 1 'Begin spawning for request %d', name %s_%d (showroom_car/safety_car/car), FUN_14442b4c0 with cbs 0x142f3e7c0/0x142f3e200/0x142f3dc90, SetState 0x142f3d970(2); 3->4; 4->5; 7 forceUnload->8; 8 unloadedCB->0. Then spawns new 0x6910 requests from queue this+0x28 (stride 0x6880). (lane owner review requested) Better name: Game_VehicleSpawning_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.vehicle_spawning_begin",

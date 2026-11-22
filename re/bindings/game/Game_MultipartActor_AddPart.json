@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401cb030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401cb030.c;pat:log-message-cxx;xref:0x1401a6845,0x1401ec5b6",
-  "notes": "MultipartActor::addPart (strings 'MultipartActor::addPart %s', ACTOR_REGEX 'addPart srcString %s [%s%s] %s', 'unable to find a part to determine regex replacement logic', 'connectionParent was null, check above for MISSING RESOURCE'). Callers 0x1401a6845, 0x1401ec5b6."
+  "notes": "If part name (string table 0x14618ce08, index *param_5) starts with '$': splits by ',' and for '$replace' looks up part (FUN_140194930) and regex-replaces (FUN_140322e60), logs ACTOR_REGEX 'MultipartActor::addPart %s', 'addPart srcString %s [%s%s] %s', 'unable to find a part to determine regex replacement logic - part [%s]'. Then grows part vector this+0x550/0x558/0x560, creates MultipartActorPart via FUN_140187560, part+0x580=this, part+0x588=connectionParent (null -> ACTOR_WARN 'connectionParent was null...', uses this), FUN_1401cce60; returns part or 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.multipart_actor_add_part",

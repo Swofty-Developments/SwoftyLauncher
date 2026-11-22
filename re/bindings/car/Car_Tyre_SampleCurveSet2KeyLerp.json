@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e7bfa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e7bfa0.c;xref:0x1414dc62a",
-  "notes": "Bilinear sampler over a 2D curve set (outer list [this+0x10], per-curve points +0x28 via FUN_142e7bd50 / 142e7c1c0 / 142e7c410): clamps t to 0..1, finds two bracketing curves by key param_3[0], samples both at param_3[1] and lerps by (x-x0)/(x1-x0). ~44 callers incl. HUD/virtual-session code. Hypothesis: tyre grip/wear vs lap curve evaluation. vp5-verify partial/disagree"
+  "evidence": "decomp:re/decomp/142e7bfa0.c;xref:0x1414dc62a,0x14155518f,0x141555a2b,0x141558ab4,0x141558f39,0x14155a8cf,0x1418ef7ea,0x1418ef801,0x141d7065b,0x141f98410,0x141f98427,0x141f98607,0x141f9861e,0x1429b081d,0x1429b0830,0x1429b8bf5,0x1429b8c0c,0x142e7c9f5,0x142e92d1c,0x142e92d2f,0x142f6cb84,0x142f72fef,0x142f73009,0x142f73a5f,0x142f73ad7,0x14368ee50,0x14368eeeb,0x143691966,0x14369f6d6,0x14369f6e9,0x14369f767,0x14369f77a,0x14369f7f9,0x14369f80c,0x14369f889,0x14369f89c,0x1436a0e43,0x1436a116f,0x1436a55cc,0x1436a567b,0x1436a6707,0x1436a6902,0x1436aed16,0x14fa9a52b",
+  "notes": "(set, t in xmm1, key*): t clamped 0..1; outer curves bracketed by key[0] (0x142e7bd50), inner curves bracketed by key[1] (0x142e7c1c0); 4 samples with Car_Tyre_Curve2D_SampleByBinarySearchY(t), lerped by the +0x20 params on key[1], then on key[0]; 0 if the set is empty. Callers listed in xref. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_sample_wear_curve2_d",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143125980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143125980.c;pat:log-message-cxx",
-  "notes": "onAttributeSetRecalculated (own pretty-function string in the body)."
+  "evidence": "decomp:re/decomp/143125980.c;pat:log-message-cxx;xref:0x14312293f,0x14312296c",
+  "notes": "Bus handler (lea refs in 0x1431228f0). Returns unless map at this+0x38 has an entry with +0x39==2 and msg+0x60 set; compares msg key (+0x18 type 3/7, +0x20..+0x38) with local player id (0x1441207d0/+0x140->+0x198->+0x1c0 vt+0x38); logs NETWORK-ENTRANTS 'Lead player's attribute set was recalculated.', looks up key in hash map this+0x30 (+0xa0..+0xd4), builds update msg (vt 0x145824520) and sends via 0x14402e500(this+0x20), logs 'Sent update message ... to the server.' (lane owner review requested)"
  },
  "signature": {
   "id": "game.attribute_set_replication_manager_on_attribute_set_recalculated",

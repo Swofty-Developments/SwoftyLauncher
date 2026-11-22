@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14147b720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14147b720.c;pat:log-channel-GAME;xref:0x14147e172,0x1414a7fab,0x14ae2d9d0,0x14ae4e439,0x14e2f284a",
-  "notes": "0x9c7-byte body: '[TIME TRIALS] New reference : track, weather, leaderboard', reads current_track, track_info.track_set_name, tt_weather."
+  "notes": "pdata ..0x14147c0e7. Returns unless [p2+8] key == this+0x20508. Reads track_info.current_track.track_set_name -> track entry id byte +1, tt_weather.value=='wet', byte [..+0x2b0]+0x80; if changed vs this+0x3c/+0x40/+0x41: store; on track change 0x142f8baf0 -> this+0x20278 + vfunc +0x130(id,wet); logs '[TIME TRIALS] New reference : track(%d, %s), weather(%s), leaderboard(%s).'; 0x14147c0f0(this,0); resets [[this+0x30]+0x50]+0x28. (lane owner review requested)"
  },
  "signature": {
   "id": "game.time_trial_set_reference",

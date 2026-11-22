@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143128e40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143128e40.c;pat:log-message-cxx",
-  "notes": "handleBadgeIdAllocated: gets the badge for the allocated id, replaces the player badge (0x143128730) and sends a reply (0x14402e500)."
+  "evidence": "decomp:re/decomp/143128e40.c;pat:log-message-cxx;xref:0x14febe045",
+  "notes": "Body read in full. When (+0x10)+8 > 1 and [(+8)+0xd8] vt+0x10 == param_3: looks up the badge for id [+0x80]+0x1b8 via 0x14246d820(+0x28) (missing: logs '%s : There is no badge assigned to the standard slot.'); else replaces the player badge 0x143128730(this,..,param_2+0x60,badge) and sends a message (vtable 0x1458245e0, badge fields +0x18..+0x158) via 0x14402e500(+0x20,1,..). Only ref: lea 0x14febe045 (registration in 0x14febdd60). (lane owner review requested)"
  },
  "signature": {
   "id": "game.badge_replication_manager_handle_badge_id_allocated",

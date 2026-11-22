@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414bf420",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "pat:10-entry-jump-table;kb:subsystems/rnd_ui.md#pie",
-  "notes": "View-model vt[11]: Vm_Dispatch_BindingMessage (0x1442c00e0) delivers a 0x4d binding event here; a 10-entry jump table maps ev 0->slot 13, 1->14, 2->20+15 (when +0x628&1), 3->6, 4->7, 7->19, 8->20, 9->21. For the class-B R&D VM slot 19 is Career_Build_RnDPieOverview. No E8 callers."
+  "evidence": "decomp:re/decomp/1414bf420.c;pat:10-entry-jump-table;kb:subsystems/rnd_ui.md#pie;xref:0x1456e12c8,0x1456e6ce8,0x1456e9728,0x1456f7188",
+  "notes": "Vtable slot 11 (cell 0x1456e6ce8 = TabViewModel vt 0x1456e6c90+0x58, plus other VM vtables). switch ev: 0 -> +0x25c|=0x10, slot13; 1 -> slot14; 2 -> slot20 if byte +0x628&1, +0x25c&=~0x10, slot15; 3 -> +0x25c|=4, slot6; 4 -> +0x25c&=~4, slot7; 7/8/9 -> slots 19/20/21; others return. No direct calls. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.route_binding_event",

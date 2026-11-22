@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14039f630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/14039f630.c;xref:0x14039dd5e,0x1403a6b28",
-  "notes": "(carVisual, dt): smooths visual heat values (+0x1be4 from car+0x2574, +0x1be8 from +0x2548/rpm) and maps temperature (+0x253c K -273.15 -30) into glow ramps for brake/exhaust shaders. Caller: Car_Visual_UpdateRenderState."
+  "notes": "(vis,dt): car = [[+0x1248]+0x58]+0x530; smooths +0x1be4 toward car+0x2574 (2*dt) and +0x1be8 toward car+0x2548/XOR(car+0x2518) (6*dt); temperature car+0x253c K -303.15 mapped (x-20)/90 and (x-35)/90; rpm car+0x2538*9.55414 normalised by a per-car rev range (table stride 0x6780, +0xce0/+0xce4); lerps 9 ramps +0x17bc..+0x19fc (stride 0x48). Also rpm ramps, not only heat. Callers in 0x14039aa80, 0x1403a66d0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.visual_update_heat_effects",

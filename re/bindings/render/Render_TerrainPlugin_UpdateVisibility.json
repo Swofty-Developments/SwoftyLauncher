@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c36650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c36650.c;xref:0x143c34e33,0x143cefb09,0x143df03a3",
-  "notes": "Mode param_3: 1 logs 'double set of PVS-MIP camera in one frame' (channel AndrewW) when +0x1c8 == +0x20; 2 checks LOD ranges +0x10604..; then cell lookups in flat hash maps (+0x58 seed, +0x60..+0x8c; +0xd8/+0x90 via Ne_FlatHashMap_FindSlotKey16_D), atan2f. Render_TerrainPlugin_Render calls it with mode 6 on [x+0x40]."
+  "notes": "param_3=1: warns once (<5) when +0x1c8==+0x20 (log 0x1406d4c80), clears +0x1d0. param_3=2: picks LOD band from +0x10604/+0x10608 vs +0x24. Quantises pos*100 -> key, hash lookup (FUN_143edb740 on +0xd8/+0x90, flat map +0x58..+0x8c) -> cell index into +0x38 (0x20 stride); mode 1 builds angular mask in 0x146543d70 (+0x105d8..+0x105f8, 2pi sectors). Under CS +0x1d8 decodes RLE/XOR-delta PVS bits from +0x40 into one of 8 cached 0x1000-byte slots (+0x410/+0x85d0, ids +0x208, frame +0x228), returns slot desc +0x250 or +0x8410. (lane owner review requested) Better name: Render_Pvs_LookupCellVisibility (bound record keeps its name)."
  },
  "signature": {
   "id": "render.terrain_plugin_update_visibility",

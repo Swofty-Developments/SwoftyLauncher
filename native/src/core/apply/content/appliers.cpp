@@ -379,6 +379,11 @@ void report_left_out(const Expansion &x)
                     n("team.identity"), n("vehicle"), n("content.package"));
         moments::left_out(addon, n("team.identity"), n("vehicle"), n("content.package"));
     }
+    for (auto &[addon, lines] : x.status)
+        for (auto &line : lines) {
+            swofty::log("[registry] left out: %s: %s", addon.c_str(), line.c_str());
+            moments::status(addon, line);
+        }
 }
 
 void run_boot(Store &st)
@@ -1081,6 +1086,13 @@ GridBox grid_for_box(const std::string &entrant_list)
     collect_packages(p);
     GridPick pick = grid_pick(entrant_list, p.list);
     return {pick.rule, pick.line};
+}
+
+size_t seats_for_box(const std::string &entrant_list)
+{
+    Packages p;
+    collect_packages(p);
+    return package_seats(entrant_list, p.list);
 }
 
 bool any_grid_rule()

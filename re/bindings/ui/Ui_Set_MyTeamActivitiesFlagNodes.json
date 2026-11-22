@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14231e2f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void SetFlags(void *menu, int state)",
-  "evidence": "decomp:re/decomp/14231e2f0.c;xref:0x142316c14;xref:0x14231b917;xref:0x14231bb17",
-  "notes": "myteam-g2: Sets Vm bool nodes from menu+0x428/+0x448 state flags (visibility of activity sub-menus). UI only."
+  "evidence": "decomp:re/decomp/14231e2f0.c;xref:0x142316c14,0x14231b917,0x14231bb17",
+  "notes": "(menu,state): state -1 -> bool nodes menu+0x448 and menu+0x428 = false; else +0x448 = (state != 0), +0x428 = (state != 3); setter 0x140973e20. (lane owner review requested)"
  },
  "signature": {
   "id": "ui.set_my_team_activities_flag_nodes",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14196a7c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14196a7c0.c;xref:0x14196da86,0x141bf858a,0x141c0102e,0x141defe57",
-  "notes": "Special livery list (team_%d/item_%d, default livery then owned unlockables)."
+  "notes": "Clears out-map param_2; per team node of param_1+0x30 inserts node (key byte+0x20<<14|u16+0x22, vector of 0x6980-byte entries +0x30, count +0x48, selected +0x50), 'team_%d'/'item_%d' djb2-interned ids; first entry = default livery (lng_default_livery_title/_description); then items whose vfunc+0x40==1, owned flag vs equipped (+200) sets +0x50; finally pads each team to 6 entries with empty items (index -1). (lane owner review requested)"
  },
  "signature": {
   "id": "game.build_special_livery_list",

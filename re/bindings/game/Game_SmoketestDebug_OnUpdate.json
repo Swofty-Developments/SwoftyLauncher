@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143deeae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143deeae0.c;pat:log-message-method;xref:0x1527e89a6",
-  "notes": "pdata 0xedf bytes; strings me_renderOrder, zRenderOrder, \"material Render Order parameter not found\", SMOKETEST_DEBUG \"%s Tile count for %s is %u\", \"%s_x%d_y%d\". Only ref: lea 0x1527e89a6 (in 0x1527e87d0)."
+  "notes": "Logs method 'onUpdate' (SMOKETEST_DEBUG/'material Render Order parameter not found' are log channel/text, class unknown). Frees buffers +0x128..+0x178, takes tile resource +0xd0: per material (+0x3c) reads me_renderOrder param into +0x168, patches 3 hashed params; logs tile count (+0x38), registers '%s_x%d_y%d' names via +0xc8, copies tile bounds to +0x128, centroid +0x140, scale 126/maxabs +0x158, packs 4 s8 extents per tile into +0x150. (lane owner review requested)"
  },
  "signature": {
   "id": "game.smoketest_debug_on_update",

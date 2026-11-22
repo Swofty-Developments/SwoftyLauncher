@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143242a70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "pat:log-message-cxx;doc:re/research/fuel_mix_five.md#sites;decomp:re/decomp/143242a70.c;xref:0x14323cc20,0x14324b563,0x143251481",
-  "notes": "Pretty-function string buildVehicleStateMessage(racing::vehicleInstance::Id, const VehicleState &, const VehicleState *) and matching 'sending ...' logs plus 'Built Packet ||%s%s%s%s%s%s|%s' (sections pit/controls/ghost/rules/vehicle) are in the body. Callers Game_VehicleMechanicalManager_SetVehicle 0x14323ca40, 0x1432495e0, Game_VehicleMechanicalManager_OnRequestSessionData 0x143251340. | engine-re fuel-mix-5 2026-11-20 (static): the requested fuel mix of the controls (byte +0x65; log text 'fuelmix(%u)' 0x14582cc76) is written as a ranged value 0..3 (mov r9d,3 before the writer at 0x1432491ce; the second 0..3 write at 0x143244b41 is another field); 4 is outside the wire range. edited by engine-re with --force 2026-11-20 at user request (lane owner review requested)"
+  "notes": "Pretty-fn 0x14582c65c. (this,id,cur,prev|null): per-field dirty vs prev (null=full). Bitstream: vehicle eng dmg+0x32,temp+0x18,ERS+0x33/+0x34/+0x38,dmg+0x4/+0x8/+0x10,tyres+0x1a..+0x2d,fuel+0x3a,antistall+0x3d(0..3 @0x143244b41); rules pens+0x48..+0x55; ghost+0x56..+0x59; controls+0x5a..+0x64,fuelmix+0x65 0..3 @0x1432491ce; pit+0x6c/+0x70. Header id 0..0x1a+section bits, 0x1439263e0, bits->this+0x134. (lane owner review requested)"
  },
  "signature": {
   "id": "game.vehicle_mechanical_manager_build_vehicle_state_message",

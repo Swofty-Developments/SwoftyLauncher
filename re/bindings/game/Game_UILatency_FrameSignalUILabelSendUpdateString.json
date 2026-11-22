@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144235090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144235090.c;pat:log-channel-UI_latency;xref:0x14423506b,0x14423b006,0x14423b7b8,0x1534db677,0x1534df897,0x1534df917,0x1534e2fe7",
-  "notes": "UI label update: walks child nodes (type 0x146ca3498), rebuilds the 0x23-entry string parameter table (stride 0x70) and logs UI_latency 'Signal UI Label Send Update string to Element:%hs Node:%hs'. Callers 0x14423506b, 0x14423b006, 0x14423b7b8 and protector jmps 0x1534db677, 0x1534df897, 0x1534df917, 0x1534e2fe7."
+  "notes": "Whole body read: skips if no child of type 0x146ca3498 with count (+0x40); vfunc +0xf8 dirty check unless param_2; refreshes this+0x90 string from +0x88; copies 0x23-entry param table (stride 0x70, name at +0x30) from map this+0x50; substitutes '[name]' tokens in label text (0x1442ba0b0), stores via 0x1441974e0; logs UI_latency 0x145a66df3; posts update msg (vtbl 0x14588b9a0) via 0x1438f5fd0 or 0x1442bfc50; clears byte +0xa1. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ui_latency_frame_signal_ui_label_send_update_string",

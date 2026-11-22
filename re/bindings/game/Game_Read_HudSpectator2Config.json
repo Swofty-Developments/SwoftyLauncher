@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141c1e530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141c1e530.c;pat:log-channel--;xref:0x141496fb3",
-  "notes": "Spectator HUD 2 VM: hud_spectator_2.content.* panels and content.tyre_performance/pit_strategy view models."
+  "notes": "Not a config reader: constructor of the 'hud_spectator_2' view model (base init + 0x1442bf450 register, vtables 0x14573ca20/0x14573caa0), then allocates and pushes child VMs into vector +0x2f0..+0x300: 'hud_spectator_2.content.bottom_right' (0x1414e0b80), .driver_list_panel, .spectator_menu_panel, .focused_driver_panel, 'content.tyre_performance' (0x141529000), 'content.pit_strategy' (0x141518e70); returns this. Caller 0x141496fb3 in 0x14148a320. (lane owner review requested) Better name: Game_HudSpectator2_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_hud_spectator2_config",

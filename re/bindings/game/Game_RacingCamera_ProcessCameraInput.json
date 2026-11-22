@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144540050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144540050.c;xref:0x14080e237",
-  "notes": "Callees from disassembly: Ne_InputMapper_IsActionPressed 0x1441162f0, 0x144541150, 0x1445412a0, 0x1445413f0, Ne_Entity_FindComponent 0x143f9b3c0, 0x144534390 (camera request submit); no Ne_Post_BusMessage call. Logs FreeLookCameraModifier::resetStateData. Caller 0x14080e237 (0x14080e110)."
+  "evidence": "decomp:re/decomp/144540050.c;xref:0x14080e237,0x144540040",
+  "notes": "Per local player 0/1 (input mappers _DAT_146cc1cb8+0x198/+0x1a0, state 0x146cc1cc8+i*0x148): Ne_InputMapper_IsActionPressed 0x1441162f0, checks 0x144541150/0x1445412a0/0x1445413f0, submits camera requests 0x144534390, next/prev camera cycling, logs INPUT 'FreeLookCameraModifier::resetStateData'. Correction: DOES call Ne_Post_BusMessage 0x1439876c0 (msg vt 0x145becd90, driver idx, player idx, mode 0..8 from hash at comp 0x146cb78b8 +0x70). 0x144540040 = jmp thunk; caller 0x14080e237 (0x14080e110). (lane owner review requested)"
  },
  "signature": {
   "id": "game.racing_camera_process_camera_input",

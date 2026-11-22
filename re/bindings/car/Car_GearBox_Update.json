@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446a6b60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "xref:0x1446dce0c",
-  "notes": "carlive 2026-10-29 (static, carlive-verify agree): 0x1446a6c46-0x1446a6c7c [gb+0x698] = (1.0 - [car+0x1c0]) * ([Eng+0x2518]^[Eng+0x2520]) * [gb+0xe8] (Eng=[car+0x530], 1.0 at 0x145381184); gb+0xe8 MaxClutchTorque PLAIN (vmulss, not XOR); +0x698 forced to 0 at 0x1446a6c9b when gear idx [+0x680]==1 or global flag / car+0x128==1. Called from 0x1446dce0c (Car_Update_WheelSurfaceAndEcuGrip, per frame H); powertrain reads +0x698 per substep. Writing +0x698 is overwritten next call: scale gb+0xe8. car+0x1c0 = clutch input (label H)."
+  "evidence": "decomp:re/decomp/1446a6b60.c;xref:0x1409d5a71,0x1446dce0c",
+  "notes": "(gb, dt): Car_GearBox_UpdateShiftTimersAndFaults first; gear +0x680 takes target +0x684 unless shift blocked (car+0x224 bit0, engine flag, timer +0x690 vs obf*+0x66c); timers +0x688/+0x68c/+0x690 += dt; +0x698 = (1-[car+0x1c0])*([Eng+0x2518]^[Eng+0x2520])*gb+0xe8 (Eng=[car+0x530]); 0 if gear==1, flag 0x146ce89d8 or car+0x128==1. (lane owner review requested)"
  },
  "signature": {
   "id": "car.gearbox_update",

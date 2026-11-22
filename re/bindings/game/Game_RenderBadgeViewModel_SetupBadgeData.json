@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d77e70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d77e70.c;str:s_RenderBadgeViewModel_SetupBadgeData;xref:0x141d7a365",
-  "notes": "setupBadgeData(BadgeStatId) (pretty-function 0x14574a3c0): strings for default badge, background/emblem processing, customisation.cstm_badge_large.* and bg_%s/_style_ formats; calls LoadTexture. 7.7 KB body."
+  "notes": "Pretty-function \"void game::RenderBadgeViewModel::setupBadgeData(BadgeStatId)\" (0x14574a3c0), channel RENDER_BADGE. statId hi==0x3fff or lookup (p1+0x308) fails -> default badge (FUN_141d75800). Transform from badge +0xb8 rot/+0xbc scale; background bg_%s + cstm_badge_large.bg/bg_style, emblem cstm_badge_large.emblem/emblem_style (*_style_blank if \"none\"); setTexture via FUN_1407b10c0 on layer +0x80/+0x1c0; p1[0x445]=pending. (lane owner review requested)"
  },
  "signature": {
   "id": "game.render_badge_view_model_setup_badge_data",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143188a40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143188a40.c;pat:log-message-cxx;xref:0x143187035,0x14318b3dc,0x14318cab9,0x14318ce87,0x14318d107",
-  "notes": "Own pretty-function 0x145821ea8 = updatePlayerLifeData(const PlayerDescription&, game::F1LifeData&), logs 'Updating/Updated player (%s) life data' (NETWORK-CUSTOMISATION-REPLICATION). Posts EnqueueMessage_A (0x143188cfb) and _B (0x143189327) on bus [0x14618b3b8]+8. Callers include handleF1LifeDataAdd/Update/Request."
+  "notes": "Own __FUNCTION__ 0x145821ea8 updatePlayerLifeData(PlayerDescription&,F1LifeData&); logs Updating/Updated. Map this+0x80..0xc0 (0x1830 nodes): hit -> 0x142539150 assign, player_customisation_updated_message via 0x143218a60, host_..._updated via 0x143218e00; miss -> insert (0x14252c7d0), set this+0xd0 flag node+0x60=0, inline-queue ..._added / host_..._added on [0x14618b3b8]+8. If [this+8]<2: msg 0x145825110 -> 0x14402e500, 0x1431872e0. Non-local player: 0x14253a8e0([this+0x50]). (lane owner review requested)"
  },
  "signature": {
   "id": "game.customisation_replication_manager_update_player_life_data",

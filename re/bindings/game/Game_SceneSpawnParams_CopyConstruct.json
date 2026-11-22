@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e0a530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e0a530.c;xref:0x140249915,0x1407b1c3f,0x1407b8ac0,0x1416c7944,0x1416ca399,0x1416ca93a,0x1417e72e5,0x141869326,0x141879d9d,0x14196ac76,0x14196bb97,0x141997eea,0x141a580be,0x141a735ff,0x141bfb75b,0x141cc0014,0x141f2956c,0x142008ca1,0x142008f30,0x1421ce465,0x1425485f2,0x142548a9d,0x142548c61,0x142549378,0x142549659,0x14254986f,0x14254a44a,0x1427ac336,0x1427ac692,0x142a21145,0x142a21237,0x142a21536,0x142a21a36,0x142aafd18,0x142e2f8ab,0x142e33051,0x142e33a6e,0x14379e2cd,0x14379e449,0x1437a3c5c,0x14387575a,0x143875d25,0x143876342,0x143876c0e,0x1438771c2,0x1438777d6,0x14387886b,0x143879c95,0x14387a27f,0x14387a82a,0x14387ae70,0x14387b5b0,0x14f2dcde6,0x14f327cc5",
-  "notes": "Copy-constructor-like routine for a large scene/session spawn parameter struct (10 params: id, vectors, Ne_String_Reserve + Ne_Crt_Memcpy of names, default name '<unknown-because-not-initialised/resource>'). 54 call sites incl Game_MyTeamCustomisation_SpawnScene, Game_ChampionshipGameMode_BuildSessionSettings. Hypothesis."
+  "notes": "Whole body read: 10-arg ctor. Copies param_2 block (u32 +0, 5 inline 256-byte strings, memcpy 0x218/0x30*n/0x2b0 parts, to +0xcf6); optional param_4: two 64-byte strings, optional 128 string (+0x148 flag), name list n=+0x490 (stride 0x28); optional param_5 via 0x14096e580 (+0x4a40); flags param_3/7/8/9, 48 bytes param_10, ten empty 256 strings, default name 0x1456135b2; tail 0x142e0b390(this,param_6,0). 'SceneSpawnParams' from callers only. (lane owner review requested)"
  },
  "signature": {
   "id": "game.scene_spawn_params_copy_construct",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14102b110",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14102b110.c;pat:log-channel--;xref:0x1456b85c0",
-  "notes": "GDB reader for pit_crew_training.probabilities / mini_game rows (time loss, mistake chances, AI button accuracy, AR object sounds/VO)."
+  "notes": "Vtable slot +0x80 (table 0x1456b8540). GDB pit_crew_training.mistakes rows (stat_id,type,min/max_time_loss,VO/animation/event names) -> 0x480 objs +0x2e0; .probabilities (training level, stop time, mistake chance, Bad/Good/Perfect offsets/accuracy) -> hash map +0x338; .settings per 4 career modes -> +0x390; config floats +0x3d0..+0x434; mini_game AR sounds/VO +0x470/+0x638. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_pit_crew_training_config",

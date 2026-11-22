@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141250d40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141250d40.c;pat:log-channel-RIVALS;xref:0x1456cd1e0",
-  "notes": "Vtable slot (cell 0x1456cd1e0); 13 KB body with 'Starting new rivalry with %s' log; calls Game_Rivalry_Start."
+  "notes": "Vtable cell 0x1456cd1e0, arg this. Walks rivalry lists this+0xbd8/+0xbe0 and +0xbf8/+0xc00 (entry type 1/2/3 at +0x10), compares driver ratings (0x14113d120) vs thresholds (+0x2a4/+0x6c4/+0x924 scaled by 0x141267be0()/100), calls 0x1412584b0/0x141258880/0x141257220/0x1412573a0, expires slots +0x50..+0x5c by race idx, calls 0x141249ce0; new rival (vtbl 0x1456cdbc0) logged RIVALS 'Starting new rivalry with %s', posted via 0x1439876c0. (lane owner review requested) Better name: Game_Rivalry_EvaluateAll (bound record keeps its name)."
  },
  "signature": {
   "id": "game.rivalry_start_2",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142477900",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Vehicle customisation replaced with stat id %s, existing entry? %s | Couldn't find array to replace vehicle customisation with stat id %s | Failed to add vehicle customisation with stat id %s whilst r'"
+  "evidence": "decomp:re/decomp/142477900.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x1410f6bd2,0x141425096,0x14142da19,0x141449f7b,0x14144a422,0x141fdb9ef,0x141fe2636,0x14200e010,0x142011541,0x142011d17,0x14201250c,0x142053fcc,0x14208230c,0x142082c6c,0x142083205,0x142266ef9,0x142573514,0x142ea987b,0x143140178,0x143141383,0x154bfbae3",
+  "notes": "(entrants, key, record): kind 0 refused -> 5; list [entrants+0x388+kind*0x10] missing -> 1; equal check with the record from Ent_Get_VehicleCustomisation_Thunk; removes with 0x142477710, adds a copy via 0x140cdd730; fail -> 3, else 0/2. Logs on ENTRANTS_SYSTEM. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_replace_vehicle_customisation",

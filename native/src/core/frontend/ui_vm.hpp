@@ -13,5 +13,7 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 uintptr_t ui_vm_node_token(const std::string &path);
 uintptr_t ui_vm_epoch();
 void *ui_vm_message_system();
+// The game's g_Vm_UiSystem global, or null before the view model host resolved it.
+void **ui_vm_ui_system();
 
 }

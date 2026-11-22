@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143fcd400",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143fcd400.c;pat:log-message-cxx;xref:0x145a44ca0",
-  "notes": "EadpSDK 'Calling eadp::foundation::Hub::create' (log string); vtable cell 0x145a44ca0."
+  "notes": "EadpModule vtable 0x145a44c80 slot +0x20. Env from 'EADP.serverEnvironment' (int=2,prod=1,lt=3,cert=4,test=5) -> +0x214; logs EadpSDK 'Calling eadp::foundation::Hub::create', hub -> +0x168/+0x170, sets 'eadp.authentication.useJwtToken'=true, env name -> global+0x3c8, 5 service objects into vector +0x228 (refs +0x240..+0x298), optional +0x110/+0x118 (flags +0x129/+0x12a), +0x210|=1, returns 0. (lane owner review requested) Better name: Game_EadpModule_InitHubAndServices (bound record keeps its name)."
  },
  "signature": {
   "id": "game.hub_create",

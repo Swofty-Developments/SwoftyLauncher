@@ -33,7 +33,9 @@
     "how": "static"
    }
   ],
-  "used_by": []
+  "used_by": [
+   "native/src/core/diagnostics/session_loader.cpp"
+  ]
  },
  "verify": [
   {

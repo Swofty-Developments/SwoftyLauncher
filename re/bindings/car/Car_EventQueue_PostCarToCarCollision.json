@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144776220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144776220.c;xref:0x14467c5f3,0x157f419f7",
-  "notes": "Same queue pattern with a 0x60-byte payload. Caller: Car_Collision_CarToCar. Addon: car-to-car contact event. (2 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/144776220.c;xref:0x14467c5f3",
+  "notes": "Thread-safe queue post: under CS +0x98 allocates a 0x60 node (allocator +0x70), vtable 0x145c05350, copies payload qwords param_2+8..+0x58, links into list +0x58/+0x60, SetEvent(+0x90); +0x68 == 0 logs code 0x58. Caller 0x14467c5f3 in Car_Collision_CarToCar 0x14467c280. (lane owner review requested)"
  },
  "signature": {
   "id": "car.event_queue_post_car_to_car_collision",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1424710e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Badge replaced with stat id %s, existing entry? %s | Couldn't find array to replace badge with stat id %s | Failed to add badge with stat id %s'"
+  "evidence": "decomp:re/decomp/1424710e0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x141fca15c,0x141fd1408,0x1420542be,0x142075fe5,0x142267192,0x142573aaf,0x142ea9bda,0x143128612,0x143128928",
+  "notes": "(entrants, u32 key, record): kind 0 refused -> 5; list [entrants+0x3b8+kind*0x10] missing -> 1; skips when Ent_Get_Badge_Thunk finds an equal record (0x142471640); else removes old (0x142470f00), copies the record (key at +0x160) and inserts via Ent_EntrantsSystem_InsertBadgeRecord; insert fail -> 3, else 0 (existed) / 2 (new). Logs 'Badge replaced ... existing entry? yes/no'. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_replace_badge",

@@ -46,9 +46,8 @@ impl Shell {
             - 20.
             - RAIL_W
             - if wide { 20. + super::ranking::RIGHT_W } else { 0. };
-        let in_place = self.trial_look().opens_in_place();
-        let rows = self.track_rows(&shown, main_width, in_place, &mut items, p, cx);
-        let custom_rows = self.track_rows(&custom_shown, main_width, in_place, &mut items, p, cx);
+        let rows = self.track_rows(&shown, &mut items, p, cx);
+        let custom_rows = self.track_rows(&custom_shown, &mut items, p, cx);
         let ranking = self.rank_column(id, tr("SEASON RANKING"), &mut items, p, cx);
         self.online.items = items;
         let header = self.season_header(&page.season, p);

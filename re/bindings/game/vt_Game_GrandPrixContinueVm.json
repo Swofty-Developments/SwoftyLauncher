@@ -1,0 +1,66 @@
+{
+ "schema": 1,
+ "name": "vt_Game_GrandPrixContinueVm",
+ "table": "globals",
+ "author": "msyeett",
+ "row": {
+  "addr": "0x145739fa0",
+  "type": "vtable[37]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x14164be4e-0x14164be6f,0x141e86180-0x141e861a9;xref:0x14164be4e,0x141e8618a",
+  "notes": "GrandPrixContinueViewModel vtable (the Grand Prix save cards screen): both constructors store it at [vm] with the secondary vtables at +0x260/+0x268. Slot 22 start new Grand Prix, 24 card pressed (Game_GrandPrixContinueVm_PressEntry), 28 fill a card from a save, 31 Game_GrandPrixContinueVm_FindModeEntity, 34 skip a save (shared), 36 clear a card (shared)"
+ },
+ "signature": {
+  "id": "game.grand_prix_continue_vm",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 49 89 04 24 48 8D 05 ?? ?? ?? ?? 49 89 84 24 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 84 24 68 02 00 00 C4 C1 78 11 B4 24 80 13 00 00",
+  "match": "0x14164a85e",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145739fa0",
+  "kind": "data",
+  "names": [
+   "vt_Game_GrandPrixContinueVm"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-22",
+    "by": "msyeett",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14164be4e",
+  "made_on_target": "0x14573c0d0",
+  "twin": "made on steam-26566308; the target 0x14573c0d0 is KB 0x145739fa0: k_Career_RnDCardColourTable (0x571de10) and vt_Career_RnDDeptCard (0x5742380) on either side both sit 0x2130 above their KB addresses; the match 0x14164be4e is KB 0x14164a85e: Ui_CareerContinueMyTeam_Flow (0x164b570) and Ui_PaddockPass_OnShow_CloseTransactionQueue (0x1655990) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "msyeett",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164be4e",
+    "target": "0x14573c0d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bda76841025532a1e88b7e11521a98bcb4a592bbf176d48e4935d9ae521d462e"
+  }
+ ]
+}

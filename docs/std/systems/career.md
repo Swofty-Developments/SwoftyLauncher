@@ -648,7 +648,7 @@ The season's year comes from one of two places:
 career::report_season(year, season_index);
 ```
 
-A career loaded in a season that already started fires nothing, but the core still needs its year, for the [season's rules](#the-season-s-rules) among others. An owner's report for that season, or the idle Team HQ of a career no addon owns, dates the career: the core takes the year without a `career.season.start`. An owner reports at the first idle Team HQ after each career load, as well as at each season's start:
+A career loaded in a season that already started fires nothing, but the core still needs its year, for the [season's rules](#the-season-s-rules) among others. An owner's report for that season, or the idle Team HQ of a career no addon owns, dates the career: the core takes the year without a `career.season.start`. An owner reports at `career.loaded` or at the first idle Team HQ after each career load, as well as at each season's start. A `career.loaded` handler can run off the flow thread: its report answers `late`, and the core runs it at the next flow tick, before the session loads. A career resumed straight into a race weekend has its year that way:
 
 ```text
 [registry] career::report_season(2010, 0) from swofty.swofty-seasons-progressive: ok, 2010 already started in career f1_career_sw_progressive.driver_career:3f0a
@@ -1005,7 +1005,7 @@ swofty::events::on<career::events::Missing>().after(
 | `career.saved` | notify | after the containers block was written with no error (`site_Game_SaveData_ContainersDone`) |
 | `career.missing` | notify | after a profile load, a career the index knew has no slot in any mode (see below) |
 
-`career.saving` and `career.saved` fire only while the save splice is armed, on the thread that writes the profile. A handler stays short and uses no game calls. Both carry no payload: `saves::current()` names the career.
+`career.saving` and `career.saved` fire only while the save splice is armed, on the thread that writes the profile, and only for the profile save: the race highlights save (`savegame@highlights000`) and the game's other saves fire neither. A handler stays short and uses no game calls. Both carry no payload: `saves::current()` names the career.
 
 `career.missing` fires at the end of a good profile load, on the loading thread, when a career of the index has no slot in the `SaveSlotManager` of any mode after `Game_SaveSlotManager_Deserialise`. The core marks those careers missing in the index and `saves::missing()` lists them. A career is matched by its slot guid, or its slot id when the slot has no guid.
 

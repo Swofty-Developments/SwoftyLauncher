@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1439f7d80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1439f7d80.c;pat:log-channel-WINDOW;xref:0x1439f7d68,0x1439fc0e0,0x1443d9c52",
-  "notes": "Callers 0x1439f7b80, 0x1439fa850, 0x1443d9b80. Logs 'NeWindowWin::changeSettings: Changing resolution and display mode at the same time...'; likely NeWindowWin::changeSettings itself (name kept until read)."
+  "notes": "NeWindowWin::changeSettings(cur=p1,req=p2): diffs req+0x138..0x188 vs cur+0x220..0x270; logs ch WINDOW 'NeWindowWin::changeSettings: calling resizeTarget/setDisplayMode/updateAspectRatio/notifyWindowSettingsChanged'; calls 0x1439f9ff0, 0x1439fa850, 0x1439f14f0, 0x1439fc830; inlined setHdrMode/setHdrPeakNits/setVsync/setVsyncInterval/setFrameRateLimiter* write hdr/peakNits/vsync.. via Ne_Save_HardwareSettings; +0x17c change -> /restart + TerminateProcess; then callbacks cur+0x880. (lane owner review requested) Better name: Game_Window_NeWindowWinChangeSettings (bound record keeps its name)."
  },
  "signature": {
   "id": "game.window_ne_window_win_change_settings_changing",
