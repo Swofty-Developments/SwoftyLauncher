@@ -1154,7 +1154,7 @@ TyreChangeBox tyre_change_for_box(const std::string &entrant_list, const std::st
     return {pick.required, pick.line};
 }
 
-CareerBox career_box_now(const registry::Context &ctx) { return career_box(registry::store(), ctx); }
+CareerBox career_box_now(const registry::Context &ctx, bool safety_car) { return career_box(registry::store(), ctx, safety_car); }
 
 void start_boot_ahead()
 {

@@ -6,19 +6,25 @@
 #include "core/apply/content/appliers.hpp"
 #include "core/apply/facts.hpp"
 #include "core/apply/scheduler.hpp"
+#include "core/boxes/box_options.hpp"
 
 #include <cstdio>
+#include <cstring>
 
 // Career season rules (docs/std/systems/career.md#the-season-s-rules): a Driver Career or My Team session load puts the box
 // rules of the career's season (apply/content/career_rules.hpp) into the career's current game setup mode
 // (EntrantsManager +0x2b0), through the same swaps a box press makes in swofty_f1: the DRS group, tyre warmers,
 // mandatory tyre change, race time limit and race points, and the fuel, grid and qualifying tyre rules the session
-// hooks read. The weekend helper exchange, the four game options and the rev lights stay as the career has them.
+// hooks read. The weekend helper exchange, the game options and the rev lights stay as the career has them (the safety
+// car option only by default, see below).
 // A load of the same career, season, box and setup mode keeps what the last load put in, unless a put back ran since
 // (put_back_drs); any other load puts the last rules back first (leave_front_end), and the career's unload puts them
 // back (put_back_career_rules). The swaps are dropped with the setup modes when Sess_Apply_ContentAvailability rebuilds
 // them (drop_setup_pointers).
 // SWOFTY_CAREER_RULES=0 turns it off.
+// SWOFTY_CAREER_SAFETY_CAR=1 also runs the season box's rules.safety_car: the load sets the options store's
+// safety_car_frequency (box_options.cpp, the option a box press sets and the safety car logic's deployment points
+// condition reads every update), and the put back on unload or on another load gives the player's index back.
 
 namespace era_picker {
 
@@ -41,6 +47,31 @@ CareerRules &rules()
 {
     static CareerRules r;
     return r;
+}
+
+bool safety_car_on()
+{
+    char v[16];
+    return swofty_core::guards::env_off("SWOFTY_CAREER_SAFETY_CAR", v, [](const char *s) { return s && !strcmp(s, "1"); });
+}
+
+// The season box's rules.safety_car into the options store, when the plan runs it.
+void apply_career_safety_car(const RuleTarget &t, const swofty_core::apply::content::CareerBox &box)
+{
+    namespace content = swofty_core::apply::content;
+    bool runs = false;
+    for (auto &r : box.runs)
+        runs = runs || r == "safety_car";
+    if (!runs)
+        return;
+    const int rule = content::box_option_index("safety_car");
+    auto pick = content::box_options_for_box(box.entrant_list);
+    if (rule < 0 || !pick.settings[size_t(rule)]) {
+        box_rules.box_options_log.say(t.prefix + "safety_car: the box holds no setting the option takes");
+        return;
+    }
+    box_rules.box_options_log.say(t.prefix + "safety_car " + *pick.settings[size_t(rule)] + ": " +
+                                  runtime::box_option_apply(size_t(rule), *pick.settings[size_t(rule)]));
 }
 
 uint8_t *current_setup_mode(uintptr_t ctx, std::string &name)
@@ -72,7 +103,7 @@ CareerSession career_session(uintptr_t ctx)
                 p.host = "the career's setup mode";
             swofty_core::registry::Context c = swofty_core::apply::scheduler().context();
             p.year = c.has_year ? c.year : 0;
-            p.box = swofty_core::apply::content::career_box_now(c);
+            p.box = swofty_core::apply::content::career_box_now(c, safety_car_on());
             if (!p.box.package.empty() && !p.box.runs.empty() && p.mode) {
                 char at[32];
                 std::snprintf(at, sizeof at, "%p", static_cast<void *>(p.mode));
@@ -116,6 +147,7 @@ void apply_career_rules()
     apply_points(t, list);
     apply_grid(t, list);
     apply_quali_tyres(t, list);
+    apply_career_safety_car(t, p.box);
     rules().applied = p.key;
 }
 

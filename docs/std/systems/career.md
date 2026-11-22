@@ -547,6 +547,8 @@ At each session load of a Driver Career or My Team career, the core puts the rul
 
 A season whose box is a stock box, whose pack is off, or a career whose year isn't known yet races under the game's rules. The rules stay in the setup mode while the career's season and box stay the same, and the career's unload puts the game's rules back. A career of another data group never reads them. `SWOFTY_CAREER_RULES=0` turns it off.
 
+With `SWOFTY_CAREER_SAFETY_CAR=1` (experimental, off by default) the season's `safety_car` rule runs too: each session load sets the game's safety car option (`safety_car_frequency`) to the box's setting, the option a press of the box sets, so a 1950 season races without a safety car. The career's unload, or a load of a season without the rule, puts the player's value back when the option still holds the box's. The red flag option (`red_flag_frequency`) is a separate option and stays as the player set it. The game's safety car option covers the virtual safety car too; that `off` keeps the virtual safety car away is not seen in game yet.
+
 ```text
 [career-rules] career f1_career_sw_progressive.driver_career:3f0a season 2010 (swofty.swofty-seasons-progressive/2010): box sw_f1_2010 (swofty.swofty-seasons-2010/sw_2010), rules drs; into <setup mode>
 [drs] career season 2010: box sw_f1_2010 (swofty.swofty-seasons-2010/sw_2010): <setup mode> DRS group swofty_drs_sw10_no_drs_5c1e9a20 (rules.drs swofty.swofty-seasons-2010/sw10_no_drs: race start lap 200, red flag restart 200, safety car end 200)

@@ -102,7 +102,8 @@ struct PointsBox {
 };
 PointsBox points_for_box(const std::string &entrant_list, const std::string &host = "swofty_f1");
 
-// The box of the loaded career's season (career_rules.hpp) in this context, read from the registry store.
-CareerBox career_box_now(const registry::Context &ctx);
+// The box of the loaded career's season (career_rules.hpp) in this context, read from the registry store; safety_car
+// runs the season's rules.safety_car too (SWOFTY_CAREER_SAFETY_CAR=1).
+CareerBox career_box_now(const registry::Context &ctx, bool safety_car = false);
 
 }
