@@ -634,7 +634,8 @@ inline constexpr address<"Ne_PhysPool_AllocZeroed"> Ne_PhysPool_AllocZeroed{}; /
 inline constexpr address<"Ne_PhysShape_BuildConvexFromPoints"> Ne_PhysShape_BuildConvexFromPoints{}; // L2 experimental
 inline constexpr address<"Ne_PhysShape_CreateConvex"> Ne_PhysShape_CreateConvex{}; // L2 experimental
 inline constexpr address<"Ne_PhysShape_InitConvexDefaults"> Ne_PhysShape_InitConvexDefaults{}; // L2 experimental
-inline constexpr address<"Ne_PhysUpdateStage_FinishStepNotifyBodies"> Ne_PhysUpdateStage_FinishStepNotifyBodies{}; // L2 experimental
+using Ne_PhysUpdateStage_FinishStepNotifyBodies_t = void(void *stage);
+inline constexpr fn<"Ne_PhysUpdateStage_FinishStepNotifyBodies", Ne_PhysUpdateStage_FinishStepNotifyBodies_t> Ne_PhysUpdateStage_FinishStepNotifyBodies{}; // L2 experimental
 inline constexpr address<"Ne_PhysUpdateStage_FlushSubstepRecords"> Ne_PhysUpdateStage_FlushSubstepRecords{}; // L2 experimental
 inline constexpr address<"Ne_PhysUpdateStage_InterpolateBodyStates"> Ne_PhysUpdateStage_InterpolateBodyStates{}; // L2 experimental
 inline constexpr address<"Ne_PhysUpdateStage_RunSubsteps"> Ne_PhysUpdateStage_RunSubsteps{}; // L2 experimental

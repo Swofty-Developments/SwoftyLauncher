@@ -143,7 +143,7 @@ void Scheduler::reset()
     Lock g = settled_lock();
     ctx_ = Context();
     have_ctx_ = false;
-    planned_ = booted_ = read_ = session_ = work_ = false;
+    planned_ = booted_ = read_ = session_ = loaded_from_flow_ = work_ = false;
     started_ = false;
     boot_.clear();
     boot_keys_.clear();
@@ -749,8 +749,42 @@ Totals Scheduler::session_load(const SessionFacts &f)
     return t;
 }
 
+bool Scheduler::session_enter(const SessionFacts &f, bool from_flow)
+{
+    Lock g(mu_);
+    if (facts::session_start(from_flow, session_, loaded_from_flow_) == facts::SessionStart::facts) {
+        session_started(f);
+        return false;
+    }
+    session_load(f);
+    loaded_from_flow_ = from_flow;
+    return true;
+}
+
+bool Scheduler::session_started(const SessionFacts &f)
+{
+    Lock g(mu_);
+    if (!session_)
+        return false;
+    bool other_track = !f.track.empty() && !ctx_.track.empty() && f.track != ctx_.track;
+    if (other_track)
+        log("[apply] session start: the weekend names track " + f.track + ", not the loaded " + ctx_.track +
+            "; the session is left unknown");
+    std::string type = other_track ? std::string() : f.type, name = other_track ? std::string() : f.session;
+    std::string track = ctx_.track.empty() ? f.track : ctx_.track;
+    if (type == ctx_.session_type && name == session_name_ && track == ctx_.track)
+        return false;
+    ctx_.session_type = type;
+    session_name_ = name;
+    ctx_.track = track;
+    publish(g);
+    log_facts();
+    return true;
+}
+
 Totals Scheduler::session_end_locked(Lock &g, const std::string &why)
 {
+    loaded_from_flow_ = false;
     if (!session_)
         return {};
     std::vector<Applier *> was;

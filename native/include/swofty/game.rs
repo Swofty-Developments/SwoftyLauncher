@@ -4801,6 +4801,7 @@ pub type Ne_Map_InsertUnique_StringKey_t =
 pub type Ne_Parse_Long_t = unsafe extern "C" fn(text: *const c_char, end: *mut *mut c_char, base: i32) -> i32;
 pub type Ne_PhysBody_ApplyImpulse_t =
     unsafe extern "C" fn(body: *mut c_void, J: *const f32, worldPoint: *const f32);
+pub type Ne_PhysUpdateStage_FinishStepNotifyBodies_t = unsafe extern "C" fn(stage: *mut c_void);
 pub type Ne_Play_FullscreenVideo_t = unsafe extern "C" fn(
     feature_system: *mut c_void,
     path: *mut *mut NeStr,
@@ -10722,6 +10723,11 @@ pub mod bindings {
     };
     pub const Game_FrontendSceneDriver_UpdateTransform: Binding = Binding {
         id: "Game_FrontendSceneDriver_UpdateTransform",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_FrontendSceneManager_DespawnMainScene: Binding = Binding {
+        id: "Game_FrontendSceneManager_DespawnMainScene",
         kind: "func",
         status: Status::Experimental,
     };

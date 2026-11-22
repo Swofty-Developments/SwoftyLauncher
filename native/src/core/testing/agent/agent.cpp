@@ -1571,7 +1571,7 @@ void watch()
     resolve_game();
     routes_setup();
     runtime::pad::setup();
-    runtime::pad::claim(true);
+    runtime::pad::claim(runtime::pad::Owner::agent, true);
     controller_setup();
     runtime::title::setup();
     ga.node_set_bool = runtime::title::node_set_bool();
@@ -1608,7 +1608,7 @@ void watch()
             if (!runtime::test_run_live()) {
                 stopped = true;
                 runtime::pad::release();
-                runtime::pad::claim(false);
+                runtime::pad::claim(runtime::pad::Owner::agent, false);
                 runtime::title::want(false);
                 swofty::log("[test] the run's token is gone from run.json: the agent stops and lets go of the pad");
                 return;

@@ -180,6 +180,11 @@
 %s
 %s
 
+[log engine/phys_nonfinite_guard.cpp]
+%s
+%s
+[phys] non-finite log: g_Sess_VehicleTable or g_Sess_VehicleCount does not resolve on this build, so its lines do not name the car a body belongs to
+
 [log engine/placed_record.cpp]
 [gfx] placed records: heap %u reached %d of %d this frame (buffer '%s', flags 0x%llx, %llu bytes)
 [gfx] %s

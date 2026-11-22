@@ -1382,6 +1382,7 @@ addr	name
 0x14077b4c0	Game_Analytics_FillBuildInfoRecord
 0x14077bb90	Game_Analytics_FillSessionContext
 0x14077cd40	Game_Career_IsDriverCareerMode
+0x14077cff0	Game_GameMode_IsGrandPrix
 0x14077d590	Ne_Steam_OnEncryptedAppTicket
 0x14077e260	Game_Write_AnalyticsJsonObject
 0x1407879d0	Game_String_ReplaceAll
@@ -1404,6 +1405,7 @@ addr	name
 0x140794a00	Game_RetrieveConsumableEntitlementsTask_CollatePackageData
 0x140796010	Game_Steam_ParsePriceOverview
 0x1407972c0	Game_Read_VteEnabled
+0x14079f300	Game_GameModeEntity_SetSetupMode
 0x1407a00d0	Game_Read_GameSetup
 0x1407a0eb0	Sess_ParticipantDescVec_PushBack
 0x1407a1310	Game_GameMode_AddTrackLayerWorlds
@@ -1451,6 +1453,7 @@ addr	name
 0x1407d07a0	Game_Game_SetCurrentGameMode
 0x1407d11a0	Sess_Loader_FillSessionDescriptor
 0x1407d18b0	Game_CareerInvitationalFlow_GameModeSystemGameModeDetailsSet
+0x1407d2280	Game_GameModes_FindByPredicate
 0x1407d22d0	Career_Find_CareerSaveByPredicate
 0x1407d2820	Game_ModeChampionship_Build
 0x1407d7f90	Game_Read_SessionPostRaceConfig
@@ -6121,6 +6124,7 @@ addr	name
 0x14245c0f0	Sess_Collect_GameModeSetupModes
 0x14245f590	Ent_EntrantsSystem_RemoveAll
 0x14245fb70	Sess_Build_CandidatePool
+0x142460230	Ent_Fill_EntrantsFromList
 0x142460b90	Ent_EntrantsSystem_Construct
 0x142466a10	Wear_Load_DriverCustomisations
 0x142469440	Sess_Load_Teams
@@ -6225,6 +6229,8 @@ addr	name
 0x1424de3e0	Sess_Parse_EntrantTemplateRef
 0x1424e02e0	Career_Sort_IntrosortLoop_Ptr8ByFunctor
 0x1424e0c80	Ne_Std_IntroSort_PtrsByOptByte80
+0x1424e2b90	Game_MessageBus_PostEntrantChangeBegin
+0x1424e2f00	Game_MessageBus_PostEntrantChangeEnd
 0x1424e7650	Sess_SortEntrantsByGarageOrder
 0x1424e81c0	Ne_Sort_Elem40WithPred
 0x1424ec1c0	Ne_Sort_IntKeyPairs
@@ -11916,6 +11922,7 @@ addr	name
 0x144208c80	Vm_ListBase_Init
 0x14420a770	Ne_Ref_GetListElementOrEmpty
 0x14420b270	Career_Ui_FindChildIndex
+0x14420cd60	Game_ChampionshipRounds_Clear
 0x144217490	Game_UILatency_FrameSignalUIList
 0x144217d70	Ui_Unk_144217d70
 0x144217ff0	Vm_List_SwapItemsAndNotify

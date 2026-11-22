@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_GameModeEntity_SetSetupMode",
+ "table": "functions",
+ "author": "Moorzii",
+ "row": {
+  "addr": "0x14079f300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GameModeEntity_SetSetupMode(void *mode_entity, void *setup_mode, int flags)",
+  "evidence": "decomp:own disasm 0x14079f340 (thunk into protected code) and its callers;xref:0x140b7be7f,0x141126c37,0x141f0e6af",
+  "notes": "sets the game mode entity's game setup mode (the Grand Prix menu calls it with the chosen setup mode and 0); a jmp into protected code"
+ },
+ "signature": {
+  "id": "game.game_mode_entity_set_setup_mode",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 AF 10 0E 00 00",
+  "match": "0x141895db9",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14079f300",
+  "kind": "call",
+  "names": [
+   "Game_GameModeEntity_SetSetupMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-21",
+    "by": "Moorzii",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141897599",
+  "made_on_target": "0x14079f340",
+  "twin": "made on steam-26566308; the target 0x14079f340 is KB 0x14079f300: Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices (0x793910) and Game_BenchmarkGameMode_BuildSessionSettings (0x7a48a0) on either side both sit 0x40 above their KB addresses; the match 0x141897599 is KB 0x141895db9: site_Career_RnDPerfGotoName (0x18965e3) and Career_RenownForm_BuildRenownText (0x18aea30) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141897599",
+    "target": "0x14079f340"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "41c713abfb6a4d96e5ef9e0f16d90f976785981664884c93719611e8fdfdd19e"
+  }
+ ]
+}

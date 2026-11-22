@@ -31,6 +31,9 @@ void career_renamed(const char *from, const char *to);
 void box_picked(const char *entrant_list);
 void box_picked(const char *entrant_list, const void *mode_context);
 void session_load(const char *source);
+// StateSession is updating: the loaded session's facts take the weekend's current session again, for a game that moves
+// the weekend on to the session that starts only after that session's start.
+void session_running();
 std::pair<std::string, std::string> session_mode_track();
 // The current championship weekend of the loaded game mode, read live: round and rounds 1-based, the weekend's
 // progress state (0 not started, 1 in progress, 2 complete), the current session's index, the session count and how

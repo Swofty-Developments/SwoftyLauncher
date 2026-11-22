@@ -70,6 +70,7 @@ enum class CoreSetId : uint8_t {
     anim_packet_time,
     speech,
     vehicle_override,
+    phys_nonfinite,
     count,
 };
 
@@ -133,6 +134,7 @@ constexpr std::array<std::string_view, CORE_SET_COUNT> CORE_SET_NAMES = {
     "anim_packet_time",
     "speech",
     "vehicle_override",
+    "phys_nonfinite",
 };
 
 constexpr std::string_view core_set_name(CoreSetId id) { return CORE_SET_NAMES[size_t(id)]; }
@@ -195,6 +197,7 @@ constexpr std::array<CoreSetId, CORE_SET_COUNT - 1> COMMIT_ORDER = {
     CoreSetId::anim_packet_time,
     CoreSetId::speech,
     CoreSetId::vehicle_override,
+    CoreSetId::phys_nonfinite,
 };
 
 constexpr bool settles(CoreSetId id) { return id != CoreSetId::garage_placement; }

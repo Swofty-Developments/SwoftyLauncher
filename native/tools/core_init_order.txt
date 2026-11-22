@@ -12,6 +12,7 @@
 # an intended change, copy native/build/init-order.txt here.
 init
   src/core/frontend/tt_blocked.cpp
+  src/core/guards/engine/phys_nonfinite_guard.cpp
   src/core/audio/speech.cpp
   src/core/guards/engine/anim_packet_time_guard.cpp
   src/core/guards/session/marshal_lights_guard.cpp
@@ -353,6 +354,7 @@ exit
   src/core/guards/session/marshal_lights_guard.cpp
   src/core/guards/engine/anim_packet_time_guard.cpp
   src/core/audio/speech.cpp
+  src/core/guards/engine/phys_nonfinite_guard.cpp
   src/core/frontend/tt_blocked.cpp
 mixins
   src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state)

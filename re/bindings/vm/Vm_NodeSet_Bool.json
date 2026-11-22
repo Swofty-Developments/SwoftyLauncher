@@ -65,7 +65,37 @@
    "verdict": "agree",
    "evidence": "decomp:re/decomp/140973e20.c;xref:0x140975f67",
    "notes": "V4337 called from Vm_Set_Bool 0x140975db0; sets bool node value"
+  },
+  {
+   "date": "2026-11-21",
+   "verifier": "Moorzii",
+   "kind": "func",
+   "item": "Vm_NodeSet_Bool",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x140973e70-0x14097415f;xref:0x14079e0d7,0x1407a1c1f,0x1407bacdb",
+   "notes": "gh:Moorzii found independently by its own pattern in Instant Race; sets a bool on a view model node (used to complete the session load sync)"
   }
  ],
- "proofs": []
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140973e70",
+    "target": "0x140973e70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1f29d23ede0363ffffa741f46d6d9339a1f513b84bdcc93a218348162170c203"
+  }
+ ]
 }

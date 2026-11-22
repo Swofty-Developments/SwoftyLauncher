@@ -28,6 +28,11 @@ struct XCaps {
 
 std::once_flag once;
 std::atomic<int> claims{0};
+std::atomic<int> owner_claims[3] = {};
+std::atomic<uint32_t> owners_seen{0};
+std::atomic<uint64_t> reads_set{0}, reads_idle{0}, reads_real{0};
+std::atomic<void *> caps_export{nullptr};
+std::atomic<bool> hooked{false};
 std::atomic<uint32_t> pad_word{0};
 std::atomic<bool> pad_held{false};
 std::atomic<DWORD> pad_packet{1};
@@ -39,7 +44,9 @@ DWORD WINAPI x_get_state(DWORD user, XState *s)
     DWORD r = h_xget.call<DWORD>(user, s);
     if (user != 0 || !s || claims.load() <= 0)
         return r;
-    if (pad_held.load() || r != ERROR_SUCCESS) {
+    bool held = pad_held.load();
+    (held ? reads_set : r != ERROR_SUCCESS ? reads_idle : reads_real).fetch_add(1, std::memory_order_relaxed);
+    if (held || r != ERROR_SUCCESS) {
         uint32_t w = pad_word.load();
         std::memset(s, 0, sizeof *s);
         s->packet = pad_packet.load();
@@ -68,6 +75,7 @@ void pad_setup()
     HMODULE x = LoadLibraryW(L"xinput1_4.dll");
     void *get = x ? reinterpret_cast<void *>(GetProcAddress(x, MAKEINTRESOURCEA(2))) : nullptr;
     void *caps = x ? reinterpret_cast<void *>(GetProcAddress(x, MAKEINTRESOURCEA(4))) : nullptr;
+    caps_export.store(caps);
     if (!get || !caps) {
         pad_why = "xinput1_4.dll or its XInputGetState/XInputGetCapabilities exports were not found";
         return;
@@ -80,6 +88,7 @@ void pad_setup()
     }
     h_xget = std::move(*g);
     h_xcaps = std::move(*c);
+    hooked.store(true, std::memory_order_release);
     pad_why.clear();
 }
 
@@ -91,7 +100,18 @@ void setup() { std::call_once(once, pad_setup); }
 
 const std::string &why() { return pad_why; }
 
-void claim(bool on) { claims.fetch_add(on ? 1 : -1); }
+void claim(Owner who, bool on)
+{
+    auto i = size_t(who);
+    if (on) {
+        owners_seen.fetch_or(1u << i);
+        owner_claims[i].fetch_add(1);
+    } else if (owner_claims[i].fetch_sub(1) <= 0) {
+        owner_claims[i].fetch_add(1);
+        return;
+    }
+    claims.fetch_add(on ? 1 : -1);
+}
 
 void set(uint16_t buttons, uint8_t lt, uint8_t rt)
 {
@@ -101,5 +121,31 @@ void set(uint16_t buttons, uint8_t lt, uint8_t rt)
 }
 
 void release() { set(0); }
+
+Stats stats()
+{
+    Stats s;
+    for (size_t i = 0; i < 3; i++)
+        if (owner_claims[i].load() > 0)
+            s.owners |= 1u << i;
+    s.seen = owners_seen.load();
+    s.set = reads_set.load(std::memory_order_relaxed);
+    s.idle = reads_idle.load(std::memory_order_relaxed);
+    s.real = reads_real.load(std::memory_order_relaxed);
+    return s;
+}
+
+uint32_t real_caps(uint32_t user, uint32_t flags, void *caps)
+{
+    using Fn = DWORD(WINAPI *)(DWORD, DWORD, void *);
+    if (hooked.load(std::memory_order_acquire))
+        return h_xcaps.call<DWORD>(user, flags, caps);
+    void *fn = caps_export.load();
+    if (!fn) {
+        HMODULE x = GetModuleHandleW(L"xinput1_4.dll");
+        fn = x ? reinterpret_cast<void *>(GetProcAddress(x, MAKEINTRESOURCEA(4))) : nullptr;
+    }
+    return fn ? reinterpret_cast<Fn>(fn)(user, flags, caps) : DWORD(ERROR_DEVICE_NOT_CONNECTED);
+}
 
 }

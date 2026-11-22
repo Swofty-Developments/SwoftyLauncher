@@ -51,3 +51,9 @@ off [anim] packet time guard off (SWOFTY_ANIM_PACKET_TIME_GUARD=%s)
 unresolved [anim] packet time guard off: needs Ne_AnimPacketB1_Sample, Ne_AnimPacketB4_Sample, Ne_AnimPacketL1_Sample, Ne_AnimPacketL3_SampleTrack, Ne_AnimPacketL4_SampleTrack and Ne_AnimPacketS4_SampleTrack, which this build does not resolve
 armed [anim] packet time guard armed: an animation packet sampled at a time that is not a finite number shows its first key instead of faulting
 not_installed [anim] packet time guard did not install (see the [core] lines)
+
+[phys_nonfinite]
+off [phys] non-finite log off (SWOFTY_PHYS_NONFINITE_LOG=%s)
+unresolved [phys] non-finite log off: needs Ne_PhysUpdateStage_FinishStepNotifyBodies, which this build does not resolve
+armed [phys] non-finite log armed: each physics body that holds a value that is not finite after a step is logged once
+not_installed [phys] non-finite log did not install (see the [core] lines)

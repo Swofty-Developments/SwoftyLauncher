@@ -57,6 +57,7 @@ rva	calls	callers	sections	thunks	thunk_calls	thunk_callers	jumps	lea	pointers
 0x3a44090	77	24	.data1:10,.xtls:67	0	0	0	1	0	0
 0x3a44700	89	48	.data1:5,.xtls:84	0	0	0	0	0	0
 0x3cfc8f0	432	70	.data1:19,.xtls:413	3	3	1	0	0	0
+0x40c7d70	1	1	.xtls:1	0	0	0	0	0	0
 0x4121bc0	386	253	.data1:12,.xtls:374	1	0	0	5	0	0
 0x4141c00	0	0	-	0	0	0	0	0	1
 0x4145650	2	2	.xtls:2	0	0	0	0	0	0

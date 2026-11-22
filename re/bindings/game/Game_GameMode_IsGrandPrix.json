@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GameMode_IsGrandPrix",
+ "table": "functions",
+ "author": "Moorzii",
+ "row": {
+  "addr": "0x14077cff0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_GameMode_IsGrandPrix(void *mode)",
+  "evidence": "decomp:own disasm 0x14077d030 (thunk into protected code) and the caller at 0x141a79b10;xref:0x141a79b10,0x14183c34f",
+  "notes": "Grand Prix mode predicate: lea'd at 0x141a79b10 and passed to Game_GameModes_FindByPredicate to find the Grand Prix mode entity; a jmp into protected code"
+ },
+ "signature": {
+  "id": "game.game_mode_is_grand_prix",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? C8 CC D2 12 8D 4F E9",
+  "match": "0x14077cff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14077cff0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameMode_IsGrandPrix"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-21",
+    "by": "Moorzii",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14077d030",
+  "made_on_target": "0x14077d030",
+  "twin": "made on steam-26566308; the target 0x14077d030 is KB 0x14077cff0: Game_Career_IsDriverCareerMode (0x77cd80) and Ne_Steam_OnEncryptedAppTicket (0x77d5d0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14077d030",
+    "target": "0x14077d030"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "debd4dfa8e515e534587168065218abd4ef8ee71eb83c38500f2e79e4bf5a8f2"
+  }
+ ]
+}

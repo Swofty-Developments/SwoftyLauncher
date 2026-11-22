@@ -489,7 +489,9 @@ EOF
         once "leaderboard: the time trial leaderboard guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(time trial leaderboard guard\)': 1 mixin"
         once "leaderboard: the time trial leaderboard guard is armed" '\[leaderboard\] time trial leaderboard guard armed'
         count "leaderboard: each view without a board is skipped and logged" 2 '\[leaderboard\] Time Trial leaderboard view 0x[0-9a-f]+ has no board for this track'
-        once "lap host: an addon finds the table and attaches" '\[t_laphost\] lap host version 3, size ok, swofty root set, files root set, build bits [0-3], attach 1'
+        once "lap host: an addon finds the table and attaches" '\[t_laphost\] lap host version 4, size ok, swofty root set, files root set, build bits [0-3], attach 1'
+        once "lap host: the first input call answers before the device list is read and refuses a short table" '\[t_laphost\] input: answered 1, version 1, size ok, read not yet, 0 device\(s\); a short table answered 0'
+        once "lap host: the core reads the input devices on a thread of its own" '\[input\] read the input devices: [0-9]+ game controller\(s\) \([0-9]+ XInput, [0-9]+ named\), [0-9]+ keyboard\(s\), [0-9]+ mouse/mice in [0-9]+ ms'
         once "lap host: the core takes the module's hook set while it collects sets" '\[t_laphost\] offer: add_hooks answered 1'
         once "lap host: the module's hook set is a core mixin set of its own" "core mixin set 't_laphost\.dll \(lap host set\)': 1 mixin"
         once "lap host: the module hears its hook set is in place" '\[t_laphost\] settle: the hook set is active'

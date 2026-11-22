@@ -44,7 +44,6 @@ std::once_flag attached;
 std::mutex status_mu;
 std::map<std::string, std::vector<std::string>> status_lines;
 std::map<std::string, std::array<int, 3>> left_outs;
-std::atomic<bool> loaded_from_flow{false};
 std::mutex ids_mu;
 
 std::wstring registry_root()
@@ -289,6 +288,7 @@ struct Weekend {
     bool sprint = false;
     int track = -1;
     uint32_t round = 0, rounds = 0, progress = 0, current = 0, sessions = 0, complete = 0;
+    bool current_complete = false;
 };
 
 bool weekend(uintptr_t holder, Weekend &out)
@@ -324,18 +324,21 @@ bool weekend(uintptr_t holder, Weekend &out)
         !rd(wk + offsetof(g::Weekend, current_session), xi) || xe < xb || (xe - xb) / SESSION_STRIDE > MAX_SESSIONS)
         return true;
     std::vector<uint32_t> ids;
+    std::vector<bool> done;
     for (uintptr_t at = xb; at < xe; at += SESSION_STRIDE) {
         uint32_t id = 0, completion = 0;
-        if (rd(at + offsetof(g::Session, session_id), id))
-            ids.push_back(id);
-        if (rd(at + offsetof(g::Session, completion), completion) && completion == SESSION_COMPLETE)
-            out.complete++;
+        rd(at + offsetof(g::Session, session_id), id);
+        ids.push_back(id);
+        done.push_back(rd(at + offsetof(g::Session, completion), completion) && completion == SESSION_COMPLETE);
+        out.complete += done.back();
     }
     out.sprint = facts::sprint_weekend(ids);
     out.current = xi;
     out.sessions = uint32_t((xe - xb) / SESSION_STRIDE);
-    if (xi < ids.size())
+    if (xi < ids.size()) {
         out.session = ids[xi];
+        out.current_complete = done[xi];
+    }
     return true;
 }
 
@@ -488,7 +491,7 @@ std::string track_id(int stat_id)
     return id;
 }
 
-SessionFacts at_session_load()
+SessionFacts at_session_load(std::string *already_ran = nullptr)
 {
     SessionFacts f;
     uintptr_t ctx = current_context();
@@ -506,8 +509,12 @@ SessionFacts at_session_load()
         once("the " + f.mode + " game mode has no current championship weekend; session and track stay empty");
         return f;
     }
-    facts::Session s = facts::session_of(w.session, w.sprint);
-    if (s.type.empty())
+    facts::Session s = facts::current_session(w.session, w.sprint, w.current_complete);
+    if (w.current_complete && already_ran)
+        *already_ran = "session " + std::to_string(w.current + 1) + " of " + std::to_string(w.sessions) + " (" +
+                       facts::session_of(w.session, w.sprint).session + ") of round " + std::to_string(w.round) +
+                       " already ran: the game has not moved on to the session that starts";
+    else if (s.type.empty() && !w.current_complete)
         once("session id " + std::to_string(w.session) + " is not a known session");
     f.type = s.type;
     f.session = s.session;
@@ -759,6 +766,15 @@ void report_writer_main()
     }
 }
 
+void session_started(const char *where)
+{
+    std::string ran;
+    SessionFacts f = game::at_session_load(&ran);
+    if (!ran.empty())
+        swofty::log("[apply] session start (%s): %s; the session is left unknown", where, ran.c_str());
+    scheduler().session_started(f);
+}
+
 }
 
 void session_load(const char *source)
@@ -766,17 +782,25 @@ void session_load(const char *source)
     attach();
     std::string from = source ? source : "";
     bool flow = from == "StateLoadSession";
-    if (!flow && scheduler().in_session() && loaded_from_flow.load())
-        return;
-    loaded_from_flow = flow;
-    SessionFacts f = game::at_session_load();
+    std::string ran;
+    SessionFacts f = game::at_session_load(&ran);
+    if (!ran.empty())
+        swofty::log("[apply] session start (%s): %s; the session is left unknown", from.c_str(), ran.c_str());
     if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
         note_mode(k, "the session load");
-    scheduler().session_load(f);
+    if (!scheduler().session_enter(f, flow))
+        return;
     if (flow)
         frontend::view::load_trackside_cameras(f.track);
     std::call_once(report_writer_once, [] { std::thread(report_writer_main).detach(); });
     report_queue.want(from);
+}
+
+void session_running()
+{
+    attach();
+    if (scheduler().in_session())
+        session_started("StateSession updating");
 }
 
 facts::ModeKind mode_kind() { return facts::ModeKind(mode_now.load(std::memory_order_relaxed)); }
@@ -847,7 +871,6 @@ void grand_prix_track_check()
 void session_end(const char *source)
 {
     attach();
-    loaded_from_flow = false;
     scheduler().session_end(source ? source : "the session ended");
 }
 

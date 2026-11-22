@@ -1127,6 +1127,9 @@
   "Ne_Parse_Long": {
    "match": "0x3db14f3"
   },
+  "Ne_PhysUpdateStage_FinishStepNotifyBodies": {
+   "match": "0x40b62a0"
+  },
   "Ne_Play_FullscreenVideo": {
    "match": "0x4162040"
   },

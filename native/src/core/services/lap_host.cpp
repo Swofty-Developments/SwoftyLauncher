@@ -9,6 +9,7 @@
 #include "core/hooks/core_events.hpp"
 #include "core/hooks/guard.hpp"
 #include "core/hooks/hooks.hpp"
+#include "core/live/input_devices.hpp"
 #include "core/live/live_car.hpp"
 #include "core/frontend/view_state.hpp"
 #include "core/services/lap_host.hpp"
@@ -26,7 +27,8 @@
 // The lap host (swofty_api.h SwoftyLapHost, the core export SwoftyCoreLapHost): what a lap module needs from the
 // core beyond the SDK, and the module's callbacks the core calls where it has the moment (flow tick, session
 // enter and end, a new lap, hook set offer and settle). The module's timing marks (version 2) are stamped on the
-// caller's thread and written for the launcher by a writer thread of their own (lap_marks_logic.hpp).
+// caller's thread and written for the launcher by a writer thread of their own (lap_marks_logic.hpp). The input
+// devices and the virtual pad (version 4) come from live/input_devices.cpp.
 namespace runtime {
 
 void player_name_probe_tick();
@@ -424,6 +426,8 @@ int mark(int32_t lap, int32_t which, int32_t game_ms)
 
 const char *core_version() { return SWOFTY_CORE_VERSION; }
 
+int input(SwoftyLapInput *out) { return input_devices::input(out); }
+
 const SwoftyLapHost table = {sizeof(SwoftyLapHost),
                              SWOFTY_LAP_HOST_VERSION,
                              attach,
@@ -466,7 +470,8 @@ const SwoftyLapHost table = {sizeof(SwoftyLapHost),
                              notice,
                              name_tick,
                              mark,
-                             core_version};
+                             core_version,
+                             input};
 
 const SwoftyLapClient *live() { return client.load(std::memory_order_acquire); }
 

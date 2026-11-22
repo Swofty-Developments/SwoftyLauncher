@@ -725,6 +725,7 @@ inline constexpr address<"Game_FrontendSceneDriver_SpawnActorsAlt"> Game_Fronten
 inline constexpr address<"Game_FrontendSceneDriver_Update"> Game_FrontendSceneDriver_Update{}; // L2 experimental
 inline constexpr address<"Game_FrontendSceneDriver_UpdatePfx"> Game_FrontendSceneDriver_UpdatePfx{}; // L2 experimental
 inline constexpr address<"Game_FrontendSceneDriver_UpdateTransform"> Game_FrontendSceneDriver_UpdateTransform{}; // L2 experimental
+inline constexpr address<"Game_FrontendSceneManager_DespawnMainScene"> Game_FrontendSceneManager_DespawnMainScene{}; // L2 experimental
 inline constexpr address<"Game_FrontendSceneManager_GetDriverHelmetData"> Game_FrontendSceneManager_GetDriverHelmetData{}; // L2 experimental
 inline constexpr address<"Game_FrontendSceneManager_ProcessPendingCarChanges"> Game_FrontendSceneManager_ProcessPendingCarChanges{}; // L2 experimental
 inline constexpr address<"Game_FrontendSceneManager_ProcessPendingDriverChanges"> Game_FrontendSceneManager_ProcessPendingDriverChanges{}; // L2 experimental

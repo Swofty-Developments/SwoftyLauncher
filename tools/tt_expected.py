@@ -202,6 +202,11 @@ def apply_profile(values, profile):
     return out
 
 
+def boxes(content):
+    """The boxes a `within` entry's content names: one id, or a list of ids any of which matches."""
+    return content if isinstance(content, list) else [content]
+
+
 def norm(key):
     return key.replace('_', '').lower()
 
@@ -214,6 +219,11 @@ def apply_record(values, record):
         if section is None or not isinstance(fields, dict):
             continue
         for key, v in fields.items():
+            if snake == 'f1_aero' and key == 'slipstream' and isinstance(v, dict):
+                for part, x in v.items():
+                    if 'aero_slipstream_' + part in out and isinstance(x, (int, float)) and not isinstance(x, bool):
+                        out['aero_slipstream_' + part] = float(x)
+                continue
             if snake == 'gearbox' and key == 'ratios' and isinstance(v, list):
                 for i in range(len(GEARS)):
                     out['gear_ratio_%d' % (i + 1)] = float(v[i]) if i < len(v) else 0.0
@@ -301,18 +311,28 @@ def merge(variants):
     return out
 
 
-def car_entry(content, version, stat, team, roots, tiers, profile=None, drop=(), records=None):
+def car_entry(content, version, stat, team, roots, tiers, variants=None, drop=(), records=None):
     """roots: the handling files a car may be built from (its own, and its equal performance base), with the
-    vehicle.handling record the build applies to each in `records`."""
+    vehicle.handling record the build applies to each in `records`. variants: the car.profile layers the car may be
+    driven with (the AI's, the player's), each a list applied in order."""
     records = records or [None] * len(roots)
     base = [apply_record(read_fields(r), rec) for r, rec in zip(roots, records)]
-    fin = (lambda v: apply_profile(v, profile)) if profile else (lambda v: v)
-    values = merge([fin(b) for b in base])
+    variants = variants or [[]]
+
+    def fin(v):
+        out = []
+        for layers in variants:
+            x = v
+            for layer in layers:
+                x = apply_profile(x, layer)
+            out.append(x)
+        return out
+    values = merge([x for b in base for x in fin(b)])
     for f in drop:
         values.pop(f)
     tracks = {}
     for track, tier in sorted(tiers.items()):
-        per = merge([fin(read_fields(r, tier, b)) for r, b in zip(roots, base)])
+        per = merge([x for r, b in zip(roots, base) for x in fin(read_fields(r, tier, b))])
         diff = {f: v for f, v in per.items() if f in values and v != values[f]}
         if diff:
             tracks[track] = diff
@@ -443,13 +463,24 @@ def season_cars(addon_dir, stock, db, tiers):
         return None
     for package, rec in reg.get('content.package', {}).items():
         content = '%s/%s' % (addon, package)
-        profile = {}
-        for pid, prof in reg.get('car.profile', {}).items():
+        layers = []
+        ordered = sorted(reg.get('car.profile', {}).items(), key=lambda kv: (kv[1].get('priority', 0), kv[0]))
+        for pid, prof in ordered:
             within = prof.get('within') or []
-            if any(w.get('content') == content for w in within) and all(set(w) == {'content'} for w in within):
-                profile.update({k: v for k, v in prof.items() if k != 'within'})
-            elif any(w.get('content') == content for w in within):
+            if not any(content in boxes(w.get('content')) for w in within):
+                continue
+            # Every entry has to hold: two entries naming one box each match no box at all.
+            if not all(content in boxes(w.get('content')) for w in within if 'content' in w):
+                continue
+            if 'when' in prof and 'time_trial' not in boxes(prof['when']):
+                continue
+            if all(set(w) == {'content'} for w in within) and 'cars' not in prof:
+                layers.append(prof)
+            else:
                 problems.append('%s: car.profile %s has a selector besides content, not applied' % (content, pid))
+        # The AI's car and the player's: a core without player_only profiles builds the player's car as the AI's.
+        variants = [[p for p in layers if not p.get(skip)] for skip in ('player_only', 'ai_only')]
+        variants = [v for i, v in enumerate(variants) if v not in variants[:i]]
         for team in rec.get('teams', []):
             vkey = team['vehicle'].split('/')[-1]
             vrec = reg.get('vehicle', {}).get(vkey, {})
@@ -477,8 +508,8 @@ def season_cars(addon_dir, stock, db, tiers):
                 records.append(consensus(by_package[package]) if package else None)
             else:
                 problems.append('%s %s: no equal performance base found' % (content, label))
-            drop = [PROFILE[k] for k in ('lift_scale', 'drag_scale') if profile.get(k, 1.0) != 1.0]
-            cars.append(car_entry(content, manifest['version'], None, label, roots, tiers, profile, drop=drop,
+            drop = [PROFILE[k] for k in ('lift_scale', 'drag_scale') if any(p.get(k, 1.0) != 1.0 for p in layers)]
+            cars.append(car_entry(content, manifest['version'], None, label, roots, tiers, variants, drop=drop,
                                   records=records))
     return cars, problems
 

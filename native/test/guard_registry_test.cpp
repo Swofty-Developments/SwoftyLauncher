@@ -75,6 +75,7 @@ const std::vector<std::string> OFFERED = {
     "anim_packet_time",
     "speech",
     "vehicle_override",
+    "phys_nonfinite",
 };
 
 const std::vector<std::string> SETTLED = {
@@ -134,6 +135,7 @@ const std::vector<std::string> SETTLED = {
     "anim_packet_time",
     "speech",
     "vehicle_override",
+    "phys_nonfinite",
 };
 
 // The order 1.9.63 armed the hook guards in, each from its own SWOFTY_ON_LOAD entry, as the armed lines of a 1.9.63

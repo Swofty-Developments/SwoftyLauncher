@@ -41,6 +41,7 @@ The header names what the core knows and leaves out the rest:
   "lap": { "time_ms": 91234, "sectors_ms": [29001, 31002, 31231], "valid": true, "source": "game", "lap_index": 3,
            "started_utc": "2026-11-10T04:10:11Z", "session_time_s": 412.5 },
   "assists": { "brk": 1, "abs": 1, "trc": 2, "drl": 0, "gbx": 3, "ers": 1, "input": 2 },
+  "input": { "v": 1, "game": { "device": "controller" }, "core": "ok", "devices": [] },
   "performance": "equal",
   "rate_hz": 60,
   "fields": [
@@ -65,6 +66,48 @@ These keys are left out when the core could not read them:
 | `board.content_name` | the title of the era box the content id names |
 | `board.track_name` | the track's display name from the core's track base |
 | `board.track_addon` `board.track_kind` | on a custom track, the addon id that adds or fills the track and `record` or `older`; left out on a stock track |
+
+### The input record
+
+The Time Trial plugin writes `input`: the game's own input class of the car through the lap, and the game controllers and virtual pad reads the core lists at the lap's start and end. A sealed lap carries it inside the body its attestation hashes.
+
+```json
+"input": {
+  "v": 1,
+  "game": { "device": "controller", "start": "controller", "end": "controller",
+            "samples": { "controller": 362, "wheel": 0, "keyboard": 0, "direct": 0 }, "switches": 0 },
+  "core": "ok",
+  "pad": { "from": "lap", "owners": [], "seen": ["title"], "set": 0, "idle": 0, "real": 5431 },
+  "devices": [
+    { "kind": "xinput", "slot": 0, "subtype": "gamepad", "vid": "045e", "pid": "028e" },
+    { "kind": "gamepad", "usage": "01:05", "vid": "045e", "pid": "028e", "name": "Controller (XBOX 360 For Windows)", "xinput": true },
+    { "kind": "joystick", "usage": "01:04", "vid": "046d", "pid": "c24f", "name": "G29 Driving Force Racing Wheel" }
+  ],
+  "devices_total": 3, "keyboards": 1, "mice": 1, "devices_age_s": 1.3
+}
+```
+
+| Key | Meaning |
+| --- | --- |
+| `game` | the car's input class, read every 250 ms of the lap: the class with the most reads, the first and last read, the reads per class and how often it changed |
+| `core` | `ok`, `none` from a core without the lap host's `input` (before version 4), `refused` when the core turned the call down; `pad` and `devices` are there only with `ok` |
+| `pad` | the core's virtual pad: who holds it now (`owners`) and who held it since the game started (`seen`): `title` (title skip and direct start), `agent` (the test agent), `plugin` (an addon); and the XInput slot 0 reads through the lap it answered with held buttons or triggers (`set`), with nothing held (`idle`) and from the real controller (`real`). `from` is `process` when the lap's start had no answer and the counts run from the game's start |
+| `devices` | up to 16 game controllers at the lap's end: the XInput slots (`slot`, `subtype` as XInput names it or its number) and the Raw Input HID joysticks, gamepads and multi-axis controllers (`usage` page:usage), with the USB vendor and product ids and the product string when Windows has them. `virtual` marks the core's virtual pad in slot 0 when no real controller is there, `xinput` the HID entry of an XInput device |
+| `devices_total` `keyboards` `mice` | every game controller listed, and the keyboards and mice |
+| `devices_age_s` | how old the core's device list is; the core reads it every 5 s while a plugin asks. Left out with `devices` before the first read |
+
+The core logs its first read and every change of the controllers:
+
+```
+[input] read the input devices: 2 game controller(s) (1 XInput, 1 named), 1 keyboard(s), 1 mouse/mice in 4 ms
+[input] the game controllers changed; read the input devices: 3 game controller(s) (1 XInput, 2 named), 1 keyboard(s), 1 mouse/mice in 3 ms
+```
+
+and the plugin one line per lap:
+
+```
+[laps] input: lap 3 game controller (362 controller, 0 wheel, 0 keyboard, 0 direct samples, 0 switches); core ok: 3 controller(s) listed, pad set 0 idle 0 real 5431
+```
 
 `board.weather` is guessed from the track wetness when the lap starts. The core has no read of the Time Trial weather setting. `board.game_board` is the last board name the game's leaderboard screen requested in the session, written when its weather matches the lap's. `ghost_id` is the base64 of the 0x30-byte id block of the last committed personal best, written on laps that carry a `GHST` section. Both keys are left out when unknown.
 
@@ -127,6 +170,17 @@ The plugin attaches to the core's lap host, `SwoftyCoreLapHost` in `swofty_api.h
 [tt] attached to the core's lap host (version 1)
 module tt-game: not loaded for this session: none published
 ```
+
+From lap host version 4 the plugin calls the host's `input` at each lap's start and end for the lap's `input` record:
+
+```c
+SwoftyLapInput in = { .size = sizeof in };
+if (host->version >= 4 && host->size >= SWOFTY_LAP_HOST_V3_SIZE + sizeof(void *) && host->input(&in) == 1)
+    for (uint32_t i = 0; i < in.count; i++)
+        log("%s %04x:%04x", in.devices[i].name, in.devices[i].vendor, in.devices[i].product);
+```
+
+`input` answers 0 for a NULL table or one shorter than `SwoftyLapInput`. It reads nothing from the game.
 
 Without the plugin no lap is recorded and the in-game boards are off.
 

@@ -240,4 +240,5 @@ src/core/guards/engine/anim_clip_time_guard.cpp
 src/core/guards/session/marshal_lights_guard.cpp
 src/core/guards/engine/anim_packet_time_guard.cpp
 src/core/audio/speech.cpp
+src/core/guards/engine/phys_nonfinite_guard.cpp
 src/core/frontend/tt_blocked.cpp

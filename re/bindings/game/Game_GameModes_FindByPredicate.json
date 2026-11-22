@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GameModes_FindByPredicate",
+ "table": "functions",
+ "author": "Moorzii",
+ "row": {
+  "addr": "0x1407d2280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_GameModes_FindByPredicate(void *modes, void *const *predicate)",
+  "evidence": "decomp:own disasm 0x1407d22c0-0x1407d230c;xref:0x141a79b21,0x141bb8639",
+  "notes": "returns the game mode entity whose mode matches the predicate (a callable wrapped at [rsp+0x28]); the caller at 0x141a79b10 passes the Grand Prix predicate"
+ },
+ "signature": {
+  "id": "game.game_modes_find_by_predicate",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28",
+  "match": "0x1407d2280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407d2280",
+  "kind": "func_start",
+  "names": [
+   "Game_GameModes_FindByPredicate"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-21",
+    "by": "Moorzii",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1407d22c0",
+  "made_on_target": "0x1407d22c0",
+  "twin": "made on steam-26566308; the target 0x1407d22c0 is KB 0x1407d2280: Game_Game_SetCurrentGameMode (0x7d07e0) and Career_Find_CareerSaveByPredicate (0x7d2310) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "Moorzii",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407d22c0",
+    "target": "0x1407d22c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "446e3d64f6f4e4bb6f33c62ce83346d5d9a83b485afbaa9b2fba9f27c5c3d051"
+  }
+ ]
+}

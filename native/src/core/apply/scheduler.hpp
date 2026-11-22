@@ -64,6 +64,14 @@ public:
 
     Totals session_load(const std::string &type, const std::string &track);
     Totals session_load(const SessionFacts &facts);
+    // A session starts, through StateLoadSession (from_flow) or the game's session enter. It loads the session and runs
+    // the session appliers, except for a later start of a session loaded through StateLoadSession (the weekend's next
+    // session, which loads no track, or a restart): that one is session_started. True when it loaded the session.
+    bool session_enter(const SessionFacts &facts, bool from_flow);
+    // A later start of the loaded session (the weekend's next session, or a restart): the session's type and name take
+    // the read's and no applier runs. A read that names no session, or another track than the loaded one, leaves the
+    // session unknown instead of keeping the last session's name. False when nothing changed or no session is loaded.
+    bool session_started(const SessionFacts &facts);
     std::string session_name() const;
     std::string facts_line() const;
     Totals session_end(const std::string &why);
@@ -107,7 +115,7 @@ private:
     std::function<void(const Context &)> facts_;
     Context ctx_;
     bool have_ctx_ = false;
-    bool planned_ = false, booted_ = false, read_ = false, session_ = false;
+    bool planned_ = false, booted_ = false, read_ = false, session_ = false, loaded_from_flow_ = false;
     uint64_t boot_from_ = 0, boot_published_ = 0;
     std::vector<std::pair<std::string, std::size_t>> keys_;
     bool work_ = false;

@@ -1667,7 +1667,7 @@ typedef struct SwoftyApi {
 typedef int (*SwoftyAddonInitFn)(const SwoftyApi *api);
 typedef SwoftyAddonInitFn SwoftyModInitFn;
 
-/* Lap host, from the core export SwoftyCoreLapHost; not a SwoftyApi field. Table version 2. What a lap module
+/* Lap host, from the core export SwoftyCoreLapHost; not a SwoftyApi field. Table version 4. What a lap module
    (a plugin that records laps and serves lap boards) needs from the core beyond the SDK. A string a function
    returns belongs to the calling thread until its next call of this table; never NULL. NULL table: a core
    without it.
@@ -1698,7 +1698,21 @@ typedef SwoftyAddonInitFn SwoftyModInitFn;
    line or the pause, on the flow thread, and the finish before the lap's file is written. A core before 1.10.0
    refuses the pause marks. The core stamps the moment and hands it to the launcher, which sends it off the game's
    threads; 1 queued, 0 refused. A module takes a table of at least SWOFTY_LAP_HOST_V1_SIZE bytes and
-   calls mark only on version 2 or later. */
+   calls mark only on version 2 or later.
+   Table version 4 adds input at the end: the input devices Windows lists and the core's virtual pad, for the lap
+   file's input record. out->size is the caller's sizeof(SwoftyLapInput); the core fills at most that many bytes and
+   answers 1, or 0 for a NULL or short out. It never waits: the device list is read on a thread of the core's own,
+   at most every 5 seconds while someone asks, so the first answer of a process has age_s below 0 and no devices.
+   pad_*: the virtual pad (XInputGetState and XInputGetCapabilities of slot 0, which the core answers while a claim
+   holds it). pad_owners and pad_owners_seen are SWOFTY_LAP_PAD_* bits: who holds a claim now, and who held one
+   since the process started. pad_set counts the slot 0 reads the virtual pad answered with held buttons or
+   triggers, pad_idle the reads it answered with an idle pad because no real pad was in slot 0, and pad_real the
+   reads a real pad passed through while a claim held it; all three only grow. devices: the game controllers,
+   XInput slots first, then the HID joysticks, gamepads and multi-axis controllers Raw Input lists (an XInput pad
+   is in both, its HID entry with SWOFTY_LAP_INPUT_XINPUT_HID). devices_total counts every one found, past the 16
+   the array holds; keyboards and mice are counted only. name is the HID product string, UTF-8, "" when it
+   could not be read; vendor and product are 0 when unknown. A module calls input only on version 4 or later, on
+   a table of at least SWOFTY_LAP_HOST_V3_SIZE + sizeof(void *) bytes. */
 typedef struct SwoftyLapClient {
     uint32_t size, version;
     void (*offer)(void);
@@ -1733,6 +1747,40 @@ typedef struct SwoftyLapMotion {
     float pos[3], vel[3], angvel[3], quat[4], spin[4], slip_angle[4], slip_ratio[4], drs;
     int32_t player, ai;
 } SwoftyLapMotion;
+
+#define SWOFTY_LAP_INPUT_DEVICES 16
+#define SWOFTY_LAP_INPUT_NAME 64
+#define SWOFTY_LAP_INPUT_KIND_XINPUT 1u
+#define SWOFTY_LAP_INPUT_KIND_JOYSTICK 2u
+#define SWOFTY_LAP_INPUT_KIND_GAMEPAD 3u
+#define SWOFTY_LAP_INPUT_KIND_MULTI_AXIS 4u
+#define SWOFTY_LAP_INPUT_VIRTUAL 1u
+#define SWOFTY_LAP_INPUT_XINPUT_HID 2u
+#define SWOFTY_LAP_PAD_TITLE 1u
+#define SWOFTY_LAP_PAD_AGENT 2u
+#define SWOFTY_LAP_PAD_PLUGIN 4u
+
+/* One game controller. kind: SWOFTY_LAP_INPUT_KIND_*. slot: the XInput user index of an XInput device, 255
+   otherwise. subtype: the XInput XINPUT_DEVSUBTYPE_* of an XInput device (1 gamepad, 2 wheel, 3 arcade stick,
+   4 flight stick, ...), 0 otherwise. flags: SWOFTY_LAP_INPUT_VIRTUAL for slot 0 answered by the virtual pad,
+   SWOFTY_LAP_INPUT_XINPUT_HID for a HID entry whose device path marks an XInput device. usage_page and usage are
+   the HID top-level collection's, 0 for an XInput slot. */
+typedef struct SwoftyLapInputDevice {
+    uint8_t kind, slot, subtype, flags;
+    uint16_t vendor, product, usage_page, usage;
+    char name[SWOFTY_LAP_INPUT_NAME];
+} SwoftyLapInputDevice;
+
+typedef struct SwoftyLapInput {
+    uint32_t size, version;
+    uint32_t pad_owners, pad_owners_seen;
+    uint64_t pad_set, pad_idle, pad_real;
+    uint32_t keyboards, mice, count, devices_total;
+    double age_s;
+    SwoftyLapInputDevice devices[SWOFTY_LAP_INPUT_DEVICES];
+} SwoftyLapInput;
+
+#define SWOFTY_LAP_INPUT_VERSION 1
 
 typedef void (*SwoftyLapFlowLinkFn)(uint8_t *state, uint32_t *link);
 typedef int32_t (*SwoftyLapSectionFn)(void *user, const char *tag, const void *bytes, uint32_t len);
@@ -1785,11 +1833,14 @@ typedef struct SwoftyLapHost {
     int (*mark)(int32_t lap, int32_t which, int32_t game_ms);
     /* Version 3: the core's own version (the launcher's, such as "1.10.0"), for the lap file header. */
     const char *(*core_version)(void);
+    /* Version 4: the input devices and the virtual pad, SwoftyLapInput. */
+    int (*input)(SwoftyLapInput *out);
 } SwoftyLapHost;
 
-#define SWOFTY_LAP_HOST_VERSION 3
+#define SWOFTY_LAP_HOST_VERSION 4
 #define SWOFTY_LAP_HOST_V1_SIZE offsetof(SwoftyLapHost, mark)
 #define SWOFTY_LAP_HOST_V2_SIZE offsetof(SwoftyLapHost, core_version)
+#define SWOFTY_LAP_HOST_V3_SIZE offsetof(SwoftyLapHost, input)
 #define SWOFTY_LAP_CAR_SPEED 1u
 #define SWOFTY_LAP_CAR_PEDALS 2u
 #define SWOFTY_LAP_CAR_STEER 4u
