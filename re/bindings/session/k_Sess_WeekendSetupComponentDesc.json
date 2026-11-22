@@ -5,7 +5,7 @@
  "author": "Moorzii",
  "row": {
   "addr": "0x14605ada0",
-  "type": "void",
+  "type": "uint8_t[32]",
   "level": "L2",
   "subsystem": "session",
   "evidence": "decomp:own disasm 0x140d6af58-0x140d6af73 in the static init and around 0x1421f5aba;xref:0x140d6af5f,0x1421f5aba,0x141124ca5",

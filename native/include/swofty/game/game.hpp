@@ -1446,7 +1446,7 @@ inline constexpr data<"g_Game_TrackLength", float> g_Game_TrackLength{}; // L2 e
 inline constexpr data<"g_Game_VehicleRecordManager", void *> g_Game_VehicleRecordManager{}; // L2 experimental
 inline constexpr data<"g_Game_VehicleStateRoot", void *> g_Game_VehicleStateRoot{}; // L2 experimental
 inline constexpr data<"g_Game_WeatherSurfaceState", void*> g_Game_WeatherSurfaceState{}; // L2 experimental
-inline constexpr data<"k_Game_CustomTrackListComponentDesc", void> k_Game_CustomTrackListComponentDesc{}; // L2 experimental
+inline constexpr data<"k_Game_CustomTrackListComponentDesc", uint8_t[32]> k_Game_CustomTrackListComponentDesc{}; // L2 experimental
 inline constexpr data<"k_Game_TrackListComponentDesc", void *> k_Game_TrackListComponentDesc{}; // L2 experimental, TrackListComponent
 inline constexpr site<"site_Game_AcclimPenalty_Entry"> site_Game_AcclimPenalty_Entry{}; // L2 experimental
 inline constexpr site<"site_Game_AcclimPenalty_Return"> site_Game_AcclimPenalty_Return{}; // L2 experimental
