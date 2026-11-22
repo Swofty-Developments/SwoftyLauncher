@@ -44,7 +44,7 @@ The manifest declares the row:
 
 ```json
 "hud": {
-  "pit_rows": [{ "id": "serve_penalty", "label": "SERVE PENALTY" }]
+  "pit_rows": [{ "id": "serve_penalty", "label": "Serve Penalty" }]
 }
 ```
 
@@ -108,7 +108,7 @@ public:
 }
 ```
 
-Each row of `hud.pit_rows` sits under FRONT WING REPAIR on the MFD pit page and shows NO or YES, starting on NO. `find` names only the calling addon's rows and is empty until the page's rows are built in game, or when the row was left out (more than 2 addon rows in the session). A locked row is greyed out the way the game greys its own rows in the pit lane, and reads NO. The player changes an unlocked row with the MFD's left and right inputs. `SWOFTY_PIT_ROWS=0` leaves the rows out.
+Each row of `hud.pit_rows` sits under Front Wing Repair on the MFD pit page and shows NO or YES, starting on NO. `find` names only the calling addon's rows and is empty until the page's rows are built in game, or when the row was left out (more than 2 addon rows in the session). A locked row is greyed out the way the game greys its own rows in the pit lane, and reads NO. The player changes an unlocked row with the MFD's left and right inputs. `SWOFTY_PIT_ROWS=0` leaves the rows out.
 
 ## Builds
 
