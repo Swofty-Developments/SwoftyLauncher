@@ -125,6 +125,13 @@ impl ErpBuild<'_> {
             Some((erp, resource)) if self.merge_ui => self.earlier_whole(erp, resource, origin)?,
             _ => None,
         };
+        let templates = match op {
+            ErpOp::PutResource { .. } => match replaces(op).filter(|(_, r)| r.ends_with(".ui")) {
+                Some((erp, resource)) => self.templates_before(erp, resource)?.map(|t| (erp, resource, t)),
+                None => None,
+            },
+            _ => None,
+        };
         if let ErpOp::PatchPkg {
             erp,
             resource,
@@ -163,6 +170,9 @@ impl ErpBuild<'_> {
         }
         if let Some((erp, resource)) = whole {
             self.record_whole(erp, resource, origin, before)?;
+        }
+        if let Some((erp, resource, t)) = templates {
+            self.keep_templates(erp, resource, t, origin)?;
         }
         if let ErpOp::AppendSlices { erp, resource, .. } = op {
             self.appended
