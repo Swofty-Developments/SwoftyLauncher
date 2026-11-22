@@ -99,6 +99,10 @@
    "pattern": "E9 ?? ?? ?? ?? 4F 3B 55 D9 B6 6C 0F 8E",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The pattern matches once, at the thunk 0x142926100; Game_TelemetryLaps_OnNewLapRecorded calls it at the same place (0x1437b319c), and its jmp target 0x14d1c5210 is the KB body's twin (same instructions modulo the protector's constants)."
   },
+  "Game_Teleport_VehicleImmediate_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 8A 1F BA 8F E5 B4 A5 B8",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler (the KB pattern carried them, so it matched nothing here). On this build the thunk is 0x144740550, 0x130 before Game_Teleport_Vehicle 0x144740680 as on the KB build; its jmp target 0x154cd7320 (.trace) calls Game_Teleport_Vehicle at +0xd7, and its two rel32 callers 0x1434c1473/0x1437aef64 are the moved twins of the KB build's 0x1434beef3/0x1437ac9d4."
+  },
   "Game_TileList_PushChildSelection_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 0F 88 D2 3B ?? ?? ?? ?? 5C DB 96 00 E9",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
@@ -5420,6 +5424,9 @@
   },
   "Game_Teleport_Vehicle": {
    "match": "0x4740680"
+  },
+  "Game_Teleport_VehicleImmediate_Thunk": {
+   "match": "0x4740550"
   },
   "Game_TerminalDamage_Initialise": {
    "match": "0x354530"
