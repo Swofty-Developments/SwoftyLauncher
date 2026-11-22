@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e7c410",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e7c410.c;xref:0x142e7c089",
-  "notes": "Binary search in an array of 0x28-byte keyframes then in the inner (x,y) pair array (8-byte pairs, compares second float) and linear interpolates; used by the tyre 2-D wear/curve sampler. Hypothesis on axis meaning."
+  "evidence": "decomp:re/decomp/142e7c410.c;xref:0x142e7c089,0x142e7c09f,0x142e7c10b,0x142e7c121",
+  "notes": "(curve, y in xmm1): inverse lookup: binary search of 0x28-byte keys by the first pair's y, then of pairs by y; interpolates x (clamped) and returns key[0] + x. All calls in Car_Tyre_SampleCurveSet2KeyLerp 0x142e7bfa0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_curve2_d_sample_by_binary_search_y",

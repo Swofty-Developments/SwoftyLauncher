@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1437a9180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "pat:log-message-method",
-  "notes": "logged method name processRenderResources (class from the log channel); log channel GameSurfacePack: 'processRenderResources(): Processing surfaces' insertions (% I64u)'"
+  "evidence": "decomp:re/decomp/1437a9180.c;pat:log-message-method;xref:0x14015d03a",
+  "notes": "Under CS [+0x18480]: construct/destroy atlas (logs 'Constructing/Destroying atlas surface', EGO_GFX_RESOURCES, eaid://ego_package/textures/game_surface_pack.tif, 0x1d8 obj vtable 0x1458c11f0 at +0x180d8); pops insertions vector +0x18128 (0x138 stride) into placed list +0xd8 / pending +0xc0d8 (0x40 entries, max 0x300); removals +0x18168; 32px-grid packing in 0x800 atlas; logs processRenderResources() strings. Xref = tail jne in thunk 0x14015d030 (this+0x130). (lane owner review requested)"
  },
  "signature": {
   "id": "game.game_surface_pack_process_render_resources",

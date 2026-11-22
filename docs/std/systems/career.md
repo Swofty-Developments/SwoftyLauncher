@@ -547,6 +547,8 @@ At each session load of a Driver Career or My Team career, the core puts the rul
 
 A season whose box is a stock box, whose pack is off, or a career whose year isn't known yet races under the game's rules. The rules stay in the setup mode while the career's season and box stay the same, and the career's unload puts the game's rules back. A career of another data group never reads them. `SWOFTY_CAREER_RULES=0` turns it off.
 
+With `SWOFTY_CAREER_SAFETY_CAR=1` (experimental, off by default) the season's `safety_car` rule runs too: each session load sets the game's safety car option (`safety_car_frequency`) to the box's setting, the option a press of the box sets, so a 1950 season races without a safety car. The career's unload, or a load of a season without the rule, puts the player's value back when the option still holds the box's. The red flag option (`red_flag_frequency`) is a separate option and stays as the player set it. The game's safety car option covers the virtual safety car too; that `off` keeps the virtual safety car away is not seen in game yet.
+
 ```text
 [career-rules] career f1_career_sw_progressive.driver_career:3f0a season 2010 (swofty.swofty-seasons-progressive/2010): box sw_f1_2010 (swofty.swofty-seasons-2010/sw_2010), rules drs; into <setup mode>
 [drs] career season 2010: box sw_f1_2010 (swofty.swofty-seasons-2010/sw_2010): <setup mode> DRS group swofty_drs_sw10_no_drs_5c1e9a20 (rules.drs swofty.swofty-seasons-2010/sw10_no_drs: race start lap 200, red flag restart 200, safety car end 200)
@@ -648,7 +650,7 @@ The season's year comes from one of two places:
 career::report_season(year, season_index);
 ```
 
-A career loaded in a season that already started fires nothing, but the core still needs its year, for the [season's rules](#the-season-s-rules) among others. An owner's report for that season, or the idle Team HQ of a career no addon owns, dates the career: the core takes the year without a `career.season.start`. An owner reports at the first idle Team HQ after each career load, as well as at each season's start:
+A career loaded in a season that already started fires nothing, but the core still needs its year, for the [season's rules](#the-season-s-rules) among others. An owner's report for that season, or the idle Team HQ of a career no addon owns, dates the career: the core takes the year without a `career.season.start`. An owner reports at `career.loaded` or at the first idle Team HQ after each career load, as well as at each season's start. A `career.loaded` handler can run off the flow thread: its report answers `late`, and the core runs it at the next flow tick, before the session loads. A career resumed straight into a race weekend has its year that way:
 
 ```text
 [registry] career::report_season(2010, 0) from swofty.swofty-seasons-progressive: ok, 2010 already started in career f1_career_sw_progressive.driver_career:3f0a

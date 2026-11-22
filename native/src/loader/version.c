@@ -12,6 +12,7 @@
 #include "pe_exports.h"
 #include "data_folder.h"
 #include "alog.h"
+#include "stack_room.h"
 #include "supported_builds.h"
 #include "build_gate.h"
 #include "pe_imports.h"
@@ -1194,10 +1195,8 @@ static void crash_where(uintptr_t a, char *out, size_t cap)
     }
 }
 
-static void crash_backtrace(CONTEXT ctx)
+static void crash_backtrace(CONTEXT ctx, uintptr_t lo, uintptr_t hi)
 {
-    NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
-    uintptr_t lo = (uintptr_t)tib->StackLimit, hi = (uintptr_t)tib->StackBase;
     char w[320];
     for (int i = 0, shown = 0; i < 16 && ctx.Rip; i++) {
         crash_where(ctx.Rip, w, sizeof w);
@@ -1220,13 +1219,12 @@ static void crash_backtrace(CONTEXT ctx)
     }
 }
 
-static void crash_report(const char *when, EXCEPTION_POINTERS *e)
+static void crash_lines(const char *when, const EXCEPTION_RECORD *r, const CONTEXT *c, DWORD tid, uintptr_t lo, uintptr_t hi)
 {
-    EXCEPTION_RECORD *r = e->ExceptionRecord;
     char w[320];
     crash_where((uintptr_t)r->ExceptionAddress, w, sizeof w);
     ediag("CRASH (%s): %s (0x%08lx) on thread %lu, %lu ms after attach, at %s", when, exc_name(r->ExceptionCode),
-          (unsigned long)r->ExceptionCode, GetCurrentThreadId(), GetTickCount() - attach_tick, w);
+          (unsigned long)r->ExceptionCode, tid, GetTickCount() - attach_tick, w);
     if ((r->ExceptionCode == EXCEPTION_ACCESS_VIOLATION || r->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) &&
         r->NumberParameters >= 2) {
         ULONG_PTR op = r->ExceptionInformation[0];
@@ -1238,23 +1236,92 @@ static void crash_report(const char *when, EXCEPTION_POINTERS *e)
               (unsigned long long)r->ExceptionInformation[1]);
     }
     ediag("  stack (loader unwind, module+RVA):");
-    crash_backtrace(*e->ContextRecord);
+    crash_backtrace(*c, lo, hi);
+}
+
+static void crash_report(const char *when, EXCEPTION_POINTERS *e)
+{
+    NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
+    crash_lines(when, e->ExceptionRecord, e->ContextRecord, GetCurrentThreadId(), (uintptr_t)tib->StackLimit,
+                (uintptr_t)tib->StackBase);
+}
+
+static const char CRASH_FIRST_CHANCE[] = "first-chance (the game may still handle it)", CRASH_UNHANDLED[] = "unhandled";
+
+/* The exception a thread with little stack left handed to the log writer (crash_hand_off), one per process. */
+static struct {
+    CONTEXT ctx;
+    EXCEPTION_RECORD rec;
+    DWORD tid;
+    uintptr_t lo, hi;
+    size_t left;
+    const char *when;
+} crash_note;
+static volatile LONG crash_note_claimed;
+
+static void crash_note_job(void)
+{
+    if (crash_note.left == SIZE_MAX)
+        ediag("CRASH: thread %lu hit %s (0x%08lx) off its own stack; it logs nothing itself, the log writer logs it",
+              crash_note.tid, exc_name(crash_note.rec.ExceptionCode), (unsigned long)crash_note.rec.ExceptionCode);
+    else
+        ediag("CRASH: thread %lu hit %s (0x%08lx) with %llu KB of its stack left; it logs nothing itself, the log writer "
+              "logs it",
+              crash_note.tid, exc_name(crash_note.rec.ExceptionCode), (unsigned long)crash_note.rec.ExceptionCode,
+              (unsigned long long)(crash_note.left >> 10));
+    if (crash_note.when == CRASH_UNHANDLED)
+        ediag("CRASH: unhandled exception reached the loader top-level filter; %s",
+              prev_filter ? "passing it to the game's filter" : "the process ends here");
+    crash_lines(crash_note.when, &crash_note.rec, &crash_note.ctx, crash_note.tid, crash_note.lo, crash_note.hi);
+}
+
+/* A stack overflow, or less than SWOFTY_LOW_STACK of this thread's stack left with the log writer to hand to. */
+static int crash_low_stack(DWORD code, size_t *left)
+{
+    *left = swofty_stack_left();
+    return code == EXCEPTION_STACK_OVERFLOW || (*left < SWOFTY_LOW_STACK && log_async);
+}
+
+/* Copies the exception for the log writer, which logs it on its own stack, and waits for it at most 5 s; this thread
+   formats nothing. */
+static __attribute__((noinline)) void crash_hand_off(const char *when, EXCEPTION_POINTERS *e, size_t left)
+{
+    if (!log_async || InterlockedCompareExchange(&crash_note_claimed, 1, 0))
+        return;
+    NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
+    memcpy(&crash_note.ctx, e->ContextRecord, sizeof(CONTEXT));
+    memcpy(&crash_note.rec, e->ExceptionRecord, sizeof(EXCEPTION_RECORD));
+    crash_note.rec.ExceptionRecord = NULL;
+    crash_note.tid = GetCurrentThreadId();
+    crash_note.lo = (uintptr_t)tib->StackLimit;
+    crash_note.hi = (uintptr_t)tib->StackBase;
+    crash_note.left = left;
+    crash_note.when = when;
+    alog_run(crash_note_job, 5000);
 }
 
 static LONG CALLBACK loader_veh(EXCEPTION_POINTERS *e)
 {
     DWORD code = e->ExceptionRecord->ExceptionCode;
-    if (ea_diag && exc_fatal(code) && InterlockedIncrement(&diag_crash_reports) <= 8)
-        crash_report("first-chance (the game may still handle it)", e);
+    if (!ea_diag || !exc_fatal(code) || InterlockedIncrement(&diag_crash_reports) > 8)
+        return EXCEPTION_CONTINUE_SEARCH;
+    size_t left;
+    if (crash_low_stack(code, &left))
+        crash_hand_off(CRASH_FIRST_CHANCE, e, left);
+    else
+        crash_report(CRASH_FIRST_CHANCE, e);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
 static LONG WINAPI loader_unhandled(EXCEPTION_POINTERS *e)
 {
-    if (ea_diag) {
+    size_t left;
+    if (ea_diag && crash_low_stack(e->ExceptionRecord->ExceptionCode, &left)) {
+        crash_hand_off(CRASH_UNHANDLED, e, left);
+    } else if (ea_diag) {
         ediag("CRASH: unhandled exception reached the loader top-level filter; %s",
               prev_filter ? "passing it to the game's filter" : "the process ends here");
-        crash_report("unhandled", e);
+        crash_report(CRASH_UNHANDLED, e);
     }
     return prev_filter ? prev_filter(e) : EXCEPTION_CONTINUE_SEARCH;
 }

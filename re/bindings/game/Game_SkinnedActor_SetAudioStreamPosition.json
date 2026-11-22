@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401fb5b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401fb5b0.c;pat:log-message-cxx;xref:0x1455e1068,0x1455e1578,0x1455e1748,0x1455e35a8,0x1455e5b08,0x14560ba58,0x14561b688,0x14561c468,0x14561c648,0x14561ddf8,0x14561e2a8,0x14561e478,0x14561e6c8",
-  "notes": "Next slot after PlayAudioStream in the same actor vtables (cells in xref). When visible and the packet layer weight >= 0.8: +0x1d0 = *param_3 and 0x1401f36a0; otherwise ACTOR_AUDIO logs \"not weighted enough\" or \"not visible, disabled or muted\"."
+  "notes": "Own strings 'SkinnedActor::setAudioStreamPosition - ...' (ACTOR_AUDIO). Needs flags +0x40 &0x20 and not &0xc0; layer id *param_2 vs 5 globals (0x146042c20..c40) with weights +0x2a0/+0x2f0/+0x340/+0x390 >= 0.8; then +0x1d0 = *param_3 and 0x1401f36a0. Else logs 'not weighted enough' or 'not visible, disabled or muted'. Refs: actor vtable cells. (lane owner review requested)"
  },
  "signature": {
   "id": "game.skinned_actor_set_audio_stream_position",

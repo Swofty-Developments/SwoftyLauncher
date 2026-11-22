@@ -418,9 +418,9 @@ impl Shell {
         out
     }
 
-    /// The trail over an Online page: none at a tab's root, else `Online › <tab> › …` with a back arrow. On the
-    /// Multiplayer tab `room` is the room shown. Time Trial without access keeps 1.10's trail, from `Time Trial`
-    /// and at its root too.
+    /// The trail over an Online page. Time Trial keeps 1.10's trail, from `Time Trial` and at its root too. The
+    /// Multiplayer page has none at its root, and `Online › Multiplayer › <room>` with a back arrow while it shows
+    /// the room `room`.
     pub(crate) fn crumb_bar(
         &self,
         tab: OnlineTab,
@@ -428,7 +428,7 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let classic = tab == OnlineTab::TimeTrial && self.trial_look().trail_at_root();
+        let classic = tab == OnlineTab::TimeTrial;
         let in_room = room.is_some();
         let crumbs: Vec<(usize, String)> = match (tab, room) {
             (_, Some(name)) => vec![(0, name)],

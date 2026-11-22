@@ -87,6 +87,7 @@ core/diagnostics/perf/vq.cpp: p.write = runtime::import_write; => import *!Virtu
 core/diagnostics/perf/vq.cpp: void install() => none
 core/diagnostics/perf/vq.hpp: void install(); => none
 core/diagnostics/session_job_probe.cpp: if (auto r = runtime::loader::install(hook, at, FUNC, on_entry); !r) { => mid binding FUNC
+core/diagnostics/session_loader.cpp: if (auto r = runtime::loader::install(hook, at, name, fn); !r) { => mid binding UPDATE UNLOAD
 core/events/events.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via
 core/events/events.cpp: h_flow = mid(S_FLOW, flow_mid); => mid sig S_FLOW
 core/events/events.cpp: h_session_enter = mid(S_SESSION_ENTER, session_enter_mid); => mid sig S_SESSION_ENTER
@@ -204,13 +205,14 @@ core/render/d3d12/hooking.cpp: if (!runtime::loader::install(h, reinterpret_cast
 core/render/d3d12/hooking.hpp: bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *what); => none
 core/render/d3d12/list_state.cpp: ok = install(*w.h, (w.slot == PSO1_SLOT ? vt4 : vt)[w.slot], w.detour, "ID3D12GraphicsCommandList state"); => outside d3d12
 core/render/d3d12/rtas_guard.cpp: ok = install(hook, target, reinterpret_cast<void *>(&build_rtas_hook), => outside d3d12
-core/render/d3d12/srv_clamp.cpp: bool ok = vt && VirtualProtect(&vt[SRV_SLOT], sizeof(void *), PAGE_READWRITE, &old); => outside d3d12
+core/render/d3d12/srv_clamp.cpp: bool ok = install(hooks.create_srv, target, detour, "ID3D12Device::CreateShaderResourceView"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: if (!install(*w.h, target, w.detour, w.what)) { => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.present, sc_vt[8], reinterpret_cast<void *>(&present_hook), "IDXGISwapChain::Present"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.present1, sc_vt[22], reinterpret_cast<void *>(&present1_hook), "IDXGISwapChain1::Present1"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.resize, sc_vt[13], reinterpret_cast<void *>(&resize_hook), "IDXGISwapChain::ResizeBuffers"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.resize1, sc_vt[39], reinterpret_cast<void *>(&resize1_hook), "IDXGISwapChain3::ResizeBuffers1"); => outside d3d12
 core/render/d3d12/swapchain_hooks.cpp: install(hooks.color_space, sc_vt[38], reinterpret_cast<void *>(&color_space_hook), "IDXGISwapChain3::SetColorSpace1"); => outside d3d12
+core/runtime/game_mem.cpp: if (!VirtualProtect(p, n, PAGE_READWRITE, &old)) => none
 core/runtime/imports.hpp: if (!VirtualProtect(slot, sizeof *slot, PAGE_READWRITE, &old)) => via
 core/runtime/loader/hook_install.cpp: Installed install(safetyhook::MidHook &h, uintptr_t at, const char *what, safetyhook::MidHookFn fn) => via
 core/runtime/loader/hook_install.cpp: auto made = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via

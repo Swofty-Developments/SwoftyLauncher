@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14464e3a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-TYRE_DAMAGE_MONITOR",
-  "notes": "Log channel TYRE_DAMAGE_MONITOR: 'Removed puncture for vehicle %d tyre %p.'"
+  "evidence": "decomp:re/decomp/14464e3a0.c;pat:log-channel-TYRE_DAMAGE_MONITOR;xref:0x142bdcf1e,0x142bdcfb6,0x142bdd051,0x142bdd0ec,0x142bdd322,0x142bdd3ed,0x142bdd4bb,0x142bdd57d,0x142e8892a,0x142e88a1a,0x142e88b0d,0x142e88c04,0x14324b98b,0x144656c92,0x144656e99,0x14470e1b1,0x154df972b,0x155371da0,0x155444248",
+  "notes": "(monitor, veh, tyre): under CS [+0x28]: if count +0x24: count--, erase matching {tyre, veh} from vector +8..+0x10 and log 'Removed puncture...'; when not found records a stack backtrace (ring 0x146107830) and logs. (lane owner review requested)"
  },
  "signature": {
   "id": "car.puncture_remove",

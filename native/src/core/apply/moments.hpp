@@ -41,6 +41,16 @@ struct CareerWeekend {
     std::string session, track;
 };
 bool career_weekend(CareerWeekend &out);
+// The current championship session's own copy of the entrant records, read live: the session (weekend +0x220 +
+// current index (+0x238) * 0xa0) and its record vector (Session +0x20 .. +0x28, 0x88 per record), at most 64 records.
+// False when the chain does not read (team.vehicle_override, vehicle_override.cpp).
+struct SessionEntrants {
+    uintptr_t session = 0, begin = 0, end = 0;
+    uint32_t session_id = 0;
+};
+bool session_entrants(SessionEntrants &out);
+// Whether this game start is a shared session's (a direct start that targets a room).
+bool room_boot();
 // The kind of game mode the game is in: kept by a watch on its own thread (started by mode_watch) and by every session load.
 facts::ModeKind mode_kind();
 void mode_watch();

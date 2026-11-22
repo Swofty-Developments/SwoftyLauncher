@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141871390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void Ui_TeamHqMenu_SetItemValueById(void *menu, int32_t item_id, int32_t value)",
-  "evidence": "decomp:re/decomp/141871390.c;xref:0x141c44d83;xref:0x141c44f97;xref:0x1422d682c",
-  "notes": "myteam-g2: Finds the menu item by id (stride 0x18) and updates its bound text/value (menu+0x38, +0x298). UI only."
+  "evidence": "decomp:re/decomp/141871390.c;xref:0x141c44d83,0x141c44f97,0x1422d682c,0x1422d687a,0x1422d6f51,0x1422d7691,0x1422d7e37",
+  "notes": "(menu,id,sub): focuses item id like 0x141871230, then on the item submenu (vcall +0xd0) checks and focuses sub-item sub (0x14431faa0 / 0x14431fb10) and calls submenu vcall +0xd8(index). (lane owner review requested) Better name: Ui_TeamHqMenu_FocusItemAndSubItem (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.team_hq_menu_set_item_value_by_id",

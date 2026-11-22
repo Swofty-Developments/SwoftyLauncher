@@ -1,0 +1,79 @@
+{
+ "schema": 1,
+ "name": "Game_GarageMonitorContainerVM_SetViewMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f76000",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GarageMonitorContainerVM_SetViewMode(void *container, int32_t mode)",
+  "evidence": "decomp:own capstone disasm 0x141f76000-0x141f76ab6 (re/tools/disx.py);xref:0x141f74cd2,0x14c6040a3",
+  "notes": "Switches the garage monitor container between minimised (mode 0) and fullscreen (mode 1) view. pdata 0x141f76000-0x141f76ab6: returns at once when dword container+0x940 == mode (0x141f7601c), else stores mode there (0x141f76034) and walks the local players ([[0x146044988]+0x20]+0x140 entries +0x198/+0x1a0). Mode 0 (0x141f761a3): resolves #session.time_change.values.normal / current_value nodes (Vm_Resolve_RegistryNode, Ne_Property_SetUIDBRefIfChanged), finds two entity components, asks Game_RacingCameraArbitrator_RequiresCrossfade, dispatches set_render_mode_minimised_view and show_backround_static, vcall +0xb0, copies four 16-byte blocks from 0x146053c88.. and posts bus messages on g_Game_MessageBus. Mode 1 (0x141f76790): per player caches [[c+0x970]+0x38]+0x98+40*idx -> +0x2a0 into c+0x980+8*idx, matches it in [c+0x978]+0x40.., calls 0x141f75a50, posts bus messages, dispatches show_backround_static and set_render_mode_fullscreen_view, vcall +0xb8, copies blocks from 0x146053f68... Callers: 0x141f74cd2 (mode 1, the container command handler's path when +0x958 == 0) and 0x14c6040a3 (mode 0, .data1 body behind the thunk 0x141f75890). A forced re-entry needs +0x940 reset first, as the red-flag-pit addon does (c+0x940 = 0, then SetViewMode(c, 1)). void. Strings: set_render_mode_minimised_view 0x145760d0c, set_render_mode_fullscreen_view 0x145760d41, show_backround_static 0x145760d2b, #session.time_change.values.normal 0x145760cc6."
+ },
+ "signature": {
+  "id": "game.garage_monitor_container_vm_set_view_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 B4 24 80 01 00 00 39 91 40 09 00 00",
+  "match": "0x141f76000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f76000",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageMonitorContainerVM_SetViewMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-21",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f76000",
+    "target": "0x141f76000"
+   },
+   "sigcheck": "passed",
+   "digest": "4a72a28c137e3b0452672635157b1d8679b094e25fec1a89f7eb051f70cff35f"
+  },
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f77c00",
+    "target": "0x141f77c00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d113ae0407935afcfab006076c9acf7840193fae644eab95bce9eeb19331d2a9"
+  }
+ ]
+}

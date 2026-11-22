@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1417eaa50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "uint64_t Set(void **params, void *key, void *node, void **out)",
-  "evidence": "decomp:re/decomp/1417eaa50.c;xref:0x1417e9cec,0x14184d38a,0x141883eeb,0x1418ae39f",
-  "notes": "Builds a Game_EventParams block from param_3 and param_3+0x20 (Game_EventParams_SetValue x2); if param_4 (localiser) is set translates string param_1 via vt+0x18 first; then 0x1416673e0(params, string, param_2)."
+  "evidence": "decomp:re/decomp/1417eaa50.c;xref:0x1417e9cec,0x14184d38a,0x141883eeb,0x1418ae39f,0x1418ae73b,0x14197f4a4,0x1419abf3b,0x141c9f986,0x141d80112,0x141db54a7,0x141e036bf,0x1420a719b,0x1421b9139,0x1421b9b03,0x1421bb05c,0x1421bb69e,0x14233efc5,0x1423e093a,0x1424024a8,0x1427a5553",
+  "notes": "Body read in full. Builds a params block (0x14192eb80 with param_3 and param_3+0x20); without localiser param_4 calls 0x1416673e0(params, string param_1, param_2); with it first translates param_1 via param_4 vt+0x18 into a temp string and passes that; releases the temp string refs. (lane owner review requested)"
  },
  "signature": {
   "id": "career.set_event_param_from_node_value",

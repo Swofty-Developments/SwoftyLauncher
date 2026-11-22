@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f15ce0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "ulonglong(void *monitor)",
-  "evidence": "decomp:re/decomp/142f15ce0.c",
-  "notes": "Tyre damage monitor (log channel TYRE_DAMAGE_MONITOR). Copies the maximum number of concurrent punctures (monitor+0xf74) into the vehicle tyre state; logs 'Set the maximum number of concurrent punctures to %d.'."
+  "evidence": "decomp:re/decomp/142f15ce0.c;xref:0x142f1584a,0x142f16480",
+  "notes": "Resets count +0xc20; per car idx (entrants [+0x28]+0x28, vehicle +0x58, idx +0xe8) appends a 0x70 record at +0x50 {idx, vehicle, cleared states, timer +0xbc = -1}; copies max concurrent punctures +0xf74 to [[+0x28]+0x40]+0x3f70+0x20 and logs TYRE_DAMAGE_MONITOR; calls 0x142f16ed0; inlined bus queue push (0x145801010). Records read by Car_TerminalDamage_UpdateVehicle. Callers 0x142f15840, jmp thunk 0x142f16480. (lane owner review requested) Better name: Car_TyreDamageMonitor_InitVehicleRecords (bound record keeps its name)."
  },
  "signature": {
   "id": "car.tyre_damage_monitor_update",

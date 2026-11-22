@@ -1,0 +1,9 @@
+{
+  "content.box_assets": {
+    "no_box": {
+      "kind": "crowd",
+      "archive": "box_assets/crowd.erp",
+      "resources": ["eaid://character_package_shared/crowd/"]
+    }
+  }
+}

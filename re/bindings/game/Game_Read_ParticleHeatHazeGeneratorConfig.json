@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143d5f8b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143d5f8b0.c;pat:log-channel--;xref:0x143d65354",
-  "notes": "Heat haze generator GPU setup: eaid://vfx_package heatHaze buffers, ParticleHeatHazeGenerator.*ContextSetup names, screen_processing/track_heat_haze/p0."
+  "notes": "Renamed (was Game_Read_ParticleHeatHazeGeneratorConfig). Body read fully: constructor, vtable 0x1459b2fc0, stores ctor args, creates GPU resources under [0x14618caa8] lock: heatHazeTileDirtyBuffer/TileDirtyCoordsBuffer/TileBlurCmdBuf/tileCullCBuffer/tileBlurCBuffer/heathazeConstsCBuffer -> +0x80..+0xa8, trackHeatHazeCBuffer -> +0x110; contexts ParticleHeatHazeGenerator.Blur/TileCull/TileBlur/THHContextSetup -> +0x40/+0x48/+0x50/+0xf0; shader screen_processing/track_heat_haze/p0 -> +0xf8 with fullScreenTex. (lane owner review requested) Better name: Game_ParticleHeatHazeGenerator_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_particle_heat_haze_generator_config",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14318d560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14318d560.c;pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION;xref:0x143184802",
-  "notes": "handleF1LifeDataVehicleSegmentedDecalsAdd (per __FUNCTION__): logs handling; finds the player by user id (Ne_UserId_Equals), inlined addPlayerLifeDataVehicleSegmentedDecals builds the decal node list (Game_NetSerialisableVehicleDecalNodeList_CreateDecalNodeList) and enqueues replication messages. Better name: Game_CustomisationRepl_HandleLifeDataVehicleDecalsAdd (bound record keeps its name)."
+  "notes": "handleF1LifeDataVehicleSegmentedDecalsAdd (lea in 0x1431845e0): finds player by user id (0x144121bc0) in hash this+0xa0; inlined addPlayerLifeDataVehicleSegmentedDecals: list msg+0x68 (0x14313dbd0) appended (0x141106ea0) to player+0xfc0+msg[0x98]*0x120+msg[0x60]*0x370 (+0xd60 if -1) +0xe0, +0x108=msg+0x9c; posts 0x143218a60, maybe 0x143218e00. (lane owner review requested) Better name: Game_CustomisationRepl_HandleLifeDataVehicleDecalsAdd (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_customisation_handling_player_life_data_vehicle",

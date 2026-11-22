@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1411cf770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1411cf770.c;xref:0x1411cf44c,0x141f58eb9",
-  "notes": "Power-unit component slot (param_2 car components, param_3 type 0-6, slot = param_2+0x18+type*0x10): sets +0x20 = component id param_4, +0x28 = 2; when online (mgr+0xf21) notifies listeners in this+0x2f8 (+0x48..+0x50 stride 0x58, vehicle idx car+0x80->+0x58->+0xe8) with event type+9 (0x15 otherwise). Callers Car_Read_WearRatesConfig, Car_Component_Fit."
+  "notes": "(mgr, comps, type, id): slot [comps+0x18+type*0x10]: +0x20 = id, +0x28 = 2; if [mgr+0x278]+0xf21: veh = [[comps+0x80]+0x58]+0xe8, code = type+9 (0x15 if type>=7); in list [mgr+0x2f8]+0x48 (stride 0x58, byte +0x16 = veh) re-rolls or appends {code, (lo+rand*(hi-lo))*scale} (table [entry]+(code*3+6)*4) to +0x20.. and code to +0x40..; PRNG 0x14607a640. (lane owner review requested)"
  },
  "signature": {
   "id": "car.pu_component_set_fitted_id",

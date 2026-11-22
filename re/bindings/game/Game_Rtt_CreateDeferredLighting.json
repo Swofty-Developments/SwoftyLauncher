@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143c89460",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143c89460.c;xref:0x143c8e686,0x143d84fe3",
-  "notes": "Strings DeferredLightingGenerator.ContextSetup, DeferredLightingCBuffer, deferred_render/ps_deferred_%s%s/%s/p0, DeferredRender, ps_clear_to_nan; 6 KB body. Callers 0x143c8dce0, Game_Rtt_RttGenerator."
+  "notes": "Ctor (call 0x143c8e686 in 0x143c8dce0, 0x143d84fe3 in 0x143d84490). vtable 0x1458e8880; creates DeferredLightingGenerator.ContextSetup + DeferredLightingCBuffer (0x204 B) at +0x220/+0x238; loops quality low..rtt_ultra (0x1458e8840) x ''/_30/_chpr/_30_chpr x main/vrs: finds ps_deferred shader, DeferredRender state into table +0x50, binds hashed constants; ps_clear_to_nan -> +0x210. (lane owner review requested) Better name: Game_Rtt_DeferredLightingGenerator_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.rtt_create_deferred_lighting",

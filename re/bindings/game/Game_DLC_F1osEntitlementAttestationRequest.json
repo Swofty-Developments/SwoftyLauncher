@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140791120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140791120.c;pat:log-channel-DLC;xref:0x140791fe8",
-  "notes": "Called from 0x140791fe0; also an absolute cell 0x145644608 whose neighbours are not pdata code."
+  "notes": "Renamed (result handler, not the request): (mgr, err, os_err, result); only caller wrapper 0x140791fe0 (then +0x51c = 1). err 0x25 -> 'request already pending. Ignoring..'; other err -> 'failed - Revoking entitlements' and 0x140791d80(mgr, idx) per entry of +0x4a8 (stride 0x28); err 0 + result NULL -> 'succeeded, but without a token'; else copies +0x4a8, activates each attested entry of result+0x30..+0x38 (idx|1<<32) and revokes the rest. Returns and clears atomic byte +0x4c0. Cell 0x145644608 is followed by string bytes: no vtable. (lane owner review requested) Better name: Game_DLC_OnF1osEntitlementAttestationResult (bound record keeps its name)."
  },
  "signature": {
   "id": "game.dlc_f1os_entitlement_attestation_request",

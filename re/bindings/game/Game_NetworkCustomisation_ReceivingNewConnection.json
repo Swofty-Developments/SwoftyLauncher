@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143184840",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143184840.c;pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION;xref:0x145821c18",
-  "notes": "CustomisationReplicationManager::onNewConnection (virtual, per __FUNCTION__ log): logs \"Receiving new connection from %d\"; for a human player connection runs sendReplicatedData (logs \"Sending/Sent replicated data\") and updates player life data (Game_CustomisationReplicationManager_UpdatePlayerLifeData). Better name: Game_CustomisationRepl_OnNewConnection (bound record keeps its name)."
+  "notes": "Logs on channel NETWORK-CUSTOMISATION-REPLICATION (0x145821ce8) with __FUNCTION__ network::CustomisationReplicationManager::onNewConnection: \"Receiving new connection from %d\"; if flag bit 8 set, iterates list at this+0x88 and sends replicated entries via 0x14402e500(this+0x38,2,msg) with sendReplicatedData logs \"Sending/Sent replicated data\"; then finds player at (this+0x30)+0x58 with +0x63==conn, +0x5b&0x10, builds msg (0x143188a40) and sends; else logs \"was not from a human player description\". (lane owner review requested) Better name: Game_CustomisationRepl_OnNewConnection (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_customisation_receiving_new_connection",

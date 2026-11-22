@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14406b390",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14406b390.c;pat:log-message-method;xref:0x152f10692",
-  "notes": "NeNetSystemCommon::handleSystemMessage (per log): switches on the system message type (Hello, server hello response, ConnectionLeft ...), checks protocol version, (de)serialises hello messages, calls Game_NetworkTransport_ConnectionLeftCallback, 0x144070890 (RTT list removal) and sendToConnectionIDViaSystemChannel. Better name: Game_Network_NetSystemCommon_HandleSystemMessage (bound record keeps its name)."
+  "notes": "Fn ptr stored with this as delegate in 0x152f105c0, passed to vcall +0x68 of obj at this+0x110. Updates conn last-recv time (list stride 0x58, id +0x4c); non-system msg -> delegate [5]/[6]. Else reads type from bit buffer, logs handleSystemMessage, switch: 0 Hello (version vs +0x704, ServerHelloResponse), 1-5 (5 ConnectionLeft: 0x144070890, vcall +0xd8, cb [7]/[8]), 6 KeepAlive->ACK, 7 KeepAliveACK rtt, 10-13, 15. (lane owner review requested) Better name: Game_Network_NetSystemCommon_HandleSystemMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_e_system_message_id_connection_left",

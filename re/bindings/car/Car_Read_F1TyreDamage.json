@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-DEFORMATION",
-  "notes": "Log channel DEFORMATION: 'Loading node graph for tyre %d from VTF files for package %s.' | 'Tyre damage is %s.'  | renamed 2026-10-28 from Car_TyreDeformation_LoadNodeGraph: it is the F1TyreDamage data-class reader (vtable 0x145bf8d00 slot 2), see car.md#objects"
+  "evidence": "decomp:re/decomp/144657290.c;pat:log-channel-DEFORMATION;xref:0x145bf8d10",
+  "notes": "F1TyreDamage data-class reader, vtable cell 0x145bf8d10; log channel DEFORMATION ('Loading node graph for tyre %d ...')."
  },
  "signature": {
   "id": "car.tyre_deformation_load_node_graph",

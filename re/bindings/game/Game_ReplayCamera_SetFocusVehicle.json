@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1406ae650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1406ae650.c;xref:0x1406ae141,0x1406ae506,0x1406aec60,0x1406aee10,0x1406aef68,0x1406af0b5,0x142c05d17",
-  "notes": "(cam, idx, flag, comp): stores +0x15; idx 0xff clears focus (0x144534390 with preset 0x14565bc9e, +0x29 = 1, +0x14 = 0xff); else updates per-vehicle bitmasks [cam+0x48]+0x60 (stride 0x14) and sets focus via 0x1445361a0, +0x14 = idx. Decomp runs past pdata end 0x1406ae904 (merged tail code)."
+  "notes": "pdata 0x1406ae650..0x1406ae904 = dispatcher; decomp lines 104-380 are merged tail-jmp targets. (cam,idx,mode,comp): +0x15=mode. idx 0xff: unless +0x29, bit +0xc set in [cam+0x48]+0x60 (stride 0x14) for old idx, 0x144534390 preset 'spectator_default_1', +0x29=1, +0x14=0xff, vcall [cam+0x78]. mode 0: jmp 0x1406af0c0(cam,idx); mode 1: comp (lookup if 0) then jmp 0x1406af3d0(cam,idx,comp). (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_camera_set_focus_vehicle",

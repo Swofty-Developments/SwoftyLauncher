@@ -9,10 +9,12 @@
 #include <string>
 #include <type_traits>
 
+#include <swofty/d3d12.hpp>
 #include <swofty/ease.hpp>
 #include <swofty/events.hpp>
 #include <swofty/fake_hud.hpp>
 #include <swofty/game_assets.hpp>
+#include <swofty/game_mem.hpp>
 #include <swofty/hud_format.hpp>
 #include <swofty/hud_frame.hpp>
 #include <swofty/hud_leaves.hpp>
@@ -128,6 +130,10 @@ SWOFTY_REGISTER
 static void unavailable_without_core()
 {
     CHECK(!detail::registry_table());
+    CHECK(!d3d12::available());
+    CHECK(d3d12::on_srv_created([](void *, const d3d12::SrvCreated *) {}) == d3d12::Result::unavailable);
+    CHECK(d3d12::on_srv_created(nullptr) == d3d12::Result::invalid);
+    CHECK(d3d12::remove_srv_callback(1) == d3d12::Result::unavailable);
     auto v10 = sounds::engine_sounds.add("v10", {.bundle = file("a.bdl")});
     CHECK(v10.empty());
     auto ferrari =
@@ -556,6 +562,41 @@ static void schemas()
     CHECK(swofty::to_json(garage_rec).find("\"root\":\"eaid://environment_package/core_assets/objects/textures/\"") !=
               std::string::npos &&
           garage_rec.srgb);
+    std::string boards = tracks::sponsors.schema();
+    CHECK(boards.find("\"x-registry\":\"track.sponsors\"") != std::string::npos &&
+          boards.find("\"x-applies\":\"boot\"") != std::string::npos);
+    CHECK(boards.find("\"x-ref\":\"content.package\"") != std::string::npos && tracks::sponsors.at_major() == "track.sponsors@1");
+    tracks::Sponsors boards_rec;
+    CHECK(swofty::to_json(boards_rec).find("\"root\":\"eaid://environment_package/core_assets/shared_textures/sponsors/\"") !=
+              std::string::npos &&
+          boards_rec.srgb);
+    std::string swap = teams::vehicle_overrides.schema();
+    CHECK(swap.find("\"x-registry\":\"team.vehicle_override\"") != std::string::npos &&
+          swap.find("\"x-applies\":\"session\"") != std::string::npos);
+    CHECK(swap.find("\"x-ref\":\"vehicle\"") != std::string::npos &&
+          swap.find("\"x-ref\":\"driver.identity\"") != std::string::npos &&
+          swap.find("\"x-ref\":\"track\"") != std::string::npos &&
+          teams::vehicle_overrides.at_major() == "team.vehicle_override@1");
+    teams::VehicleOverride swap_rec;
+    CHECK(swap_rec.when.year == 0 && swap_rec.drivers.empty() && swap_rec.when.session_types.empty());
+    std::string box_ui = content::package_ui.schema();
+    CHECK(box_ui.find("\"x-registry\":\"ui.per_package\"") != std::string::npos &&
+          box_ui.find("\"x-applies\":\"content\"") != std::string::npos);
+    CHECK(box_ui.find("\"x-ref\":\"content.package\"") != std::string::npos &&
+          content::package_ui.at_major() == "ui.per_package@1");
+    content::PackageUi ui_rec;
+    CHECK(swofty::to_json(ui_rec).find("\"root\":\"eaid://ui_package/art/\"") != std::string::npos && ui_rec.srgb &&
+          ui_rec.archives.empty());
+    std::string kit = content::box_assets.schema();
+    CHECK(kit.find("\"x-registry\":\"content.box_assets\"") != std::string::npos &&
+          kit.find("\"x-applies\":\"boot\"") != std::string::npos && kit.find("\"marshals\"") != std::string::npos);
+    CHECK(kit.find("\"x-ref\":\"content.package\"") != std::string::npos &&
+          content::box_assets.at_major() == "content.box_assets@1");
+    content::BoxAssets kit_rec;
+    kit_rec.resources = {"eaid://character_package_shared/crowd/"};
+    std::string kit_json = swofty::to_json(kit_rec);
+    CHECK(kit_json.find("\"kind\":\"other\"") != std::string::npos && kit_json.find("\"archive\":null") != std::string::npos &&
+          kit_json.find("\"resources\":[\"eaid://character_package_shared/crowd/\"]") != std::string::npos && kit_rec.srgb);
     std::string tree = career::rnd_trees.schema();
     CHECK(tree.find("\"x-applies\":\"boot\"") != std::string::npos && tree.find("\"x-key\":[\"label\"]") != std::string::npos);
     CHECK(tree.find("\"enum\":[\"aerodynamics\",\"chassis\",\"durability\",\"engine\"]") != std::string::npos);
@@ -876,8 +917,65 @@ static void game_assets_wrappers()
     ga::detail::set_table(nullptr);
 }
 
+namespace game_mem_fake {
+struct Call {
+    std::string id;
+    size_t size = 0, offset = 0, n = 0;
+    uint32_t value = 0;
+    bool expect = false;
+    int restores = 0;
+};
+inline Call last;
+inline uint64_t heap[4];
+int write_data(const char *id, size_t size, size_t offset, const void *bytes, size_t n, const void *expect)
+{
+    last.id = id ? id : "";
+    last.size = size, last.offset = offset, last.n = n, last.expect = expect != nullptr;
+    std::memcpy(&last.value, bytes, n < sizeof last.value ? n : sizeof last.value);
+    return SWOFTY_ASSET_OK;
+}
+int restore_data(const char *id)
+{
+    last.id = id ? id : "*";
+    last.restores++;
+    return SWOFTY_ASSET_OK;
+}
+void *alloc(void *, size_t size, size_t) { return size <= sizeof heap ? heap : nullptr; }
+void free(void *, void *p) { last.value = p == heap ? 1u : 0u; }
+inline constexpr swofty::data<"k_Test_ColourTable", uint32_t[6]> colours{};
+inline constexpr swofty::data<"g_Test_Scalar", float> scalar{};
+}
+
+static void game_memory()
+{
+    namespace gm = swofty::game_mem;
+    using namespace game_mem_fake;
+    CHECK(!gm::available());
+    CHECK(gm::write(colours, 4, 0xff00ff00u) == gm::Result::unavailable);
+    CHECK(gm::alloc(16) == nullptr);
+    static_assert(std::is_same_v<gm::detail::element_type<decltype(colours)>, uint32_t>);
+    static_assert(gm::detail::element_count<decltype(colours)> == 6 && gm::detail::element_count<decltype(scalar)> == 1);
+    SwoftyGameMem t{SWOFTY_GAME_MEM_VERSION, write_data, restore_data, alloc, free};
+    gm::set_table(&t);
+    CHECK(gm::available());
+    CHECK(gm::write(colours, 5, 0xff112233u, 0xffffffffu) == gm::Result::ok);
+    CHECK(last.id == "k_Test_ColourTable" && last.size == 24 && last.offset == 20 && last.n == 4 && last.value == 0xff112233u &&
+          last.expect);
+    CHECK(gm::write(colours, 6, 0u) == gm::Result::invalid);
+    CHECK(gm::write(scalar, 0, 1.5f) == gm::Result::ok && last.size == 4 && !last.expect);
+    CHECK(gm::restore(colours) == gm::Result::ok && last.id == "k_Test_ColourTable");
+    CHECK(gm::restore_all() == gm::Result::ok && last.id == "*" && last.restores == 2);
+    uint64_t *p = gm::alloc_array<uint64_t>(4);
+    CHECK(p == heap && gm::alloc_array<uint64_t>(5) == nullptr && gm::alloc_array<uint64_t>(0) == nullptr);
+    gm::free(p);
+    CHECK(last.value == 1u);
+    CHECK(std::strcmp(gm::name(gm::Result::invalid), "invalid") == 0);
+    gm::set_table(nullptr);
+}
+
 int main()
 {
+    game_memory();
     hud_runtime_headers();
     game_assets_wrappers();
     unavailable_without_core();

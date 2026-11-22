@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142355020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142355020.c;pat:log-channel--;xref:0x145781d78",
-  "notes": "Owner perks specialisation tree VM: stewardship/engineering/commercial pills, levels, points, team badge."
+  "notes": "Vt 0x145781d78 slot +0x30. Resolves specialisation_extra_details.diagram.code_{stewardship,engineering,commercial,dot}_point (djb2 path) into +0x2b8..+0x2d0; subscribes OwnerPerksNodeUpdated (0x1456bc878, handler 0x1423584a0) via 0x143987810; builds 0x440 binding tree 'specialisation' (title,level,points,team_card...) at +0x2b0; per item 'owner_perks_specialisation_pill' + lng_op_tree_* labels. (lane owner review requested) Better name: Game_OwnerPerksSpecialisationVm_BuildBindings (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_specialisation_extra_details_config",

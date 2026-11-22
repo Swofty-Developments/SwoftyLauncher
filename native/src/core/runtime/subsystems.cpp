@@ -48,6 +48,7 @@ constexpr Subsystem SUBSYSTEMS[] = {
     {"session host", Start::ready, session_host_ready},
     {"test agent", Start::ready, testagent_setup},
     {"direct start", Start::ready, direct_start_setup},
+    {"session loader probe", Start::ready, session_loader_setup},
     {"load stall", Start::ready, load_stall_setup},
     {"perf sampler", Start::ready, perf::start},
 };

@@ -710,6 +710,8 @@ int main(int argc, char **argv)
     room_hole_tests();
     livery_tests();
     garage_tests();
+    sponsors_tests();
+    box_assets_tests();
     package_team_row_tests();
     points_tests();
     if (argc > 1)
@@ -738,6 +740,8 @@ int main(int argc, char **argv)
         id_clash_tests(argv[1]);
     if (argc > 1)
         virtual_list_tests(argv[1]);
+    if (argc > 1)
+        setup_mode_cap_tests(argv[1]);
     if (argc > 1)
         late_write_tests(argv[1]);
     if (argc > 1)

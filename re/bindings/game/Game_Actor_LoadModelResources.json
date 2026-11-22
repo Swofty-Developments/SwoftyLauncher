@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140187560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140187560.c;xref:0x1401cba91,0x1401ebe00",
-  "notes": "Actor model resource build: tries '.idf?render', '.idf?model', '.emb?context=default', '_rig_head_lite', head morph v1/v2, '.fbx/.idf?context=animset' under eaid:// names; logs MISSING RESOURCE modelResourceID/proxyResourceID [%s] derived from %s (ACTOR_WARN/ACTOR_FAIL). Callers in 0x1401cb030, 0x1401e9150. | 2026-11-19 engine-re: material binding per part = '%s%s' (mesh base param_2+0x20, context suffix = interned string handle param_2+0x50 that Game_SceneManager_BuildMaterialActorForScene fills from the instance's material context list, e.g. '.emb?context=spa_francorchamps'); when that resource is missing or not loaded (+0x28 == 0) it retries '<mesh>.emb?context=default' (0x14560e1ce, lea 0x1401886b1; both lookups only for an eaid:// base) and logs ACTOR_WARN 'MISSING RESOURCE [%s] using fallback [context=default]' (0x1455dfc8e), or ACTOR_FAIL 'FATAL MISSING RESOURCE ... has no fallback [context=default]' (0x1455dfc0a) when the default binding is missing too. Resource lookup by name hash in the global resource map ([g 0x14601db08]+0x70)+0x60."
+  "notes": "Name id param_2[4]: strips _rig_head_morph_v1/v2 -> tries _rig_head_lite.idf?model/?render, else .idf?model/.idf?render (eaid:// only, map ([0x14601db08]+0x70)+0x60). Material '%s%s' name+context param_2[10], fallback .emb?context=default (ACTOR_WARN 0x1455dfc8e / FATAL 0x1455dfc0a); proxy param_2[5]; animsets param_2[9] -> .idf?context=animset / .fbx?context=animset. Then factory by type name param_2[3] in map +0x988 -> vfunc+8 creates actor, sets +0x544, returns it (0 on fail). (lane owner review requested) Better name: Game_Actor_ResolveResourcesAndCreate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.actor_load_model_resources",

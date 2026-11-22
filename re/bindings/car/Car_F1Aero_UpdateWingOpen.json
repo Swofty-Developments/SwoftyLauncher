@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446cb540",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "void Car_F1Aero_UpdateWingOpen(void *f1aero, float dt)",
-  "evidence": "doc:re/db/subsystems/car.md",
-  "notes": "DRS / 2026 straight-mode wing: clears open request F1Aero+0x1988 bit0 when brake [car+0x190] > 0.05 (0x1446cb65f) or throttle [car+0x188] < 0.9 (0x1446cb6d0); open fraction +0x19a8 moves at DRSOpenCloseSpeed ([+0x1868]^[+0x1870]) clamped 0..1; second fraction +0x19b0 targets 0 when +0x19ac (2026 Partial mode); bit1 = failed (skips checks); car = [F1Aero+8]. F1Aero = car+0x570, runtime field = data offset + 0x18, XOR pairs (agent aero, ap-verify claim 1) | findings from PR #477 by vogtmarcel07-cloud; independent check 2026-10-28 by ap-verify: agree"
+  "evidence": "decomp:re/decomp/1446cb540.c;doc:re/db/subsystems/car.md;xref:0x15546a719",
+  "notes": "(F1Aero this, dt): returns if (+0x1848^+0x1850)&0x7fffffff==0; car=[this+8]; +0x1990 += |v|*dt; bit1 set: cleared (+0x1990=0, +0x198c=0x1446c9930()) once [car+0x9db0] > +0x1994; else bit1 set when car+0x134&4, car+0x120==0, car+0x130&2 and 0<+0x198c<distance; bit0 cleared if [car+0x190]>0.05 or [car+0x188]<0.9; +0x19a8 and +0x19b0 (target 0 when +0x19ac) move at (+0x1868^+0x1870)*dt, clamp 0..1. Ref lea 0x15546a719 (.data1 stub). (lane owner review requested)"
  },
  "signature": {
   "id": "car.f1_aero_update_wing_open",

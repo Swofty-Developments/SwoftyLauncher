@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143b5c570",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "-",
-  "evidence": "decomp:re/decomp/143b5c570.c;xref:0x143b5c159,0x143b5e7c2,0x143b61acb,0x143b63c53",
-  "notes": "Constructor: vtable 0x1459be9b8, copies config param_3 into +0x10 (0x143dcb650), creates a child (vtable 0x1458c0d20, name via Ne_HashedName_FromString(param_3+0x4f8)) and a refcounted 0x20 control block (vtable 0x145a3bf00), stores allocator param_2 at +0x540 and copies the 8-byte array param_3+0x408 (count +0x410)."
+  "evidence": "decomp:re/decomp/143b5c570.c;xref:0x143b5c159,0x143b5e7c2,0x143b61acb,0x143b63c53,0x143ce40ab,0x143ce6bd4,0x143ce70c1,0x143ce75ae,0x143ce835e,0x143ce8c9c,0x143ce9210,0x143ce9891,0x143ce9ca2,0x143d1ccf0,0x143d1d9d9,0x143d50412,0x143d508b8,0x143d860b8,0x143d86719,0x143d86e09,0x143d87472,0x143d87b49,0x143d883c8,0x143d88568,0x143d88718,0x143d88850,0x143d88fe8,0x143d897a8,0x143d89e15,0x143d8a5c2,0x143dbc227,0x143dbc877,0x143dbce67,0x143dbd437,0x143dbda37,0x143dbe87f,0x143dbeed6,0x143dbfc06,0x143dbfdfe,0x143dc004b,0x143dc023e,0x143dc04a1,0x143dc068f,0x143dc1385,0x143dc1b27,0x143dc2468,0x143dc2858,0x143dc2cff,0x143dc35e4,0x143f85a70,0x14478de9d",
+  "notes": "Ctor (obj, allocator, cfg): vtable 0x1459be9b8; Render_Gfx2_NamedProgram_CopyConstruct 0x143dcb650(obj+0x10, cfg); 0x30 child (vt 0x1458c0d20, hashed name 0x143994bc0(cfg+0x4f8)); 0x20 refcounted block (vt 0x145a3bf00, {allocator, child}); +0x520 child, +0x528 block, +0x540 allocator; copies cfg+0x408 array (cfg+0x410 u64s) to +0x418. (lane owner review requested)"
  },
  "signature": {
   "id": "render.gfx2_named_program_create",

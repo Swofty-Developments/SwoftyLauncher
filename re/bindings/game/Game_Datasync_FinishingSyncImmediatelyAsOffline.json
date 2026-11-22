@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431041a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1431041a0.c;pat:log-channel-DATASYNC;xref:0x140fd2dee,0x140ff7e03,0x140ff7ed3,0x1436dd447,0x1436feace",
-  "notes": "Calls Game_Datasync_ShouldSyncWithPeer at 0x14310429c,0x143104784,0x143104804,0x143104d50,0x143104eb1."
+  "notes": "Renamed (was Game_Datasync_FinishingSyncImmediatelyAsOffline, a log fragment). Body read fully: state machine on this+0x24 (names 0x145827450): 1 Start - frees list +0x98, new cookie +0x1c, sends start message (vt 0x1458167a0) as Sender/Receiver via 0x14402e500([+8]+0x3d0), -> 2 Syncing; or 'Finishing sync immediately as we are offline' -> 4; 2 per-peer substates +0x50 (msgs 0x1458167e0/0x145816800, callbacks +0xf0/+0x100) -> 3 Finishing: broadcast finished (0x145816820) -> 4 Finished. Returns 1 when finished. (lane owner review requested) Better name: Game_Datasync_UpdateState (bound record keeps its name)."
  },
  "signature": {
   "id": "game.datasync_finishing_sync_immediately_as_offline",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419857a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void* (void *out, void *a, void *b, void *c)",
-  "evidence": "decomp:re/decomp/1419857a0.c;xref:0x141984ef0,0x14198715e,0x141987ce0,0x14232542a",
-  "notes": "Gets a string via param_3 vt+0x28, localises it via param_4 vt+0x18, then substitutes up to 8 numbered args (Ne_Crt_Snprintf into 0x100 buffers) and assigns the result (Ne_String_AssignWithMode); returns '' when param_4 is null."
+  "evidence": "decomp:re/decomp/1419857a0.c;xref:0x141984ef0,0x14198715e,0x141987ce0,0x14232542a,0x142359b03,0x14235a05c,0x1423cefa0",
+  "notes": "param_4 null -> ''. Else param_3 vt+0x28 fills a float vector; string [param_3[1]+0x40] (weak ref param_3[2]) -> param_1, localised by param_4 vt+0x18. 8 arg slots (memset 0x380): float i -> key '%u'=i, value rounded int (type 4); 0x1401b9000 substitutes into param_1. Old note's 0x100 snprintf buffers wrong. Caller funcs 0x141983f10,0x1419867f0,0x141987910,0x1423252b0,0x142359360,0x1423cd630. (lane owner review requested) Better name: Career_FormatLocStringWithFloatArgs (bound record keeps its name)."
  },
  "signature": {
   "id": "career.renown_form_format_level_name",

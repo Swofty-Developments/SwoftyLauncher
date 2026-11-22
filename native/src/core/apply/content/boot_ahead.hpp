@@ -84,7 +84,8 @@ inline StatIds boot_stat_ids(ids::Store &ids, const std::string &day, LogLine lo
 // What the boot expansion made ahead read and made.
 struct Ahead {
     uint64_t store_generation = 0, ids_generation = 0;
-    bool box_worlds = false;
+    bool box_worlds = false, own_worlds = false;
+    box_world::WorldTracks world_tracks;
     std::string day;
     std::shared_ptr<const OlderEdits> edits;
     std::unique_ptr<Expansion> boot;
@@ -102,6 +103,8 @@ inline void boot_ahead(registry::Store &st, const ids::Store &live, rows::Base b
     a.ids_generation = a.ids->generation();
     a.boot = std::make_unique<Expansion>(base);
     a.boot->box_worlds = a.box_worlds;
+    a.boot->own_worlds = a.own_worlds;
+    a.boot->world_tracks = a.world_tracks;
     LogLine hold = [&a](const std::string &line) { a.logs.push_back(line); };
     boot_ids(st, *a.ids, base, a.day, a.box_worlds, a.lines, hold);
     expand(st, *a.boot, boot_stat_ids(*a.ids, a.day, hold));
@@ -110,7 +113,7 @@ inline void boot_ahead(registry::Store &st, const ids::Store &live, rows::Base b
 // What the boot sees when it would adopt the expansion made ahead.
 struct AheadNow {
     uint64_t store_generation = 0;
-    bool box_worlds = false;
+    bool box_worlds = false, own_worlds = false;
     std::string day;
     const OlderEdits *edits = nullptr;
     Admission admitted;
@@ -129,6 +132,9 @@ inline std::string ahead_refusal(const Ahead &a, const AheadNow &now)
     if (now.box_worlds != a.box_worlds)
         return std::string("SWOFTY_BOX_WORLDS is ") + (now.box_worlds ? "on" : "off") + " at the boot and was " +
                (a.box_worlds ? "on" : "off") + " ahead";
+    if (now.own_worlds != a.own_worlds)
+        return std::string("SWOFTY_BOX_OWN_WORLDS is ") + (now.own_worlds ? "on" : "off") + " at the boot and was " +
+               (a.own_worlds ? "on" : "off") + " ahead";
     if (now.day != a.day)
         return "the date changed after the expansion ahead started";
     if (!now.edits || !a.edits || *now.edits != *a.edits)

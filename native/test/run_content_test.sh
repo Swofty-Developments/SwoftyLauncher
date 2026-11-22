@@ -15,6 +15,7 @@ LOGO_SLICE_DIR="$OUT/logo_slices" LOGO_SLICE_WARM=1 "$OUT/logo_build_test" conte
 python3 content/check_logo_slices.py content/bc7/expect/logo_out.md5 "$OUT/logo_out" "$OUT/logo_out_cold" "$OUT/logo_out_warm"
 "$OUT/logo_deliver_test" content/bc7
 "$OUT/garage_test"
+"$OUT/box_ui_test"
 python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
 "$OUT/rows_test" ../../packages/sdk/std/registries
 "$OUT/vehicle_tower_test"

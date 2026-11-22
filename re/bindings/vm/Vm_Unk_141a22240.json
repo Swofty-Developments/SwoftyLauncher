@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a22240",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "decomp:work/exe/decomp/141a22240_uses_title_loc.c;xref:0x141a2425a,0x141a2432c,0x141a2560b,0x141a2570d,0x141a2581e,0x141a268d5,0x141a26943,0x141a288a7+11;pat:exe-agent-label",
-  "notes": "exe-agent label uses_title_loc"
+  "evidence": "decomp:re/decomp/141a22240.c;pat:exe-agent-label;xref:0x141a24259,0x141a2432b,0x141a2560a,0x141a2570c,0x141a2581d,0x141a268d4,0x141a26942,0x141a288a6",
+  "notes": "(vm,item{id,a,title,desc,instance}): id checked for '#','.','[' then djb2 -> 0x1442b2bf0 get-or-create child of list [vm+0x300]; FeTile_Construct_Tile(tile,h,id,item[1],0xff); Vm_Set_String title, Vm_Set_Bool title_localised=1, description, id; Vm_Set_NodeRef instance_data=item[4]; if [vm+0x320]==0 selects the first list child (0x1414c70f0(vm+0x318,..)). Renamed from Vm_Unk. (lane owner review requested) Better name: Vm_Add_TitleDescTileToList (bound record keeps its name)."
  },
  "signature": {
   "id": "vm.unk_141a22240",

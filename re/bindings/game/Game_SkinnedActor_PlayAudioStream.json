@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1401facd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1401facd0.c;pat:log-message-cxx;xref:0x1455e1060,0x1455e1570,0x1455e1740,0x1455e35a0,0x1455e5b00,0x14560ba50,0x14561b680,0x14561c460,0x14561c640,0x14561ddf0,0x14561e2a0,0x14561e470,0x14561e6c0",
-  "notes": "Same slot in several actor vtables (cells in xref). When visible (+0x40 bit 0x20, not 0xc0) and the packet layer weight (+0x2a0/+0x2f0/+0x340/+0x390 >= 0.8 for layer ids 0x146042c20..40) allows: +0x1d0 = *param_3, 0x1401f36a0, stops the old stream (0x140a311b0), plays via [[0x14601db08]+0xb0] vcall +0x98 -> +0x520 (generated or provided audio id param_6). Else ACTOR_AUDIO logs."
+  "notes": "Same vtable slot (cells in xref). If flags +0x40 visible (0x20, not 0xc0) and layer weight ok (ids 0x146042c20/28/38/40 need +0x2a0/+0x2f0/+0x340/+0x390 >= 0.8): +0x1d0 = *param_3; needs artwork proxy +0x228 ('ERROR m_artwork.m_proxy == NULL'); 0x1401f36a0; stops old stream +0x520 (0x140a311b0); plays via [[0x14601db08]+0xb0] vcall +0x98 -> +0x520 (generated) or uses param_6 (provided). Else ACTOR_AUDIO 'not visible'/'not weighted enough' logs. (lane owner review requested)"
  },
  "signature": {
   "id": "game.skinned_actor_play_audio_stream",

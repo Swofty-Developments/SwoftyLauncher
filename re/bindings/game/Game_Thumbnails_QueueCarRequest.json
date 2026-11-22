@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e33790",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e33790.c;xref:0x142e3319f,0x142e366d8",
-  "notes": "0x755-byte body queueing car request (Game_ThumbnailCarRequest_Construct, Game_ThumbnailSystem_RegenerateCarThumbnail)."
+  "notes": "Full body read (pdata 0x142e33790-0x142e33ee5, stack probe 0x144c897d0). Looks up *param_2 in robin-hood map (param_1+0x78 slots, +0x80 ctrl, +0x90 mask); not found -> skip. Optional overrides (param_4): customisation 0x141400ce0/0x1413ffe80, livery 0x1416cd100. Builds spawn params (0x142e0a530 or 0x142e0c700), Game_ThumbnailCarRequest_Construct 0x1428bf4c0, submits via 0x142e2e150 with callback 0x142e32310, frees temps; clears arg+0x88. Callers 0x142e32670 (BuildCarRequests), 0x142e34c90. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnails_queue_car_request",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ee49a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142ee49a0.c;xref:0x142e316e3,0x142e32e19,0x142e346a0,0x142e34e52,0x142e37708,0x142e37bd3,0x142e389f3,0x142e38f13,0x142e396d1",
-  "notes": "Open-addressing hash insert (Ne_HashMap_FindSlot_Thumbnail, Ne_HashMap_Grow_Thumbnail) of key param_3 with VM node refs; tail not read."
+  "notes": "Emplace-unique: node from freelist this+8 (or pool alloc 0x142ee5130): u32 key *param_3, +8 = val[0], +0x10 VM ref (vtable 0x14565f3d8, 0x1442bba60) from val[2], +0x30 VM ref (0x14565f670) from val[6], +0x50 = val[9]. Robin-hood probe (hash mult +0x20, meta +0x30, slots +0x28); key found -> releases node refs (0x1442b3d70), node back to freelist, inserted=0. Grow 0x142ee5280 / rehash, 256 tries then 0x142ee5120. Returns {slot, meta, inserted}. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_hash_map_insert",

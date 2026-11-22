@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140bef050",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140bef050.c;pat:log-message-cxx;xref:0x140beed0c,0x140bf0333",
-  "notes": "Refs are lea sites (callback registration) in 0x140beeca0 and 0x140bf02c0. Name from cxx log 'WeeklyGPComponent::simulateQualifyingSessionForMultiplayer()' (NETWORK)."
+  "notes": "If [+0x2a0]+0x58==3, +0x54 in 1..2: flag 0x20 on [+0x290]+0x4f8, 0x1407b5c40 (championship begin); per session (0xa0): types 1-4 build 0x128 entries (0x142c79940); types 5-14 log 'WeeklyGPComponent::simulateQualifyingSessionForMultiplayer()', WEEKLY_GP_GRID 'Seeding/Forcing fastest lap time', 'Adding grid penalty time', 0x140af2880; types 15-17 stop. (lane owner review requested)"
  },
  "signature": {
   "id": "game.weekly_gp_component_simulate_qualifying_session_for_multiplayer",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e7c990",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142e7c990.c;xref:0x1414dcaae,0x1414dcb0b,0x14369df52",
-  "notes": "(tyre, cur, dLaps, ctx, t) -> cur + t * (predict(base + dLaps) - cur) via 0x142e7bfa0 / 0x142e7c5f0; 0 when no tyre model. Used by strategy code. (6 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/142e7c990.c;xref:0x1414dcaae,0x1414dcb0b,0x14369df52,0x1436a0b4c,0x1436a0bd2,0x1436a1068",
+  "notes": "(tyre,cur,dLaps,ctx,t): 0 when the curve set ([+0x10] chain, +0x18) is empty; else v = Car_Tyre_SampleWearCurve2DAlt(tyre, Car_Tyre_SampleCurveSet2KeyLerp(tyre)+dLaps, ctx) and returns cur + t*(v-cur). Callers in 0x1414dbb20, 0x14369cd10, 0x14369f920. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_lerp_predicted_wear",

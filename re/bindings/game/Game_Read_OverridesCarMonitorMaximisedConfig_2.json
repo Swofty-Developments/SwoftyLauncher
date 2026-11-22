@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141f893f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141f893f0.c;pat:log-channel--;xref:0x145761988",
-  "notes": "Practice programme car-monitor VM: Message*UpdateUIResults per programme, programme_1..3, objectives, tyre_tex, session timer, green/purple status icons."
+  "notes": "vt 0x145761920 slot 13 (cell 0x145761988, same slot as GarageMonitorTvFeedVM_OnActivate). VM 'view_model_data.garage_monitor_practice_select'; Ne_Subscribe_BusMessage for Message{TrackAcclim,TyreWearManagement,QualiPace,FuelManagement,ERSManagement,RacePace}UpdateUIResults; data obj +0x6278 (programme_1..3, objectives, tyre_tex, session_timer); compounds Softer..Wet -> +0x6248; car_monitor_maximised icons +0xc80. (lane owner review requested) Better name: Game_GarageMonitorPracticeSelectVM_OnActivate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_car_monitor_maximised_config_2",
