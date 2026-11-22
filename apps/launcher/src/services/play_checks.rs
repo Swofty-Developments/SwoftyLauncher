@@ -381,16 +381,29 @@ fn registry(
         notes.extend(vanilla_note(using));
         return Verdict::Go;
     }
-    let Ok(plan) = timings.time("resolve", || {
+    let plan = match timings.time("resolve", || {
         swofty_core::profile::resolver::resolve(profile, installed)
-    }) else {
-        return Verdict::Go;
+    }) {
+        Ok(plan) => plan,
+        Err(swofty_core::Error::AddonConflict { addon, other }) => {
+            return Verdict::Stop(conflict_stop(&addon, &other));
+        }
+        Err(_) => return Verdict::Go,
     };
     let report = timings.time("deps check", || {
         deps::for_order(&profile.name, &plan.order, installed, all)
     });
     let findings = report.findings.iter().map(finding_note).collect();
     assemble(findings, report.stop_text(), notes)
+}
+
+/// What stops Play when two addons that are on conflict.
+fn conflict_stop(addon: &str, other: &str) -> String {
+    trf!(
+        "{addon} conflicts with {other}. Turn one of them off on the Addons page",
+        addon = addon,
+        other = other
+    )
 }
 
 fn vanilla_note(using: usize) -> Option<Note> {
@@ -718,6 +731,71 @@ mod tests {
             checked.lines
         );
         assert!(checked.timings.line().contains("files "));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn play_stops_before_the_launch_on_two_addons_that_conflict_and_names_them() {
+        let root = std::env::temp_dir().join(format!("swofty-play-conflict-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = Store::new(root.join("data")).with_builtins(swofty_builtins::all());
+        for (id, name, extra) in [
+            (
+                "william09leo.heavier-damage-realism",
+                "Heavier Damage + 2026 Realism Performance",
+                r#","conflicts":[{"id":"formula-nascar.handling"}]"#,
+            ),
+            ("formula-nascar.handling", "Formula NASCAR", ""),
+            ("a.needs", "Needs Missing", r#","requires":[{"id":"a.missing"}]"#),
+        ] {
+            let src = root.join("src").join(id);
+            std::fs::create_dir_all(&src).unwrap();
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{"schema_version":1,"id":"{id}","name":"{name}","version":"1.0.0","author":"a"{extra}}}"#
+                ),
+            )
+            .unwrap();
+            store.install_addon(&src).unwrap();
+        }
+        store.create_profile("p", None).unwrap();
+        let on = |ids: &[&str]| {
+            store
+                .update_profile("p", |p| {
+                    for id in [
+                        "william09leo.heavier-damage-realism",
+                        "formula-nascar.handling",
+                        "a.needs",
+                    ] {
+                        p.set_enabled(id, ids.contains(&id))?;
+                    }
+                    Ok(())
+                })
+                .unwrap();
+            run(Inputs {
+                store: store.clone(),
+                profile: "p".into(),
+                game: root.join("game"),
+                build_id: None,
+            })
+        };
+        let checked = on(&["william09leo.heavier-damage-realism", "formula-nascar.handling"]);
+        assert_eq!(
+            checked.verdict,
+            Verdict::Stop(
+                "Heavier Damage + 2026 Realism Performance conflicts with Formula NASCAR. Turn one of them off \
+                 on the Addons page"
+                    .into()
+            )
+        );
+        assert!(checked.timings.line().contains("resolve "));
+        assert_eq!(on(&["formula-nascar.handling"]).verdict, Verdict::Go);
+        assert_eq!(
+            on(&["a.needs"]).verdict,
+            Verdict::Go,
+            "the build reports the other resolver errors"
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 

@@ -451,6 +451,7 @@ impl Launching {
             Step::ConfirmOffline => Some(Prompt::ConfirmOffline),
             Step::FirstLaunch => Some(Prompt::FirstLaunch),
             Step::Stop(stop) => {
+                crate::app::app_log::scrubbed(&format!("[play] stopped: {stop}"));
                 launching.notice = Some(stop);
                 None
             }

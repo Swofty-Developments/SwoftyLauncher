@@ -155,8 +155,17 @@ pub(super) fn not_started(store: &Store, log: &Path, cli: &Path, e: &std::io::Er
 }
 
 /// Why the CLI exited before the game started, from its log, or else its exit
-/// status.
+/// status. A CLI that crashed without writing its error says it crashed.
 pub(super) fn launch_failure(log: &str, status: Option<ExitStatus>) -> String {
+    if let Some(status) = status.filter(crashed)
+        && error_line(log).is_none()
+    {
+        return trf!(
+            "the swofty command crashed ({status}) before the game started. Reinstall Swofty Launcher with the \
+             installer from f1.swofty.net; your addons and settings are kept",
+            status = status
+        );
+    }
     failure_line(log).unwrap_or_else(|| match status {
         Some(status) => trf!(
             "the swofty command exited ({status}) before the game started, without saying why",
@@ -170,6 +179,16 @@ pub(super) fn launch_failure(log: &str, status: Option<ExitStatus>) -> String {
 /// wrote. An error over several lines gives its first, which says what failed.
 /// A command line the CLI refused gives clap's `error: ` line.
 pub(super) fn failure_line(log: &str) -> Option<String> {
+    error_line(log).or_else(|| {
+        log.lines()
+            .rfind(|l| !l.trim().is_empty())
+            .map(|l| l.trim_end_matches(':').to_owned())
+    })
+}
+
+/// The error the CLI wrote: clap's refusal of its command line, or its last
+/// `swofty: ` line.
+fn error_line(log: &str) -> Option<String> {
     let lines: Vec<&str> = log.lines().filter(|l| !l.trim().is_empty()).collect();
     if let Some(error) = usage_error(&lines) {
         return Some(trf!(
@@ -181,8 +200,24 @@ pub(super) fn failure_line(log: &str) -> Option<String> {
         .iter()
         .rev()
         .find_map(|l| l.strip_prefix("swofty: "))
-        .or_else(|| lines.last().copied())
         .map(|l| l.trim_end_matches(':').to_owned())
+}
+
+fn crashed(status: &ExitStatus) -> bool {
+    #[cfg(unix)]
+    let signal = std::os::unix::process::ExitStatusExt::signal(status);
+    #[cfg(not(unix))]
+    let signal = None;
+    crash(status.code(), signal)
+}
+
+/// An exit that is a crash: an NTSTATUS error code, such as an access
+/// violation (0xc0000005), other than the one for a console's Ctrl-C, or
+/// SIGILL, SIGABRT, SIGBUS, SIGFPE or SIGSEGV.
+pub(super) fn crash(code: Option<i32>, signal: Option<i32>) -> bool {
+    const CONTROL_C_EXIT: u32 = 0xC000_013A;
+    let ntstatus = code.is_some_and(|c| (c as u32) >> 30 == 0b11 && c as u32 != CONTROL_C_EXIT);
+    ntstatus || signal.is_some_and(|s| matches!(s, 4 | 6 | 7 | 8 | 11))
 }
 
 /// clap's report of arguments it could not parse: an `error: ` line, then

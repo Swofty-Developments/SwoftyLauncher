@@ -1259,6 +1259,8 @@
   "the boards server answered HTTP {status}": "리더보드 서버 응답: HTTP {status}",
   "the launch exited before the game started": "게임이 시작되기 전에 실행이 종료되었습니다",
   "the swofty command exited ({status}) before the game started, without saying why": "swofty 명령이 게임 시작 전에 이유 없이 종료되었습니다 ({status})",
+  "{addon} conflicts with {other}. Turn one of them off on the Addons page": "{addon}이(가) {other}와(과) 충돌합니다. 애드온 페이지에서 둘 중 하나를 끄세요",
+  "the swofty command crashed ({status}) before the game started. Reinstall Swofty Launcher with the installer from f1.swofty.net; your addons and settings are kept": "swofty 명령이 게임 시작 전에 충돌했습니다 ({status}). f1.swofty.net의 설치 프로그램으로 Swofty Launcher를 다시 설치하세요. 애드온과 설정은 유지됩니다",
   "the swofty command refused its command line: {error}": "swofty 명령이 명령줄을 거부했습니다: {error}",
   "then": "이전",
   "this author": "이 제작자",

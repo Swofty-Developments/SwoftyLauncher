@@ -1198,6 +1198,8 @@
   "the boards server answered HTTP {status}": "el servidor de clasificaciones respondió HTTP {status}",
   "the launch exited before the game started": "el inicio terminó antes de que se iniciara el juego",
   "the swofty command exited ({status}) before the game started, without saying why": "el comando swofty terminó ({status}) antes de que se iniciara el juego, sin indicar el motivo",
+  "{addon} conflicts with {other}. Turn one of them off on the Addons page": "{addon} entra en conflicto con {other}. Desactiva uno de los dos en la página Complementos",
+  "the swofty command crashed ({status}) before the game started. Reinstall Swofty Launcher with the installer from f1.swofty.net; your addons and settings are kept": "el comando swofty se bloqueó ({status}) antes de que se iniciara el juego. Reinstala Swofty Launcher con el instalador de f1.swofty.net; tus complementos y ajustes se conservan",
   "the swofty command refused its command line: {error}": "el comando swofty rechazó su línea de comandos: {error}",
   "then": "entonces",
   "this author": "este autor",

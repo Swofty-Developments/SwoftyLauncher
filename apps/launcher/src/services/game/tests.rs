@@ -5,7 +5,7 @@ use swofty_core::platform::app_control::Block;
 use swofty_core::store::Store;
 
 use super::import_retry::{IMPORT_RETRY_SECS, RetryGate, should_retry_import};
-use super::run::{cause_first, failure_line, launch_failure, not_started, run_args};
+use super::run::{cause_first, crash, failure_line, launch_failure, not_started, run_args};
 use swofty_core::session::LaunchMode;
 
 fn idle_steam() -> RetryGate {
@@ -187,6 +187,66 @@ fn a_launch_that_exits_without_a_word_says_how_it_exited() {
         );
     }
     assert_eq!(launch_failure("swofty: no room\n", None), "no room");
+}
+
+#[test]
+fn a_crash_is_an_ntstatus_error_or_a_fatal_signal() {
+    assert!(crash(Some(0xC000_0005_u32 as i32), None));
+    assert!(crash(Some(0xC000_0409_u32 as i32), None));
+    assert!(crash(Some(0xC000_00FD_u32 as i32), None));
+    assert!(!crash(Some(0xC000_013A_u32 as i32), None), "Ctrl-C");
+    for code in [0, 1, 3, 101, 255] {
+        assert!(!crash(Some(code), None), "{code}");
+    }
+    for signal in [4, 6, 7, 8, 11] {
+        assert!(crash(None, Some(signal)), "{signal}");
+    }
+    for signal in [2, 9, 15] {
+        assert!(!crash(None, Some(signal)), "{signal}");
+    }
+    assert!(!crash(None, None));
+}
+
+#[test]
+fn a_cli_that_crashed_without_its_error_says_it_crashed() {
+    #[cfg(unix)]
+    let crashed = {
+        use std::os::unix::process::ExitStatusExt;
+        std::process::ExitStatus::from_raw(11)
+    };
+    #[cfg(windows)]
+    let crashed = {
+        use std::os::windows::process::ExitStatusExt;
+        std::process::ExitStatus::from_raw(0xC000_0005)
+    };
+    let said = format!(
+        "the swofty command crashed ({crashed}) before the game started. Reinstall Swofty Launcher with the \
+         installer from f1.swofty.net; your addons and settings are kept"
+    );
+    assert_eq!(launch_failure("", Some(crashed)), said);
+    assert_eq!(
+        launch_failure(
+            "[info] launching F1 25 directly; waiting for the wrapper, output in C:\\Swofty\\state/wrapper-run.log\n",
+            Some(crashed)
+        ),
+        said
+    );
+    assert_eq!(
+        launch_failure(
+            "swofty: the wrapper exited (exit code: 1) before the game started: Heavier Damage conflicts with \
+             Formula NASCAR. Turn one of them off on the Addons page\n",
+            Some(crashed)
+        ),
+        "the wrapper exited (exit code: 1) before the game started: Heavier Damage conflicts with Formula \
+         NASCAR. Turn one of them off on the Addons page",
+        "the error the CLI wrote before it crashed"
+    );
+    #[cfg(windows)]
+    assert_eq!(
+        said,
+        "the swofty command crashed (exit code: 0xc0000005) before the game started. Reinstall Swofty \
+         Launcher with the installer from f1.swofty.net; your addons and settings are kept"
+    );
 }
 
 #[test]

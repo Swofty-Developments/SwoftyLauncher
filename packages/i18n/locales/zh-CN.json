@@ -1198,6 +1198,8 @@
   "the boards server answered HTTP {status}": "排行榜服务器返回 HTTP {status}",
   "the launch exited before the game started": "启动过程在游戏启动前退出",
   "the swofty command exited ({status}) before the game started, without saying why": "swofty 命令在游戏启动前退出（{status}），未说明原因",
+  "{addon} conflicts with {other}. Turn one of them off on the Addons page": "{addon} 与 {other} 冲突。请在插件页面关闭其中一个",
+  "the swofty command crashed ({status}) before the game started. Reinstall Swofty Launcher with the installer from f1.swofty.net; your addons and settings are kept": "swofty 命令在游戏启动前崩溃（{status}）。请使用 f1.swofty.net 上的安装程序重新安装 Swofty Launcher；你的插件和设置会保留",
   "the swofty command refused its command line: {error}": "swofty 命令拒绝了其命令行：{error}",
   "then": "之前",
   "this author": "此作者",
