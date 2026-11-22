@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142b77fa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142b77fa0.c;doc:re/db/subsystems/game.md;xref:0x145d31cb0",
-  "notes": "1840-line static-init decomp; pdata 0x142b77fa0-0x142b7bc1e. Ref: absolute cell 0x145d31cb0 (initializer table). Earlier notes: builds the SC event table near 0x146077878 and interns MFD action handles (not re-verified here)."
+  "notes": "Merged dynamic-initializer (atexit regs via FUN_1449e071c). Builds std::map at 0x146076bd8 from 0x60-byte stack {name,handler} entries (TriggerBeginGameplay..TriggerOnDevelopmentWithoutFail, e.g. FUN_142a371a0); SC/VSC notif records at 0x146077878.. (lng_notif_main_sc_deployed, SC_Deploy, VSC_Returned); FUN_143a860a0 action handles 0x146078c90-0x146078d90 (MFD Button..); interns vol_* names at 0x1460793d8. (lane owner review requested) Better name: Game_StaticInit_TriggerMap_ScNotif_MfdInputs (bound record keeps its name)."
  },
  "signature": {
   "id": "game.engineer_init_sc_event_table",

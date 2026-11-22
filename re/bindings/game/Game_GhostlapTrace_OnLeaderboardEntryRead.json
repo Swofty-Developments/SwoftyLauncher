@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142fa53c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142fa53c0.c;pat:log-message-method;xref:0x142f9ae64",
-  "notes": "Leaderboard entry read callback (strings). Registered (lea) in 0x142f98320."
+  "notes": "Logs GHOSTLAP-TRACE onLeaderboardEntryRead success/failure. QPC time -> +0x70. Failed read/no entries -> state +0x1d8=4. Checks active presence vs param_3+8. Matching entry (0x144121bc0) copied to +0x1e8..+0x228; reads VehicleStatId, TeamStatId, VehicleCustomisationStatId, PerformanceState, CarSetup, DriverAssists, Sector1-3, GhostLap (+0x268), Date. Sector sum within +/-10 of lap -> state 1 (id +0x510), else 2. (lane owner review requested)"
  },
  "signature": {
   "id": "game.ghostlap_trace_on_leaderboard_entry_read",

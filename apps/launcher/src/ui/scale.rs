@@ -10,6 +10,9 @@ const BASE_FONT: f32 = 14.;
 
 const MIN_CONTENT: f32 = 320.;
 
+pub const MIN_WINDOW_WIDTH: f32 = 1024.;
+pub const MIN_WINDOW_HEIGHT: f32 = 680.;
+
 static SCALE: AtomicU32 = AtomicU32::new(1.0_f32.to_bits());
 static TV: AtomicBool = AtomicBool::new(false);
 

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142a76ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142a76ae0.c;pat:log-channel-INPUT;xref:0x1457bc498",
-  "notes": "VT cell 0x1457bc498. Inlined device-data loader state machine on [[this+0xc0]]: state +0x18==0 pops queue (+0xb8/+0xc0) and logs Starting request, registers via Ne_Loader_RegisterRequest 0x143ac8ce0 or falls back to 0x142a71420 at 0x142a778af; state 1 calls ParseDevice 0x142a6fc70 + callback. Later logs 'GameInputModule::update - processing m_pendingRefresh', regenerates schemes 0x142a598c0/0x142a5c7f0, UpdateTooltips 0x142a79e70, posts bus msg 0x1439876c0. Better name: Game_GameInputModule_Update (bound record keeps its name)."
+  "notes": "Logs 'GameInputModule::update - processing m_pendingRefresh' / 'GameInputModule::refreshData'. Inlined device-data loader on [[this+0xc0]]: state +0x18==0 pops queue (+0xb8/+0xc0), 'Starting request', Ne_Loader_RegisterRequest 0x143ac8ce0 or error path 0x142a71420; state 1 ParseDevice 0x142a6fc70 + callback +0xd8. Then 0x142b3c560, bus post 0x1439876c0 (0x1457c2d00); pending +0x72: 0x142a598c0, 0x142a5c7f0, 0x142a7a290, UpdateTooltips 0x142a79e70. (lane owner review requested) Better name: Game_GameInputModule_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.device_data_loader_request",

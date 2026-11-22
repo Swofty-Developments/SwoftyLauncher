@@ -88,14 +88,8 @@ impl Shell {
                         .label(if bound { tr("Save") } else { tr("Save as Addon…") })
                         .on_click(move |_, window, cx| {
                             window.close_dialog(cx);
-                            s2.update(cx, |s, cx| {
-                                if bound {
-                                    Db::save_bound(s, Some(t2.clone()), window, cx);
-                                } else {
-                                    s.db_save_as(Some(t2.clone()), window, cx);
-                                }
-                            })
-                            .ok();
+                            s2.update(cx, |s, cx| s.db_save_checked(Some(t2.clone()), window, cx))
+                                .ok();
                         }),
                 );
             alert

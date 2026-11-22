@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f7a6b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f7a6b0.c;pat:log-channel-VOICE_COMMANDS;xref:0x142f7993d",
-  "notes": "Only ref: lea at 0x142f7993d in 0x142f79650 (registration, next to onUICommand). Logged method name is 'onGameCommand' (0x1457fbf11) with eGameAction_Pause/Resume/Repeat/Mute/Unmute cases; renamed from OnGameAction to the game's own method name. Better name: Game_VoiceCommands_OnGameCommand (bound record keeps its name)."
+  "notes": "Registered via lea 0x142f7993d in 0x142f79650. Logs VOICE_COMMANDS 'onGameCommand' eGameAction_Pause/Resume/Repeat/Mute/Unmute. Switch on action 1..0x16: 1/2 set flags +0x304/+0x308; 4/5 mute/unmute via +0x30c and session+0xc30+0xba5; 6/7 toggle/cycle that byte; 8 float +0x18; 9..0x11 select table 0x146080400 entry by type; 0x12..0x14 call +0x310 functor with 1/0/-1; 0x15/0x16 set flags. Decomp merges tail targets 0x1434bd7f0/0x140a2a5xx. (lane owner review requested) Better name: Game_VoiceCommands_OnGameCommand (bound record keeps its name)."
  },
  "signature": {
   "id": "game.voice_commands_on_game_action",

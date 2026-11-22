@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144065aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144065aa0.c;pat:log-channel-NETWORK-CONNECTION-QUALITY;xref:0x14406597b",
-  "notes": "Per-tick update under critical section this[0xe4]: updates sub-systems (vtable+0x30), packet throttle (Game_NetworkThrottle_SendPacket), host-change detection (logs \"Local machine became/stopped being the host\"), inlined NeNetConnectionQuality arbiter/tester/bandwidth tests, handshake timeout (log names NeNetSystemCommon::update). Better name: Game_Network_NetSystemCommon_Update (bound record keeps its name)."
+  "notes": "Log string 'void neon::NeNetSystemCommon::update(const NEdouble)'. Under EnterCriticalSection(this[0xe4]): vfunc+0x30 on this[0x2a..0x2c], Game_NetworkThrottle_SendPacket(this[0x26]); inlined NeNetConnectionQuality updateArbiter/setArbiterState/startBandwidthEvaluations/updateTester on this[0x28] (host change log 'Local machine became the host'); handshake timeout -> vfunc+0x40; RTT timeouts (0x144070210/0x1440730e0); broadcastMyConnectivityTable; state 2 -> Ne_NetSystemCommon_LeaveSession. Caller 0x14406597b in 0x144065920. (lane owner review requested) Better name: Game_Network_NetSystemCommon_Update (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_connection_local_machine_became_host",

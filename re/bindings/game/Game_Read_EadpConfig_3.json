@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1449c070c",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1449c070c.c;pat:log-channel--",
-  "notes": "pdata start 0x1449c070c (size 0x346); no rip-relative or absolute reference found."
+  "evidence": "decomp:re/decomp/1449c070c.c;pat:log-channel--;xref:0x1449c06d0",
+  "notes": "Chained-unwind body of 0x1449c06d0 (called at 0x1561b321c in 0x1561b30e0), entered by fall-through: config [this+0x30] vt+0x58, vt+0x18 lookups 'eadp.director.retry.maxInterval' -> +0xa8, 'retry.interval' -> +0xa4, 'retry.intervalMultiplier' -> +0xa0, 'useHardcodedConfig.interval' -> +0xac, each strtol base 10 (0x144d658e0); frees std::strings. Old name Game_Read_EadpConfig_3 vague. (lane owner review requested) Better name: Game_EadpDirector_ReadRetryConfig_Body (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_eadp_config_3",

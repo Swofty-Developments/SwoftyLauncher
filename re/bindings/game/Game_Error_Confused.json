@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431717c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1431717c0.c;pat:log-message-cxx;xref:0x1455f33a0",
-  "notes": "6208-line decomp; pdata 0x1431717c0-0x14317bdb3; ref: vtable cell 0x1455f33a0. Name comes from one log line ('? update_eventSelect: unparseable response, posting Error::Confused.'), likely a fragment of a large update/state handler, not a function called Error::Confused."
+  "notes": "NETWORK-LEAGUES tick (vtable cell). +0x30 state boot/idle/syncing/leagueSelect/eventSelect/inSession/ready (table 0x145820240), substates +0x34/+0x38/+0x3c. boot: ProLeagues.Environment host select, bus subs 0x14317c690/0x14317c6a0. Racenet requests via 0x143170960, HTTP status +0x140 -> error +0x40; JSON fail logs Error::Confused (+0x40=3, 0x143180ee0(this,3)); send via 0x14404b7e0. (lane owner review requested) Better name: Game_ProLeagues_UpdateStateMachine (bound record keeps its name)."
  },
  "signature": {
   "id": "game.error_confused",

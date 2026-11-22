@@ -1,0 +1,66 @@
+{
+ "schema": 1,
+ "name": "vt_Game_F1WorldActivityContainerVm",
+ "table": "globals",
+ "author": "msyeett",
+ "row": {
+  "addr": "0x14572ac70",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm 0x141a76d64-0x141a76dab,0x141a79540-0x141a7981c;xref:0x141a76d8c,0x141a76d93",
+  "notes": "F1WorldActivityContainerViewModel vtable (the play menu: Grand Prix, Time Trial, ...), stored at [vm] by its constructor; slot 10 is the command switch Game_F1WorldActivityContainer_HandleCommand (compares command hashes)"
+ },
+ "signature": {
+  "id": "game.f1_world_activity_container_vm",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 05 ?? ?? ?? ?? 48 89 86 60 02 00 00 48 8D 05 ?? ?? ?? ?? 48 89 86 68 02 00 00 48 8D 05 ?? ?? ?? ?? 48 89 86 A8 02 00 00 48 8D 05 ?? ?? ?? ?? 48 89 86 B0 02 00 00 48 89 BE E0 02 00 00 4C 8D B6 60 03 00 00",
+  "match": "0x141a755ac",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14572ac70",
+  "kind": "data",
+  "names": [
+   "vt_Game_F1WorldActivityContainerVm"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-22",
+    "by": "msyeett",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141a76d8c",
+  "made_on_target": "0x14572cda0",
+  "twin": "made on steam-26566308; the target 0x14572cda0 is KB 0x14572ac70: k_Career_RnDCardColourTable (0x571de10) and vt_Career_RnDDeptCard (0x5742380) on either side both sit 0x2130 above their KB addresses; the match 0x141a76d8c is KB 0x141a755ac: site_FeTile_EraTilesBuilt (0x1a70f08) and Game_F1WorldActivityContainer_OnExit (0x1a78b20) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "msyeett",
+   "date": "2026-11-22",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a76d8c",
+    "target": "0x14572cda0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "16ae85d35dbaf046f3ed069cb7dda513f1b4127b3cb1226a5425950f399b8987"
+  }
+ ]
+}

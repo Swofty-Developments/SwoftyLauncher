@@ -18,6 +18,7 @@
 #include "core/career/ops/entrants.hpp"
 #include "core/career/ops/lineup.hpp"
 #include "core/career/ops/ops_api.hpp"
+#include "core/career/ops/report_queue.hpp"
 #include "core/career/ops/tables.hpp"
 #include "core/runtime/loader/core_rank.hpp"
 
@@ -237,17 +238,44 @@ int api_swap_drivers(uint32_t a, uint32_t b)
     return r;
 }
 
+career::ops::reports::Queue season_reports;
+
+const char *result_name(int r)
+{
+    return r == SWOFTY_ASSET_OK            ? "ok"
+           : r == SWOFTY_ASSET_LATE        ? "late"
+           : r == SWOFTY_ASSET_UNAVAILABLE ? "unavailable"
+           : r == SWOFTY_REFUSED           ? "refused"
+                                           : "invalid";
+}
+
 int api_report_season(int32_t year, int32_t season_index)
 {
     std::string dll, who = settings_addon(__builtin_return_address(0), dll);
     if (who.empty())
         who = dll.empty() ? std::string("an unknown module") : dll;
     if (!on_flow_thread()) {
-        swofty::log("[career-ops] report_season(%d, %d) from %s: late: called off the flow thread", year, season_index,
-                    who.c_str());
+        namespace rq = career::ops::reports;
+        rq::Queued q{who, runtime::snapshots_career_now(), year, season_index, GetCurrentThreadId()};
+        swofty::log("%s", (season_reports.put(q) ? rq::queued_line(q) : rq::full_line(q)).c_str());
         return SWOFTY_ASSET_LATE;
     }
     return runtime::snapshots_report_season(who, year, season_index);
+}
+
+void run_queued_reports()
+{
+    if (!season_reports.pending())
+        return;
+    namespace rq = career::ops::reports;
+    for (auto &r : rq::drain(season_reports, runtime::snapshots_career_now(), runtime::snapshots_report_season))
+        swofty::log("%s", rq::ran_line(r, result_name(r.result)).c_str());
+}
+
+void flow_frame(double dt, void *user)
+{
+    frame(dt, user);
+    run_queued_reports();
 }
 
 std::string caller(const void *from)
@@ -570,7 +598,7 @@ void setup()
     uint32_t token = 0;
     if (ev && ev->on_frame) {
         runtime::frame_probe_name("career_ops");
-        ev->on_frame(frame, nullptr, &token);
+        ev->on_frame(flow_frame, nullptr, &token);
     }
     career::ops::track_fuel_setup();
 }

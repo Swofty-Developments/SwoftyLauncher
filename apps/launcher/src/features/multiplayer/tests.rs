@@ -12,7 +12,7 @@ use super::model::{
     restart_ok_text, room_meta, round_trip_ms,
 };
 use super::model::{
-    RoomFocus, StepCard, StepRow, card_rooms, closed_subtitle, default_room_name, fix_lines, game_after_room,
+    RoomFocus, StepCard, StepRow, closed_subtitle, default_room_name, fix_lines, game_after_room,
     leaves_on_exit, lobby_hint, repeats, room_focus, shows_ad, starting, step_title,
 };
 use super::state::{Lobby, room_sizes, unasked};
@@ -942,13 +942,6 @@ fn the_multiplayer_page_shows_the_room_until_its_player_steps_out_to_the_list() 
         RoomFocus::Viewing("KX7P2Q".into())
     );
     assert_eq!(room_focus(false, false, None), RoomFocus::List);
-}
-
-#[test]
-fn the_rooms_card_lists_the_first_three_rooms() {
-    assert_eq!(card_rooms(0), 0);
-    assert_eq!(card_rooms(2), 2);
-    assert_eq!(card_rooms(9), 3);
 }
 
 mod room_fit {

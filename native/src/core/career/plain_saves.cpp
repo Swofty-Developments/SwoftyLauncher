@@ -97,7 +97,12 @@ Plan make_plan()
         return p;
     p.on = true;
     Root root(c.root);
-    p.newest = newest_core_save(root);
+    std::vector<uint64_t> other;
+    p.newest = newest_core_save(root, &other);
+    for (uint64_t n : other)
+        swofty::log("[saves] plain store: generation %llu was written at another save than the profile's (such as the race "
+                    "highlights); nothing is put back from it",
+                    (unsigned long long)n);
     Taken t = take_requests(root);
     if (!t.why.empty())
         swofty::log("[saves] inject requests not taken: %s; they wait for the next profile load", t.why.c_str());

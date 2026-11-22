@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140d817c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_Calc_DriverContractDaysLeft(void *comp, void *unused, int16_t *days_left, uint64_t *out_date)",
   "evidence": "decomp:re/decomp/140d817c0.c;xref:0x1422f05b6,0x1422f6f1a",
-  "notes": "Record = 0x14126f540(comp+0x370, index (comp+0x370)+0x428); days = field 0xf (0x141289bc0) - elapsed days ((comp+0x358)+0x2b0 minutes/1440), clamped at 0; end date via 0x14111dbc0 and 0x14534a0ec; if 0, a calendar-span fallback is added. Better name: Career_Calc_ActivityDaysRemaining (bound record keeps its name)."
+  "notes": "Read in full. rec = 0x14126f540(comp+0x370, [comp+0x370]+0x428); days = 0x141289bc0(rec,0xf) - ([comp+0x358]+0x2b0 minutes/1440), clamped 0 -> *param_3; end date via 0x14111dbc0(+0x290, field*1440) and 0x14534a0ec -> param_4 (36 B). If days 0: adds a calendar-span day count * (idx+1) and bumps param_4+0x14. Callers Career_TeamHqContractsVM_RebuildRows, Career_ContractHubVM_OnActivate. Better name: Career_Calc_ActivityDaysRemaining (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "career.calc_driver_contract_days_left",

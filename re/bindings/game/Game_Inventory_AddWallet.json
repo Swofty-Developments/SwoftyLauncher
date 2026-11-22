@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1425b0a00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1425b0a00.c;pat:log-channel-INVENTORY;xref:0x1425ae989,0x1425b1973",
-  "notes": "INVENTORY 'Added wallet [%s]' (log string)."
+  "notes": "Full read. Registers wallet types 'F1W-Cards'=1, 'F1W-Collectables'=2, 'F1W-CollaborativeEvents'=3 in map this+0x128 (0x142714340), allocs a wallet (vtable 0x1457991c0, shared ctrl 0x1457991d0), id = ++counter at (*(this+0x200))+0xd4, inserts it into that object's hash map (+0x78..+0xcc, grow 0x142715470), logs INVENTORY 'Added wallet [%s]' ('%d - %s' id,name); stores id at this+0xc8, name at this+0xd8. (lane owner review requested)"
  },
  "signature": {
   "id": "game.inventory_add_wallet",

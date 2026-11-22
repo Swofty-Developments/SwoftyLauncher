@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1441db170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1441db170.c;pat:log-channel-UI_FLOW;xref:0x1444a313e",
-  "notes": "Large UI_ASSETS / UI_FLOW body (pdata 0x38c7 bytes): logs 'NeUIFlow::loadAssets Load AssetGroup=%hs', 'NeUIFlow::unloadAssets Unload AssetGroup=%hs' and 'NeUIFlow::addCallback - callback list ... is full'. Caller 0x1444a313e."
+  "notes": "Per-frame NeUIFlow update (called from Ui_EngineModule_Update 0x1444a3060 with frame struct: dt +8, time +0x18). Walks asset-group list this+0x1a0 by state +0x4c: 1 = load via loader [+0x140] vt+8 with name +0x70, cb 0x14421ac80, log UI_ASSETS 0x145a65747 loadAssets; 3 = unload vt+0x10, cb 0x14421adc0, log 0x145a65770; 4 = addCallback, UI_FLOW full log 0x145a655b7. Then view matrices (list +0xba20), async job queue +0xb900 (QPC). (lane owner review requested) Better name: Game_UIFlow_NeUIFlowUpdate (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_flow_ne_ui_flow_load_assets_load_asset_group",

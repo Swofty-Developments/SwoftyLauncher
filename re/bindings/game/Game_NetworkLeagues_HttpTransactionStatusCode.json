@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143180630",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143180630.c;pat:log-channel-NETWORK-LEAGUES;xref:0x143179988",
-  "notes": "HTTP callback (lea 0x143179988 in 0x1431717c0): appends param_6 + param_7 bytes from param_5 to the buffer at this+0x168, NUL-terminates when param_7 != 0, and on error logs 'HTTP Transaction error, statusCode %d irrelevant.', 'Authorization failed. Refreshing token data and trying again.' / '... on retry. Going to Error state.', 'Final HTTP status %d.'. Better name: Game_NetworkLeagues_OnHttpResponseData (bound record keeps its name)."
+  "notes": "Registered by lea 0x143179988 in 0x1431717c0. HTTP data callback: appends param_6+param_7 bytes from param_5 to buffer [this+0x168]; when param_7 set: NUL-terminate, +0x13a=0; error flag -> 'HTTP Transaction error, statusCode %d irrelevant.', +0x13c=1; status 401/403: first time 0x14317c8d0 + 'Authorization failed. Refreshing token...', else '... on retry. Going to Error state.'; other 'Final HTTP status %d.'; +0x140=status. Better name: Game_NetworkLeagues_OnHttpResponseData (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_leagues_http_transaction_status_code",

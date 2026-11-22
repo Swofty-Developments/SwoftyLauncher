@@ -24,13 +24,9 @@ impl Shell {
         let season = match &self.online.overview {
             Load::Idle | Load::Loading => Err(card_skeleton(3, p)),
             Load::Failed(e) => Err(card_note(e.to_string(), p)),
-            Load::Ready(o) => hub_season(
-                &o.seasons,
-                self.online.hub_season.as_deref(),
-                self.online.recents.list(),
-            )
-            .cloned()
-            .ok_or_else(|| card_note(tr("Nobody has set a lap yet.").to_owned(), p)),
+            Load::Ready(o) => preview_season(&o.seasons, self.online.recents.list())
+                .cloned()
+                .ok_or_else(|| card_note(tr("Nobody has set a lap yet.").to_owned(), p)),
         };
         let body = match season {
             Ok(season) => self.card_season(&season, p, cx),
@@ -104,17 +100,21 @@ impl Shell {
             }
         };
         let rows: Vec<AnyElement> = match tracks {
-            Ok(tracks) => tracks
-                .iter()
-                .map(|t| self.card_track(t, &season.id, p, cx))
-                .collect(),
+            Ok(tracks) => tracks.iter().map(|t| self.card_track(t, season, p, cx)).collect(),
             Err(note) => vec![note.into_any_element()],
         };
         v_flex().pb(px(6.)).child(head).children(rows)
     }
 
-    /// A track's record and holder, with the player's best against it. Opens the track on the Time Trial page.
-    fn card_track(&self, t: &TrackCard, season: &str, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    /// A track's record and holder, with the player's best against it. Opens the track's board on the Time Trial
+    /// page.
+    fn card_track(
+        &self,
+        t: &TrackCard,
+        season: &SeasonCard,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let gap = own_gap(
             self.online.my_times.get(&t.key).copied(),
             t.record.as_ref().map(|r| r.time_ms),
@@ -124,7 +124,7 @@ impl Shell {
             OwnGap::Record => (tr("Your record").to_owned(), p.success),
             OwnGap::Behind(ms) => (format!("+{}", sector_time(ms)), p.text_muted),
         };
-        let (season, key) = (season.to_owned(), t.key.clone());
+        let (id, name, card) = (season.id.clone(), season.name.clone(), t.clone());
         h_flex()
             .id(SharedString::from(format!(
                 "tt-card-{}-{}",
@@ -176,7 +176,7 @@ impl Shell {
                     .child(div().text_size(px(11.)).text_color(gap_colour).child(gap_text)),
             )
             .on_click(cx.listener(move |this, _, _, cx| {
-                Online::show_track(this, season.clone(), key.clone(), cx);
+                Online::open_track(this, id.clone(), name.clone(), card.clone(), cx);
                 this.open_page(Page::Online, cx);
             }))
             .into_any_element()

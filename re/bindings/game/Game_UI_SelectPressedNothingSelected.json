@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141a91170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141a91170.c;pat:log-channel-UI;xref:0x14572bb50",
-  "notes": "Large UI handler (vtable cell 0x14572bb50; decomp also merges code outside its pdata range): goto_engineering, detach_buttons / rebuild_buttons, inputAllow / inputDisallow, nav_anim_on / off and the 'Select pressed with nothing selected' log."
+  "notes": "Vtable slot 10 (vt 0x14572bb00), F1 World events screen. Exits if this+0x1360==0; switch on msg hash *(int*)*param_2: 0x2b0357a select (idx 0x141a940b0; -1 logs 'Select pressed with nothing selected'; type 2 -> 0x141a94250 else 'show_collaborative_events_start'), 0x2a56f725/0x7c9e066d input+nav_anim on/off, goto_engineering, detach/rebuild_buttons. Tail-jumps 0x141a94570,0x1417193b0,0x141719150. (lane owner review requested) Better name: Game_UI_F1WorldEventsScreen_HandleMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_select_pressed_nothing_selected",

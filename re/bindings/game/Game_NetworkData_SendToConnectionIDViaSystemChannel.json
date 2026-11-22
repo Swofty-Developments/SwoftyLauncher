@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144073560",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144073560.c;pat:log-message-method;xref:0x144063021,0x1440689d8,0x14406e47d",
-  "notes": "NeNetSystemCommon::sendToConnectionIDViaSystemChannel(conn, size): queues the packet on the system channel (Game_NetworkTraffic_QueuedPacketSizeConnectionId) and logs \"send to: connection %d packet size: %d, error: %d\"; returns the error code."
+  "notes": "NeNetSystemCommon::sendToConnectionIDViaSystemChannel(conn,size,buf): logs '%s(%d, %d)'; if [this+0x110]==0 records error 0xe (TLS error slot + ring at 0x146107830) and returns 0xe; else err = 0x14406f280([this+0x130],conn,size,buf[0],buf[1],1); 0 -> logs 'send to: connection %d packet size: %d, error: %d', returns 0; nonzero -> recorded and returned. (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_data_send_to_connection_id_via_system_channel",

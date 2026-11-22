@@ -114,6 +114,10 @@ inline constexpr const char *LISTS = "entrants.entrant_lists.entrant_list";
 inline constexpr const char *VIRTUAL_HOST_LIST = "swofty_virtual_list";
 inline constexpr const char *SCENARIOS = "game_setup.scenarios.scenario";
 inline constexpr const char *SETUP_ROW = "entrants.entrant_setup_modes.entrant_setup_mode";
+// The lists one entrant setup mode field (entrant_lists, selectable_entrant_lists) can name. The game's parser
+// (Sess_Parse_EntrantSetupMode) appends each name into a 32-slot array with no bound check: a 33rd name lands on
+// the count, and Sess_Register_EntrantSetupMode's copy then crashes the boot (F1_25.exe+0x537b1a6 on 1.0.145).
+inline constexpr std::size_t SETUP_MODE_LISTS = 32;
 inline constexpr const char *CATEGORY = "options_system.options.multiplayer.options_folder_2.option[_metadata_=category]";
 
 inline constexpr const char *AUDIO_CAR_FIELDS[] = {"_metadata_",

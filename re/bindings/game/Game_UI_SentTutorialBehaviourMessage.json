@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e699f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e699f0.c;pat:log-channel-UI;xref:0x142e6915b,0x142e6dcaf",
-  "notes": "Large ONBOARDING body (pdata 0x2fdf bytes): logs 'Sent Tutorial to Behaviour Message: %s', reads skip_key / poi_element_id / voice_over / audio_to_face / component_path. Callers 0x142e6915b, 0x142e6dcaf."
+  "notes": "Logs ONBOARDING 'Sent Tutorial to Behaviour Message: %s', posts bus msg 0x1457f16b0; optionally overridePromptEnablement(0) msg 0x1457324a0. Name -> +0x80. Per 'tutorialStep' i: 0x50-byte record {i, poi_element_id, voice_over, audio_to_face, skip_key (default 'Menu Accept'), component_path, message, messageType, message_timing, wait_for_input, show_skip_tooltip, keep_v2f_character_summoned} -> vector +0xb0, i -> +0xc8; may set +0x24/+0x2c and post 0x1457f1690. (lane owner review requested) Better name: Game_Onboarding_HandleTutorialBehaviourMsg (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_sent_tutorial_behaviour_message",

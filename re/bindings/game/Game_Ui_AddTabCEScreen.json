@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141d8f9f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141d8f9f0.c;pat:log-message-method;xref:0x14574bae8",
-  "notes": "Logs 'addTabCEScreen() created CE tab with pill type %s' (UI); strings in the body: MP_CE, session_results_collaborative_event, session_results_persistent, featured_driver, check_tab_header_count, attach_spawned. Only ref the data cell 0x14574bae8 (neighbours not code), code caller found by the rip scan."
+  "notes": "Vtable cell 0x14574bae8 (neighbours are code; old note wrong). Popup +0x295 -> 'close'; this+0xa00 -> 'close_container'. Else session class -> this+0x800, tabs via 0x141d93420; class 6 allocs 0xff0 'session_results_collaborative_event' tab, logs addTabCEScreen MP_CE, pill 0x2104. No tabs -> 'advance'; loads session_results_persistent, featured_driver; signals check_tab_header_count, attach_spawned (lane owner review requested) Better name: Game_Ui_SessionResultsScreen_SetupTabs (bound record keeps its name)."
  },
  "signature": {
   "id": "game.ui_add_tab_ce_screen",

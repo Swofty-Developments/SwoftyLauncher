@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141ff79b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141ff79b0.c;doc:re/research/sponsors.md#decal-editor;xref:0x141ff6bf3",
-  "notes": "Called from Game_DecalEditor_SetDirty (0x141ff5950)."
+  "notes": "If +0x420 and a selected slot: sets 'button_highlight_helper_flags'.'force_highlight'; rebuilds action list +0x480 (count +0x530, 0xb0 items) via 0x141855ba0 with cb 0x141ffdef0: 0 lng_edit_decal, 4 lng_duplicate_decal (lng_decal_editor_no_free_slots), 3 lng_mirror_decal (lng_decal_editor_decal_already_linked / no_free_slots), 2 lng_swap_decal (lng_decal_editor_reserved_swap), 1 lng_delete_decal (lng_decal_editor_reserved_delete); po... (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_editor_build_slot_action_menu",

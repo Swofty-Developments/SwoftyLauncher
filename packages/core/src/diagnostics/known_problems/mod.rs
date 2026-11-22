@@ -17,6 +17,7 @@ mod hooks;
 mod logos;
 mod memory;
 mod package_ids;
+mod saves;
 mod slow_init;
 mod stall;
 mod system;
@@ -55,6 +56,7 @@ use graphics::graphics_mods;
 use hang::{hang, hang_watchdog};
 pub use logos::unbuilt_logos;
 pub use package_ids::{PACKAGE_ID_MAX, PackageIds};
+pub use saves::unsaved_profile;
 pub(crate) use slow_init::slow_start;
 use stall::BOOT_STALL_SECS;
 pub use stall::stalled;
@@ -113,6 +115,12 @@ pub fn tyres(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Opt
 /// logos, when its log says the game could not write them.
 pub fn logos(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
     unbuilt_logos(&evidence(session, game, store))
+}
+
+/// Why `session`, which ended without a crash, could not save the profile,
+/// when its log says the kept careers could not be written back.
+pub fn saves(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Option<Diagnosis> {
+    unsaved_profile(&evidence(session, game, store))
 }
 
 /// The cause of a crash, from the first rule that recognises it. A crash no

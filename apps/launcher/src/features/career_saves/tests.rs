@@ -295,7 +295,7 @@ fn the_banner_names_a_career_the_newest_generation_lacks_and_offers_its_containe
         "save",
         Some("s1"),
         &[
-            ("driver_career", "game", &[("0x01", "Stock")]),
+            ("gm_driver_career", "game", &[("0x01", "Stock")]),
             (
                 "driver_career_progressive",
                 "kept",
@@ -308,7 +308,7 @@ fn the_banner_names_a_career_the_newest_generation_lacks_and_offers_its_containe
         2,
         "load",
         None,
-        &[("driver_career", "game", &[("0x01", "Stock")])],
+        &[("gm_driver_career", "game", &[("0x01", "Stock")])],
     );
     match banner_from(&d, loc.source.clone(), "p".into()) {
         Some(Banner::Lost(Missing {

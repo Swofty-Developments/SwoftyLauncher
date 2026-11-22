@@ -34,15 +34,25 @@
 namespace runtime::era {
 
 constexpr size_t TT_TABLE = 26;
-// A raised grid stops at the stock 22 cars: with the safety car, 25 vehicles overran the replay recorder
-// (Ne_Replay_WriteFrames) and 27 overrun the 26-slot physics body registry (Car_Chassis_Build).
+// A raised grid stops at the stock 22 cars, the grid slots of the f1 and f1_26 worlds, for a list the core's boot
+// lowering did not make. A box whose content.package seats more goes up to its seats, at most the 24 cars of My Team's
+// stock grid: a package of 12 teams loads a My Team world (24 grid slots, 12 garages), its own season's or the box
+// world the boot lowering gives it (box_world.hpp); the replay recorder guard keeps every copy within its holder's
+// block (replay_grid_guard.cpp); and 24 cars with the safety car fit the 26-slot physics body registry
+// (Car_Chassis_Build) that 27 overrun.
 constexpr size_t GRID_RAISE_MAX = 22;
+constexpr size_t PACKAGE_GRID_MAX = 24;
 constexpr size_t TT_EXTRA_CARS = 3;
 constexpr size_t TT_MAX_CARS = TT_TABLE - TT_EXTRA_CARS;
 constexpr size_t LIST_ENTRANTS_BEGIN = 0x10;
 constexpr size_t LIST_ENTRANTS_END = 0x18;
 constexpr size_t ENTRANT_RECORD = 0x88;
 constexpr size_t MAX_LIST_ENTRANTS = 64;
+
+inline size_t grid_raise_cap(size_t package_seats)
+{
+    return package_seats > GRID_RAISE_MAX ? std::min(package_seats, PACKAGE_GRID_MAX) : GRID_RAISE_MAX;
+}
 
 inline int64_t entrant_count(uintptr_t begin, uintptr_t end)
 {
@@ -295,7 +305,7 @@ struct GridLimit {
     uint8_t *esm = nullptr;
     int32_t was = 0, set = 0;
 
-    std::string raise(uint8_t *setup_mode, int64_t cars)
+    std::string raise(uint8_t *setup_mode, int64_t cars, size_t package_seats = 0)
     {
         restore();
         if (!setup_mode || cars <= 0)
@@ -303,8 +313,9 @@ struct GridLimit {
         int32_t limit = *reinterpret_cast<int32_t *>(setup_mode + ENTRANT_SETUP_MAX_ENTRANTS);
         if (limit <= 0 || cars <= limit)
             return "";
-        bool clamped = size_t(cars) > GRID_RAISE_MAX;
-        int32_t target = clamped ? int32_t(GRID_RAISE_MAX) : int32_t(cars);
+        size_t cap = grid_raise_cap(package_seats);
+        bool clamped = size_t(cars) > cap;
+        int32_t target = clamped ? int32_t(cap) : int32_t(cars);
         if (target <= limit)
             return "";
         esm = setup_mode;
@@ -314,7 +325,8 @@ struct GridLimit {
         std::string line = "max_entrants " + std::to_string(was) + " -> " + std::to_string(set) + " for a list of " +
                            std::to_string(cars) + " cars";
         if (clamped)
-            line += "; clamped to " + std::to_string(GRID_RAISE_MAX) + " cars, the stock grid";
+            line += "; clamped to " + std::to_string(cap) + " cars, " +
+                    (cap > GRID_RAISE_MAX ? "the stock My Team grid" : "the stock grid");
         return line;
     }
 
