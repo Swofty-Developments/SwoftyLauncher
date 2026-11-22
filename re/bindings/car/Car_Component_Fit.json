@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-VEHICLE",
+  "evidence": "decomp:re/decomp/141f58a20.c;pat:log-channel-VEHICLE;xref:0x141f5832a",
   "notes": "named from its log messages (channel VEHICLE): 'Fit component %I64u (exists: %hs), type: %hs'"
  },
  "signature": {

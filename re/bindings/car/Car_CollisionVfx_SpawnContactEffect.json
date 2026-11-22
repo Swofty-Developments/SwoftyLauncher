@@ -8,7 +8,7 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144705fc0.c;xref:0x14470471e,0x144705ab4",
+  "evidence": "decomp:re/decomp/144705fc0.c;xref:0x14470471e,0x144705ab4,0x144705c28,0x144705c92",
   "notes": "Spawns collision VFX for contact on car part param_3 with contact matrix param_4: double-buffered effect slots (+0x36fb8, 0xf70 each), per-part emitters +0x6b0[part], emits through 0x143b021e0. Callers: Car_CollisionVfx_OnContact."
  },
  "signature": {

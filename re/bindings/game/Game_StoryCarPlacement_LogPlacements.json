@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141322d00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141322d00.c;pat:log-channel-StoryCarPlacement;xref:0x142e074af,0x14f288a92",
-  "notes": "Logs StoryCarPlacement driver placements. Callers 0x142e07270, 0x14f288a30."
+  "notes": "pdata 0x141322d00-0x1413259be. 0x1413259c0(this+0x298) loads placement records (0x230 each) into stack; repacked to 0x80 entries, 0x1413222e0 resolves; logs 'Driver Placements' (file %s=param_2). Maps to vehicle ids, sorts by progress, builds target progresses (normal or [RED FLAG PLACEMENT] branch), applies per vehicle via 0x142883960/0x142883a90, writes lap/progress into vehicle objs (+0x38/+0x48/+0x98), sets this+0x338 time fields. Logging is a side effect. (lane owner review requested) Better name: Game_StoryCarPlacement_ApplyFromFile (bound record keeps its name)."
  },
  "signature": {
   "id": "game.story_car_placement_log_placements",

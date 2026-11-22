@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140399720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/140399720.c;xref:0x140393eb0",
-  "notes": "(clipTarget, out, name, flags): under critical section +0x1218 binds a vehicle animation by name (JIT bind) for the in-car driver ('DRIVER'); sums channel counts from +0x12b0 lists, writes out={this+0x1270, weight 1.0}; logs 'InCarDriverActor::VehicleAnimationData::NeVehicleClipTargetImpl::setAnimationName JIT bind failed'. Caller: Car_Model_BindCockpitNodes."
+  "evidence": "decomp:re/decomp/140399720.c;xref:0x140394d29,0x140394d3e,0x140394d5e,0x140394d7a,0x140394d96,0x140394db3,0x140394dd3,0x140394def,0x140394e0c,0x140394e29,0x140394e46,0x140394e63,0x140394e84,0x140394ea1,0x140394ebe,0x140394edb,0x140394ef8,0x140394f15,0x140394f32,0x140394f4f,0x140394f6c,0x140394f89,0x140394fa6,0x140394fc3,0x140394fe0,0x140394ffd,0x14039501a,0x140395037",
+  "notes": "(clipTarget, out, name, set): under CS +0x1218 when +0x1248: out = {this+0x1270, weight 1.0}, channel count summed from lists [+0x12b0]; id = 0x143a3d780(name); finds the clip with that id, JIT-creates a 0x30 binding (0x143a35d90) if missing (log 'SkinnedActor::NeSequenceClipTargetImpl::setAnimationName JIT bind failed'); not found -> 'InCarDriverActor::...::setAnimationName ERROR %s not found' (channel DRIVER); buffers +0x1330/+0x1350[set]. Returns found. (lane owner review requested)"
  },
  "signature": {
   "id": "car.anim_clip_target_set_animation",

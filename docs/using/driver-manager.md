@@ -43,6 +43,8 @@ The next launch adds the drivers to the game. Start a new career to find them am
 
 **Game drivers** lists the drivers the game already has. **Edit** on one sets its head and helmet from the same lists, including heads and helmets addons install. The helmet goes on every look the driver has, one per season and series. **Use the stock head and helmet** undoes the change. The changes apply the next time you play with Driver Manager on, in every profile with Driver Manager on. A head or helmet that isn't installed when you play leaves the driver's stock one in place.
 
+Driver Manager builds after every other addon. A head or helmet set here replaces the one another addon sets for the same driver, such as a DB Editor addon's **Head model** on **Drivers**. Saving a DB Editor addon with such a change asks first; see [Heads and helmets Driver Manager sets](/using/db-editor#heads-and-helmets-driver-manager-sets). To keep the other addon's value, press **Use the stock head and helmet** on the driver.
+
 ## In the DB Editor
 
 The [DB Editor](/using/db-editor#driver-manager-drivers) lists your drivers in the choices of its driver and entrant fields, such as a seat's **Entrant** on **Line-ups**, as the name and **(Driver Manager)**. Retired drivers show as **(Driver Manager, retired)**; drivers marked **left out** aren't listed, apart from those left out for a head or kit that isn't installed. Its search finds them by name, code and label: `dm_` and the driver id, such as `dm_208`. The drivers are edited here, not in the DB Editor.

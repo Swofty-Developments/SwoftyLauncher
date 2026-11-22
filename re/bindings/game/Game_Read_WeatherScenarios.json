@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140b9f490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140b9f490.c;xref:0x14978339d,0x1497833aa,0x1497833b7,0x1497833c4,0x1497833d1,0x1497833de,0x1497833eb,0x1497833f8,0x149783405,0x149783419,0x149783426,0x149783433,0x149783440,0x14978344d,0x14978345a,0x149783467,0x149783479",
-  "notes": "Weather scenarios GDB reader: weather_custom and weather_scenarios.m_<session>.<single|full>.<short|medium|long> -> weather_<...> rows."
+  "notes": "Per session type edx (all from 0x149783390 with 1..17): key PracticeSession(1-4)/QualifyingSession(5-14)/RaceSession(15-17); reads 'weather_custom', picks scenario via session-length byte (+0x270 / 0x140afe570 / 0x140b78470 tables, e.g. weather_scenarios.m_practice.single.short -> weather_practice_single_short), formats '%s.%s', loops 'slot%d' reading 'weather', 0x1438c9df0 -> byte at this[0xab]+0x300+type*6+slot, 0x140bdf2c0; all slots -> 0x140ba07a0, flags +0x2c0/+0x330. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_weather_scenarios",

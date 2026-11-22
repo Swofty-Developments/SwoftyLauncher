@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443ed5c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1443ed5c0.c;pat:log-channel--;xref:0x140a036e9,0x145a8a3c0,0x145be71b0",
-  "notes": "Caller 0x140a036e9 (0x140a036c0); vt cells 0x145a8a3c0, 0x145be71b0."
+  "notes": "Body read in full: (system, init params) copies params, vt+0x80/+0x2e0, default paths audio/soundbanks, audio, audio/speech; reads Audio.enabled/asserts/bankDataPath/xmlDataPath/speechDataPath/bankDataPathSubfolder/ignoreCameraFocusOnCars/maxSoundEmitterDistance/cameraDiscontinuityThreshold; audio job policy affinity (POLICY log); CoInitializeEx + CoCreateInstance; creates listeners and handlers; sets +0xb70 initialised. Caller 0x140a036e9; vt cells 0x145a8a3c0, 0x145be71b0. Renamed: not a config reader. (lane owner review requested) Better name: Game_AudioSystem_Initialise (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_audio_config_3",

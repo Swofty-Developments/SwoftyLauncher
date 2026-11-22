@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ad9680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142ad9680.c;str:s_UIOptionsSystem_LoadAssistBuckets;xref:0x142ada6ba,0x14dce6928",
-  "notes": "Own pretty string 'void game::UIOptionsSystem::loadAssistBuckets()' (channel OPTIONS) with 'weight' / 'vr_only' properties and the assist weighting warnings. Referenced by lea at 0x142ada6ba, 0x14dce6928."
+  "notes": "Read in full. Address taken by lea 0x142ada6ba (0x142ada6a0) and 0x14dce6928 (0x14dce68f0). Clears and reloads from data tree: options_system.ui_layer.categories (skips 'vr_only' unless VR flag 0x14618c698; category id bit set in mask +0x28..+0x40 via 0x142a1a740; 0x58-byte entries +0x50 via 0x142ada890), options_system.ui_layer.filter (names -> +0x70 vector), options_system.ui_layer.assist_buckets with 'weight' (0x142a1a0b0 -> 0x40-byte buckets +0xb8; missing weight / bad bucket -> loadAssistBuckets warnings). Returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.u_i_options_system_load_assist_buckets",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142aae940",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142aae940.c;pat:log-channel-MyTeamFacilitiesSceneSystem;xref:0x142aae3c9,0x142ab09ab",
-  "notes": "lea'd at 0x142aae3c9, 0x142ab09ab. Scene-change handler: scene name != 'TeamHQV2' and active +0x80 -> deactivates (same cleanup as 0x14dbcf170); TeamHQV2 and inactive -> +0x80 = 1 and builds the facility scene objects (large setup path, calls 0x142ab0ce0). Not deactivate-only. Better name: Game_MyTeamFacilitiesScene_OnSceneChanged (bound record keeps its name)."
+  "notes": "(this, evt): name=evt+0x10 (+9) vs 'TeamHQV2' (0x14535d850). Not TeamHQV2 and +0x80 set: log 'Facilities Scene has been deactivated, cleaning up scene'/'Clearing up all Scene objects', +0x80=0, releases cars of +0xb0 list (0x1428dbb80 on +0x20 mgr). TeamHQV2 and +0x80 clear: +0x80=1, 'Facilities Scene has been activated...', fills tree +0x70 (types 0-8), spawns cars via FindOrCreateNewCustomCar 0x1428ea4c0 + 0x1428ea250, ends 0x142ab... (lane owner review requested) Better name: Game_MyTeamFacilitiesScene_OnSceneChanged (bound record keeps its name)."
  },
  "signature": {
   "id": "game.my_team_facilities_scene_deactivate",

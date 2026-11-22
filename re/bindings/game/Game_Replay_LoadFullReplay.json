@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142c4ade0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142c4ade0.c;pat:log-message-method;xref:0x142c4656d,0x142c4cf61",
-  "notes": "Log REPLAY 'loadFullReplay(path=%S, keepSaveSlot=%d, deserialiseReplay=%d) took %f seconds' and a header-magic mismatch warning. Callers Game_Replay_LoadSavedReplayJob, 0x142c4cf40."
+  "notes": "Callers 0x142c4656d (in 0x142c460e0), 0x142c4cf61 (in 0x142c4cf40). Under CS [this+0xe8]; finds 'main' module, opens path (param_2) with L\"rb\", reads 0xa0-byte header, XOR-decodes it, checks magic 0xe32fcaa8 (warn 'Header magic number %I64u didn't match...'), allocs 2 MB-aligned buffer via [this+0x10], deserialises via 0x142c4a1e0/0x142c4c710, fills param_5/param_6, progress cb param_7; logs REPLAY 'loadFullReplay(path=%S, keepSaveSlot=%d, deserialiseReplay=%d) took %f seconds'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.replay_load_full_replay",

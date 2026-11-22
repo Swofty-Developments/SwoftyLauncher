@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443f19f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1443f19f0.c;pat:log-channel--;xref:0x145a8a878",
-  "notes": "Vt cell 0x145a8a878. Strings audio.event/stopEvent/emitter/podium.emitter.%02I64u, audio.playOutsideTrack, audio.isMusicEmitter."
+  "notes": "Full read; vtable slot +0x18 (table from 0x145a8a860). Caches 3 attr sources param_2[0x1c..0x1e]; component 0x146cb8098 from this+8 -> this+0x28 (missing: error 2, ret 2). Reads audio.event.%02I64u x5 -> +0x50, stopEvent x5 -> +0x64, emitter x40 -> +0x78 (count +0xee8), podium.emitter x5 -> +0xd00 (count +0xeec), playOutsideTrack -> +0xef1, isMusicEmitter -> +0xef2, name -> +0xea0; bad type error 0x16. Ret 0. (lane owner review requested) Better name: Game_AudioEntity_ReadAudioAttributes (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_audio_config_5",

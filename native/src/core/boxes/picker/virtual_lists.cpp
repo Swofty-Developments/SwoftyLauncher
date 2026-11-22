@@ -2,6 +2,8 @@
 
 #include "core/runtime/runtime.hpp"
 
+#include "core/apply/content/appliers.hpp"
+
 #include <iterator>
 
 namespace era_picker {
@@ -122,6 +124,7 @@ void narrow(void *mode, const char *list)
     restore_lists();
     std::string row = virtual_lists.parse_list_bound ? virtual_row(list) : std::string();
     const char *want = row.empty() ? list : VIRTUAL_HOST;
+    const size_t seats = swofty_core::apply::content::seats_for_box(list);
     for_each_host_setup(mode, [&](uint8_t *setup) {
         int64_t count = at<int64_t>(setup, LIST_COUNT);
         if (count <= 1 || count > int64_t(LIST_SLOTS) || picker.narrowed_count == std::size(picker.narrowed))
@@ -150,7 +153,7 @@ void narrow(void *mode, const char *list)
         n.kept = 1;
         n.time_trial = false;
         n.grid = {};
-        std::string grid = n.grid.raise(setup, list_cars(hit).cars);
+        std::string grid = n.grid.raise(setup, list_cars(hit).cars, seats);
         if (!grid.empty())
             swofty::log("[era] %s pressed: %s", list, grid.c_str());
         n.kept_lists[0] = hit;

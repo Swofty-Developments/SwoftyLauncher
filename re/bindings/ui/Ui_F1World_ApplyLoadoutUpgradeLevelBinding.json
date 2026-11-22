@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1417082d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void Ui_F1World_ApplyLoadoutUpgradeLevelBinding(void *self, void *card, void *a3, void *a4)",
-  "evidence": "decomp:re/decomp/1417082d0.c;xref:0x141708d96;xref:0x14170935e;xref:0x141af5c2e",
-  "notes": "myteam-g2: Applies the upgrade level of a loadout card (level read at card+0xc) to the bound property at self+0x30 and the unique-level binding. UI only."
+  "evidence": "decomp:re/decomp/1417082d0.c;xref:0x141708d96,0x14170935e,0x141af5c2e,0x14570a5f8",
+  "notes": "Renamed (binds the whole card): vtable cell 0x14570a5f8 plus thunks. Resets (vt+0x10), int +0x30 = card+0xc, strings +0x48/+0x68 from tables by card+0x19, int +0x90 = round(card+0x1c), rows from 0x142aaa100(card+0x28) (text +0x20, bools +0x48/+0x68), strings +0xe8/+0x108 from 0x142724870/0x142724ba0(card+0x40), rarity from 0x14256c650(card+0x1a) -> +0x128/+0x148/+0x170. (lane owner review requested) Better name: Ui_F1World_BindLoadoutCard (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.f1_world_apply_loadout_upgrade_level_binding",

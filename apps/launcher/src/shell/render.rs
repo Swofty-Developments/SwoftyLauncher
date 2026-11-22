@@ -165,7 +165,6 @@ impl Render for Shell {
             .children(self.popover_layer(p, cx))
             .children(self.popup_layer(p, cx))
             .children(self.update_bar(p))
-            .children(self.scale_rescue(p, cx))
             .child(self.play_bar(p, wide, cx))
             .children(ad_video)
             .children(self.task_dialog(p, window, cx))
@@ -174,6 +173,7 @@ impl Render for Shell {
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))
             .when(self.overlays.dropping, |d| d.child(self.drop_overlay(p)))
+            .children(self.scale_rescue(p, window, cx))
             .children(self.consent_probe(p))
             .children(self.ads.sweep());
         self.note_slow("render", page, started);

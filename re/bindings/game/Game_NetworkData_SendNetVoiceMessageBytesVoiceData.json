@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143061c20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143061c20.c;pat:log-channel-NETWORK-DATA;xref:0x1430568da,0x143058eaf",
-  "notes": "Builds a NetVoiceMessage packet (header + voice payload memcpy) and sends it via Game_NetworkData_SendToConnection; logs \"Send NetVoiceMessage to %d of %d bytes, with voice data %d bytes\". Better name: Game_NetworkData_SendNetVoiceMessage (bound record keeps its name)."
+  "notes": "Logs 'Send NetVoiceMessage to %d of %d bytes, with voice data %d bytes'. Net system [[this+8]+0xd8]. No voice data: header {1,param_2,target,len} + memcpy param_4 (0x1453784c0), total len+4 <= 0x48e, channel 0. With voice (param_7): skipped if [this+600]; header 0x11/0x12 (len>0xff) + payload + voice bytes, channel 2. Sends via 0x14406ed50(sys,target,ch,buf,len). (lane owner review requested) Better name: Game_NetworkData_SendNetVoiceMessage (bound record keeps its name)."
  },
  "signature": {
   "id": "game.network_data_send_net_voice_message_bytes_voice_data",

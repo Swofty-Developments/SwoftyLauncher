@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/14466e2f0.c;xref:0x1409d5363,0x1446b57fd",
-  "notes": "Brake heat exchange: convection coeff a + b*v + c*v^2 (params +0x20/+0x24/+0x28), ambient temp (vcall +8 on [+0xd8]+0x130) + 273.15 K, rain factor when +0x9f40 == 100. Hypothesis. Caller: Car_Wheel_Update. (2 xref site(s), fb.py callers.)"
+  "evidence": "decomp:re/decomp/14466e2f0.c;xref:0x1409d5361,0x1446b57fd",
+  "notes": "(b,car,wheel,dt): needs car+0x132 bit6; convection TT+0x20 + |v|*TT+0x24 + v^2*TT+0x28 (v = dot of car+0x558 +0x1b0/+0x170, scaled by b+0x50 if +0x9f40 == 100); ambient+273.15; heat = |wheel+0x188| * XOR(b+0x28/+0x30); +0x9f40 == 100: two nodes b+8/b+0xc with world vcall +0x20 factor, else one node with windows around XOR(TT+0xf0)/2. Callers 0x1446b57fd, lea 0x1409d5361."
  },
  "signature": {
   "id": "car.wheel_update_brake_temperature",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f0f2a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142f0f2a0.c;pat:log-channel-NETWORK;xref:0x1457f5068",
-  "notes": "Slot 25 (+0xc8) of vtable 0x1457f4fa0 (stored at 0x142fe5021 and 0x142fe5131); no direct calls. Loops vehicles (0x28-byte records from +0x94, hash map +0x4a8..+0x4dc), rolling-start time getter with the out-of-range warning inlined, OSQ start-lights messages 'Not Ready, so no lights' / 'Out of monitor, lights are on', state strings Rolling/off. Better name: Game_Network_Unk_142f0f2a0 (bound record keeps its name)."
+  "notes": "Slot 25 (+0xc8) of vtable 0x1457f4fa0. Update(this, dt*): 26 vehicle records (0x28 B from +0x80), light object per index from hash map +0x4a8, lap progress 0x1446046a0 + vfuncs +0x138/+0x148 of +0x48 -> light count set via 0x142cf3a80, msg 0x145800ef8 posted for local index +0x490; OSQ logs 'Not Ready, so no lights'/'Out of monitor, lights are on'; Rolling/off via 0x1407b10c0. Better name: Game_RollingStartSystem_UpdateStartLights (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_attempting_get_time_end_rolling_start",

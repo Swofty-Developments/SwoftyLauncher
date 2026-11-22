@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143ab0cb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143ab0cb0.c;pat:log-channel-HEADTRACKING;xref:0x1458a7f20",
-  "notes": "TrackIR (HEADTRACKING) per-frame body: logs NP rotation/translation, 'No new data for 30 frames', NP_RegisterWindowHandle results; calls the init 0x143ab0800 at 0x143ab17dc. Vtable cell 0x1458a7f20."
+  "notes": "Body read in full. When registered (+0xd2): NP_GetData (fn ptr 0x146292170); on frame change converts pitch/yaw/roll (*pi/16383) and x/y/z (*5e-5) clamped to +0x6c..+0x90 limits into a rotation matrix +0x20..+0x40, angles +0x60..+0x68, translation +0x50..+0x58, logs HEADTRACKING values; after 0x1e frames without data logs 'No new data for 30 frames' and resets to identity. Otherwise every 5 s retries NP_RegisterWindowHandle (0x146292140, logs result) and calls the init 0x143ab0800. Only ref vt cell 0x1458a7f20 (next cell not code). (lane owner review requested)"
  },
  "signature": {
   "id": "game.track_ir_update",

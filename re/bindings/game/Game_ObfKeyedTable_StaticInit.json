@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1409d50b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1409d50b0.c;xref:0x140b6ff38",
-  "notes": "Only caller 0x140b6ff38 (static-init block 0x140b6ebb0). 37 KB static initialiser."
+  "notes": "Called from static-init block 0x140b6ebb0 (site 0x140b6ff38). Builds 0x27 entries {code ptr ^ RNG (e.g. 0x1446db280, 0x143571850), byte len (0x9f0..0x1cd8), 64-bit key}; RNG = MT-style state 0x146108c00 seeded from QPC. Allocs vector at 0x14604ffa8 via NeMemorySystem allocator 0x14612a5c0 (cap 0x27 x 0x58). Per entry: follow E9 jmp, hash code bytes with CryptoAPI ctx (0x143959b90 init, 0x143959d90 hash, 0x14395a360 get 32-byte digest), store masked ptr/len/key+digest; CryptDestroyHash at end. (lane owner review requested) Better name: Game_AntiTamper_CodeHashTable_StaticInit (bound record keeps its name)."
  },
  "signature": {
   "id": "game.obf_keyed_table_static_init",

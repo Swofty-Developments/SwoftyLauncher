@@ -9,7 +9,7 @@
   "subsystem": "car",
   "proto": "-",
   "evidence": "decomp:re/decomp/1446b9650.c;xref:0x1446dbdaf,0x1446e5075",
-  "notes": "Clamps travel +0x168 into curve range ([+0x140]+0x15b8..+0x15bc +-0.005) and evaluates curve +0xaf0 (0x142e88290) with finite difference. Hypothesis: bump-stop / spring curve. Callers: Car_Solver_PrepareWheel. (2 xref site(s), fb.py callers.)"
+  "notes": "(wheel, dt): if curve [w+0x140]+0xaf0 non-empty: travel w+0x168 clamped to [+0x15b8+0.005,+0x15bc-0.005], slope (f(x+0.005)-f(x-0.005))/0.01; spin term w+0x188 - R(+0x3c)*w+0x3c4*dt/I([w+8]+0x14), |I*term/dt| capped by +0x108^+0x110; returns signed slope*cap. Stored to solver+0x210[i] by Car_Solver_PrepareWheel."
  },
  "signature": {
   "id": "car.solver_eval_suspension_travel",

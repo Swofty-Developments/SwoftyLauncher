@@ -87,6 +87,7 @@ core/diagnostics/perf/vq.cpp: p.write = runtime::import_write; => import *!Virtu
 core/diagnostics/perf/vq.cpp: void install() => none
 core/diagnostics/perf/vq.hpp: void install(); => none
 core/diagnostics/session_job_probe.cpp: if (auto r = runtime::loader::install(hook, at, FUNC, on_entry); !r) { => mid binding FUNC
+core/diagnostics/session_loader.cpp: if (auto r = runtime::loader::install(hook, at, name, fn); !r) { => mid binding UPDATE UNLOAD
 core/events/events.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via
 core/events/events.cpp: h_flow = mid(S_FLOW, flow_mid); => mid sig S_FLOW
 core/events/events.cpp: h_session_enter = mid(S_SESSION_ENTER, session_enter_mid); => mid sig S_SESSION_ENTER

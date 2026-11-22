@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1402474e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1402474e0.c;xref:0x14023e6f8,0x140246613,0x14024c86e",
-  "notes": "Not a CameraActor::enable body: validates the driver slot (+0x31a < 3, index +0x31c, session +0x290 tables +0x2c8/+0x450), builds spawn flags (asset names 'cinematic'/'careerhub'/'careerhub2' by param_7 bits 0x800/0x1000), spawns a scene (0x1401b71c0), sets its transform, per camera actor logs 'CameraActor::enable' (inlined) and calls 0x140197cd0; applies 'racecrewclothes'/'Driver::Head' (0x14024a370). Better name: Game_CutScene_SpawnCharacterScene (bound record keeps its name)."
+  "notes": "Not a CameraActor::enable body: validates the driver slot (+0x31a < 3, index +0x31c, session +0x290 tables +0x2c8/+0x450), asset 'cinematic' or 'careerhub'/'careerhub2' by param_7 bits 0x800/0x1000, spawns a scene (0x1401b71c0), sets its transform (+0x470 matrix), per camera actor logs CAMERA_ACTOR_ENABLE 'CameraActor::enable %p %s [%s]' and calls 0x140197cd0; applies 'racecrewclothes'/'Driver::Head' (0x14024a370), then 0x140241c80; returns scene. Better name: Game_CutScene_SpawnCharacterScene (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.camera_actor_enable",

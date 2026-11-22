@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141127eb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141127eb0.c;pat:log-channel--;xref:0x141125f43,0x14112769d",
-  "notes": "Callers 0x141125f43, 0x14112769d (0x141125e80)."
+  "notes": "Loop u=0.. while key DevSessionDataContract.Entrants.%s_%u.vehicle_name exists (FUN_143a44700 on this+0x368+0x18, %s=param_2): reads driver_name, team_name (entrants.teams stat_id), driver_customisation_name or helmet/suit/gloves/pose/emote, vehicle_customisation_name or livery/sticker, team_position, car_number, vehicle_specialisation_name; Game.DefaultEntrantGarageOverrides -> 0x58 rec at this+0x278+0x300 (count +0xe00); 0x88 entry pushed to vector param_4. (lane owner review requested)"
  },
  "signature": {
   "id": "game.read_dev_session_data_contract_entrants_config",

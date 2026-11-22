@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144343aa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void **Find(void *vm, void **name)",
-  "evidence": "decomp:re/decomp/144343aa0.c;xref:0x141a58f19;xref:0x141c45894;xref:0x141c71464",
-  "notes": "myteam-g2: Ne_Crt_Strcmp scan of a name table returning the matching node pointer; used by header builders and Select_TopLevelFacility."
+  "evidence": "decomp:re/decomp/144343aa0.c;xref:0x141a58f19,0x141c45894,0x141c71464,0x1420847f4,0x14208bd45,0x142186254,0x14218e7c4,0x142195358,0x142195d53,0x1421973fb,0x14219f364,0x1421a52f4,0x1421c5284,0x1421c725e,0x14223df74,0x14229d2e4,0x1422b0664,0x14234eda9,0x1423543c6,0x1423dc863,0x142403564,0x14416458a,0x144253972",
+  "notes": "Red-black tree find: header=self+8, node+0x19 = isnil, key = interned string at node+0x20 (hash u32 at +0, chars at +9), hash equality shortcut else 0x14535d850 compare; returns matching node or header (end). (lane owner review requested)"
  },
  "signature": {
   "id": "ui.find_node_by_name",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141428060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141428060.c;pat:log-channel-CUSTOMISATION_DECALS;xref:0x14142800a,0x1428b2c5f,0x142f3e06b",
-  "notes": "Called from 0x141427e80, 0x1428b2920, 0x142f3dc90."
+  "notes": "Returns shared_ptr (param_2). Returns null if param_5+0x30==0. Searches list +0x2d8..+0x2e0 (16-byte shared_ptr) for service byte +0x10 == vehicle id param_6; flags 8/10/0x1e from +0x1ac / human checks. Found: FUN_141429730 (RequestRegenerate). Else if cvar 'Renderer.Gfx.enableCustomisationDecals': log CUSTOMISATION_DECALS 'Inserting new CustomisationDecalGenerationService for decal list, %I64d.', alloc 0x1f0 service, resolves 5 type... (lane owner review requested) Better name: Game_DecalGeneration_FindOrCreateService (bound record keeps its name)."
  },
  "signature": {
   "id": "game.decal_generation_create_service",

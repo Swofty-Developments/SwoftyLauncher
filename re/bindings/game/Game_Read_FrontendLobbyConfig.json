@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14228fd80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14228fd80.c;pat:log-channel--;xref:0x145778008",
-  "notes": "Vt cell 0x145778008. Strings colour/value/default/info/icon/visible plus frontend_lobby.* paths."
+  "notes": "Vtable slot 0x145778008 (neighbours 0x14228fb10,0x1422948e0 code). Allocs 0x6c0 binding block -> this+0x280; resolves child nodes under this+0x10 by hash: status_top, status_bottom, notification, each with label/label_is_loctag/label_animation_flags/colour(default)/icon/value/value2/show_value*/timer/panel/info(off). If DAT_146cc4278+0xf0: frontend_lobby.colours.* -> +0x298..+0x2a4, frontend_lobby.other.* -> +0x2a8..+0x2b1. Tail calls FUN_142292510(this,+0x280,..). (lane owner review requested) Better name: Game_FrontendLobby_BindWidgetsReadConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_frontend_lobby_config",

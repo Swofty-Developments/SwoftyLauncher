@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431581a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1431581a0.c;pat:log-channel-NETWORK;xref:0x14581cd80",
-  "notes": "Slot 20 (+0xa0) of vtable 0x14581cce0 (preceded by the cxx string of network::EventMatching::onSessionLobby). Missing track: logs 'F1 World Event data - missing track. Filling from the season document ...' and reads the season data ([..]+0x1030 vt+0x88); else logs 'matched track to the current event stat id'. Better name: Game_Network_FillWorldEventTrack (bound record keeps its name)."
+  "notes": "Read in full. Slot 20 of vtable 0x14581cce0 (cell 0x14581cd80). Locks weak event [this+0x80]+0xf0/+0xf8; if event+0x18 (track) null: logs 'F1 World Event data - missing track...', season data [[this+0x10]+0x4f8]+0x1030 vfunc +0x88, scans tracks event+0x28..+0x30 for byte +1 == current-event byte +0x278, logs 'matched track to the current event stat id', stores it to event+0x18. Better name: Game_Network_FillWorldEventTrack (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_f1_world_event_data_missing_track",

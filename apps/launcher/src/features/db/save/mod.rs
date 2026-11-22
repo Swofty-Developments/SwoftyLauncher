@@ -25,6 +25,10 @@ mod details;
 mod export;
 mod game_files;
 mod leave;
+mod overrides;
+
+#[cfg(test)]
+pub(super) use overrides::{overrides_text, parts_text};
 
 /// The author last typed, else one from an installed DB Editor addon; never
 /// the OS user name.
@@ -139,11 +143,7 @@ impl Shell {
 
     /// The header's Save (an addon) or Save as Addon (a new draft).
     pub(crate) fn db_save(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.db.book.draft.addon.is_some() {
-            Db::save_bound(self, None, window, cx);
-        } else {
-            self.db_save_as(None, window, cx);
-        }
+        self.db_save_checked(None, window, cx);
     }
 
     pub(crate) fn db_save_as(&mut self, then: Option<Then>, window: &mut Window, cx: &mut Context<Self>) {

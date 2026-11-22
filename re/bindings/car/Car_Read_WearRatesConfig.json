@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1411cb150",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel--",
-  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: engine_management.driver_wear_radriver_wear_rateMisconductMessag, q.world.create, wear_rates.ai_pq_max, wear_rates.ai_pq_min, wear_rates.ai_race_max, wear_rates.ai_race_min, wear_rates.human_max, wear_rates.human_min'"
+  "evidence": "decomp:re/decomp/1411cb150.c;pat:log-channel--;xref:0x1456c7700",
+  "notes": "(this): builds 0x68-byte config from Gdb tables engine_management.weekends (random_component_swap_chance list), two settings hashes -> +0x20/+0x24, engine_management.driver_wear_rates (driver, component_percentage, gearbox_percentage; 32-byte rows), engine_management.components (season + 7 component rows, 0x250 each); stores at this+0x340, frees the old one. Vtable cell 0x1456c7700. (lane owner review requested) Better name: Car_Load_EngineManagementConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "car.read_wear_rates_config",
