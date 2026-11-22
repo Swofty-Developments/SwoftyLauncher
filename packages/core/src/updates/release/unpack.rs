@@ -77,6 +77,7 @@ pub(super) fn write_entry(entry: &mut impl Read, path: &Path, mode: Option<u32>)
     }
     let mut out = std::fs::File::create(path).map_err(io_err(path))?;
     std::io::copy(entry, &mut out).map_err(io_err(path))?;
+    out.sync_all().map_err(io_err(path))?;
     #[cfg(unix)]
     if let Some(mode) = mode {
         use std::os::unix::fs::PermissionsExt;
