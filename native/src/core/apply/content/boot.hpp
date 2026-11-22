@@ -29,11 +29,29 @@
 
 namespace swofty_core::apply::content {
 
-inline constexpr const char *ROW_REGISTRIES[] = {
-    "engine_sound", "vehicle.package", "vehicle",            "livery",          "team.identity", "team.pit_times",
-    "team.garage",  "track.sponsors",  "content.box_assets", "helmet",          "suit",          "gloves",
-    "driver.head",  "driver.look",     "driver.person",      "driver.identity", "driver.stats",  "wearable.season_set",
-    "rules.drs",    "session.points",  "content.package",    "career.rnd.tree", "career.market"};
+inline constexpr const char *ROW_REGISTRIES[] = {"engine_sound",
+                                                 "vehicle.package",
+                                                 "vehicle",
+                                                 "livery",
+                                                 "team.identity",
+                                                 "team.pit_times",
+                                                 "team.garage",
+                                                 "track.sponsors",
+                                                 "content.box_assets",
+                                                 "helmet",
+                                                 "suit",
+                                                 "gloves",
+                                                 "driver.head",
+                                                 "driver.look",
+                                                 "driver.person",
+                                                 "driver.identity",
+                                                 "driver.stats",
+                                                 "wearable.season_set",
+                                                 "rules.drs",
+                                                 "session.points",
+                                                 "content.package",
+                                                 "career.rnd.tree",
+                                                 "career.market"};
 
 inline Lookup store_lookup(registry::Store &st, std::map<std::string, Value> &keep)
 {

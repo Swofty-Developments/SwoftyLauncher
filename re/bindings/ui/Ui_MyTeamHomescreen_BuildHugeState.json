@@ -9,7 +9,7 @@
   "subsystem": "ui",
   "proto": "void f(void *self)",
   "evidence": "decomp:re/decomp/14223fa00.c;xref:0x1422563d7",
-  "notes": "myteam-g1: Giant (16k-line) menu builder for the My Team home screen: lng_homescreen_my_team_career, myTeam. Mostly menu/state-machine constant setup."
+  "notes": "16k-line builder, caller 0x1422563d7. Strings cover the whole home screen, not only My Team: play, solo, multiplayer, ranked/unranked, timeTrial, myTeam, startCareer/resumeCareer, season/season3, podiumPass, store, showRoom, playerCars, news1..3, mail, trophies, superlicense, settings, theatre, voting, scenarios, splitscreen. Better name: Ui_HomeScreen_BuildTileTree (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.my_team_homescreen_build_huge_state",

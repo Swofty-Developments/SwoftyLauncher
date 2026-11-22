@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1446b7060",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "void Car_Tyre_UpdateDeflation(void *ctx)",
-  "evidence": "doc:re/db/subsystems/car.md",
-  "notes": "Body 0x155453df0: puncture lerps sidewall (TT+0x58), tyre spring wheel+0x58 (TT+0x50), damping/rolling resistance wheel+0x5c/+0x60 (both from TT+0x54 at 0x155453f96 / 0x155453fa8: copy-paste bug suspected, TT+0x60 PunctureResistanceMultiplier never read; car2-verify); burst sets near-zero stiffness (agent car-tyre, static)"
+  "evidence": "decomp:re/decomp/1446b7060.c;doc:re/db/subsystems/car.md;xref:0x1409b356e,0x1409b378d,0x142bdcf34,0x142bdcf64,0x142bdcfcc,0x142bdcffc,0x142bdd067,0x142bdd097,0x142bdd102,0x142bdd141,0x142bdd33a,0x142bdd405,0x142bdd4d3,0x142bdd593,0x142e88940,0x142e88a30,0x142e88b23,0x142e88c25,0x14324b9a1,0x144656c52,0x144656caa,0x144656d4b,0x144656db4,0x144656e56,0x144656eb3,0x144656f29,0x144657020,0x14465703a,0x1446b5bd0,0x1446b5d63,0x1446b5d78,0x1446b5f0e,0x1446b5f23,0x1446b5f3e,0x14470e1c9,0x155371d58,0x155371db8,0x15544421d,0x155444265,0x1554b0c56,0x1554b0c72",
+  "notes": "5-byte thunk to 0x155453df0; w = wheel+8, TT = [w]. Flags w+0x18: none -> nominal (w+0x34 = TT+0x1c, w+0x48 = (TT+0x1c-TT+0x20)*w+0x4c, w+0x50/+0x54/+0x58 = 1). bit1 puncture: f = 1-w+0x2c/w+0x30; w+0x48 scaled by lerp(1,TT+0x58,f); w+0x50 = lerp(TT+0x50), w+0x54 = lerp(TT+0x54), w+0x58 = lerp(TT+0x54) again (TT+0x54 read twice). bit0 burst: w+0x90 = 2, w+0x48 min 0.15, w+0x50/+0x54 = 0.001/0.0001, w+0x58 = 0. (lane owner review requested)"
  },
  "signature": {
   "id": "car.tyre_update_deflation",

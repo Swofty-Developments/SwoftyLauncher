@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1443c8d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1443c8d70.c;pat:log-channel--;xref:0x1443c080d",
-  "notes": "EGO_JOB_QUEUE_SYSTEM setup: JobQueueSystem.* settings, CPU topology, job policies, queue creation logs."
+  "notes": "Allocator EGO_JOB_QUEUE_SYSTEM alloc 0x120 -> global 0x146ca5c30 (CS, CreateEventW). Reads cpu/processors/processorStride/processorBinding, JobQueueSystem.* settings (0x143a42f10/0x143a43240/0x143a43b90), Audio.audio_thread_affinity_mask, GetLogicalProcessorInformationEx; computes affinity masks; init 0x143ac1e10; 0x143ac3620 creates sync_queue/render_queue/update_queue/module_gen_queue -> [rcx+0x38/0x40/0x48/0x50]; POLICY/APPLICATION Jobs: logs. (lane owner review requested) Better name: Game_JobQueueSystem_Init_FromConfig (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_job_queue_system_config",

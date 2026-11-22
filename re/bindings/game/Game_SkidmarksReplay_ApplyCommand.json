@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14471c860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14471c860.c;xref:0x144720e3f,0x14472110e,0x144722e9e,0x144725ca5,0x144726377,0x144726bd5,0x144726e41,0x144727254",
-  "notes": "Records a command into ring this+0x190 (stride 0x20, count +0x4190 capped 0x1ff): type byte 0 / (type<<4|3) / 0x23 / 0x30 / 0x43 / 0x51, then +0x198 = param_3, +0x1a0 = chunk, +0x1a8 = allocator [this+0x188]. Types 0 and 5 allocate a 0x2180 chunk and copy param_3 (0x2100 bytes + params +0x2100..+0x217f); 1 and 6 use Render_Skidmarks_FindOrCreateChunk 0x14471d4b0. Callers in Render_Skidmarks_Update 0x14471f650 and Game_SkidmarksReplay_Rewind 0x144725390."
+  "notes": "switch(type): records into ring this+0x190 (stride 0x20, index +0x4190 capped 0x1ff) byte 0x00 (0) / type<<4|3 (1,6) / 0x23 (2) / 0x30 (3) / 0x43 (4) / 0x51 (5); +0x198 = param_3, +0x1a0 = chunk, +0x1a8 = allocator +0x188. Types 0,5 allocate a 0x2180 chunk and copy param_3 (0x2100 bytes + +0x2100..+0x217f); 1,6 use Render_Skidmarks_FindOrCreateChunk 0x14471d4b0 (recorded only if created). (lane owner review requested)"
  },
  "signature": {
   "id": "game.skidmarks_replay_apply_command",

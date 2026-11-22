@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1431239f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1431239f0.c;pat:log-channel-NETWORK-ENTRANTS;xref:0x14febcec0",
-  "notes": "AttributeSetReplicationManager::handleAttributeSetUpdate (per __FUNCTION__): logs the key; ignores lead-player messages; findOrGet the attribute set, matches serialisable attributes (emplaceAttributes) and replaces values that differ (\"Replaced its value (%f) with the network value (%f)\"). Better name: Game_AttributeSetRepl_HandleAttributeSetUpdate (bound record keeps its name)."
+  "notes": "Whole body read: network::AttributeSetReplicationManager::handleAttributeSetUpdate (__FUNCTION__ 0x1458177c4, channel NETWORK-ENTRANTS 0x14578e8d2). Logs key msg+0x10; ignores lead-player key (0x1458178ac); hash lookup in this+0x30 map, else findOrGenerateAttributeSet inlined (0x14581803c) via 0x1409e3840; per serialisable attr matches id msg+0x30 stride 0x10, clamps value, logs 0x145818281/0x1458182ba, applies 0x1409eaa90. Better name: Game_AttributeSetRepl_HandleAttributeSetUpdate (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_entrants_received_update_message_attribute_set",

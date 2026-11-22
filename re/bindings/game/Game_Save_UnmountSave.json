@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1441490a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1441490a0.c;pat:log-message-method;xref:0x14413f1f7,0x1441522dd",
-  "notes": "logged method name unmountSave (class from the log channel); log channel SAVE: 'unmountSave - load op, deleting mount dir '%s''"
+  "notes": "SAVE log 'Unmount save requested for %s - m_mountCreatedNew %d' (0x145a5d12b), arg4==0: 'unmounting save , m_storeInCloud is false' path. Cloud path (this+1000): 'unmountSave searchPath %S , search %S', FindFirstFileW/CreateFileW/ReadFile per file, remote write via (this+0x30)+0x108 vtbl+0, logs 'Remote storage write for file %s succeeded.'; then deletes mount dir this+0x50 via FUN_14413ac70 retry 16x Sleep(500), FUN_14414b150 rename (.old); logs 'Unmount save result: 0x%x'. (lane owner review requested)"
  },
  "signature": {
   "id": "game.save_unmount_save",

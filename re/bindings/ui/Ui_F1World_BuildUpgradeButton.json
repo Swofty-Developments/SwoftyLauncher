@@ -9,7 +9,7 @@
   "subsystem": "ui",
   "proto": "void FUN(void *view, void *ctx)",
   "evidence": "decomp:re/decomp/141af6b00.c;xref:0x141ae6c5c",
-  "notes": "myteam-g1: UI binding code; upgrade_button_enabled/visible, upgrade_cost_pills, upgrade_info_visible (2250 lines). Static, string-key driven."
+  "notes": "Renamed: VM holder ctor (returns param_1) binding the F1 World inventory/upgrade screen: unopened_cards_*, slot_type, craft/equip/upgrade/dismantle buttons and infos, warning/hint messages, *_pills, focused/equipped/primary/comparison (contract) cards, cards/filtered_cards lists, tooltips, can_craft. Better name: Ui_F1World_InventoryScreenVm_Construct (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.f1_world_build_upgrade_button",

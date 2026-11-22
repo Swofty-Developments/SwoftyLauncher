@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1414869d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1414869d0.c;pat:log-channel--;xref:0x1414aec7d,0x1414b72a3",
-  "notes": "End-of-session banner VM: weather icons, eos_single/double layouts, lng_race_winner, session.top_car driver/team names."
+  "notes": "Session HUD/broadcast panel update. Sets timer widgets from vt+0xd8/+0x100 (x1000 ms); param_9: 6-slot weather forecast at param_1+0x65 (offsets UNK_1456e9060/9080, FUN_1438c60b0/1437cdc90, time-of-day h/m/s /60 /3600), air/track temp FUN_1441f03b0 with F conversion (x*9/5+32) if +0x77; weather icon by +0x32c: '#overrides.broadcast_ui_generic.icons.weather_clear_day/_night', light_cloud, overcast, light_rain, heavy_rain, stormy. End-... (lane owner review requested) Better name: Game_SessionHud_UpdateWeatherAndEndOfSession (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_session_top_car_config",

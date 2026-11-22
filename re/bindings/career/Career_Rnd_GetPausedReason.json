@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14385a2e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void *Career_Rnd_GetPausedReason(void *out, void *a2, void *rnd, uint32_t part_key)",
   "evidence": "decomp:re/decomp/14385a2e0.c;xref:0x14181613b,0x141816676,0x1419bf164",
-  "notes": "Out {byte0, byte1} = 0. Finds the CareerEntity row (+0x2e0..+0x2e8, 0x88 stride) matching the active profile id (0x14604c2c8); match = row key (+0x50/+0x52) == param_4. Depending on 0x14385a9b0 (<2), a component query (0x1460609c8) and a record lookup (+0x30 == 1) sets byte0 (match) or byte1 to 1. No R&D queue at +0x2e0 (those are entrant rows). Better name: Career_Rnd_ResolvePlayerFlagPairByEntrantKey (bound record keeps its name)."
+  "notes": "Out 3 bytes zeroed. Row in this+0x2e0..+0x2e8 (stride 0x88) matching the active profile id ([[0x14604c2c8+0x140]+0x198]+0x1c0 vt+0x38); match = row +0x50 byte and +0x52 u16 == param_4. 0x14385a9b0 < 2, or entity +0x2b2 != 0x3fff / +0x2b0 set: byte0 if match else byte1. Else record of component 0x1460609c8 (+0x340, 0x140fdb170): +0x30 == 1 -> byte0/byte2, else byte2/byte1. Name not shown by the body (bound). (lane owner review requested)"
  },
  "signature": {
   "id": "career.rnd_get_paused_reason",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x140153d60",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/140153d60.c;pat:log-message-method;xref:0x14014e797",
-  "notes": "Logs PVS 'maxPVSRenderInstances is %d'. Caller 0x14014e797 (0x14014d230). Body 0x3876 bytes."
+  "notes": "pdata 0x140153d60-0x1401575d6. Loop 0..0x1b allocs 0x810 view objs at this+0x168+i*8, named camera%u/_nj/_pr, mirror_cam_*, cube_cam_*_0/1, camera_vrUi, registered via 0x1439932e0(this+0xb0). Builds sdr/vr backbuffer surfaces+rtv/srv. Reads Renderer.maxStaticInstances (def 0x2cec) and Renderer.maxPVSRenderInstances (def 0x1000; PVS log only if channel on), creates generators (staticGenerator, shadows, PlanarReflections*, mirror*, cubemap, ghostCar, rainMask, wetnessMap...) + pass callbacks. (lane owner review requested) Better name: Game_Renderer_InitCamerasTargetsGenerators (bound record keeps its name)."
  },
  "signature": {
   "id": "game.pvs_max_pvs_render_instances",

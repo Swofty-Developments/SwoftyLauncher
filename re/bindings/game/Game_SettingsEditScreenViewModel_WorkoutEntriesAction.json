@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x141db26d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/141db26d0.c;str:s_SettingsEditScreenViewModel_WorkoutEntriesAction;xref:0x14574d5d8",
-  "notes": "cxx=game::SettingsEditScreenViewModel::workoutEntriesAction; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+  "notes": "Vt cell 0x14574d5d8. Inlined setSelectedFilter (0x14606aa34), 0x141da4670(this,[this+0xbc0]); option-type switch 1 toggle/2 slider/3 header/4 game_save btn/5 bindings/6 button builds entry_%u VMs into [+0xbc0]+0xd0, desc panels +0xe8; subscribes MessageMusicTrackDuration/Status (0x143987810); inlined workoutEntriesAction (stay/new/delete, open/close logs); fires rebuilt_info + rebuilt_list (0x144320fe0) (lane owner review requested) Better name: Game_SettingsEditScreenViewModel_RebuildList (bound record keeps its name)."
  },
  "signature": {
   "id": "game.settings_edit_screen_view_model_workout_entries_action",

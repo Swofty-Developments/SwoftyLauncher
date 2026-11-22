@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ec9600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/142ec9600.c;pat:log-message-method;xref:0x142eaab8a,0x142eab25f,0x142eab6a1,0x142eac037,0x142eacdbe,0x142eae1f1,0x142eaf080,0x142eafef0,0x142eb0d40,0x142eb1b90,0x142eb29e0,0x142eb3850",
-  "notes": "Seen: appends a 0x40-byte entry to the item vector +0x50..+0x60 (grows 1.5x via allocator +0x48), logs 'registerUnlockableItem() - Item [%s] has no unlock method, setting unlocked' when the item has no method, inserts the item into the hash set +0x68..+0xbc (rehash path, ne_hash_map.h assert) and a second map at +0xd8 (0x142efad90 / 0x142efaee0 / 0x142efb1f0). Xref list truncated."
+  "evidence": "decomp:re/decomp/142ec9600.c;pat:log-message-method;xref:0x142eaab8a,0x142eab25f,0x142eab6a1,0x142eac037,0x142eacdbe,0x142eae1f1,0x142eaf080,0x142eafef0,0x142eb0d40,0x142eb1b90,0x142eb29e0,0x142eb3850,0x142eb46a0,0x142eb54f0,0x142eb6335,0x142eb7195,0x142eb7ff5,0x142eb8e25,0x142eb9c75,0x142ebaaf0,0x142ebb960,0x142ebc7d0,0x142ebd640,0x142ebe495,0x142ebf335,0x142ec01e0,0x142ec057b,0x142ec199b,0x142ec2b35",
+  "notes": "Item info from param_2[1] vt+8; id = info+0xa0. If id not in hash map +0x88..+0xbc: appends 0x40-byte entry (owning ptr, state, flag) to vector +0x50..+0x60 (1.5x growth, allocator +0x48); if method ptr+0x10 null logs UnlockSystem 'registerUnlockableItem() - Item [%s] has no unlock method, setting unlocked' and sets state 1; inserts node (copy of info +0x20..+0xa0, index) into map (ne_hash_map.h 0x145612f08 assert) and name map +0xc0 via 0x142efad90/0x142efaee0/0x142efb1f0. Callers in 0x142eaa490,0x142eab320,0x142ead3f0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.unlock_system_register_unlockable_item",

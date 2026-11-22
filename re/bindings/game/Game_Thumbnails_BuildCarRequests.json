@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142e32670",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142e32670.c;xref:0x14196dec3,0x141dddb8f,0x14221173f,0x142d4c4f2",
-  "notes": "0x111c-byte body building car thumbnail requests (has_texture, textures)."
+  "notes": "0x11c-KB stack frame. Resolves 'textures' handle + name hash (djb2 0x1505*33); searches existing entries (bitset map +0x78/+0x80): match -> opt. 0x142e33790 QueueCarRequest, ++[e+0x54] refcount, return id [e+0x50]. Else id=++[+0xa8], 'has_texture' handle, insert 0x142ee49a0, spawn params 0x142e0c700/0x142e0a530, 0x1428bf4c0 ThumbnailCarRequest_Construct, livery/driver lookup (0x141400ce0, 0x14246dcb0, 0x1416cd100), 0x142e2dc20 Adding... (lane owner review requested) Better name: Game_Thumbnails_AcquireCarThumbnail (bound record keeps its name)."
  },
  "signature": {
   "id": "game.thumbnails_build_car_requests",

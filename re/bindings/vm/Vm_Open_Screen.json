@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144182660",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "-",
-  "evidence": "decomp:re/decomp/144182660.c;xref:0x1441826e7",
-  "notes": "logs '---- OPEN SCREEN (%hs) ----' then NeUIScene::activateScreen; called by route-command executors"
+  "evidence": "decomp:re/decomp/144182660.c;xref:0x143889625,0x14388a0d5,0x144182066,0x1441fc153,0x15337223f",
+  "notes": "NeUIScene::activateScreen(scene,screen): optional 'OPEN SCREEN (%hs)' / activateScreen logs; scene vt+0x150(1,0) false -> clears screen children, 5; screen already in scene list +0x130 or flag +0xa bit5 -> 5; else Ne_UICrashDumpInfo_OnScreenEvent (not persistent/audio_themes/playercard), screen+0x70=2, +0x20=scene, vt+0x58, scene+0x100=1, +0x108++, posts OnScreenActivated, event 0x603; returns 0. (lane owner review requested)"
  },
  "signature": {
   "id": "vm.open_screen",

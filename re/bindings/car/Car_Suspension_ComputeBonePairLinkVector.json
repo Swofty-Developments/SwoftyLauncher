@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1446661f0.c;xref:0x144665370",
-  "notes": "SIMD (2764 bytes): takes two bone indices (param_2) into a skeleton array of 0x30-byte 3x4 transforms, builds relative vector/length of a suspension link (epsilons 0x3638b88e/0x37cfb4c2). Called 6x from Car_Suspension_ResolveLinkGeometryFromBones. Hypothesis on exact maths."
+  "evidence": "decomp:re/decomp/1446661f0.c;xref:0x144665370,0x14475d27e,0x14475d6b5,0x14475da8f,0x14475dec7,0x14475df19,0x14475df6e,0x14475e3c6",
+  "notes": "SIMD bone-pair helper; callers 0x144665370 (fn 0x144664080) and Car_Suspension_ResolveLinkGeometryFromBones."
  },
  "signature": {
   "id": "car.suspension_compute_bone_pair_link_vector",

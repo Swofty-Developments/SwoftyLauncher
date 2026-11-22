@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419fe120",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1419fe120.c;pat:log-channel--;xref:0x1419fd98a,0x1419fd994,0x1419fd99e,0x1419fd9a8,0x1419fd9b2,0x1419fd9bc,0x1419fd9c6,0x1419fd9d0,0x1419fd9da,0x1419fd9e4,0x1419fd9ee,0x1419fd9f8,0x1419fda02,0x1419fda0c,0x1419fda16,0x1419fda20,0x1419fda2a,0x1419fda34,0x1419fda3e,0x1419fda48,0x1419fda52,0x1419fda5c,0x1419fda66",
-  "notes": "call sites in 0x1419fd070. Keys are VM paths broadcast_intros.dummy_messages_for_vm.*."
+  "notes": "Renamed (was Game_Read_BroadcastIntrosConfig). Body read fully: switch on type byte param_2 (0,7,9,10,0xf..0x13,0x16..0x1f,0x29,0x2a,0x2c,0x2e) allocates from [this+0x278] and constructs a broadcast-intro VM (generic 0x2f8-byte ones with path 'broadcast_intros.dummy_messages_for_vm.*' + hash, others via 0x14159d6d0, 0x1415914f0 'broadcast_intros.driver_comparison_qualifying', ...), appends {alloc,vm} to vector this+0x2d0, calls vm+0x260 vt+8(this+0x280,+0x288). All callers in 0x1419fd070. (lane owner review requested) Better name: Game_BroadcastIntros_CreateViewModel (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_broadcast_intros_config",

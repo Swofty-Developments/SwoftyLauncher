@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14078f9c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14078f9c0.c;pat:log-channel-DLC;xref:0x14078f9aa,0x1407920ec",
-  "notes": "Called from 0x14078f9a0 and from Game_DLC_UpdateEntitlementScan (0x1407920ec, state 1 -> 2)."
+  "notes": "Atomic busy byte +0x4c0: if set, DLC log 'attestation already in progress' and vcall +0x28(0x25). Else clears string vector +0x4a8/+0x4b0, list from 0x14078f720(DAT_14604e9e0); entries passing 0x14078e2f0(+0x470,id) get XOR-decoded names pushed (0x14095c740). Empty: log 'request list is empty', vcall +0x28(0). Else posts bus msg 0x1439876c0 and async task with callback 0x140791110 kept at +0x498/+0x490. (lane owner review requested)"
  },
  "signature": {
   "id": "game.dlc_f1os_entitlement_attestation",

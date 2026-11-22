@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14146dd40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14146dd40.c;xref:0x141431c2d,0x1414327b3",
-  "notes": "Called from Game_DecalCustomisation_LinkFileToPlayer."
+  "notes": "Robin-hood NeHashMap<u64, shared_ptr> try_emplace: node from freelist this+8 (0x14146e330), key *param_3, value param_4 (addref). Probes meta this+0x30; key exists -> release, inserted=0; else shift-insert, count +0x38, grow 0x14146e470. Out param_2 = {entry, meta, inserted}. 256 failed tries -> fatal. (lane owner review requested)"
  },
  "signature": {
   "id": "game.decal_files_hash_map_emplace_b",

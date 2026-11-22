@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14246ddd0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Couldn't find driver to remove with stat id %s'"
+  "evidence": "decomp:re/decomp/14246ddd0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe5c02,0x141a18471,0x141a20a32,0x1420557a9,0x1422677e6,0x1431341c2,0x143137429",
+  "notes": "(entrants, u32 key[, force]): kind 0 (ePreLoaded) refused -> 5; list [entrants+0x268+kind*0x10] missing -> 1; remover 0x14246e1c0(list, key>>16) false -> 2; success posts bus msg 0x14578d658 (key + flag) via Ne_Post_BusMessage on [0x14618b3b8+8] and returns 0. Logs on ENTRANTS_SYSTEM. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_remove_driver",

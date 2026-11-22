@@ -170,6 +170,10 @@ impl Shell {
     }
 
     pub(crate) fn nav_key(&mut self, ev: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        if self.reset_scale_key(ev, window, cx) {
+            cx.stop_propagation();
+            return;
+        }
         let key = ev.keystroke.key.as_str();
         let plain = !ev.keystroke.modifiers.control && !ev.keystroke.modifiers.platform;
         if key == "escape" && self.navigation.page == Page::Addons && cx.stop_active_drag(window) {

@@ -558,8 +558,8 @@ void box_assets_tests()
     }
 
     content::Plan sponsors;
-    content::lower_sponsors("mod.s/boards", swofty::json::parse(R"j({"package":"mod.s/f1_1950","textures":"b"})j"), lookup,
-                            read, sponsors);
+    content::lower_sponsors("mod.s/boards", swofty::json::parse(R"j({"package":"mod.s/f1_1950","textures":"b"})j"), lookup, read,
+                            sponsors);
     check(sponsors.garages.size() == 1 && sponsors.garages[0].registry == "track.sponsors" &&
               sponsors.garages[0].kind == "sponsors" && sponsors.garages[0].groups.size() == 2 &&
               sponsors.garages[0].game_path == "2025_asset_groups/swofty_sponsors/mod_s_boards.erp",

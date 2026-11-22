@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x144051df0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/144051df0.c;pat:log-channel-HTTP/V;xref:0x145a4d640",
-  "notes": "HTTP/V '[%u] crackURI() for web socket succeeded - port=%d, hostName=%s, m_path=%s' (log string); vtable cell 0x145a4d640."
+  "notes": "HTTP/V crackURI, vtable 0x145a4d620 slot +0x20. URL this+0x38: 'WS' prefix -> parser 0x14443d7a0, default port 80/443, port->+0x21e0, host->+0x2190, path(+query, '%s?%s%s')->+0x21b8, secure -> [+0x21e8]+0xa8 and +0x20=2, logs 'crackURI() for web socket succeeded', ret 1. Else WinHttpCrackUrl: port, host, path+extra; ret ok. (lane owner review requested) Better name: Game_HttpV_CrackURI (bound record keeps its name)."
  },
  "signature": {
   "id": "game.http_crack_uri_web_socket_succeeded_port",

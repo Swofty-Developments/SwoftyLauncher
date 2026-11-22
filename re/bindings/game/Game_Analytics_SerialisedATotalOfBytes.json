@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1407622c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1407622c0.c;pat:log-channel-TELEMETRY;xref:0x145642120",
-  "notes": "vtable[8] of the telemetry manager (cell 0x145642120). Calls 0x140761f40 on presence change, serialises queues ('serialised a total of %d bytes'), ElasticSearch url/auth states ('Got auth!', auth retry, 'X-Steam-AppID', json content type). Better name: Game_Analytics_Update_SerialiseAndPostToElastic (bound record keeps its name)."
+  "notes": "vtable cell 0x145642120. Ret 0 if !+0x38. Polls presence (0x1441207d0/+0x412d), change -> 0x140761f40 or flag +0x4135. State +0x3c: 0 interval -> ELASTIC url, tier none/standard/pro/trial; 1 serialise queues +0x4028/+0x4029 via 0x140762100 ('serialised a total of %d bytes'); 2/3 https auth (+0x402f, 'Got auth!'/retry); 4 post via 0x14404b9a0, json content type, X-Steam-AppID, cb 0x1407659a0; 5 results, reset. (lane owner review requested) Better name: Game_Analytics_Update_SerialiseAndPostToElastic (bound record keeps its name)."
  },
  "signature": {
   "id": "game.analytics_serialised_a_total_of_bytes",

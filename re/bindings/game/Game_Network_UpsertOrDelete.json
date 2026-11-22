@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430caa20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/decomp/1430caa20.c;pat:log-message-method",
-  "notes": "Logs NETWORK/T 'upsertOrDelete(%s) - %s' (VOTER / not a voter) and 'removeFindPlayer(%s).'; player lookups 0x1430674a0/0x144121bc0/0x14308d1d0."
+  "evidence": "decomp:re/decomp/1430caa20.c;pat:log-message-method;xref:0x1458135a8,0x1458135b0,0x1458135b8",
+  "notes": "(this, player, forceRemove): needs flag +0x5b&0x10; voter = !param_3 && +0x65 && !+0x66; logs NETWORK/T 'upsertOrDelete(%s) - %s' (VOTER / not a voter) and NETWORK '%s(%s).' removeFindPlayer; matches user id +0x18..+0x58 (Ne_UserId_Equals 0x144121bc0) in list +0xd0..+0xd8 (stride 0x60, vt 0x145823990): voter -> insert or set byte +8 = +0x63; else remove; count -> +0x2d8 (Ne_Property_SetS32IfChanged). Thunks 0x1430cb200/0x1430cb210 (r... (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_upsert_or_delete",

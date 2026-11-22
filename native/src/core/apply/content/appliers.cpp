@@ -692,8 +692,8 @@ bool box_archive_checked(const GarageArt &g, const std::string &tag, Report &rep
     }
     std::vector<BoxArchiveEntry> entries;
     for (auto &e : a.entries)
-        entries.push_back({e.name, std::string(e.mid.data(), strnlen(e.mid.data(), std::min<size_t>(16, e.mid.size()))),
-                           e.frags.size()});
+        entries.push_back(
+            {e.name, std::string(e.mid.data(), strnlen(e.mid.data(), std::min<size_t>(16, e.mid.size()))), e.frags.size()});
     BoxArchiveCheck c = check_box_archive(entries, g.prefixes);
     if (c.outside) {
         report.refused++;
