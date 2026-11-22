@@ -8,6 +8,7 @@ mod hang;
 mod hooks;
 mod logos;
 mod memory;
+mod saves;
 mod slow_init;
 mod stall;
 mod stuck;

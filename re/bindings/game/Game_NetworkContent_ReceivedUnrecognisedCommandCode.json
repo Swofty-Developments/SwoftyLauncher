@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x14303abb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/14303abb0.c;pat:log-channel-NETWORK-CONTENT;xref:0x143059f87",
-  "notes": "Content-domain command dispatcher: switch on command byte *param_3 (<5): cmd_Client_ReportLanguage (host), cmd_Host_ReportDomain (EXE/CONFIG version and domain checks, Domain Error), cmd_Client_ReportVerified, availability; logs \"Received unrecognised command code\" otherwise. Better name: Game_NetworkContent_HandleIncomingCommand (bound record keeps its name)."
+  "notes": "NETWORK-CONTENT, peer=param_2 buf=param_3 len=param_4. switch *param_3: 0 cmd_Client_ReportLanguage (host, reply this+0x108 vfunc0), 1 cmd_Host_ReportDomain (EXE/CONFIG ver vs this+0x128/+0x129, domain lookup, Domain Error state 6), 2 cmd_Client_ReportVerified (sends availability), 3 cmd_Host_ReportNetIdentifier (IDMAP), 4 cmd_Peer_ReportItemAvailability; 99 malformed; else unrecognised, reply 99. Better name: Game_ContentDomainVerifier_HandleIncomingCommand (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_content_received_unrecognised_command_code",

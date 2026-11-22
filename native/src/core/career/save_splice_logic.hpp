@@ -33,6 +33,41 @@ constexpr size_t MAX_KEPT = 32;
 constexpr uint64_t MAX_BODY = 64ull << 20;
 constexpr uint64_t MAX_TOTAL = 128ull << 20;
 
+// Every save the game writes (the profile, the race highlights, ...) has a root container of the one class
+// (vt_Game_SaveDataRootContainer), each with its own registered children. Only the profile's root registers the options
+// container, and the race highlights save's root registers only its own replay container, which never belongs in a profile.
+constexpr const char *PROFILE_CHILD = "options_options";
+constexpr const char *HIGHLIGHTS_CHILD = "ReplayHighlights_ReplayHighlights";
+
+// Which save root is the profile's. A root whose registered children hold PROFILE_CHILD is, and the core keeps its address.
+// Where the children do not read, a root at that address is the profile's, and with no address yet the first root the game
+// loads is: the game loads the profile at boot, before any other save.
+class ProfileRoot {
+public:
+    bool at_load(uintptr_t self, bool has_profile_child)
+    {
+        if (!self)
+            return false;
+        if (has_profile_child || !self_)
+            self_ = self;
+        return self == self_;
+    }
+
+    bool at_save(uintptr_t self, bool has_profile_child)
+    {
+        if (!self)
+            return false;
+        if (has_profile_child)
+            self_ = self;
+        return self == self_;
+    }
+
+    bool is(uintptr_t self) const { return self && self == self_; }
+
+private:
+    uintptr_t self_ = 0;
+};
+
 constexpr uint64_t fnv1a64(const char *s)
 {
     uint64_t h = 0xcbf29ce484222325ull;

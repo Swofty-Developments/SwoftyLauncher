@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142f1b2b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "-",
-  "evidence": "pat:log-channel-CARBON_DAMAGE",
-  "notes": "Log channel CARBON_DAMAGE: 'registerImpactCallback for vehicle %d'"
+  "evidence": "decomp:re/decomp/142f1b2b0.c;pat:log-channel-CARBON_DAMAGE;xref:0x1457f5a50",
+  "notes": "Vtable cell 0x1457f5a50. When this+0x20, +0x21 and param_6 == 0: entry = list +0x30[vehicle]; entry+0x44 += param_3; first time resolves the car (component 0x146ce8b00 +0x58) into +0x30, registers {0x142f13de0, entry} via Car_Collision_AddListener 0x144651f90, logs 'registerImpactCallback for vehicle %d', node 'nosecone' pos -> +0x90; every call: +0x50..+0x8c = car matrix [car+0x558]+0x1d0.. x 0x14467ccb0 matrix. (lane owner review requested) Better name: Car_CarbonDamage_UpdateVehicle (bound record keeps its name)."
  },
  "signature": {
   "id": "car.carbon_damage_register_impact_callback",

@@ -82,8 +82,12 @@ void Profiler::start()
         return;
     report_path();
     wake = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-    if (HANDLE t = CreateThread(nullptr, 0, writer, nullptr, 0, nullptr))
-        CloseHandle(t);
+    DWORD id = 0;
+    if (HANDLE t = CreateThread(nullptr, 0, writer, nullptr, CREATE_SUSPENDED, &id)) {
+        writer_id.store(id);
+        writer_thread.store(t);
+        ResumeThread(t);
+    }
 }
 
 void Profiler::flush(const char *why)
@@ -95,6 +99,17 @@ void Profiler::flush(const char *why)
         SetEvent(wake);
 }
 
+void Profiler::stop(DWORD wait_ms)
+{
+    HANDLE t = writer_thread.load();
+    if (!t || GetCurrentThreadId() == writer_id.load())
+        return;
+    flushed.store(true);
+    if (wake)
+        SetEvent(wake);
+    WaitForSingleObject(t, wait_ms);
+}
+
 double ms_of(uint64_t ticks) { return profiler.ms_of(ticks); }
 
 }
@@ -104,5 +119,7 @@ void attach() { detail::profiler.attach(); }
 void start() { detail::profiler.start(); }
 
 void flush(const char *why) { detail::profiler.flush(why); }
+
+void stop(unsigned wait_ms) { detail::profiler.stop(wait_ms); }
 
 }

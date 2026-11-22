@@ -9,7 +9,7 @@
   "subsystem": "ui",
   "proto": "void *vm",
   "evidence": "decomp:re/decomp/142085820.c;xref:0x145767c38",
-  "notes": "myteam-g1: Large refresh of the livery customisation view; sets can_toggle_sponsors (sponsors on/off for the car livery)."
+  "notes": "Screen vtable slot (cell 0x145767c38), 2123 lines. Strings: Suit/Face, CustomisationIdle, can_go_back, can_toggle_sponsors (again 0x142428790(..,\"f1_2026\")), show_advance, show_nationality, show_name, avatar_button_enabled, first_name, last_name, initials, number, output_firstname/lastname/initials, UI.PreviewEvent. Identity setup screen init, not a livery refresh. Better name: Ui_CharacterSetup_Init (bound record keeps its name)."
  },
  "signature": {
   "id": "ui.livery_customisation_refresh_sponsor_toggle",

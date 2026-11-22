@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430a5170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1430a5170.c;pat:log-channel-NETWORK;xref:0x14580fad8",
-  "notes": "Slot 1 (+0x8) of vtable 0x14580fad0, whose slot 3 is Game_GameSessionSeasonDocument_OnNewConnection; no direct calls. Calls ProcessPending 0x14309ceb0, rebuild 0x143099350, OpenDocument 0x143067d40, logs 'Host sends open Season Document Message on role changed', sends it (0x14402e500) and logs the generated correlationId; one branch tail-jumps 0x14309d6a0. Better name: Game_GameSessionSeasonDocument_OnRoleChanged (bound record keeps its name)."
+  "notes": "Read in full (pdata 0x1430a5170-0x1430a5769; param_2==0 branch tail-jumps 0x14309d6a0, merged in decomp). Slot 1 of vtable 0x14580fad0, no direct calls. param_2==0: clears callbacks/state. Else: sets doc callback 0x14309e3a0, ProcessPending 0x14309ceb0, rebuild 0x143099350, OpenDocument 0x143067d40, new correlationId (CoCreateGuid) logged; logs 'Host sends open Season Document Message on role changed' and sends it via 0x14402e500. Better name: Game_GameSessionSeasonDocument_OnRoleChanged (bound record keeps its name). (lane owner review requested)"
  },
  "signature": {
   "id": "game.network_host_sends_open_season_document_message",

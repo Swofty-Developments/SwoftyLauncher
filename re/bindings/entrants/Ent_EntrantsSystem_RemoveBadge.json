@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142470be0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Badge removed : %s | Couldn't find array to remove badge with stat id %s | Failed to remove badge : %s'"
+  "evidence": "decomp:re/decomp/142470be0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe602f,0x141a20c20,0x141fd15fc,0x14205585d,0x14226789a,0x142573a3a,0x143129c4a",
+  "notes": "(entrants, u32 key): kind 0 (ePreLoaded) refused -> 5; list [entrants+0x3b8+kind*0x10] missing -> 1; remover 0x142470f00(list, key>>16) false -> 2, true -> 0; each case logs on ENTRANTS_SYSTEM (kind names ePreLoaded/eUserDefined/eNetworkReplicated from table 0x145612e60). (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_remove_badge",

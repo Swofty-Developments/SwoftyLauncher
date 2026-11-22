@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142477cb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "-",
-  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
-  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Vehicle customisation added with stat id %s | Couldn't find array to add vehicle customisation with type %s | Failed to add vehicle customisation with stat id %s'"
+  "evidence": "decomp:re/decomp/142477cb0.c;pat:log-channel-ENTRANTS_SYSTEM;xref:0x140fe92c2,0x14143c65f,0x1416e536a,0x14200af62,0x142057025,0x142265d54",
+  "notes": "AddVehicleCustomisation for type 1 eUserDefined: array this+0x398; ENTRANTS_SYSTEM: id = (first free slot of the array's 16-byte entries << 16) | type; result *p3 = 0 ok / 1 no array / 3 insert failed; logs added/failed with stat id. Stack-built record (0x144c897d0, 0x14096e580), inserts via 0x140cdd730, temp destroyed 0x14030c740. (lane owner review requested)"
  },
  "signature": {
   "id": "entrants.entrants_system_add_vehicle_customisation",

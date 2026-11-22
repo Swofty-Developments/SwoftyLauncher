@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1440217f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1440217f0.c;pat:log-message-cxx;xref:0x144022450,0x1443c67e3,0x1443c6e11",
-  "notes": "Callers 0x144022450 (recursive), 0x1443c67e3, 0x1443c6e11. hardwareSettings::Options::apply: applies reference category/option entries (hardware_settings_info, graphics_card, show)."
+  "notes": "Read in full. hardwareSettings::Options::apply (own log strings). Reads hardware_settings_info: graphics_card vendorId/deviceId (0x10de/0x1002 checks, adapter scan via 0x1400023c0/0x140002720), cpu processors (<5 -> lowEndCPU); finds 'category' param_3 / 'option' param_4 in tree +0x10; each child: 'ref' entries filtered by featureConservativeRasterization / featureRasterizeOrderViews / lowEndCPU / defaultForAMD / defaultForNGX / defaultForNvidia -> recursive apply (0x144022450), others -> 0x1440226c0. Callers in 0x1443c4fa0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.options_apply",

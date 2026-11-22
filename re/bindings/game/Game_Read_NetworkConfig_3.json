@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1430c4610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1430c4610.c;pat:log-channel--;xref:0x1430d1d53",
-  "notes": "GameSessionVotingManager VM: network.voting_data.* (mode, state, counts, kick, skip practice votes)."
+  "notes": "Body read in full: GameSessionVotingManager constructor (vtables 0x1458135a0/0x1458135c0, logs '%s().' GameSessionVotingManager): timers, VM handles network.voting_data.mode/state/result/countdown/count_yes/count_total/num_players/skip_practice_votes/kick_player_ref/kick_available/voted_skip_practice/voting_player_skip_practice/vote_skip_practice_text; handlers for message ids 0x1f/0x20/0x21 on [param_2+0x3d0] vt+8; 0x140997d80; appends itself to [param_2+0x100]+0x78. Caller 0x1430d1d53. Renamed: not a config reader. (lane owner review requested) Better name: Game_GameSessionVotingManager_Ctor (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_network_config_3",

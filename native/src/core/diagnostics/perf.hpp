@@ -73,6 +73,9 @@ void mark(const char *kind, const std::string &what);
 void attach();
 void start();
 void flush(const char *why);
+// Stops the report writer thread and waits for it to return, at most wait_ms: the exit hooks call it so that the
+// process does not end while that thread is still patching import slots or holding a lock (perf.cpp).
+void stop(unsigned wait_ms);
 int open_probes(uint32_t *out, int max);
 size_t crash_text(char *out, size_t cap, const uint32_t *open, int depth);
 

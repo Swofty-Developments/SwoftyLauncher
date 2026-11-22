@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1422ce4f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void Set(void *vm)",
-  "evidence": "decomp:re/decomp/1422ce4f0.c;xref:0x141c4130b;xref:0x1422ce454;xref:0x1422d07c1",
-  "notes": "myteam-g2: Sets four bool VM nodes (vm+0xcf0/0xd00/0xd20/0xd38) from state; used by Build_HubLaptop."
+  "evidence": "decomp:re/decomp/1422ce4f0.c;xref:0x141c4130b,0x1422ce454,0x1422d07c1",
+  "notes": "Only if this+0xd38: this+0xcf0 == 1 -> bool node this+0xd00 = false, this+0xd20 = true; this+0xcf0 == 0 -> d00 = true, d20 = false. Two nodes, not four. (lane owner review requested)"
  },
  "signature": {
   "id": "ui.set_team_hq_corner_node_flags",

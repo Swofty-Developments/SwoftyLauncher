@@ -751,3 +751,121 @@ void virtual_list_tests(const std::string &regs)
     check(all.find("virtual lists: host swofty_virtual_list added") != std::string::npos, "the host is added and logged");
     check(all.find("virtual lists: 2 moved above the count") != std::string::npos, "the move is logged");
 }
+
+void setup_mode_cap_tests(const std::string &regs)
+{
+    const std::string setup = "entrants.entrant_setup_modes.entrant_setup_mode_0.";
+    auto run = [&](int packages, bool virt, int db_lists, auto &&checks) {
+        registry::reset_store();
+        auto &st = registry::store();
+        st.set_order({"mod.cap"});
+        st.set_validator(&registry::schema_validator());
+        const SwoftyRegistry *t = registry::table();
+        for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
+            std::string schema =
+                slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.5.json" : "/1.0.json"));
+            t->declare(name, SwoftyText{schema.data(), schema.size()});
+        }
+        auto package = [](const std::string &list, bool v) {
+            return R"({ "title": "lng_x", "entrant_list": ")" + list + R"(", "season": 1960, "stat_id": "auto", )" +
+                   (v ? R"("virtual_list": true, )" : "") + R"("teams": [ { "key": "mercedes", "vehicle": null,
+                     "drivers": [ { "driver": "game/lewis_hamilton", "number": 44, "look": null } ] } ],
+                     "database": { "entrant_list": ")" +
+                   list + R"(", "scenario_stat_id": null, "content_sets": ["2025"],
+                     "looks": { "mercedes/lewis_hamilton": "x" } } })";
+        };
+        std::string json = "{ \"content.package\": { ";
+        for (int i = 0; i < packages; i++) {
+            char n[8];
+            std::snprintf(n, sizeof n, "%02d", i);
+            json += (i ? ", " : "") + ("\"p" + std::string(n) + "\": ") + package("cl_" + std::string(n), false);
+        }
+        if (virt)
+            json += ", \"v\": " + package("cl_virtual", true);
+        json += " } }";
+        check(registry::load_data_file("mod.cap", "registry/content.json", json) == SWOFTY_ASSET_OK,
+              "the setup mode cap packages register");
+        st.end_register();
+        Db db;
+        stock_package_rows(db);
+        if (db_lists) {
+            std::string names = "f1_2025";
+            for (int i = 1; i < db_lists; i++)
+                names += ",db_" + std::to_string(i);
+            db.put(setup + "entrant_lists", 13, names);
+            db.put(setup + "selectable_entrant_lists", 13, names);
+        }
+        apply::ids::Store ids;
+        auto text = [&](const std::string &path) -> std::optional<std::string> {
+            auto r = db.base()(content::gvdb::fnv64(path));
+            return r ? std::optional<std::string>(r->text) : std::nullopt;
+        };
+        std::map<std::string, content::PoolScan> scans;
+        for (auto &scan : content::scan_all_pools(text)) {
+            ids.define_pool(scan.registry, {{{scan.lo, scan.hi}}});
+            scans[scan.registry] = scan;
+        }
+        content::settle_ids(ids, st, scans, "test");
+        content::StatIds stat = [&](const std::string &reg, const std::string &id, int64_t pin) -> int64_t {
+            return pin >= 0 ? ids.pin(reg, id, pin, "test").id : ids.allocate(reg, id, "test").id;
+        };
+        content::Expansion x(db.base());
+        content::expand(st, x, stat);
+        checks(x);
+    };
+    auto names = [&](content::Expansion &x, const char *field) {
+        return rows::Engine::items(x.engine.text(setup + field).value_or(""));
+    };
+    auto has = [](const std::vector<std::string> &v, const std::string &s) {
+        return std::find(v.begin(), v.end(), s) != v.end();
+    };
+    auto joined = [](const std::vector<std::string> &v) {
+        std::string all;
+        for (auto &l : v)
+            all += l + "\n";
+        return all;
+    };
+    auto expect = [](bool ok, const std::string &what, const std::string &detail) {
+        check(ok, ok ? what : what + "\n" + detail);
+    };
+    run(33, false, 0, [&](content::Expansion &x) {
+        auto lists = names(x, "entrant_lists"), selectable = names(x, "selectable_entrant_lists");
+        expect(lists.size() == 32 && selectable.size() == 32,
+               "33 packages on swofty_f1 with the stock list leave 32 lists in each field",
+               std::to_string(lists.size()) + " and " + std::to_string(selectable.size()) + "\n" +
+                   joined(x.lines["content.package"]));
+        check(has(lists, "cl_30") && !has(lists, "cl_31") && !has(lists, "cl_32") && !has(selectable, "cl_31"),
+              "the last packages in load order are the ones left out");
+        check(x.refused["content.package"] == 2, "the two packages past the cap are refused");
+        check(!x.engine.resolve("entrants.entrant_lists.entrant_list[_metadata_=cl_31]"),
+              "a package left out writes no entrant list row");
+        auto &status = x.status["mod.cap"];
+        expect(status.size() == 2 && status[0].find("entrant list cl_31 left out") != std::string::npos &&
+                   status[0].find("32 at most") != std::string::npos,
+               "the addon's status names each list left out", joined(status));
+        check(x.status.count("swofty.core") == 0, "the backstop has nothing to trim");
+    });
+    run(31, true, 0, [&](content::Expansion &x) {
+        auto lists = names(x, "entrant_lists");
+        expect(lists.size() == 32 && has(lists, std::string(content::VIRTUAL_HOST_LIST)),
+               "with a virtual package the host keeps its slot in swofty_f1", joined(x.lines["content.package"]));
+        check(has(lists, "cl_29") && !has(lists, "cl_30"), "the host's slot leaves room for 30 package lists");
+        expect(x.status["mod.cap"].size() == 1 &&
+                   x.status["mod.cap"][0].find("keeps a slot for swofty_virtual_list") != std::string::npos,
+               "the status says the host holds the slot", joined(x.status["mod.cap"]));
+    });
+    run(1, false, 40, [&](content::Expansion &x) {
+        auto lists = names(x, "entrant_lists"), selectable = names(x, "selectable_entrant_lists");
+        expect(lists.size() == 32 && selectable.size() == 32 && lists.front() == "f1_2025" && lists.back() == "db_31",
+               "the backstop trims 40 database lists to the first 32", joined(x.lines["content.package"]));
+        check(x.refused["content.package"] == 1 && !has(lists, "cl_00"), "a package finds no room in a full mode");
+        auto &core = x.status["swofty.core"];
+        expect(core.size() == 2 && core[0].find("named 40 lists") != std::string::npos &&
+                   core[0].find("left out db_32,db_33") != std::string::npos,
+               "the backstop names what it left out", joined(core));
+        bool staged = false;
+        for (auto &w : x.engine.writes())
+            staged = staged || (w.path == setup + "entrant_lists" && w.registry == "content.package");
+        check(staged, "the trimmed field is written under content.package, so its applier stages it");
+    });
+}

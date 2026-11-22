@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1434c0fb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1434c0fb0.c;xref:0x1434b7dec,0x1434c0445",
-  "notes": "Spline builder type 1 of Game_PitLane_BuildPitSplineByType (0x1434c0445); also Game_PitLane_HandleEnterPitBox 0x1434b7dec (mgr+0xc24 orientation); ends in Ne_Spline_ComputeLengths. Earlier static round (C2): normal box entry / queue, knots into car record +0x118. Better name: Game_PitLane_BuildEntrySplineNormal (bound record keeps its name)."
+  "notes": "Pit spline type 1 (box entry). Box i=param_4 ((rec+0xe0)>>1, 0xc if 0x63), valid via [p1+8]+0x738/+0x838+i*8; box pos/dirs p1+0x70/+0x40/+0x60+i*0x90; p5=mgr+0xc24: 0x200 use +0x40 dir, 0x800 negate. Pushes 8 knots: car pos (p3+0x30) x3, pos+fwd*d*[p1+0x8e0], box-dir*d*[p1+0x8e8], box pos x3; Ne_Spline_ComputeLengths; ret 1. 0x1434b7dec: spline [rec+0x118], rec+0xd4=1. Better: Game_PitLane_BuildEntrySplineNormal (lane owner review requested)"
  },
  "signature": {
   "id": "game.pitlane_resolve_vehicle_state1",

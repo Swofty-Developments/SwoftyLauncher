@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "site_Car_RearWingRenderFraction",
+ "table": "globals",
+ "author": "UnorthodoxStoneND",
+ "row": {
+  "addr": "0x144639b34",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:own disasm 0x14463bc10-0x14463c9d0 on Steam 26566308;xref:0x14463bc9e,0x14463bff2,0x14463c3a4,0x14463c414,0x14463c6c1",
+  "notes": "Rear-wing model-matrix update, after the front-wing branch and before both rear-flap transforms. xmm13.low is the rear visual open fraction loaded from F1Aero+0x19b0; r14 is F1Aero and rdi the model owner. Front-wing branch reads +0x19a8 separately, saves/restores xmm13 via xmm5. Handler may change xmm13.low without writing simulation fractions or DRSOpenCloseSpeed. Original instructions decode DRSRotationAngleRadians from r14+0x1848 XOR +0x1850. Layout contract observed only on Steam 26566308; other builds and in-game trace remain unverified."
+ },
+ "signature": {
+  "id": "car.rear_wing_render_fraction",
+  "section": ".xtls",
+  "pattern": "C5 F8 29 44 01 20 41 8B 9E 48 18 00 00",
+  "match": "0x144639b2e",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144639b34",
+  "kind": "mid",
+  "expect": "41 8B 9E 48 18 00 00",
+  "names": [
+   "site_Car_RearWingRenderFraction"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-21",
+    "by": "UnorthodoxStoneND",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14463c39e",
+  "made_on_target": "0x14463c3a4",
+  "twin": "made on steam-26566308; the target 0x14463c3a4 is KB 0x144639b34: site_Car_ChassisRegistryCount (0x462cecf) and Game_RacingVehicles_Initialise (0x463d630) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "UnorthodoxStoneND",
+   "date": "2026-11-21",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14463c39e",
+    "target": "0x14463c3a4"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f4bc2d92fd204ddac3590a9168c9a1eb8b9b9e94e17007ed4a851405f4842b5"
+  }
+ ]
+}

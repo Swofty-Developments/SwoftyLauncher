@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x1419c51a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/1419c51a0.c;pat:log-channel--;xref:0x14168205a,0x142344894,0x142344973,0x14234915a,0x1423d605f",
-  "notes": "Sponsor contract offer card: lng_contract_* headers, risk_status_overlay.risk_state_01..05, Ui_Format_ResourcePointsAmount."
+  "notes": "Fills a sponsor-contract offer card VM (rcx). Offer = r8 if param_4 and [r8+0x50] set, else rdx. Ints at offer+0x28/+0x38/+0x30/+0x34 go through Ui_Format_ResourcePointsAmountText to widgets +0x68/+0x88/+0x148/+0xa8/+0xc8; clause type byte offer+0x28 indexes lng_performance_clause_* table 0x145736560 (type 4 = ordinal via 0x1441e7290); risk float offer+0x44 *100 -> risk_state_01..05; header lng_contract_current_offer(_out_of_window)/lng_contracts_inflight, or accepted path lng_contract_header_success/lng_offer_accepted (param_5); caches offer at +0x1c0 (+0x210 flag). (lane owner review requested) Better name: Game_SponsorContract_PopulateOfferCard (bound record keeps its name)."
  },
  "signature": {
   "id": "game.read_overrides_team_hq_config_4",

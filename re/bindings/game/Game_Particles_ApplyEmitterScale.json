@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x143af9740",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/143af9740.c;xref:0x143afad5b,0x143afaf41",
-  "notes": "Read part: if *(param_1[4]) == 1 multiplies 12 floats of param_3 by constant param_1[3]+8; else evaluates a curve for SIMD lanes of param_2 (16-entry byte table lerp via pshufb when 0x146106f14 set, else 0x143b15690) and multiplies param_3 lanes by the result. Callers in 0x143af9c70. Looks like a curve multiplier rather than a plain scale."
+  "notes": "Scales 16 floats of param_3. Mode *param_1[4]==1: all 16 by const [param_1[3]+8] (old note said 12). Else per lane of param_2 (4x4): x*[p1[3]]+[p1[3]+4], clamp, 24-bit fixed, lerp of adjacent bytes of 32-byte LUT param_1[0..1] (pshufb), result [p1[2]+4]+[p1[2]]*lerp. Fallback 0x143b15690 if byte 0x146106f14 is 0. Caller func 0x143af9c70; particle link not in body. (lane owner review requested) Better name: Game_Curve_MultiplyByByteLut16 (bound record keeps its name)."
  },
  "signature": {
   "id": "game.particles_apply_emitter_scale",

@@ -5,11 +5,11 @@
  "author": "kb-import",
  "row": {
   "addr": "0x142ee2c50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
   "evidence": "decomp:re/decomp/142ee2c50.c;xref:0x142e237d3,0x142e24386,0x14f320fd0",
-  "notes": "std red-black tree erase/unlink of node param_2 from tree param_1; callers Game_FrontendSceneWorld_DespawnWorldAssetsIfAble and 0x14f320ed0."
+  "notes": "MSVC std::_Tree extract of node p2 from tree p1 (head *p1, size p1[1]): successor via isnil byte +0x19, relinks parent/left/right, fixes head leftmost/rightmost, swaps colour byte +0x18, red-black fixup rotations if removed node black, size -1; node not freed. Callers 0x142e232a0 (Game_FrontendSceneWorld_DespawnWorldAssetsIfAble), 0x14f320ed0. (lane owner review requested)"
  },
  "signature": {
   "id": "game.thumbnail_system_process_task_tree",
