@@ -3083,8 +3083,8 @@ __declspec(dllexport) __attribute__((noinline)) void fake_crash(volatile int *p)
     printf("not reached\n");
 }
 
-// Recurses until less than 24 KB of the thread's stack is left and raises a stack overflow there. A real one leaves
-// Wine's handlers no stack on a CPU with AVX-512: its exception frame fills the one page under the guard page.
+// Recurses until less than 24 KB of the thread's stack is left and raises a stack overflow there. A real one under
+// Wine on the CI runners ends the thread before any handler logs a line.
 __declspec(dllexport) __attribute__((noinline)) int fake_overflow(volatile char *up, int depth)
 {
     volatile char frame[1024];
