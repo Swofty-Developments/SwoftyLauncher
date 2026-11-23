@@ -38,6 +38,7 @@ struct StartLights;
 struct SafetyCarPhase;
 struct FastestLap;
 struct Classification;
+struct StartReaction;
 }
 namespace swofty::tyre_damage::events {
 struct Damage;
@@ -105,6 +106,7 @@ bool session_start_lights(swofty::race_control::events::StartLights &payload);
 bool session_safety_car_phase(swofty::race_control::events::SafetyCarPhase &payload);
 bool session_fastest_lap(swofty::race_control::events::FastestLap &payload);
 bool session_classification(swofty::race_control::events::Classification &payload);
+bool session_start_reaction(swofty::race_control::events::StartReaction &payload);
 bool session_sector(swofty::race_control::events::Sector &payload);
 bool session_car_status(swofty::race_control::events::CarStatus &payload);
 bool car_tyre_damage(swofty::tyre_damage::events::Damage &payload);

@@ -350,6 +350,46 @@ static void test_broadcast_moments()
     expect(m.fastest.empty(), "the same fastest lap again fires nothing");
 }
 
+static void test_start_reaction()
+{
+    rcl::Tracker t;
+    lv::Snapshot s = snapshot();
+    for (uint32_t id = 0; id < 3; id++)
+        s.cars[id].have |= SWOFTY_LIVE_HAVE_SPEED;
+    t.step(&s, 1000);
+    s.ses.have |= SWOFTY_LIVE_SHAVE_START_LIGHTS;
+    s.ses.start_lights = 3;
+    expect(t.step(&s, 2000).reactions.empty(), "lights lit, nobody moving: no reaction");
+    s.cars[2].speed = 1.0f;
+    expect(t.step(&s, 2500).reactions.empty(), "a car creeping while the lights are lit fires nothing yet");
+    s.ses.start_lights = 0;
+    s.cars[2].speed = 0;
+    expect(t.step(&s, 4000).reactions.empty(), "lights out at 4000: nobody over 0.5 m/s yet");
+    s.cars[0].speed = 0.4f;
+    expect(t.step(&s, 4150).reactions.empty(), "0.4 m/s is not moving off");
+    s.cars[0].speed = 3.0f;
+    s.cars[2].speed = 2.0f;
+    rcl::Moments m = t.step(&s, 4234);
+    expect(m.reactions.size() == 2 && m.reactions[0].car == 0 && m.reactions[0].reaction_ms == 234 && !m.reactions[0].jumped &&
+               m.reactions[1].car == 2 && m.reactions[1].jumped,
+           "vehicle 0 reacts in 234 ms, vehicle 2 too, flagged as a jump start");
+    s.cars[1].speed = 5.0f;
+    m = t.step(&s, 4400);
+    expect(m.reactions.size() == 1 && m.reactions[0].car == 1 && m.reactions[0].reaction_ms == 400, "each car fires once");
+    expect(t.step(&s, 4500).reactions.empty(), "and only once");
+    s.ses.start_lights = 1;
+    t.step(&s, 20000);
+    s.ses.start_lights = 0;
+    s.cars[0].speed = s.cars[1].speed = s.cars[2].speed = 0;
+    t.step(&s, 21000);
+    s.cars[1].speed = 2;
+    m = t.step(&s, 21300);
+    expect(m.reactions.size() == 1 && m.reactions[0].car == 1 && m.reactions[0].reaction_ms == 300,
+           "a restarted start sequence times again");
+    s.cars[0].speed = 2;
+    expect(t.step(&s, 32000).reactions.empty(), "past ten seconds after lights out nothing fires");
+}
+
 static void test_fastest_from_memory()
 {
     udp::Source u;
@@ -376,7 +416,7 @@ static void test_points()
 {
     expect(rcl::fires("session.penalty") && rcl::fires("session.penalty.served") && rcl::fires("session.drs") &&
                rcl::fires("session.start_lights") && rcl::fires("session.safety_car.phase") &&
-               rcl::fires("session.fastest_lap") && rcl::fires("session.classification"),
+               rcl::fires("session.fastest_lap") && rcl::fires("session.classification") && rcl::fires("session.start_reaction"),
            "the broadcast points read the live state");
 }
 
@@ -539,6 +579,7 @@ int main()
     test_messages();
     test_broadcast_moments();
     test_fastest_from_memory();
+    test_start_reaction();
     test_points();
     test_hud();
     test_pause_clock();

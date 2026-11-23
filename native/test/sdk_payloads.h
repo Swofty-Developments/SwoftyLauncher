@@ -195,6 +195,14 @@ typedef struct SwoftyEvClassification {
     SwoftyEvClassifiedCar entries[24];
 } SwoftyEvClassification;
 
+typedef struct SwoftyEvStartReaction {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint32_t reaction_ms;
+    uint8_t jumped;
+    uint8_t pad[3];
+} SwoftyEvStartReaction;
+
 typedef struct SwoftyEvControllersRebuilt {
     uint32_t size, payload_version;
     SwoftyEvCar car;
@@ -354,6 +362,7 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvSafetyCarPhase, race_control, SafetyCarPhase, 16)                                                                  \
     X(SwoftyEvFastestLap, race_control, FastestLap, 28)                                                                          \
     X(SwoftyEvClassification, race_control, Classification, 492)                                                                 \
+    X(SwoftyEvStartReaction, race_control, StartReaction, 20)                                                                    \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, 32)                                                                  \
     X(SwoftyEvHudVisible, spectator, HudVisible, 32)                                                                             \
     X(SwoftyEvLapsRecorded, laps, Recorded, 24)                                                                                  \
@@ -467,6 +476,9 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvFastestLap, race_control, FastestLap, lap, 24)                                                                     \
     X(SwoftyEvClassification, race_control, Classification, cars, 8)                                                             \
     X(SwoftyEvClassification, race_control, Classification, entries, 12)                                                         \
+    X(SwoftyEvStartReaction, race_control, StartReaction, car, 8)                                                                \
+    X(SwoftyEvStartReaction, race_control, StartReaction, reaction_ms, 12)                                                       \
+    X(SwoftyEvStartReaction, race_control, StartReaction, jumped, 16)                                                            \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, car, 8)                                                              \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, reason, 24)                                                          \
     X(SwoftyEvHudVisible, spectator, HudVisible, following, 8)                                                                   \

@@ -28,7 +28,8 @@ inline bool fires(std::string_view point)
            point == rc::events::Sector::point || point == rc::events::CarStatus::point || point == rc::events::Penalty::point ||
            point == rc::events::PenaltyServed::point || point == rc::events::Drs::point ||
            point == rc::events::StartLights::point || point == rc::events::SafetyCarPhase::point ||
-           point == rc::events::FastestLap::point || point == rc::events::Classification::point;
+           point == rc::events::FastestLap::point || point == rc::events::Classification::point ||
+           point == rc::events::StartReaction::point;
 }
 
 struct Moments {
@@ -41,11 +42,12 @@ struct Moments {
     std::vector<rc::events::StartLights> lights;
     std::vector<rc::events::SafetyCarPhase> phases;
     std::vector<rc::events::FastestLap> fastest;
+    std::vector<rc::events::StartReaction> reactions;
 
     bool empty() const
     {
         return red_flags.empty() && safety_cars.empty() && flags.empty() && statuses.empty() && sectors.empty() && drs.empty() &&
-               lights.empty() && phases.empty() && fastest.empty();
+               lights.empty() && phases.empty() && fastest.empty() && reactions.empty();
     }
 };
 
@@ -98,6 +100,7 @@ public:
         primed_ = false;
         flag_known_ = sc_known_ = red_known_ = false;
         broadcast_ = Broadcast{};
+        start_ = Start{};
         for (CarSeen &c : cars_)
             c = CarSeen{};
     }
@@ -105,7 +108,7 @@ public:
     bool primed() const { return primed_; }
     uint64_t sessions() const { return sessions_; }
 
-    Moments step(const Snapshot *s)
+    Moments step(const Snapshot *s, uint64_t now_ms = 0)
     {
         Moments out;
         if (!s || !s->valid) {
@@ -122,6 +125,7 @@ public:
         rc::State st = rc::read(s->ses, leader_lap(*s));
         session_moments(st, out);
         broadcast_moments(*s, st, out);
+        start_moments(*s, now_ms, out);
         car_moments(*s, out);
         return out;
     }
@@ -241,6 +245,47 @@ private:
         }
     }
 
+    // The start: each car's first frame over MOVING after lights out, and whether it moved while the lights were lit.
+    static constexpr float MOVING = 0.5f;
+    static constexpr uint64_t REACTION_WINDOW_MS = 10000;
+    struct Start {
+        bool lit = false, out = false;
+        uint64_t out_at = 0;
+        uint32_t jumped = 0, reported = 0;
+    };
+
+    void start_moments(const Snapshot &s, uint64_t now, Moments &out)
+    {
+        const SwoftyLiveSession &ses = s.ses;
+        bool known = ses.have & SWOFTY_LIVE_SHAVE_START_LIGHTS;
+        if (known && ses.start_lights) {
+            if (start_.out)
+                start_ = Start{};
+            start_.lit = true;
+        } else if (known && start_.lit && !start_.out) {
+            start_.out = true;
+            start_.out_at = now;
+        }
+        if (!start_.lit || (start_.out && now - start_.out_at > REACTION_WINDOW_MS))
+            return;
+        for (uint32_t id = 0; id < SWOFTY_LIVE_MAX_CARS; id++) {
+            uint32_t bit = 1u << id;
+            if (!s.present[id] || !(s.cars[id].have & SWOFTY_LIVE_HAVE_SPEED) || s.cars[id].speed <= MOVING ||
+                (start_.reported & bit))
+                continue;
+            if (!start_.out) {
+                start_.jumped |= bit;
+                continue;
+            }
+            auto e = payload<rc::events::StartReaction>();
+            e.car = id;
+            e.reaction_ms = uint32_t(now - start_.out_at);
+            e.jumped = (start_.jumped & bit) != 0;
+            out.reactions.push_back(e);
+            start_.reported |= bit;
+        }
+    }
+
     void car_moments(const Snapshot &s, Moments &out)
     {
         for (uint32_t id = 0; id < SWOFTY_LIVE_MAX_CARS; id++) {
@@ -289,6 +334,7 @@ private:
     rc::Deployment sc_ = rc::Deployment::unknown;
     rc::RedFlag red_ = rc::RedFlag::unknown;
     Broadcast broadcast_;
+    Start start_;
     CarSeen cars_[SWOFTY_LIVE_MAX_CARS];
 };
 

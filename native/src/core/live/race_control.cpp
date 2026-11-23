@@ -111,6 +111,10 @@ void fire(rcl::Moments &m)
              e.lap);
         ev::session_fastest_lap(e);
     }
+    for (auto &e : m.reactions) {
+        line("vehicle %u moved off %u ms after lights out%s", e.car, e.reaction_ms, e.jumped ? ", a jump start" : "");
+        ev::session_start_reaction(e);
+    }
 }
 
 void fire_udp(lv::udp::Moments &m)
@@ -157,7 +161,7 @@ void race_control_tick(const lv::Snapshot &published)
         return;
     const lv::Snapshot *s = lv::snap_read(&published, &g.read) ? &g.read : nullptr;
     uint64_t before = g.tracker.sessions();
-    rcl::Moments m = g.tracker.step(s);
+    rcl::Moments m = g.tracker.step(s, GetTickCount64());
     std::vector<td::events::Damage> tyres = g.tyres.step(s);
     if (!g.tracker.primed()) {
         lv::udp::Moments late = runtime::live_udp_take();

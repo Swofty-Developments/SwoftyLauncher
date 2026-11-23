@@ -81,7 +81,7 @@ SWOFTY_ADDON()
 ```
 
 - **Header:** `swofty/systems/race_control.hpp`, namespace `swofty::race_control`
-- **Events:** `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` (hot), `session.car.status`, and the [race control messages](#race-control-messages) `session.penalty`, `session.penalty.served`, `session.drs`, `session.start_lights`, `session.safety_car.phase`, `session.fastest_lap` and `session.classification`; all notify, through the hooks table (`SwoftyApi` version 9, `events.hpp`)
+- **Events:** `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` (hot), `session.car.status`, and the [race control messages](#race-control-messages) `session.penalty`, `session.penalty.served`, `session.drs`, `session.start_lights`, `session.safety_car.phase`, `session.fastest_lap`, `session.classification` and `session.start_reaction`; all notify, through the hooks table (`SwoftyApi` version 9, `events.hpp`)
 - **Feature:** `events` (stable) and `telemetry` (experimental, the live state)
 - **Thread:** the flow thread, once per frame after the live state's tick
 - **Changes nothing in the game:** it reads the live state and fires events
@@ -271,6 +271,13 @@ struct Classification {         // "session.classification", version 1: the fina
     uint32_t cars;
     ClassifiedCar entries[24];  // `cars` of them, by vehicle id
 };
+struct StartReaction {          // "session.start_reaction", version 1: a car moves off after lights out
+    uint32_t size, payload_version;
+    uint32_t car;               // vehicle id
+    uint32_t reaction_ms;       // lights out to its first frame over 0.5 m/s
+    uint8_t jumped;             // 1 when it read over 0.5 m/s while the lights were lit
+    uint8_t pad[3];
+};
 struct FastestLap {             // "session.fastest_lap", version 1
     uint32_t size, payload_version;
     uint32_t car;               // vehicle id
@@ -292,12 +299,14 @@ The messages come from the game's UDP Event packet (see [Live state: from the ga
 | `session.safety_car.phase` | `SCAR` | deployed, in this lap, returned, resume race |
 | `session.fastest_lap` | `FTLP`, or memory's best laps (Steam) | when the session's fastest lap changes holder or time |
 | `session.classification` | Final Classification (8), formats 2024 and 2025 | once when the game sends the final classification, also after the live session has ended |
+| `session.start_reaction` | the start lights above and each car's speed (`SWOFTY_LIVE_HAVE_SPEED`) | once per car and start, on its first frame over 0.5 m/s in the ten seconds after lights out |
 
-`session.penalty`, `session.penalty.served` and `session.classification` fire as the game sends them. The other four follow the snapshot rules above, except that a value race control has not sent yet counts as a value: the first light, the first DRS message, the first safety car phase and the first fastest lap of a session fire once the session's first read is done. The chequered flag is `session.flag` with `Flag::chequered`, and retirements are `session.car.status` and `telemetry.retirement` (with the game's reason as `b`).
+`session.penalty`, `session.penalty.served` and `session.classification` fire as the game sends them. `session.start_reaction` times each car to the frame: the frame that reads the lights out and the car's first frame over 0.5 m/s, so at 60 fps a reaction reads up to about 17 ms late. A car that read over 0.5 m/s while the lights were lit has `jumped` set (the game's own jump start penalty is a `session.penalty`), and a new start sequence in the same session (a restart) times again. The other four follow the snapshot rules above, except that a value race control has not sent yet counts as a value: the first light, the first DRS message, the first safety car phase and the first fastest lap of a session fire once the session's first read is done. The chequered flag is `session.flag` with `Flag::chequered`, and retirements are `session.car.status` and `telemetry.retirement` (with the game's reason as `b`).
 
 ```text
 [race-control] start lights 3, lap 0
 [race-control] lights out, lap 0
+[race-control] vehicle 5 moved off 234 ms after lights out
 [race-control] drs enabled, reason 255, lap 3
 [race-control] vehicle 4 time penalty for corner cutting gained time (other vehicle 255, 5 s, lap 6, places gained 0)
 [race-control] fastest lap vehicle 2 91234 ms (was vehicle 255 0 ms), lap 7

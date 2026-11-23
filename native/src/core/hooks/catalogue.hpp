@@ -98,6 +98,7 @@ inline constexpr Event EVENTS[] = {
     {"session.safety_car.phase", N, "swofty::race_control::events::SafetyCarPhase", 1, false, Fired::yes, nullptr},
     {"session.fastest_lap", N, "swofty::race_control::events::FastestLap", 1, false, Fired::yes, nullptr},
     {"session.classification", N, "swofty::race_control::events::Classification", 1, false, Fired::yes, nullptr},
+    {"session.start_reaction", N, "swofty::race_control::events::StartReaction", 1, false, Fired::yes, nullptr},
     {"session.player.control", C, "swofty::sessions::events::PlayerControl", 1, false, Fired::game, nullptr},
     {"session.finish", N, SHELL, 1, false, Fired::no, nullptr},
     {"session.grid.group_result", C, SHELL, 1, false, Fired::no, nullptr},

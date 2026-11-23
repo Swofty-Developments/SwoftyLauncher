@@ -279,6 +279,19 @@ struct StartLights {
     int32_t lap;
 };
 
+// A car moves off after the lights go out (notify), once per car and start: reaction_ms is the time from lights out
+// to the first frame the car reads over 0.5 m/s, to the frame; jumped is 1 when the car read over 0.5 m/s while the
+// lights were lit. From the live state's start lights and car speed (SWOFTY_LIVE_HAVE_SPEED).
+struct StartReaction {
+    static constexpr const char *point = "session.start_reaction";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint32_t reaction_ms;
+    uint8_t jumped;
+    uint8_t pad[3];
+};
+
 // The safety car's phase changes (notify): SWOFTY_LIVE_SC_DEPLOYED, _RETURNING (in this lap), _RETURNED or
 // _RESUME. deployment is the deployment it belongs to; previous is 0xff for the first phase of a session.
 struct SafetyCarPhase {
