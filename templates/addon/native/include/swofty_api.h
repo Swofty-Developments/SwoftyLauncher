@@ -134,8 +134,8 @@ typedef void (*SwoftyPaintFn)(SwoftyPaint *paint, void *user);
    SwoftyCoreOverlayVersion and it returns 2 or more (swofty/overlay.hpp checks); the v3 entries after
    ui_scale() exist when it returns 3 or more. A text style and an input snapshot are read and written
    up to their size field, so later fields can be added. The v4 entry after focus() exists when it returns 4 or
-   more, and the v6 entries after load_image_rgba() and SwoftyTextStyle.font_id when it returns 6 or more. */
-#define SWOFTY_OVERLAY_VERSION 6
+   more, and the v5 entries after load_image_rgba() and SwoftyTextStyle.font_id when it returns 5 or more. */
+#define SWOFTY_OVERLAY_VERSION 5
 
 enum {
     SWOFTY_TEXT_LEFT = 0x00,
@@ -213,7 +213,7 @@ typedef struct SwoftyTextStyle {
     float shadow_dx, shadow_dy, shadow_blur;
     float max_width;
     uint32_t font;
-    /* v6: the id of a font loaded with load_font or load_font_memory; NULL or "" is the built-in font. */
+    /* v5: the id of a font loaded with load_font or load_font_memory; NULL or "" is the built-in font. */
     const char *font_id;
 } SwoftyTextStyle;
 
@@ -263,7 +263,7 @@ typedef struct SwoftyOverlay {
     int (*focus)(int on);
     /* v4 */
     int (*load_image_rgba)(const char *id, uint32_t width, uint32_t height, const void *rgba);
-    /* v6 */
+    /* v5 */
     int (*load_font)(const char *id, const char *file);
     int (*load_font_memory)(const char *id, const void *bytes, uint32_t size);
     void (*polygon_concave)(SwoftyPaint *paint, const float *xy, uint32_t count, uint32_t rgba);

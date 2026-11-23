@@ -38,7 +38,7 @@ To check whether `on_paint`, `remove` or `load_image` succeeded, use the returne
 
 ## Text
 
-The built-in font is Titillium Web SemiBold ([SIL Open Font License 1.1](https://openfontlicense.org)), drawn from a signed distance field atlas, so it stays sharp from 12 to 72 pixels and beyond. It covers ASCII, Latin-1, curly quotes, dashes, the bullet, the ellipsis, `€` and `™`, and applies the font's kerning; an addon can also load its own fonts ([v6](#fonts-and-concave-shapes-v6)). `font_size` is the font's em size in pixels and the height of one line box; the capitals and descenders sit centred in it. Lines after the first advance by `line_height × font_size`.
+The built-in font is Titillium Web SemiBold ([SIL Open Font License 1.1](https://openfontlicense.org)), drawn from a signed distance field atlas, so it stays sharp from 12 to 72 pixels and beyond. It covers ASCII, Latin-1, curly quotes, dashes, the bullet, the ellipsis, `€` and `™`, and applies the font's kerning; an addon can also load its own fonts ([v5](#fonts-and-concave-shapes-v5)). `font_size` is the font's em size in pixels and the height of one line box; the capitals and descenders sit centred in it. Lines after the first advance by `line_height × font_size`.
 
 ## v2 calls
 
@@ -142,9 +142,9 @@ if (ov::load_image_rgba("atlas", 256, 64, px.data()) == ov::Result::ok)
 [overlay] api: author.my-addon load_image_rgba atlas (256x64) -> ok (slot 3)
 ```
 
-## Fonts and concave shapes (v6)
+## Fonts and concave shapes (v5)
 
-A core whose `SwoftyCoreOverlayVersion` returns 6 or more also loads fonts and fills concave polygons; `v6()` returns `true` there.
+A core whose `SwoftyCoreOverlayVersion` returns 5 or more also loads fonts and fills concave polygons; `v5()` returns `true` there.
 
 ```cpp [native/src/my_plugin.cpp]
 #include <swofty/overlay.hpp>
@@ -184,7 +184,7 @@ static void paint(SwoftyPaint *p, void *)
 
 SWOFTY_ON_LOAD
 {
-    if (!ov::available() || !ov::v6())
+    if (!ov::available() || !ov::v5())
         return;
     ov::load_font("display", "fonts/Display-Bold.ttf");
     ov::load_font("numbers", "fonts/Numbers-Black.otf");
@@ -208,11 +208,11 @@ ov::load_font_memory("numbers", bytes.data(), bytes.size());
 
 | Call | Does |
 |---|---|
-| `v6()` | `true` when the core implements the calls below |
-| `load_font(id, file)` | loads a TrueType or OpenType font (TrueType or CFF outlines) from the addon folder under `id`. Loading an `id` again replaces it. `invalid` for an empty id, a path outside the addon folder, a missing, empty or unreadable file, a file over 32 MB, or bytes that are not a font; `unavailable` on a core before version 6 |
+| `v5()` | `true` when the core implements the calls below |
+| `load_font(id, file)` | loads a TrueType or OpenType font (TrueType or CFF outlines) from the addon folder under `id`. Loading an `id` again replaces it. `invalid` for an empty id, a path outside the addon folder, a missing, empty or unreadable file, a file over 32 MB, or bytes that are not a font; `unavailable` on a core before version 5 |
 | `load_font_memory(id, bytes, size)` | loads a font from `size` bytes in memory; the core copies them. Same results as `load_font` |
-| `TextStyle::font` | the id of a font the addon loaded; `text`, `text_in` and `measure` with the style draw and measure in it. Empty, or an id the addon has not loaded, is the built-in font, and so is every font on a core before version 6 |
-| `polygon_concave(paint, xy, count, rgba)` | filled simple polygon through `count` points, convex or concave, either winding, with the one-pixel anti-aliased edge of `polygon`. A last point equal to the first is dropped. Up to 2048 points; draws nothing on a core before version 6 |
+| `TextStyle::font` | the id of a font the addon loaded; `text`, `text_in` and `measure` with the style draw and measure in it. Empty, or an id the addon has not loaded, is the built-in font, and so is every font on a core before version 5 |
+| `polygon_concave(paint, xy, count, rgba)` | filled simple polygon through `count` points, convex or concave, either winding, with the one-pixel anti-aliased edge of `polygon`. A last point equal to the first is dropped. Up to 2048 points; draws nothing on a core before version 5 |
 | `PathVertex`, `flatten_path(vertices, count, closed, xy, tolerance = 0.25f)` | in `swofty/overlay_path.hpp`, which `swofty/overlay.hpp` includes: flattens a cubic bezier path into points (`x0, y0, x1, y1, …`) for `polygon_concave`, `polygon` and `polyline` and returns how many. A segment runs from a vertex along its out tangent (`out_x`, `out_y`) to the next vertex's in tangent (`in_x`, `in_y`); tangents are relative to their vertex and zero tangents make a straight segment. A closed path also runs from the last vertex back to the first and does not repeat the first point. Points stay within `tolerance` of the curve, in the path's units |
 
 A font draws like the built-in font: `size` is its em size and one line box, with its capitals (the height of `H`) and descenders (the lowest of `g`, `j`, `p`, `q`, `y`) centred in the box. Kerning comes from the font's `kern` table or its GPOS pair adjustments; tracking, line height, wrapping, alignment, outline and shadow apply as they do to the built-in font. A codepoint the font lacks draws from the built-in font, and one neither has draws as the built-in `?`; a tab and a no-break space draw as the font's space. One codepoint draws one glyph: ligatures and other GSUB substitutions are not applied.
@@ -223,7 +223,7 @@ Each glyph is rasterised into a signed distance field the first time it draws, a
 [overlay] api: author.my-addon load_font display (swofty/addons/author.my-addon/fonts/Display-Bold.ttf: Display Bold, TrueType outlines, 95 glyphs on 1 page(s)) -> ok
 ```
 
-The C table reads the font id from `SwoftyTextStyle.font_id` (`const char *`, v6); `NULL` or `""` is the built-in font.
+The C table reads the font id from `SwoftyTextStyle.font_id` (`const char *`, v5); `NULL` or `""` is the built-in font.
 
 ## Toolkit
 
