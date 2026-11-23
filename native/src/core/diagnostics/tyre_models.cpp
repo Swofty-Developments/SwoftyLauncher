@@ -10,6 +10,8 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include <safetyhook.hpp>
+
 #include <atomic>
 #include <chrono>
 #include <cstddef>
@@ -61,6 +63,25 @@ constexpr uintptr_t SCENE_CONTEXT_VA = 0x14601f5c8;
 constexpr size_t TC_CAR = 0x20, CAR_LIVE = 0x58, LIVE_VEHICLE_ID = 0xe8;
 constexpr size_t TC_GROUP_OLD = 0x9920, TC_GROUP_NEW = 0x9938, GROUP_SIZE = 0x18;
 constexpr int64_t FIX_FIRST_MS = 2000, FIX_LAST_MS = 90000, FIX_PERIOD_MS = 1000;
+
+const runtime::Sig S_UPDATE_VEHICLE{
+    "Game_TyreSystem_UpdateVehicle",
+    "41 57 41 56 41 54 56 57 55 53 48 81 EC 50 01 00 00 C5 78 29 BC 24 40 01 00 00 C5 78 29 B4 24 "
+    "30 01 00 00",
+    0x2e93110};
+constexpr size_t SYSTEM_LIST = 0x110, SYSTEM_LIST_END = 0x118, SYSTEM_LIST_CAP = 0x120, COUNT_IDS = 32;
+std::atomic<uint32_t> update_counts[COUNT_IDS];
+std::atomic<uintptr_t> update_system{0};
+safetyhook::InlineHook update_hook_handle;
+bool update_counting = false;
+
+void update_vehicle_hook(void *system, uint8_t idx, void *a3, void *camera, float scale)
+{
+    update_system.store(uintptr_t(system), std::memory_order_relaxed);
+    if (idx < COUNT_IDS)
+        update_counts[idx].fetch_add(1, std::memory_order_relaxed);
+    update_hook_handle.call<void>(system, idx, a3, camera, scale);
+}
 
 void (*start_orig)(void *) = nullptr;
 runtime::loader::MixinGate mixin_gate;
@@ -277,6 +298,36 @@ void repair_pass()
                 session, list.c_str());
 }
 
+void log_update_counts(const char *when, uintptr_t car_list)
+{
+    uintptr_t sys = update_system.load(), begin = 0, end = 0, cap = 0;
+    std::string counts;
+    unsigned seen = 0;
+    for (size_t i = 0; i < COUNT_IDS; i++) {
+        uint32_t n = update_counts[i].load();
+        if (!n && i >= 28)
+            continue;
+        counts += (counts.empty() ? "" : " ") + std::to_string(i) + ":" + std::to_string(n);
+        seen += n != 0;
+    }
+    swofty::log("[tyres] UpdateVehicle calls (%s), session %u: %s (%u vehicle(s) updated)", when, session, counts.c_str(), seen);
+    if (!sys || !mem::read(sys + SYSTEM_LIST, begin) || !mem::read(sys + SYSTEM_LIST_END, end) ||
+        !mem::read(sys + SYSTEM_LIST_CAP, cap)) {
+        swofty::log("[tyres] tyre system list (%s): the system %p could not be read", when, (void *)sys);
+        return;
+    }
+    swofty::log("[tyres] tyre system list (%s): %p, %llu entr(ies), capacity %llu", when, (void *)sys,
+                (unsigned long long)((end - begin) / sizeof(uintptr_t)), (unsigned long long)((cap - begin) / sizeof(uintptr_t)));
+    for (uint8_t v = 22; v < 26; v++) {
+        uintptr_t entry = 0, comp = tyre_component_of(car_list, v), parent = 0;
+        bool in = begin && v < (end - begin) / sizeof(uintptr_t) && mem::read(begin + v * sizeof(uintptr_t), entry);
+        if (entry)
+            mem::read(entry + TC_CAR, parent);
+        swofty::log("[tyres] tyre system list (%s): vehicle %u entry %s%p, car list component %p, entry car %p", when,
+                    unsigned(v), in ? "" : "(none) ", (void *)entry, (void *)comp, (void *)parent);
+    }
+}
+
 void check(const char *when)
 {
     uintptr_t career = 0, car_list = 0, begin = 0, end = 0;
@@ -296,6 +347,8 @@ void check(const char *when)
             swofty::log("%s", tmod::car_line(cars.back(), session, when).c_str());
     }
     swofty::log("%s", tmod::summary_line(cars, session, when).c_str());
+    if (update_counting)
+        log_update_counts(when, car_list);
 }
 
 void on_start(void *c)
@@ -316,6 +369,8 @@ void on_start(void *c)
     session = id;
     started_ms = now_ms();
     fix_logged = false;
+    for (auto &n : update_counts)
+        n.store(0);
     stage = 0;
 }
 
@@ -353,6 +408,21 @@ static void tyre_models_commit()
     swofty::log(
         "[tyres] model check %s",
         loader::install_state(core_mixins_active(MIXIN), "armed: fitted tyre models are read 10 s and 60 s into each session"));
+    char off[16] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_TYRE_UPDATE_COUNT", off, sizeof off);
+    if (!(n && n < sizeof off && !strcmp(off, "0"))) {
+        uintptr_t at = runtime::find(S_UPDATE_VEHICLE, "tyre system update", "tyres");
+        void *target = reinterpret_cast<void *>(at), *detour = reinterpret_cast<void *>(&update_vehicle_hook);
+        if (!at) {
+            swofty::log("[tyres] update count off: Game_TyreSystem_UpdateVehicle did not resolve on this build");
+        } else if (auto r = safetyhook::InlineHook::create(target, detour)) {
+            update_hook_handle = std::move(*r);
+            update_counting = true;
+            swofty::log("[tyres] update count armed: calls of Game_TyreSystem_UpdateVehicle are counted per vehicle");
+        } else {
+            swofty::log("[tyres] update count off: the hook on Game_TyreSystem_UpdateVehicle failed");
+        }
+    }
     if (fix_armed)
         swofty::log(
             "[tyres] activation fix armed (SWOFTY_TYRE_ACTIVATE_FIX=1): cars 23 and up with no previous compound slot get "

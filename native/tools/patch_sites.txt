@@ -103,6 +103,7 @@ core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::c
 core/frontend/main_menu/navigation_hooks.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(container_detour)); => inline sig S_CONTAINER
 core/frontend/main_menu/tiles.cpp: if (!VirtualProtect(block.at, sizeof jmp, PAGE_EXECUTE_READWRITE, &old)) { => bytes=5 sig S_BLOCK
 core/frontend/mfd.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(update), reinterpret_cast<void *>(&update_hook)); => inline sig S_UPDATE
+core/diagnostics/tyre_models.cpp: } else if (auto r = safetyhook::InlineHook::create(target, detour)) { => inline sig S_UPDATE_VEHICLE
 core/frontend/player_name.cpp: auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&lookup_hook)); => inline sig S_NAME
 core/frontend/player_name/copies.cpp: return WriteProcessMemory(GetCurrentProcess(), reinterpret_cast<void *>(at), data, n, &done) != 0 && done == n; => none
 core/frontend/popup.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(a_construct), reinterpret_cast<void *>(&construct_hook)); => inline rel32 S_MOTD MOTD_CONSTRUCT

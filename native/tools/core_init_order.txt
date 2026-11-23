@@ -300,6 +300,7 @@ exit
   src/core/guards/career/myteam_vehicle_keep.cpp
   src/core/guards/engine/watchdog_grace.cpp
   src/core/guards/cars/tyre_slots.cpp
+  src/core/diagnostics/tyre_models.cpp
   src/core/career/hub_tab.cpp
   src/core/hooks/hooks.cpp
   src/core/hooks/core_events.cpp
