@@ -63,13 +63,30 @@ The scope switch (`ScopeSwitch`) runs when the setup screen's VM initialises (`G
 - `within` takes the selectors of content and layers (`content`, `owner`, `data_group`, `mode`, `setup_mode`, `any`, `not`). A box is not a setup mode (every box shares `swofty_f1`): scope on the box's entrant lists or its content id, and the career's `data_group`.
 - `slider` is a `car_setup.sliders` label or an index 0 to 41; a label such as `front_wing` is one slider. Each slider appears once; one section per tab; one to ten rows per section; a section needs a title and a row a name (`check_layout`).
 - `min` and `max` go together. A row without them keeps the game's range. `min` may be above `max`: the row then reads from the high number down (a ballast row shown as 42 to 40 percent).
-- `steps` (1 to 100) gives a row its own number of positions. It is accepted only on `brake_cooling_front`, `brake_cooling_rear`, `brake_duct_front` and `brake_duct_rear`, because ApplyTuning divides the stored step by the same steps cell: the scope's handling must pin those four F1Tuning ranges to min == max (the stock constructor does so for the cooling pair, 1050 and 900, and leaves the duct pair at 0 to 1), or the car's brake cooling and drag would follow the new fraction. The cell is restored with the min and max cells when the scope ends. A step saved above the stock count (more than 2 or 5) is clamped to the top by ApplyTuning outside the scope.
+- `steps` (1 to 100) gives a row its own number of positions, on any slider. The cell is swapped with min and max while the scope is active and restored when it ends. ApplyTuning divides the stored step by the same steps cell, so the car's physics follows the fraction through the slider's F1Tuning range; the brake sliders 37 to 40 need the scope's handling to pin their F1Tuning ranges to min == max (the stock constructor does so for the cooling pair, 1050 and 900, and leaves the duct pair at 0 to 1). A saved setup and a preset keep raw step indexes, not numbers: a layout that changes a slider's steps owns the presets and saved setups of that slider, and a step saved above the new count is clamped to the top.
 - Two records whose scopes match one session: the later in load order wins, as for layers.
 - A record whose layout fails `check_layout` is dropped with a `[setup-layout]` log line, and that scope sees the stock screen.
 
+## Row text
+
+Optional fields of a row control the text beside the bar and the right-hand text. With any of them, or a `min` and `max`, the row's text is its own and the game's stock number and its `Soft/Firm` or `Min/Max` range text never show.
+
+```json
+{ "slider": "front_susp", "name": "Front spring", "min": 1050, "max": 1350, "steps": 6, "format": "{v} lb/in", "group": true }
+{ "slider": "rear_susp", "name": "Rear spring", "min": 1.5, "max": 3.0, "steps": 6, "format": "{v} kg/mm", "decimals": 2, "range_text": "Soft to firm" }
+{ "slider": "diff_preload", "name": "Final drive", "labels": ["Short", "Medium", "Long", "Very long"] }
+```
+
+- `format`: the value text, `{v}` the number at the step, `lerp(min, max, step / steps)`.
+- `decimals` (0 to 3): digits of `{v}`; absent, the fewest that show the step size exactly. `group`: thousands separator (`1,050`).
+- `labels`: one text per step, shown instead of the number; steps become `labels.length - 1` (a `steps` that disagrees is refused).
+- `range_text`: a string replaces the right-hand text, an empty string hides it; absent, it is the row's min to max through `format` (`1,050 - 1,350 lb/in`), or the first and last label.
+
+The text is written per row on the entry node (`value_str`, `range_desc` with `range_localise` false), so rows that share a range key in the game each get their own text. The entry nodes are rebuilt by the game every time the screen opens, so leaving the scope needs no restore beyond the cells.
+
 ## Open points
 
-- The value text of a row (`value_str`, and the `lng_cs_*_range` formats with `%.1f` and a unit key) is written by the game per slider; whether `unit` can be applied through `range_desc` alone, or needs the shared `lng_cs_*_range` keys set with the scope, is not read yet.
+- Text path: the game builds each row's value text with a view-model formatter (`value_format` node, `unit_type` 'none', `decimal_places`) that writes `value_str`, and the right-hand text from one shared `lng_cs_*_range` key per group (`Soft {min} - {max} Firm`, `Min {min} - {max} Max`) into `range_desc`, localised by `range_localise`. A layout row's own text is written to those entry nodes after populate and after each value change (see Row text). Whether the formatter rewrites `value_str` after the change handler returns is checked in game with `SWOFTY_SETUP_LAYOUT_LOG=1`.
 - The stock screen's eighth tab is the fuel tab on some cars; a layout may use it.
 - A saved setup keeps all 42 steps, so a step saved in a scope returns the same row in that scope; outside it the same step is read by the stock slider of that index. Layouts should pick sliders whose stock use is inert in the scope's cars.
 

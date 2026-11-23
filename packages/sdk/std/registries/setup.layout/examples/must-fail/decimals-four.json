@@ -1,0 +1,1 @@
+{"setup.layout": {"x": {"sections": [{"tab": 1, "title": "Wings", "rows": [{"slider": "front_wing", "name": "Front", "min": 0, "max": 1, "decimals": 4}]}]}}}

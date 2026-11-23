@@ -1,0 +1,31 @@
+{
+  "setup.layout": {
+    "f1_1990_display": {
+      "within": [{ "owner": "swofty.f1-1990" }],
+      "sections": [
+        {
+          "tab": "aerodynamics",
+          "title": "Wings",
+          "rows": [
+            { "slider": "front_wing", "name": "Front flap", "min": 0, "max": 50, "steps": 50, "format": "Blade {v}", "range_text": "" }
+          ]
+        },
+        {
+          "tab": "suspension",
+          "title": "Springs",
+          "rows": [
+            { "slider": "front_susp", "name": "Front spring", "min": 1050, "max": 1350, "steps": 6, "format": "{v} lb/in", "group": true },
+            { "slider": "rear_susp", "name": "Rear spring", "min": 1.5, "max": 3.0, "steps": 6, "format": "{v} kg/mm", "decimals": 2, "range_text": "Soft to firm" }
+          ]
+        },
+        {
+          "tab": "transmission",
+          "title": "Gearbox",
+          "rows": [
+            { "slider": "diff_preload", "name": "Final drive", "labels": ["Short", "Medium", "Long", "Very long"] }
+          ]
+        }
+      ]
+    }
+  }
+}
