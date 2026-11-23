@@ -54,8 +54,8 @@ void compile(void *lane, uint32_t *out)
         swofty::log("[ai] marker cap: an AI lane has %u markers on one channel, more than the game's 256 (side %u, brake %u, "
                     "corner end %u, corner start %u, ch4 %u, retire %u, width class %u); core compiled its tables "
                     "(%llu bytes, %u channels dropped)%s",
-                    amc::most(c), c.n[0], c.n[1], c.n[2], c.n[3], c.n[4], c.n[5], c.n[6], (unsigned long long)r.bytes,
-                    r.dropped, line.tail);
+                    amc::most(c), c.n[0], c.n[1], c.n[2], c.n[3], c.n[4], c.n[5], c.n[6], (unsigned long long)r.bytes, r.dropped,
+                    line.tail);
 }
 
 guards::SiteGuard guard{guards::CoreSetId::ai_marker_cap,
