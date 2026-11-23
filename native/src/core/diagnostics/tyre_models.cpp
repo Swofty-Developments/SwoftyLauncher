@@ -27,7 +27,9 @@
 // models of that entry (component +0x30 + entry * 0xde0 + 0 / 0x4a0 / 0x940) are checked for the spawn defaults.
 // A car whose spawned fitted models all still have them was never placed (Game_CompoundModelSet_PlaceFittedTyre,
 // driven per vehicle by Game_TyreSystem_UpdateVehicle) and drives without visible tyres; known_problems explains it.
-// Nothing is written and no placement is attempted. SWOFTY_TYRE_MODELS_CHECK=0 turns it off.
+// A car found unplaced also gets one line with the activation fields Game_TyreSystem_UpdateVehicle needs before it
+// places anything (+0x9920..+0x9948, set by Car_Tyre_ActivateCompounds only while the car's scene state, the row at
+// [[SceneContext+0xa0]+0x68+vehicle*0x10]+4, is 2 or 3). Nothing is written and no placement is attempted. SWOFTY_TYRE_MODELS_CHECK=0 turns it off.
 
 namespace {
 
@@ -50,6 +52,11 @@ constexpr size_t MODEL_SUB[] = {0, 0x4a0, 0x940};
 constexpr size_t MODEL_RENDER = 0x78, RENDER_INSTANCE = 0x80, INSTANCE_TRANSLATION = 0x2c, INSTANCE_STATE = 0x128;
 constexpr size_t MODEL_DIMENSION_A = 0x278, MODEL_DIMENSION_B = 0x27c;
 constexpr uint64_t MAX_ENTRIES = 11;
+constexpr size_t TC_ACTIVE_FITTED = 0x9938, TC_ACTIVE_FITTED_A = 0x9940, TC_ACTIVE_FITTED_B = 0x9948;
+constexpr size_t TC_ACTIVE_PENDING = 0x9920, TC_ACTIVE_PENDING_A = 0x9928, TC_ACTIVE_PENDING_B = 0x9930;
+constexpr size_t TC_PENDING_OPTION = 0x9c70, TC_LOCKED = 0x9912;
+constexpr size_t SCENE_STATES = 0xa0, SCENE_STATE_ROWS = 0x68, SCENE_STATE_STRIDE = 0x10, SCENE_STATE_VALUE = 0x4;
+constexpr uint8_t SCENE_STATE_LAST_VEHICLE = 0x1a;
 
 void (*start_orig)(void *) = nullptr;
 runtime::loader::MixinGate mixin_gate;
@@ -128,6 +135,37 @@ tmod::Model read_model(uintptr_t m)
     return out;
 }
 
+uint32_t scene_state_of(uint8_t vehicle)
+{
+    uintptr_t ctx = 0, states = 0, row = 0;
+    uint32_t value = 0xffffffff;
+    auto at = reinterpret_cast<const uintptr_t *>(swofty::api->resolve("g_Game_SceneContext"));
+    if (vehicle > SCENE_STATE_LAST_VEHICLE || !at || !read_ptr(uintptr_t(at), ctx) || !read_ptr(ctx + SCENE_STATES, states) ||
+        !read_ptr(states + SCENE_STATE_ROWS + vehicle * SCENE_STATE_STRIDE, row))
+        return value;
+    mem::read(row + SCENE_STATE_VALUE, value);
+    return value;
+}
+
+void log_activation(uintptr_t tc, uint8_t vehicle)
+{
+    uint32_t fitted = 0xffffffff, pending = 0xffffffff, option = 0xffffffff;
+    uint64_t fitted_a = 0, fitted_b = 0, pending_a = 0, pending_b = 0;
+    uint8_t locked = 0xff;
+    mem::read(tc + TC_ACTIVE_FITTED, fitted);
+    mem::read(tc + TC_ACTIVE_FITTED_A, fitted_a);
+    mem::read(tc + TC_ACTIVE_FITTED_B, fitted_b);
+    mem::read(tc + TC_ACTIVE_PENDING, pending);
+    mem::read(tc + TC_ACTIVE_PENDING_A, pending_a);
+    mem::read(tc + TC_ACTIVE_PENDING_B, pending_b);
+    mem::read(tc + TC_PENDING_OPTION, option);
+    mem::read(tc + TC_LOCKED, locked);
+    swofty::log("[tyres] car %u activation: fitted compound %u (%s%s), set to apply %u (%s%s), pending option %u, locked %u, "
+                "scene state %d",
+                unsigned(vehicle), fitted, fitted_a ? "a" : "-", fitted_b ? "b" : "-", pending, pending_a ? "a" : "-",
+                pending_b ? "b" : "-", option, unsigned(locked), int(scene_state_of(vehicle)));
+}
+
 tmod::Car check_car(uintptr_t car_list, uintptr_t row)
 {
     tmod::Car car;
@@ -148,6 +186,8 @@ tmod::Car check_car(uintptr_t car_list, uintptr_t row)
         models[i] = read_model(tc + TC_MODELS + entry * MODEL_ENTRY_STRIDE + MODEL_SUB[i]);
     car.readable = true;
     car.verdict = tmod::judge(models, 3, &car.spawned, &car.unplaced);
+    if (car.verdict == tmod::Verdict::unplaced)
+        log_activation(tc, car.vehicle);
     return car;
 }
 
