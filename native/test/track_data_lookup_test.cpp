@@ -8,8 +8,9 @@
 // executable and calls them with the Windows calling convention on a TrackDataSystem built in memory: 44 track slots
 // as on aober420's profile, two TrackDataSets in database row order. The site's first byte (+0xb1, movzx eax, byte
 // [rdx+1]) becomes an int3 whose handler does what the core's site mixin does there: it hands the registers to the
-// guard and then runs the relocated movzx. Without the guard the trap sees rdx 0, the crash of the bundle; with it the
-// lookup returns melbourne's track data of the matched set.
+// guard and then runs the relocated movzx. Without the guard the trap sees rdx 0, the crash of the bundle, notes it and
+// runs the movzx on a placeholder record so the call returns; with it the lookup returns melbourne's track data of the
+// matched set. A fault anywhere else prints its registers and where it is in the game's bytes.
 
 #include "core/guards/tracks/track_data_lookup_logic.hpp"
 
@@ -21,10 +22,10 @@
 
 #if defined(__x86_64__) && defined(__linux__)
 #define REAL_BYTES 1
-#include <csetjmp>
 #include <csignal>
 #include <sys/mman.h>
 #include <ucontext.h>
+#include <unistd.h>
 #endif
 
 namespace tl = runtime::track_data_lookup;
@@ -288,10 +289,30 @@ struct Trap {
     bool guard = false;
     int hits = 0;
     uint64_t rdx = 0, r11 = 0;
-    bool faulted = false;
+    bool null_record = false;
     tl::Pick pick;
-    sigjmp_buf jump;
 } trap;
+
+static uint64_t code_page = 0;
+
+static void on_fault(int sig, siginfo_t *info, void *raw)
+{
+    auto *uc = static_cast<ucontext_t *>(raw);
+    greg_t *r = uc->uc_mcontext.gregs;
+    uint64_t rip = uint64_t(r[REG_RIP]);
+    char text[512];
+    int n = std::snprintf(text, sizeof text,
+                          "FAIL: signal %d at rip 0x%llx (GetTrack +0x%llx) reading 0x%llx; rax 0x%llx rcx 0x%llx rdx 0x%llx "
+                          "r8 0x%llx r11 0x%llx rsp 0x%llx; trap hits %d\n",
+                          sig, (unsigned long long)rip,
+                          (unsigned long long)(code_page && rip - code_page < 0x1000 ? rip - code_page : ~0ull),
+                          (unsigned long long)info->si_addr, (unsigned long long)r[REG_RAX], (unsigned long long)r[REG_RCX],
+                          (unsigned long long)r[REG_RDX], (unsigned long long)r[REG_R8], (unsigned long long)r[REG_R11],
+                          (unsigned long long)r[REG_RSP], trap.hits);
+    if (n > 0 && write(1, text, std::size_t(n)) < 0)
+        _exit(3);
+    _exit(2);
+}
 
 static void on_trap(int, siginfo_t *, void *raw)
 {
@@ -304,8 +325,8 @@ static void on_trap(int, siginfo_t *, void *raw)
     if (trap.guard)
         record = tl::record_at_site(trap.rdx, trap.r11, reinterpret_cast<uint64_t>(PLACEHOLDER), host_read, nullptr, trap.pick);
     if (!record) {
-        trap.faulted = true;
-        siglongjmp(trap.jump, 1);
+        trap.null_record = true;
+        record = reinterpret_cast<uint64_t>(PLACEHOLDER);
     }
     r[REG_RDX] = greg_t(record);
     r[REG_RAX] = greg_t(*reinterpret_cast<const uint8_t *>(record + tl::RECORD_STAT_ID));
@@ -314,7 +335,7 @@ static void on_trap(int, siginfo_t *, void *raw)
 
 struct Call {
     uint64_t result = 0;
-    bool faulted = false;
+    bool null_record = false;
     int hits = 0;
     uint64_t rdx = 0, r11 = 0;
     tl::Pick pick;
@@ -325,9 +346,8 @@ static Call call(GetTrack fn, World &w, uint64_t record, const uint8_t (&query)[
     trap = Trap{};
     trap.guard = guard;
     Call c;
-    if (sigsetjmp(trap.jump, 1) == 0)
-        c.result = fn(w.system, reinterpret_cast<void *>(record), query);
-    c.faulted = trap.faulted;
+    c.result = fn(w.system, reinterpret_cast<void *>(record), query);
+    c.null_record = trap.null_record;
     c.hits = trap.hits;
     c.rdx = trap.rdx;
     c.r11 = trap.r11;
@@ -354,35 +374,36 @@ static void check_bytes(const char *build, const uint8_t *bytes, std::size_t siz
         return;
     }
     auto fn = reinterpret_cast<GetTrack>(page);
+    code_page = reinterpret_cast<uint64_t>(page);
 
     World w;
     make(w, {{}, {}}, {1u | (1u << 13), 1u << 20});
     const uint8_t swofty_f1[6] = {20, 1, 7, 1, 0, 1}, f1[6] = {0, 1, 7, 1, 0, 1}, nobody[6] = {5, 1, 7, 1, 0, 1};
 
     Call c = call(fn, w, record_of(w, 11), swofty_f1, true);
-    expect(!c.faulted && c.hits == 1 && c.r11 == set_of(w, 1) && c.result == track_of(w, 1, 11),
+    expect(!c.null_record && c.hits == 1 && c.r11 == set_of(w, 1) && c.result == track_of(w, 1, 11),
            (b + ": monza's record reads monza's track of the set whose modes hold swofty_f1, r11 = that set").c_str());
 
     c = call(fn, w, 0, swofty_f1, false);
-    expect(c.faulted && c.hits == 1 && c.rdx == 0 && c.r11 == set_of(w, 1),
+    expect(c.null_record && c.hits == 1 && c.rdx == 0 && c.r11 == set_of(w, 1),
            (b + ": without the guard a null record reaches the site with rdx 0 (aober420's crash, reading 0x1)").c_str());
 
     c = call(fn, w, 0, swofty_f1, true);
-    expect(!c.faulted && c.result == track_of(w, 1, 0) && c.pick.name == "melbourne",
+    expect(!c.null_record && c.result == track_of(w, 1, 0) && c.pick.name == "melbourne",
            (b + ": with the guard a null record reads melbourne's track of the matched set").c_str());
 
     c = call(fn, w, 0, f1, true);
-    expect(!c.faulted && c.r11 == set_of(w, 0) && c.result == track_of(w, 0, 0),
+    expect(!c.null_record && c.r11 == set_of(w, 0) && c.result == track_of(w, 0, 0),
            (b + ": a null record on another mode's set reads that set's melbourne").c_str());
 
     c = call(fn, w, 0, nobody, true);
-    expect(!c.faulted && c.hits == 0 && c.result == 0,
+    expect(!c.null_record && c.hits == 0 && c.result == 0,
            (b + ": no matching set returns null before the site, the game's own answer").c_str());
 
     World no_melbourne;
     make(no_melbourne, {{}, {0}}, {1u, 1u << 20});
     c = call(fn, no_melbourne, 0, swofty_f1, true);
-    expect(!c.faulted && c.result == track_of(no_melbourne, 1, 2),
+    expect(!c.null_record && c.result == track_of(no_melbourne, 1, 2),
            (b + ": a set without melbourne reads its first track (shanghai)").c_str());
 
     World empty;
@@ -390,7 +411,7 @@ static void check_bytes(const char *build, const uint8_t *bytes, std::size_t siz
     put64(empty.sets[1].bytes + tl::SET_ITEMS_BEGIN, 0);
     put64(empty.sets[1].bytes + tl::SET_ITEMS_END, 0);
     c = call(fn, empty, 0, swofty_f1, true);
-    expect(!c.faulted && c.hits == 1 && c.result == 0,
+    expect(!c.null_record && c.hits == 1 && c.result == 0,
            (b + ": an empty matched set gets the placeholder and GetTrack returns null without a fault").c_str());
 
     World holes;
@@ -398,10 +419,10 @@ static void check_bytes(const char *build, const uint8_t *bytes, std::size_t siz
     for (Item &it : holes.items[1])
         it.pointer = 0;
     c = call(fn, holes, 0, swofty_f1, true);
-    expect(!c.faulted && c.result == 0, (b + ": a matched set of null items gets the placeholder and reads null").c_str());
+    expect(!c.null_record && c.result == 0, (b + ": a matched set of null items gets the placeholder and reads null").c_str());
 
     c = call(fn, w, reinterpret_cast<uint64_t>(PLACEHOLDER), swofty_f1, false);
-    expect(!c.faulted && c.result == track_of(w, 1, 0),
+    expect(!c.null_record && c.result == track_of(w, 1, 0),
            (b + ": the placeholder's stat id 0xff is past the set and GetTrack falls back to its first track").c_str());
 
     munmap(page, 0x1000);
@@ -411,9 +432,15 @@ static void check_real_bytes()
 {
     struct sigaction sa{};
     sa.sa_sigaction = on_trap;
-    sa.sa_flags = SA_SIGINFO | SA_NODEFER;
+    sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
     sigaction(SIGTRAP, &sa, nullptr);
+    struct sigaction fault{};
+    fault.sa_sigaction = on_fault;
+    fault.sa_flags = SA_SIGINFO;
+    sigemptyset(&fault.sa_mask);
+    for (int sig : {SIGSEGV, SIGBUS, SIGILL, SIGFPE})
+        sigaction(sig, &fault, nullptr);
     check_bytes("Steam 26566308", STEAM_26566308, sizeof STEAM_26566308);
     check_bytes("KB d873a1c8", KB_D873A1C8, sizeof KB_D873A1C8);
     expect(std::memcmp(STEAM_26566308, KB_D873A1C8, 0x11d) == 0, "the two builds' GetTrack differ only in the assert calls");
@@ -423,6 +450,7 @@ static void check_real_bytes()
 
 int main()
 {
+    std::setvbuf(stdout, nullptr, _IOLBF, 0);
     check_pick();
 #ifdef REAL_BYTES
     check_real_bytes();
