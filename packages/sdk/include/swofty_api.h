@@ -1157,6 +1157,11 @@ typedef struct SwoftyContentOps {
 #define SWOFTY_LIVE_HAVE_GRID (1ull << 29)
 #define SWOFTY_LIVE_HAVE_LAP_TIMES (1ull << 30)
 #define SWOFTY_LIVE_HAVE_TYRE_AGE (1ull << 31)
+#define SWOFTY_LIVE_HAVE_DRS_ALLOWED (1ull << 32)
+#define SWOFTY_LIVE_HAVE_PIT_LIMITER (1ull << 33)
+#define SWOFTY_LIVE_HAVE_FIA_FLAG (1ull << 34)
+#define SWOFTY_LIVE_HAVE_DRIVER_STATUS (1ull << 35)
+#define SWOFTY_LIVE_HAVE_PIT_TIMING (1ull << 36)
 
 #define SWOFTY_LIVE_CAR_PLAYER (1u << 0)
 #define SWOFTY_LIVE_CAR_AI_DRIVING (1u << 1)
@@ -1233,6 +1238,17 @@ typedef struct SwoftyLiveCar {
 #define SWOFTY_LIVE_SHAVE_ROAD_ORDER (1ull << 12)
 #define SWOFTY_LIVE_SHAVE_TIME_LEFT (1ull << 13)
 #define SWOFTY_LIVE_SHAVE_TOTAL_LAPS (1ull << 14)
+#define SWOFTY_LIVE_SHAVE_FASTEST_LAP (1ull << 15)
+#define SWOFTY_LIVE_SHAVE_SAFETY_CAR_PHASE (1ull << 16)
+#define SWOFTY_LIVE_SHAVE_DRS (1ull << 17)
+#define SWOFTY_LIVE_SHAVE_PIT_WINDOW (1ull << 18)
+#define SWOFTY_LIVE_SHAVE_START_LIGHTS (1ull << 19)
+
+#define SWOFTY_LIVE_NO_CAR 0xff
+#define SWOFTY_LIVE_SC_DEPLOYED 0
+#define SWOFTY_LIVE_SC_RETURNING 1
+#define SWOFTY_LIVE_SC_RETURNED 2
+#define SWOFTY_LIVE_SC_RESUME 3
 
 #define SWOFTY_LIVE_MODE_UNKNOWN 0
 #define SWOFTY_LIVE_MODE_GRAND_PRIX 1
@@ -1264,12 +1280,30 @@ typedef struct SwoftyLiveSession {
     uint32_t classified;
     uint32_t road_order[SWOFTY_LIVE_MAX_CARS];
     uint32_t on_track;
-    /* The session time left in seconds (SWOFTY_LIVE_SHAVE_TIME_LEFT) and the race's lap count
-       (SWOFTY_LIVE_SHAVE_TOTAL_LAPS). Not read yet on any build: both bits stay clear and both fields 0. They take
-       the first two words of what was reserved[8]: the struct's size and every other offset are unchanged. */
+    /* The session time left and the session's length in seconds (SWOFTY_LIVE_SHAVE_TIME_LEFT) and the race's lap
+       count (SWOFTY_LIVE_SHAVE_TOTAL_LAPS), from the game's UDP Session packet (formats 2024 and 2025). They take the
+       first three words of what was reserved[8]. */
     float time_left_s;
     uint32_t total_laps;
-    uint32_t reserved[6];
+    float duration_s;
+    /* The session's fastest lap (SWOFTY_LIVE_SHAVE_FASTEST_LAP): its time and its car's vehicle id. */
+    uint32_t fastest_lap_ms;
+    uint8_t fastest_lap_vehicle;
+    /* The safety car's phase (SWOFTY_LIVE_SHAVE_SAFETY_CAR_PHASE): SWOFTY_LIVE_SC_DEPLOYED, _RETURNING (in this
+       lap), _RETURNED or _RESUME, the last phase of this session's latest deployment. */
+    uint8_t safety_car_phase;
+    /* DRS (SWOFTY_LIVE_SHAVE_DRS): drs_enabled 1 once race control enables DRS, 0 once it disables it; drs_reason
+       is why it was disabled (0 wet track, 1 safety car, 2 red flag, 3 minimum lap not reached, 0xff none given). */
+    uint8_t drs_enabled;
+    uint8_t drs_reason;
+    /* The player's pit window (SWOFTY_LIVE_SHAVE_PIT_WINDOW): the ideal and the latest lap to pit and the predicted
+       position on rejoining, 0 where the game gives none. */
+    uint8_t pit_window_ideal_lap;
+    uint8_t pit_window_latest_lap;
+    uint8_t pit_rejoin_position;
+    /* The start lights (SWOFTY_LIVE_SHAVE_START_LIGHTS): the lights lit, 1 to 5, and 0 from lights out. */
+    uint8_t start_lights;
+    uint32_t reserved[2];
 } SwoftyLiveSession;
 
 #define SWOFTY_LIVE_TURN_OFFICIAL 1
@@ -1302,7 +1336,17 @@ typedef struct SwoftyLiveTurn {
    best_sector_ms, the fastest valid completed lap and its sectors (0 while there is none); lap_flags,
    SWOFTY_LIVE_LAP_CURRENT_VALID and SWOFTY_LIVE_LAP_LAST_VALID.
    SWOFTY_LIVE_HAVE_TYRE_AGE: tyre_age_laps, the laps the fitted set has run, earlier stints on it included (the
-   count the game sends as tyresAgeLaps); tyre_stint_laps, the laps since it was fitted. */
+   count the game sends as tyresAgeLaps); tyre_stint_laps, the laps since it was fitted.
+   The fields below take the first six words of what was reserved[17] and come from the game's UDP packets:
+   SWOFTY_LIVE_HAVE_DRS_ALLOWED: drs_allowed, 1 while the car may open DRS; drs_distance_m, the distance to the
+   next activation point (0 where the game gives none).
+   SWOFTY_LIVE_HAVE_PIT_LIMITER: pit_limiter, 1 while the limiter is on.
+   SWOFTY_LIVE_HAVE_FIA_FLAG: fia_flag, the flag shown to the car (-1 invalid, 0 none, 1 green, 2 blue, 3 yellow).
+   SWOFTY_LIVE_HAVE_DRIVER_STATUS: driver_status, 0 in the garage, 1 flying lap, 2 in lap, 3 out lap, 4 on track.
+   SWOFTY_LIVE_HAVE_PIT_TIMING: pit_lane_timer_active, 1 while the car is in the pit lane; pit_lane_ms, the time in
+   the pit lane of the current or last visit; pit_stop_ms, the time stationary in the box.
+   SWOFTY_LIVE_HAVE_IDENTITY: race_number; team_id, the team id the game sends over UDP; team_colour, the livery's
+   first colour as 0xRRGGBB (0 where the game sends none). */
 typedef struct SwoftyLiveCarDetail {
     uint32_t version;
     uint32_t size;
@@ -1321,7 +1365,18 @@ typedef struct SwoftyLiveCarDetail {
     uint32_t best_lap_ms;
     uint32_t best_lap_number;
     uint32_t best_sector_ms[3];
-    uint32_t reserved[17];
+    uint8_t drs_allowed;
+    uint8_t pit_limiter;
+    int8_t fia_flag;
+    uint8_t driver_status;
+    float drs_distance_m;
+    uint8_t pit_lane_timer_active;
+    uint8_t race_number;
+    uint16_t team_id;
+    uint32_t pit_lane_ms;
+    uint32_t pit_stop_ms;
+    uint32_t team_colour;
+    uint32_t reserved[11];
 } SwoftyLiveCarDetail;
 
 typedef struct SwoftyLiveImages SwoftyLiveImages;

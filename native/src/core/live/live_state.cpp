@@ -5,6 +5,7 @@
 #include "core/live/live_state.hpp"
 #include "core/live/live_telemetry_fill.hpp"
 #include "core/live/live_turns.hpp"
+#include "core/live/live_udp.hpp"
 #include "core/live/live_tyre_images.hpp"
 #include "core/live/race_control.hpp"
 #include "core/runtime/build.hpp"
@@ -95,6 +96,9 @@ lv::bus::Queue g_bus_queue;
 lv::bus::Subscriber g_bus_sub;
 std::atomic<bool> g_bus_armed;
 double g_bus_tried = -1e9;
+lv::udp::Source g_udp;
+std::mutex g_udp_lock;
+std::atomic<bool> g_udp_said;
 
 double qpc_ms()
 {
@@ -238,6 +242,13 @@ void publish()
     std::memcpy(g_snap.cars, g_live->cars, sizeof g_snap.cars);
     std::memcpy(g_snap.details, g_live->details, sizeof g_snap.details);
     std::memcpy(g_snap.present, g_live->present, sizeof g_snap.present);
+    {
+        std::lock_guard<std::mutex> u(g_udp_lock);
+        if (g_snap.valid)
+            g_udp.merge(g_snap.ses, g_snap.cars, g_snap.details, g_snap.present, GetTickCount64());
+        else
+            g_udp.reset();
+    }
     g_snap.official = g_official;
     g_snap.turn_length = g_turns.length;
     lv::snap_end(&g_snap);
@@ -513,6 +524,30 @@ uint32_t live_fill_feed(SwoftyTelemetryFeed &f)
 }
 
 bool live_verify() { return g_on && g_verify; }
+
+void live_udp(const uint8_t *buf, size_t len)
+{
+    if (!g_on)
+        return;
+    bool read;
+    {
+        std::lock_guard<std::mutex> u(g_udp_lock);
+        read = g_udp.feed(buf, len, GetTickCount64());
+    }
+    if (read && !g_udp_said.exchange(true)) {
+        DWORD err = GetLastError();
+        swofty::log("[live] reading the session clock, lap count, race control messages, DRS, pit timing and identity "
+                    "from the game's UDP packets (format %d)",
+                    buf[0] | buf[1] << 8);
+        SetLastError(err);
+    }
+}
+
+swofty_core::live::udp::Moments live_udp_take()
+{
+    std::lock_guard<std::mutex> u(g_udp_lock);
+    return g_udp.take();
+}
 
 const SwoftyTelemetryFeed &live_memory_view() { return g_mem_view; }
 

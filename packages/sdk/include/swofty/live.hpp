@@ -269,6 +269,89 @@ inline std::optional<uint8_t> pit_stops(const Car &c)
     return has(c, SWOFTY_LIVE_HAVE_PIT_LANE) ? std::optional<uint8_t>(c.pit_stops) : std::nullopt;
 }
 
+enum class DriverStatus : uint8_t { garage = 0, flying_lap = 1, in_lap = 2, out_lap = 3, on_track = 4 };
+
+// The session clock and lap count, from the game's UDP Session packet (see live.md for each field's source).
+inline std::optional<float> time_left_s(const Session &s)
+{
+    return has(s, SWOFTY_LIVE_SHAVE_TIME_LEFT) ? std::optional<float>(s.time_left_s) : std::nullopt;
+}
+
+inline std::optional<uint32_t> total_laps(const Session &s)
+{
+    return has(s, SWOFTY_LIVE_SHAVE_TOTAL_LAPS) ? std::optional<uint32_t>(s.total_laps) : std::nullopt;
+}
+
+struct FastestLap {
+    uint32_t vehicle;
+    uint32_t lap_ms;
+};
+
+inline std::optional<FastestLap> fastest_lap(const Session &s)
+{
+    if (!has(s, SWOFTY_LIVE_SHAVE_FASTEST_LAP) || !s.fastest_lap_ms)
+        return std::nullopt;
+    return FastestLap{s.fastest_lap_vehicle, s.fastest_lap_ms};
+}
+
+inline std::optional<uint8_t> safety_car_phase(const Session &s)
+{
+    return has(s, SWOFTY_LIVE_SHAVE_SAFETY_CAR_PHASE) ? std::optional<uint8_t>(s.safety_car_phase) : std::nullopt;
+}
+
+inline std::optional<bool> drs_enabled(const Session &s)
+{
+    return has(s, SWOFTY_LIVE_SHAVE_DRS) ? std::optional<bool>(s.drs_enabled != 0) : std::nullopt;
+}
+
+inline std::optional<uint8_t> start_lights(const Session &s)
+{
+    return has(s, SWOFTY_LIVE_SHAVE_START_LIGHTS) ? std::optional<uint8_t>(s.start_lights) : std::nullopt;
+}
+
+struct PitWindow {
+    uint8_t ideal_lap, latest_lap, rejoin_position;
+};
+
+inline std::optional<PitWindow> pit_window(const Session &s)
+{
+    if (!has(s, SWOFTY_LIVE_SHAVE_PIT_WINDOW))
+        return std::nullopt;
+    return PitWindow{s.pit_window_ideal_lap, s.pit_window_latest_lap, s.pit_rejoin_position};
+}
+
+inline std::optional<bool> drs_allowed(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_DRS_ALLOWED) ? std::optional<bool>(d.drs_allowed != 0) : std::nullopt;
+}
+
+inline std::optional<bool> pit_limiter(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_PIT_LIMITER) ? std::optional<bool>(d.pit_limiter != 0) : std::nullopt;
+}
+
+inline std::optional<int8_t> fia_flag(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_FIA_FLAG) ? std::optional<int8_t>(d.fia_flag) : std::nullopt;
+}
+
+inline std::optional<DriverStatus> driver_status(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_DRIVER_STATUS) && d.driver_status <= 4
+               ? std::optional<DriverStatus>(static_cast<DriverStatus>(d.driver_status))
+               : std::nullopt;
+}
+
+inline std::optional<uint8_t> race_number(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_IDENTITY) ? std::optional<uint8_t>(d.race_number) : std::nullopt;
+}
+
+inline std::optional<uint32_t> team_colour(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_IDENTITY) && d.team_colour ? std::optional<uint32_t>(d.team_colour) : std::nullopt;
+}
+
 inline GameMode game_mode(const Session &s)
 {
     return has(s, SWOFTY_LIVE_SHAVE_GAME_MODE) ? static_cast<GameMode>(s.game_mode) : GameMode::unknown;

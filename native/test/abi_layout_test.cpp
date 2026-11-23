@@ -87,8 +87,15 @@ ADDED
 
 // SwoftyLiveSession keeps its size; version 6 takes the first two reserved words.
 static_assert(sizeof(SwoftyLiveSession) == 440 && offsetof(SwoftyLiveSession, on_track) == 404);
-static_assert(offsetof(SwoftyLiveSession, time_left_s) == 408 && offsetof(SwoftyLiveSession, total_laps) == 412 &&
-              offsetof(SwoftyLiveSession, reserved) == 416);
+static_assert(offsetof(SwoftyLiveSession, time_left_s) == 408 && offsetof(SwoftyLiveSession, total_laps) == 412);
+// The broadcast fields take the next four.
+static_assert(offsetof(SwoftyLiveSession, duration_s) == 416 && offsetof(SwoftyLiveSession, fastest_lap_ms) == 420 &&
+              offsetof(SwoftyLiveSession, fastest_lap_vehicle) == 424 && offsetof(SwoftyLiveSession, safety_car_phase) == 425 &&
+              offsetof(SwoftyLiveSession, drs_enabled) == 426 && offsetof(SwoftyLiveSession, drs_reason) == 427 &&
+              offsetof(SwoftyLiveSession, pit_window_ideal_lap) == 428 &&
+              offsetof(SwoftyLiveSession, pit_window_latest_lap) == 429 &&
+              offsetof(SwoftyLiveSession, pit_rejoin_position) == 430 && offsetof(SwoftyLiveSession, start_lights) == 431 &&
+              offsetof(SwoftyLiveSession, reserved) == 432);
 
 // SwoftyLiveCarDetail (table version 6).
 #define DETAIL                                                                                                                   \
@@ -109,7 +116,18 @@ static_assert(offsetof(SwoftyLiveSession, time_left_s) == 408 && offsetof(Swofty
     X(best_lap_ms, 72)                                                                                                           \
     X(best_lap_number, 76)                                                                                                       \
     X(best_sector_ms, 80)                                                                                                        \
-    X(reserved, 92)
+    X(drs_allowed, 92)                                                                                                           \
+    X(pit_limiter, 93)                                                                                                           \
+    X(fia_flag, 94)                                                                                                              \
+    X(driver_status, 95)                                                                                                         \
+    X(drs_distance_m, 96)                                                                                                        \
+    X(pit_lane_timer_active, 100)                                                                                                \
+    X(race_number, 101)                                                                                                          \
+    X(team_id, 102)                                                                                                              \
+    X(pit_lane_ms, 104)                                                                                                          \
+    X(pit_stop_ms, 108)                                                                                                          \
+    X(team_colour, 112)                                                                                                          \
+    X(reserved, 116)
 static_assert(sizeof(SwoftyLiveCarDetail) == 160 && alignof(SwoftyLiveCarDetail) == 8);
 #define X(f, at) static_assert(offsetof(SwoftyLiveCarDetail, f) == (at), #f);
 DETAIL

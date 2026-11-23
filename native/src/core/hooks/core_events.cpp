@@ -72,6 +72,12 @@ static_assert(declared<swofty::race_control::events::SafetyCar>(SWOFTY_POINT_NOT
 static_assert(declared<swofty::race_control::events::RedFlag>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::race_control::events::Sector>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::race_control::events::CarStatus>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::Penalty>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::PenaltyServed>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::Drs>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::StartLights>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::SafetyCarPhase>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::FastestLap>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::tyre_damage::events::Damage>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::speech::events::Line>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::speech::events::Timed>(SWOFTY_POINT_NOTIFY));
@@ -171,6 +177,12 @@ bool session_lap(uint32_t car)
 bool session_flag(swofty::race_control::events::Flag &payload) { return fire(payload); }
 bool session_safety_car(swofty::race_control::events::SafetyCar &payload) { return fire(payload); }
 bool session_red_flag(swofty::race_control::events::RedFlag &payload) { return fire(payload); }
+bool session_penalty(swofty::race_control::events::Penalty &payload) { return fire(payload); }
+bool session_penalty_served(swofty::race_control::events::PenaltyServed &payload) { return fire(payload); }
+bool session_drs(swofty::race_control::events::Drs &payload) { return fire(payload); }
+bool session_start_lights(swofty::race_control::events::StartLights &payload) { return fire(payload); }
+bool session_safety_car_phase(swofty::race_control::events::SafetyCarPhase &payload) { return fire(payload); }
+bool session_fastest_lap(swofty::race_control::events::FastestLap &payload) { return fire(payload); }
 bool session_sector(swofty::race_control::events::Sector &payload) { return fire(payload); }
 bool session_car_status(swofty::race_control::events::CarStatus &payload) { return fire(payload); }
 bool car_tyre_damage(swofty::tyre_damage::events::Damage &payload) { return fire(payload); }

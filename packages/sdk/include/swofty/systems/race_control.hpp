@@ -166,6 +166,9 @@ inline std::optional<State> now()
     return read(*s, lap);
 }
 
+// The penalty a car serves (session.penalty.served).
+enum class Served : uint8_t { drive_through = 1, stop_go = 2 };
+
 namespace events {
 
 // The session's flag or its set of yellow sectors changes (notify). The 1.x name flag fires with it, with
@@ -224,6 +227,140 @@ struct CarStatus {
     int32_t lap;
 };
 
+// Race control issues a penalty or a warning (notify), from the game's UDP Event packet PENA. car and other_car
+// are vehicle ids (other_car SWOFTY_LIVE_NO_CAR when none); penalty_type and infringement are the game's numbers
+// (see swofty::race_control::penalty_name and infringement_name); seconds is the time added, lap the lap it was given
+// on.
+struct Penalty {
+    static constexpr const char *point = "session.penalty";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint32_t other_car;
+    uint8_t penalty_type;
+    uint8_t infringement;
+    uint8_t seconds;
+    uint8_t places_gained;
+    int32_t lap;
+};
+
+// A car serves a drive through or a stop and go (notify), from DTSV and SGSV. stop_s is the time stationary (format
+// 2025; 0 otherwise).
+struct PenaltyServed {
+    static constexpr const char *point = "session.penalty.served";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;
+    Served kind;
+    uint8_t pad[3];
+    float stop_s;
+    int32_t lap;
+};
+
+// Race control enables or disables DRS (notify). reason is the session's drs_reason.
+struct Drs {
+    static constexpr const char *point = "session.drs";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint8_t enabled;
+    uint8_t reason;
+    uint8_t pad[2];
+    int32_t lap;
+};
+
+// A start light comes on (lights 1 to 5) or the lights go out (lights 0, out 1) (notify).
+struct StartLights {
+    static constexpr const char *point = "session.start_lights";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint8_t lights;
+    uint8_t out;
+    uint8_t pad[2];
+    int32_t lap;
+};
+
+// The safety car's phase changes (notify): SWOFTY_LIVE_SC_DEPLOYED, _RETURNING (in this lap), _RETURNED or
+// _RESUME. deployment is the deployment it belongs to; previous is 0xff for the first phase of a session.
+struct SafetyCarPhase {
+    static constexpr const char *point = "session.safety_car.phase";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    Deployment deployment;
+    uint8_t phase;
+    uint8_t previous;
+    uint8_t pad;
+    int32_t lap;
+};
+
+// The session's fastest lap changes hands or gets faster (notify). car and previous_car are vehicle ids
+// (previous_car SWOFTY_LIVE_NO_CAR for the first fastest lap); lap is the holder's lap.
+struct FastestLap {
+    static constexpr const char *point = "session.fastest_lap";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint32_t lap_ms;
+    uint32_t previous_car;
+    uint32_t previous_ms;
+    int32_t lap;
+};
+
+}
+
+// The game's penalty type numbers (the UDP PENA penaltyType ones).
+inline const char *penalty_name(uint8_t type)
+{
+    static const char *const names[] = {"drive through", "stop go", "grid penalty", "penalty reminder", "time penalty",
+                                        "warning", "disqualified", "removed from formation lap", "parked too long timer",
+                                        "tyre regulations", "this lap invalidated", "this and next lap invalidated",
+                                        "this lap invalidated without reason", "this and next lap invalidated without reason",
+                                        "this and previous lap invalidated", "this and previous lap invalidated without reason",
+                                        "retired", "black flag timer"};
+    return type < sizeof names / sizeof *names ? names[type] : "unknown";
+}
+
+// The game's infringement type numbers (the UDP PENA infringementType ones).
+inline const char *infringement_name(uint8_t type)
+{
+    static const char *const names[] = {"blocking by slow driving", "blocking by wrong way driving",
+                                        "reversing off the start line", "big collision", "small collision",
+                                        "collision failed to hand back position single", "collision failed to hand back position multiple",
+                                        "corner cutting gained time", "corner cutting overtake single",
+                                        "corner cutting overtake multiple", "crossed pit exit lane", "ignoring blue flags",
+                                        "ignoring yellow flags", "ignoring drive through", "too many drive throughs",
+                                        "drive through reminder serve within n laps", "drive through reminder serve this lap",
+                                        "pit lane speeding", "parked for too long", "ignoring tyre regulations",
+                                        "too many penalties", "multiple warnings", "approaching disqualification",
+                                        "tyre regulations select single", "tyre regulations select multiple",
+                                        "lap invalidated corner cutting", "lap invalidated running wide",
+                                        "corner cutting ran wide gained time minor", "corner cutting ran wide gained time significant",
+                                        "corner cutting ran wide gained time extreme", "lap invalidated wall riding",
+                                        "lap invalidated flashback used", "lap invalidated reset to track",
+                                        "blocking the pitlane", "jump start", "safety car to car collision",
+                                        "safety car illegal overtake", "safety car exceeding allowed pace",
+                                        "virtual safety car exceeding allowed pace", "formation lap below allowed speed",
+                                        "formation lap parking", "retired mechanical failure", "retired terminally damaged",
+                                        "safety car falling too far back", "black flag timer", "unserved stop go penalty",
+                                        "unserved drive through penalty", "engine component change", "gearbox change",
+                                        "parc ferme change", "league grid penalty", "retry penalty", "illegal time gain",
+                                        "mandatory pitstop", "attribute assigned"};
+    return type < sizeof names / sizeof *names ? names[type] : "unknown";
+}
+
+inline const char *phase_name(uint8_t phase)
+{
+    switch (phase) {
+    case SWOFTY_LIVE_SC_DEPLOYED:
+        return "deployed";
+    case SWOFTY_LIVE_SC_RETURNING:
+        return "returning";
+    case SWOFTY_LIVE_SC_RETURNED:
+        return "returned";
+    case SWOFTY_LIVE_SC_RESUME:
+        return "resume race";
+    default:
+        return "none";
+    }
 }
 
 }

@@ -1,4 +1,5 @@
 #include "core/live/race_control.hpp"
+#include "core/live/live_udp.hpp"
 #include "core/live/tyre_damage.hpp"
 
 #include "core/hooks/core_events.hpp"
@@ -92,6 +93,39 @@ void fire(rcl::Moments &m)
     }
     for (auto &e : m.sectors)
         ev::session_sector(e);
+    for (auto &e : m.drs) {
+        line("drs %s, reason %u, lap %d", e.enabled ? "enabled" : "disabled", e.reason, e.lap);
+        ev::session_drs(e);
+    }
+    for (auto &e : m.lights) {
+        line(e.out ? "lights out, lap %d" : "start lights %u, lap %d", e.out ? e.lap : e.lights, e.lap);
+        ev::session_start_lights(e);
+    }
+    for (auto &e : m.phases) {
+        line("safety car phase %s (was %s), %s, lap %d", rc::phase_name(e.phase), rc::phase_name(e.previous),
+             rc::name(e.deployment), e.lap);
+        ev::session_safety_car_phase(e);
+    }
+    for (auto &e : m.fastest) {
+        line("fastest lap vehicle %u %u ms (was vehicle %u %u ms), lap %d", e.car, e.lap_ms, e.previous_car, e.previous_ms,
+             e.lap);
+        ev::session_fastest_lap(e);
+    }
+}
+
+void fire_udp(lv::udp::Moments &m)
+{
+    namespace ev = swofty_core::hooks::events;
+    for (auto &e : m.penalties) {
+        line("vehicle %u %s for %s (other vehicle %u, %u s, lap %d, places gained %u)", e.car, rc::penalty_name(e.penalty_type),
+             rc::infringement_name(e.infringement), e.other_car, e.seconds, e.lap, e.places_gained);
+        ev::session_penalty(e);
+    }
+    for (auto &e : m.served) {
+        line("vehicle %u served a %s, stop %.1f s", e.car, e.kind == rc::Served::stop_go ? "stop go" : "drive through",
+             e.stop_s);
+        ev::session_penalty_served(e);
+    }
 }
 
 void fire_tyres(std::vector<td::events::Damage> &m)
@@ -127,6 +161,13 @@ void race_control_tick(const lv::Snapshot &published)
         fire(m);
     if (!tyres.empty())
         fire_tyres(tyres);
+    lv::udp::Moments udp = runtime::live_udp_take();
+    for (auto &e : udp.penalties)
+        e.lap = e.lap ? e.lap : rcl::leader_lap(*s);
+    for (auto &e : udp.served)
+        e.lap = rcl::leader_lap(*s);
+    if (!udp.empty())
+        fire_udp(udp);
 }
 
 }

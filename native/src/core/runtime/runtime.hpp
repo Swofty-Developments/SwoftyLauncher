@@ -283,6 +283,8 @@ uint32_t live_fill_feed(SwoftyTelemetryFeed &f);
 bool live_verify();
 const SwoftyTelemetryFeed &live_memory_view();
 std::vector<LiveEvent> live_take_events();
+// The live state's UDP source (core/live/live_udp.hpp): one packet from the sendto hook, any thread.
+void live_udp(const uint8_t *buf, size_t len);
 void placed_record_setup();
 void placed_record_crash_text(char *out, size_t cap);
 // The session host (services/session_host.cpp): the core's reports to the session plugin's listeners. Each does

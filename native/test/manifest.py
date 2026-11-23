@@ -132,6 +132,7 @@ UNITS = [
     Unit('player_name', 'Player name sanitising unit test'),
     Unit('postfx', 'Post-process pass logic unit test'),
     Unit('race_control', 'Race control events unit test', 'zig'),
+    Unit('live_udp', 'Live state UDP source and broadcast race control events unit test', 'zig'),
     Unit('tyre_damage', 'Tyre damage events unit test', 'zig'),
     Unit('speech', 'Speech events unit test', 'zig'),
     Unit('race_retirement', 'Race retirement driver guard unit test'),

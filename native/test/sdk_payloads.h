@@ -144,6 +144,45 @@ typedef struct SwoftyEvCarStatus {
     int32_t lap;
 } SwoftyEvCarStatus;
 
+typedef struct SwoftyEvPenalty {
+    uint32_t size, payload_version;
+    uint32_t car, other_car;
+    uint8_t penalty_type, infringement, seconds, places_gained;
+    int32_t lap;
+} SwoftyEvPenalty;
+
+typedef struct SwoftyEvPenaltyServed {
+    uint32_t size, payload_version;
+    uint32_t car;
+    uint8_t kind, pad[3];
+    float stop_s;
+    int32_t lap;
+} SwoftyEvPenaltyServed;
+
+typedef struct SwoftyEvDrs {
+    uint32_t size, payload_version;
+    uint8_t enabled, reason, pad[2];
+    int32_t lap;
+} SwoftyEvDrs;
+
+typedef struct SwoftyEvStartLights {
+    uint32_t size, payload_version;
+    uint8_t lights, out, pad[2];
+    int32_t lap;
+} SwoftyEvStartLights;
+
+typedef struct SwoftyEvSafetyCarPhase {
+    uint32_t size, payload_version;
+    uint8_t deployment, phase, previous, pad;
+    int32_t lap;
+} SwoftyEvSafetyCarPhase;
+
+typedef struct SwoftyEvFastestLap {
+    uint32_t size, payload_version;
+    uint32_t car, lap_ms, previous_car, previous_ms;
+    int32_t lap;
+} SwoftyEvFastestLap;
+
 typedef struct SwoftyEvControllersRebuilt {
     uint32_t size, payload_version;
     SwoftyEvCar car;
@@ -296,6 +335,12 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvRedFlag, race_control, RedFlag, 16)                                                                                \
     X(SwoftyEvSector, race_control, Sector, 20)                                                                                  \
     X(SwoftyEvCarStatus, race_control, CarStatus, 20)                                                                            \
+    X(SwoftyEvPenalty, race_control, Penalty, 24)                                                                                \
+    X(SwoftyEvPenaltyServed, race_control, PenaltyServed, 24)                                                                    \
+    X(SwoftyEvDrs, race_control, Drs, 16)                                                                                        \
+    X(SwoftyEvStartLights, race_control, StartLights, 16)                                                                        \
+    X(SwoftyEvSafetyCarPhase, race_control, SafetyCarPhase, 16)                                                                  \
+    X(SwoftyEvFastestLap, race_control, FastestLap, 28)                                                                          \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, 32)                                                                  \
     X(SwoftyEvHudVisible, spectator, HudVisible, 32)                                                                             \
     X(SwoftyEvLapsRecorded, laps, Recorded, 24)                                                                                  \
@@ -381,6 +426,32 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvCarStatus, race_control, CarStatus, status, 12)                                                                    \
     X(SwoftyEvCarStatus, race_control, CarStatus, previous, 13)                                                                  \
     X(SwoftyEvCarStatus, race_control, CarStatus, lap, 16)                                                                       \
+    X(SwoftyEvPenalty, race_control, Penalty, car, 8)                                                                            \
+    X(SwoftyEvPenalty, race_control, Penalty, other_car, 12)                                                                     \
+    X(SwoftyEvPenalty, race_control, Penalty, penalty_type, 16)                                                                  \
+    X(SwoftyEvPenalty, race_control, Penalty, infringement, 17)                                                                  \
+    X(SwoftyEvPenalty, race_control, Penalty, seconds, 18)                                                                       \
+    X(SwoftyEvPenalty, race_control, Penalty, places_gained, 19)                                                                 \
+    X(SwoftyEvPenalty, race_control, Penalty, lap, 20)                                                                           \
+    X(SwoftyEvPenaltyServed, race_control, PenaltyServed, car, 8)                                                                \
+    X(SwoftyEvPenaltyServed, race_control, PenaltyServed, kind, 12)                                                              \
+    X(SwoftyEvPenaltyServed, race_control, PenaltyServed, stop_s, 16)                                                            \
+    X(SwoftyEvPenaltyServed, race_control, PenaltyServed, lap, 20)                                                               \
+    X(SwoftyEvDrs, race_control, Drs, enabled, 8)                                                                                \
+    X(SwoftyEvDrs, race_control, Drs, reason, 9)                                                                                 \
+    X(SwoftyEvDrs, race_control, Drs, lap, 12)                                                                                   \
+    X(SwoftyEvStartLights, race_control, StartLights, lights, 8)                                                                 \
+    X(SwoftyEvStartLights, race_control, StartLights, out, 9)                                                                    \
+    X(SwoftyEvStartLights, race_control, StartLights, lap, 12)                                                                   \
+    X(SwoftyEvSafetyCarPhase, race_control, SafetyCarPhase, deployment, 8)                                                       \
+    X(SwoftyEvSafetyCarPhase, race_control, SafetyCarPhase, phase, 9)                                                            \
+    X(SwoftyEvSafetyCarPhase, race_control, SafetyCarPhase, previous, 10)                                                        \
+    X(SwoftyEvSafetyCarPhase, race_control, SafetyCarPhase, lap, 12)                                                             \
+    X(SwoftyEvFastestLap, race_control, FastestLap, car, 8)                                                                      \
+    X(SwoftyEvFastestLap, race_control, FastestLap, lap_ms, 12)                                                                  \
+    X(SwoftyEvFastestLap, race_control, FastestLap, previous_car, 16)                                                            \
+    X(SwoftyEvFastestLap, race_control, FastestLap, previous_ms, 20)                                                             \
+    X(SwoftyEvFastestLap, race_control, FastestLap, lap, 24)                                                                     \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, car, 8)                                                              \
     X(SwoftyEvControllersRebuilt, cars, ControllersRebuilt, reason, 24)                                                          \
     X(SwoftyEvHudVisible, spectator, HudVisible, following, 8)                                                                   \
