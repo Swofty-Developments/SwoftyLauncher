@@ -95,7 +95,8 @@ static_assert(offsetof(SwoftyLiveSession, duration_s) == 416 && offsetof(SwoftyL
               offsetof(SwoftyLiveSession, pit_window_ideal_lap) == 428 &&
               offsetof(SwoftyLiveSession, pit_window_latest_lap) == 429 &&
               offsetof(SwoftyLiveSession, pit_rejoin_position) == 430 && offsetof(SwoftyLiveSession, start_lights) == 431 &&
-              offsetof(SwoftyLiveSession, reserved) == 432);
+              offsetof(SwoftyLiveSession, hud_visible) == 432 && offsetof(SwoftyLiveSession, hud_hidden_by) == 433 &&
+              offsetof(SwoftyLiveSession, reserved) == 436);
 
 // SwoftyLiveCarDetail (table version 6).
 #define DETAIL                                                                                                                   \

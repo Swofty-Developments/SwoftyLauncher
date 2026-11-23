@@ -5,6 +5,8 @@
 #include "core/live/live_state.hpp"
 #include "core/live/live_telemetry_fill.hpp"
 #include "core/live/live_turns.hpp"
+#include "core/frontend/view_state.hpp"
+#include "core/live/live_hud.hpp"
 #include "core/live/live_udp.hpp"
 #include "core/live/live_tyre_images.hpp"
 #include "core/live/race_control.hpp"
@@ -252,6 +254,8 @@ void publish()
         else
             g_udp.end();
     }
+    lv::hud::apply(g_snap.ses, lv::hud::from_view(frontend::view::flow_seen(), frontend::view::current().flags,
+                                                  frontend::view::pause_reasons()));
     g_snap.official = g_official;
     g_snap.turn_length = g_turns.length;
     lv::snap_end(&g_snap);

@@ -78,6 +78,7 @@ class ViewState {
 public:
     frontend::view::State current() const { return unpack(packed.load(std::memory_order_acquire)); }
     uint32_t pause_reasons() const { return pause_mask.load(std::memory_order_relaxed); }
+    bool seen_flow() const { return flow_seen.load(std::memory_order_relaxed); }
     void flow(uint32_t hash, uint32_t to);
     void setup();
     void photo_on();
@@ -416,6 +417,8 @@ void ViewState::setup()
 State current() { return view_state.current(); }
 
 uint32_t pause_reasons() { return view_state.pause_reasons(); }
+
+bool flow_seen() { return view_state.seen_flow(); }
 
 void flow(uint32_t hash, uint32_t to) { view_state.flow(hash, to); }
 

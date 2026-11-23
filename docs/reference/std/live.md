@@ -270,7 +270,10 @@ typedef struct SwoftyLiveSession {
     uint8_t pit_window_latest_lap;
     uint8_t pit_rejoin_position;
     uint8_t start_lights;          // 1 to 5 lit, 0 from lights out (SWOFTY_LIVE_SHAVE_START_LIGHTS)
-    uint32_t reserved[2];
+    uint8_t hud_visible;           // 1 while the game shows its race HUD (SWOFTY_LIVE_SHAVE_HUD)
+    uint8_t hud_hidden_by;         // SWOFTY_LIVE_HUD_* bits: what hides it
+    uint8_t pad2[2];
+    uint32_t reserved[1];
 } SwoftyLiveSession;
 ```
 
@@ -291,6 +294,32 @@ if (auto f = live::fastest_lap(*s))
 | `live::fastest_lap(s)` | `live::FastestLap{vehicle, lap_ms}`, empty when the bit is clear |
 | `live::safety_car_phase(s)`, `live::drs_enabled(s)`, `live::start_lights(s)` | `std::optional`, empty until race control sends one this session |
 | `live::pit_window(s)` | `live::PitWindow{ideal_lap, latest_lap, rejoin_position}` |
+| `live::hud_visible(s)` | `std::optional<bool>`: whether the game shows its race HUD now; empty when the bit is clear |
+| `live::hud_hidden_by(s)` | the `SWOFTY_LIVE_HUD_*` bits that hide it, 0 while it shows |
+
+### The race HUD
+
+An overlay that stands in for the stock HUD hides with it:
+
+```cpp
+void on_frame(double)
+{
+    auto s = live::session();
+    if (!s || live::hud_visible(*s) == false)
+        return; // menus, the track intro, the grid, cutscenes, replays, photo mode, the pause menu
+    draw_my_hud(*s);
+}
+```
+
+| `hud_hidden_by` bit | The game is in |
+|---|---|
+| `SWOFTY_LIVE_HUD_MENU` | no driving view: a menu, the track intro and its grid walk, the starting grid before Start Race, the results |
+| `SWOFTY_LIVE_HUD_CUTSCENE` | a cutscene (the intro cameras, the formation lap cinematic, the winner and podium sequences) |
+| `SWOFTY_LIVE_HUD_REPLAY` | an instant replay, a flashback's replay or the highlights |
+| `SWOFTY_LIVE_HUD_PHOTO` | photo mode |
+| `SWOFTY_LIVE_HUD_PAUSED` | a held pause reason (`swofty::view::pause_reasons()`), the pause menu among them |
+
+`hud_visible` is 1 while driving and while spectating (the spectator HUD). The value comes from the game's flow states (the `[view] kind=… flags=…` log lines) and its pause calls, the same sources as [`swofty::view`](./events#pause-and-resume) and the post-processing view. The game's own HUD setting (HUD off in the options) is not read. `SWOFTY_LIVE_SHAVE_HUD` is clear until the core has seen a flow state, and `live::session()` itself is empty outside a session.
 
 The watched car follows the spectator director only while the spectator HUD is up. The safety car cinematic and the winner sequence also switch the director on, and those do not count. A red flag is reported when the game's red flag system says so, or when every marshal zone reads red; the game's own byte stayed 0 through a red flag in a race, so the zones are the second witness. The safety car value is 0 while a red flag is out, because the game's byte also reads 1 then.
 

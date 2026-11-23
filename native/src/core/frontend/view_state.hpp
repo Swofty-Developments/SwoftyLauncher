@@ -27,6 +27,7 @@ struct State {
 };
 
 State current();
+bool flow_seen();
 uint32_t pause_reasons();
 void setup();
 void load_trackside_cameras(std::string_view track);

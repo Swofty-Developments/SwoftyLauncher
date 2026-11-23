@@ -2,6 +2,7 @@
 // per-car DRS, pit limiter, FIA flag, driver status, pit timing and identity decoded from the game's UDP packets and
 // merged into a snapshot without overwriting the memory read, the race control messages it queues, the broadcast
 // moments the race control tracker fires from them, and the SDK reads in swofty/live.hpp.
+#include "core/live/live_hud.hpp"
 #include "core/live/live_udp.hpp"
 #include "core/live/race_control.hpp"
 
@@ -376,6 +377,30 @@ static void test_points()
            "the broadcast points read the live state");
 }
 
+static void test_hud()
+{
+    namespace fv = frontend::view;
+    namespace hud = swofty_core::live::hud;
+    SwoftyLiveSession s{};
+    auto at = [&](bool seen, uint32_t flags, uint32_t pause) {
+        hud::apply(s, hud::from_view(seen, flags, pause));
+        return swofty::live::hud_visible(s);
+    };
+    expect(!at(false, fv::MENU, 0) && !(s.have & SWOFTY_LIVE_SHAVE_HUD), "no flow state seen: the bit stays clear");
+    expect(at(true, fv::MENU, 0) == false && swofty::live::hud_hidden_by(s) == SWOFTY_LIVE_HUD_MENU,
+           "the track intro and the grid (no driving view) hide it");
+    expect(at(true, fv::CUTSCENE, 0) == false && swofty::live::hud_hidden_by(s) == SWOFTY_LIVE_HUD_CUTSCENE,
+           "a cutscene hides it");
+    expect(at(true, 0, 0) == true && swofty::live::hud_hidden_by(s) == 0, "driving shows it");
+    expect(at(true, 0, 1u << 3) == false && swofty::live::hud_hidden_by(s) == SWOFTY_LIVE_HUD_PAUSED,
+           "a pause reason hides it");
+    expect(at(true, fv::REPLAY | fv::PHOTO, 0) == false &&
+               swofty::live::hud_hidden_by(s) == (SWOFTY_LIVE_HUD_REPLAY | SWOFTY_LIVE_HUD_PHOTO),
+           "replay and photo mode hide it");
+    expect(at(true, fv::SPECTATING, 0) == true, "spectating shows the spectator HUD");
+    expect(!at(false, 0, 0) && s.hud_visible == 0 && s.hud_hidden_by == 0, "losing the flow clears the fields");
+}
+
 static void test_sdk_fake()
 {
     swofty::fake::Live fake;
@@ -401,6 +426,7 @@ int main()
     test_broadcast_moments();
     test_fastest_from_memory();
     test_points();
+    test_hud();
     test_sdk_fake();
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;

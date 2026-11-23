@@ -1244,12 +1244,19 @@ typedef struct SwoftyLiveCar {
 #define SWOFTY_LIVE_SHAVE_DRS (1ull << 17)
 #define SWOFTY_LIVE_SHAVE_PIT_WINDOW (1ull << 18)
 #define SWOFTY_LIVE_SHAVE_START_LIGHTS (1ull << 19)
+#define SWOFTY_LIVE_SHAVE_HUD (1ull << 20)
 
 #define SWOFTY_LIVE_NO_CAR 0xff
 #define SWOFTY_LIVE_SC_DEPLOYED 0
 #define SWOFTY_LIVE_SC_RETURNING 1
 #define SWOFTY_LIVE_SC_RETURNED 2
 #define SWOFTY_LIVE_SC_RESUME 3
+
+#define SWOFTY_LIVE_HUD_MENU 1
+#define SWOFTY_LIVE_HUD_CUTSCENE 2
+#define SWOFTY_LIVE_HUD_REPLAY 4
+#define SWOFTY_LIVE_HUD_PHOTO 8
+#define SWOFTY_LIVE_HUD_PAUSED 16
 
 #define SWOFTY_LIVE_MODE_UNKNOWN 0
 #define SWOFTY_LIVE_MODE_GRAND_PRIX 1
@@ -1304,7 +1311,15 @@ typedef struct SwoftyLiveSession {
     uint8_t pit_rejoin_position;
     /* The start lights (SWOFTY_LIVE_SHAVE_START_LIGHTS): the lights lit, 1 to 5, and 0 from lights out. */
     uint8_t start_lights;
-    uint32_t reserved[2];
+    /* The race HUD (SWOFTY_LIVE_SHAVE_HUD): hud_visible 1 while the game shows its race HUD (driving, or its
+       spectator HUD while spectating), 0 while it hides it; hud_hidden_by is what hides it, SWOFTY_LIVE_HUD_*
+       bits: _MENU no driving view (menus, the track intro, the starting grid, the results), _CUTSCENE, _REPLAY,
+       _PHOTO photo mode, _PAUSED a pause reason held (the pause menu). From the game's flow states and pause calls,
+       not its HUD setting. */
+    uint8_t hud_visible;
+    uint8_t hud_hidden_by;
+    uint8_t pad2[2];
+    uint32_t reserved[1];
 } SwoftyLiveSession;
 
 #define SWOFTY_LIVE_TURN_OFFICIAL 1

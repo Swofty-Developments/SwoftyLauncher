@@ -310,6 +310,19 @@ inline std::optional<uint8_t> start_lights(const Session &s)
     return has(s, SWOFTY_LIVE_SHAVE_START_LIGHTS) ? std::optional<uint8_t>(s.start_lights) : std::nullopt;
 }
 
+// Whether the game shows its race HUD now: false through menus, the track intro, the grid, cutscenes,
+// replays, photo mode and the pause menu. Empty when the core cannot tell (no flow states seen).
+inline std::optional<bool> hud_visible(const Session &s)
+{
+    return has(s, SWOFTY_LIVE_SHAVE_HUD) ? std::optional<bool>(s.hud_visible != 0) : std::nullopt;
+}
+
+// What hides the race HUD, SWOFTY_LIVE_HUD_* bits; 0 while it shows or when the bit is clear.
+inline uint8_t hud_hidden_by(const Session &s)
+{
+    return has(s, SWOFTY_LIVE_SHAVE_HUD) ? s.hud_hidden_by : 0;
+}
+
 struct PitWindow {
     uint8_t ideal_lap, latest_lap, rejoin_position;
 };
