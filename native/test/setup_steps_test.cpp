@@ -40,6 +40,29 @@ int main()
     c::SetupSteps keep = steps;
     expect(!c::read_setup_steps(0, read, steps) && steps == keep, "a null block reads nothing");
     expect(!c::read_setup_steps(base + 0x300, read, steps) && steps == keep, "an unreadable block leaves the steps alone");
+    std::vector<uint8_t> entry(0x2000, 0);
+    uintptr_t eb = reinterpret_cast<uintptr_t>(entry.data());
+    auto eread = [&](uintptr_t a, void *out, size_t n) {
+        if (a < eb || a + n > eb + entry.size())
+            return false;
+        std::memcpy(out, entry.data() + (a - eb), n);
+        return true;
+    };
+    entry[1] = 5;
+    expect(c::setup_entry_block(eb, eread) == eb + 0x68 + 5 * 0x550, "the active slot is not limited to four");
+    entry[1] = 2;
+    expect(c::setup_entry_block(eb, eread) == eb + 0x68 + 2 * 0x550, "a race slot is entry+0x68+slot*0x550");
+    entry[0x30] = 1;
+    entry[0x34] = 1;
+    expect(c::setup_entry_block(eb, eread) == eb + 0x1058, "a fixed mode names its block");
+    entry[0x60] = 1;
+    expect(c::setup_entry_block(eb, eread) == eb + 0x68 + 2 * 0x550, "entry+0x60 set brings the slot back");
+    entry[0x60] = 0;
+    entry[0x34] = 9;
+    entry[0] = 3;
+    expect(c::setup_entry_block(eb, eread) == eb + 0x68 + 3 * 0x550, "an unknown mode uses the slot at entry+0");
+    expect(c::setup_entry_block(0, eread) == 0 && c::setup_entry_block(eb + 0x1fff, eread) == 0,
+           "an unreadable entry gives no block");
     std::printf(failed ? "%d failed\n" : "all passed\n", failed);
     return failed ? 1 : 0;
 }

@@ -232,9 +232,7 @@ void m_setup(safetyhook::Context &ctx)
     bool got = hooked && apply::content::read_setup_steps(t_apply_block, read, steps);
     uint32_t path = got ? 0 : 1;
     if (!got && ctx.rsi) {
-        uint8_t slot = 0;
-        if (read(ctx.rsi + 1, &slot, 1) && slot < 4)
-            got = apply::content::read_setup_steps(ctx.rsi + 0x68 + uintptr_t(slot) * 0x550, read, steps);
+        got = apply::content::read_setup_steps(apply::content::setup_entry_block(ctx.rsi, read), read, steps);
         if (got)
             path = 2;
     }
