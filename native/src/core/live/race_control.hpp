@@ -245,13 +245,16 @@ private:
         }
     }
 
-    // The start: each car's first frame over MOVING after lights out, and whether it moved while the lights were lit.
+    // The start. Other cars' speed refreshes about every 100 ms, so a car's move-off time is extrapolated back from its
+    // first two readings over MOVING at constant acceleration, clamped between lights out and the first reading.
     static constexpr float MOVING = 0.5f;
-    static constexpr uint64_t REACTION_WINDOW_MS = 10000;
+    static constexpr uint64_t REACTION_WINDOW_MS = 10000, SECOND_READING_MS = 500;
     struct Start {
         bool lit = false, out = false;
         uint64_t out_at = 0;
-        uint32_t jumped = 0, reported = 0;
+        uint32_t jumped = 0, reported = 0, moving = 0;
+        float first_v[SWOFTY_LIVE_MAX_CARS] = {};
+        uint64_t first_at[SWOFTY_LIVE_MAX_CARS] = {};
     };
 
     void start_moments(const Snapshot &s, uint64_t now, Moments &out)
@@ -270,16 +273,33 @@ private:
             return;
         for (uint32_t id = 0; id < SWOFTY_LIVE_MAX_CARS; id++) {
             uint32_t bit = 1u << id;
-            if (!s.present[id] || !(s.cars[id].have & SWOFTY_LIVE_HAVE_SPEED) || s.cars[id].speed <= MOVING ||
-                (start_.reported & bit))
+            if (!s.present[id] || !(s.cars[id].have & SWOFTY_LIVE_HAVE_SPEED) || (start_.reported & bit))
+                continue;
+            float v = s.cars[id].speed;
+            if (v <= MOVING)
                 continue;
             if (!start_.out) {
                 start_.jumped |= bit;
                 continue;
             }
+            if (!(start_.moving & bit)) {
+                start_.moving |= bit;
+                start_.first_v[id] = v;
+                start_.first_at[id] = now;
+                continue;
+            }
+            uint64_t t1 = start_.first_at[id];
+            float v1 = start_.first_v[id];
+            if (v == v1 && now - t1 < SECOND_READING_MS)
+                continue;
+            uint64_t moved = t1;
+            if (v > v1 && now > t1) {
+                double back = double(v1) * double(now - t1) / double(v - v1);
+                moved = back >= double(t1 - start_.out_at) ? start_.out_at : t1 - uint64_t(back);
+            }
             auto e = payload<rc::events::StartReaction>();
             e.car = id;
-            e.reaction_ms = uint32_t(now - start_.out_at);
+            e.reaction_ms = uint32_t(moved - start_.out_at);
             e.jumped = (start_.jumped & bit) != 0;
             out.reactions.push_back(e);
             start_.reported |= bit;

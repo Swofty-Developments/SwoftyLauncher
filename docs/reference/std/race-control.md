@@ -274,7 +274,7 @@ struct Classification {         // "session.classification", version 1: the fina
 struct StartReaction {          // "session.start_reaction", version 1: a car moves off after lights out
     uint32_t size, payload_version;
     uint32_t car;               // vehicle id
-    uint32_t reaction_ms;       // lights out to its first frame over 0.5 m/s
+    uint32_t reaction_ms;       // lights out to its move-off
     uint8_t jumped;             // 1 when it read over 0.5 m/s while the lights were lit
     uint8_t pad[3];
 };
@@ -299,9 +299,9 @@ The messages come from the game's UDP Event packet (see [Live state: from the ga
 | `session.safety_car.phase` | `SCAR` | deployed, in this lap, returned, resume race |
 | `session.fastest_lap` | `FTLP`, or memory's best laps (Steam) | when the session's fastest lap changes holder or time |
 | `session.classification` | Final Classification (8), formats 2024 and 2025 | once when the game sends the final classification, also after the live session has ended |
-| `session.start_reaction` | the start lights above and each car's speed (`SWOFTY_LIVE_HAVE_SPEED`) | once per car and start, on its first frame over 0.5 m/s in the ten seconds after lights out |
+| `session.start_reaction` | the start lights above and each car's speed (`SWOFTY_LIVE_HAVE_SPEED`) | once per car and start, on its second speed reading over 0.5 m/s in the ten seconds after lights out |
 
-`session.penalty`, `session.penalty.served` and `session.classification` fire as the game sends them. `session.start_reaction` times each car to the frame: the frame that reads the lights out and the car's first frame over 0.5 m/s, so at 60 fps a reaction reads up to about 17 ms late. A car that read over 0.5 m/s while the lights were lit has `jumped` set (the game's own jump start penalty is a `session.penalty`), and a new start sequence in the same session (a restart) times again. The other four follow the snapshot rules above, except that a value race control has not sent yet counts as a value: the first light, the first DRS message, the first safety car phase and the first fastest lap of a session fire once the session's first read is done. The chequered flag is `session.flag` with `Flag::chequered`, and retirements are `session.car.status` and `telemetry.retirement` (with the game's reason as `b`).
+`session.penalty`, `session.penalty.served` and `session.classification` fire as the game sends them. `session.start_reaction` takes lights out from the frame that reads it and each car's move-off from its speed: the live state reads the other cars' speed about every 100 ms, so the move-off is extrapolated back from the car's first two readings over 0.5 m/s at constant acceleration and clamped between lights out and the first reading (a reading that does not change for 500 ms counts as the move-off). A car that read over 0.5 m/s while the lights were lit has `jumped` set and a `reaction_ms` near 0 (the game's own jump start penalty is a `session.penalty`), and a new start sequence in the same session (a restart) times again. The other four follow the snapshot rules above, except that a value race control has not sent yet counts as a value: the first light, the first DRS message, the first safety car phase and the first fastest lap of a session fire once the session's first read is done. The chequered flag is `session.flag` with `Flag::chequered`, and retirements are `session.car.status` and `telemetry.retirement` (with the game's reason as `b`).
 
 ```text
 [race-control] start lights 3, lap 0

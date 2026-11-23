@@ -371,27 +371,37 @@ static void test_start_reaction()
     expect(t.step(&s, 4000).reactions.empty(), "lights out at 4000: nobody over 0.5 m/s yet");
     s.cars[0].speed = 0.4f;
     expect(t.step(&s, 4150).reactions.empty(), "0.4 m/s is not moving off");
-    s.cars[0].speed = 3.0f;
+    s.cars[0].speed = 1.0f;
     s.cars[2].speed = 2.0f;
-    rcl::Moments m = t.step(&s, 4234);
-    expect(m.reactions.size() == 2 && m.reactions[0].car == 0 && m.reactions[0].reaction_ms == 234 && !m.reactions[0].jumped &&
-               m.reactions[1].car == 2 && m.reactions[1].jumped,
-           "vehicle 0 reacts in 234 ms, vehicle 2 too, flagged as a jump start");
+    expect(t.step(&s, 4300).reactions.empty(), "the first reading over 0.5 m/s waits for a second one");
+    expect(t.step(&s, 4306).reactions.empty(), "the same reading on the next frame is not a second one");
+    s.cars[0].speed = 3.0f;
+    s.cars[2].speed = 4.0f;
+    rcl::Moments m = t.step(&s, 4400);
+    expect(m.reactions.size() == 2 && m.reactions[0].car == 0 && m.reactions[0].reaction_ms == 250 && !m.reactions[0].jumped,
+           "1 m/s at 4300 and 3 m/s at 4400: 20 m/s2, moved off at 4250, 250 ms after lights out");
+    expect(m.reactions[1].car == 2 && m.reactions[1].reaction_ms == 200 && m.reactions[1].jumped,
+           "vehicle 2 extrapolates back to 4200 and is flagged as a jump start");
     s.cars[1].speed = 5.0f;
-    m = t.step(&s, 4400);
-    expect(m.reactions.size() == 1 && m.reactions[0].car == 1 && m.reactions[0].reaction_ms == 400, "each car fires once");
-    expect(t.step(&s, 4500).reactions.empty(), "and only once");
+    expect(t.step(&s, 4500).reactions.empty(), "vehicle 1's first reading");
+    s.cars[1].speed = 6.0f;
+    m = t.step(&s, 4600);
+    expect(m.reactions.size() == 1 && m.reactions[0].car == 1 && m.reactions[0].reaction_ms == 0,
+           "a move-off extrapolated to before lights out clamps to lights out");
+    expect(t.step(&s, 4700).reactions.empty(), "each car fires once");
     s.ses.start_lights = 1;
     t.step(&s, 20000);
     s.ses.start_lights = 0;
     s.cars[0].speed = s.cars[1].speed = s.cars[2].speed = 0;
     t.step(&s, 21000);
     s.cars[1].speed = 2;
-    m = t.step(&s, 21300);
+    t.step(&s, 21300);
+    m = t.step(&s, 21900);
     expect(m.reactions.size() == 1 && m.reactions[0].car == 1 && m.reactions[0].reaction_ms == 300,
-           "a restarted start sequence times again");
+           "a restarted start times again; a reading that never changes reports its own time after 500 ms");
     s.cars[0].speed = 2;
-    expect(t.step(&s, 32000).reactions.empty(), "past ten seconds after lights out nothing fires");
+    t.step(&s, 31500);
+    expect(t.step(&s, 32100).reactions.empty(), "past ten seconds after lights out nothing fires");
 }
 
 static void test_fastest_from_memory()
@@ -454,6 +464,19 @@ static void test_hud()
            "replay and photo mode hide it");
     expect(at(true, fv::SPECTATING, 0) == true, "spectating shows the spectator HUD");
     expect(!at(false, 0, 0) && s.hud_visible == 0 && s.hud_hidden_by == 0, "losing the flow clears the fields");
+
+    hud::Bridge b;
+    auto step = [&](uint32_t flags, uint32_t pause, uint64_t now) {
+        hud::apply(s, b.step(hud::from_view(true, flags, pause), now));
+        return swofty::live::hud_visible(s) == true;
+    };
+    expect(!step(fv::MENU, 0, 0), "the grid: hidden");
+    expect(step(0, 0, 1000), "the start lights: shown");
+    expect(step(fv::MENU, 0, 1006) && step(fv::MENU, 0, 1012), "lights out's unnamed flow nodes stay shown");
+    expect(step(0, 0, 1018), "InGame: shown");
+    expect(!step(0, 1u << 3, 1024), "a pause hides it at once");
+    expect(step(0, 0, 2000) && !step(fv::CUTSCENE | fv::MENU, 0, 2006), "a cutscene hides it at once");
+    expect(step(0, 0, 3000) && step(fv::MENU, 0, 3100) && !step(fv::MENU, 0, 3101), "a menu that stays past 100 ms hides it");
 }
 
 namespace fake_db {

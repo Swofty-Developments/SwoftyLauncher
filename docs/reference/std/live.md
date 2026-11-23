@@ -216,7 +216,7 @@ typedef struct SwoftyLiveCarDetail {
 ```cpp
 if (auto who = live::driver_identity(*d))  // reads entrants.drivers: call it when Session::generation moves, not every frame
     swofty::log("[my-osd] %s %s (%s)", who->first_name.c_str(), who->last_name.c_str(), who->code.c_str());
-// "Charles Leclerc (LEC)"
+// "Charles LECLERC (LEC)": the game's text for family names is upper case
 ```
 
 `driver_identity` reads the `entrants.drivers` row whose `stat_id` is the car's `driver_id` with [swofty/db.hpp](./db): `code` is its `initials`, `first_name` and `last_name` the text of its `lng_*` keys in the game's language through [swofty/lang.hpp](./strings) (a stored string that is not a key reads as is, `default` as empty), `label` its `_metadata_` and `name_reversed` its `is_name_reversed` (the family name first). `live::driver_identity(uint32_t driver_id)` takes the id directly. It is empty without `SWOFTY_LIVE_HAVE_IDENTITY`, before the game has loaded its database, for driver id 255 (a network human, or an added driver with no stock ancestor), and when the id names more than one row: the 2024 and 2025 UDP formats carry one byte, so an added driver whose `stat_id` is above 254 shares its low byte with another row.
@@ -332,7 +332,7 @@ void on_frame(double)
 | `SWOFTY_LIVE_HUD_PHOTO` | photo mode |
 | `SWOFTY_LIVE_HUD_PAUSED` | a held pause reason (`swofty::view::pause_reasons()`), the pause menu among them |
 
-`hud_visible` is 1 while driving (from the start lights on) and while spectating (the spectator HUD). The value comes from the game's flow states (the `[view] kind=… flags=…` log lines) and its pause calls, the same sources as [`swofty::view`](./events#pause-and-resume) and the post-processing view. The game's own HUD setting (HUD off in the options) is not read. `SWOFTY_LIVE_SHAVE_HUD` is clear until the core has seen a flow state, and `live::session()` itself is empty outside a session.
+`hud_visible` is 1 while driving (from the start lights on) and while spectating (the spectator HUD). The value comes from the game's flow states (the `[view] kind=… flags=…` log lines) and its pause calls, the same sources as [`swofty::view`](./events#pause-and-resume) and the post-processing view. At lights out the game passes through unnamed flow states for two or three frames between the start lights and the race; a menu reading that lasts 100 ms or less straight after the HUD showed keeps `hud_visible` at 1, so a menu that opens from driving reads hidden up to 100 ms late. The game's own HUD setting (HUD off in the options) is not read. `SWOFTY_LIVE_SHAVE_HUD` is clear until the core has seen a flow state, and `live::session()` itself is empty outside a session.
 
 The watched car follows the spectator director only while the spectator HUD is up. The safety car cinematic and the winner sequence also switch the director on, and those do not count. A red flag is reported when the game's red flag system says so, or when every marshal zone reads red; the game's own byte stayed 0 through a red flag in a race, so the zones are the second witness. The safety car value is 0 while a red flag is out, because the game's byte also reads 1 then.
 

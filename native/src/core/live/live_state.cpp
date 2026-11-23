@@ -100,6 +100,7 @@ std::atomic<bool> g_bus_armed;
 double g_bus_tried = -1e9;
 lv::udp::Source g_udp;
 lv::udp::Clock g_udp_clock;
+lv::hud::Bridge g_hud;
 std::mutex g_udp_lock;
 std::atomic<bool> g_udp_said;
 
@@ -256,8 +257,9 @@ void publish()
         else
             g_udp.end();
     }
-    lv::hud::apply(g_snap.ses, lv::hud::from_view(frontend::view::flow_seen(), frontend::view::current().flags,
-                                                  frontend::view::pause_reasons()));
+    lv::hud::apply(g_snap.ses, g_hud.step(lv::hud::from_view(frontend::view::flow_seen(), frontend::view::current().flags,
+                                                             frontend::view::pause_reasons()),
+                                          GetTickCount64()));
     g_snap.official = g_official;
     g_snap.turn_length = g_turns.length;
     lv::snap_end(&g_snap);

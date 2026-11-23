@@ -30,6 +30,30 @@ inline Shown from_view(bool flow_seen, uint32_t flags, uint32_t pause_reasons)
     return {true, by};
 }
 
+// At lights out the game passes through unnamed flow nodes between StartLights and InGame for two or three frames,
+// which read as the menu. A menu-only hide within BRIDGE_MS of the last shown frame keeps the HUD shown.
+class Bridge {
+public:
+    static constexpr uint64_t BRIDGE_MS = 100;
+
+    Shown step(const Shown &h, uint64_t now_ms)
+    {
+        if (h.known && !h.hidden_by) {
+            shown_ = true;
+            shown_at_ = now_ms;
+            return h;
+        }
+        if (shown_ && h.known && h.hidden_by == SWOFTY_LIVE_HUD_MENU && now_ms - shown_at_ <= BRIDGE_MS)
+            return {true, 0};
+        shown_ = false;
+        return h;
+    }
+
+private:
+    bool shown_ = false;
+    uint64_t shown_at_ = 0;
+};
+
 inline void apply(SwoftyLiveSession &s, const Shown &h)
 {
     s.hud_visible = h.known && !h.hidden_by;
