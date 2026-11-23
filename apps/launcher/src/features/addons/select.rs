@@ -1,6 +1,14 @@
 #[derive(Default)]
 pub(super) struct Selection {
     ids: Vec<String>,
+    anchor: Option<String>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(super) enum Ticks {
+    None,
+    Some,
+    All,
 }
 
 impl Selection {
@@ -10,6 +18,46 @@ impl Selection {
                 self.ids.remove(at);
             }
             None => self.ids.push(id.to_owned()),
+        }
+        self.set_anchor(id);
+    }
+
+    pub(super) fn set_anchor(&mut self, id: &str) {
+        self.anchor = Some(id.to_owned());
+    }
+
+    pub(super) fn extend(&mut self, shown: &[&str], id: &str) {
+        let at = |x: &str| shown.iter().position(|s| *s == x);
+        match (self.anchor.as_deref().and_then(at), at(id)) {
+            (Some(a), Some(b)) => self.add(&shown[a.min(b)..=a.max(b)]),
+            _ => self.add(&[id]),
+        }
+        self.set_anchor(id);
+    }
+
+    pub(super) fn ticks(&self, ids: &[String]) -> Ticks {
+        match ids.iter().filter(|id| self.contains(id)).count() {
+            0 => Ticks::None,
+            n if n == ids.len() => Ticks::All,
+            _ => Ticks::Some,
+        }
+    }
+
+    pub(super) fn toggle_all(&mut self, ids: &[String]) {
+        match self.ticks(ids) {
+            Ticks::All => self.ids.retain(|id| !ids.contains(id)),
+            Ticks::None | Ticks::Some => {
+                let ids: Vec<&str> = ids.iter().map(String::as_str).collect();
+                self.add(&ids);
+            }
+        }
+    }
+
+    fn add(&mut self, ids: &[&str]) {
+        for id in ids {
+            if !self.contains(id) {
+                self.ids.push((*id).to_owned());
+            }
         }
     }
 
@@ -120,6 +168,149 @@ mod tests {
         s.toggle("b");
         s.retain(|id| id == "b");
         assert_eq!(s.ids(), ["b"]);
+    }
+
+    const SHOWN: [&str; 5] = ["a", "b", "c", "d", "e"];
+
+    fn ids(list: &[&str]) -> Vec<String> {
+        list.iter().map(|s| (*s).to_owned()).collect()
+    }
+
+    #[test]
+    fn shift_click_ticks_every_shown_row_from_the_anchor() {
+        let mut s = Selection::default();
+        s.toggle("b");
+        s.extend(&SHOWN, "d");
+        assert_eq!(s.ids(), ["b", "c", "d"]);
+    }
+
+    #[test]
+    fn shift_click_above_the_anchor_ticks_the_rows_between_in_list_order() {
+        let mut s = Selection::default();
+        s.toggle("d");
+        s.extend(&SHOWN, "a");
+        assert_eq!(s.ids(), ["d", "a", "b", "c"]);
+    }
+
+    #[test]
+    fn a_plain_click_sets_the_anchor_without_ticking() {
+        let mut s = Selection::default();
+        s.set_anchor("b");
+        assert!(s.is_empty());
+        s.extend(&SHOWN, "c");
+        assert_eq!(s.ids(), ["b", "c"]);
+    }
+
+    #[test]
+    fn the_last_clicked_row_is_the_next_anchor() {
+        let mut s = Selection::default();
+        s.set_anchor("a");
+        s.extend(&SHOWN, "b");
+        s.extend(&SHOWN, "d");
+        assert_eq!(s.ids(), ["a", "b", "c", "d"]);
+        s.toggle("e");
+        s.toggle("e");
+        s.extend(&SHOWN, "e");
+        assert_eq!(s.ids(), ["a", "b", "c", "d", "e"]);
+    }
+
+    #[test]
+    fn shift_click_without_an_anchor_ticks_only_that_row() {
+        let mut s = Selection::default();
+        s.extend(&SHOWN, "c");
+        assert_eq!(s.ids(), ["c"]);
+        s.extend(&SHOWN, "e");
+        assert_eq!(s.ids(), ["c", "d", "e"]);
+    }
+
+    #[test]
+    fn a_range_covers_only_shown_rows() {
+        let shown = ["a", "d", "e"];
+        let mut s = Selection::default();
+        s.toggle("a");
+        s.extend(&shown, "e");
+        assert_eq!(s.ids(), ["a", "d", "e"]);
+    }
+
+    #[test]
+    fn a_hidden_anchor_ticks_only_the_clicked_row() {
+        let shown = ["a", "d", "e"];
+        let mut s = Selection::default();
+        s.toggle("b");
+        s.extend(&shown, "e");
+        assert_eq!(s.ids(), ["b", "e"]);
+    }
+
+    #[test]
+    fn a_range_keeps_rows_already_ticked_once() {
+        let mut s = Selection::default();
+        s.toggle("c");
+        s.toggle("a");
+        s.extend(&SHOWN, "d");
+        assert_eq!(s.ids(), ["c", "a", "b", "d"]);
+    }
+
+    #[test]
+    fn clearing_keeps_the_anchor() {
+        let mut s = Selection::default();
+        s.toggle("b");
+        s.clear();
+        s.extend(&SHOWN, "c");
+        assert_eq!(s.ids(), ["b", "c"]);
+    }
+
+    #[test]
+    fn a_folder_shows_none_some_or_all_ticked() {
+        let folder = ids(&["b", "c"]);
+        let mut s = Selection::default();
+        assert_eq!(s.ticks(&folder), Ticks::None);
+        s.toggle("a");
+        assert_eq!(s.ticks(&folder), Ticks::None);
+        s.toggle("c");
+        assert_eq!(s.ticks(&folder), Ticks::Some);
+        s.toggle("b");
+        assert_eq!(s.ticks(&folder), Ticks::All);
+        assert_eq!(s.ticks(&[]), Ticks::None);
+    }
+
+    #[test]
+    fn a_folder_tick_ticks_all_its_addons() {
+        let folder = ids(&["b", "c", "d"]);
+        let mut s = Selection::default();
+        s.toggle("a");
+        s.toggle_all(&folder);
+        assert_eq!(s.ids(), ["a", "b", "c", "d"]);
+        assert_eq!(s.ticks(&folder), Ticks::All);
+    }
+
+    #[test]
+    fn a_partly_ticked_folder_ticks_the_rest() {
+        let folder = ids(&["b", "c", "d"]);
+        let mut s = Selection::default();
+        s.toggle("c");
+        s.toggle_all(&folder);
+        assert_eq!(s.ids(), ["c", "b", "d"]);
+    }
+
+    #[test]
+    fn a_fully_ticked_folder_unticks_only_its_addons() {
+        let folder = ids(&["b", "c"]);
+        let mut s = Selection::default();
+        s.toggle("a");
+        s.toggle_all(&folder);
+        s.toggle("e");
+        s.toggle_all(&folder);
+        assert_eq!(s.ids(), ["a", "e"]);
+        assert_eq!(s.ticks(&folder), Ticks::None);
+    }
+
+    #[test]
+    fn a_folder_tick_leaves_the_anchor() {
+        let mut s = Selection::default();
+        s.set_anchor("a");
+        s.toggle_all(&ids(&["d", "e"]));
+        s.extend(&SHOWN, "b");
+        assert_eq!(s.ids(), ["d", "e", "a", "b"]);
     }
 
     #[test]

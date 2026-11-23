@@ -87,6 +87,7 @@ pub(super) enum AddonListItem {
         count: usize,
         on: usize,
         open: bool,
+        members: Vec<String>,
     },
     Addon {
         index: usize,
@@ -121,6 +122,17 @@ pub(super) fn anchor(old: &[AddonListItem], new: &[AddonListItem], top: usize) -
         .iter()
         .enumerate()
         .find_map(|(n, item)| at.get(&item.key()).map(|&ix| (ix, n == 0)))
+}
+
+/// The addon rows the list shows, top to bottom.
+pub(super) fn shown_addons(items: &[AddonListItem]) -> Vec<&str> {
+    items
+        .iter()
+        .filter_map(|item| match item {
+            AddonListItem::Addon { id, .. } => Some(id.as_str()),
+            _ => None,
+        })
+        .collect()
 }
 
 /// The list index of `id`'s row.
@@ -229,6 +241,10 @@ impl AddonsPage {
         had
     }
 
+    pub(super) fn extend_selection(&mut self, id: &str) {
+        self.selection.extend(&shown_addons(&self.list_items), id);
+    }
+
     pub(super) fn ticking(&self) -> bool {
         self.ctrl || !self.selection.is_empty()
     }
@@ -283,9 +299,10 @@ impl Conflicts {
 
 #[cfg(test)]
 mod tests {
-    use super::{AddonListItem, Conflicts, anchor, back_offset, row_of};
+    use super::{AddonListItem, Conflicts, anchor, back_offset, row_of, shown_addons};
     use gpui_kit::{ListOffset, px};
     use swofty_core::profile::conflicts::Report;
+    use swofty_core::profile::folders::Key;
 
     fn addon(id: &str, index: usize) -> AddonListItem {
         AddonListItem::Addon {
@@ -319,6 +336,31 @@ mod tests {
         ];
         let new = [AddonListItem::Heading, addon("a", 0), addon("c", 1)];
         assert_eq!(anchor(&old, &new, 2), Some((2, false)));
+    }
+
+    #[test]
+    fn shown_addons_are_the_addon_rows_in_list_order() {
+        let folder = |open: bool, members: &[&str]| AddonListItem::Folder {
+            key: Key::Own("f1".to_owned()),
+            at: 1,
+            count: members.len(),
+            on: 0,
+            open,
+            members: members.iter().map(|m| (*m).to_owned()).collect(),
+        };
+        let items = [
+            AddonListItem::Heading,
+            addon("a", 0),
+            AddonListItem::Detail("a".to_owned()),
+            folder(false, &["b", "c"]),
+            folder(true, &["d"]),
+            addon("d", 3),
+            addon("e", 4),
+            AddonListItem::End,
+            AddonListItem::BrokenHeading,
+            AddonListItem::Broken(0),
+        ];
+        assert_eq!(shown_addons(&items), ["a", "d", "e"]);
     }
 
     #[test]

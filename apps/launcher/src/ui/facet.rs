@@ -9,6 +9,15 @@ use crate::ui::theme::Palette;
 pub(crate) const FILTERS_W: f32 = 226.;
 
 pub(crate) fn checkbox(on: bool, p: Palette) -> Div {
+    tick_box(on.then_some(IconName::Check), p)
+}
+
+/// A tick box with a dash: some of what it stands for is ticked.
+pub(crate) fn partial_checkbox(p: Palette) -> Div {
+    tick_box(Some(IconName::Minus), p)
+}
+
+fn tick_box(mark: Option<IconName>, p: Palette) -> Div {
     div()
         .size(ctl(14.))
         .flex_shrink_0()
@@ -17,14 +26,12 @@ pub(crate) fn checkbox(on: bool, p: Palette) -> Div {
         .flex()
         .items_center()
         .justify_center()
-        .map(|d| {
-            if on {
-                d.bg(p.accent)
-                    .border_color(p.accent)
-                    .child(Icon::new(IconName::Check).size(ctl(11.)).text_color(p.on_accent))
-            } else {
-                d.border_color(p.border)
-            }
+        .map(|d| match mark {
+            Some(icon) => d
+                .bg(p.accent)
+                .border_color(p.accent)
+                .child(Icon::new(icon).size(ctl(11.)).text_color(p.on_accent)),
+            None => d.border_color(p.border),
         })
 }
 

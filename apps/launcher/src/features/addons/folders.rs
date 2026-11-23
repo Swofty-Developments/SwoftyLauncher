@@ -1,6 +1,8 @@
 use super::drag::{Dragged, Dragging};
+use super::select::Ticks;
 use crate::shell::notices::{Notification, Notify};
 use crate::shell::{Prompt, Shell};
+use crate::ui::facet::{checkbox, partial_checkbox};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
@@ -84,13 +86,16 @@ impl Shell {
         self.reload(cx);
     }
 
-    /// A folder's row: click to open or close it, drag it to move its addons.
+    /// A folder's row: click to open or close it, drag it to move its addons. While rows show
+    /// tick boxes, its own box ticks the folder's addons that the search and filters show.
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn folder_row(
         &self,
         key: &Key,
         count: usize,
         on: usize,
         open: bool,
+        members: &[String],
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
@@ -118,6 +123,24 @@ impl Shell {
         let tag = key.text();
         let actions = own.map(|id| self.folder_actions(id, &tag, cx));
         let toggle = key.clone();
+        let tickable = !vanilla && !members.is_empty();
+        let ticking = tickable && self.addons.ticking();
+        let tick = ticking.then(|| {
+            let ids = members.to_vec();
+            div()
+                .id(SharedString::from(format!("folder-tick-{tag}")))
+                .child(match self.addons.selection.ticks(members) {
+                    Ticks::None => checkbox(false, p),
+                    Ticks::Some => partial_checkbox(p),
+                    Ticks::All => checkbox(true, p),
+                })
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    cx.stop_propagation();
+                    this.addons.selection.toggle_all(&ids);
+                    cx.notify();
+                }))
+        });
+        let ids = tickable.then(|| members.to_vec());
         let row = h_flex()
             .id(SharedString::from(format!("folder-{tag}")))
             .h(px(40.))
@@ -129,13 +152,19 @@ impl Shell {
             .border_color(p.border_variant)
             .cursor_pointer()
             .hover(move |s| s.bg(p.hover))
-            .child(div().w(px(14.)).flex_shrink_0().when(draggable, |d| {
-                d.child(
-                    Icon::new(IconName::GripVertical)
-                        .size(px(14.))
-                        .text_color(p.text_placeholder),
-                )
-            }))
+            .child(
+                div()
+                    .w(px(14.))
+                    .flex_shrink_0()
+                    .when(draggable && !ticking, |d| {
+                        d.child(
+                            Icon::new(IconName::GripVertical)
+                                .size(px(14.))
+                                .text_color(p.text_placeholder),
+                        )
+                    })
+                    .children(tick),
+            )
             .child(
                 Icon::new(if open {
                     IconName::ChevronDown
@@ -181,7 +210,14 @@ impl Shell {
                     ),
             )
             .children(actions)
-            .on_click(cx.listener(move |this, _, window, cx| this.toggle_folder(&toggle, window, cx)));
+            .on_click(cx.listener(move |this, ev: &ClickEvent, window, cx| {
+                if let Some(ids) = ids.as_ref().filter(|_| ev.modifiers().secondary(cx)) {
+                    this.addons.selection.toggle_all(ids);
+                    cx.notify();
+                    return;
+                }
+                this.toggle_folder(&toggle, window, cx)
+            }));
         match draggable {
             true => {
                 let dragged = Dragged {

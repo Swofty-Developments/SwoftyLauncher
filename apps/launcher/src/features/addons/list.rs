@@ -195,6 +195,7 @@ impl Shell {
                         count: inside.len(),
                         on: inside.iter().filter(|m| self.addon_on(m)).count(),
                         open,
+                        members: matching.iter().map(|(_, id)| (*id).clone()).collect(),
                     });
                     if open {
                         for (j, id) in matching {
@@ -407,8 +408,13 @@ impl Shell {
         match this.addons.list_items.get(i).cloned() {
             Some(AddonListItem::Heading) => this.list_heading(p),
             Some(AddonListItem::Folder {
-                key, count, on, open, ..
-            }) => this.folder_row(&key, count, on, open, p, cx),
+                key,
+                count,
+                on,
+                open,
+                members,
+                ..
+            }) => this.folder_row(&key, count, on, open, &members, p, cx),
             Some(AddonListItem::Addon {
                 index,
                 position,
