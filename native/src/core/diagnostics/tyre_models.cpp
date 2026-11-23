@@ -54,9 +54,11 @@ constexpr size_t MODEL_DIMENSION_A = 0x278, MODEL_DIMENSION_B = 0x27c;
 constexpr uint64_t MAX_ENTRIES = 11;
 constexpr size_t TC_ACTIVE_FITTED = 0x9938, TC_ACTIVE_FITTED_A = 0x9940, TC_ACTIVE_FITTED_B = 0x9948;
 constexpr size_t TC_ACTIVE_PENDING = 0x9920, TC_ACTIVE_PENDING_A = 0x9928, TC_ACTIVE_PENDING_B = 0x9930;
-constexpr size_t TC_PENDING_OPTION = 0x9c70, TC_LOCKED = 0x9912;
+constexpr size_t TC_PENDING_OPTION = 0x9c70, TC_LOCKED = 0x9912, TC_APPLIED = 0x9913, TC_BUSY = 0x9918, MODEL_GATE = 0x80;
 constexpr size_t SCENE_STATES = 0xa0, SCENE_STATE_ROWS = 0x68, SCENE_STATE_STRIDE = 0x10, SCENE_STATE_VALUE = 0x4;
 constexpr uint8_t SCENE_STATE_LAST_VEHICLE = 0x1a;
+constexpr uintptr_t SCENE_CONTEXT_VA = 0x14601f5c8;
+constexpr size_t TC_CAR = 0x20, CAR_LIVE = 0x58, LIVE_VEHICLE_ID = 0xe8;
 constexpr size_t TC_GROUP_OLD = 0x9920, TC_GROUP_NEW = 0x9938, GROUP_SIZE = 0x18;
 constexpr int64_t FIX_FIRST_MS = 2000, FIX_LAST_MS = 90000, FIX_PERIOD_MS = 1000;
 
@@ -139,23 +141,27 @@ tmod::Model read_model(uintptr_t m)
     return out;
 }
 
-uint32_t scene_state_of(uint8_t vehicle)
+int64_t scene_state_of(uint8_t vehicle)
 {
     uintptr_t ctx = 0, states = 0, row = 0;
-    uint32_t value = 0xffffffff;
-    auto at = reinterpret_cast<const uintptr_t *>(swofty::api->resolve("g_Game_SceneContext"));
-    if (vehicle > SCENE_STATE_LAST_VEHICLE || !at || !read_ptr(uintptr_t(at), ctx) || !read_ptr(ctx + SCENE_STATES, states) ||
-        !read_ptr(states + SCENE_STATE_ROWS + vehicle * SCENE_STATE_STRIDE, row))
-        return value;
-    mem::read(row + SCENE_STATE_VALUE, value);
-    return value;
+    uint32_t value = 0;
+    if (vehicle > SCENE_STATE_LAST_VEHICLE)
+        return -1;
+    if (!read_ptr(SCENE_CONTEXT_VA, ctx))
+        return -3;
+    if (!read_ptr(ctx + SCENE_STATES, states))
+        return -4;
+    if (!read_ptr(states + SCENE_STATE_ROWS + vehicle * SCENE_STATE_STRIDE, row))
+        return -5;
+    return mem::read(row + SCENE_STATE_VALUE, value) ? int64_t(value) : -6;
 }
 
-void log_activation(uintptr_t tc, uint8_t vehicle)
+void log_activation(uintptr_t tc, uint8_t vehicle, const char *tag, uint32_t entry)
 {
     uint32_t fitted = 0xffffffff, pending = 0xffffffff, option = 0xffffffff;
     uint64_t fitted_a = 0, fitted_b = 0, pending_a = 0, pending_b = 0;
-    uint8_t locked = 0xff;
+    uint8_t locked = 0xff, applied = 0xff, busy = 0xff, live_id = 0xff, gate[3] = {0xff, 0xff, 0xff};
+    uintptr_t car = 0, live = 0;
     mem::read(tc + TC_ACTIVE_FITTED, fitted);
     mem::read(tc + TC_ACTIVE_FITTED_A, fitted_a);
     mem::read(tc + TC_ACTIVE_FITTED_B, fitted_b);
@@ -164,10 +170,18 @@ void log_activation(uintptr_t tc, uint8_t vehicle)
     mem::read(tc + TC_ACTIVE_PENDING_B, pending_b);
     mem::read(tc + TC_PENDING_OPTION, option);
     mem::read(tc + TC_LOCKED, locked);
-    swofty::log("[tyres] car %u activation: fitted compound %u (%s%s), set to apply %u (%s%s), pending option %u, locked %u, "
-                "scene state %d",
-                unsigned(vehicle), fitted, fitted_a ? "a" : "-", fitted_b ? "b" : "-", pending, pending_a ? "a" : "-",
-                pending_b ? "b" : "-", option, unsigned(locked), int(scene_state_of(vehicle)));
+    mem::read(tc + TC_APPLIED, applied);
+    mem::read(tc + TC_BUSY, busy);
+    if (mem::read(tc + TC_CAR, car) && car && mem::read(car + CAR_LIVE, live) && live)
+        mem::read(live + LIVE_VEHICLE_ID, live_id);
+    if (entry < MAX_ENTRIES)
+        for (size_t i = 0; i < 3; i++)
+            mem::read(tc + TC_MODELS + entry * MODEL_ENTRY_STRIDE + MODEL_GATE + i, gate[i]);
+    swofty::log("[tyres] car %u activation (%s): live id %u, fitted compound %u (%s%s), set to apply %u (%s%s), pending option "
+                "%u, flags %u/%u/%u, entry %u gate %u/%u/%u, scene state %lld",
+                unsigned(vehicle), tag, unsigned(live_id), fitted, fitted_a ? "a" : "-", fitted_b ? "b" : "-", pending,
+                pending_a ? "a" : "-", pending_b ? "b" : "-", option, unsigned(locked), unsigned(applied), unsigned(busy),
+                unsigned(entry), unsigned(gate[0]), unsigned(gate[1]), unsigned(gate[2]), (long long)scene_state_of(vehicle));
 }
 
 tmod::Car check_car(uintptr_t car_list, uintptr_t row)
@@ -191,7 +205,9 @@ tmod::Car check_car(uintptr_t car_list, uintptr_t row)
     car.readable = true;
     car.verdict = tmod::judge(models, 3, &car.spawned, &car.unplaced);
     if (car.verdict == tmod::Verdict::unplaced)
-        log_activation(tc, car.vehicle);
+        log_activation(tc, car.vehicle, "unplaced", entry);
+    else if (car.vehicle == 0 || car.vehicle == tmod::FIRST_UNGARAGED_VEHICLE)
+        log_activation(tc, car.vehicle, "placed", entry);
     return car;
 }
 
