@@ -102,5 +102,16 @@ int main()
     CHECK(tmod::summary_line(cars, 12, "60 s in").find("all 1 car(s)") != std::string::npos,
           "cars that could not be read are left out of the count");
 
+    tmod::Group good{1, 0x10, 0x20}, none;
+    CHECK(tmod::group_usable(good) && !tmod::group_usable(none), "a group needs an option up to 4 and both compounds");
+    CHECK(tmod::plan_activation(22, none, none, true) == tmod::Repair::none, "cars below 23 are never touched");
+    CHECK(tmod::plan_activation(0xff, none, none, true) == tmod::Repair::none, "an unknown vehicle is never touched");
+    CHECK(tmod::plan_activation(24, good, good, true) == tmod::Repair::none, "a car with both groups is left alone");
+    CHECK(tmod::plan_activation(24, none, good, false) == tmod::Repair::copy_new_to_old,
+          "a missing previous group takes the current one");
+    CHECK(tmod::plan_activation(25, none, none, true) == tmod::Repair::copy_slot_to_both,
+          "both groups missing take the fitted slot");
+    CHECK(tmod::plan_activation(25, none, none, false) == tmod::Repair::none, "no usable slot means no repair");
+
     return failures ? 1 : 0;
 }

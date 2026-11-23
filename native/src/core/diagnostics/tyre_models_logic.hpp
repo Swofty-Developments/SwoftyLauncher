@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "core/guards/cars/tyre_slots_logic.hpp"
+
 // Read-only check of the fitted tyre models (tyre_models.cpp). A tyre component keeps 5 sets of 3 models; the game
 // places a spawned fitted model on its wheel (render instance +0x2c real translation, model +0x278/+0x27c the wheel
 // dimensions, render instance +0x128 = 2). A model that was never placed keeps the spawn defaults below, so the car
@@ -92,6 +94,32 @@ inline std::string summary_line(const std::vector<Car> &cars, uint32_t session, 
                       "[tyres] fitted tyre check (%s), session %u: all %u car(s) have their fitted tyres placed%s", when, session,
                       checked, partial ? " (some cars have a spare model not placed)" : "");
     return buf;
+}
+
+}
+
+namespace runtime::tyre_models {
+
+constexpr uint8_t FIRST_UNGARAGED_VEHICLE = 23;
+
+struct Group {
+    uint32_t option = 0xffffffff;
+    uint64_t physical = 0, visual = 0;
+};
+
+enum class Repair { none, copy_new_to_old, copy_slot_to_both };
+
+inline bool group_usable(const Group &g) { return g.option <= 4 && g.physical && g.visual; }
+
+inline Repair plan_activation(uint8_t vehicle, const Group &old_group, const Group &new_group, bool slot_usable)
+{
+    if (vehicle < FIRST_UNGARAGED_VEHICLE || vehicle == 0xff)
+        return Repair::none;
+    if (group_usable(old_group) && group_usable(new_group))
+        return Repair::none;
+    if (group_usable(new_group))
+        return Repair::copy_new_to_old;
+    return slot_usable ? Repair::copy_slot_to_both : Repair::none;
 }
 
 }

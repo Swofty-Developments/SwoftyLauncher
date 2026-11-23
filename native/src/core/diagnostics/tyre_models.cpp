@@ -57,6 +57,8 @@ constexpr size_t TC_ACTIVE_PENDING = 0x9920, TC_ACTIVE_PENDING_A = 0x9928, TC_AC
 constexpr size_t TC_PENDING_OPTION = 0x9c70, TC_LOCKED = 0x9912;
 constexpr size_t SCENE_STATES = 0xa0, SCENE_STATE_ROWS = 0x68, SCENE_STATE_STRIDE = 0x10, SCENE_STATE_VALUE = 0x4;
 constexpr uint8_t SCENE_STATE_LAST_VEHICLE = 0x1a;
+constexpr size_t TC_GROUP_OLD = 0x9920, TC_GROUP_NEW = 0x9938, GROUP_SIZE = 0x18;
+constexpr int64_t FIX_FIRST_MS = 2000, FIX_LAST_MS = 90000, FIX_PERIOD_MS = 1000;
 
 void (*start_orig)(void *) = nullptr;
 runtime::loader::MixinGate mixin_gate;
@@ -66,6 +68,8 @@ uintptr_t component = 0;
 uint32_t session = 0;
 int64_t started_ms = 0;
 std::atomic<int> stage{2};
+bool fix_armed = false, fix_logged = false;
+int64_t fix_last_ms = 0;
 
 int64_t now_ms()
 {
@@ -191,6 +195,72 @@ tmod::Car check_car(uintptr_t car_list, uintptr_t row)
     return car;
 }
 
+bool read_group(uintptr_t at, tmod::Group &g)
+{
+    return mem::read(at, g.option) && mem::read(at + 8, g.physical) && mem::read(at + 0x10, g.visual);
+}
+
+void write_group(uintptr_t at, const void *from) { std::memcpy(reinterpret_cast<void *>(at), from, GROUP_SIZE); }
+
+bool repair_car(uintptr_t car_list, uintptr_t row, unsigned &done)
+{
+    uint8_t vehicle = 0xff;
+    mem::read(row + ENTRANT_VEHICLE, vehicle);
+    if (vehicle < tmod::FIRST_UNGARAGED_VEHICLE || vehicle == 0xff)
+        return false;
+    uintptr_t tc = tyre_component_of(car_list, vehicle), fitted = 0;
+    uint64_t count = 0;
+    uint32_t option = 0xffffffff;
+    tmod::Group old_group, new_group;
+    if (!tc || !mem::object_like(tc) || !read_group(tc + TC_GROUP_OLD, old_group) || !read_group(tc + TC_GROUP_NEW, new_group) ||
+        !mem::read(tc + TC_COUNT, count) || count > runtime::tyre_slots::CAPACITY || !read_ptr(tc + TC_FITTED, fitted) ||
+        !mem::read(fitted + FITTED_OPTION, option) || option > 4)
+        return false;
+    runtime::tyre_slots::Slot slots[runtime::tyre_slots::CAPACITY] = {};
+    for (uint64_t i = 0; i < count; i++) {
+        uintptr_t s = tc + TC_SLOTS + i * SLOT_STRIDE;
+        if (!mem::read(s, slots[i].option) || !mem::read(s + 8, slots[i].physical) || !mem::read(s + 0x10, slots[i].visual))
+            return false;
+    }
+    int pick = runtime::tyre_slots::find(slots, count, option);
+    bool slot_usable = pick >= 0 && runtime::tyre_slots::usable(slots[pick]);
+    auto plan = tmod::plan_activation(vehicle, old_group, new_group, slot_usable);
+    if (plan == tmod::Repair::none)
+        return false;
+    uintptr_t source = plan == tmod::Repair::copy_new_to_old ? tc + TC_GROUP_NEW : tc + TC_SLOTS + size_t(pick) * SLOT_STRIDE;
+    uint8_t copy[GROUP_SIZE];
+    for (size_t i = 0; i < GROUP_SIZE; i++)
+        if (!mem::read(source + i, copy[i]))
+            return false;
+    write_group(tc + TC_GROUP_OLD, copy);
+    if (plan == tmod::Repair::copy_slot_to_both)
+        write_group(tc + TC_GROUP_NEW, copy);
+    done |= 1u << (vehicle & 31);
+    return true;
+}
+
+void repair_pass()
+{
+    uintptr_t career = 0, car_list = 0, begin = 0, end = 0;
+    if (!read_ptr(component + COMP_CAREER, career) || !read_ptr(component + COMP_CAR_LIST, car_list) ||
+        !mem::read(career + CAREER_ENTRANTS, begin) || !mem::read(career + CAREER_ENTRANTS + 8, end) || !begin || end <= begin ||
+        (end - begin) % ENTRANT_SIZE || (end - begin) / ENTRANT_SIZE > ENTRANT_MAX || !mem::readable(begin, end - begin))
+        return;
+    unsigned done = 0;
+    for (uintptr_t row = begin; row < end; row += ENTRANT_SIZE)
+        repair_car(car_list, row, done);
+    if (!done || fix_logged)
+        return;
+    fix_logged = true;
+    std::string list;
+    for (unsigned v = tmod::FIRST_UNGARAGED_VEHICLE; v < 32; v++)
+        if (done & (1u << v))
+            list += (list.empty() ? "" : ", ") + std::to_string(v);
+    swofty::log("[tyres] activation fix, session %u: cars %s had no previous tyre compound slot; the fitted compound's slot was "
+                "copied into it so the tyre models are placed",
+                session, list.c_str());
+}
+
 void check(const char *when)
 {
     uintptr_t career = 0, car_list = 0, begin = 0, end = 0;
@@ -229,6 +299,7 @@ void on_start(void *c)
     component = uintptr_t(c);
     session = id;
     started_ms = now_ms();
+    fix_logged = false;
     stage = 0;
 }
 
@@ -252,6 +323,8 @@ static std::vector<CoreMixins> tyre_models_mixins()
         swofty::log("[tyres] model check off: needs %s, which this build does not resolve", SITE);
         return out;
     }
+    DWORD f = GetEnvironmentVariableA("SWOFTY_TYRE_ACTIVATE_FIX", v, sizeof v);
+    fix_armed = f && f < sizeof v && !strcmp(v, "1");
     wanted = true;
     out.push_back({MIXIN, {{SITE, SWOFTY_MIXIN_WRAP, 0, (void *)&on_start, (void **)&start_orig}}});
     return out;
@@ -264,16 +337,29 @@ static void tyre_models_commit()
     swofty::log(
         "[tyres] model check %s",
         loader::install_state(core_mixins_active(MIXIN), "armed: fitted tyre models are read 10 s and 60 s into each session"));
+    if (fix_armed)
+        swofty::log(
+            "[tyres] activation fix armed (SWOFTY_TYRE_ACTIVATE_FIX=1): cars 23 and up with no previous compound slot get "
+            "the fitted compound's slot");
 }
 
 static loader::FunctionSet tyre_models_core_set{loader::CoreSetId::tyre_models, tyre_models_mixins, tyre_models_commit};
 
 void tyre_models_tick()
 {
-    if (stage >= 2)
+    if (stage >= 2 && !fix_armed)
         return;
     std::lock_guard<std::mutex> g(lock);
-    if (stage >= 2 || !component)
+    if (!component)
+        return;
+    if (fix_armed) {
+        int64_t since = now_ms() - started_ms;
+        if (since >= FIX_FIRST_MS && since <= FIX_LAST_MS && now_ms() - fix_last_ms >= FIX_PERIOD_MS) {
+            fix_last_ms = now_ms();
+            repair_pass();
+        }
+    }
+    if (stage >= 2)
         return;
     int64_t due = stage == 0 ? TYRE_FIRST_MS : TYRE_SECOND_MS;
     if (now_ms() - started_ms < due)
