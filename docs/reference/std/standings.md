@@ -5,7 +5,7 @@ description: The loaded career's drivers' championship from swofty/systems/caree
 
 # Standings
 
-`career::standings()` reads the drivers' championship of the loaded career's current season. The drivers come in the game's order with the game's totals, the [dropped scores](/std/systems/career#progressive-s-career-mode) rule included. Each driver has his points and his finishes for every round. A title-decider HUD shows the gap to the leader, a custom points addon checks its totals against the game's, and a league addon writes the table out after every race.
+`career::standings()` reads the drivers' championship of the loaded career's current season. For both championships from any thread, a paint callback included, see [Championship standings](./championship). The drivers come in the game's order with the game's totals, the [dropped scores](/std/systems/career#progressive-s-career-mode) rule included. Each driver has his points and his finishes for every round. A title-decider HUD shows the gap to the leader, a custom points addon checks its totals against the game's, and a league addon writes the table out after every race.
 
 ```cpp [native/src/table.cpp]
 #include <swofty/events.hpp>

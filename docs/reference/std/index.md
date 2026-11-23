@@ -136,6 +136,7 @@ Each entry names the header, the `SwoftyApi` member and its API version, the fea
   - **[Voice lines](./speech)** (`swofty/systems/speech.hpp`): `speech.line`, `speech.line.timed` and `speech.line.end` for every voice line the game posts, with its speaker, category, subtitle stem and id. The hooks table, API 9; feature `events` (stable); the flow thread.
   - **[Weather setup](./weather)** (`swofty/systems/weather.hpp`): the `session.weather.setup` event, the session's seed and a scripted forecast per dataset. The hooks table, API 9; feature `events` (stable) and `SWOFTY_WEATHER_CHAIN=1`; the thread that sets up the session.
   - **[Standings](./standings)** (`swofty/systems/career.hpp`): the loaded career's drivers' championship in the game's order, with each driver's points and finishes per round. The career operations table, version 8; feature `career`; the flow thread.
+  - **[Championship standings](./championship)** (`swofty/standings.hpp`): the loaded career's drivers' and constructors' championships with wins, podiums and points per round, and the season's round. The core export `SwoftyCoreStandings`; feature `career`; any thread.
   - **[Telemetry](./telemetry)** (`swofty/telemetry.hpp`): live car, session and participant reads. `telemetry`, API 5; feature `telemetry` (experimental); the flow thread.
   - **[Game assets](./game-assets)** (`swofty/game_assets.hpp`): the game's own resources by `eaid://` URI, textures decoded to RGBA8 and UI image catalogue entries. The core export `SwoftyCoreGameAssets`, any API version; no feature; a thread of your own.
   - **[Database read](./db)** (`swofty/db.hpp`): read values and walk tables of the game database. `db`, API 5; feature `db` (stable); the caller's thread.
@@ -170,6 +171,7 @@ packages/sdk/include/
   swofty/overlay.hpp        the 2D overlay
   swofty/telemetry.hpp      live car and session reads
   swofty/live.hpp           live car, session, order and turn reads from memory
+  swofty/standings.hpp      the career's drivers' and constructors' championships, from any thread
   swofty/systems/race_control.hpp  flag, safety car, red flag, sector and result status events
   swofty/db.hpp             game-database reads
   swofty/storage.hpp        addon storage
