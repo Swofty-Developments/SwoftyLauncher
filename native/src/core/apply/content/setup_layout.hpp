@@ -15,19 +15,25 @@
 // text (name, desc, range_desc, value_format) and numbers (min, max, step) are VM data the core can write; the number
 // the screen converts to a step is lerp(min, max, step / steps) over the global car_setup.sliders cells
 // (0x14605a428 max, 0x14605a578 min, 0x14605a6c8 steps), read by the VM and by Car_Setup_SetSliderValue alike, so a
-// layout's own range is a swap of the min and max cells while its scope is active. The steps cells stay: ApplyTuning
-// divides by them. Pure, for the host test.
+// layout's own range is a swap of the min and max cells while its scope is active. A row may also swap its steps cell, but
+// only the four brake sliders (indexes 37 to 40): ApplyTuning divides the step by the same cell, so a layout that gives them their own
+// step count must pin their F1Tuning min == max (the 1990 handling does) or the physics would follow the new fraction.
+// min above max is allowed (a descending row). Pure, for the host test.
 
 namespace swofty_core::apply::content {
 
 inline constexpr int LAYOUT_TABS = 8;
 inline constexpr int LAYOUT_TAB_ROWS = 10;
+inline constexpr int LAYOUT_STEP_FIRST = 37;
+inline constexpr int LAYOUT_STEP_LAST = 40;
+inline constexpr int LAYOUT_STEPS_MAX = 100;
 
 struct LayoutRow {
     int slider = -1;
     std::string name;
     std::string desc;
     std::optional<float> min, max;
+    std::optional<int> steps;
     std::string unit;
 };
 
@@ -71,8 +77,14 @@ inline LayoutVerdict check_layout(const Layout &l)
             used[r.slider] = true;
             if (r.name.empty())
                 return {false, "a row needs a name"};
-            if (r.min && r.max && !(*r.min < *r.max))
-                return {false, "a row's min must be below its max"};
+            if (r.min && r.max && *r.min == *r.max)
+                return {false, "a row's min and max must differ"};
+            if (r.steps) {
+                if (r.slider < LAYOUT_STEP_FIRST || r.slider > LAYOUT_STEP_LAST)
+                    return {false, "only the brake sliders 37 to 40 take their own steps"};
+                if (*r.steps < 1 || *r.steps > LAYOUT_STEPS_MAX)
+                    return {false, "a row's steps are 1 to 100"};
+            }
             if (bool(r.min) != bool(r.max))
                 return {false, "a row gives both min and max or neither"};
         }
@@ -93,6 +105,8 @@ inline std::array<bool, SETUP_SLIDER_COUNT> shown_sliders(const Layout &l)
 struct CellSwap {
     int slider;
     float min, max;
+    int steps;
+    bool range;
 };
 
 inline std::vector<CellSwap> cell_swaps(const Layout &l)
@@ -100,8 +114,8 @@ inline std::vector<CellSwap> cell_swaps(const Layout &l)
     std::vector<CellSwap> out;
     for (const auto &s : l.sections)
         for (const auto &r : s.rows)
-            if (r.min && r.max)
-                out.push_back({r.slider, *r.min, *r.max});
+            if ((r.min && r.max) || r.steps)
+                out.push_back({r.slider, r.min.value_or(0), r.max.value_or(0), r.steps.value_or(0), bool(r.min && r.max)});
     return out;
 }
 
@@ -124,6 +138,7 @@ inline std::vector<LangSet> title_overrides(const Layout &l, const std::array<co
 struct CellSnapshot {
     int slider;
     float min, max;
+    int steps;
 };
 
 class ScopeSwitch {
@@ -133,17 +148,18 @@ public:
         leave(write);
         for (const auto &c : cell_swaps(l)) {
             float cur_min = 0, cur_max = 0;
-            if (!read(c.slider, cur_min, cur_max))
+            int cur_steps = 0;
+            if (!read(c.slider, cur_min, cur_max, cur_steps))
                 continue;
-            saved_.push_back({c.slider, cur_min, cur_max});
-            write(c.slider, c.min, c.max);
+            saved_.push_back({c.slider, cur_min, cur_max, cur_steps});
+            write(c.slider, c.range ? c.min : cur_min, c.range ? c.max : cur_max, c.steps ? c.steps : cur_steps);
         }
         active_ = l.id;
     }
     template <class Write> void leave(Write &&write)
     {
         for (auto it = saved_.rbegin(); it != saved_.rend(); ++it)
-            write(it->slider, it->min, it->max);
+            write(it->slider, it->min, it->max, it->steps);
         saved_.clear();
         active_.clear();
     }

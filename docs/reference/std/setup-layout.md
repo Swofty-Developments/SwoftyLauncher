@@ -62,7 +62,8 @@ The scope switch (`ScopeSwitch`) runs when the setup screen's VM initialises (`G
 
 - `within` takes the selectors of content and layers (`content`, `owner`, `data_group`, `mode`, `setup_mode`, `any`, `not`). A box is not a setup mode (every box shares `swofty_f1`): scope on the box's entrant lists or its content id, and the career's `data_group`.
 - `slider` is a `car_setup.sliders` label or an index 0 to 41; a label such as `front_wing` is one slider. Each slider appears once; one section per tab; one to ten rows per section; a section needs a title and a row a name (`check_layout`).
-- `min` and `max` go together. A row without them keeps the game's range.
+- `min` and `max` go together. A row without them keeps the game's range. `min` may be above `max`: the row then reads from the high number down (a ballast row shown as 42 to 40 percent).
+- `steps` (1 to 100) gives a row its own number of positions. It is accepted only on `brake_cooling_front`, `brake_cooling_rear`, `brake_duct_front` and `brake_duct_rear`, because ApplyTuning divides the stored step by the same steps cell: the scope's handling must pin those four F1Tuning ranges to min == max (the stock constructor does so for the cooling pair, 1050 and 900, and leaves the duct pair at 0 to 1), or the car's brake cooling and drag would follow the new fraction. The cell is restored with the min and max cells when the scope ends. A step saved above the stock count (more than 2 or 5) is clamped to the top by ApplyTuning outside the scope.
 - Two records whose scopes match one session: the later in load order wins, as for layers.
 - A record whose layout fails `check_layout` is dropped with a `[setup-layout]` log line, and that scope sees the stock screen.
 

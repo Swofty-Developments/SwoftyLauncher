@@ -63,7 +63,17 @@ int main()
     bad = l;
     bad.sections[0].rows[0].min = 2.0f;
     bad.sections[0].rows[0].max = 1.0f;
-    expect(!c::check_layout(bad).ok, "min above max is refused");
+    expect(c::check_layout(bad).ok, "min above max is a descending row and is fine");
+    bad.sections[0].rows[0].max = 2.0f;
+    expect(!c::check_layout(bad).ok, "min equal to max is refused");
+    bad = l;
+    bad.sections[0].rows[0].steps = 10;
+    expect(!c::check_layout(bad).ok, "steps on a slider outside 37 to 40 are refused");
+    bad = l;
+    bad.sections[1].rows[0].steps = 0;
+    expect(!c::check_layout(bad).ok, "zero steps are refused");
+    bad.sections[1].rows[0].steps = 101;
+    expect(!c::check_layout(bad).ok, "more than 100 steps are refused");
     bad = l;
     bad.sections[0].title.clear();
     expect(!c::check_layout(bad).ok, "a section needs a title");
@@ -77,18 +87,24 @@ int main()
     expect(titles.size() == 2 && titles[0].key == "lng_cs_aerodynamics_title" && titles[1].text == "Fuel mix", "titles go on the game's tab title keys");
 
     std::map<int, std::pair<float, float>> cells;
-    for (int i = 0; i < c::SETUP_SLIDER_COUNT; i++)
+    std::map<int, int> steps_cells;
+    for (int i = 0; i < c::SETUP_SLIDER_COUNT; i++) {
         cells[i] = {0.0f, 100.0f};
-    auto rd = [&](int s, float &mn, float &mx) { mn = cells[s].first; mx = cells[s].second; return true; };
-    auto wr = [&](int s, float mn, float mx) { cells[s] = {mn, mx}; };
+        steps_cells[i] = 5;
+    }
+    auto rd = [&](int s, float &mn, float &mx, int &st) { mn = cells[s].first; mx = cells[s].second; st = steps_cells[s]; return true; };
+    auto wr = [&](int s, float mn, float mx, int st) { cells[s] = {mn, mx}; steps_cells[s] = st; };
+    for (auto &r : l.sections[1].rows)
+        r.steps = 20;
     c::ScopeSwitch sw;
     sw.enter(l, rd, wr);
     expect(sw.active() == "f1_1990" && sw.saved() == 4 && std::fabs(cells[38].first - 0.84f) < 1e-4f && cells[0].second == 100.0f,
            "entering swaps only the cells of rows with a range");
     sw.enter(l, rd, wr);
     expect(sw.saved() == 4 && std::fabs(cells[38].first - 0.84f) < 1e-4f, "entering again does not stack swaps");
+    expect(steps_cells[37] == 20 && steps_cells[0] == 5, "a row's steps swap its steps cell only");
     sw.leave(wr);
-    expect(sw.saved() == 0 && sw.active().empty() && cells[38].first == 0.0f && cells[40].second == 100.0f, "leaving puts every cell back");
+    expect(sw.saved() == 0 && sw.active().empty() && cells[38].first == 0.0f && cells[40].second == 100.0f && steps_cells[39] == 5, "leaving puts every cell back, steps too");
     sw.leave(wr);
     expect(cells[37].first == 0.0f, "leaving twice is harmless");
 
