@@ -1500,6 +1500,7 @@ inline constexpr site<"site_Game_Mfd_FuelMixMaxRaceGate"> site_Game_Mfd_FuelMixM
 inline constexpr site<"site_Game_MyTeamVehicleBases_AiConfigLoad"> site_Game_MyTeamVehicleBases_AiConfigLoad{}; // L2 experimental
 inline constexpr site<"site_Game_MyTeamVehicleBases_NextBase"> site_Game_MyTeamVehicleBases_NextBase{}; // L2 experimental
 inline constexpr site<"site_Game_MyTeamVehicleBases_SaveRecord"> site_Game_MyTeamVehicleBases_SaveRecord{}; // L2 experimental
+inline constexpr site<"site_Game_PhysicsWorldConfigOverrides"> site_Game_PhysicsWorldConfigOverrides{}; // L2 experimental
 inline constexpr site<"site_Game_PitLane_BoxPoseFalse"> site_Game_PitLane_BoxPoseFalse{}; // L2 experimental
 inline constexpr site<"site_Game_PitLane_BoxSlotRead"> site_Game_PitLane_BoxSlotRead{}; // L2 experimental
 inline constexpr site<"site_Game_PitStops_CrewTemplateRead"> site_Game_PitStops_CrewTemplateRead{}; // L2 experimental

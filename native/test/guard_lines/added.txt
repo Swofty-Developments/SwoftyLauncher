@@ -63,3 +63,9 @@ off [ai] marker cap guard off (SWOFTY_AI_MARKER_CAP_GUARD=%s)
 unresolved [ai] marker cap guard off: needs Game_AiRoute_CompileMarkerChannel, which this build does not resolve
 armed [ai] marker cap guard armed: an AI lane with more than 256 markers on one channel gets its marker tables compiled by core instead of overflowing the game's stack arrays
 not_installed [ai] marker cap guard did not install (see the [core] lines)
+
+[collision_pool]
+off [collision] tile pool off (SWOFTY_COLLISION_GEOM_POOL=%s)
+unresolved [collision] tile pool off: needs site_Game_PhysicsWorldConfigOverrides, which this build does not resolve
+armed [collision] tile pool armed: physics world 1 gets a large-geom pool of SWOFTY_COLLISION_GEOM_POOL objects (default 8192) instead of the game's 2000, so a track's collision tiles past the first ~1640 load
+not_installed [collision] tile pool did not install (see the [core] lines)

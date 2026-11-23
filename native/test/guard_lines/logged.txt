@@ -350,6 +350,10 @@
 [log session/thrustmaster_lcd.cpp]
 [tmlcd] a sector entrant has no record, so the wheel LCD keeps its last team name%s
 
+[log tracks/collision_pool_guard.cpp]
+%s%s
+%s
+
 [log tracks/gp_weekend_track_guard.cpp]
 [gp] %s
 [gp] weekend track guard: %s is not found on this build

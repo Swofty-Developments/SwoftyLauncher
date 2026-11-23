@@ -23056,6 +23056,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_PhysicsWorldConfigOverrides: Binding = Binding {
+        id: "site_Game_PhysicsWorldConfigOverrides",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
         id: "site_Game_PitLane_BoxPoseFalse",
         kind: "site",

@@ -244,3 +244,4 @@ src/core/audio/speech.cpp
 src/core/guards/engine/phys_nonfinite_guard.cpp
 src/core/frontend/tt_blocked.cpp
 src/core/guards/ai/ai_marker_cap_guard.cpp
+src/core/guards/tracks/collision_pool_guard.cpp

@@ -72,6 +72,7 @@ enum class CoreSetId : uint8_t {
     vehicle_override,
     phys_nonfinite,
     ai_marker_cap,
+    collision_pool,
     count,
 };
 
@@ -137,6 +138,7 @@ constexpr std::array<std::string_view, CORE_SET_COUNT> CORE_SET_NAMES = {
     "vehicle_override",
     "phys_nonfinite",
     "ai_marker_cap",
+    "collision_pool",
 };
 
 constexpr std::string_view core_set_name(CoreSetId id) { return CORE_SET_NAMES[size_t(id)]; }
@@ -201,6 +203,7 @@ constexpr std::array<CoreSetId, CORE_SET_COUNT - 1> COMMIT_ORDER = {
     CoreSetId::vehicle_override,
     CoreSetId::phys_nonfinite,
     CoreSetId::ai_marker_cap,
+    CoreSetId::collision_pool,
 };
 
 constexpr bool settles(CoreSetId id) { return id != CoreSetId::garage_placement; }

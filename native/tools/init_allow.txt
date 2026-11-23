@@ -109,6 +109,7 @@ src/core/guards/session/red_flag_recompute_guard.cpp: guards::SiteGuard guard{gu
 src/core/guards/session/session_enter.cpp: guards::SiteGuard guard{guards::CoreSetId::session_enter,
 src/core/guards/session/team_slots.cpp: guards::SiteGuard guard{guards::CoreSetId::team_slots,
 src/core/guards/session/thrustmaster_lcd.cpp: guards::SiteGuard guard{guards::CoreSetId::thrustmaster_lcd,
+src/core/guards/tracks/collision_pool_guard.cpp: CollisionPool guard;
 src/core/guards/tracks/track_acclim.cpp: guards::SiteGuard guard{guards::CoreSetId::track_acclim,
 src/core/guards/tracks/track_list_guard.cpp: TrackListGuard guard;
 src/core/guards/tracks/track_select.cpp: TrackSelectGuard guard;

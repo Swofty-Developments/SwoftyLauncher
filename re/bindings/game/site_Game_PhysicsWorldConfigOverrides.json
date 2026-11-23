@@ -1,0 +1,97 @@
+{
+ "schema": 1,
+ "name": "site_Game_PhysicsWorldConfigOverrides",
+ "table": "globals",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14445793b",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/144457220.c;decomp:own capstone disasm Steam 26566308 0x1444597f0-0x14445b200 and KB 0x144457220-0x144458c2e;xref:0x144459f5c,0x144459cbf,0x144459eaa",
+  "notes": "Third of the three world-1 overrides in Game_Read_PhysicsWorldConfig: mov dword [rsp+0x7c],60000 (maxBroadPhaseCollisions), after [rsp+0x104]=20000 (maxRigidBodies) and [rsp+0x10c]=20000 (maxSmallGeoms); the pattern starts at the first of them, so a build that moves these config fields does not resolve. The world-1 PhysicsWorldConfig is at rsp+0x40 (lea rdx,[rsp+0x40] before the Ne_PhysWorld_InitFromConfig call), so [rsp+0x108] = cfg+0xc8 = maxLargeGeoms, already read from the settings store (out pointer r12 = rsp+0x108, default 0x7d0) and already copied to the trigger-world config at rsp+0x140 (vmovaps [rsp+0x200] from [rsp+0x100]). A write to [rsp+0x108] here sizes only the world-1 large-geom pool (element 0x220, stride 0x230, pointer free list) that Ne_MoverCollision_BuildMoverShapes takes every VCQTC collision tile from. No branch lands inside the three movs; rsp is the function's frame (no push after the prologue)."
+ },
+ "signature": {
+  "id": "game.physics_world_config_overrides",
+  "section": ".xtls",
+  "pattern": "C7 84 24 04 01 00 00 20 4E 00 00 C7 84 24 0C 01 00 00 20 4E 00 00 C7 44 24 7C 60 EA 00 00",
+  "match": "0x144457925",
+  "anchor": "0x16",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14445793b",
+  "kind": "mid",
+  "names": [
+   "site_Game_PhysicsWorldConfigOverrides"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-23",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/collision_pool_guard.cpp"
+  ],
+  "expect": "C7 44 24 7C 60 EA 00 00",
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144459ef5",
+  "made_on_target": "0x144459f0b",
+  "twin": "made on steam-26566308; the target 0x144459f0b is KB 0x14445793b: Game_Read_PhysicsWorldConfig (0x44597f0) and Ne_WorldInstance_PreWarmTextures (0x447b2b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "native-guards-collpool-blind",
+   "kind": "global",
+   "item": "site_Game_PhysicsWorldConfigOverrides",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1444597f0-0x14445a3fc (config build, copy 0x144459e62-0x144459eec, site 0x144459ef5-0x144459f13), callee 0x1440c5f10 (read 0x1440c842b, pool 0x1440c8420-0x1440c84b0);xref:0x144459cbc (r12=&[rsp+0x108] to setting getter, default 0x7d0 string PhysicsWorld.maxLargeGeoms), 0x144459ea1-0x144459eaa (copy [rsp+0x100..] to [rsp+0x200..]), 0x144459f54 (rdx=rsp+0x40), 0x144459ffa (second call rdx=rsp+0x140), branch-target scan none in 0x144459ef5-0x144459f13",
+   "notes": "gh:native-guards-collpool-blind Derived: prologue 8 pushes+sub rsp,0x2a8 and no rsp change before site; no branch targets inside the 3 movs; maxLargeGeoms read into [rsp+0x108] (default 2000), copied to the trigger-world block via the 0x100..0x10f vmovaps before the site, no later read of rsp+0x100..0x10f or r12 in the function; callee sees config at rdx=rsp+0x40, reads cfg+0xc8 once at 0x1440c842b as pool count (elem 0x220)."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144459ef5",
+    "target": "0x144459f0b"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "82bdc34e75763d353ab049643ff7f4e8e8bea822e15c364ce56135732324584e"
+  },
+  {
+   "by": "native-guards-collpool-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144459ef5",
+    "target": "0x144459f0b"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "82bdc34e75763d353ab049643ff7f4e8e8bea822e15c364ce56135732324584e"
+  }
+ ]
+}
