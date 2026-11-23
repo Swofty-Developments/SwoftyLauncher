@@ -77,12 +77,58 @@ std::atomic<uintptr_t> update_system{0};
 safetyhook::InlineHook update_hook_handle;
 bool update_counting = false;
 
+uint32_t session = 0;
+std::atomic<uint32_t> list_extra_total{0}, list_extra_mask{0};
+std::atomic<bool> list_fix{true};
+tmod::FrameBound frame;
+std::atomic<int> list_logged{0};
+
+void update_extras(void *system, void *a3, void *camera, float scale)
+{
+    uintptr_t sys = uintptr_t(system), begin = 0, end = 0;
+    if (!mem::read(sys + SYSTEM_LIST, begin) || !mem::read(sys + SYSTEM_LIST_END, end) || !begin || end <= begin)
+        return;
+    uint64_t count = (end - begin) / sizeof(uintptr_t);
+    if (count > tmod::MAX_LIST)
+        return;
+    bool has_car[tmod::MAX_LIST] = {};
+    for (uint64_t i = frame.bound; i < count; i++) {
+        uintptr_t entry = 0, car = 0;
+        has_car[i] = mem::read(begin + i * sizeof(uintptr_t), entry) && entry && mem::read(entry + TC_CAR, car) && car;
+    }
+    uint32_t todo[tmod::MAX_LIST];
+    size_t n = tmod::extra_updates(count, frame.bound, has_car, todo, tmod::MAX_LIST);
+    for (size_t k = 0; k < n; k++) {
+        update_hook_handle.call<void>(system, uint8_t(todo[k]), a3, camera, scale);
+        uintptr_t entry = 0, car = 0, live = 0;
+        uint8_t id = 0xff;
+        if (mem::read(begin + todo[k] * sizeof(uintptr_t), entry) && mem::read(entry + TC_CAR, car) &&
+            mem::read(car + CAR_LIVE, live) && live && mem::read(live + LIVE_VEHICLE_ID, id) && id < 32)
+            list_extra_mask.fetch_or(1u << id, std::memory_order_relaxed);
+        list_extra_total.fetch_add(1, std::memory_order_relaxed);
+    }
+    if (n && list_logged.exchange(1) == 0) {
+        std::string ids;
+        for (unsigned v = 0; v < 32; v++)
+            if (list_extra_mask.load() & (1u << v))
+                ids += (ids.empty() ? "" : ", ") + std::to_string(v);
+        swofty::log("[tyres] list fix, session %u: the caller updates %u of %llu tyre system entries; %zu more are updated after "
+                    "it (vehicle(s) %s)",
+                    session, frame.bound, (unsigned long long)count, n, ids.c_str());
+    }
+}
+
 void update_vehicle_hook(void *system, uint8_t idx, void *a3, void *camera, float scale)
 {
     update_system.store(uintptr_t(system), std::memory_order_relaxed);
     if (idx < COUNT_IDS)
         update_counts[idx].fetch_add(1, std::memory_order_relaxed);
     update_hook_handle.call<void>(system, idx, a3, camera, scale);
+    if (!list_fix.load(std::memory_order_relaxed))
+        return;
+    tmod::frame_step(frame, idx);
+    if (tmod::is_last_of_frame(frame, idx))
+        update_extras(system, a3, camera, scale);
 }
 
 void (*start_orig)(void *) = nullptr;
@@ -90,7 +136,6 @@ runtime::loader::MixinGate mixin_gate;
 bool wanted = false;
 std::mutex lock;
 uintptr_t component = 0;
-uint32_t session = 0;
 int64_t started_ms = 0;
 std::atomic<int> stage{2};
 bool fix_armed = false, fix_logged = false;
@@ -320,6 +365,16 @@ void log_update_counts(const char *when, uintptr_t car_list)
     }
     swofty::log("[tyres] tyre system list (%s): %p, %llu entr(ies), capacity %llu", when, (void *)sys,
                 (unsigned long long)((end - begin) / sizeof(uintptr_t)), (unsigned long long)((cap - begin) / sizeof(uintptr_t)));
+    for (uint64_t i = 0; begin && end > begin && i < tmod::MAX_LIST && i < (end - begin) / sizeof(uintptr_t); i++) {
+        uintptr_t entry = 0, car = 0, live = 0;
+        uint8_t id = 0xff;
+        mem::read(begin + i * sizeof(uintptr_t), entry);
+        if (entry && mem::read(entry + TC_CAR, car) && car && mem::read(car + CAR_LIVE, live) && live)
+            mem::read(live + LIVE_VEHICLE_ID, id);
+        swofty::log("[tyres] tyre system list (%s): idx %llu entry %p car %p vehicle %u", when, (unsigned long long)i,
+                    (void *)entry, (void *)car, unsigned(id));
+    }
+    swofty::log("[tyres] list fix (%s): bound %u, %u extra update(s) so far", when, frame.bound, list_extra_total.load());
     for (uint8_t v = 22; v < 26; v++) {
         uintptr_t entry = 0, comp = tyre_component_of(car_list, v), parent = 0;
         bool in = begin && v < (end - begin) / sizeof(uintptr_t) && mem::read(begin + v * sizeof(uintptr_t), entry);
@@ -373,6 +428,9 @@ void on_start(void *c)
     fix_logged = false;
     for (auto &n : update_counts)
         n.store(0);
+    list_extra_total = 0;
+    list_extra_mask = 0;
+    list_logged = 0;
     stage = 0;
 }
 
@@ -412,7 +470,10 @@ static void tyre_models_commit()
         loader::install_state(core_mixins_active(MIXIN), "armed: fitted tyre models are read 10 s and 60 s into each session"));
     char off[16] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_TYRE_UPDATE_COUNT", off, sizeof off);
-    if (!(n && n < sizeof off && !strcmp(off, "0"))) {
+    char fixoff[16] = {};
+    DWORD m = GetEnvironmentVariableA("SWOFTY_TYRE_LIST_FIX", fixoff, sizeof fixoff);
+    list_fix = !(m && m < sizeof fixoff && !strcmp(fixoff, "0"));
+    if (!(n && n < sizeof off && !strcmp(off, "0")) || list_fix) {
         uintptr_t at = runtime::find(S_UPDATE_VEHICLE, "tyre system update", "tyres");
         void *target = reinterpret_cast<void *>(at), *detour = reinterpret_cast<void *>(&update_vehicle_hook);
         if (!at) {
@@ -420,7 +481,8 @@ static void tyre_models_commit()
         } else if (auto r = safetyhook::InlineHook::create(target, detour)) {
             update_hook_handle = std::move(*r);
             update_counting = true;
-            swofty::log("[tyres] update count armed: calls of Game_TyreSystem_UpdateVehicle are counted per vehicle");
+            swofty::log("[tyres] update count armed: calls of Game_TyreSystem_UpdateVehicle are counted per vehicle; list fix %s",
+                        list_fix ? "on (cars past the caller's vehicle count are updated too)" : "off");
         } else {
             swofty::log("[tyres] update count off: the hook on Game_TyreSystem_UpdateVehicle failed");
         }

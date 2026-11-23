@@ -123,3 +123,41 @@ inline Repair plan_activation(uint8_t vehicle, const Group &old_group, const Gro
 }
 
 }
+
+namespace runtime::tyre_models {
+
+constexpr size_t MAX_LIST = 64;
+
+struct FrameBound {
+    uint32_t last_max = 0, candidate = 0, bound = 0;
+    bool seen = false;
+};
+
+inline void frame_step(FrameBound &f, uint32_t idx)
+{
+    if (idx == 0 && f.seen) {
+        uint32_t n = f.last_max + 1;
+        if (n == f.candidate)
+            f.bound = n;
+        f.candidate = n;
+        f.last_max = 0;
+    } else if (idx > f.last_max) {
+        f.last_max = idx;
+    }
+    f.seen = true;
+}
+
+inline bool is_last_of_frame(const FrameBound &f, uint32_t idx) { return f.bound && idx + 1 == f.bound; }
+
+inline size_t extra_updates(uint64_t count, uint32_t bound, const bool *has_car, uint32_t *out, size_t room)
+{
+    size_t n = 0;
+    if (!bound || count > MAX_LIST)
+        return 0;
+    for (uint64_t i = bound; i < count && n < room; i++)
+        if (has_car[i])
+            out[n++] = uint32_t(i);
+    return n;
+}
+
+}
