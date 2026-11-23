@@ -21,6 +21,8 @@ constexpr uint32_t djb2(const char *s) { return career::state::djb2(s); }
 constexpr Tracked TRACKED[] = {
     {djb2("StateSession"), G_SESSION},
     {djb2("InGame"), G_DRIVING},
+    {djb2("PreLights"), G_DRIVING},
+    {djb2("StartLights"), G_DRIVING},
     {djb2("InstantReplay"), G_REPLAY},
     {djb2("ViewReplayHighlights"), G_REPLAY},
     {djb2("PostRaceReplay"), G_REPLAY},
@@ -58,5 +60,6 @@ constexpr uint32_t group_of(uint32_t hash)
 static_assert(djb2("StateSession") == 0x1505f42au, "state name hashing drifted");
 static_assert(djb2("InGame") == 0xba16bc16u, "the driving node moved");
 static_assert(djb2("InstantReplay") == 0x24941c93u, "the instant replay node moved");
+static_assert(djb2("StartLights") == 0xf00bd57eu && djb2("PreLights") == 0xa5f900d7u, "the start sequence nodes moved");
 
 }

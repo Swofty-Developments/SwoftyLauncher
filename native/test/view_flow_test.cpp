@@ -25,6 +25,11 @@ int main()
     expect(group_of(0x89b82f18) == G_REPLAY, "highlights replay node 89b82f18 is a replay state");
     expect(group_of(0x5764b973) == G_REPLAY, "post race replay node 5764b973 is a replay state");
     expect(group_of(0xba16bc16) == G_DRIVING, "InGame node ba16bc16 is the driving state");
+    // A standing start on Steam 26566308 (2026-11-24) entered a5f900d7 and f00bd57e as the start lights came on, with
+    // the race HUD up, and ba16bc16 only at lights out.
+    expect(group_of(0xa5f900d7) == G_DRIVING && group_of(0xf00bd57e) == G_DRIVING,
+           "PreLights a5f900d7 and StartLights f00bd57e are driving states");
+    expect(group_of(djb2("PreRace")) == 0, "the grid's Start Race screen (PreRace 2330fd27) is not");
     expect(group_of(0x1505f42a) == G_SESSION, "StateSession 1505f42a is the session state");
     expect(group_of(0x963b35bf) == G_CUTSCENE, "Cutscene node 963b35bf is a cutscene state");
     expect(group_of(0xb55facbe) == G_SPECTATE, "Spectate node b55facbe is a spectating state");

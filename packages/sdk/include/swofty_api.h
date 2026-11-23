@@ -1313,9 +1313,9 @@ typedef struct SwoftyLiveSession {
     uint8_t start_lights;
     /* The race HUD (SWOFTY_LIVE_SHAVE_HUD): hud_visible 1 while the game shows its race HUD (driving, or its
        spectator HUD while spectating), 0 while it hides it; hud_hidden_by is what hides it, SWOFTY_LIVE_HUD_*
-       bits: _MENU no driving view (menus, the track intro, the starting grid, the results), _CUTSCENE, _REPLAY,
-       _PHOTO photo mode, _PAUSED a pause reason held (the pause menu). From the game's flow states and pause calls,
-       not its HUD setting. */
+       bits: _MENU no driving view (menus, the track intro, the grid's Start Race screen, the results),
+       _CUTSCENE, _REPLAY, _PHOTO photo mode, _PAUSED a pause reason held (the pause menu). From the game's flow
+       states and pause calls, not its HUD setting. */
     uint8_t hud_visible;
     uint8_t hud_hidden_by;
     uint8_t pad2[2];

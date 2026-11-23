@@ -313,13 +313,13 @@ void on_frame(double)
 
 | `hud_hidden_by` bit | The game is in |
 |---|---|
-| `SWOFTY_LIVE_HUD_MENU` | no driving view: a menu, the track intro and its grid walk, the starting grid before Start Race, the results |
+| `SWOFTY_LIVE_HUD_MENU` | no driving view: a menu, the track intro and its grid walk, the grid's Start Race screen, the results |
 | `SWOFTY_LIVE_HUD_CUTSCENE` | a cutscene (the intro cameras, the formation lap cinematic, the winner and podium sequences) |
 | `SWOFTY_LIVE_HUD_REPLAY` | an instant replay, a flashback's replay or the highlights |
 | `SWOFTY_LIVE_HUD_PHOTO` | photo mode |
 | `SWOFTY_LIVE_HUD_PAUSED` | a held pause reason (`swofty::view::pause_reasons()`), the pause menu among them |
 
-`hud_visible` is 1 while driving and while spectating (the spectator HUD). The value comes from the game's flow states (the `[view] kind=… flags=…` log lines) and its pause calls, the same sources as [`swofty::view`](./events#pause-and-resume) and the post-processing view. The game's own HUD setting (HUD off in the options) is not read. `SWOFTY_LIVE_SHAVE_HUD` is clear until the core has seen a flow state, and `live::session()` itself is empty outside a session.
+`hud_visible` is 1 while driving (from the start lights on) and while spectating (the spectator HUD). The value comes from the game's flow states (the `[view] kind=… flags=…` log lines) and its pause calls, the same sources as [`swofty::view`](./events#pause-and-resume) and the post-processing view. The game's own HUD setting (HUD off in the options) is not read. `SWOFTY_LIVE_SHAVE_HUD` is clear until the core has seen a flow state, and `live::session()` itself is empty outside a session.
 
 The watched car follows the spectator director only while the spectator HUD is up. The safety car cinematic and the winner sequence also switch the director on, and those do not count. A red flag is reported when the game's red flag system says so, or when every marshal zone reads red; the game's own byte stayed 0 through a red flag in a race, so the zones are the second witness. The safety car value is 0 while a red flag is out, because the game's byte also reads 1 then.
 
