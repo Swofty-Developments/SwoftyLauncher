@@ -368,7 +368,7 @@ When the memory source is on, `session.udp_format` reads 2026 even before a pack
 
 `pit_status` follows the game's own mapping: 0 on track, 2 while the car's pit state is 4, otherwise 1 once the car has a pit-lane flag set, and `pit_stops` is the low byte of the car's stop counter. `IN_PIT_LANE` is set for status 1 and 2.
 
-The game's UDP output still has to be on for the 2024 and 2025 names, temperatures and wear, and for any group that is not verified on your build. The core hooks `sendto` while any group still depends on it, and the hook costs a table lookup per packet. Once every telemetry group is verified and the bus events are on, `telemetry_wants_udp` is false and the hook is not installed.
+The game's UDP output still has to be on for the 2024 and 2025 names, temperatures and wear, for any group that is not verified on your build, and for the values the [live state reads from UDP](./live#from-the-games-udp-packets). The core hooks `sendto` while the telemetry feature is on, and the hook costs a table lookup per packet.
 
 ## Memory source
 

@@ -1,6 +1,6 @@
 ---
 title: Race control
-description: React to flags, the safety car, the red flag, sectors and retirements with the session.flag, session.safety_car.deploy, session.red_flag, session.sector and session.car.status events of swofty/systems/race_control.hpp.
+description: React to flags, the safety car, the red flag, sectors, retirements, penalties, DRS, the start lights and the fastest lap with the race control events of swofty/systems/race_control.hpp.
 ---
 
 # Race control
@@ -81,7 +81,7 @@ SWOFTY_ADDON()
 ```
 
 - **Header:** `swofty/systems/race_control.hpp`, namespace `swofty::race_control`
-- **Events:** `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` (hot), `session.car.status`; all notify, through the hooks table (`SwoftyApi` version 9, `events.hpp`)
+- **Events:** `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector` (hot), `session.car.status`, and the [race control messages](#race-control-messages) `session.penalty`, `session.penalty.served`, `session.drs`, `session.start_lights`, `session.safety_car.phase` and `session.fastest_lap`; all notify, through the hooks table (`SwoftyApi` version 9, `events.hpp`)
 - **Feature:** `events` (stable) and `telemetry` (experimental, the live state)
 - **Thread:** the flow thread, once per frame after the live state's tick
 - **Changes nothing in the game:** it reads the live state and fires events
@@ -192,6 +192,101 @@ struct CarStatus {              // race_control::events::CarStatus, "session.car
 ```
 
 `session.sector` fires up to once per car per sector, so it is hot: the core logs only its first fire of a session. Crossing the line fires sector 1 with the new lap. A sector the live state reads as 0 fires nothing. `session.car.status` fires for each car whose result status changes: the leader finishing, a retirement, a disqualification, a car not classified at the end. Each status change is in `swofty/loader.log`.
+
+## Race control messages
+
+```cpp
+ev::on<rc::events::Penalty>().after([](const rc::events::Penalty &e, const ev::Context &) {
+    swofty::log("[race-board] vehicle %u: %s for %s, %u s, lap %d", e.car, rc::penalty_name(e.penalty_type),
+                rc::infringement_name(e.infringement), e.seconds, e.lap);
+});
+ev::on<rc::events::Drs>().after([](const rc::events::Drs &e, const ev::Context &) {
+    swofty::log("[race-board] DRS %s", e.enabled ? "enabled" : "disabled");
+});
+ev::on<rc::events::StartLights>().after([](const rc::events::StartLights &e, const ev::Context &) {
+    if (e.out)
+        swofty::log("[race-board] lights out");
+});
+ev::on<rc::events::SafetyCarPhase>().after([](const rc::events::SafetyCarPhase &e, const ev::Context &) {
+    if (e.phase == SWOFTY_LIVE_SC_RETURNING)
+        swofty::log("[race-board] %s in this lap", rc::name(e.deployment));
+});
+ev::on<rc::events::FastestLap>().after([](const rc::events::FastestLap &e, const ev::Context &) {
+    swofty::log("[race-board] fastest lap: vehicle %u, %u ms", e.car, e.lap_ms);
+});
+```
+
+```c
+struct Penalty {                // "session.penalty", version 1: race control issues a penalty or a warning
+    uint32_t size, payload_version;
+    uint32_t car;               // vehicle id
+    uint32_t other_car;         // vehicle id, SWOFTY_LIVE_NO_CAR (0xff) when none
+    uint8_t penalty_type;       // 0-17, the game's: rc::penalty_name
+    uint8_t infringement;       // 0-54, the game's: rc::infringement_name
+    uint8_t seconds;            // time added
+    uint8_t places_gained;
+    int32_t lap;                // the lap it was given on
+};
+struct PenaltyServed {          // "session.penalty.served", version 1
+    uint32_t size, payload_version;
+    uint32_t car;
+    Served kind;                // drive_through 1, stop_go 2
+    uint8_t pad[3];
+    float stop_s;               // time stationary in a stop and go (format 2025), else 0
+    int32_t lap;                // the leader's lap
+};
+struct Drs {                    // "session.drs", version 1
+    uint32_t size, payload_version;
+    uint8_t enabled;            // 1 enabled, 0 disabled
+    uint8_t reason;             // disabled: 0 wet, 1 safety car, 2 red flag, 3 minimum lap not reached, 0xff none
+    uint8_t pad[2];
+    int32_t lap;
+};
+struct StartLights {            // "session.start_lights", version 1
+    uint32_t size, payload_version;
+    uint8_t lights;             // 1 to 5, 0 at lights out
+    uint8_t out;                // 1 at lights out
+    uint8_t pad[2];
+    int32_t lap;
+};
+struct SafetyCarPhase {         // "session.safety_car.phase", version 1
+    uint32_t size, payload_version;
+    Deployment deployment;      // the safety car the live state reads at the change
+    uint8_t phase;              // SWOFTY_LIVE_SC_DEPLOYED 0, _RETURNING 1 (in this lap), _RETURNED 2, _RESUME 3
+    uint8_t previous;           // 0xff for the session's first phase
+    uint8_t pad;
+    int32_t lap;
+};
+struct FastestLap {             // "session.fastest_lap", version 1
+    uint32_t size, payload_version;
+    uint32_t car;               // vehicle id
+    uint32_t lap_ms;
+    uint32_t previous_car;      // SWOFTY_LIVE_NO_CAR for the session's first
+    uint32_t previous_ms;
+    int32_t lap;                // the holder's lap
+};
+```
+
+The messages come from the game's UDP Event packet (see [Live state: from the game's UDP packets](./live#from-the-games-udp-packets)), so they need its UDP telemetry output on, on Steam and EA alike:
+
+| Event | UDP event codes | Fires |
+|---|---|---|
+| `session.penalty` | `PENA` | for each penalty, warning or lap invalidation race control issues, in the order the game sends them |
+| `session.penalty.served` | `DTSV`, `SGSV` | when a car serves a drive through or a stop and go |
+| `session.drs` | `DRSE`, `DRSD` | when the session's DRS state changes |
+| `session.start_lights` | `STLG`, `LGOT` | each light, then lights out |
+| `session.safety_car.phase` | `SCAR` | deployed, in this lap, returned, resume race |
+| `session.fastest_lap` | `FTLP`, or memory's best laps (Steam) | when the session's fastest lap changes holder or time |
+
+`session.penalty` and `session.penalty.served` fire as the game sends them. The other four follow the snapshot rules above, except that a value race control has not sent yet counts as a value: the first light, the first DRS message, the first safety car phase and the first fastest lap of a session fire once the session's first read is done. The chequered flag is `session.flag` with `Flag::chequered`, and retirements are `session.car.status` and `telemetry.retirement` (with the game's reason as `b`).
+
+```text
+[race-control] start lights 3, lap 0
+[race-control] lights out, lap 0
+[race-control] drs enabled, reason 255, lap 3
+[race-control] vehicle 4 time penalty for corner cutting gained time (other vehicle 255, 5 s, lap 6, places gained 0)
+[race-control] fastest lap vehicle 2 91234 ms (was vehicle 255 0 ms), lap 7
+```
 
 ## Scope and selectors
 

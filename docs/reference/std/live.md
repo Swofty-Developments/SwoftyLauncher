@@ -181,7 +181,19 @@ typedef struct SwoftyLiveCarDetail {
     uint32_t best_lap_ms;          // fastest valid completed lap, 0 while there is none
     uint32_t best_lap_number;      // from 1
     uint32_t best_sector_ms[3];    // the best lap's sectors
-    uint32_t reserved[17];
+    // from the game's UDP packets (see "From the game's UDP packets")
+    uint8_t drs_allowed;           // 1 while the car may open DRS (SWOFTY_LIVE_HAVE_DRS_ALLOWED)
+    uint8_t pit_limiter;           // 1 while the limiter is on (SWOFTY_LIVE_HAVE_PIT_LIMITER)
+    int8_t fia_flag;               // -1 invalid, 0 none, 1 green, 2 blue, 3 yellow (SWOFTY_LIVE_HAVE_FIA_FLAG)
+    uint8_t driver_status;         // 0 garage, 1 flying lap, 2 in lap, 3 out lap, 4 on track (SWOFTY_LIVE_HAVE_DRIVER_STATUS)
+    float drs_distance_m;          // to the next activation point, 0 when none (SWOFTY_LIVE_HAVE_DRS_ALLOWED)
+    uint8_t pit_lane_timer_active; // 1 while in the pit lane (SWOFTY_LIVE_HAVE_PIT_TIMING)
+    uint8_t race_number;           // SWOFTY_LIVE_HAVE_IDENTITY
+    uint16_t team_id;              // the UDP team id (SWOFTY_LIVE_HAVE_IDENTITY)
+    uint32_t pit_lane_ms;          // in the pit lane, this or the last visit (SWOFTY_LIVE_HAVE_PIT_TIMING)
+    uint32_t pit_stop_ms;          // stationary in the box (SWOFTY_LIVE_HAVE_PIT_TIMING)
+    uint32_t team_colour;          // 0xRRGGBB, the livery's first colour; 0 when the game sends none (SWOFTY_LIVE_HAVE_IDENTITY)
+    uint32_t reserved[11];
 } SwoftyLiveCarDetail;
 ```
 
@@ -189,6 +201,8 @@ typedef struct SwoftyLiveCarDetail {
 |---|---|
 | `live::car_detail(vehicle)` | the car's detail from the same snapshot as `live::car`; empty on a core older than table version 6 |
 | `live::grid_position(d)`, `live::last_lap_ms(d)`, `live::best_lap_ms(d)` | `std::optional`, empty when the bit is clear or the lap time is 0 |
+| `live::drs_allowed(d)`, `live::pit_limiter(d)`, `live::fia_flag(d)`, `live::driver_status(d)` | `std::optional`, empty when the bit is clear; `driver_status` is a `live::DriverStatus` |
+| `live::race_number(d)`, `live::team_colour(d)` | `std::optional`, empty when the identity bit is clear (`team_colour` also when it is 0) |
 
 The values are the ones the game sends in its UDP output:
 
@@ -239,13 +253,40 @@ typedef struct SwoftyLiveSession {
     uint32_t classified;
     uint32_t road_order[32];       // vehicle ids by distance covered, `on_track` of them
     uint32_t on_track;
-    float time_left_s;             // SWOFTY_LIVE_SHAVE_TIME_LEFT: not read yet, always 0
-    uint32_t total_laps;           // SWOFTY_LIVE_SHAVE_TOTAL_LAPS: not read yet, always 0
-    uint32_t reserved[6];
+    // from the game's UDP packets (see "From the game's UDP packets")
+    float time_left_s;             // SWOFTY_LIVE_SHAVE_TIME_LEFT
+    uint32_t total_laps;           // SWOFTY_LIVE_SHAVE_TOTAL_LAPS
+    float duration_s;              // the session's length, SWOFTY_LIVE_SHAVE_TIME_LEFT
+    uint32_t fastest_lap_ms;       // SWOFTY_LIVE_SHAVE_FASTEST_LAP
+    uint8_t fastest_lap_vehicle;   // vehicle id, SWOFTY_LIVE_SHAVE_FASTEST_LAP
+    uint8_t safety_car_phase;      // SWOFTY_LIVE_SC_DEPLOYED, _RETURNING, _RETURNED, _RESUME (SWOFTY_LIVE_SHAVE_SAFETY_CAR_PHASE)
+    uint8_t drs_enabled;           // 1 enabled, 0 disabled (SWOFTY_LIVE_SHAVE_DRS)
+    uint8_t drs_reason;            // 0 wet, 1 safety car, 2 red flag, 3 minimum lap not reached, 0xff none
+    uint8_t pit_window_ideal_lap;  // the player's, SWOFTY_LIVE_SHAVE_PIT_WINDOW
+    uint8_t pit_window_latest_lap;
+    uint8_t pit_rejoin_position;
+    uint8_t start_lights;          // 1 to 5 lit, 0 from lights out (SWOFTY_LIVE_SHAVE_START_LIGHTS)
+    uint32_t reserved[2];
 } SwoftyLiveSession;
 ```
 
-`time_left_s` and `total_laps` take the first two words of what was `reserved[8]`; `SwoftyLiveSession` keeps its 440 bytes. Their bits stay clear on every build (see [Not read yet](#not-read-yet)).
+The fields from `time_left_s` on take what was `reserved[8]`; `SwoftyLiveSession` keeps its 440 bytes. `safety_car` reads 3 (formation) while the formation lap runs, from the UDP Session packet, where memory reads none.
+
+```cpp
+if (auto laps = live::total_laps(*s))
+    swofty::log("[my-osd] lap %d of %u", leader.lap, *laps);
+if (auto left = live::time_left_s(*s))
+    swofty::log("[my-osd] %.0f s of %.0f left", *left, s->duration_s);
+if (auto f = live::fastest_lap(*s))
+    swofty::log("[my-osd] fastest lap: car %u, %u ms", f->vehicle, f->lap_ms);
+```
+
+| Call | Answers |
+|---|---|
+| `live::time_left_s(s)`, `live::total_laps(s)` | `std::optional`, empty when the bit is clear |
+| `live::fastest_lap(s)` | `live::FastestLap{vehicle, lap_ms}`, empty when the bit is clear |
+| `live::safety_car_phase(s)`, `live::drs_enabled(s)`, `live::start_lights(s)` | `std::optional`, empty until race control sends one this session |
+| `live::pit_window(s)` | `live::PitWindow{ideal_lap, latest_lap, rejoin_position}` |
 
 The watched car follows the spectator director only while the spectator HUD is up. The safety car cinematic and the winner sequence also switch the director on, and those do not count. A red flag is reported when the game's red flag system says so, or when every marshal zone reads red; the game's own byte stayed 0 through a red flag in a race, so the zones are the second witness. The safety car value is 0 while a red flag is out, because the game's byte also reads 1 then.
 
@@ -408,9 +449,37 @@ A group whose chain the knowledge base has no verified row for reads only under 
 
 The core also subscribes to the game's `r_car_to_car_col` and `vehicle_status_changed` bus messages (the bus group) to fire `telemetry.collision` and `telemetry.retirement` without UDP; see [Telemetry](./telemetry#events).
 
+## From the game's UDP packets
+
+The values below have no verified memory source. The core decodes them from the packets the game builds for its UDP telemetry, in the `sendto` hook the [telemetry](./telemetry) feed uses, and merges them into each snapshot; a field the memory read fills is never overwritten. They need the game's UDP telemetry output on (Settings, Telemetry Settings), at any port and send rate. The source is the same on the Steam and EA App builds. A packet value older than five seconds (fifteen for Participants) clears its bit; the race control values hold until the session's UID changes.
+
+| Field | Bit | UDP packet and field | 2024, 2025 | 2026 |
+|---|---|---|---|---|
+| `time_left_s`, `duration_s` | `SHAVE_TIME_LEFT` | Session (1) `m_sessionTimeLeft`, `m_sessionDuration` | yes | no |
+| `total_laps` | `SHAVE_TOTAL_LAPS` | Session (1) `m_totalLaps` | yes | no |
+| `pit_window_*`, `pit_rejoin_position` | `SHAVE_PIT_WINDOW` | Session (1) `m_pitStopWindowIdealLap`, `m_pitStopWindowLatestLap`, `m_pitStopRejoinPosition` | yes | no |
+| `safety_car` 3 (formation) | `SHAVE_SAFETY_CAR` | Session (1) `m_safetyCarStatus` 3 | yes | no |
+| `safety_car_phase` | `SHAVE_SAFETY_CAR_PHASE` | Event `SCAR` `eventType` | yes | yes |
+| `drs_enabled`, `drs_reason` | `SHAVE_DRS` | Event `DRSE`, `DRSD` (`reason` in 2025) | yes | yes |
+| `start_lights` | `SHAVE_START_LIGHTS` | Event `STLG` `numLights`, `LGOT` | yes | yes |
+| `fastest_lap_*` | `SHAVE_FASTEST_LAP` | memory: the lowest `best_lap_ms` of every car while lap times read (Steam); else Event `FTLP` | yes | yes |
+| `driver_status` | `HAVE_DRIVER_STATUS` | Lap Data (2) `m_driverStatus` | yes | yes |
+| `pit_lane_*`, `pit_stop_ms` | `HAVE_PIT_TIMING` | Lap Data (2) `m_pitLaneTimerActive`, `m_pitLaneTimeInLaneInMS`, `m_pitStopTimerInMS` | yes | yes |
+| `drs_allowed` | `HAVE_DRS_ALLOWED` | Car Status (7) `m_drsAllowed`, `m_drsActivationDistance` (distance 0 in 2026) | yes | yes |
+| `fia_flag` | `HAVE_FIA_FLAG` | Car Status (7) `m_vehicleFiaFlags` | yes | yes |
+| `pit_limiter` | `HAVE_PIT_LIMITER` | Car Status (7) `m_pitLimiterStatus` | yes | no |
+| `race_number`, `team_id` | `HAVE_IDENTITY` | Participants (4) `m_raceNumber`, `m_teamId` | yes | team id only |
+| `team_colour` | `HAVE_IDENTITY` | Participants (4) `m_liveryColours[0]` | 2025 only | no |
+
+The car index of a UDP packet is taken as the vehicle id, as for the telemetry feed (see [Telemetry](./telemetry#availability)). The race control messages (penalties, served penalties, DRS, start lights, the safety car phase and the fastest lap) fire as events; see [Race control](./race-control#race-control-messages). The 2026 rows read the 2025 entry offsets of the packets whose 2026 size the telemetry decoder knows; the 2026 Session and Participants layouts past the team id are not catalogued.
+
+```text
+[live] reading the session clock, lap count, race control messages, DRS, pit timing and identity from the game's UDP packets (format 2025)
+```
+
 ## Not read yet
 
-Active aero mode, Boost and Overtake state, DRS allowed and distance, the pit limiter, driver name and team colour, the session time left and the race lap count, car setup values, personal best sector times and tyre temperatures have no verified memory source. `SWOFTY_LIVE_HAVE_BOOST`, `_AERO_MODE` and `_IDENTITY`, and `SWOFTY_LIVE_SHAVE_TIME_LEFT` and `_TOTAL_LAPS` (with `time_left_s` and `total_laps`), are declared so the structs stay stable when they land and stay clear until then. The core logs the unread session and setup values once:
+Active aero mode, Boost and Overtake state, the driver's three-letter code and split names, car setup values, personal best sector times and tyre temperatures have no verified memory source and no UDP source in the live state. `SWOFTY_LIVE_HAVE_BOOST` and `_AERO_MODE` are declared so the structs stay stable when they land and stay clear until then. The session time left, the race lap count, DRS allowed, the pit limiter and the identity fields read from UDP (above). The core logs the unread session and setup values once:
 
 ```text
 [live] session time left off: needs a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the game timer)
