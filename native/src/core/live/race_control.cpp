@@ -122,8 +122,7 @@ void fire_udp(lv::udp::Moments &m)
         ev::session_penalty(e);
     }
     for (auto &e : m.served) {
-        line("vehicle %u served a %s, stop %.1f s", e.car, e.kind == rc::Served::stop_go ? "stop go" : "drive through",
-             e.stop_s);
+        line("vehicle %u served a %s, stop %.1f s", e.car, e.kind == rc::Served::stop_go ? "stop go" : "drive through", e.stop_s);
         ev::session_penalty_served(e);
     }
     for (auto &e : m.classifications) {

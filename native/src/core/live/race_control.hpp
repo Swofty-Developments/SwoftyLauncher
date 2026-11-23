@@ -25,11 +25,10 @@ namespace rc = swofty::race_control;
 inline bool fires(std::string_view point)
 {
     return point == rc::events::Flag::point || point == rc::events::SafetyCar::point || point == rc::events::RedFlag::point ||
-           point == rc::events::Sector::point || point == rc::events::CarStatus::point ||
-           point == rc::events::Penalty::point || point == rc::events::PenaltyServed::point ||
-           point == rc::events::Drs::point || point == rc::events::StartLights::point ||
-           point == rc::events::SafetyCarPhase::point || point == rc::events::FastestLap::point ||
-           point == rc::events::Classification::point;
+           point == rc::events::Sector::point || point == rc::events::CarStatus::point || point == rc::events::Penalty::point ||
+           point == rc::events::PenaltyServed::point || point == rc::events::Drs::point ||
+           point == rc::events::StartLights::point || point == rc::events::SafetyCarPhase::point ||
+           point == rc::events::FastestLap::point || point == rc::events::Classification::point;
 }
 
 struct Moments {
@@ -45,8 +44,8 @@ struct Moments {
 
     bool empty() const
     {
-        return red_flags.empty() && safety_cars.empty() && flags.empty() && statuses.empty() && sectors.empty() &&
-               drs.empty() && lights.empty() && phases.empty() && fastest.empty();
+        return red_flags.empty() && safety_cars.empty() && flags.empty() && statuses.empty() && sectors.empty() && drs.empty() &&
+               lights.empty() && phases.empty() && fastest.empty();
     }
 };
 
@@ -236,7 +235,8 @@ private:
             e.previous_car = was.fastest_car;
             e.previous_ms = was.fastest_ms;
             uint32_t id = now.fastest_car;
-            e.lap = id < SWOFTY_LIVE_MAX_CARS && s.present[id] && (s.cars[id].have & SWOFTY_LIVE_HAVE_PROGRESS) ? s.cars[id].lap : 0;
+            e.lap =
+                id < SWOFTY_LIVE_MAX_CARS && s.present[id] && (s.cars[id].have & SWOFTY_LIVE_HAVE_PROGRESS) ? s.cars[id].lap : 0;
             out.fastest.push_back(e);
         }
     }

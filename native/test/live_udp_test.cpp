@@ -180,7 +180,8 @@ static void test_cars()
 
     lv::Snapshot absent = snapshot(2);
     merge(u, absent);
-    expect(!absent.present[2] && !(absent.details[2].have & SWOFTY_LIVE_HAVE_DRIVER_STATUS), "a car not in the snapshot stays empty");
+    expect(!absent.present[2] && !(absent.details[2].have & SWOFTY_LIVE_HAVE_DRIVER_STATUS),
+           "a car not in the snapshot stays empty");
 
     udp::Source v;
     Bytes st26 = packet(2026, 7, 1445);
@@ -246,8 +247,8 @@ static void test_classification()
     udp::Moments m = u.take();
     expect(m.classifications.size() == 1 && m.classifications[0].cars == 2, "it survives the end of the live session");
     const rc::events::ClassifiedCar &c = m.classifications[0].entries[0];
-    expect(c.car == 0 && c.position == 2 && c.laps == 5 && c.grid == 1 && c.points == 18 && c.pit_stops == 1 &&
-               c.status == 3 && c.best_lap_ms == 91500 && c.race_ms == 512250 && c.penalties_s == 5,
+    expect(c.car == 0 && c.position == 2 && c.laps == 5 && c.grid == 1 && c.points == 18 && c.pit_stops == 1 && c.status == 3 &&
+               c.best_lap_ms == 91500 && c.race_ms == 512250 && c.penalties_s == 5,
            "vehicle 0: P2 from P1, 5 laps, 18 points, one stop, best 1:31.500, 8:32.250, 5 s of penalties");
     expect(m.classifications[0].entries[1].position == 1 && m.classifications[0].entries[1].points == 25, "vehicle 1 won");
 }
@@ -372,8 +373,8 @@ static void test_fastest_from_memory()
 static void test_points()
 {
     expect(rcl::fires("session.penalty") && rcl::fires("session.penalty.served") && rcl::fires("session.drs") &&
-               rcl::fires("session.start_lights") && rcl::fires("session.safety_car.phase") && rcl::fires("session.fastest_lap") &&
-               rcl::fires("session.classification"),
+               rcl::fires("session.start_lights") && rcl::fires("session.safety_car.phase") &&
+               rcl::fires("session.fastest_lap") && rcl::fires("session.classification"),
            "the broadcast points read the live state");
 }
 
@@ -392,8 +393,7 @@ static void test_hud()
     expect(at(true, fv::CUTSCENE, 0) == false && swofty::live::hud_hidden_by(s) == SWOFTY_LIVE_HUD_CUTSCENE,
            "a cutscene hides it");
     expect(at(true, 0, 0) == true && swofty::live::hud_hidden_by(s) == 0, "driving shows it");
-    expect(at(true, 0, 1u << 3) == false && swofty::live::hud_hidden_by(s) == SWOFTY_LIVE_HUD_PAUSED,
-           "a pause reason hides it");
+    expect(at(true, 0, 1u << 3) == false && swofty::live::hud_hidden_by(s) == SWOFTY_LIVE_HUD_PAUSED, "a pause reason hides it");
     expect(at(true, fv::REPLAY | fv::PHOTO, 0) == false &&
                swofty::live::hud_hidden_by(s) == (SWOFTY_LIVE_HUD_REPLAY | SWOFTY_LIVE_HUD_PHOTO),
            "replay and photo mode hide it");
@@ -410,8 +410,8 @@ static void test_sdk_fake()
     ses.time_left_s = 61.5f;
     fake.install();
     auto s = swofty::live::session();
-    expect(s && swofty::live::total_laps(*s) == 44u && swofty::live::time_left_s(*s) == 61.5f &&
-               !swofty::live::fastest_lap(*s) && !swofty::live::drs_enabled(*s),
+    expect(s && swofty::live::total_laps(*s) == 44u && swofty::live::time_left_s(*s) == 61.5f && !swofty::live::fastest_lap(*s) &&
+               !swofty::live::drs_enabled(*s),
            "the fake live session gives total laps and time left, and nothing it does not set");
     fake.uninstall();
 }
