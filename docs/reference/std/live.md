@@ -484,7 +484,7 @@ The core also subscribes to the game's `r_car_to_car_col` and `vehicle_status_ch
 
 ## From the game's UDP packets
 
-The values below have no verified memory source. The core decodes them from the packets the game builds for its UDP telemetry, in the `sendto` hook the [telemetry](./telemetry) feed uses, and merges them into each snapshot; a field the memory read fills is never overwritten. They need the game's UDP telemetry output on (Settings, Telemetry Settings), at any port and send rate. The source is the same on the Steam and EA App builds. A packet value older than five seconds (fifteen for Participants) clears its bit; the race control values hold until the session's UID changes.
+The values below have no verified memory source. The core decodes them from the packets the game builds for its UDP telemetry, in the `sendto` hook the [telemetry](./telemetry) feed uses, and merges them into each snapshot; a field the memory read fills is never overwritten. They need the game's UDP telemetry output on (Settings, Telemetry Settings), at any port and send rate. The source is the same on the Steam and EA App builds. A packet value older than five seconds (fifteen for Participants) clears its bit; the time the game spends paused, when it sends no packets, does not count. The race control values hold until the session's UID changes.
 
 | Field | Bit | UDP packet and field | 2024, 2025 | 2026 |
 |---|---|---|---|---|

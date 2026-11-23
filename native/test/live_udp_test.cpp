@@ -378,6 +378,15 @@ static void test_points()
            "the broadcast points read the live state");
 }
 
+static void test_pause_clock()
+{
+    udp::Clock c;
+    expect(c.step(1000, false) == 1000 && c.step(2000, false) == 2000, "the clock runs with the wall clock");
+    c.step(2016, true);
+    expect(c.step(62016, true) == 2000 && c.at(62016) == 2000, "a pause stops it: a minute of pause does not age the packets");
+    expect(c.step(63016, false) == 3000, "it runs again from the resume");
+}
+
 static void test_hud()
 {
     namespace fv = frontend::view;
@@ -427,6 +436,7 @@ int main()
     test_fastest_from_memory();
     test_points();
     test_hud();
+    test_pause_clock();
     test_sdk_fake();
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;

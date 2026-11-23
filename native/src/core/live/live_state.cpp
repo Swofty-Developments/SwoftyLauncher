@@ -99,6 +99,7 @@ lv::bus::Subscriber g_bus_sub;
 std::atomic<bool> g_bus_armed;
 double g_bus_tried = -1e9;
 lv::udp::Source g_udp;
+lv::udp::Clock g_udp_clock;
 std::mutex g_udp_lock;
 std::atomic<bool> g_udp_said;
 
@@ -249,8 +250,9 @@ void publish()
     std::memcpy(g_snap.present, g_live->present, sizeof g_snap.present);
     {
         std::lock_guard<std::mutex> u(g_udp_lock);
+        uint64_t now = g_udp_clock.step(GetTickCount64(), frontend::view::pause_reasons() != 0);
         if (g_snap.valid)
-            g_udp.merge(g_snap.ses, g_snap.cars, g_snap.details, g_snap.present, GetTickCount64());
+            g_udp.merge(g_snap.ses, g_snap.cars, g_snap.details, g_snap.present, now);
         else
             g_udp.end();
     }
@@ -539,7 +541,7 @@ void live_udp(const uint8_t *buf, size_t len)
     bool read;
     {
         std::lock_guard<std::mutex> u(g_udp_lock);
-        read = g_udp.feed(buf, len, GetTickCount64());
+        read = g_udp.feed(buf, len, g_udp_clock.at(GetTickCount64()));
     }
     if (read && !g_udp_said.exchange(true)) {
         DWORD err = GetLastError();

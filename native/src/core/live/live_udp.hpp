@@ -39,6 +39,22 @@ constexpr unsigned CARS = 24;
 constexpr uint64_t STALE_MS = 5000;
 constexpr uint64_t PARTICIPANTS_STALE_MS = 15000;
 
+// The freshness clock: wall milliseconds less the time the game spent paused, when it sends no packets.
+class Clock {
+public:
+    uint64_t step(uint64_t now, bool paused)
+    {
+        if (last_ && paused && now > last_)
+            paused_ += now - last_;
+        last_ = now;
+        return at(now);
+    }
+    uint64_t at(uint64_t now) const { return now - paused_; }
+
+private:
+    uint64_t last_ = 0, paused_ = 0;
+};
+
 inline uint16_t u16(const uint8_t *p) { return uint16_t(p[0] | p[1] << 8); }
 
 inline uint32_t u32(const uint8_t *p)
