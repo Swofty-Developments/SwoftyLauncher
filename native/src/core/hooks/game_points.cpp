@@ -288,8 +288,9 @@ public:
             placed++;
         }
         live_ = placed > 0;
+        std::string stage = late ? " (installed late)" : " (window stage)";
         log("[hooks] team.logo.resolve " + std::string(live_ ? "live" : "unavailable") + " on " + std::to_string(placed) +
-            " of " + std::to_string(LOGO_SITE_COUNT) + " logo format sites" + (late ? " (installed late)" : " (window stage)") + ": subscribers " + subscribers);
+            " of " + std::to_string(LOGO_SITE_COUNT) + " logo format sites" + stage + ": subscribers " + subscribers);
         return live_;
     }
 
