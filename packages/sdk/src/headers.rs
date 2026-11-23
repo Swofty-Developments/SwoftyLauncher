@@ -4,6 +4,7 @@ pub const ASSETS_HEADER: &str = include_str!("../include/swofty/assets.hpp");
 pub const EVENTS_HEADER: &str = include_str!("../include/swofty/events.hpp");
 pub const OVERLAY_HEADER: &str = include_str!("../include/swofty/overlay.hpp");
 pub const OVERLAY_UI_HEADER: &str = include_str!("../include/swofty/overlay_ui.hpp");
+pub const OVERLAY_PATH_HEADER: &str = include_str!("../include/swofty/overlay_path.hpp");
 pub const TELEMETRY_HEADER: &str = include_str!("../include/swofty/telemetry.hpp");
 pub const DB_HEADER: &str = include_str!("../include/swofty/db.hpp");
 pub const STORAGE_HEADER: &str = include_str!("../include/swofty/storage.hpp");

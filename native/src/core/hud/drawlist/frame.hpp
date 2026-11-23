@@ -1,4 +1,6 @@
 #pragma once
+#include "core/hud/drawlist/fonts.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -11,6 +13,7 @@ namespace hud::drawlist {
 
 constexpr uint32_t MAX_VERTS = 1u << 17;
 constexpr size_t MAX_STACK = 64;
+constexpr uint32_t MAX_CONCAVE_POINTS = 2048;
 constexpr float SAFE_INSET = 0.035f;
 constexpr float AA = 1.0f;
 constexpr float PI = 3.14159265358979f;
@@ -72,6 +75,7 @@ struct TextStyle {
     uint32_t shadow_rgba = 0;
     float shadow_dx = 0, shadow_dy = 0, shadow_blur = 0;
     float max_width = 0;
+    Face *face = nullptr;
 };
 
 struct Line {
@@ -81,6 +85,8 @@ struct Line {
 
 struct Quad {
     float x0, y0, x1, y1, u0, v0, u1, v1;
+    int tex = TEX_FONT;
+    bool loaded = false;
 };
 
 struct LaidLine {
@@ -128,7 +134,7 @@ struct Frame {
     uint32_t xform_over = 0, clip_over = 0, opacity_over = 0;
     uint32_t dropped = 0;
     std::vector<Pt> path, local, ring_in, ring_out;
-    std::vector<uint32_t> cols;
+    std::vector<uint32_t> cols, tris;
     std::vector<Line> lines;
     TextCache text_cache;
     std::string owner;

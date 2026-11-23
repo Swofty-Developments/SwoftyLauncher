@@ -1,11 +1,15 @@
 #pragma once
+#include "core/hud/drawlist/fonts.hpp"
 #include "core/hud/drawlist/frame.hpp"
 #include "swofty_api.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace hud::drawlist {
@@ -19,12 +23,16 @@ struct Paintsub {
     std::string owner;
 };
 
+// rgba holds `channels` bytes per pixel: 4 for images, 1 for font atlas pages. A kept image (a font page) keeps its
+// pixels after the upload, so glyphs can be added to it.
 struct Image {
     std::string id;
     uint32_t width = 0, height = 0;
     std::vector<uint8_t> rgba;
     uint32_t generation = 0;
     std::string source;
+    uint32_t channels = 4;
+    bool keep = false;
 };
 
 class Registry {
@@ -70,6 +78,8 @@ public:
         im.width = width;
         im.height = height;
         im.rgba = std::move(rgba);
+        im.channels = 4;
+        im.keep = false;
         im.generation++;
         return at;
     }
@@ -94,9 +104,49 @@ public:
 
     size_t image_count() const { return images_.size(); }
 
+    int add_page(const std::string &id, uint32_t width, uint32_t height)
+    {
+        int at = set_image(id, width, height, std::vector<uint8_t>(size_t(width) * height, 0));
+        images_[size_t(at)].channels = 1;
+        images_[size_t(at)].keep = true;
+        return at;
+    }
+
+    void blit(int slot, uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint8_t *grey)
+    {
+        Image *im = image(slot);
+        if (!im || im->channels != 1 || x + w > im->width || y + h > im->height ||
+            im->rgba.size() < size_t(im->width) * im->height)
+            return;
+        for (uint32_t row = 0; row < h; row++)
+            memcpy(&im->rgba[size_t(y + row) * im->width + x], grey + size_t(row) * w, w);
+        im->generation++;
+    }
+
+    void set_font(const std::string &key, std::shared_ptr<Face> face)
+    {
+        for (auto &f : fonts_)
+            if (f.first == key) {
+                f.second = std::move(face);
+                return;
+            }
+        fonts_.emplace_back(key, std::move(face));
+    }
+
+    std::shared_ptr<Face> font(const std::string &key) const
+    {
+        for (const auto &f : fonts_)
+            if (f.first == key)
+                return f.second;
+        return nullptr;
+    }
+
+    size_t font_count() const { return fonts_.size(); }
+
 private:
     std::vector<Paintsub> subs_;
     std::vector<Image> images_;
+    std::vector<std::pair<std::string, std::shared_ptr<Face>>> fonts_;
     uint32_t next_ = 1;
 };
 

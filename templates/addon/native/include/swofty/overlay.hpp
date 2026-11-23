@@ -4,10 +4,12 @@
 
 #include <atomic>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <swofty/mixin.hpp>
+#include <swofty/overlay_path.hpp>
 
 // Immediate-mode 2D overlay drawn on top of the game. Register a paint callback; the core
 // invokes it once per presented frame, on the render thread, with a per-frame Paint handle.
@@ -19,7 +21,8 @@
 // nine-slice, clip/transform/opacity stacks, safe area, UI scale) need a core that exports
 // SwoftyCoreOverlayVersion; v2() says whether it does. On an older core the shape calls fall back
 // to the nearest v1 call and the rest draw nothing. v3 calls (input, focus) need version 3; v3()
-// says whether the core has them. load_image_rgba needs version 4; v4() says whether the core has it.
+// says whether the core has them. load_image_rgba needs version 4; v4() says whether the core has it. v6 calls
+// (load_font, load_font_memory, TextStyle::font, polygon_concave) need version 6; v6() says whether the core has them.
 
 namespace swofty::overlay {
 
@@ -66,6 +69,12 @@ inline const SwoftyOverlay *table4()
     return t && core_version() >= 4 ? t : nullptr;
 }
 
+inline const SwoftyOverlay *table6()
+{
+    auto t = table();
+    return t && core_version() >= 6 ? t : nullptr;
+}
+
 // A NUL-terminated copy of s in a per-thread buffer reused across calls; slot picks one of two buffers
 // for calls that pass two strings.
 inline const char *cstr(std::string_view s, int slot = 0)
@@ -107,6 +116,12 @@ inline bool v3()
 inline bool v4()
 {
     return detail::table4() != nullptr;
+}
+
+// The core implements loaded fonts and polygon_concave.
+inline bool v6()
+{
+    return detail::table6() != nullptr;
 }
 
 // Register a per-frame paint callback. The token identifies it for remove; pass nullptr to
@@ -216,7 +231,7 @@ constexpr uint32_t top = SWOFTY_TEXT_TOP, middle = SWOFTY_TEXT_MIDDLE, baseline 
 // align combines one horizontal and one vertical align:: value and places the text relative to (x, y).
 // tracking adds pixels after each glyph; line_height is the line advance as a multiple of size;
 // max_width wraps at spaces (0: no wrapping). An outline and a drop shadow draw when their colour's
-// alpha is non-zero.
+// alpha is non-zero. font names a font loaded with load_font or load_font_memory (v6); empty is the built-in font.
 struct TextStyle {
     float size = 16;
     uint32_t rgba = 0xffffffff;
@@ -228,6 +243,7 @@ struct TextStyle {
     uint32_t shadow = 0;
     float shadow_dx = 0, shadow_dy = 0, shadow_blur = 0;
     float max_width = 0;
+    std::string_view font;
 };
 
 struct Rect {
@@ -252,6 +268,7 @@ inline SwoftyTextStyle style(const TextStyle &s)
     c.shadow_dy = s.shadow_dy;
     c.shadow_blur = s.shadow_blur;
     c.max_width = s.max_width;
+    c.font_id = s.font.empty() ? nullptr : cstr(s.font, 1);
     return c;
 }
 
@@ -572,6 +589,37 @@ inline Result focus(bool on)
     if (!t)
         return Result::unavailable;
     return detail::result(t->focus(on ? 1 : 0));
+}
+
+// ----- v6: fonts and concave fills ---------------------------------------------------------------
+
+// Load a TrueType or OpenType font (TrueType or CFF outlines) from a file in the addon folder under an id; TextStyle::font
+// names it. Loading an id again replaces it. unavailable on a core before overlay version 6.
+inline Result load_font(std::string_view id, std::string_view file)
+{
+    auto t = detail::table6();
+    if (!t)
+        return Result::unavailable;
+    return detail::result(t->load_font(detail::cstr(id), detail::cstr(file, 1)));
+}
+
+// Load a font from bytes in memory; the core copies them.
+inline Result load_font_memory(std::string_view id, const void *bytes, size_t size)
+{
+    auto t = detail::table6();
+    if (!t)
+        return Result::unavailable;
+    if (size > UINT32_MAX)
+        return Result::invalid;
+    return detail::result(t->load_font_memory(detail::cstr(id), bytes, uint32_t(size)));
+}
+
+// Filled simple polygon through count points, convex or concave, either winding, with an anti-aliased edge. Draws
+// nothing on a core before overlay version 6.
+inline void polygon_concave(Paint *paint, const float *xy, uint32_t count, uint32_t rgba)
+{
+    if (auto t = detail::table6())
+        t->polygon_concave(paint, xy, count, rgba);
 }
 
 }

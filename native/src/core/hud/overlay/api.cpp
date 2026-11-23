@@ -1,3 +1,4 @@
+#include "core/hud/hud_ttf.hpp"
 #include "core/hud/overlay/overlay.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
@@ -26,7 +27,7 @@ Caller caller(const void *from)
 
 std::string owner_of(const Caller &c) { return c.id.empty() ? c.dll : c.id; }
 
-std::string addon_image(const Caller &c, const char *file, std::string &why)
+std::string addon_file(const Caller &c, const char *file, std::string &why)
 {
     if (c.id.empty())
         return why = "no addon in settings.json lists " + c.dll + ", so it has no folder", std::string();
@@ -125,7 +126,7 @@ int ov_load_image(const char *id, const char *file)
     const char *who = c.id.empty() ? c.dll.c_str() : c.id.c_str();
     if (!id || !*id)
         return SWOFTY_ASSET_INVALID;
-    std::string why, rel = addon_image(c, file, why);
+    std::string why, rel = addon_file(c, file, why);
     hud::img::Pixels px;
     if (!rel.empty() && !hud::img::decode(runtime::read_file(runtime::under_swofty(rel), size_t(64) << 20), px, why))
         why = "swofty/" + rel + ": " + why;
@@ -291,15 +292,90 @@ hud::drawlist::TextStyle text_style(const SwoftyTextStyle *s)
     return t;
 }
 
-void ov_text_styled(SwoftyPaint *paint, float x, float y, const SwoftyTextStyle *style, const char *utf8)
+std::string font_key(const std::string &owner, const char *id) { return owner + "\n" + id; }
+
+std::shared_ptr<hud::drawlist::Face> style_font(const std::string &owner, const SwoftyTextStyle *s)
 {
-    if (paint && utf8)
-        hud::drawlist::text(*frame_of(paint), x, y, text_style(style), utf8);
+    if (!s || s->size < offsetof(SwoftyTextStyle, font_id) + sizeof(s->font_id) || !s->font_id || !*s->font_id)
+        return nullptr;
+    std::lock_guard<std::mutex> g(overlay.reg_lock);
+    return overlay.reg.font(font_key(owner, s->font_id));
 }
 
-void ov_measure_styled(const SwoftyPaint *, const SwoftyTextStyle *style, const char *utf8, float *width, float *height)
+void ov_text_styled(SwoftyPaint *paint, float x, float y, const SwoftyTextStyle *style, const char *utf8)
 {
-    hud::drawlist::measure(text_style(style), utf8 ? utf8 : "", width, height);
+    if (!paint || !utf8)
+        return;
+    hud::drawlist::TextStyle t = text_style(style);
+    std::shared_ptr<hud::drawlist::Face> face = style_font(frame_of(paint)->owner, style);
+    t.face = face.get();
+    hud::drawlist::text(*frame_of(paint), x, y, t, utf8);
+}
+
+void ov_measure_styled(const SwoftyPaint *paint, const SwoftyTextStyle *style, const char *utf8, float *width, float *height)
+{
+    hud::drawlist::TextStyle t = text_style(style);
+    std::shared_ptr<hud::drawlist::Face> face;
+    if (style && style->size >= offsetof(SwoftyTextStyle, font_id) + sizeof(style->font_id) && style->font_id && *style->font_id)
+        face = style_font(paint ? reinterpret_cast<const hud::drawlist::Frame *>(paint)->owner
+                                : owner_of(caller(__builtin_return_address(0))),
+                          style);
+    t.face = face.get();
+    hud::drawlist::measure(t, utf8 ? utf8 : "", width, height);
+}
+
+int install_font(const Caller &c, const char *id, std::string bytes, const std::string &from, std::string why)
+{
+    const char *who = c.id.empty() ? c.dll.c_str() : c.id.c_str();
+    std::shared_ptr<hud::ttf::TtfFace> face;
+    if (why.empty())
+        face = hud::ttf::TtfFace::open(std::move(bytes), overlay.reg, overlay.reg_lock, "\x01" + font_key(owner_of(c), id) + "\n",
+                                       int(TEX_MAX) - 2, why);
+    if (!face) {
+        swofty::log("[overlay] api: %s load_font %s (%s) -> invalid: %s", who, id, from.c_str(), why.c_str());
+        return SWOFTY_ASSET_INVALID;
+    }
+    face->warm(0x20, 0x7e);
+    {
+        std::lock_guard<std::mutex> g(overlay.reg_lock);
+        overlay.reg.set_font(font_key(owner_of(c), id), face);
+    }
+    swofty::log("[overlay] api: %s load_font %s (%s: %s, %s outlines, %zu glyphs on %zu page(s)) -> ok", who, id, from.c_str(),
+                face->name().c_str(), face->cff() ? "CFF" : "TrueType", face->glyph_count(), face->page_count());
+    return SWOFTY_ASSET_OK;
+}
+
+int ov_load_font(const char *id, const char *file)
+{
+    Caller c = caller(__builtin_return_address(0));
+    if (!overlay.implemented || !settings().gate)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    if (!id || !*id)
+        return SWOFTY_ASSET_INVALID;
+    std::string why, rel = addon_file(c, file, why), bytes;
+    if (!rel.empty()) {
+        bytes = runtime::read_file(runtime::under_swofty(rel), hud::ttf::MAX_BYTES);
+        if (bytes.empty())
+            why = "swofty/" + rel + " is empty, unreadable or over 32 MB";
+    }
+    return install_font(c, id, std::move(bytes), rel.empty() ? std::string(file ? file : "") : "swofty/" + rel, why);
+}
+
+int ov_load_font_memory(const char *id, const void *bytes, uint32_t size)
+{
+    Caller c = caller(__builtin_return_address(0));
+    if (!overlay.implemented || !settings().gate)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    if (!id || !*id)
+        return SWOFTY_ASSET_INVALID;
+    std::string data = bytes && size ? std::string(static_cast<const char *>(bytes), size) : std::string();
+    return install_font(c, id, std::move(data), std::to_string(size) + " bytes from memory", bytes && size ? "" : "no bytes");
+}
+
+void ov_polygon_concave(SwoftyPaint *paint, const float *xy, uint32_t count, uint32_t rgba)
+{
+    if (paint)
+        hud::drawlist::polygon_concave(*frame_of(paint), xy, std::min<uint32_t>(count, hud::drawlist::MAX_CONCAVE_POINTS), rgba);
 }
 
 int ov_image_uv(SwoftyPaint *paint, const char *id, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
@@ -452,7 +528,10 @@ const SwoftyOverlay table = {ov_available,
                              ov_ui_scale,
                              ov_input,
                              ov_focus,
-                             ov_load_image_rgba};
+                             ov_load_image_rgba,
+                             ov_load_font,
+                             ov_load_font_memory,
+                             ov_polygon_concave};
 
 }
 

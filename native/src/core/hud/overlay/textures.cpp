@@ -90,12 +90,18 @@ void Textures::sync(Renderer &r, ID3D12GraphicsCommandList *l)
         UINT index = UINT(slot + 1);
         if (!im || im->rgba.empty() || index >= TEX_MAX || entries[index].generation == im->generation)
             continue;
-        bool ok = upload(r, l, index, DXGI_FORMAT_R8G8B8A8_UNORM, im->width, im->height, 4, im->rgba.data());
-        swofty::log("[overlay] image %s (%ux%u) %s", im->id.substr(im->id.find('\n') + 1).c_str(), im->width, im->height,
-                    ok ? "uploaded" : "upload failed; it draws nothing");
+        bool grey = im->channels == 1;
+        bool ok = upload(r, l, index, grey ? DXGI_FORMAT_R8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM, im->width, im->height,
+                         grey ? 1 : 4, im->rgba.data());
+        if (!im->keep || !ok)
+            swofty::log("[overlay] %s %s (%ux%u) %s", im->keep ? "font page" : "image",
+                        im->id.substr(im->id.find('\n') + 1).c_str(), im->width, im->height,
+                        ok ? "uploaded" : "upload failed; it draws nothing");
         entries[index].generation = im->generation;
-        im->rgba.clear();
-        im->rgba.shrink_to_fit();
+        if (!im->keep) {
+            im->rgba.clear();
+            im->rgba.shrink_to_fit();
+        }
     }
 }
 

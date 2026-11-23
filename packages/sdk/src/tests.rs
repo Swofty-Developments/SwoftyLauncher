@@ -138,7 +138,8 @@ fn layout_matches_header() {
         "#define SWOFTY_EVENT_SESSION_START \"session.start\"",
         "#define SWOFTY_TELEMETRY_VERSION 2",
         "#define SWOFTY_EVENT_TELEMETRY_OVERTAKE \"telemetry.overtake\"",
-        "#define SWOFTY_OVERLAY_VERSION 4",
+        "#define SWOFTY_OVERLAY_VERSION 6",
+        "void (*polygon_concave)(SwoftyPaint *paint, const float *xy, uint32_t count, uint32_t rgba);",
         "#define SWOFTY_LANG_VERSION 2",
         "SwoftyCoreLangVersion(void);",
         "} SwoftyInput;",
@@ -184,6 +185,10 @@ fn template_headers_match() {
     assert_eq!(
         include_str!("../../../templates/addon/native/include/swofty/overlay_ui.hpp"),
         OVERLAY_UI_HEADER
+    );
+    assert_eq!(
+        include_str!("../../../templates/addon/native/include/swofty/overlay_path.hpp"),
+        OVERLAY_PATH_HEADER
     );
     assert_eq!(
         include_str!("../../../templates/addon/native/include/swofty/telemetry.hpp"),
@@ -361,8 +366,16 @@ fn stdlib_headers_wrap_every_call() {
         "inline bool v3()",
         "inline Input input(",
         "inline Result focus(",
+        "inline bool v6()",
+        "inline Result load_font(",
+        "inline Result load_font_memory(",
+        "inline void polygon_concave(",
+        "std::string_view font;",
     ] {
         assert!(OVERLAY_HEADER.contains(name), "{name}");
+    }
+    for name in ["struct PathVertex", "inline uint32_t flatten_path("] {
+        assert!(OVERLAY_PATH_HEADER.contains(name), "{name}");
     }
     for name in [
         "namespace swofty::overlay::ui {",

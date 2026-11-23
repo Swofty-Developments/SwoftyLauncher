@@ -76,6 +76,93 @@ inline void fill_convex(Frame &f, const std::vector<Pt> &pts, uint32_t col)
     fill_convex(f, pts, f.cols);
 }
 
+inline float turn(const Pt &a, const Pt &b, const Pt &c) { return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x); }
+
+// Triangulates a simple polygon of either winding by ear clipping into index triples. A collinear or doubled point adds
+// no triangle. A polygon with no ear left (one that crosses itself) gets the rest of its points as a fan.
+inline void triangulate(const std::vector<Pt> &p, std::vector<uint32_t> &tris)
+{
+    tris.clear();
+    const size_t n = p.size();
+    if (n < 3)
+        return;
+    float area = signed_area(p);
+    if (std::fabs(area) < 1e-6f)
+        return;
+    const float sign = area > 0 ? 1.0f : -1.0f;
+    float span = 0;
+    for (const Pt &q : p)
+        span = std::max({span, std::fabs(q.x - p[0].x), std::fabs(q.y - p[0].y)});
+    const float eps = span * span * 1e-7f;
+    auto cross = [&](uint32_t a, uint32_t b, uint32_t c) { return turn(p[a], p[b], p[c]) * sign; };
+    auto same = [&](uint32_t a, uint32_t b) { return p[a].x == p[b].x && p[a].y == p[b].y; };
+    std::vector<uint32_t> ring(n);
+    for (uint32_t i = 0; i < n; i++)
+        ring[i] = i;
+    size_t i = 0, misses = 0;
+    while (ring.size() > 3 && misses < ring.size()) {
+        const size_t m = ring.size();
+        i %= m;
+        uint32_t a = ring[(i + m - 1) % m], b = ring[i], c = ring[(i + 1) % m];
+        float cr = cross(a, b, c);
+        if (std::fabs(cr) <= eps) {
+            ring.erase(ring.begin() + std::ptrdiff_t(i));
+            misses = 0;
+            continue;
+        }
+        bool ear = cr > 0;
+        for (size_t k = 0; ear && k < m; k++) {
+            uint32_t q = ring[k];
+            if (q == a || q == b || q == c || same(q, a) || same(q, b) || same(q, c))
+                continue;
+            ear = !(cross(a, b, q) >= -eps && cross(b, c, q) >= -eps && cross(c, a, q) >= -eps);
+        }
+        if (ear) {
+            tris.insert(tris.end(), {a, b, c});
+            ring.erase(ring.begin() + std::ptrdiff_t(i));
+            misses = 0;
+        } else {
+            i++;
+            misses++;
+        }
+    }
+    for (size_t k = 1; k + 1 < ring.size(); k++)
+        if (std::fabs(cross(ring[0], ring[k], ring[k + 1])) > eps)
+            tris.insert(tris.end(), {ring[0], ring[k], ring[k + 1]});
+}
+
+// Fills a simple polygon, convex or concave, given in framebuffer pixels: its ear-clipped triangles inset half a pixel
+// and the same fringe as fill_convex.
+inline void fill_concave(Frame &f, const std::vector<Pt> &pts, uint32_t col)
+{
+    size_t n = pts.size();
+    if (n < 3)
+        return;
+    float area = signed_area(pts);
+    if (std::fabs(area) < 1e-4f)
+        return;
+    triangulate(pts, f.tris);
+    if (!reserve(f, f.tris.size() + 6 * n, TEX_NONE))
+        return;
+    float k = AA * 0.5f * (area > 0 ? 1.0f : -1.0f);
+    std::vector<Pt> &in = f.ring_in, &out = f.ring_out;
+    in.resize(n);
+    out.resize(n);
+    for (size_t i = 0; i < n; i++) {
+        Pt m = miter(edge_normal(pts[(i + n - 1) % n], pts[i]), edge_normal(pts[i], pts[(i + 1) % n]));
+        in[i] = {pts[i].x - m.x * k, pts[i].y - m.y * k};
+        out[i] = {pts[i].x + m.x * k, pts[i].y + m.y * k};
+    }
+    for (size_t t = 0; t + 2 < f.tris.size(); t += 3)
+        tri(f, in[f.tris[t]], in[f.tris[t + 1]], in[f.tris[t + 2]], col, col, col);
+    uint32_t edge = clear_alpha(col);
+    for (size_t i = 0; i < n; i++) {
+        size_t j = (i + 1) % n;
+        tri(f, in[i], out[i], out[j], col, edge, edge);
+        tri(f, in[i], out[j], in[j], col, edge, col);
+    }
+}
+
 // Strokes a path given in framebuffer pixels: an opaque core of thickness - 1 with a one-pixel fringe
 // on each side; a path thinner than a pixel is a faded hairline.
 inline void stroke(Frame &f, const std::vector<Pt> &pts, bool closed, float thickness, uint32_t col)

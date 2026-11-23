@@ -124,6 +124,22 @@ inline void polygon(Frame &f, const float *xy, uint32_t count, uint32_t rgba)
     fill_convex(f, f.path, pack(rgba, f.opacity));
 }
 
+inline void polygon_concave(Frame &f, const float *xy, uint32_t count, uint32_t rgba)
+{
+    if (!xy || count < 3 || !rgba_visible(rgba) || clipped_out(f))
+        return;
+    f.path.clear();
+    for (uint32_t i = 0; i < count; i++) {
+        Pt p;
+        f.xform.apply(xy[2 * i], xy[2 * i + 1], p.x, p.y);
+        if (f.path.empty() || std::fabs(p.x - f.path.back().x) + std::fabs(p.y - f.path.back().y) > 1e-3f)
+            f.path.push_back(p);
+    }
+    if (f.path.size() > 2 && std::fabs(f.path[0].x - f.path.back().x) + std::fabs(f.path[0].y - f.path.back().y) <= 1e-3f)
+        f.path.pop_back();
+    fill_concave(f, f.path, pack(rgba, f.opacity));
+}
+
 inline void image_nine(Frame &f, int slot, float iw, float ih, float x, float y, float w, float h, float l, float t, float r,
                        float b, float scale, uint32_t tint)
 {
