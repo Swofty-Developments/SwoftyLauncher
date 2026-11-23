@@ -244,7 +244,7 @@ The launcher tells the core what the session did through `swofty/tt.json` and ta
 
 `tt_module` names the module the session placed, `local` for `SWOFTY_TT_INTEGRITY_DLL`. `tt_blocked` is written when Time Trial boards is on, the player is signed in, the profile loads the core and no verified module could be placed, whatever the upload meta's `state` says. Neither key is written with Time Trial boards off, signed out or in a vanilla profile.
 
-The core blocks Time Trial while `tt_boards` is `true` and either `tt_blocked` is there, or `tt_module` is there and, from the first main menu on, `swofty_integrity.dll` is not in the process or `laps.sealing` has no handler. The main menu's Time Trial card and the activity container's `time_trial` command (F1 World > Play > Time Trial) are refused, and the game's own message popup says why:
+The core reads `tt.json` for the block once, on a thread of its own, when the game starts; the game thread never waits on that read, and Time Trial is not blocked until it is done. The core blocks Time Trial while `tt_boards` is `true` and either `tt_blocked` is there, or `tt_module` is there and, from the first main menu on, `swofty_integrity.dll` is not in the process or `laps.sealing` has no handler. The main menu's Time Trial card and the activity container's `time_trial` command (F1 World > Play > Time Trial) are refused, and the game's own message popup says why:
 
 ```
 Time Trial is unavailable

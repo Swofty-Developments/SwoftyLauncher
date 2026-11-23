@@ -1,10 +1,15 @@
 // Host unit test for the Time Trial block (core/frontend/tt_blocked_logic.hpp): reading swofty\tt.json, when Time Trial
-// is blocked, the refused container command and the popup gates. native/test/run_tests.sh tt_blocked builds and runs
-// it.
+// is blocked, the read done once off the game thread, the refused container command and the popup gates.
+// native/test/run_tests.sh tt_blocked builds and runs it.
 #include "core/frontend/tt_blocked_logic.hpp"
 
+#include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <cstdio>
+#include <functional>
 #include <string>
+#include <thread>
 
 namespace b = frontend::tt_blocked;
 
@@ -14,6 +19,99 @@ static void expect(bool ok, const char *what)
     std::printf("%s: %s\n", ok ? "ok  " : "FAIL", what);
     if (!ok)
         failed++;
+}
+
+using Clock = std::chrono::steady_clock;
+
+static double ms_since(Clock::time_point t) { return std::chrono::duration<double, std::milli>(Clock::now() - t).count(); }
+
+// A drive that stalls: tt.json takes STALL_MS to read. The game thread asks why() every millisecond for longer than the
+// old two-second re-read period; no call may wait on the read, the read runs once and never on the asking thread.
+static void stalled_drive()
+{
+    constexpr int STALL_MS = 600;
+    constexpr int ASK_MS = 2300;
+    std::atomic<int> reads{0};
+    std::atomic<bool> on_asker{false};
+    const std::thread::id asker = std::this_thread::get_id();
+    b::Reading r([&] {
+        reads++;
+        on_asker = std::this_thread::get_id() == asker;
+        std::this_thread::sleep_for(std::chrono::milliseconds(STALL_MS));
+        return std::string(R"({"tt_boards":true,"tt_blocked":{"reason":"couldn't reach the server"}})");
+    });
+    auto loaded = [](const b::Session &) { return true; };
+    Clock::time_point start = Clock::now();
+    double slowest = 0;
+    int before = 0, after = 0, wrong = 0;
+    while (ms_since(start) < ASK_MS) {
+        Clock::time_point t = Clock::now();
+        b::Why w = r.why(loaded);
+        slowest = std::max(slowest, ms_since(t));
+        if (!r.done()) {
+            before++;
+            wrong += w != b::Why::none;
+        } else {
+            after++;
+            wrong += w != b::Why::not_placed;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    std::printf("      stalled read: %d asks before it was done, %d after, slowest ask %.2f ms, %d read(s)\n", before, after,
+                slowest, reads.load());
+    expect(slowest < 50, "no ask waits on a stalled tt.json read");
+    expect(before > 0 && after > 0 && !wrong, "not blocked while the read stalls, blocked once it is done");
+    expect(reads == 1, "tt.json is read once, however long the game asks");
+    expect(!on_asker, "tt.json is read on a thread of its own, not the asking thread");
+    expect(r.session().reason == "couldn't reach the server", "the read's session is kept");
+}
+
+static b::Why ask_once(b::Reading &r, const std::function<bool(const b::Session &)> &loaded)
+{
+    Clock::time_point start = Clock::now();
+    while (ms_since(start) < 2000) {
+        b::Why w = r.why(loaded);
+        if (r.done())
+            return w;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    return b::Why::none;
+}
+
+static void readings()
+{
+    int asked = 0;
+    auto counted = [&](bool v) {
+        return [&asked, v](const b::Session &) {
+            asked++;
+            return v;
+        };
+    };
+    b::Reading placed(
+        [] { return std::string(R"({"tt_boards":true,"tt_module":{"version":"v1","dll":"swofty_integrity.dll"}})"); });
+    expect(ask_once(placed, counted(false)) == b::Why::not_loaded && asked > 0, "a placed module that did not load blocks");
+    expect(placed.why(counted(true)) == b::Why::none, "the module loading later lifts the block without another read");
+
+    asked = 0;
+    b::Reading off([] { return std::string(R"({"tt_boards":false,"tt_module":{"version":"v1"}})"); });
+    ask_once(off, counted(false));
+    b::Reading missing([] { return std::string(); });
+    expect(ask_once(missing, counted(false)) == b::Why::none && missing.done(), "no tt.json does not block");
+    b::Reading boards_only([] { return std::string(R"({"tt_boards":true})"); });
+    expect(ask_once(boards_only, counted(false)) == b::Why::none, "boards on with no module key does not block");
+    expect(asked == 1, "the module is looked for only when one was placed");
+
+    b::Reading late([] {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        return std::string(R"({"tt_boards":true,"tt_blocked":{"reason":"timeout"}})");
+    });
+    b::EntryGate e;
+    auto loaded = [](const b::Session &) { return true; };
+    bool shown = e.step(late.why(loaded) != b::Why::none);
+    expect(!shown, "in Time Trial before the read is done: no popup yet");
+    ask_once(late, loaded);
+    expect(late.why(loaded) != b::Why::none && e.step(true), "the read done while in Time Trial: the popup shows once");
+    expect(!e.step(late.why(loaded) != b::Why::none), "and not again while the game stays there");
 }
 
 int main()
@@ -77,6 +175,9 @@ int main()
     expect(std::string(b::TITLE) == "Time Trial is unavailable", "the popup title");
     expect(std::string(b::BODY).find("turn off Time Trial boards") != std::string::npos,
            "the popup says how to play without the boards");
+
+    stalled_drive();
+    readings();
 
     std::printf("%s\n", failed ? "FAILED" : "all ok");
     return failed ? 1 : 0;

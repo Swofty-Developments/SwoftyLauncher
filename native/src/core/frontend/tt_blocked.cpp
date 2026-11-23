@@ -15,8 +15,9 @@
 #include <mutex>
 #include <string>
 
-// Time Trial blocked for the session (tt_blocked_logic.hpp). The state is read from swofty\tt.json at most every
-// READ_MS. The main menu's Time Trial card (main_menu/navigation.cpp card_pressed) and the activity container's
+// Time Trial blocked for the session (tt_blocked_logic.hpp). swofty\tt.json is read once, on a thread of its own
+// (Reading in tt_blocked_logic.hpp); the game thread only looks at what that read found, and until it is done Time Trial is not
+// blocked. The main menu's Time Trial card (main_menu/navigation.cpp card_pressed) and the activity container's
 // time_trial command, which F1 World > Play > Time Trial raises (main_menu/navigation_hooks.cpp container_command), are
 // refused with the game's own message popup; the card's description says it is unavailable (main_menu/tiles.cpp). When
 // the game reaches Time Trial another way (the activity container's tabs), the popup shows once on entry. Whether a
@@ -28,9 +29,6 @@ namespace {
 std::atomic<int> off{-1};
 std::atomic<bool> home_seen{false};
 std::mutex lock;
-Session session;
-bool have = false;
-ULONGLONG read_at = 0;
 Why told = Why::none;
 bool told_once = false;
 PopupGate popups;
@@ -55,16 +53,28 @@ bool module_loaded(const Session &s)
     return swofty_core::hooks::core().handlers("laps.sealing") > 0;
 }
 
+std::string read_text()
+{
+    ULONGLONG t0 = GetTickCount64();
+    std::string text = runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20);
+    swofty::log("[tt-blocked] swofty\\tt.json read once in %llu ms on a thread of its own (%s)",
+                (unsigned long long)(GetTickCount64() - t0), text.empty() ? "no file" : "found");
+    return text;
+}
+
+Reading &reading()
+{
+    static auto *r = new Reading(read_text);
+    return *r;
+}
+
 Why current()
 {
     std::lock_guard<std::mutex> g(lock);
-    ULONGLONG now = GetTickCount64();
-    if (!have || now - read_at >= READ_MS) {
-        session = parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
-        have = true;
-        read_at = now;
-    }
-    Why w = why_blocked(session, placed(session) && module_loaded(session));
+    Why w = reading().why(module_loaded);
+    if (!reading().done())
+        return w;
+    const Session &session = reading().session();
     if (w != told || !told_once) {
         told_once = true;
         told = w;

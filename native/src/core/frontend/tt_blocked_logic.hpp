@@ -1,15 +1,19 @@
 #pragma once
 
 #include "core/runtime/json.hpp"
+#include "core/runtime/off_thread.hpp"
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <string>
+#include <utility>
 
 // Time Trial blocked for the session. swofty\tt.json's "tt_blocked" ({"reason"}, written by the wrapper when Time Trial
 // boards is on, the player is signed in and no verified integrity module could be placed) blocks it, and so does
 // "tt_module" ({"version", "dll"}, the module the wrapper placed) when that DLL is not in the process or nothing
-// handles laps.sealing. Both count only with "tt_boards": true, the key that turns lap recording on.
+// handles laps.sealing. Both count only with "tt_boards": true, the key that turns lap recording on. The wrapper writes
+// these keys before it starts the game and takes them out after the game exits, so the core reads the file once.
 namespace frontend::tt_blocked {
 
 constexpr const char *TITLE = "Time Trial is unavailable";
@@ -20,7 +24,6 @@ constexpr const char *CARD_DESCRIPTION = "Unavailable: the integrity module did 
 constexpr const char *CONTAINER_COMMAND = "time_trial";
 constexpr const char *DEFAULT_DLL = "swofty_integrity.dll";
 constexpr uint64_t POPUP_GAP_MS = 1500;
-constexpr uint64_t READ_MS = 2000;
 constexpr size_t REASON_MAX = 200;
 constexpr size_t DLL_MAX = 64;
 
@@ -83,6 +86,30 @@ inline Why why_blocked(const Session &s, bool loaded)
         return Why::not_loaded;
     return Why::none;
 }
+
+// Why Time Trial is blocked, as the game thread asks it. read (tt.json's text) runs once, on a thread of its own, from
+// the first why(); why() never waits on it and says not blocked until it is done. loaded(session) says whether the
+// placed module is in the process and is asked only when one was placed. Not thread safe: callers hold a lock.
+class Reading {
+public:
+    explicit Reading(std::function<std::string()> read) : file_([read = std::move(read)] { return parse(read()); }, 0, 0) {}
+
+    template <class Loaded> Why why(Loaded loaded)
+    {
+        if (!done_ && !(done_ = file_.take(session_, seen_)))
+            return Why::none;
+        return why_blocked(session_, placed(session_) && loaded(session_));
+    }
+
+    bool done() const { return done_; }
+    const Session &session() const { return session_; }
+
+private:
+    runtime::OffThreadValue<Session> file_;
+    Session session_;
+    uint64_t seen_ = 0;
+    bool done_ = false;
+};
 
 inline const char *why_text(Why w)
 {
