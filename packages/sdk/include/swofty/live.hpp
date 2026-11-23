@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include <swofty/live_images.h>
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <optional>
@@ -350,6 +351,14 @@ inline std::optional<uint8_t> race_number(const CarDetail &d)
 inline std::optional<uint32_t> team_colour(const CarDetail &d)
 {
     return has(d, SWOFTY_LIVE_HAVE_IDENTITY) && d.team_colour ? std::optional<uint32_t>(d.team_colour) : std::nullopt;
+}
+
+// The car's best time in each sector this session, 0 for a sector it has no time in yet.
+inline std::optional<std::array<uint32_t, 3>> sector_bests(const CarDetail &d)
+{
+    if (!has(d, SWOFTY_LIVE_HAVE_SECTOR_BESTS))
+        return std::nullopt;
+    return std::array<uint32_t, 3>{d.personal_best_sector_ms[0], d.personal_best_sector_ms[1], d.personal_best_sector_ms[2]};
 }
 
 inline GameMode game_mode(const Session &s)

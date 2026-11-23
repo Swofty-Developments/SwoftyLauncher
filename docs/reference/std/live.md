@@ -193,7 +193,10 @@ typedef struct SwoftyLiveCarDetail {
     uint32_t pit_lane_ms;          // in the pit lane, this or the last visit (SWOFTY_LIVE_HAVE_PIT_TIMING)
     uint32_t pit_stop_ms;          // stationary in the box (SWOFTY_LIVE_HAVE_PIT_TIMING)
     uint32_t team_colour;          // 0xRRGGBB, the livery's first colour; 0 when the game sends none (SWOFTY_LIVE_HAVE_IDENTITY)
-    uint32_t reserved[11];
+    uint16_t driver_id;            // the UDP driver id, before the core's stock id rewrite (SWOFTY_LIVE_HAVE_IDENTITY)
+    uint8_t pad[2];
+    uint32_t personal_best_sector_ms[3]; // the car's best time in each sector this session, 0 for none (SWOFTY_LIVE_HAVE_SECTOR_BESTS)
+    uint32_t reserved[7];
 } SwoftyLiveCarDetail;
 ```
 
@@ -203,6 +206,7 @@ typedef struct SwoftyLiveCarDetail {
 | `live::grid_position(d)`, `live::last_lap_ms(d)`, `live::best_lap_ms(d)` | `std::optional`, empty when the bit is clear or the lap time is 0 |
 | `live::drs_allowed(d)`, `live::pit_limiter(d)`, `live::fia_flag(d)`, `live::driver_status(d)` | `std::optional`, empty when the bit is clear; `driver_status` is a `live::DriverStatus` |
 | `live::race_number(d)`, `live::team_colour(d)` | `std::optional`, empty when the identity bit is clear (`team_colour` also when it is 0) |
+| `live::sector_bests(d)` | `std::array<uint32_t, 3>` of the personal best sectors, empty when the bit is clear |
 
 The values are the ones the game sends in its UDP output:
 
@@ -468,8 +472,11 @@ The values below have no verified memory source. The core decodes them from the 
 | `drs_allowed` | `HAVE_DRS_ALLOWED` | Car Status (7) `m_drsAllowed`, `m_drsActivationDistance` (distance 0 in 2026) | yes | yes |
 | `fia_flag` | `HAVE_FIA_FLAG` | Car Status (7) `m_vehicleFiaFlags` | yes | yes |
 | `pit_limiter` | `HAVE_PIT_LIMITER` | Car Status (7) `m_pitLimiterStatus` | yes | no |
-| `race_number`, `team_id` | `HAVE_IDENTITY` | Participants (4) `m_raceNumber`, `m_teamId` | yes | team id only |
+| `race_number`, `team_id`, `driver_id` | `HAVE_IDENTITY` | Participants (4) `m_raceNumber`, `m_teamId`, `m_driverId` | yes | team and driver id only |
 | `team_colour` | `HAVE_IDENTITY` | Participants (4) `m_liveryColours[0]` | 2025 only | no |
+| `personal_best_sector_ms` | `HAVE_SECTOR_BESTS` | Session History (11) `m_bestSectorNLapNum` and that lap's sector time | yes | no |
+
+`driver_id` is the `stat_id` of the car's `entrants.drivers` row for a stock driver; its names and code read from that row with [swofty/db.hpp](./db). The session's best sector is the lowest `personal_best_sector_ms` over the cars. Session History carries one car per packet, so a car's bests refresh about once a second per car on the game's rotation.
 
 The car index of a UDP packet is taken as the vehicle id, as for the telemetry feed (see [Telemetry](./telemetry#availability)). The race control messages (penalties, served penalties, DRS, start lights, the safety car phase and the fastest lap) fire as events; see [Race control](./race-control#race-control-messages). The 2026 rows read the 2025 entry offsets of the packets whose 2026 size the telemetry decoder knows; the 2026 Session and Participants layouts past the team id are not catalogued.
 
@@ -479,7 +486,7 @@ The car index of a UDP packet is taken as the vehicle id, as for the telemetry f
 
 ## Not read yet
 
-Active aero mode, Boost and Overtake state, the driver's three-letter code and split names, car setup values, personal best sector times and tyre temperatures have no verified memory source and no UDP source in the live state. `SWOFTY_LIVE_HAVE_BOOST` and `_AERO_MODE` are declared so the structs stay stable when they land and stay clear until then. The session time left, the race lap count, DRS allowed, the pit limiter and the identity fields read from UDP (above). The core logs the unread session and setup values once:
+Active aero mode, Boost and Overtake state, the driver's three-letter code and split names, car setup values and tyre temperatures have no verified memory source and no UDP source in the live state. `SWOFTY_LIVE_HAVE_BOOST` and `_AERO_MODE` are declared so the structs stay stable when they land and stay clear until then. The session time left, the race lap count, DRS allowed, the pit limiter and the identity fields read from UDP (above). The core logs the unread session and setup values once:
 
 ```text
 [live] session time left off: needs a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the game timer)

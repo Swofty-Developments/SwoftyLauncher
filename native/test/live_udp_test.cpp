@@ -149,6 +149,7 @@ static void test_cars()
     Bytes who = packet(2025, 4, 1284);
     who[29] = 4;
     uint8_t *w = &who[30 + 2 * 57];
+    w[1] = 9;
     w[3] = 2;
     w[5] = 81;
     w[44] = 1;
@@ -164,8 +165,9 @@ static void test_cars()
     expect(swofty::live::drs_allowed(d) == true && d.drs_distance_m == 120.f && swofty::live::pit_limiter(d) == true &&
                swofty::live::fia_flag(d) == int8_t(2),
            "Car Status: DRS allowed 120 m out, limiter on, blue flag");
-    expect(swofty::live::race_number(d) == uint8_t(81) && d.team_id == 2 && swofty::live::team_colour(d) == 0xff8000u,
-           "Participants: number 81, team 2, colour ff8000");
+    expect(swofty::live::race_number(d) == uint8_t(81) && d.team_id == 2 && d.driver_id == 9 &&
+               swofty::live::team_colour(d) == 0xff8000u,
+           "Participants: number 81, team 2, driver 9, colour ff8000");
     expect((s.cars[2].have & SWOFTY_LIVE_HAVE_PIT_TIMING) && (s.cars[2].have & SWOFTY_LIVE_HAVE_IDENTITY),
            "the car's have bits match the detail's");
 
@@ -195,6 +197,31 @@ static void test_cars()
     n = snapshot();
     merge(v, n);
     expect(swofty::live::driver_status(n.details[0]) == swofty::live::DriverStatus::out_lap, "2024 Lap Data: out lap");
+}
+
+static void test_sector_bests()
+{
+    udp::Source u;
+    Bytes h = packet(2025, 11, 1460);
+    h[29] = 1;
+    h[30] = 3;
+    h[33] = 2, h[34] = 3, h[35] = 0;
+    uint8_t *lap2 = &h[36 + 1 * 14];
+    lap2[4] = 0x30, lap2[5] = 0x75;
+    uint8_t *lap3 = &h[36 + 2 * 14];
+    lap3[7] = 0xa8, lap3[8] = 0x61, lap3[9] = 1;
+    expect(feed(u, h), "a 2025 Session History packet is read");
+    lv::Snapshot s = snapshot();
+    merge(u, s);
+    auto b = swofty::live::sector_bests(s.details[1]);
+    expect(b && (*b)[0] == 30000 && (*b)[1] == 85000 && (*b)[2] == 0,
+           "vehicle 1: best sector 1 30.000 on lap 2, sector 2 1:25.000 on lap 3, no sector 3 yet");
+    expect(!swofty::live::sector_bests(s.details[0]), "a car with no history packet has no bests");
+    h[35] = 9;
+    feed(u, h);
+    s = snapshot();
+    merge(u, s);
+    expect(swofty::live::sector_bests(s.details[1]).value()[2] == 0, "a best lap number past numLaps reads as none");
 }
 
 static void test_messages()
@@ -340,6 +367,7 @@ int main()
 {
     test_session();
     test_cars();
+    test_sector_bests();
     test_messages();
     test_broadcast_moments();
     test_fastest_from_memory();

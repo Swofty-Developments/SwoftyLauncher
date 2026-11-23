@@ -19,10 +19,12 @@
 //   Event (3), 45 bytes, every format: code at 29, details at 33. PENA penaltyType, infringementType, vehicleIdx,
 //     otherVehicleIdx, time, lapNum, placesGained; DTSV vehicleIdx; SGSV vehicleIdx, stopTime f32 (2025); FTLP
 //     vehicleIdx, lapTime f32 s; DRSE; DRSD reason (2025); STLG numLights; LGOT; SCAR safetyCarType, eventType.
-//   Participants (4): 2024 22 x 60 bytes, 2025 22 x 57, from 30: teamId 3, raceNumber 5; 2025 numColours 44 and
-//     liveryColours[4] RGB from 45. 2026 24 x 60: teamId u16 at 5 only.
+//   Participants (4): 2024 22 x 60 bytes, 2025 22 x 57, from 30: driverId 1, teamId 3, raceNumber 5; 2025 numColours
+//     44 and liveryColours[4] RGB from 45. 2026 24 x 60: driverId u16 at 1 and teamId u16 at 5 only.
 //   Car Status (7): 2024 and 2025 22 x 55 bytes, from 29: pitLimiterStatus 4, drsAllowed 22, drsActivationDistance
 //     u16 23, vehicleFiaFlags i8 28. 2026 24 x 59: drsAllowed 22 and vehicleFiaFlags 28 only.
+//   Session History (11), 1460 bytes, 2024 and 2025: carIdx 29, numLaps 30, bestSector1LapNum 33, 2 at 34, 3 at 35,
+//     100 x 14-byte laps from 36: sector n ms u16 at 4 + 3(n-1) and minutes u8 after it.
 // Pure: live_state.cpp feeds it packets and snapshots under its own lock.
 
 namespace swofty_core::live::udp {
@@ -63,7 +65,8 @@ inline const Layout *layout(const uint8_t *p, size_t len)
         {2025, 2, 1285, 57, 22, HEADER},   {2026, 2, 1399, 57, 24, HEADER},   {2024, 3, 45, 0, 0, 0},
         {2025, 3, 45, 0, 0, 0},            {2026, 3, 45, 0, 0, 0},            {2024, 4, 1350, 60, 22, HEADER + 1},
         {2025, 4, 1284, 57, 22, HEADER + 1}, {2026, 4, 1470, 60, 24, HEADER + 1}, {2024, 7, 1239, 55, 22, HEADER},
-        {2025, 7, 1239, 55, 22, HEADER},   {2026, 7, 1445, 59, 24, HEADER},
+        {2025, 7, 1239, 55, 22, HEADER},   {2026, 7, 1445, 59, 24, HEADER},   {2024, 11, 1460, 0, 0, 0},
+        {2025, 11, 1460, 0, 0, 0},
     };
     if (!p || len < HEADER + 1)
         return nullptr;
@@ -83,9 +86,11 @@ struct Car {
     bool status_full = false;
     float drs_distance_m = 0;
     uint8_t race_number = 0;
-    uint16_t team_id = 0;
+    uint16_t team_id = 0, driver_id = 0;
     uint32_t team_colour = 0;
     bool who_full = false;
+    uint64_t history_at = 0;
+    uint32_t sector_best[3] = {};
 };
 
 struct Moments {
@@ -139,6 +144,9 @@ public:
             break;
         case 7:
             car_status(p, *l, now_ms);
+            break;
+        case 11:
+            history(p, now_ms);
             break;
         }
         return true;
@@ -226,8 +234,26 @@ private:
             c.who_at = now;
             c.who_full = l.format != 2026;
             c.team_id = l.format == 2026 ? u16(e + 5) : e[3];
+            c.driver_id = l.format == 2026 ? u16(e + 1) : e[1];
             c.race_number = l.format == 2026 ? 0 : e[5];
             c.team_colour = l.format == 2025 && e[44] ? uint32_t(e[45]) << 16 | uint32_t(e[46]) << 8 | e[47] : 0;
+        }
+    }
+
+    void history(const uint8_t *p, uint64_t now)
+    {
+        unsigned car = p[29], laps = p[30] < 100 ? p[30] : 100;
+        if (car >= CARS)
+            return;
+        Car &c = cars_[car];
+        c.history_at = now;
+        for (unsigned n = 0; n < 3; n++) {
+            unsigned lap = p[33 + n];
+            c.sector_best[n] = 0;
+            if (lap < 1 || lap > laps)
+                continue;
+            const uint8_t *at = p + 36 + (lap - 1) * 14 + 4 + 3 * n;
+            c.sector_best[n] = uint32_t(u16(at)) + uint32_t(at[2]) * 60000u;
         }
     }
 
@@ -349,8 +375,14 @@ private:
         if (u.who_at && now - u.who_at <= PARTICIPANTS_STALE_MS && !(d.have & SWOFTY_LIVE_HAVE_IDENTITY)) {
             d.race_number = u.race_number;
             d.team_id = u.team_id;
+            d.driver_id = u.driver_id;
             d.team_colour = u.team_colour;
             mark(c, d, SWOFTY_LIVE_HAVE_IDENTITY);
+        }
+        if (u.history_at && now - u.history_at <= PARTICIPANTS_STALE_MS && !(d.have & SWOFTY_LIVE_HAVE_SECTOR_BESTS)) {
+            for (int n = 0; n < 3; n++)
+                d.personal_best_sector_ms[n] = u.sector_best[n];
+            mark(c, d, SWOFTY_LIVE_HAVE_SECTOR_BESTS);
         }
     }
 
