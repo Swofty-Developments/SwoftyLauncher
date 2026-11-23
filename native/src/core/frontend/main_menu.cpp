@@ -151,7 +151,7 @@ void screen(const char *name)
                         "the game's again");
         menu.panel.want_strip(home ? 0 : 1);
         if (home) {
-            menu.panel.read_state(true);
+            menu.panel.read_state();
             swofty::log("[main-menu] home screen open: state read, stock top-right strip %s",
                         menu.tiles.rows_on() ? "hidden" : "hidden");
         }

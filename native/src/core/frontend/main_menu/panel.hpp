@@ -35,7 +35,7 @@ private:
 
 class Panel {
 public:
-    void read_state(bool force = false);
+    void read_state();
     State snapshot();
     bool account(std::string &name);
     bool due();
@@ -64,7 +64,7 @@ private:
     std::atomic<int> strip_wanted{-1}, strip_set{-1};
     std::mutex state_lock;
     State state;
-    uint64_t state_read_at = 0;
+    uint64_t state_taken = 0;
     long long offline_shown = -1;
     int offline_fails = 0;
     uint64_t slow_ticks = 0;

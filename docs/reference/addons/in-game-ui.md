@@ -451,7 +451,7 @@ To apply the same `clone-entry` and `set-value` edits to `!pkg` resources, use t
 
 ## Main menu state files
 
-The launcher writes `swofty/home_menu.json` into the game folder at launch and rewrites it when the latest video has been fetched. The core reads it for the main menu's top-right strip and the video card. With the **Home screen video** setting off (`"home_video": false` in `config.json`) the file has no `video`, the launcher doesn't fetch it, and the home screen has no video card.
+The launcher writes `swofty/home_menu.json` into the game folder at launch and rewrites it when the latest video has been fetched. The core reads it for the main menu's top-right strip and the video card, every second on a thread of its own while the home screen is open. With the **Home screen video** setting off (`"home_video": false` in `config.json`) the file has no `video`, the launcher doesn't fetch it, and the home screen has no video card.
 
 ```json
 {

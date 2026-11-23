@@ -4,6 +4,7 @@
 #include "core/frontend/main_menu_logic.hpp"
 #include "core/frontend/ui_vm.hpp"
 #include "core/runtime/json.hpp"
+#include "core/runtime/off_thread.hpp"
 
 #include <atomic>
 #include <cstdlib>
@@ -144,14 +145,15 @@ void Panel::set_offline_text(long long online)
     }
 }
 
-void Panel::read_state(bool force)
+namespace {
+
+constexpr uint64_t STATE_EVERY_MS = 1000;
+constexpr uint64_t STATE_KEEP_MS = 3000;
+
+State read_state_file()
 {
-    uint64_t now = GetTickCount64();
-    std::lock_guard<std::mutex> g(state_lock);
-    if (!force && state_read_at && now - state_read_at < 1000)
-        return;
-    state_read_at = now;
-    auto next = parse_state(runtime::read_file(runtime::under_swofty("home_menu.json"), size_t(1) << 20));
+    uint64_t t0 = GetTickCount64();
+    State next = parse_state(runtime::read_file(runtime::under_swofty("home_menu.json"), size_t(1) << 20));
     if (const char *override_path = std::getenv("SWOFTY_HOME_VIDEO_JSON"); override_path && *override_path) {
         json::Value v;
         if (json::parse(runtime::read_file(runtime::wide(override_path), size_t(1) << 20), v)) {
@@ -161,6 +163,29 @@ void Panel::read_state(bool force)
             next.video_thumbnail = v["thumbnail"].str();
         }
     }
+    static uint64_t slow = 0;
+    if (uint64_t took = GetTickCount64() - t0; took > 100 && (slow++ < 10 || slow % 50 == 0))
+        swofty::log("[main-menu] home_menu.json took %llu ms to read on its own thread (slow read %llu)",
+                    static_cast<unsigned long long>(took), static_cast<unsigned long long>(slow));
+    return next;
+}
+
+// home_menu.json, which the launcher rewrites while the game runs, read every STATE_EVERY_MS on a thread of its own
+// while the game thread asked for it in the last STATE_KEEP_MS.
+runtime::OffThreadValue<State> &state_file()
+{
+    static auto *file = new runtime::OffThreadValue<State>(read_state_file, STATE_EVERY_MS, STATE_KEEP_MS);
+    return *file;
+}
+
+}
+
+void Panel::read_state()
+{
+    std::lock_guard<std::mutex> g(state_lock);
+    State next;
+    if (!state_file().take(next, state_taken))
+        return;
     if (next.loaded != state.loaded || next.signed_in != state.signed_in || next.video_url != state.video_url)
         swofty::log("[main-menu] state: %s, %s, video %s", next.loaded ? version_line(next).c_str() : "no file",
                     discord_line(next).c_str(), has_video(next) ? "yes" : "none");
@@ -206,7 +231,7 @@ void Panel::home_tick()
         t3 = GetTickCount64();
     }
     if (t3 - t0 > 100 && (slow_ticks++ < 10 || slow_ticks % 50 == 0))
-        swofty::log("[main-menu] slow home tick: state read %llu ms, panel prepare %llu ms, video bind %llu ms",
+        swofty::log("[main-menu] slow home tick: state taken %llu ms, panel prepare %llu ms, video bind %llu ms",
                     static_cast<unsigned long long>(t1 - t0), static_cast<unsigned long long>(t2 - t1),
                     static_cast<unsigned long long>(t3 - t2));
 }
