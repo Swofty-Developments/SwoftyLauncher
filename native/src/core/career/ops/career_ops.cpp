@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstdio>
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -10,6 +11,7 @@
 
 #include "core/career/ops/seat_plan.hpp"
 #include "core/career/standings_read.hpp"
+#include "core/career/standings_snapshot.hpp"
 #include "core/runtime/build.hpp"
 #include "core/career/ops/stats.hpp"
 #include "core/apply/content/teams.hpp"
@@ -273,10 +275,13 @@ void run_queued_reports()
         swofty::log("%s", rq::ran_line(r, result_name(r.result)).c_str());
 }
 
+void refresh_standings();
+
 void flow_frame(double dt, void *user)
 {
     frame(dt, user);
     run_queued_reports();
+    refresh_standings();
 }
 
 std::string caller(const void *from)
@@ -576,6 +581,228 @@ int api_set_dropped_scores(const char *data_group, uint32_t best)
     return runtime::standings_drop_set(data_group, best);
 }
 
+// The championship standings snapshot (SwoftyCoreStandings). The constructors' side and the weekends' line-up copies
+// are read by instructions equal on each build (re/tools/sigport.py --witness at the KB RVA): the season loop 0xae9550
+// (+0x3b8, 59 of 59), the season-start order builder 0xae2d80 (the constructors' table +0x3f8, +0x400; 341 of 341),
+// the constructors' recompute body 0x95e2c60 (+0x20, +0x28, +0x40, +0x48 aligned, 128 of 131), the start-order fill
+// 0x13cf8a0 (+0xd0, +0xd8, +0xe0 aligned) and Career_Weekend_SetEntrantNumber 0xaf6800 (the weekend's rows +0x20,
+// +0x28; 47 of 47), on Steam 1.0.145 (26566308) and on the EA 1.0.145 dump.
+constexpr bp::Proof CONSTRUCTORS_READ{"the constructors' standings (Season +0x3b8: points +0x20, table +0x40, start order "
+                                      "+0xd8) and the weekends' line-up copies (+0x20)",
+                                      bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) |
+                                          bp::bit(bp::Build::ea_1_0_145)};
+constexpr bp::Gate CONSTRUCTORS{"the championship standings", &CONSTRUCTORS_READ};
+constexpr uint64_t STANDINGS_EVERY_MS = 1000;
+constexpr uintptr_t WEEKEND_ROWS = 0x20, SESSION_ID_AT = 0x8;
+
+struct StandingsStore {
+    std::mutex lock;
+    cs::Snapshot snap;
+    int status = SWOFTY_ASSET_LATE;
+    uint64_t seq = 0;
+    uint64_t next_ms = 0;
+    int32_t logged_raced = -1, logged_season = -1;
+};
+
+StandingsStore &standings_store()
+{
+    static StandingsStore s;
+    return s;
+}
+
+uint32_t stat_or_none(uint32_t key) { return none(key) ? cs::NONE : stat_of(key); }
+
+std::vector<cs::Seat> seats_at(uintptr_t begin_field)
+{
+    std::vector<cs::Seat> out;
+    uintptr_t b = rdv<uintptr_t>(begin_field), e = rdv<uintptr_t>(begin_field + 8);
+    if (!b || e <= b || (e - b) % sizeof(EntrantRecord) || (e - b) / sizeof(EntrantRecord) > kMaxEntrants ||
+        !mem::readable(b, e - b))
+        return out;
+    for (uintptr_t p = b; p < e; p += sizeof(EntrantRecord)) {
+        EntrantRecord r{};
+        if (mem::read(p, r) && has_car(r))
+            out.push_back({stat_of(driver_of(r)), teamless(r) ? cs::NONE : stat_of(r.team_stat_id),
+                           r.car_number == kNoNumber ? uint8_t(0) : r.car_number});
+    }
+    return out;
+}
+
+std::vector<uint32_t> weekend_sessions(uintptr_t weekend)
+{
+    std::vector<uint32_t> ids;
+    g::Weekend wk{};
+    if (!mem::read(weekend, wk))
+        return ids;
+    auto b = reinterpret_cast<uintptr_t>(wk.sessions_begin), e = reinterpret_cast<uintptr_t>(wk.sessions_end);
+    if (!b || e <= b || (e - b) % sizeof(g::Session) || (e - b) / sizeof(g::Session) > 16)
+        return ids;
+    for (uintptr_t s = b; s < e; s += sizeof(g::Session)) {
+        uint32_t id = 0;
+        if (mem::read(s + SESSION_ID_AT, id))
+            ids.push_back(id);
+    }
+    return ids;
+}
+
+cs::Lineups read_lineups(uintptr_t e, uintptr_t season)
+{
+    cs::Lineups l;
+    std::vector<Row> rows;
+    if (entrant_rows(e, rows))
+        for (const Row &r : rows)
+            if (has_car(r.rec))
+                l.now.push_back({stat_of(driver_of(r.rec)), teamless(r.rec) ? cs::NONE : stat_of(r.rec.team_stat_id),
+                                 r.rec.car_number == kNoNumber ? uint8_t(0) : r.rec.car_number});
+    g::Season s{};
+    if (!mem::read(season, s))
+        return l;
+    auto wb = reinterpret_cast<uintptr_t>(s.weekends_begin), we = reinterpret_cast<uintptr_t>(s.weekends_end);
+    if (!wb || we <= wb || (we - wb) % sizeof(void *) || (we - wb) / sizeof(void *) > 64)
+        return l;
+    for (uintptr_t at = wb; at < we; at += sizeof(void *)) {
+        uintptr_t w = rdv<uintptr_t>(at);
+        l.rounds.push_back(w ? seats_at(w + WEEKEND_ROWS) : std::vector<cs::Seat>{});
+        l.races.push_back(w ? cs::main_race(weekend_sessions(w)) : 0);
+    }
+    return l;
+}
+
+cs::Where read_where(const SwoftyCareerState &state, uint32_t index)
+{
+    cs::Where w;
+    w.mode = state.mode;
+    w.season_index = static_cast<int32_t>(index);
+    int32_t si = 0;
+    if (api_current_round(&si, &w.round, &w.rounds) != SWOFTY_ASSET_OK)
+        w.round = w.rounds = 0;
+    if (auto facts = swofty_core::hooks::core().current(); facts && facts->career)
+        w.year = facts->career->year;
+    if (state.has_player) {
+        w.player_driver = stat_or_none(state.player_driver);
+        w.player_team = stat_or_none(state.player_team);
+    }
+    return w;
+}
+
+std::string rows_text(const std::vector<SwoftyStandingsRow> &rows, bool drivers)
+{
+    std::string out;
+    for (const SwoftyStandingsRow &r : rows) {
+        char one[96];
+        if (drivers)
+            std::snprintf(one, sizeof one, "%sP%d d%u t%d #%u %d (%dw %dp)", out.empty() ? "" : ", ", r.position, r.driver,
+                          r.team == cs::NONE ? -1 : int(r.team), r.race_number, r.points, r.wins, r.podiums);
+        else
+            std::snprintf(one, sizeof one, "%sP%d t%u %d (%dw %dp)", out.empty() ? "" : ", ", r.position, r.team, r.points,
+                          r.wins, r.podiums);
+        out += one;
+    }
+    return out.empty() ? "none" : out;
+}
+
+void log_standings(StandingsStore &st, const cs::Lineups &l)
+{
+    const SwoftyStandingsSeason &s = st.snap.season;
+    if (s.raced == st.logged_raced && s.season_index == st.logged_season)
+        return;
+    st.logged_raced = s.raced;
+    st.logged_season = s.season_index;
+    std::string races;
+    for (uint32_t id : l.races)
+        races += (races.empty() ? "" : ",") + std::to_string(id);
+    swofty::log("[standings] season %d (year %d) round %d of %d: %d round(s) scored, %d raced%s; main races %s", s.season_index,
+                s.year, s.round, s.rounds, s.scored, s.raced, s.flags & SWOFTY_STANDINGS_COMPLETE ? ", complete" : "",
+                races.empty() ? "unread" : races.c_str());
+    swofty::log("[standings] drivers: %s", rows_text(st.snap.drivers, true).c_str());
+    swofty::log("[standings] constructors: %s", rows_text(st.snap.constructors, false).c_str());
+}
+
+void clear_standings(int status)
+{
+    StandingsStore &st = standings_store();
+    std::lock_guard<std::mutex> g(st.lock);
+    st.status = status;
+    st.snap = {};
+    st.logged_raced = st.logged_season = -1;
+}
+
+// A read that fails while the career stays loaded (it is busy, or between seasons) keeps the last snapshot.
+void standings_late()
+{
+    StandingsStore &st = standings_store();
+    std::lock_guard<std::mutex> g(st.lock);
+    if (st.status != SWOFTY_ASSET_OK)
+        st.status = SWOFTY_ASSET_LATE;
+}
+
+void publish_standings(const cs::Snapshot &snap, const cs::Lineups &l)
+{
+    StandingsStore &st = standings_store();
+    std::lock_guard<std::mutex> g(st.lock);
+    st.status = SWOFTY_ASSET_OK;
+    if (cs::same(st.snap, snap))
+        return;
+    st.snap = snap;
+    st.snap.season.seq = ++st.seq;
+    log_standings(st, l);
+}
+
+void refresh_standings()
+{
+    StandingsStore &st = standings_store();
+    uint64_t now = GetTickCount64();
+    if (now < st.next_ms)
+        return;
+    st.next_ms = now + STANDINGS_EVERY_MS;
+    const SwoftyCareer *c = runtime::career_table();
+    SwoftyCareerState state{};
+    if (!runtime::enabled("career", nullptr) || !c || !c->state || c->state(&state) != SWOFTY_ASSET_OK || !state.loaded ||
+        (state.mode != SWOFTY_CAREER_DRIVER && state.mode != SWOFTY_CAREER_MY_TEAM))
+        return clear_standings(SWOFTY_ASSET_LATE);
+    if (!runtime::holds(STANDINGS) || !runtime::holds(CONSTRUCTORS))
+        return clear_standings(SWOFTY_ASSET_UNAVAILABLE);
+    uintptr_t season = 0;
+    uint32_t index = 0;
+    cs::Standings drivers;
+    cs::Constructors teams;
+    if (current_season(season, index) != SWOFTY_ASSET_OK ||
+        !cs::read(season + cs::sd::SEASON_STANDINGS, read_game, nullptr, drivers) ||
+        !cs::read_constructors(season + cs::SEASON_CONSTRUCTORS, read_game, nullptr, teams))
+        return standings_late();
+    cs::Lineups l = read_lineups(entity(), season);
+    publish_standings(cs::snapshot(drivers, teams, l, read_where(state, index)), l);
+}
+
+int st_available() { return runtime::proven(STANDINGS) && runtime::proven(CONSTRUCTORS) ? 1 : 0; }
+
+int st_season(SwoftyStandingsSeason *out)
+{
+    if (!out)
+        return SWOFTY_ASSET_INVALID;
+    StandingsStore &st = standings_store();
+    std::lock_guard<std::mutex> g(st.lock);
+    if (st.status != SWOFTY_ASSET_OK)
+        return st.status;
+    *out = st.snap.season;
+    return SWOFTY_ASSET_OK;
+}
+
+int st_rows(bool drivers, SwoftyStandingsRow *out, uint32_t cap, uint32_t *count)
+{
+    StandingsStore &st = standings_store();
+    std::lock_guard<std::mutex> g(st.lock);
+    if (st.status != SWOFTY_ASSET_OK)
+        return st.status;
+    return cs::copy_rows(drivers ? st.snap.drivers : st.snap.constructors, out, cap, count);
+}
+
+int st_drivers(SwoftyStandingsRow *out, uint32_t cap, uint32_t *count) { return st_rows(true, out, cap, count); }
+
+int st_constructors(SwoftyStandingsRow *out, uint32_t cap, uint32_t *count) { return st_rows(false, out, cap, count); }
+
+const SwoftyStandings g_standings = {SWOFTY_STANDINGS_VERSION, st_available, st_season, st_drivers, st_constructors};
+
 const SwoftyCareerOps g_table = {
     SWOFTY_CAREER_OPS_VERSION,
     api_available,
@@ -611,6 +838,8 @@ void setup()
 }
 
 extern "C" __declspec(dllexport) const SwoftyCareerOps *SwoftyCoreCareerOps(void) { return &g_table; }
+
+extern "C" __declspec(dllexport) const SwoftyStandings *SwoftyCoreStandings(void) { return &g_standings; }
 
 SWOFTY_CORE_RANK(career_ops)
 

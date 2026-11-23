@@ -65,7 +65,7 @@ class Script:
 
 # Built with the host C++ compiler, or with zig for x86_64-linux-musl where the compiler is zig.
 UNITS = [
-    Unit('abi_layout', 'Live car ABI layout unit test'),
+    Unit('abi_layout', 'Live car and standings ABI layout unit test'),
     Unit('activity_resume', 'Activity resume guard unit test'),
     Unit('ai_corner', 'AI brake line guard unit test'),
     Unit('ai_curves', 'AI team curves guard unit test'),
@@ -161,6 +161,7 @@ UNITS = [
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
     Unit('standings_drop', 'Standings dropped scores unit test'),
     Unit('standings_read', 'Season standings read unit test'),
+    Unit('standings_snapshot', 'Championship standings snapshot and SDK fake unit test'),
     Unit('teamhq_track', 'Team HQ track guard unit test'),
     Unit('teammate_pairs', 'Teammate pairs guard unit test'),
     Unit('theatre_list', 'Theatre list guard unit test'),

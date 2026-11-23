@@ -1045,6 +1045,70 @@ typedef struct SwoftyCareerSaves {
     int (*missing)(char *json, size_t cap, size_t *len);
 } SwoftyCareerSaves;
 
+/* Championship standings (standard library 1.10, experimental), from the core export SwoftyCoreStandings; not a
+   SwoftyApi field. Table version 1. The loaded Driver Career's or My Team's current season: the drivers' and the
+   constructors' championships in the game's order with the game's totals (the dropped scores rule included for the
+   drivers), and where the season is. The core reads them on the game's flow thread about once a second while a career
+   is loaded and every call copies from that snapshot, so the calls are cheap and work from any thread.
+   season: the snapshot's facts; seq changes whenever the snapshot does. round is the weekend the career is at (the
+   next race to run, 1-based) and rounds the season's weekend count, both 0 while the season has no built weekends;
+   scored counts the rounds with points or results and raced the rounds whose main race has results; flags has
+   SWOFTY_STANDINGS_COMPLETE once the last round's main race has results. year is the season's year as the career's
+   content reported it (career::report_season), 0 when none did.
+   drivers and constructors: up to cap rows into out and the row count into *count (out may be NULL with cap 0 to ask
+   for the count). A row's points are the game's total, round_points the points each round gave (calendar order; a
+   round past SWOFTY_STANDINGS_MAX_ROUNDS is in the total only). wins and podiums count main-race finishes in first and
+   in the top three with a status that scores (0 or 1); the main race is the round's last race session (a sprint
+   weekend's sprint is not). A driver row names the driver (driver stat id), the team he races for now or, off the
+   grid, the team of his last round, and his racing number (0 when it is not known); a constructors row has driver
+   SWOFTY_STANDINGS_NONE, race number 0, and the wins and podiums of the drivers it fielded in each round. The player's
+   row has SWOFTY_STANDINGS_PLAYER in flags. Before the first scored session the drivers list is empty and the
+   constructors list holds the game's season-start order on 0 points.
+   Every call reports SWOFTY_ASSET_LATE while no career is loaded (also in Grand Prix and the other modes) and before the
+   first read, and SWOFTY_ASSET_UNAVAILABLE on a build the read is not proven on. */
+#define SWOFTY_STANDINGS_VERSION 1
+#define SWOFTY_STANDINGS_MAX_ROUNDS 32
+#define SWOFTY_STANDINGS_NONE 0xffffffffu
+enum { SWOFTY_STANDINGS_PLAYER = 1 };
+enum { SWOFTY_STANDINGS_COMPLETE = 1 };
+
+typedef struct SwoftyStandingsSeason {
+    uint64_t seq;
+    uint32_t mode;
+    int32_t year;
+    int32_t season_index;
+    int32_t round;
+    int32_t rounds;
+    int32_t scored;
+    int32_t raced;
+    uint32_t flags;
+    uint32_t drivers;
+    uint32_t constructors;
+    uint32_t reserved[4];
+} SwoftyStandingsSeason;
+
+typedef struct SwoftyStandingsRow {
+    uint32_t driver;
+    uint32_t team;
+    int32_t position;
+    int32_t points;
+    int32_t wins;
+    int32_t podiums;
+    uint8_t race_number;
+    uint8_t flags;
+    uint8_t pad[2];
+    int32_t round_points[SWOFTY_STANDINGS_MAX_ROUNDS];
+    uint32_t reserved[1];
+} SwoftyStandingsRow;
+
+typedef struct SwoftyStandings {
+    uint32_t version;
+    int (*available)(void);
+    int (*season)(SwoftyStandingsSeason *out);
+    int (*drivers)(SwoftyStandingsRow *out, uint32_t cap, uint32_t *count);
+    int (*constructors)(SwoftyStandingsRow *out, uint32_t cap, uint32_t *count);
+} SwoftyStandings;
+
 /* Session operations (standard library 1.6), from the core export SwoftyCoreSessionOps; not a SwoftyApi
    field. Table version 1. Every call runs on the game's flow thread and reports SWOFTY_ASSET_UNAVAILABLE
    when a game function it needs does not resolve on the running build. control: the mode (0 human, 1 AI)
@@ -1992,6 +2056,7 @@ typedef const SwoftyHooks *(*SwoftyCoreHooksFn)(void);
 typedef const SwoftyServices *(*SwoftyCoreServicesFn)(void);
 typedef const SwoftyCareerOps *(*SwoftyCoreCareerOpsFn)(void);
 typedef const SwoftyCareerSaves *(*SwoftyCoreCareerSavesFn)(void);
+typedef const SwoftyStandings *(*SwoftyCoreStandingsFn)(void);
 typedef const SwoftySessionOps *(*SwoftyCoreSessionOpsFn)(void);
 typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
 typedef const SwoftyContentOps *(*SwoftyCoreContentOpsFn)(void);
@@ -2019,6 +2084,7 @@ SWOFTY_EXPORT const SwoftyHooks *SwoftyCoreHooks(void);
 SWOFTY_EXPORT const SwoftyServices *SwoftyCoreServices(void);
 SWOFTY_EXPORT const SwoftyCareerOps *SwoftyCoreCareerOps(void);
 SWOFTY_EXPORT const SwoftyCareerSaves *SwoftyCoreCareerSaves(void);
+SWOFTY_EXPORT const SwoftyStandings *SwoftyCoreStandings(void);
 SWOFTY_EXPORT const SwoftySessionOps *SwoftyCoreSessionOps(void);
 SWOFTY_EXPORT const SwoftyCarOps *SwoftyCoreCarOps(void);
 SWOFTY_EXPORT const SwoftyContentOps *SwoftyCoreContentOps(void);
