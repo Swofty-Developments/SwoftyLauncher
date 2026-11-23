@@ -103,20 +103,52 @@ inline std::array<bool, SETUP_SLIDER_COUNT> shown_sliders(const Layout &l)
     return shown;
 }
 
-
 // The slider index of a layout's `slider` name: the SDK's SetupSlider names, and the car_setup.sliders labels the
 // stock database uses for the same index. -1 for a name that is none of them.
 inline int slider_index(const std::string &name)
 {
-    static const char *const names[SETUP_SLIDER_COUNT] = {
-        "front_wing", "rear_wing", "diff_on_throttle", "diff_off_throttle", "diff_mid_corner", "diff_high_speed",
-        "diff_preload", "front_camber", "rear_camber", "front_toe", "rear_toe", "front_suspension", "rear_suspension",
-        "front_ride_height", "rear_ride_height", "front_anti_roll_bar", "rear_anti_roll_bar", "brake_pressure",
-        "brake_bias", "brake_migration_a", "brake_migration_b", "tyre_pressure_0", "tyre_pressure_1", "tyre_pressure_2",
-        "tyre_pressure_3", "ballast", "fuel_load", "engine_braking", "ramp_differential", "inter_wet_pressure_0",
-        "inter_wet_pressure_1", "inter_wet_pressure_2", "inter_wet_pressure_3", "inter_wet_pressure_4",
-        "inter_wet_pressure_5", "inter_wet_pressure_6", "inter_wet_pressure_7", "brake_cooling_front",
-        "brake_cooling_rear", "brake_duct_front", "brake_duct_rear", "brake_migration_c"};
+    static const char *const names[SETUP_SLIDER_COUNT] = {"front_wing",
+                                                          "rear_wing",
+                                                          "diff_on_throttle",
+                                                          "diff_off_throttle",
+                                                          "diff_mid_corner",
+                                                          "diff_high_speed",
+                                                          "diff_preload",
+                                                          "front_camber",
+                                                          "rear_camber",
+                                                          "front_toe",
+                                                          "rear_toe",
+                                                          "front_suspension",
+                                                          "rear_suspension",
+                                                          "front_ride_height",
+                                                          "rear_ride_height",
+                                                          "front_anti_roll_bar",
+                                                          "rear_anti_roll_bar",
+                                                          "brake_pressure",
+                                                          "brake_bias",
+                                                          "brake_migration_a",
+                                                          "brake_migration_b",
+                                                          "tyre_pressure_0",
+                                                          "tyre_pressure_1",
+                                                          "tyre_pressure_2",
+                                                          "tyre_pressure_3",
+                                                          "ballast",
+                                                          "fuel_load",
+                                                          "engine_braking",
+                                                          "ramp_differential",
+                                                          "inter_wet_pressure_0",
+                                                          "inter_wet_pressure_1",
+                                                          "inter_wet_pressure_2",
+                                                          "inter_wet_pressure_3",
+                                                          "inter_wet_pressure_4",
+                                                          "inter_wet_pressure_5",
+                                                          "inter_wet_pressure_6",
+                                                          "inter_wet_pressure_7",
+                                                          "brake_cooling_front",
+                                                          "brake_cooling_rear",
+                                                          "brake_duct_front",
+                                                          "brake_duct_rear",
+                                                          "brake_migration_c"};
     static const struct {
         const char *label;
         int index;
@@ -153,20 +185,48 @@ inline int slider_index(const std::string &name)
 // switch shares its body (the diff and the inter and wet rows are not keyed one to one).
 inline const char *name_key(int slider)
 {
-    static const char *const keys[SETUP_SLIDER_COUNT] = {
-        "lng_cs_frong_wing_angle", "lng_cs_rear_wing_angle", "", "", "lng_cs_diff_adj_mid_corner",
-        "lng_cs_diff_adj_high_speed", "lng_cs_diff_adj_preload", "lng_cs_front_camber", "lng_cs_rear_camber",
-        "lng_cs_front_toe", "lng_cs_rear_toe", "lng_cs_front_suspension", "lng_cs_rear_suspension",
-        "lng_cs_front_suspension_height", "lng_cs_rear_suspension_height", "lng_cs_front_anti_roll_bar",
-        "lng_cs_rear_anti_roll_bar", "lng_cs_brake_pressure", "lng_cs_brake_bias", "lng_cs_brake_bm",
-        "lng_cs_brake_bm_input_range_start", "lng_cs_front_right_tyre_pressure", "lng_cs_front_left_tyre_pressure",
-        "lng_cs_rear_right_tyre_pressure", "lng_cs_rear_left_tyre_pressure", "lng_cs_weight_balance", "lng_cs_fuel_load",
-        "lng_cs_engine_braking", "lng_cs_diff_adj_ramp_diff", "lng_cs_front_right_tyre_pressure_inter",
-        "lng_cs_front_left_tyre_pressure_inter", "lng_cs_rear_right_tyre_pressure_inter",
-        "lng_cs_rear_left_tyre_pressure_inter", "lng_cs_front_right_tyre_pressure_wet",
-        "lng_cs_front_left_tyre_pressure_wet", "lng_cs_rear_right_tyre_pressure_wet", "lng_cs_rear_left_tyre_pressure_wet",
-        "lng_cs_brake_ch_front", "lng_cs_brake_ch_rear", "lng_cs_brake_bd_factor_front", "lng_cs_brake_bd_factor_rear",
-        "lng_cs_brake_bm_input_range_end"};
+    static const char *const keys[SETUP_SLIDER_COUNT] = {"lng_cs_frong_wing_angle",
+                                                         "lng_cs_rear_wing_angle",
+                                                         "",
+                                                         "",
+                                                         "lng_cs_diff_adj_mid_corner",
+                                                         "lng_cs_diff_adj_high_speed",
+                                                         "lng_cs_diff_adj_preload",
+                                                         "lng_cs_front_camber",
+                                                         "lng_cs_rear_camber",
+                                                         "lng_cs_front_toe",
+                                                         "lng_cs_rear_toe",
+                                                         "lng_cs_front_suspension",
+                                                         "lng_cs_rear_suspension",
+                                                         "lng_cs_front_suspension_height",
+                                                         "lng_cs_rear_suspension_height",
+                                                         "lng_cs_front_anti_roll_bar",
+                                                         "lng_cs_rear_anti_roll_bar",
+                                                         "lng_cs_brake_pressure",
+                                                         "lng_cs_brake_bias",
+                                                         "lng_cs_brake_bm",
+                                                         "lng_cs_brake_bm_input_range_start",
+                                                         "lng_cs_front_right_tyre_pressure",
+                                                         "lng_cs_front_left_tyre_pressure",
+                                                         "lng_cs_rear_right_tyre_pressure",
+                                                         "lng_cs_rear_left_tyre_pressure",
+                                                         "lng_cs_weight_balance",
+                                                         "lng_cs_fuel_load",
+                                                         "lng_cs_engine_braking",
+                                                         "lng_cs_diff_adj_ramp_diff",
+                                                         "lng_cs_front_right_tyre_pressure_inter",
+                                                         "lng_cs_front_left_tyre_pressure_inter",
+                                                         "lng_cs_rear_right_tyre_pressure_inter",
+                                                         "lng_cs_rear_left_tyre_pressure_inter",
+                                                         "lng_cs_front_right_tyre_pressure_wet",
+                                                         "lng_cs_front_left_tyre_pressure_wet",
+                                                         "lng_cs_rear_right_tyre_pressure_wet",
+                                                         "lng_cs_rear_left_tyre_pressure_wet",
+                                                         "lng_cs_brake_ch_front",
+                                                         "lng_cs_brake_ch_rear",
+                                                         "lng_cs_brake_bd_factor_front",
+                                                         "lng_cs_brake_bd_factor_rear",
+                                                         "lng_cs_brake_bm_input_range_end"};
     return slider >= 0 && slider < SETUP_SLIDER_COUNT ? keys[slider] : "";
 }
 
@@ -191,8 +251,8 @@ inline const char *unit_key(int slider)
 
 // The game's own name of each tab slot (the group "name" BuildSetupGroupList sets, read from its table); a layout may
 // give `tab` as the number or as this name. -1 for a name that is none of them.
-inline constexpr const char *TAB_NAMES[LAYOUT_TABS] = {"fuel_load", "aerodynamics",         "transmission", "suspension_geometry",
-                                                       "suspension", "brakes", "tyres", "weight_distribution"};
+inline constexpr const char *TAB_NAMES[LAYOUT_TABS] = {"fuel_load",  "aerodynamics", "transmission", "suspension_geometry",
+                                                       "suspension", "brakes",       "tyres",        "weight_distribution"};
 
 inline int tab_index(const std::string &name)
 {

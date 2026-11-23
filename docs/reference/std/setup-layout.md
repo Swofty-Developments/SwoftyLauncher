@@ -1,12 +1,12 @@
 ---
 title: Setup layout
-description: Design for a per-scope layout of the car setup screen: which sliders show, in what order, under which headers, with their own labels and ranges. Not implemented in the core yet.
+description: "A per-scope layout of the car setup screen: which sliders show, in what order, under which headers, with their own labels and ranges."
 ---
 
 # Setup layout
 
-::: warning Design
-The pure part is in the core (`setup_layout.hpp`, host tested). The hooks that apply a layout to the screen are not written, and nothing here is tested in game.
+::: warning Experimental
+The `setup.layout` registry is experimental and its fields may change. The hooks that apply a layout are tested in game in Time Trial.
 :::
 
 A `setup.layout` record gives the car setup screen of one scope its own sliders, order, section headers, labels and displayed ranges. Outside the scope the screen is the game's.
@@ -69,7 +69,6 @@ The scope switch (`ScopeSwitch`) runs when the setup screen's VM initialises (`G
 
 ## Open points
 
-- The array layout `BuildSetupGroupList` takes (u32 indexes, count at +0x28 of the caller's local) and the tab's name source are read from the decompile to L1; the hook needs one more pass to be exact.
 - The value text of a row (`value_str`, and the `lng_cs_*_range` formats with `%.1f` and a unit key) is written by the game per slider; whether `unit` can be applied through `range_desc` alone, or needs the shared `lng_cs_*_range` keys set with the scope, is not read yet.
 - The stock screen's eighth tab is the fuel tab on some cars; a layout may use it.
 - A saved setup keeps all 42 steps, so a step saved in a scope returns the same row in that scope; outside it the same step is read by the stock slider of that index. Layouts should pick sliders whose stock use is inert in the scope's cars.

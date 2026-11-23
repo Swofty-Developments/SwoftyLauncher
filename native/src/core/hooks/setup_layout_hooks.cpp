@@ -54,13 +54,27 @@ namespace hooks = swofty_core::hooks;
 
 const runtime::Sig S_BUILD{"Game_CarSetupVm_BuildSetupGroupList",
                            "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 44 89 C3 48",
-                           0xc14a30, runtime::Sig::addr, 0, 0, 0};
-const runtime::Sig S_POPULATE{"Game_CarSetupVm_PopulateGarageMonitorSettings", "41 57 41 56 41 55 41 54 56 57 55 53 B8 58 77 00",
-                              0xc17b80, runtime::Sig::addr, 0, 0, 0};
-const runtime::Sig S_CELLS{"site_Game_CarSetupVm_SliderCells",
-                           "48 8D 05 ?? ?? ?? ?? 48 8B 04 F0 48 8B 00 C5 F8 57 C0 C5 F0 57 C9 48 85 C0 74 05 C5 FA 10 48 08 48 8D 05 "
-                           "?? ?? ?? ?? 48 8B 04 F0 48 8B 00 48 85 C0 74 05 C5 FA 10 40 08 48 8D 05 ?? ?? ?? ?? 48 8B 04 F0",
-                           0xc19a90, runtime::Sig::addr, 0, 0, 0};
+                           0xc14a30,
+                           runtime::Sig::addr,
+                           0,
+                           0,
+                           0};
+const runtime::Sig S_POPULATE{"Game_CarSetupVm_PopulateGarageMonitorSettings",
+                              "41 57 41 56 41 55 41 54 56 57 55 53 B8 58 77 00",
+                              0xc17b80,
+                              runtime::Sig::addr,
+                              0,
+                              0,
+                              0};
+const runtime::Sig S_CELLS{
+    "site_Game_CarSetupVm_SliderCells",
+    "48 8D 05 ?? ?? ?? ?? 48 8B 04 F0 48 8B 00 C5 F8 57 C0 C5 F0 57 C9 48 85 C0 74 05 C5 FA 10 48 08 48 8D 05 "
+    "?? ?? ?? ?? 48 8B 04 F0 48 8B 00 48 85 C0 74 05 C5 FA 10 40 08 48 8D 05 ?? ?? ?? ?? 48 8B 04 F0",
+    0xc19a90,
+    runtime::Sig::addr,
+    0,
+    0,
+    0};
 
 safetyhook::InlineHook h_build, h_populate;
 std::mutex g_lock;
@@ -216,7 +230,8 @@ void refresh_locked()
     if (g_active >= 0) {
         g_switch.leave(write_cells);
         drop_strings();
-        swofty::log("[setups] layout %s left: the setup cells and texts are the game's again", g_layouts[g_active].layout.id.c_str());
+        swofty::log("[setups] layout %s left: the setup cells and texts are the game's again",
+                    g_layouts[g_active].layout.id.c_str());
     }
     g_active = want;
     if (want < 0)
@@ -302,8 +317,10 @@ void arm()
     uintptr_t build = runtime::find(S_BUILD, "setups", "setups");
     uintptr_t populate = runtime::find(S_POPULATE, "setups", "setups");
     if (!build || !populate || !cells) {
-        swofty::log("[setups] layout: %s did not resolve on this build; the setup screen stays the game's",
-                    !build ? S_BUILD.what : !populate ? S_POPULATE.what : S_CELLS.what);
+        swofty::log("[setups] layout: %s did not resolve on this build; the setup screen stays the game's", !build ? S_BUILD.what
+                                                                                                            : !populate
+                                                                                                                ? S_POPULATE.what
+                                                                                                                : S_CELLS.what);
         return;
     }
     auto rel = [&](size_t off) {

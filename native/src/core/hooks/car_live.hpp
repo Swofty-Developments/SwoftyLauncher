@@ -1007,8 +1007,7 @@ template <class Tag> struct Ops {
         if (!bound.load() || !car || !rd(car + CAR_VEHICLE_ID, id) || id >= MAX_CARS)
             return;
         std::lock_guard<std::mutex> g(pending_lock);
-        if (pending.size() < MAX_CARS * 8)
-        {
+        if (pending.size() < MAX_CARS * 8) {
             Pending p{id, car, what, progress, part};
             if (steps) {
                 p.has_steps = true;
