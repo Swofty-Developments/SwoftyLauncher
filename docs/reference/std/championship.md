@@ -101,6 +101,7 @@ struct SwoftyStandingsRow {
 
 - **Order and totals:** the game's own tables. The drivers' totals include the [dropped scores](/std/systems/career#progressive-s-career-mode) rule; the constructors' count every result.
 - **Before the first scored session:** `drivers()` is empty and `constructors()` holds the game's season-start order, every team on 0 points.
+- **When a race counts:** the game adds a race to its tables when the session results screen opens; for a simulated race that is after the rewards screens. The next read, within a second, has it.
 - **Rounds:** `round_points` holds a round's points sessions added up, the sprint included. A round past `SWOFTY_STANDINGS_MAX_ROUNDS` (32) counts in `points` only.
 - **Wins and podiums:** finishes in the round's main race with a status that scores. The main race is the last race session of the weekend, so a sprint weekend's sprint is neither a win nor a podium.
 - **Driver rows:** `team` and `race_number` are the driver's career row while he has a seat, else the team and number of the last round he raced.
