@@ -319,3 +319,31 @@ fn a_roll_back_that_left_locked_files_never_says_the_files_are_back() {
         "rolled the profile's game files back, but not the offline play files above"
     );
 }
+
+#[test]
+fn a_session_the_ea_app_updated_under_runs_once_more_on_the_new_version() {
+    use crate::stores::ea::Updated;
+    use swofty_core::build::GVDB;
+    let root = std::env::temp_dir().join(format!("swofty-run-{}-updated-again", std::process::id()));
+    let store = Store::new(&root);
+    let updated = || anyhow::Error::new(Updated { files: vec![GVDB] });
+    let runs = std::cell::Cell::new(0);
+    let again = || {
+        runs.set(runs.get() + 1);
+        Ok(ExitCode::SUCCESS)
+    };
+    assert!(super::again_if_updated(&store, updated(), again).is_ok());
+    assert_eq!(runs.get(), 1);
+    let err = super::again_if_updated(&store, updated(), || Err(updated())).unwrap_err();
+    assert_eq!(
+        err.to_string(),
+        format!(
+            "the EA app updated F1 25 as it started it ({GVDB} replaced) again, so the modded session was not \
+             started; wait until the EA app shows F1 25 as up to date, then press Play again"
+        )
+    );
+    let other =
+        super::again_if_updated(&store, anyhow::anyhow!("refused"), || panic!("ran again")).unwrap_err();
+    assert_eq!(other.to_string(), "refused");
+    std::fs::remove_dir_all(&root).ok();
+}

@@ -100,6 +100,7 @@ pub(crate) fn play(
         )?),
         false => None,
     };
+    let updated = ea.as_ref().and_then(|s| s.close_if_updated(installed.is_some()));
     if ea.is_some() {
         watch.restart();
     }
@@ -117,16 +118,35 @@ pub(crate) fn play(
         }
     };
     watch.ended();
-    wait_relaunched(
-        game,
-        dir,
-        &copies_before,
-        code,
-        launched.elapsed().unwrap_or_default(),
-    );
+    if updated.is_none() {
+        wait_relaunched(
+            game,
+            dir,
+            &copies_before,
+            code,
+            launched.elapsed().unwrap_or_default(),
+        );
+    }
     crate::commands::laps::end(laps, game);
     keep_game_logs(&store.root, game, dir, session.before.as_ref(), launched);
-    end_session(store, game, dir, Played { code, unread, via_ea }, launched, usage)
+    let closed = updated.as_ref().map(|_| crate::stores::ea::CLOSED);
+    let code = end_session(
+        store,
+        game,
+        dir,
+        Played {
+            code,
+            unread,
+            via_ea,
+            closed,
+        },
+        launched,
+        usage,
+    )?;
+    match updated {
+        Some(u) => Err(u.into()),
+        None => Ok(code),
+    }
 }
 
 /// A session's folder under the sessions folder, with the loader log's mark

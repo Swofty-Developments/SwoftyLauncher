@@ -87,9 +87,43 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         .game
         .clone()
         .or_else(|| wrapped.then(|| std::env::current_dir().ok()).flatten());
-    let g = crate::commands::build::game(store, explicit)?;
+    let g = crate::commands::build::game(store, explicit.clone())?;
     if wrapped {
-        return wrapper::run(store, profile, &args, &g).inspect_err(|e| failure::note_blocked(store, e));
+        return wrapper::run(store, profile, &args, &g)
+            .or_else(|e| {
+                again_if_updated(store, e, || {
+                    let g = crate::commands::build::game(store, explicit.clone())?;
+                    wrapper::run(store, profile, &args, &g)
+                })
+            })
+            .inspect_err(|e| failure::note_blocked(store, e));
     }
     launch::run(store, profile, &args, &g)
+}
+
+/// A session the EA app updated the game under ends rolled back; it runs once
+/// more on the game as the update left it, which builds the profile for the
+/// new version. An update again on that start ends the session.
+fn again_if_updated(
+    store: &Store,
+    e: anyhow::Error,
+    run: impl FnOnce() -> Result<ExitCode>,
+) -> Result<ExitCode> {
+    let Some(updated) = e.downcast_ref::<crate::stores::ea::Updated>() else {
+        return Err(e);
+    };
+    crate::console::output::say(
+        "info",
+        &format!("{updated}: building the profile for the new version and starting F1 25 again"),
+    );
+    let stage =
+        crate::stores::steam::StageFile(store.root.join(swofty_core::platform::steam::client::STAGE_FILE));
+    stage.set("The EA app updated F1 25: building the profile for the new version…");
+    run().map_err(|e| match e.downcast_ref::<crate::stores::ea::Updated>() {
+        Some(again) => anyhow::anyhow!(
+            "{again} again, so the modded session was not started; wait until the EA app shows F1 25 as up to \
+             date, then press Play again"
+        ),
+        None => e,
+    })
 }

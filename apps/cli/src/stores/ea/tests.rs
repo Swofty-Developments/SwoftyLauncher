@@ -3,6 +3,8 @@ use std::path::PathBuf;
 #[cfg(unix)]
 use std::time::SystemTime;
 
+#[cfg(unix)]
+use swofty_core::GAME_EXE;
 use swofty_core::diagnostics::launch;
 use swofty_core::platform::ea_app::Handoff;
 use swofty_core::platform::run_as_admin as compat;
@@ -314,4 +316,60 @@ fn a_hand_off_whose_program_is_not_found_names_the_setting_and_the_quotes() {
     assert!(handoff_hint(Some(126)).contains("could not run"));
     assert_eq!(handoff_hint(Some(1)), "");
     assert_eq!(handoff_hint(None), "");
+}
+
+#[cfg(unix)]
+#[test]
+fn sees_an_update_that_replaced_the_installed_exe_or_database() {
+    use swofty_core::build::GVDB;
+    let (root, game, _, _) = ea_copy("updated-files");
+    let db = game.join(GVDB);
+    std::fs::create_dir_all(db.parent().unwrap()).unwrap();
+    std::fs::write(game.join(GAME_EXE), "exe 1.0.141").unwrap();
+    std::fs::write(&db, "database built for 1.0.141").unwrap();
+    let installed = update::Installed::read(&game);
+    assert!(installed.replaced(&game).is_empty());
+    std::fs::remove_file(&db).unwrap();
+    std::fs::write(&db, "stock 1.0.145").unwrap();
+    assert_eq!(installed.replaced(&game), [GVDB]);
+    std::fs::write(game.join(GAME_EXE), "exe 1.0.145").unwrap();
+    assert_eq!(installed.replaced(&game), [GAME_EXE, GVDB]);
+    let same_size = update::Installed::read(&game);
+    std::fs::File::options()
+        .write(true)
+        .open(&db)
+        .unwrap()
+        .set_modified(SystemTime::now() - Duration::from_secs(3600))
+        .unwrap();
+    assert_eq!(same_size.replaced(&game), [GVDB]);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[cfg(unix)]
+#[test]
+fn closes_a_game_started_on_an_update_only_over_an_installed_profile() {
+    use swofty_core::build::GVDB;
+    let mut game = std::process::Command::new("sleep").arg("30").spawn().unwrap();
+    let pid = game.id();
+    assert_eq!(update::close_if_updated(pid, &[], true), None);
+    assert_eq!(update::close_if_updated(pid, &[GVDB], false), None);
+    assert_eq!(
+        game.try_wait().unwrap(),
+        None,
+        "a game with nothing to fear was closed"
+    );
+    let since = Instant::now();
+    assert_eq!(
+        update::close_if_updated(pid, &[GAME_EXE, GVDB], true),
+        Some(update::Updated {
+            files: vec![GAME_EXE, GVDB]
+        })
+    );
+    let status = game.wait().unwrap();
+    assert_eq!(std::os::unix::process::ExitStatusExt::signal(&status), Some(9));
+    assert!(since.elapsed() < Duration::from_secs(5), "{:?}", since.elapsed());
+    assert_eq!(
+        update::Updated { files: vec![GVDB] }.to_string(),
+        format!("the EA app updated F1 25 as it started it ({GVDB} replaced)")
+    );
 }

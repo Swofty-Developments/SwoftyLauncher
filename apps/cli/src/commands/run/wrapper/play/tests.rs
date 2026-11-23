@@ -142,3 +142,44 @@ fn the_ea_session_env_file_carries_the_launcher_saves_switch() {
     }
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn a_game_the_session_closed_for_an_ea_update_ends_stopped_and_is_no_failed_launch() {
+    use swofty_core::diagnostics::launch;
+    use swofty_core::session::{Ending, SessionRecord};
+    let root = session_dir("ea-updated-end");
+    let game = root.join("game");
+    let store = Store::new(root.join("data"));
+    let dir = root.join("session");
+    std::fs::create_dir_all(&dir).unwrap();
+    let played = Played {
+        code: Some(0),
+        unread: String::new(),
+        via_ea: true,
+        closed: Some(crate::stores::ea::CLOSED),
+    };
+    assert_eq!(
+        end_session(&store, &game, &dir, played, SystemTime::now(), None).unwrap(),
+        0
+    );
+    let end = SessionRecord::read(&dir).end.unwrap();
+    assert_eq!(end.end, Ending::Stopped);
+    assert!(
+        end.reason.starts_with(crate::stores::ea::CLOSED),
+        "{}",
+        end.reason
+    );
+    assert_eq!(launch::Failure::read(&store.root), None);
+    let quit = Played {
+        code: Some(0),
+        unread: String::new(),
+        via_ea: true,
+        closed: None,
+    };
+    end_session(&store, &game, &dir, quit, SystemTime::now(), None).unwrap();
+    assert!(
+        launch::Failure::read(&store.root).is_some(),
+        "an early clean exit is a failed launch"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}

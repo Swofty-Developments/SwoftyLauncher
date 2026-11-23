@@ -18,6 +18,8 @@ pub(super) struct Played {
     pub(super) code: Option<i32>,
     pub(super) unread: String,
     pub(super) via_ea: bool,
+    /// Why the session closed the game itself, before the player saw it.
+    pub(super) closed: Option<&'static str>,
 }
 
 /// Settle how the session ended, record it in the session folder, and stop
@@ -33,7 +35,9 @@ pub(super) fn end_session(
     let loader = std::fs::read(dir.join("loader.log"))
         .ok()
         .map(|b| launch::LoaderSeen::scan(&String::from_utf8_lossy(&b)));
-    let stopped = if dir.join(STOP_FILE).exists() {
+    let stopped = if let Some(why) = played.closed {
+        Some(why)
+    } else if dir.join(STOP_FILE).exists() {
         Some("Stop in the launcher closed F1 25")
     } else if ending() {
         Some("the wrapper was asked to stop and closed F1 25")
@@ -60,9 +64,10 @@ pub(super) fn end_session(
         stop_process(g.pid).ok();
     }
     let blocked = played.via_ea
+        && played.closed.is_none()
         && end.end != swofty_core::session::Ending::Quit
         && crate::stores::ea::note_stub_blocked(store, game);
-    if !blocked {
+    if !blocked && played.closed.is_none() {
         note_failed_launch(store, loader, code, launched.elapsed().unwrap_or_default());
     }
     Ok(code)

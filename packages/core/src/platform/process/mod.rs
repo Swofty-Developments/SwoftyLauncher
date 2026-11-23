@@ -171,6 +171,18 @@ pub fn stop_process(pid: u32) -> std::io::Result<()> {
     Ok(())
 }
 
+/// End `pid` at once, without asking it to close first: a game that has no
+/// window yet ignores a polite close.
+pub fn kill_process(pid: u32) -> std::io::Result<()> {
+    let pid = pid.to_string();
+    if cfg!(windows) {
+        Command::new("taskkill").args(["/F", "/PID", &pid]).status()?;
+    } else {
+        Command::new("kill").args(["-KILL", &pid]).status()?;
+    }
+    Ok(())
+}
+
 /// Ask the running games of the copy in `dir` to close, and return their
 /// pids. A game that cannot be told to be that copy's is left running.
 pub fn stop_game_in(dir: &Path) -> std::io::Result<Vec<u32>> {

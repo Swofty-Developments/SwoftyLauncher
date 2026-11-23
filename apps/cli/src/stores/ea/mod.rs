@@ -1,6 +1,7 @@
 pub mod session_env;
 mod setup;
 mod stub;
+mod update;
 
 use std::path::Path;
 use std::process::{Child, Stdio};
@@ -28,6 +29,7 @@ pub use setup::{
     StoreStart, check_elevation, check_recorded, dll_setting, refused_program, stages_offline, store_start,
 };
 pub use stub::note_stub_blocked;
+pub(crate) use update::{CLOSED, Updated};
 
 // The EA app syncs cloud saves before it starts the game, which took about
 // 170 s on a test copy, so the wait for the link outlasts that sync.
@@ -156,6 +158,7 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
         removed()?;
         elevation()
     };
+    let installed = update::Installed::read(game);
     let mut handoff = match c.spawn() {
         Ok(child) => Some(child),
         Err(e) => {
@@ -209,13 +212,19 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
             })?
         }
     };
+    let replaced = installed.replaced(game);
     say("ea app", &format!("F1 25 started (pid {pid})"));
     let (exit, unopened) = ea_diag::GameExit::open(pid);
     if let Some(line) = unopened {
         say("ea app", &line);
     }
     restage(store, game);
-    Ok(Started { handoff, exit })
+    Ok(Started {
+        handoff,
+        exit,
+        pid,
+        replaced,
+    })
 }
 
 /// An EA app copy started by the EA app as it is installed, with nothing
@@ -299,6 +308,16 @@ fn command_line(_: u32) -> Option<String> {
 pub struct Started {
     handoff: Option<Child>,
     exit: ea_diag::GameExit,
+    pid: u32,
+    replaced: Vec<&'static str>,
+}
+
+impl Started {
+    /// Close the game when the EA app updated it over the profile the session
+    /// installed (`applied`) as it started it.
+    pub(crate) fn close_if_updated(&self, applied: bool) -> Option<Updated> {
+        update::close_if_updated(self.pid, &self.replaced, applied)
+    }
 }
 
 /// Until every game of this copy started since the launch has closed. Only
@@ -313,7 +332,9 @@ pub fn wait(
     started: Started,
     mut tick: impl FnMut(),
 ) -> Option<u32> {
-    let Started { handoff, mut exit } = started;
+    let Started {
+        handoff, mut exit, ..
+    } = started;
     let mut asked = false;
     loop {
         let all = game_processes();
