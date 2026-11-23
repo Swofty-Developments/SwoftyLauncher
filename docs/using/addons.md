@@ -16,7 +16,7 @@ The two cards at the top of the **Addons** page are the ways in:
 
 A file that isn't an addon, and that no addon such as the Simplified Importer imports, opens a dialog that names it. The dialog lists up to five files. **Go to Simplified Importer** opens the [Simplified Importer](/using/mods), and **Read the addon docs** opens the [addon reference](/reference/addons/) in your browser.
 
-The launcher copies the addon to `$DATA/addons/<id>/`, opens **Addons** and highlights it. Installing an addon with an id that's already installed replaces it. A new addon joins only the active profile, turned off, at the end of the list. Installed from `vanilla`, it joins no profile.
+The launcher copies the addon to `$DATA/addons/<id>/`, opens **Addons** and highlights it. Installing an addon with an id that's already installed replaces it. A new addon joins every modded profile, turned off, at the end of the list, also when you install it from `vanilla`. **Turn on** on the message that names it turns it on in the active profile.
 
 ## Find an addon
 
@@ -54,11 +54,11 @@ Drag a ticked row to move every ticked addon with it, also those a search, a fil
 
 The list keeps its scroll position after an uninstall. Ticks are not available in the `vanilla` profile.
 
-## Add an addon to a profile
+## Addons in every profile {#add-an-addon-to-a-profile}
 
-Each modded profile lists only its own addons and the built-in ones. To use an addon you installed from another profile, select **Add addons** above the list, tick the ones you want and confirm, or select **Add to** with the profile's name on its card in the Addon Browser. It joins the profile turned off, at the end of the list.
+Every modded profile lists every installed addon. An addon is on only in the profiles where you turn it on, and stays in the list, turned off, in the others. To leave an addon out of a profile, turn it off there. Its settings and its place in that profile's order stay. [Uninstall](#remove-an-addon) is the only way to take an addon off the list, and it takes it out of every profile.
 
-**Remove from** with the profile's name, in the addon's panel, takes it out of this profile only. It stays installed for your other profiles, and its settings come back if you add it again.
+1.7.20 to 1.8.x listed only a profile's own addons, with **Add addons** above the list, **Add to** in the Addon Browser and **Remove from** in the addon's panel. 1.9.0 removed those buttons.
 
 ## Folders
 

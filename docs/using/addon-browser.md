@@ -53,7 +53,7 @@ The download card sits at the bottom right of every page while a job is queued o
 
 The launcher remembers the concurrency limit, but clears the queue and history when it closes. If you close it while jobs are pending, it warns that active work will be interrupted and queued jobs lost. An interrupted install or update leaves the addon at the version it had, and the next start deletes the unfinished copy and writes the job's result to `state/registry.log`; **Play** stops with a **Reinstall** button when a file the build or the game loads from an addon that is on is missing, empty, all zeros, or no longer what its install wrote. Launcher updates and other downloads do not appear on this page.
 
-A job keeps the profile it was requested from, even if you switch profiles while it waits. If that profile is deleted, the launcher leaves the installed addon out of other profiles and notes this in the result.
+An installed addon joins every modded profile, turned off, whichever profile was active when you queued it.
 
 ### Requirements {#requirements}
 
