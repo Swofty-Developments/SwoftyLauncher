@@ -58,10 +58,15 @@ template <class Fire> bool upgrades_replayed(Fire &&fire, const swofty::cars::li
     return fire(e);
 }
 
-template <class Fire> bool setup_applied(Fire &&fire, const swofty::cars::live::Car &car)
+template <class Fire> bool setup_applied(Fire &&fire, const swofty::cars::live::Car &car, const int32_t *steps)
 {
     swofty::cars::events::SetupApplied e{};
     e.car = car;
+    if (steps) {
+        e.steps_valid = 1;
+        for (uint32_t i = 0; i < swofty::cars::events::setup_slider_count; i++)
+            e.steps[i] = steps[i];
+    }
     return fire(e);
 }
 

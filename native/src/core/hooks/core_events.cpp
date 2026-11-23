@@ -135,7 +135,10 @@ bool car_upgrades_replayed(const swofty::cars::live::Car &car, float progress)
 {
     return payloads::upgrades_replayed(fire_core, car, progress);
 }
-bool car_setup_applied(const swofty::cars::live::Car &car) { return payloads::setup_applied(fire_core, car); }
+bool car_setup_applied(const swofty::cars::live::Car &car, const int32_t *steps)
+{
+    return payloads::setup_applied(fire_core, car, steps);
+}
 
 bool car_parts_register(int32_t car, const char *vehicle, void *front_wing, const payloads::PartSink &add)
 {

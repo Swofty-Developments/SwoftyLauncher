@@ -79,7 +79,7 @@ bool car_vtf_read(const swofty::cars::live::Car &car, const char *section, const
 bool car_built(const swofty::cars::live::Car &car);
 bool car_reset(const swofty::cars::live::Car &car, bool upgrade);
 bool car_upgrades_replayed(const swofty::cars::live::Car &car, float progress);
-bool car_setup_applied(const swofty::cars::live::Car &car);
+bool car_setup_applied(const swofty::cars::live::Car &car, const int32_t *steps);
 bool car_parts_register(int32_t car, const char *vehicle, void *front_wing,
                         const std::function<int32_t(const char *node, float detach_at, bool debris)> &add);
 bool audio_bundle_resolve(int32_t car, const char *vehicle, const char *switch_name, std::string &engine_sound);

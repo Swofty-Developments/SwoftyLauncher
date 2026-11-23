@@ -165,6 +165,7 @@ core/hooks/car_live.cpp: g_reset = std::make_unique<GamePoint>("car.reset", "Car
 core/hooks/car_live.cpp: g_replay = std::make_unique<GamePoint>("car.upgrades.replayed", "Car_Upgrades_ApplyToVehicle", => inline binding Car_Upgrades_ApplyToVehicle
 core/hooks/car_live.cpp: g_wing = std::make_unique<GamePoint>("car.parts.register", "Car_FrontWing_Init", reinterpret_cast<void *>(&d_wing_init), => inline binding Car_FrontWing_Init
 core/hooks/car_live.cpp: std::make_unique<GamePoint>("car.damage", "Car_FrontWing_OnCollision", reinterpret_cast<void *>(&d_wing_hit), game_ops()); => inline binding Car_FrontWing_OnCollision
+core/hooks/car_live.cpp: g_apply = std::make_unique<GamePoint>("car.setup.apply_entry", "Car_Setup_ApplyTuning", => inline binding Car_Setup_ApplyTuning
 core/hooks/car_live.cpp: g_pit = std::make_unique<GamePoint>("session.pit", "Game_Pitlane_SetVehicleStatus", reinterpret_cast<void *>(&d_pit_status), => inline binding Game_Pitlane_SetVehicleStatus
 core/hooks/car_live.cpp: g_pit_tyres = std::make_unique<GamePoint>("session.pit_stop.tyres", "Game_PitLane_ApplyPitstopTyres", => inline binding Game_PitLane_ApplyPitstopTyres
 core/hooks/car_live.cpp: std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup, game_ops()); => mid binding site_Car_SetupTuningApplied

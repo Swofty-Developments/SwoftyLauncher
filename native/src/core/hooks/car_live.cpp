@@ -16,6 +16,7 @@
 #include "core/apply/content/appliers.hpp"
 #include "core/apply/content/race_fuel.hpp"
 #include "core/apply/content/setup_locks.hpp"
+#include "core/apply/content/setup_steps.hpp"
 #include "core/career/ops/tables.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
@@ -59,7 +60,7 @@ bool on_flow_thread()
 }
 
 std::unique_ptr<session_points::MidPoint> g_built, g_setup;
-std::unique_ptr<GamePoint> g_reset, g_replay, g_wing, g_hit, g_pit, g_pit_tyres;
+std::unique_ptr<GamePoint> g_reset, g_replay, g_wing, g_hit, g_pit, g_pit_tyres, g_apply;
 
 // Set to 0 by the pit stop tyres detour around the game's change; race_tyres_keep sets it to 1 when it keeps the set.
 thread_local int t_tyres_kept = -1;
@@ -201,10 +202,30 @@ void lock_setup_entry(uintptr_t entry)
                     static_cast<unsigned long long>(added), static_cast<unsigned long long>(*mask));
 }
 
+// Car_Setup_ApplyTuning's third argument is the block of steps it applies; the end site (m_setup) runs inside the call,
+// so the entry hook keeps the block for it (setup_steps.hpp).
+thread_local uintptr_t t_apply_block = 0;
+
+void d_apply_tuning(void *entry, void *mask, void *block)
+{
+    uintptr_t before = t_apply_block;
+    t_apply_block = reinterpret_cast<uintptr_t>(block);
+    g_apply->original<void>(entry, mask, block);
+    t_apply_block = before;
+}
+
 void m_setup(safetyhook::Context &ctx)
 {
     lock_setup_entry(ctx.rsi);
-    Ops::setup_applied(ctx.rdi);
+    apply::content::SetupSteps steps{};
+    auto read = [](uintptr_t a, void *out, size_t n) {
+        if (!mem::readable(a, n))
+            return false;
+        std::memcpy(out, reinterpret_cast<const void *>(a), n);
+        return true;
+    };
+    bool got = t_apply_block && apply::content::read_setup_steps(t_apply_block, read, steps);
+    Ops::setup_applied(ctx.rdi, got ? steps.data() : nullptr);
 }
 
 void d_reset(void *loader, uint32_t arg)
@@ -768,7 +789,7 @@ void frame(double, void *)
             events::car_upgrades_replayed(car, p.progress);
             break;
         case Ops::What::setup:
-            events::car_setup_applied(car);
+            events::car_setup_applied(car, p.has_steps ? p.steps : nullptr);
             break;
         case Ops::What::damage:
             events::car_damage(car, p.part, p.progress);
@@ -939,6 +960,8 @@ void declare_car_points(Table &t)
                                               reinterpret_cast<void *>(&d_pit_tyres), game_ops());
     t.declare_game("session.pit_stop.tyres", SWOFTY_POINT_NOTIFY, swofty::sessions::events::PitStopTyres::version,
                    g_pit_tyres.get());
+    g_apply = std::make_unique<GamePoint>("car.setup.apply_entry", "Car_Setup_ApplyTuning",
+                                          reinterpret_cast<void *>(&d_apply_tuning), game_ops());
     g_setup =
         std::make_unique<session_points::MidPoint>("car.setup.applied", "site_Car_SetupTuningApplied", &m_setup, game_ops());
     t.declare_game("car.setup.applied", SWOFTY_POINT_NOTIFY, swofty::cars::events::SetupApplied::version, g_setup.get());
@@ -963,6 +986,10 @@ void arm_car_points()
     if (row_ready("Game_PitLane_ApplyPitstopTyres") && runtime::holds(PIT_TYRES_POINT)) {
         g_pit_tyres->keep(true);
         g_pit_tyres->install(false, "the core");
+    }
+    if (row_ready("Car_Setup_ApplyTuning")) {
+        g_apply->keep(true);
+        g_apply->install(false, "the core");
     }
     if (row_ready("site_Car_SetupTuningApplied")) {
         g_setup->keep(true);

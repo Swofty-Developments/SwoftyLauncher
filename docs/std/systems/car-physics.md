@@ -462,7 +462,7 @@ events::on<sessions::events::PitStopTyres>().after([](const sessions::events::Pi
 - `car.built` fires once for every car the game builds: at session load and when a restart builds the cars again.
 - `car.reset` fires when the game re-reads a car's parts without building it again: during loading (twice for every car) and when it hands a car to the AI or back (T120).
 - `car.upgrades.replayed` fires after the game replays an R&D upgrade block onto a car. The replay resets `aero.lift_scale`, `aero.drag_scale` and the fuel mode.
-- `car.setup.applied` fires after a setup is written to the car: the differential, suspension, brakes and centre of mass.
+- `car.setup.applied` fires after a setup is written to the car: the differential, suspension, brakes and centre of mass. From payload version 2 it carries the 42 slider steps of the setup the game applied (see [Setup steps](#setup-steps)).
 - `car.parts.register` fires after the game has registered the front wing's own 11 pieces, once per car (not on a reset or an upgrade replay). `add` registers one more piece on that wing: `node` is the model node, `detach_at` the multiplier `k` the piece comes off at (it comes off when `k` times the wing's full detach scale is at most the left and right damage together), and a node the car's model doesn't have adds nothing. `debris` is stored, not applied.
 - `car.damage` fires after the front wing takes a hit that adds damage: `part` is `front_wing_left` or `front_wing_right` and `amount` the damage the hit added to that side. It fires on the next frame, like the events above.
 - `session.pit` fires when a car's pit status changes, with the status it had and the one the game stored. `session.pit_stop` fires on the change where the game adds one to the car's stop count. `session.pit_stop.tyres` fires when the crew has fitted the car's tyres (`Game_PitLane_ApplyPitstopTyres`, after the game's change), on the KB build, Steam 1.0.145 and EA 1.0.145; `kept` is 1 when the box rule `race_tyre_change` false kept the fitted set. A stop's stationary time is off: it needs a row for the PitStopInstance's car.
@@ -538,6 +538,21 @@ cars::handling.layer(f1, [](cars::Handling &h) {
     h.tuning.brake_bias_max = 0.7f;
 });
 ```
+
+### Setup steps
+
+`car.setup.applied` carries the steps of the setup the game just applied, one int per slider in the order of the game's `car_setup.sliders` table (`cars::events::SetupSlider`). A step is the number the setup screen stores for the slider, 0 up to the slider's step count; the screen shows `min + (max - min) * step / steps` from the same table. The steps are the block `Car_Setup_ApplyTuning` applies (the parc ferme copy when the game selects it), so an AI car carries its preset's steps and the player's car the player's.
+
+```cpp
+using namespace swofty;
+
+events::on<cars::events::SetupApplied>().after([](const cars::events::SetupApplied &e, const events::Context &) {
+    if (auto step = e.step(cars::events::SetupSlider::brake_cooling_front))
+        log("car %u front brake cooling step %d", e.car.index(), *step);
+});
+```
+
+`step()` answers `std::nullopt` on a handler built against payload version 1 headers, and when `steps_valid` is 0: the core could not read the block (the `Car_Setup_ApplyTuning` entry hook is not installed on this build). Mapped from the game's code; not tested in game yet.
 
 ### Locked sliders per box
 

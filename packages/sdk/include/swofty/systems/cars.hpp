@@ -885,11 +885,35 @@ struct UpgradesReplayed {
     float progress;
 };
 
+// The index of a setup slider: the order of the game's car_setup.sliders table.
+enum class SetupSlider : uint32_t {
+    front_wing = 0, rear_wing, diff_on_throttle, diff_off_throttle, diff_mid_corner, diff_high_speed, diff_preload,
+    front_camber, rear_camber, front_toe, rear_toe, front_suspension, rear_suspension, front_ride_height,
+    rear_ride_height, front_anti_roll_bar, rear_anti_roll_bar, brake_pressure, brake_bias, brake_migration_a,
+    brake_migration_b, tyre_pressure_0, tyre_pressure_1, tyre_pressure_2, tyre_pressure_3, ballast, fuel_load,
+    engine_braking, ramp_differential, inter_wet_pressure_0, inter_wet_pressure_1, inter_wet_pressure_2,
+    inter_wet_pressure_3, inter_wet_pressure_4, inter_wet_pressure_5, inter_wet_pressure_6, inter_wet_pressure_7,
+    brake_cooling_front, brake_cooling_rear, brake_duct_front, brake_duct_rear, brake_migration_c
+};
+inline constexpr uint32_t setup_slider_count = 42;
+
+// Version 2 adds the steps of the setup the game applied: one int per slider (the setup screen's own stored step,
+// 0 .. the slider's step count in car_setup.sliders). steps_valid is 0 when the core could not read the block (a core
+// build without the Car_Setup_ApplyTuning entry hook), and steps is then all zero. Version 1 handlers see only car.
 struct SetupApplied {
     static constexpr const char *point = "car.setup.applied";
-    static constexpr uint32_t version = 1;
+    static constexpr uint32_t version = 2;
     uint32_t size, payload_version;
     live::Car car;
+    uint32_t steps_valid;
+    int32_t steps[setup_slider_count];
+
+    std::optional<int32_t> step(SetupSlider s) const
+    {
+        if (size < sizeof(SetupApplied) || !steps_valid || uint32_t(s) >= setup_slider_count)
+            return std::nullopt;
+        return steps[uint32_t(s)];
+    }
 };
 
 struct Damage {

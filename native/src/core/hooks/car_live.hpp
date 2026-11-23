@@ -995,18 +995,28 @@ template <class Tag> struct Ops {
         What what;
         float progress;
         uint32_t part;
+        bool has_steps = false;
+        int32_t steps[42] = {};
     };
     static inline std::mutex pending_lock;
     static inline std::vector<Pending> pending;
 
-    static void queue(uintptr_t car, What what, float progress = 0, uint32_t part = 0)
+    static void queue(uintptr_t car, What what, float progress = 0, uint32_t part = 0, const int32_t *steps = nullptr)
     {
         uint8_t id = 0;
         if (!bound.load() || !car || !rd(car + CAR_VEHICLE_ID, id) || id >= MAX_CARS)
             return;
         std::lock_guard<std::mutex> g(pending_lock);
         if (pending.size() < MAX_CARS * 8)
-            pending.push_back({id, car, what, progress, part});
+        {
+            Pending p{id, car, what, progress, part};
+            if (steps) {
+                p.has_steps = true;
+                for (int i = 0; i < 42; i++)
+                    p.steps[i] = steps[i];
+            }
+            pending.push_back(p);
+        }
     }
 
     static void built(uintptr_t car) { queue(car, What::built); }
@@ -1021,11 +1031,11 @@ template <class Tag> struct Ops {
         if (amount > 0 && rd(wing + SYSTEM_CAR, car))
             queue(car, What::damage, amount, part);
     }
-    static void setup_applied(uintptr_t f1_tuning)
+    static void setup_applied(uintptr_t f1_tuning, const int32_t *steps = nullptr)
     {
         uintptr_t car = 0;
         if (rd(f1_tuning + SYSTEM_CAR, car))
-            queue(car, What::setup);
+            queue(car, What::setup, 0, 0, steps);
     }
 
     static std::vector<Pending> take()
@@ -1055,6 +1065,9 @@ template <class Tag> struct Ops {
             else {
                 it->car = p.car;
                 it->progress = p.progress;
+                it->has_steps = p.has_steps;
+                for (int i = 0; i < 42; i++)
+                    it->steps[i] = p.steps[i];
             }
         }
         return out;
