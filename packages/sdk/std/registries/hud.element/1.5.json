@@ -10,11 +10,7 @@
   "properties": {
     "dial": {
       "description": "The car class dial the elements live in: f1_26 (the 2026 dial), f1_25 (the 2025 dial) or f2. The spectator HUD's dial of the same class runs the same elements.",
-      "enum": [
-        "f1_26",
-        "f1_25",
-        "f2"
-      ]
+      "enum": ["f1_26", "f1_25", "f2"]
     },
     "scene": {
       "description": "Advanced target, in place of dial: the eaid:// path of a stock scene (.idf) the elements grow. Takes text and group elements only. Needs parent_ui and no dial.",
@@ -28,25 +24,14 @@
     },
     "units": {
       "description": "The HUD unit of every at, bounds, box, pitch and cap_height in the record. hud: 1 unit = 1 px of a 640x360 frame (0.018 scene units). tower: 1 unit = 1/3 px at 1080p (0.03 scene units), Project Halo's tower unit. Absent: hud.",
-      "enum": [
-        "hud",
-        "tower"
-      ],
+      "enum": ["hud", "tower"],
       "default": "hud"
     },
     "screen": {
       "description": "A stock screen the elements live on, in place of dial or scene: standings (the track-position board), replay or spectator, or the raw form naming the template, parent_ui, host scene, instance, masks and archives.",
       "oneOf": [
-        {
-          "enum": [
-            "standings",
-            "replay",
-            "spectator"
-          ]
-        },
-        {
-          "type": "object"
-        }
+        { "enum": ["standings", "replay", "spectator"] },
+        { "type": "object" }
       ]
     },
     "show": {
@@ -59,16 +44,11 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "show": {
-            "$ref": "#/$defs/bind"
-          },
+          "show": { "$ref": "#/$defs/bind" },
           "hide": {
             "description": "Element ids hidden for good on this screen (a static visible = false inside the instance).",
             "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
+            "items": { "type": "string", "minLength": 1 }
           }
         },
         "additionalProperties": false
@@ -80,37 +60,17 @@
       "items": {
         "type": "object",
         "properties": {
-          "template": {
-            "type": "string",
-            "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"
-          },
-          "scene": {
-            "description": "The stock scene the elements belong to, when the template node itself names none.",
-            "type": "string",
-            "pattern": "^eaid://.+\\.idf$"
-          },
-          "hide": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
+          "template": { "type": "string", "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$" },
+          "scene": { "description": "The stock scene the elements belong to, when the template node itself names none.", "type": "string", "pattern": "^eaid://.+\\.idf$" },
+          "hide": { "type": "array", "items": { "type": "string", "minLength": 1 } },
           "wrap": {
             "description": "Elements a stock node already targets (a second visible on them would not hold): each gets a new null <prefix>_w_<element> around it in the scene, in its place and with its name, and the wrapper is hidden instead. Needs scene.",
             "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
+            "items": { "type": "string", "minLength": 1 }
           },
-          "while": {
-            "$ref": "#/$defs/bind"
-          }
+          "while": { "$ref": "#/$defs/bind" }
         },
-        "required": [
-          "template"
-        ],
+        "required": ["template"],
         "additionalProperties": false
       }
     },
@@ -118,13 +78,8 @@
       "description": "With a text that reads session time_remaining_str: output is the record's own leaf the cloned stock formatter writes (view_model_data.<name>), start a bool leaf whose change re-formats it (an MVCD, state 1) besides the record's own trigger.",
       "type": "object",
       "properties": {
-        "output": {
-          "type": "string",
-          "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_]+$"
-        },
-        "start": {
-          "$ref": "#/$defs/bind"
-        }
+        "output": { "type": "string", "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_]+$" },
+        "start": { "$ref": "#/$defs/bind" }
       },
       "additionalProperties": false
     },
@@ -136,67 +91,29 @@
           "items": {
             "type": "object",
             "properties": {
-              "scene": {
-                "type": "string",
-                "pattern": "^eaid://.+\\.idf$"
-              },
+              "scene": { "type": "string", "pattern": "^eaid://.+\\.idf$" },
               "fill": {
                 "type": "object",
                 "additionalProperties": {
                   "type": "object",
-                  "properties": {
-                    "sprite": {
-                      "type": "string"
-                    },
-                    "slot": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "sprite",
-                    "slot"
-                  ],
+                  "properties": { "sprite": { "type": "string" }, "slot": { "type": "string" } },
+                  "required": ["sprite", "slot"],
                   "additionalProperties": false
                 }
               },
-              "twins": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "template_parents": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "hide": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
+              "twins": { "type": "array", "items": { "type": "string" } },
+              "template_parents": { "type": "array", "items": { "type": "string" } },
+              "hide": { "type": "array", "items": { "type": "string" } },
               "scale": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "element": {
-                      "type": "string"
-                    },
-                    "by": {
-                      "type": "number",
-                      "exclusiveMinimum": 0
-                    },
-                    "pivot_y": {
-                      "type": "number"
-                    }
+                    "element": { "type": "string" },
+                    "by": { "type": "number", "exclusiveMinimum": 0 },
+                    "pivot_y": { "type": "number" }
                   },
-                  "required": [
-                    "element",
-                    "by"
-                  ],
+                  "required": ["element", "by"],
                   "additionalProperties": false
                 }
               },
@@ -205,27 +122,11 @@
                 "additionalProperties": {
                   "type": "object",
                   "properties": {
-                    "style": {
-                      "type": "string"
-                    },
-                    "box": {
-                      "type": "number",
-                      "exclusiveMinimum": 0
-                    },
-                    "at": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      },
-                      "minItems": 2,
-                      "maxItems": 2
-                    },
-                    "align": {
-                      "type": "string"
-                    },
-                    "case": {
-                      "type": "string"
-                    }
+                    "style": { "type": "string" },
+                    "box": { "type": "number", "exclusiveMinimum": 0 },
+                    "at": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+                    "align": { "type": "string" },
+                    "case": { "type": "string" }
                   },
                   "additionalProperties": false
                 }
@@ -234,49 +135,21 @@
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "properties": {
-                    "element": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {}
-                  },
-                  "required": [
-                    "element",
-                    "name",
-                    "value"
-                  ],
+                  "properties": { "element": { "type": "string" }, "name": { "type": "string" }, "value": {} },
+                  "required": ["element", "name", "value"],
                   "additionalProperties": false
                 }
               },
-              "stock_erp": {
-                "type": "string"
-              }
+              "stock_erp": { "type": "string" }
             },
-            "required": [
-              "scene"
-            ],
+            "required": ["scene"],
             "additionalProperties": false
           }
         },
         {
           "type": "object",
-          "properties": {
-            "preset": {
-              "enum": [
-                "banner"
-              ]
-            },
-            "sprite": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "preset",
-            "sprite"
-          ],
+          "properties": { "preset": { "enum": ["banner"] }, "sprite": { "type": "string" } },
+          "required": ["preset", "sprite"],
           "additionalProperties": false
         }
       ]
@@ -288,11 +161,7 @@
     },
     "stock": {
       "description": "What happens to the stock dial's parts: keep leaves them, hide has the dial template hide them, park moves them off screen. Absent: park in f1_26, hide in the other dials.",
-      "enum": [
-        "keep",
-        "hide",
-        "park"
-      ]
+      "enum": ["keep", "hide", "park"]
     },
     "switch": {
       "description": "Dial records: shows the record while the leaf is on and the dial's stock parts (with stock hide) while it is off; default is the state while the leaf is absent. A variant without a switch inherits it. Not for screen records or stock park.",
@@ -301,10 +170,7 @@
     "stock_parts": {
       "description": "The stock parts keep, hide and park act on. Absent: frame, fuel, holder_central and pit_indicator.",
       "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
+      "items": { "type": "string", "minLength": 1 }
     },
     "box": {
       "description": "The customisation footprint in HUD units, [x0, y0, x1, y1]. Absent: the bounds of the sprite named base, or of every sprite.",
@@ -322,31 +188,21 @@
     "sprites": {
       "description": "The art, by name: a PNG of the addon, or a stock texture of the game.",
       "type": "object",
-      "additionalProperties": {
-        "$ref": "#/$defs/sprite"
-      }
+      "additionalProperties": { "$ref": "#/$defs/sprite" }
     },
     "elements": {
       "type": "array",
-      "items": {
-        "$ref": "#/$defs/element"
-      }
+      "items": { "$ref": "#/$defs/element" }
     },
     "decisions": {
       "type": "array",
-      "items": {
-        "$ref": "#/$defs/decision"
-      }
+      "items": { "$ref": "#/$defs/decision" }
     },
-    "editor": {
-      "$ref": "#/$defs/editor"
-    },
+    "editor": { "$ref": "#/$defs/editor" },
     "variants": {
       "description": "Other dials the same art serves, as patches on this record, by name.",
       "type": "object",
-      "additionalProperties": {
-        "$ref": "#/$defs/variant"
-      }
+      "additionalProperties": { "$ref": "#/$defs/variant" }
     },
     "extends": {
       "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
@@ -354,9 +210,7 @@
       "x-ref": "hud.element",
       "x-missing": {
         "default": "required",
-        "allow": [
-          "required"
-        ]
+        "allow": ["required"]
       }
     },
     "yield": {
@@ -368,19 +222,7 @@
           "type": "array",
           "minItems": 1,
           "items": {
-            "enum": [
-              "f1_26",
-              "f1_25",
-              "f2",
-              "standings",
-              "replay",
-              "spectator",
-              "lap_counter",
-              "flag_box",
-              "notifications",
-              "session_timer",
-              "minimap"
-            ]
+            "enum": ["f1_26", "f1_25", "f2", "standings", "replay", "spectator", "lap_counter", "flag_box", "notifications", "session_timer", "minimap"]
           }
         },
         "while": {
@@ -388,51 +230,27 @@
           "$ref": "#/$defs/bind"
         }
       },
-      "required": [
-        "parts",
-        "while"
-      ],
+      "required": ["parts", "while"],
       "additionalProperties": false
     }
   },
   "oneOf": [
-    {
-      "required": [
-        "dial"
-      ]
-    },
-    {
-      "required": [
-        "scene",
-        "parent_ui"
-      ]
-    },
-    {
-      "required": [
-        "screen"
-      ]
-    },
-    {
-      "required": [
-        "yield"
-      ]
-    }
+    { "required": ["dial"] },
+    { "required": ["scene", "parent_ui"] },
+    { "required": ["screen"] },
+    { "required": ["yield"] }
   ],
   "additionalProperties": true,
   "$defs": {
     "point": {
       "type": "array",
-      "items": {
-        "type": "number"
-      },
+      "items": { "type": "number" },
       "minItems": 2,
       "maxItems": 2
     },
     "rect": {
       "type": "array",
-      "items": {
-        "type": "number"
-      },
+      "items": { "type": "number" },
       "minItems": 4,
       "maxItems": 4
     },
@@ -448,11 +266,7 @@
           "description": "Where the sprite sits, [x0, y0, x1, y1] in HUD units. Absent: centred on the origin at ppu pixels per unit.",
           "$ref": "#/$defs/rect"
         },
-        "ppu": {
-          "type": "number",
-          "exclusiveMinimum": 0,
-          "default": 3
-        },
+        "ppu": { "type": "number", "exclusiveMinimum": 0, "default": 3 },
         "tint": {
           "description": "A colour that multiplies the pixels (the editor preview uses it for team-coloured white art). On a texture sprite it tints through the material.",
           "type": "string",
@@ -474,32 +288,16 @@
       "description": "A value the template binds. Exactly one of view_model, path, game, session and session_car. view_model is one of the addon's leaves (view_model_data.<name>, or ui_menu_data.<name> where a record targets a scene); path is any other path of the game's view model, with ty the tag the game gives it; game is a name in the core's table of the dial's own values; session is a #session path; session_car reads a car of the session by vehicle id.",
       "type": "object",
       "properties": {
-        "view_model": {
-          "type": "string",
-          "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_{}]+$"
-        },
+        "view_model": { "type": "string", "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_{}]+$" },
         "path": {
           "description": "A dotted path of the game's own view model (#session.number_of_laps, #view_model_data.hud.content.lap_times.pill_0.active). A visible reads it as a bool, a tint as a colour, a texture as text; a text needs ty. When a stock node binds the path the tag is checked against it; a wrong tag crashes the game.",
           "type": "string",
           "pattern": "^#?[A-Za-z0-9_{}]+(\\.[A-Za-z0-9_{}]+)*$"
         },
-        "game": {
-          "type": "string",
-          "minLength": 1
-        },
-        "session": {
-          "type": "string",
-          "minLength": 1
-        },
-        "session_car": {
-          "type": "string",
-          "minLength": 1
-        },
-        "slot": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 63
-        },
+        "game": { "type": "string", "minLength": 1 },
+        "session": { "type": "string", "minLength": 1 },
+        "session_car": { "type": "string", "minLength": 1 },
+        "slot": { "type": "integer", "minimum": 0, "maximum": 63 },
         "slot_var": {
           "description": "With session_car, in place of slot: the var of an enclosing repeat whose index is the car slot.",
           "type": "string",
@@ -512,19 +310,9 @@
         },
         "ty": {
           "description": "The value's type. On a leaf: bool, text, i32 (written as a signed int, bound si32) or f32. On a path: the tag the game gives the value, si32, ui32, text or bool.",
-          "enum": [
-            "bool",
-            "text",
-            "i32",
-            "si32",
-            "ui32",
-            "f32"
-          ]
+          "enum": ["bool", "text", "i32", "si32", "ui32", "f32"]
         },
-        "not": {
-          "type": "boolean",
-          "default": false
-        },
+        "not": { "type": "boolean", "default": false },
         "default": {
           "description": "The value while the leaf is absent: a bool for visible, a #RRGGBBAA colour for tint, a string for texture."
         }
@@ -535,37 +323,19 @@
       "description": "On a group: the composer makes count copies of the group. {VV} in every string of the subtree (names, view_model, session, literal, show, slot_var) is the two-digit zero-padded index, {V} the plain index, where V is var. Copy i sits at at + pitch * (i - from). Nested repeats substitute both vars; depth at most 2 and at most 1024 copies per record.",
       "type": "object",
       "properties": {
-        "count": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 99
-        },
-        "var": {
-          "type": "string",
-          "pattern": "^[A-Z]$"
-        },
-        "pitch": {
-          "$ref": "#/$defs/point"
-        },
-        "from": {
-          "type": "integer",
-          "minimum": 0
-        }
+        "count": { "type": "integer", "minimum": 1, "maximum": 99 },
+        "var": { "type": "string", "pattern": "^[A-Z]$" },
+        "pitch": { "$ref": "#/$defs/point" },
+        "from": { "type": "integer", "minimum": 0 }
       },
-      "required": [
-        "count",
-        "var"
-      ],
+      "required": ["count", "var"],
       "additionalProperties": false
     },
     "motion": {
       "description": "On a group: a timed slide (position keys, HUD units, local space) or fade (two alpha keys) a stock curve times, started by the bool leaf play_on (event 1) and reversed when it falls (event 0); or a turn (kind turn, keys [time, degrees] counter-clockwise about the group's at) moved by the int leaf play_to, value i playing the clip to i / (steps - 1).",
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_]{0,15}$"
-        },
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,15}$" },
         "keys": {
           "type": "array",
           "minItems": 2,
@@ -573,33 +343,15 @@
             "type": "array",
             "minItems": 2,
             "maxItems": 2,
-            "items": {
-              "oneOf": [
-                {
-                  "type": "number"
-                },
-                {
-                  "$ref": "#/$defs/point"
-                }
-              ]
-            }
+            "items": { "oneOf": [ { "type": "number" }, { "$ref": "#/$defs/point" } ] }
           }
         },
-        "curve": {
-          "type": "string",
-          "minLength": 1
-        },
+        "curve": { "type": "string", "minLength": 1 },
         "kind": {
           "description": "slide, fade or turn. A slide and a fade are told by their keys; a turn is named.",
-          "enum": [
-            "slide",
-            "fade",
-            "turn"
-          ]
+          "enum": ["slide", "fade", "turn"]
         },
-        "play_on": {
-          "$ref": "#/$defs/bind"
-        },
+        "play_on": { "$ref": "#/$defs/bind" },
         "play_to": {
           "description": "A turn's view_model int leaf (ty i32 or left out), without not or default.",
           "$ref": "#/$defs/bind"
@@ -611,54 +363,20 @@
           "maximum": 64
         }
       },
-      "required": [
-        "id",
-        "keys",
-        "curve"
-      ],
+      "required": ["id", "keys", "curve"],
       "additionalProperties": false
     },
     "element": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_]{0,23}$"
-        },
-        "kind": {
-          "enum": [
-            "sprite",
-            "text",
-            "group",
-            "levels",
-            "slats",
-            "gauge",
-            "sweep",
-            "stack",
-            "centre",
-            "unit"
-          ]
-        },
-        "sprite": {
-          "type": "string"
-        },
-        "layer": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 255
-        },
-        "at": {
-          "$ref": "#/$defs/point"
-        },
-        "rot": {
-          "type": "number"
-        },
-        "visible": {
-          "$ref": "#/$defs/bind"
-        },
-        "tint": {
-          "$ref": "#/$defs/bind"
-        },
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,23}$" },
+        "kind": { "enum": ["sprite", "text", "group", "levels", "slats", "gauge", "sweep", "stack", "centre", "unit"] },
+        "sprite": { "type": "string" },
+        "layer": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "at": { "$ref": "#/$defs/point" },
+        "rot": { "type": "number" },
+        "visible": { "$ref": "#/$defs/bind" },
+        "tint": { "$ref": "#/$defs/bind" },
         "hidden": {
           "description": "Never shown: isHidden in the scene and a static visible = false template node (isHidden alone does not hide in game).",
           "type": "boolean"
@@ -668,68 +386,25 @@
           "type": "string",
           "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"
         },
-        "style": {
-          "type": "string"
-        },
-        "align": {
-          "enum": [
-            "left",
-            "centre",
-            "right"
-          ]
-        },
-        "box": {
-          "type": "number",
-          "exclusiveMinimum": 0
-        },
-        "case": {
-          "enum": [
-            "upper",
-            "none",
-            "mixed"
-          ]
-        },
-        "wrap": {
-          "enum": [
-            "none",
-            "clampwidth"
-          ]
-        },
-        "cap_height": {
-          "type": "number",
-          "exclusiveMinimum": 0
-        },
-        "value": {
-          "$ref": "#/$defs/bind"
-        },
-        "literal": {
-          "type": "string"
-        },
+        "style": { "type": "string" },
+        "align": { "enum": ["left", "centre", "right"] },
+        "box": { "type": "number", "exclusiveMinimum": 0 },
+        "case": { "enum": ["upper", "none", "mixed"] },
+        "wrap": { "enum": ["none", "clampwidth"] },
+        "cap_height": { "type": "number", "exclusiveMinimum": 0 },
+        "value": { "$ref": "#/$defs/bind" },
+        "literal": { "type": "string" },
         "literal_id": {
           "description": "A text whose value is a game string id (lng_lap, lng_sector): the node writes localise true and the id as the text.",
           "type": "string",
           "minLength": 1
         },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/element"
-          }
-        },
-        "motion": {
-          "$ref": "#/$defs/motion"
-        },
-        "repeat": {
-          "$ref": "#/$defs/repeat"
-        },
+        "children": { "type": "array", "items": { "$ref": "#/$defs/element" } },
+        "motion": { "$ref": "#/$defs/motion" },
+        "repeat": { "$ref": "#/$defs/repeat" },
         "dir": {
           "description": "On a stack: the way its children are laid out, from the first child. Absent: down.",
-          "enum": [
-            "down",
-            "up",
-            "right",
-            "left"
-          ]
+          "enum": ["down", "up", "right", "left"]
         },
         "gap": {
           "description": "On a stack: the space between children, in HUD units. Absent: 0.",
@@ -750,62 +425,19 @@
           "description": "On a unit: the binding of its quad's texture (a textureOverride node with the stock tag).",
           "$ref": "#/$defs/bind"
         },
-        "count": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 99
-        },
-        "axis": {
-          "enum": [
-            "y"
-          ]
-        },
-        "from": {
-          "type": "number"
-        },
-        "to": {
-          "type": "number"
-        },
-        "show": {
-          "type": "string",
-          "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_{}]+$"
-        },
-        "sprites": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "window": {
-          "$ref": "#/$defs/point"
-        },
-        "path": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/point"
-          },
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "mask_sprite": {
-          "type": "string"
-        },
-        "fill_sprite": {
-          "type": "string"
-        },
-        "pivot": {
-          "$ref": "#/$defs/point"
-        },
-        "start": {
-          "type": "number"
-        },
-        "arc": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/point"
-          },
-          "minItems": 2
-        },
+        "count": { "type": "integer", "minimum": 1, "maximum": 99 },
+        "axis": { "enum": ["y"] },
+        "from": { "type": "number" },
+        "to": { "type": "number" },
+        "show": { "type": "string", "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_{}]+$" },
+        "sprites": { "type": "array", "items": { "type": "string" } },
+        "window": { "$ref": "#/$defs/point" },
+        "path": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 2, "maxItems": 2 },
+        "mask_sprite": { "type": "string" },
+        "fill_sprite": { "type": "string" },
+        "pivot": { "$ref": "#/$defs/point" },
+        "start": { "type": "number" },
+        "arc": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 2 },
         "before": {
           "description": "A variant's add entries only: the id of an element of the base this one is drawn in front of (it goes just before it in the same list). Absent, with no after or replace: the entry goes last at the top level.",
           "type": "string"
@@ -819,75 +451,32 @@
           "type": "string"
         }
       },
-      "required": [
-        "id",
-        "kind"
-      ],
+      "required": ["id", "kind"],
       "additionalProperties": false
     },
     "decision": {
       "description": "A decision node of the template. svcd compares one value with equals and shows the elements in yes (the others in no); mvcd shows, for each state of a value, the elements listed for that state. The value is game (a dial's own, from the core's table) or on (a path or view_model binding; a screen record decides on paths only, and only on a screen whose parent registers decisions, the standings).",
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_]{0,23}$"
-        },
-        "type": {
-          "enum": [
-            "svcd",
-            "mvcd"
-          ]
-        },
-        "game": {
-          "type": "string",
-          "minLength": 1
-        },
-        "on": {
-          "$ref": "#/$defs/bind"
-        },
-        "equals": {
-          "type": "integer"
-        },
-        "ty": {
-          "enum": [
-            "ui32",
-            "si32",
-            "stri",
-            "bool"
-          ]
-        },
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,23}$" },
+        "type": { "enum": ["svcd", "mvcd"] },
+        "game": { "type": "string", "minLength": 1 },
+        "on": { "$ref": "#/$defs/bind" },
+        "equals": { "type": "integer" },
+        "ty": { "enum": ["ui32", "si32", "stri", "bool"] },
         "states": {
           "type": "object",
-          "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
+          "additionalProperties": { "type": "array", "items": { "type": "string" } }
         },
-        "yes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "no": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
+        "yes": { "type": "array", "items": { "type": "string" } },
+        "no": { "type": "array", "items": { "type": "string" } },
         "initial": {
           "description": "The state (an mvcd) or yes / no (an svcd) whose elements start shown: their template nodes default to visible, so they are on screen until the value first fires. Absent: every listed element starts hidden.",
           "type": "string",
           "minLength": 1
         }
       },
-      "required": [
-        "id",
-        "type"
-      ],
+      "required": ["id", "type"],
       "additionalProperties": false
     },
     "editor": {
@@ -903,52 +492,27 @@
           "minimum": 1,
           "maximum": 99
         },
-        "team_colour": {
-          "type": "string",
-          "pattern": "^#[0-9A-Fa-f]{6}$"
-        },
-        "hide_stock_in_editor": {
-          "type": "boolean",
-          "default": true
-        },
-        "box": {
-          "$ref": "#/$defs/rect"
-        }
+        "team_colour": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "hide_stock_in_editor": { "type": "boolean", "default": true },
+        "box": { "$ref": "#/$defs/rect" }
       },
       "additionalProperties": false
     },
     "variant": {
       "type": "object",
       "properties": {
-        "dial": {
-          "enum": [
-            "f1_26",
-            "f1_25",
-            "f2"
-          ]
-        },
-        "switch": {
-          "$ref": "#/$defs/bind"
-        },
-        "remove": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
+        "dial": { "enum": ["f1_26", "f1_25", "f2"] },
+        "switch": { "$ref": "#/$defs/bind" },
+        "remove": { "type": "array", "items": { "type": "string" } },
         "add": {
           "description": "Elements this dial adds; an entry with before, after or replace keeps its place in the draw order, the others go last at the top level.",
           "type": "array",
-          "items": {
-            "$ref": "#/$defs/element"
-          }
+          "items": { "$ref": "#/$defs/element" }
         },
         "decisions": {
           "description": "Decisions built for this variant's dial only, after the record's; they may show the variant's own add elements.",
           "type": "array",
-          "items": {
-            "$ref": "#/$defs/decision"
-          }
+          "items": { "$ref": "#/$defs/decision" }
         },
         "root_y": {
           "description": "This variant's root y, over the record's.",
@@ -956,24 +520,15 @@
         },
         "stock": {
           "description": "This variant's stock mode, over the record's. With a switch, hide shows the variant dial's stock parts while the switch is off and hides them while it is on; park is refused with a switch (it moves the parts for good).",
-          "enum": [
-            "keep",
-            "hide",
-            "park"
-          ]
+          "enum": ["keep", "hide", "park"]
         },
         "stock_parts": {
           "description": "The stock parts this variant's stock acts on, over the record's.",
           "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         }
       },
-      "required": [
-        "dial"
-      ],
+      "required": ["dial"],
       "additionalProperties": false
     }
   }

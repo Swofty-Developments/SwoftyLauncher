@@ -1,0 +1,11 @@
+{
+  "hud.element": {
+    "bad_yield": {
+      "$comment": "The schema refuses a part the composer does not know.",
+      "yield": {
+        "parts": ["rear_view_mirror"],
+        "while": { "view_model": "view_model_data.hud_bc_mirror" }
+      }
+    }
+  }
+}
