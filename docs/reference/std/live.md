@@ -207,6 +207,17 @@ typedef struct SwoftyLiveCarDetail {
 | `live::drs_allowed(d)`, `live::pit_limiter(d)`, `live::fia_flag(d)`, `live::driver_status(d)` | `std::optional`, empty when the bit is clear; `driver_status` is a `live::DriverStatus` |
 | `live::race_number(d)`, `live::team_colour(d)` | `std::optional`, empty when the identity bit is clear (`team_colour` also when it is 0) |
 | `live::sector_bests(d)` | `std::array<uint32_t, 3>` of the personal best sectors, empty when the bit is clear |
+| `live::driver_identity(d)` | `live::DriverIdentity{stat_id, code, first_name, last_name, label, name_reversed}`, see [Driver names](#driver-names) |
+
+### Driver names
+
+```cpp
+if (auto who = live::driver_identity(*d))  // reads entrants.drivers: call it when Session::generation moves, not every frame
+    swofty::log("[my-osd] %s %s (%s)", who->first_name.c_str(), who->last_name.c_str(), who->code.c_str());
+// "Charles Leclerc (LEC)"
+```
+
+`driver_identity` reads the `entrants.drivers` row whose `stat_id` is the car's `driver_id` with [swofty/db.hpp](./db): `code` is its `initials`, `first_name` and `last_name` the text of its `lng_*` keys in the game's language through [swofty/lang.hpp](./strings) (a stored string that is not a key reads as is, `default` as empty), `label` its `_metadata_` and `name_reversed` its `is_name_reversed` (the family name first). `live::driver_identity(uint32_t driver_id)` takes the id directly. It is empty without `SWOFTY_LIVE_HAVE_IDENTITY`, before the game has loaded its database, for driver id 255 (a network human, or an added driver with no stock ancestor), and when the id names more than one row: the 2024 and 2025 UDP formats carry one byte, so an added driver whose `stat_id` is above 254 shares its low byte with another row.
 
 The values are the ones the game sends in its UDP output:
 
@@ -505,7 +516,7 @@ The values below have no verified memory source. The core decodes them from the 
 | `team_colour` | `HAVE_IDENTITY` | Participants (4) `m_liveryColours[0]` | 2025 only | no |
 | `personal_best_sector_ms` | `HAVE_SECTOR_BESTS` | Session History (11) `m_bestSectorNLapNum` and that lap's sector time | yes | no |
 
-`driver_id` is the `stat_id` of the car's `entrants.drivers` row for a stock driver; its names and code read from that row with [swofty/db.hpp](./db). The session's best sector is the lowest `personal_best_sector_ms` over the cars. Session History carries one car per packet, so a car's bests refresh about once a second per car on the game's rotation.
+`driver_id` is the `stat_id` of the car's `entrants.drivers` row for a stock driver; `live::driver_identity` reads its code and names ([Driver names](#driver-names)). The session's best sector is the lowest `personal_best_sector_ms` over the cars. Session History carries one car per packet, so a car's bests refresh about once a second per car on the game's rotation.
 
 The car index of a UDP packet is taken as the vehicle id, as for the telemetry feed (see [Telemetry](./telemetry#availability)). The race control messages (penalties, served penalties, DRS, start lights, the safety car phase and the fastest lap) fire as events; see [Race control](./race-control#race-control-messages). The 2026 rows read the 2025 entry offsets of the packets whose 2026 size the telemetry decoder knows; the 2026 Session and Participants layouts past the team id are not catalogued.
 
@@ -515,7 +526,7 @@ The car index of a UDP packet is taken as the vehicle id, as for the telemetry f
 
 ## Not read yet
 
-Active aero mode, Boost and Overtake state, the driver's three-letter code and split names, car setup values and tyre temperatures have no verified memory source and no UDP source in the live state. `SWOFTY_LIVE_HAVE_BOOST` and `_AERO_MODE` are declared so the structs stay stable when they land and stay clear until then. The session time left, the race lap count, DRS allowed, the pit limiter and the identity fields read from UDP (above).
+Active aero mode, Boost and Overtake state, car setup values and tyre temperatures have no verified memory source and no UDP source in the live state. `SWOFTY_LIVE_HAVE_BOOST` and `_AERO_MODE` are declared so the structs stay stable when they land and stay clear until then. The session time left, the race lap count, DRS allowed, the pit limiter and the identity fields read from UDP (above).
 
 The 2026 values need the 2026 UDP layout, which the repository does not catalogue (`packages/core` has no 2026 game, and the decoders know the 2026 packet sizes only):
 

@@ -9,7 +9,9 @@
 #include <swofty/fake_live.hpp>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -410,6 +412,109 @@ static void test_hud()
     expect(!at(false, 0, 0) && s.hud_visible == 0 && s.hud_hidden_by == 0, "losing the flow clears the fields");
 }
 
+namespace fake_db {
+
+using Row = std::map<std::string, std::string>;
+std::vector<Row> rows;
+std::map<std::string, std::string> texts;
+
+int available() { return 1; }
+int open(const char *table, SwoftyDbCursor *c)
+{
+    if (std::string(table) != "entrants.drivers")
+        return SWOFTY_ASSET_INVALID;
+    c->index = 0;
+    c->count = rows.size();
+    return rows.empty() ? SWOFTY_ASSET_LATE : SWOFTY_ASSET_OK;
+}
+int step(SwoftyDbCursor *c) { return ++c->index < c->count ? SWOFTY_ASSET_OK : SWOFTY_ASSET_LATE; }
+int cell(const SwoftyDbCursor *c, const char *field, SwoftyDbValue *out)
+{
+    const Row &r = rows[c->index];
+    auto it = r.find(field);
+    if (it == r.end())
+        return SWOFTY_ASSET_INVALID;
+    out->s = it->second.c_str();
+    out->i = std::atoll(it->second.c_str());
+    out->tag = SWOFTY_DB_STRING;
+    return SWOFTY_ASSET_OK;
+}
+const char *row_name(const SwoftyDbCursor *c) { return rows[c->index].at("_metadata_").c_str(); }
+int text(const char *key, char *out, size_t cap, size_t *len)
+{
+    auto it = texts.find(key);
+    if (it == texts.end())
+        return SWOFTY_ASSET_INVALID;
+    *len = it->second.size();
+    if (cap <= *len)
+        return SWOFTY_TOO_SMALL;
+    std::memcpy(out, it->second.c_str(), *len + 1);
+    return SWOFTY_ASSET_OK;
+}
+
+}
+
+static void test_identity()
+{
+    SwoftyDb db{};
+    db.available = fake_db::available;
+    db.open = fake_db::open;
+    db.step = fake_db::step;
+    db.cell = fake_db::cell;
+    db.row_name = fake_db::row_name;
+    SwoftyLang lang{};
+    lang.available = fake_db::available;
+    lang.text = fake_db::text;
+    SwoftyApi api{};
+    api.version = 8;
+    api.db = &db;
+    api.lang = &lang;
+    swofty::api = &api;
+    swofty::lang::detail::set_version(2);
+    fake_db::rows = {
+        {{"_metadata_", "carlos_sainz-jr"},
+         {"stat_id", "0"},
+         {"initials", "SAI"},
+         {"first_name", "lng_carlos"},
+         {"last_name", "lng_sainz"},
+         {"is_name_reversed", "0"}},
+        {{"_metadata_", "zhou_guanyu"},
+         {"stat_id", "58"},
+         {"initials", "ZHO"},
+         {"first_name", "lng_guanyu"},
+         {"last_name", "lng_zhou"},
+         {"is_name_reversed", "1"}},
+        {{"_metadata_", "added_driver"},
+         {"stat_id", "300"},
+         {"initials", "ADD"},
+         {"first_name", "Ada"},
+         {"last_name", "default"}},
+    };
+    fake_db::texts = {{"lng_carlos", "Carlos"}, {"lng_sainz", "Sainz"}, {"lng_guanyu", "Guanyu"}, {"lng_zhou", "Zhou"}};
+    SwoftyLiveCarDetail d{};
+    d.have = SWOFTY_LIVE_HAVE_IDENTITY;
+    auto sai = swofty::live::driver_identity(d);
+    expect(sai && sai->code == "SAI" && sai->first_name == "Carlos" && sai->last_name == "Sainz" &&
+               sai->label == "carlos_sainz-jr" && !sai->name_reversed,
+           "driver id 0: SAI, Carlos Sainz, from the lng texts");
+    d.driver_id = 58;
+    auto zho = swofty::live::driver_identity(d);
+    expect(zho && zho->code == "ZHO" && zho->last_name == "Zhou" && zho->name_reversed, "driver id 58: family name first");
+    d.driver_id = 300;
+    auto add = swofty::live::driver_identity(d);
+    expect(add && add->code == "ADD" && add->first_name == "Ada" && add->last_name.empty(),
+           "a 2026 id above 254 names its row; a stored string reads as is, \"default\" as empty");
+    d.driver_id = 300 & 0xff;
+    fake_db::rows.push_back({{"_metadata_", "stock_44"}, {"stat_id", "44"}, {"initials", "HAM"}});
+    expect(!swofty::live::driver_identity(d), "a one-byte id two rows share is ambiguous");
+    d.driver_id = 255;
+    expect(!swofty::live::driver_identity(d), "255 (a network human, no stock ancestor) names no one");
+    d.driver_id = 0;
+    d.have = 0;
+    expect(!swofty::live::driver_identity(d), "no identity bit, no driver");
+    swofty::api = nullptr;
+}
+
 static void test_sdk_fake()
 {
     swofty::fake::Live fake;
@@ -437,6 +542,7 @@ int main()
     test_points();
     test_hud();
     test_pause_clock();
+    test_identity();
     test_sdk_fake();
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;

@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include <swofty_api.h>
+#include <swofty/db.hpp>
+#include <swofty/lang.hpp>
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -372,6 +374,71 @@ inline std::optional<std::array<uint32_t, 3>> sector_bests(const CarDetail &d)
     if (!has(d, SWOFTY_LIVE_HAVE_SECTOR_BESTS))
         return std::nullopt;
     return std::array<uint32_t, 3>{d.personal_best_sector_ms[0], d.personal_best_sector_ms[1], d.personal_best_sector_ms[2]};
+}
+
+// A car's driver by name, from the entrants.drivers row whose stat_id is the car's driver_id: code is the row's
+// initials ("VER"), first_name and last_name its names in the game's language (the lng_* text, or the stored
+// string when it is not a key), label the row's _metadata_, name_reversed its is_name_reversed (family name first).
+struct DriverIdentity {
+    uint32_t stat_id = 0;
+    std::string code, first_name, last_name, label;
+    bool name_reversed = false;
+};
+
+namespace detail {
+
+inline std::string driver_text(const db::Cursor *c, const char *field)
+{
+    db::Value v{};
+    if (db::cell(c, field, &v) != db::Result::ok || !v.s || !v.s[0])
+        return {};
+    std::string stored = v.s;
+    if (stored.rfind("lng_", 0) != 0)
+        return stored == "default" ? std::string{} : stored;
+    return lang::text(stored).value_or(std::string{});
+}
+
+}
+
+// The driver of the entrants.drivers row with this stat_id. Empty while the database is not loaded, when no row has
+// it, and when the id is ambiguous: the 2024 and 2025 UDP formats carry one byte, so a driver id below 255 that is
+// also the low byte of an added driver's stat_id names no single row. Reads the database at each call.
+inline std::optional<DriverIdentity> driver_identity(uint32_t driver_id)
+{
+    if (driver_id == 255 || !db::available())
+        return std::nullopt;
+    std::optional<DriverIdentity> found;
+    int matches = 0;
+    db::Cursor cur{};
+    for (db::Result r = db::open("entrants.drivers", &cur); r == db::Result::ok; r = db::step(&cur)) {
+        db::Value id{};
+        if (db::cell(&cur, "stat_id", &id) != db::Result::ok || id.i < 0)
+            continue;
+        uint32_t stat = static_cast<uint32_t>(id.i);
+        if (stat != driver_id && !(driver_id < 255 && (stat & 0xff) == driver_id))
+            continue;
+        if (++matches > 1)
+            return std::nullopt;
+        DriverIdentity d;
+        d.stat_id = stat;
+        d.code = detail::driver_text(&cur, "initials");
+        d.first_name = detail::driver_text(&cur, "first_name");
+        d.last_name = detail::driver_text(&cur, "last_name");
+        if (const char *label = db::row_name(&cur))
+            d.label = label;
+        db::Value reversed{};
+        d.name_reversed = db::cell(&cur, "is_name_reversed", &reversed) == db::Result::ok && reversed.i != 0;
+        found = std::move(d);
+    }
+    return found;
+}
+
+// The car's driver by name (driver_identity above), from its UDP driver id; empty without SWOFTY_LIVE_HAVE_IDENTITY.
+inline std::optional<DriverIdentity> driver_identity(const CarDetail &d)
+{
+    if (!has(d, SWOFTY_LIVE_HAVE_IDENTITY))
+        return std::nullopt;
+    return driver_identity(d.driver_id);
 }
 
 inline GameMode game_mode(const Session &s)
