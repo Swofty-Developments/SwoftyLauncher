@@ -296,7 +296,7 @@ static void test_named_world()
         stock_branding = stock_branding || r == "game_setup.branding.game_setup_branding_0";
     check(!stock_branding, "with a branding row of its own the season stays off the stock branding rows");
     check(bw::world_eri("e1950") == "eaid://environment_package/tracks/[FILENAME]/wep/[FILENAME]_e1950.wep" &&
-              bw::world_group("e1950") == "asset_groups/environment_package/tracks/[FILENAME]/wep/[FILENAME]_e1950.assetgroup" &&
+              bw::world_group("e1950") == "asset_groups/environment_package/tracks/[FILENAME]/wep/[FILENAME]_e1950" &&
               bw::world_file("monza", "e1950") == "2025_asset_groups/environment_package/tracks/monza/wep/monza_e1950.erp",
           "the world's group, eri and archive");
 
