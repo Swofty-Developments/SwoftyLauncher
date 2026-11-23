@@ -1,0 +1,97 @@
+{
+ "schema": 1,
+ "name": "site_Game_Mfd_FuelMixMaxRaceGate",
+ "table": "globals",
+ "author": "Swofty",
+ "row": {
+  "addr": "0x141788ca0",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own disasm Steam 26566308 0x14178a350-0x14178a44a;xref:0x14178a41a,0x14178a422",
+  "notes": "jb in Game_Mfd_FuelMix_BuildOptions after add eax,-0xf; cmp eax,3 on the session type [[[this+0xf0]+0x1a8]+4]: 72 21 skips the Max row (AddRow id 3) in race sessions 15..17; two NOPs offer it. The mask at this+0x324 and the MFD step (bit mix+1 of vm+0x604) never test the session type"
+ },
+ "signature": {
+  "id": "game.mfd_fuel_mix_max_race_gate",
+  "section": ".xtls",
+  "pattern": "83 F8 03 72 21 C7 44 24 20 03 00 00 00",
+  "match": "0x141788c9d",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141788ca0",
+  "kind": "mid",
+  "expect": "72 21",
+  "names": [
+   "site_Game_Mfd_FuelMixMaxRaceGate"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-23",
+    "by": "Swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/car_live.cpp"
+  ],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14178a41d",
+  "made_on_target": "0x14178a420",
+  "twin": "made on steam-26566308; the target 0x14178a420 is KB 0x141788ca0: Career_InvitationalAcclaimReward_BuildText (0x1781000) and Game_PitLane_SetDoPracticePitStop (0x1795240) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "verifier-fuelgate",
+   "kind": "global",
+   "item": "site_Game_Mfd_FuelMixMaxRaceGate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x14178a3b3-0x14178a443;xref:0x14178a420",
+   "notes": "gh:verifier-fuelgate Independent disassembly shows jb at 0x14178a420 skips only the id-3 AddRow call when session type minus 0xf is below 3, while rows 0 to 2 are gated by bl bit tests alone."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "Swofty",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178a41d",
+    "target": "0x14178a420"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e88c6e21f19b1f931d5bffdbd0451e2e1a055462596e70e5b2a2391bd0409073"
+  },
+  {
+   "by": "verifier-fuelgate",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14178a41d",
+    "target": "0x14178a420"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e88c6e21f19b1f931d5bffdbd0451e2e1a055462596e70e5b2a2391bd0409073"
+  }
+ ]
+}

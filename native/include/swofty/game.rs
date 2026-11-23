@@ -23021,6 +23021,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_Mfd_FuelMixMaxRaceGate: Binding = Binding {
+        id: "site_Game_Mfd_FuelMixMaxRaceGate",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_MyTeamVehicleBases_AiConfigLoad: Binding = Binding {
         id: "site_Game_MyTeamVehicleBases_AiConfigLoad",
         kind: "site",
