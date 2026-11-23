@@ -70,6 +70,7 @@ UNITS = [
     Unit('ai_corner', 'AI brake line guard unit test'),
     Unit('ai_curves', 'AI team curves guard unit test'),
     Unit('ai_line_set', 'AI line set guard unit test'),
+    Unit('ai_marker_cap', 'AI marker cap guard unit test'),
     Unit('audio_queue', 'Audio job queue fix unit test'),
     Unit('direct_start', 'Direct start unit test'),
     Unit('direct_start_tt', 'Direct start Time Trial unit test'),

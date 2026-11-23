@@ -21,6 +21,9 @@
 [log ai/ai_line_set_guard.cpp]
 [ai] vehicle slot %u has no AI line or tables of its own (its name is in none of the AI maps); %u of its pointers borrow another car's, %u have no donor, %u earlier cars backfilled; brake line settings %s%s
 
+[log ai/ai_marker_cap_guard.cpp]
+[ai] marker cap: an AI lane has %u markers on one channel, more than the game's 256 (side %u, brake %u, corner end %u, corner start %u, ch4 %u, retire %u, width class %u); core compiled its tables (%llu bytes, %u channels dropped)%s
+
 [log career/activity_resume_guard.cpp]
 [career] activity resume: the championship has no race length fields (its track is not in the game mode's track list); the report keeps the default
 [career] activity resume guard: %s: the hook failed: %s

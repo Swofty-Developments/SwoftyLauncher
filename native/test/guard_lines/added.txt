@@ -57,3 +57,9 @@ off [phys] non-finite log off (SWOFTY_PHYS_NONFINITE_LOG=%s)
 unresolved [phys] non-finite log off: needs Ne_PhysUpdateStage_FinishStepNotifyBodies, which this build does not resolve
 armed [phys] non-finite log armed: each physics body that holds a value that is not finite after a step is logged once
 not_installed [phys] non-finite log did not install (see the [core] lines)
+
+[ai_marker_cap]
+off [ai] marker cap guard off (SWOFTY_AI_MARKER_CAP_GUARD=%s)
+unresolved [ai] marker cap guard off: needs Game_AiRoute_CompileMarkerChannel, which this build does not resolve
+armed [ai] marker cap guard armed: an AI lane with more than 256 markers on one channel gets its marker tables compiled by core instead of overflowing the game's stack arrays
+not_installed [ai] marker cap guard did not install (see the [core] lines)

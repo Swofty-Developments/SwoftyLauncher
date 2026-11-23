@@ -76,6 +76,7 @@ src/core/diagnostics/tyre_models.cpp: static loader::FunctionSet tyre_models_cor
 src/core/garage/garage_placement.cpp: static loader::FunctionSet garage_placement_core_set{loader::CoreSetId::garage_placement, garage_placement_mixins};
 src/core/guards/ai/ai_corner_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::ai_corner_guard,
 src/core/guards/ai/ai_line_set_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::ai_line_set,
+src/core/guards/ai/ai_marker_cap_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::ai_marker_cap,
 src/core/guards/career/myteam_vehicle_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::myteam_vehicle_guard,
 src/core/guards/career/myteam_vehicle_heal.cpp: HealGuard guard;
 src/core/guards/career/myteam_vehicle_keep.cpp: KeepGuard guard;

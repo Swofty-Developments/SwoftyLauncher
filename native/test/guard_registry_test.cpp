@@ -76,6 +76,7 @@ const std::vector<std::string> OFFERED = {
     "speech",
     "vehicle_override",
     "phys_nonfinite",
+    "ai_marker_cap",
 };
 
 const std::vector<std::string> SETTLED = {
@@ -136,6 +137,7 @@ const std::vector<std::string> SETTLED = {
     "speech",
     "vehicle_override",
     "phys_nonfinite",
+    "ai_marker_cap",
 };
 
 // The order 1.9.63 armed the hook guards in, each from its own SWOFTY_ON_LOAD entry, as the armed lines of a 1.9.63

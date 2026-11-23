@@ -33,7 +33,9 @@
     "how": "static"
    }
   ],
-  "used_by": []
+  "used_by": [
+   "native/src/core/guards/ai/ai_marker_cap_guard.cpp"
+  ]
  },
  "verify": [
   {
