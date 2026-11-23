@@ -486,11 +486,21 @@ The car index of a UDP packet is taken as the vehicle id, as for the telemetry f
 
 ## Not read yet
 
-Active aero mode, Boost and Overtake state, the driver's three-letter code and split names, car setup values and tyre temperatures have no verified memory source and no UDP source in the live state. `SWOFTY_LIVE_HAVE_BOOST` and `_AERO_MODE` are declared so the structs stay stable when they land and stay clear until then. The session time left, the race lap count, DRS allowed, the pit limiter and the identity fields read from UDP (above). The core logs the unread session and setup values once:
+Active aero mode, Boost and Overtake state, the driver's three-letter code and split names, car setup values and tyre temperatures have no verified memory source and no UDP source in the live state. `SWOFTY_LIVE_HAVE_BOOST` and `_AERO_MODE` are declared so the structs stay stable when they land and stay clear until then. The session time left, the race lap count, DRS allowed, the pit limiter and the identity fields read from UDP (above).
+
+The 2026 values need the 2026 UDP layout, which the repository does not catalogue (`packages/core` has no 2026 game, and the decoders know the 2026 packet sizes only):
+
+- **Session (1):** the 2026 size and every offset; until then the session clock, lap count, pit window and formation lap read in the 2024 and 2025 formats only.
+- **Car Status (7):** the four bytes the 2026 entry adds (59 bytes, 55 in 2025) and the offsets of `activeAeroAvailable`, `activeAeroMode`, `activeAeroActivationDistance`, `activeAeroTrackStatus`, `overtakeAvailable`, `overtakeActive` and `overtakeActivationDistance`, for `HAVE_AERO_MODE` and `HAVE_BOOST`; the 2025 offsets of the pit limiter and the DRS distance are not proven in 2026.
+- **Lap Data (2):** the 2026 delta to the best lap (`lapDeltaTime`).
+- **Participants (4):** the 2026 offsets past `teamId` (race number, name, livery colours).
+- **Session History (11) and Final Classification (8):** the 2026 sizes and layouts.
+
+The game's 2026 packet builder (`Game_TelemetryOutputUDPUpdateable_PreparePackets`) writes every one of these. The core logs the unread session and setup values once:
 
 ```text
-[live] session time left off: needs a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the game timer)
-[live] total laps off: needs the race lap count: RaceRuleset +0x358 with the ruleset class proven on each session type
+[live] session time left from memory off: needs a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the game timer); read from the UDP Session packet
+[live] total laps from memory off: needs the race lap count: RaceRuleset +0x358 with the ruleset class proven on each session type; read from the UDP Session packet
 [live] setup values off: needs the car setup record rows; CarOps gives several setup values
 ```
 

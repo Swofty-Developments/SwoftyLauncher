@@ -230,7 +230,10 @@ void decide_gates(const lv::BuildProof &build)
             swofty::log("[live] %s off: %s (SWOFTY_LIVE_FORCE=1 reads it unverified)", lv::group_name(g), lv::ROWS[g].needs);
     }
     for (const lv::Unread &u : lv::UNREAD)
-        swofty::log("[live] %s off: needs %s", u.name, u.needs);
+        if (u.udp)
+            swofty::log("[live] %s from memory off: needs %s; read from %s", u.name, u.needs, u.udp);
+        else
+            swofty::log("[live] %s off: needs %s", u.name, u.needs);
 }
 
 void publish()

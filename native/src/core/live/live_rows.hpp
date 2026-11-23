@@ -147,13 +147,16 @@ inline constexpr Row ROWS[G_COUNT] = {
 struct Unread {
     const char *name;
     const char *needs;
+    const char *udp = nullptr;
 };
 
 inline constexpr Unread UNREAD[] = {
     {"session time left",
      "a session clock row read without a call (Sess_RaceRuleset_GetTimeRemaining interpolates RaceRuleset +0x2f0 from the "
-     "game timer)"},
-    {"total laps", "the race lap count: RaceRuleset +0x358 with the ruleset class proven on each session type"},
+     "game timer)",
+     "the UDP Session packet"},
+    {"total laps", "the race lap count: RaceRuleset +0x358 with the ruleset class proven on each session type",
+     "the UDP Session packet"},
     {"setup values", "the car setup record rows; CarOps gives several setup values"},
 };
 
