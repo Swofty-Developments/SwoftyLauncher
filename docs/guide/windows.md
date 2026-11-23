@@ -86,6 +86,8 @@ Smart App Control on Windows 11, and app control policies on work or school PCs,
 | 1260, 786 | A Windows policy set by whoever manages the PC |
 | 225, 226 | An antivirus, see [If the mods don't load](#if-the-mods-don-t-load) |
 
+When Smart App Control blocks a Swofty file inside F1 25, Windows shows an **F1_25.exe - Bad Image** message that names the file, such as `swofty_core.dll`, with error status `0xc0e90002`. The fix is the same.
+
 Smart App Control has no exceptions for single apps. To use the launcher, turn it off:
 
 1. Open **Windows Security** > **App & browser control** > **Smart App Control settings**.
