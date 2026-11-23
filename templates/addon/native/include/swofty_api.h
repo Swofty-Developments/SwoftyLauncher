@@ -1374,7 +1374,7 @@ typedef struct SwoftyLiveTurn {
    SWOFTY_LIVE_HAVE_SECTOR_BESTS: personal_best_sector_ms, the car's best time in each sector this session, from any
    lap (0 while it has none).
    SWOFTY_LIVE_HAVE_SC_DELTA: safety_car_delta_s, the car's delta to the time the safety car or the virtual safety car
-   requires, in seconds as the game sends it (sent every lap; it has a meaning while one is out). */
+   requires, in seconds as the game sends it (in every Lap Data packet; it has a meaning while one is out). */
 typedef struct SwoftyLiveCarDetail {
     uint32_t version;
     uint32_t size;
