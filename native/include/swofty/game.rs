@@ -21966,6 +21966,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Stable,
     };
+    pub const site_Car_RearWingRenderFraction: Binding = Binding {
+        id: "site_Car_RearWingRenderFraction",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Car_RegisterVehicleId: Binding = Binding {
         id: "site_Car_RegisterVehicleId",
         kind: "site",

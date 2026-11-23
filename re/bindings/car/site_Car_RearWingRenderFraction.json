@@ -40,7 +40,18 @@
   "made_on_target": "0x14463c3a4",
   "twin": "made on steam-26566308; the target 0x14463c3a4 is KB 0x144639b34: site_Car_ChassisRegistryCount (0x462cecf) and Game_RacingVehicles_Initialise (0x463d630) on either side both sit 0x2870 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-23",
+   "verifier": "re-bindings-ir-blind",
+   "kind": "global",
+   "item": "site_Car_RearWingRenderFraction",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1446393a0-0x14463a135 and Car_F1Aero_UpdateWingOpen 0x1446cb6f9-0x1446cb7c5;xref:0x14463943e,0x14463944b,0x1446cb7b8",
+   "notes": "gh:re-bindings-ir-blind Blind static re-derivation on d873a1c8, cross-checked on 46009bd3: the pattern matches once in the executable sections of each build (KB 0x144639b2e, 26566308 0x14463c39e) and the whole function is instruction-identical (689 of 689 after normalising rip offsets and branch targets). (owner rcx = rdi, rdx with F1Aero at +0x570 = r14): xmm13 = [r14+0x19b0] at 0x14463942e; the front-wing branch (taken only when rdi+0xd34 bit 3 and rdi+0x1330 are set) decodes FrontWingRotationAngleRadians +0x1898^+0x18a0, reads +0x19a8 and keeps xmm13 in xmm5 from 0x1446395ee to 0x144639782; every way out of it reaches the site. At the site ebx = +0x1848^+0x1850 (DRSRotationAngleRadians); the flap at [rdi+0x1300] rotates by -(xmm13*angle) (sign mask 0x80000000, 1/2pi 0x3e22f983 range reduction) and the flap at [rdi+0x1304] by xmm13 * (+0x1858^+0x1860, DRSRotationJointAngleRatio) * angle; xmm13 is not written again until the epilogue. +0x19b0 is written by Car_F1Aero_UpdateWingOpen (moves toward the DRS-open target at DRSOpenCloseSpeed*dt, target 0 when rear_wing_fixed +0x19ac) and by 0x142c21a58, read by the getter 0x14463a180; no force-code reader found (Car_F1Aero_GetTotalDownforce reads +0x19a8/+0x19ac). Not verified: the in-game probe samples (static check only)."
+  }
+ ],
  "proofs": [
   {
    "by": "UnorthodoxStoneND",
@@ -60,6 +71,25 @@
    },
    "sigcheck": "skipped (not the KB build)",
    "digest": "9f4bc2d92fd204ddac3590a9168c9a1eb8b9b9e94e17007ed4a851405f4842b5"
+  },
+  {
+   "by": "re-bindings-ir-blind",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144639b2e",
+    "target": "0x144639b34"
+   },
+   "sigcheck": "passed",
+   "digest": "a6d801192e6122ce4263da3d032b9655b6a023f8448b78683a438cd3b47b1f8d"
   }
  ]
 }
