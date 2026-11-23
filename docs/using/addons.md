@@ -45,7 +45,13 @@ In the `vanilla` profile the list is read-only and shows every installed addon. 
 
 ## Turn on, turn off, move or uninstall several addons
 
-Hold **Ctrl** (**Cmd** on macOS) to show a tick box on every row. Ctrl-click a row, or click its tick box, to tick or untick it. A plain click on a row opens its panel. While at least one addon is ticked, a bar above the list shows how many and has **Turn on**, **Turn off**, **Uninstall** and **Clear**. **Escape** also clears the ticks. The ticks clear after an action from the bar.
+Hold **Ctrl** (**Cmd** on macOS) to show a tick box on every row and folder. Ctrl-click a row, or click its tick box, to tick or untick it. A plain click on a row opens its panel.
+
+Shift-click a row, or its tick box, to tick every row from the last row you clicked to that one. Rows that a search, a filter or a closed folder hides are not ticked.
+
+A folder's tick box ticks every addon in the folder, also when the folder is closed. During a search or with a filter on, it ticks only the folder's addons that the list shows. Once they are all ticked, it unticks them. The box shows a dash while only some of them are ticked. Ctrl-clicking a folder does the same as its tick box.
+
+While at least one addon is ticked, a bar above the list shows how many and has **Turn on**, **Turn off**, **Uninstall** and **Clear**. **Escape** also clears the ticks. The ticks clear after an action from the bar.
 
 - **Turn on** and **Turn off** change the active [profile](/using/profiles) the way a row's switch does. Always-on addons and shader-only addons are skipped, and a message says how many. **Turn off** leaves on the addons whose turning off warns about your saves, and a message names them.
 - **Uninstall** asks once for all the ticked addons, then removes them as **Uninstall** in a panel does. Built-in addons are skipped, and a message says how many.
