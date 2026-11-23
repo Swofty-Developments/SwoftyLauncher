@@ -1566,6 +1566,45 @@ fn a_yield_holds_another_addons_whole_scene_and_template() {
 }
 
 #[test]
+fn two_yields_on_one_part_nest_their_nulls_in_prefix_order() {
+    let Some(stock) = game() else { return };
+    let parts = ["f1_25", "standings"];
+    let inputs = [
+        yield_input("swofty.b-yielder", &parts),
+        yield_input("swofty.a-yielder", &parts),
+    ];
+    let pfx: Vec<String> = ["swofty.a-yielder", "swofty.b-yielder"]
+        .iter()
+        .map(|a| prefix_for(a, "yield", None).unwrap())
+        .collect();
+    let (inner, outer) = (yields::null_name(&pfx[0]), yields::null_name(&pfx[1]));
+    let out = compose(&stock, &inputs).unwrap();
+    for part in parts {
+        let spot = &yields::part(part).unwrap().spots[0];
+        let paths = element_paths(&one_copy(&out, spot.scene));
+        let at = |name: &str| paths.iter().find(|p| p.rsplit('.').next() == Some(name)).cloned();
+        let outer_at = at(&outer).unwrap_or_else(|| panic!("{part}: no {outer}"));
+        assert_eq!(at(&inner), Some(format!("{outer_at}.{inner}")), "{part}");
+        let kids = |of: &str| {
+            paths
+                .iter()
+                .filter(|p| {
+                    p.strip_prefix(&format!("{of}."))
+                        .is_some_and(|r| !r.contains('.'))
+                })
+                .count()
+        };
+        assert_eq!(kids(&outer_at), 1, "{part}: {outer} holds more than {inner}");
+        assert!(
+            kids(&format!("{outer_at}.{inner}")) > 0,
+            "{part}: {inner} holds nothing"
+        );
+    }
+    assert_hooks(&out, &pfx[0], &parts);
+    assert_hooks(&out, &pfx[1], &parts);
+}
+
+#[test]
 fn a_yield_record_takes_known_parts_and_nothing_to_draw() {
     let bad = [
         serde_json::json!({ "yield": { "parts": ["tyres"], "while": { "view_model": YIELD_LEAF } } }),
