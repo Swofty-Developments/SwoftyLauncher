@@ -247,7 +247,7 @@ void publish()
         if (g_snap.valid)
             g_udp.merge(g_snap.ses, g_snap.cars, g_snap.details, g_snap.present, GetTickCount64());
         else
-            g_udp.reset();
+            g_udp.end();
     }
     g_snap.official = g_official;
     g_snap.turn_length = g_turns.length;

@@ -126,6 +126,15 @@ void fire_udp(lv::udp::Moments &m)
              e.stop_s);
         ev::session_penalty_served(e);
     }
+    for (auto &e : m.classifications) {
+        const rc::events::ClassifiedCar *first = nullptr;
+        for (uint32_t i = 0; i < e.cars; i++)
+            if (e.entries[i].position == 1)
+                first = &e.entries[i];
+        line("final classification: %u cars, winner vehicle %d, %u laps", e.cars, first ? int(first->car) : -1,
+             first ? first->laps : 0);
+        ev::session_classification(e);
+    }
 }
 
 void fire_tyres(std::vector<td::events::Damage> &m)
@@ -151,8 +160,15 @@ void race_control_tick(const lv::Snapshot &published)
     uint64_t before = g.tracker.sessions();
     rcl::Moments m = g.tracker.step(s);
     std::vector<td::events::Damage> tyres = g.tyres.step(s);
-    if (!g.tracker.primed())
+    if (!g.tracker.primed()) {
+        lv::udp::Moments late = runtime::live_udp_take();
+        if (!late.classifications.empty()) {
+            late.penalties.clear();
+            late.served.clear();
+            fire_udp(late);
+        }
         return;
+    }
     if (g.tracker.sessions() != before) {
         g.lines = 0;
         report(*s);

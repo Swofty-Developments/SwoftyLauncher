@@ -28,7 +28,8 @@ inline bool fires(std::string_view point)
            point == rc::events::Sector::point || point == rc::events::CarStatus::point ||
            point == rc::events::Penalty::point || point == rc::events::PenaltyServed::point ||
            point == rc::events::Drs::point || point == rc::events::StartLights::point ||
-           point == rc::events::SafetyCarPhase::point || point == rc::events::FastestLap::point;
+           point == rc::events::SafetyCarPhase::point || point == rc::events::FastestLap::point ||
+           point == rc::events::Classification::point;
 }
 
 struct Moments {

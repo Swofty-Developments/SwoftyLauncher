@@ -292,6 +292,26 @@ struct SafetyCarPhase {
     int32_t lap;
 };
 
+// One car of the final classification. car is the vehicle id; status is the result status (Status numbers) and
+// reason the game's result reason (format 2025, else 0); race_ms is the race time without penalties.
+struct ClassifiedCar {
+    uint32_t car;
+    uint8_t position, laps, grid, points;
+    uint8_t pit_stops, status, reason, penalties_s;
+    uint32_t best_lap_ms;
+    uint32_t race_ms;
+};
+
+// The game publishes the session's final classification (notify), from the UDP Final Classification packet: cars
+// entries, by vehicle id.
+struct Classification {
+    static constexpr const char *point = "session.classification";
+    static constexpr uint32_t version = 1;
+    uint32_t size, payload_version;
+    uint32_t cars;
+    ClassifiedCar entries[24];
+};
+
 // The session's fastest lap changes hands or gets faster (notify). car and previous_car are vehicle ids
 // (previous_car SWOFTY_LIVE_NO_CAR for the first fastest lap); lap is the holder's lap.
 struct FastestLap {

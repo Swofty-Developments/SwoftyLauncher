@@ -224,6 +224,33 @@ static void test_sector_bests()
     expect(swofty::live::sector_bests(s.details[1]).value()[2] == 0, "a best lap number past numLaps reads as none");
 }
 
+static void test_classification()
+{
+    udp::Source u;
+    Bytes fc = packet(2025, 8, 1042);
+    fc[29] = 2;
+    uint8_t *a = &fc[30];
+    a[0] = 2, a[1] = 5, a[2] = 1, a[3] = 18, a[4] = 1, a[5] = 3, a[6] = 0;
+    put32(fc, 30 + 7, 91500);
+    double race = 512.25;
+    uint64_t bits;
+    std::memcpy(&bits, &race, 8);
+    put32(fc, 30 + 11, uint32_t(bits));
+    put32(fc, 30 + 15, uint32_t(bits >> 32));
+    fc[30 + 19] = 5;
+    uint8_t *b = &fc[30 + 46];
+    b[0] = 1, b[1] = 5, b[2] = 3, b[3] = 25, b[5] = 3;
+    expect(feed(u, fc), "a 2025 Final Classification packet is read");
+    u.end();
+    udp::Moments m = u.take();
+    expect(m.classifications.size() == 1 && m.classifications[0].cars == 2, "it survives the end of the live session");
+    const rc::events::ClassifiedCar &c = m.classifications[0].entries[0];
+    expect(c.car == 0 && c.position == 2 && c.laps == 5 && c.grid == 1 && c.points == 18 && c.pit_stops == 1 &&
+               c.status == 3 && c.best_lap_ms == 91500 && c.race_ms == 512250 && c.penalties_s == 5,
+           "vehicle 0: P2 from P1, 5 laps, 18 points, one stop, best 1:31.500, 8:32.250, 5 s of penalties");
+    expect(m.classifications[0].entries[1].position == 1 && m.classifications[0].entries[1].points == 25, "vehicle 1 won");
+}
+
 static void test_messages()
 {
     udp::Source u;
@@ -344,7 +371,8 @@ static void test_fastest_from_memory()
 static void test_points()
 {
     expect(rcl::fires("session.penalty") && rcl::fires("session.penalty.served") && rcl::fires("session.drs") &&
-               rcl::fires("session.start_lights") && rcl::fires("session.safety_car.phase") && rcl::fires("session.fastest_lap"),
+               rcl::fires("session.start_lights") && rcl::fires("session.safety_car.phase") && rcl::fires("session.fastest_lap") &&
+               rcl::fires("session.classification"),
            "the broadcast points read the live state");
 }
 
@@ -368,6 +396,7 @@ int main()
     test_session();
     test_cars();
     test_sector_bests();
+    test_classification();
     test_messages();
     test_broadcast_moments();
     test_fastest_from_memory();

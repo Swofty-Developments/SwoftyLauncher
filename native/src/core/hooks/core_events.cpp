@@ -78,6 +78,7 @@ static_assert(declared<swofty::race_control::events::Drs>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::race_control::events::StartLights>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::race_control::events::SafetyCarPhase>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::race_control::events::FastestLap>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::race_control::events::Classification>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::tyre_damage::events::Damage>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::speech::events::Line>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::speech::events::Timed>(SWOFTY_POINT_NOTIFY));
@@ -183,6 +184,7 @@ bool session_drs(swofty::race_control::events::Drs &payload) { return fire(paylo
 bool session_start_lights(swofty::race_control::events::StartLights &payload) { return fire(payload); }
 bool session_safety_car_phase(swofty::race_control::events::SafetyCarPhase &payload) { return fire(payload); }
 bool session_fastest_lap(swofty::race_control::events::FastestLap &payload) { return fire(payload); }
+bool session_classification(swofty::race_control::events::Classification &payload) { return fire(payload); }
 bool session_sector(swofty::race_control::events::Sector &payload) { return fire(payload); }
 bool session_car_status(swofty::race_control::events::CarStatus &payload) { return fire(payload); }
 bool car_tyre_damage(swofty::tyre_damage::events::Damage &payload) { return fire(payload); }

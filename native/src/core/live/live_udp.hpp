@@ -23,6 +23,9 @@
 //     44 and liveryColours[4] RGB from 45. 2026 24 x 60: driverId u16 at 1 and teamId u16 at 5 only.
 //   Car Status (7): 2024 and 2025 22 x 55 bytes, from 29: pitLimiterStatus 4, drsAllowed 22, drsActivationDistance
 //     u16 23, vehicleFiaFlags i8 28. 2026 24 x 59: drsAllowed 22 and vehicleFiaFlags 28 only.
+//   Final Classification (8): numCars 29, entries from 30, 2024 22 x 45 bytes, 2025 22 x 46: position 0, numLaps 1,
+//     gridPosition 2, points 3, numPitStops 4, resultStatus 5, resultReason 6 (2025), then bestLapTimeInMS u32,
+//     totalRaceTime f64, penaltiesTime.
 //   Session History (11), 1460 bytes, 2024 and 2025: carIdx 29, numLaps 30, bestSector1LapNum 33, 2 at 34, 3 at 35,
 //     100 x 14-byte laps from 36: sector n ms u16 at 4 + 3(n-1) and minutes u8 after it.
 // Pure: live_state.cpp feeds it packets and snapshots under its own lock.
@@ -66,7 +69,7 @@ inline const Layout *layout(const uint8_t *p, size_t len)
         {2025, 3, 45, 0, 0, 0},            {2026, 3, 45, 0, 0, 0},            {2024, 4, 1350, 60, 22, HEADER + 1},
         {2025, 4, 1284, 57, 22, HEADER + 1}, {2026, 4, 1470, 60, 24, HEADER + 1}, {2024, 7, 1239, 55, 22, HEADER},
         {2025, 7, 1239, 55, 22, HEADER},   {2026, 7, 1445, 59, 24, HEADER},   {2024, 11, 1460, 0, 0, 0},
-        {2025, 11, 1460, 0, 0, 0},
+        {2025, 11, 1460, 0, 0, 0},         {2024, 8, 1020, 45, 22, HEADER + 1}, {2025, 8, 1042, 46, 22, HEADER + 1},
     };
     if (!p || len < HEADER + 1)
         return nullptr;
@@ -96,8 +99,9 @@ struct Car {
 struct Moments {
     std::vector<rc::events::Penalty> penalties;
     std::vector<rc::events::PenaltyServed> served;
+    std::vector<rc::events::Classification> classifications;
 
-    bool empty() const { return penalties.empty() && served.empty(); }
+    bool empty() const { return penalties.empty() && served.empty() && classifications.empty(); }
 };
 
 template <class E> E payload()
@@ -116,6 +120,16 @@ public:
         session_at_ = 0;
         cars_ = {};
         reset_session();
+    }
+
+    // The live session ended: the values go, a final classification still to fire stays.
+    void end()
+    {
+        auto keep = std::move(moments_.classifications);
+        uint64_t uid = uid_;
+        reset();
+        uid_ = uid;
+        moments_.classifications = std::move(keep);
     }
 
     // Decodes one packet; false when it is not one this source reads.
@@ -148,6 +162,9 @@ public:
         case 11:
             history(p, now_ms);
             break;
+        case 8:
+            classification(p, *l);
+            break;
         }
         return true;
     }
@@ -168,6 +185,7 @@ public:
         Moments out;
         out.penalties.swap(moments_.penalties);
         out.served.swap(moments_.served);
+        out.classifications.swap(moments_.classifications);
         return out;
     }
 
@@ -238,6 +256,34 @@ private:
             c.race_number = l.format == 2026 ? 0 : e[5];
             c.team_colour = l.format == 2025 && e[44] ? uint32_t(e[45]) << 16 | uint32_t(e[46]) << 8 | e[47] : 0;
         }
+    }
+
+    void classification(const uint8_t *p, const Layout &l)
+    {
+        if (moments_.classifications.size() >= 2)
+            return;
+        auto e = payload<rc::events::Classification>();
+        size_t count = p[HEADER] < l.cars ? p[HEADER] : l.cars;
+        size_t at = l.stride == 46 ? 7 : 6;
+        for (size_t i = 0; i < count; i++) {
+            const uint8_t *r = p + l.first + i * l.stride;
+            rc::events::ClassifiedCar &c = e.entries[e.cars++];
+            c.car = uint32_t(i);
+            c.position = r[0];
+            c.laps = r[1];
+            c.grid = r[2];
+            c.points = r[3];
+            c.pit_stops = r[4];
+            c.status = r[5];
+            c.reason = l.stride == 46 ? r[6] : 0;
+            c.best_lap_ms = u32(r + at);
+            double race_s;
+            uint64_t bits = u64(r + at + 4);
+            std::memcpy(&race_s, &bits, sizeof race_s);
+            c.race_ms = race_s > 0 && race_s < 4e6 ? uint32_t(race_s * 1000.0 + 0.5) : 0;
+            c.penalties_s = r[at + 12];
+        }
+        moments_.classifications.push_back(e);
     }
 
     void history(const uint8_t *p, uint64_t now)
