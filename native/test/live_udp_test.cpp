@@ -141,6 +141,7 @@ static void test_cars()
     e[32 + 14] = 1;
     lap[29 + 2 * 57 + 47] = 0x10, lap[29 + 2 * 57 + 48] = 0x27;
     lap[29 + 2 * 57 + 49] = 0xd0, lap[29 + 2 * 57 + 50] = 0x07;
+    putf(lap, 29 + 2 * 57 + 28, -1.25f);
     feed(u, lap);
     Bytes st = packet(2025, 7, 1239);
     uint8_t *c = &st[29 + 2 * 55];
@@ -165,6 +166,7 @@ static void test_cars()
     expect(swofty::live::driver_status(d) == swofty::live::DriverStatus::in_lap, "Lap Data driverStatus 2: in lap");
     expect(d.pit_lane_timer_active == 1 && d.pit_lane_ms == 10000 && d.pit_stop_ms == 2000,
            "pit lane timer on, 10.000 s in the lane, 2.000 s in the box");
+    expect(swofty::live::safety_car_delta_s(d) == -1.25f, "Lap Data safetyCarDelta -1.25 s at entry+28 (2025)");
     expect(swofty::live::drs_allowed(d) == true && d.drs_distance_m == 120.f && swofty::live::pit_limiter(d) == true &&
                swofty::live::fia_flag(d) == int8_t(2),
            "Car Status: DRS allowed 120 m out, limiter on, blue flag");
@@ -197,10 +199,12 @@ static void test_cars()
 
     Bytes lap24 = packet(2024, 2, 1131);
     lap24[29 + 30 + 12] = 3;
+    putf(lap24, 29 + 26, 2.5f);
     feed(v, lap24);
     n = snapshot();
     merge(v, n);
     expect(swofty::live::driver_status(n.details[0]) == swofty::live::DriverStatus::out_lap, "2024 Lap Data: out lap");
+    expect(swofty::live::safety_car_delta_s(n.details[0]) == 2.5f, "2024 Lap Data safetyCarDelta at entry+26");
 }
 
 static void test_sector_bests()

@@ -196,7 +196,8 @@ typedef struct SwoftyLiveCarDetail {
     uint16_t driver_id;            // the UDP driver id, before the core's stock id rewrite (SWOFTY_LIVE_HAVE_IDENTITY)
     uint8_t pad[2];
     uint32_t personal_best_sector_ms[3]; // the car's best time in each sector this session, 0 for none (SWOFTY_LIVE_HAVE_SECTOR_BESTS)
-    uint32_t reserved[7];
+    float safety_car_delta_s;      // delta to the safety car's required time, s, as the game sends it (SWOFTY_LIVE_HAVE_SC_DELTA)
+    uint32_t reserved[6];
 } SwoftyLiveCarDetail;
 ```
 
@@ -207,6 +208,7 @@ typedef struct SwoftyLiveCarDetail {
 | `live::drs_allowed(d)`, `live::pit_limiter(d)`, `live::fia_flag(d)`, `live::driver_status(d)` | `std::optional`, empty when the bit is clear; `driver_status` is a `live::DriverStatus` |
 | `live::race_number(d)`, `live::team_colour(d)` | `std::optional`, empty when the identity bit is clear (`team_colour` also when it is 0) |
 | `live::sector_bests(d)` | `std::array<uint32_t, 3>` of the personal best sectors, empty when the bit is clear |
+| `live::safety_car_delta_s(d)` | `std::optional<float>`, the car's safety car delta, empty when the bit is clear |
 | `live::driver_identity(d)` | `live::DriverIdentity{stat_id, code, first_name, last_name, label, name_reversed}`, see [Driver names](#driver-names) |
 
 ### Driver names
@@ -515,8 +517,9 @@ The values below have no verified memory source. The core decodes them from the 
 | `race_number`, `team_id`, `driver_id` | `HAVE_IDENTITY` | Participants (4) `m_raceNumber`, `m_teamId`, `m_driverId` | yes | team and driver id only |
 | `team_colour` | `HAVE_IDENTITY` | Participants (4) `m_liveryColours[0]` | 2025 only | no |
 | `personal_best_sector_ms` | `HAVE_SECTOR_BESTS` | Session History (11) `m_bestSectorNLapNum` and that lap's sector time | yes | no |
+| `safety_car_delta_s` | `HAVE_SC_DELTA` | Lap Data (2) `m_safetyCarDelta` | yes | yes |
 
-`driver_id` is the `stat_id` of the car's `entrants.drivers` row for a stock driver; `live::driver_identity` reads its code and names ([Driver names](#driver-names)). The session's best sector is the lowest `personal_best_sector_ms` over the cars. Session History carries one car per packet, so a car's bests refresh about once a second per car on the game's rotation.
+`driver_id` is the `stat_id` of the car's `entrants.drivers` row for a stock driver; `live::driver_identity` reads its code and names ([Driver names](#driver-names)). `safety_car_delta_s` is the game's delta to the time the safety car or the virtual safety car requires; the game sends it on every lap and it means something while `safety_car` reads 1 or 2. The session's best sector is the lowest `personal_best_sector_ms` over the cars. Session History carries one car per packet, so a car's bests refresh about once a second per car on the game's rotation.
 
 The car index of a UDP packet is taken as the vehicle id, as for the telemetry feed (see [Telemetry](./telemetry#availability)). The race control messages (penalties, served penalties, DRS, start lights, the safety car phase and the fastest lap) fire as events; see [Race control](./race-control#race-control-messages). The 2026 rows read the 2025 entry offsets of the packets whose 2026 size the telemetry decoder knows; the 2026 Session and Participants layouts past the team id are not catalogued.
 

@@ -368,6 +368,12 @@ inline std::optional<uint32_t> team_colour(const CarDetail &d)
     return has(d, SWOFTY_LIVE_HAVE_IDENTITY) && d.team_colour ? std::optional<uint32_t>(d.team_colour) : std::nullopt;
 }
 
+// The car's delta to the safety car's or the virtual safety car's required time, in seconds as the game sends it.
+inline std::optional<float> safety_car_delta_s(const CarDetail &d)
+{
+    return has(d, SWOFTY_LIVE_HAVE_SC_DELTA) ? std::optional<float>(d.safety_car_delta_s) : std::nullopt;
+}
+
 // The car's best time in each sector this session, 0 for a sector it has no time in yet.
 inline std::optional<std::array<uint32_t, 3>> sector_bests(const CarDetail &d)
 {

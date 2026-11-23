@@ -130,7 +130,8 @@ static_assert(offsetof(SwoftyLiveSession, duration_s) == 416 && offsetof(SwoftyL
     X(team_colour, 112)                                                                                                          \
     X(driver_id, 116)                                                                                                            \
     X(personal_best_sector_ms, 120)                                                                                              \
-    X(reserved, 132)
+    X(safety_car_delta_s, 132)                                                                                                   \
+    X(reserved, 136)
 static_assert(sizeof(SwoftyLiveCarDetail) == 160 && alignof(SwoftyLiveCarDetail) == 8);
 #define X(f, at) static_assert(offsetof(SwoftyLiveCarDetail, f) == (at), #f);
 DETAIL

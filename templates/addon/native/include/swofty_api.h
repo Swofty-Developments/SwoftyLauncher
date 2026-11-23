@@ -1169,6 +1169,7 @@ typedef struct SwoftyContentOps {
 #define SWOFTY_LIVE_HAVE_DRIVER_STATUS (1ull << 35)
 #define SWOFTY_LIVE_HAVE_PIT_TIMING (1ull << 36)
 #define SWOFTY_LIVE_HAVE_SECTOR_BESTS (1ull << 37)
+#define SWOFTY_LIVE_HAVE_SC_DELTA (1ull << 38)
 
 #define SWOFTY_LIVE_CAR_PLAYER (1u << 0)
 #define SWOFTY_LIVE_CAR_AI_DRIVING (1u << 1)
@@ -1371,7 +1372,9 @@ typedef struct SwoftyLiveTurn {
    (before the core's stock id rewrite); team_colour, the livery's first colour as 0xRRGGBB (0 where the game sends
    none).
    SWOFTY_LIVE_HAVE_SECTOR_BESTS: personal_best_sector_ms, the car's best time in each sector this session, from any
-   lap (0 while it has none). */
+   lap (0 while it has none).
+   SWOFTY_LIVE_HAVE_SC_DELTA: safety_car_delta_s, the car's delta to the time the safety car or the virtual safety car
+   requires, in seconds as the game sends it (sent every lap; it has a meaning while one is out). */
 typedef struct SwoftyLiveCarDetail {
     uint32_t version;
     uint32_t size;
@@ -1404,7 +1407,8 @@ typedef struct SwoftyLiveCarDetail {
     uint16_t driver_id;
     uint8_t pad[2];
     uint32_t personal_best_sector_ms[3];
-    uint32_t reserved[7];
+    float safety_car_delta_s;
+    uint32_t reserved[6];
 } SwoftyLiveCarDetail;
 
 typedef struct SwoftyLiveImages SwoftyLiveImages;

@@ -14,7 +14,7 @@
 //   Session (1), 753 bytes, 2024 and 2025: totalLaps 32, sessionTimeLeft u16 38, sessionDuration u16 40,
 //     safetyCarStatus 153, pitStopWindowIdealLap 682, pitStopWindowLatestLap 683, pitStopRejoinPosition 684.
 //   Lap Data (2): 2024 22 x 50 bytes, 2025 22 x 57, 2026 24 x 57, from 29. With base 30 (2024) or 32 (the rest):
-//     driverStatus base+12, pitLaneTimerActive base+14, pitLaneTimeInLaneInMS u16 base+15, pitStopTimerInMS u16
+//     safetyCarDelta f32 base-4, driverStatus base+12, pitLaneTimerActive base+14, pitLaneTimeInLaneInMS u16 base+15, pitStopTimerInMS u16
 //     base+17.
 //   Event (3), 45 bytes, every format: code at 29, details at 33. PENA penaltyType, infringementType, vehicleIdx,
 //     otherVehicleIdx, time, lapNum, placesGained; DTSV vehicleIdx; SGSV vehicleIdx, stopTime f32 (2025); FTLP
@@ -112,6 +112,7 @@ struct Car {
     uint64_t lap_at = 0, status_at = 0, who_at = 0;
     uint8_t driver_status = 0, pit_timer = 0;
     uint32_t pit_lane_ms = 0, pit_stop_ms = 0;
+    float sc_delta = 0;
     uint8_t drs_allowed = 0, pit_limiter = 0;
     int8_t fia_flag = 0;
     bool status_full = false;
@@ -253,6 +254,7 @@ private:
             c.pit_timer = e[base + 14];
             c.pit_lane_ms = u16(e + base + 15);
             c.pit_stop_ms = u16(e + base + 17);
+            c.sc_delta = f32(e + base - 4);
         }
     }
 
@@ -429,6 +431,10 @@ private:
                 d.pit_lane_ms = u.pit_lane_ms;
                 d.pit_stop_ms = u.pit_stop_ms;
                 mark(c, d, SWOFTY_LIVE_HAVE_PIT_TIMING);
+            }
+            if (!(d.have & SWOFTY_LIVE_HAVE_SC_DELTA)) {
+                d.safety_car_delta_s = u.sc_delta;
+                mark(c, d, SWOFTY_LIVE_HAVE_SC_DELTA);
             }
         }
         if (u.status_at && now - u.status_at <= STALE_MS) {
