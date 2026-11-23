@@ -348,6 +348,77 @@ The scene a scene target grows is read after every other addon's whole replaceme
 
 A record is not bound to the dials. With `screen` in place of `dial` its elements go on the standings board, the replay screen's drivers list or the spectator tower, with `show` and `also` naming the leaf that shows them on each screen, `stock_nodes` hiding the game's own parts while they show and `restyle` reshaping the Race Control banner: [HUD screens](/reference/ops/hud-screens). Team logos, the series logo and colour bars come from the game's own textures through the `unit` kind, `texture` bindings and stock-texture sprites: [HUD textures and units](/reference/ops/hud-textures). The rows of a timing tower are the `repeat`, `stack` and `centre` fields above. A group that slides or fades on a bool leaf carries a `motion`: [HUD motion](/reference/ops/hud-motion).
 
+## Yield a part
+
+A record with `yield` in place of `dial`, `scene` or `screen` hides whole parts of the HUD while its leaf is on: the game's own part and every addon's records on it. It draws nothing and has no sprites or elements. An addon that draws a part with the [overlay](/reference/std/overlay) yields that part, so a season HUD's tower or dial gives way to it.
+
+```jsonc [hud/yield.json]
+{
+  "hud.element": {
+    "tower": {
+      "prefix": "fbo_tower",                                    // optional, as in any record
+      "yield": {
+        "parts": ["standings", "replay", "spectator", "lap_counter"],
+        "while": { "view_model": "view_model_data.hud_fbo_tower" }   // a view_model leaf or a path
+      }
+    },
+    "dial": {
+      "yield": {
+        "parts": ["f1_26", "f1_25", "f2"],
+        "while": { "view_model": "view_model_data.hud_fbo_dial" }
+      }
+    }
+  }
+}
+```
+
+The native code sets the leaf:
+
+```cpp [native/src/main.cpp]
+#include <swofty/hud.hpp>
+
+void on_frame(float)
+{
+    swofty::hud::set("view_model_data.hud_fbo_tower", tower_drawn());   // true: the stock tower and every record on it are hidden
+}
+```
+
+While the leaf is false or never written, the part is what it would be without the yield record, records and all. `"not": true` on `while` hides the part while the leaf is false. A yield record takes only `yield` and `prefix`; the check refuses anything else, an unknown part, an empty `parts` and a `while` that is not a `view_model` leaf or a `path`.
+
+The parts:
+
+| part | scene | null inside | template node |
+|---|---|---|---|
+| `f1_26` | `art/osd/components/dial/dial_om_xm.idf` | `boundless_customisation` | `hud_f1_dial_om_xm.osd_visibility_option.f1_om_xm_dial_child`; spectator `hud_spectator_2.content.bottom_right.f1_26_dial` |
+| `f1_25` | `art/osd/components/dial/dial_complete.idf` | `boundless_customisation` | `hud_f1_dial.osd_visibility_option.f1_dial_child`; spectator `hud_spectator_2.content.bottom_right.modern_dial` |
+| `f2` | `art/osd/components/dial/dial_f2_complete.idf` | `boundless_customisation` | `hud_f2_dial.osd_visibility_option.f2_dial_child`; spectator `hud_spectator_2.content.bottom_right.f2_dial` |
+| `standings` | `art/osd/components/driver_position_table/driver_position_table_stacked.idf` | `Scene Root` | `hud_track_position.osd_visibility_option.track_position` |
+| `replay` | `art/screens/theatre/replay_highlights.idf` | `elements_null`, all but `replay_interface` | `replays_and_highlights` in `screens/replays_and_highlights.ui` |
+| `spectator` | `art/osd/components/spectator_mode/spec_driver_position_table.idf` and `art/osd/screens/spectator_mode_2.idf` | `Scene Root`; `Scene Root`, `session_timer` only | `hud_spectator_2.content` in `screens/hud_spectator_2.ui`, through `spectator_mode_2 > driver_position_table` and `spectator_mode_2` |
+| `lap_counter` | `art/osd/components/lap_counter/lap_counter.idf` | `Scene Root` | `hud_lap_counter.osd_visibility_option` |
+| `flag_box` | `art/osd/components/message_system/race_condition_flag_message.idf` | `boundless` | `hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message` and its `_p2` twin |
+| `notifications` | `art/osd/components/message_system/message_system.idf` | `Scene Root` | `hud_notifications_dynamic.osd_visibility_option.hud_notifications_dynamic` and its `_p2` twin |
+| `session_timer` | `art/osd/components/session_timer/q_session_timer.idf` | `boundless` | `hud_session_timer_dynamic.session_timer` |
+| `minimap` | `art/osd/components/minimap/minimap_combined.idf` | `Scene Root` | `hud_dynamic_minimap.osd_visibility_option.map` |
+
+Scenes are `eaid://ui_package/…` paths; the dials' and the standings' template is `templates/hud_dynamic_templates.ui`. The dial parts hide the dial in the race HUD and the spectator HUD; the spectator screen's own minimap (`mini_map`, `track_map` in `spectator_mode_2.idf`) is not a part.
+
+For each part the composer puts one null `<prefix>_yield` inside the element of the table and moves that element's children into it, and adds a group `<prefix>_yield_<part>` under each template node with one node `v_yield` (`v_yield_1` for a part's second scene) whose `visible` is NOT the leaf, default true:
+
+```text
+dial_complete.idf                                   hud_dynamic_templates.ui
+  Scene Root                                          hud_f1_dial.osd_visibility_option.f1_dial_child
+    boundless_customisation                             fbo_dial_yield_f1_25
+      fbo_dial_yield            <- visible = NOT hud_fbo_dial    v_yield   layout fbo_dial_yield
+        frame, fuel, holder_central, pit_indicator
+        s11_onboard…, halo…     (every record's elements and wrappers)
+    tl_customisation, br_customisation
+```
+
+The nulls go in after every other step of the composer and after every other addon's archive changes to those scenes (a whole replacement such as Project Halo's `dial_complete.idf` included), so they hold every record whatever the load order and prefixes. The ids of the moved elements follow their new paths, every name stays, and the drawing order stays: where the picked children are not next to each other (records' hosts after `replay_interface` on the replay screen), each run gets its own null, `<prefix>_yield`, `<prefix>_yield_2` … with a node each (`v_yield`, `v_yield_2` …). Several yield records on one part nest their nulls in the order of their prefixes. A yield binds only its own null, so it never meets another addon's claim on a stock element, and it does not count as one. The HUD editor runs no template, so it shows the part as it is without the yield.
+
+The composer writes a part's scene and template where it already writes them (`hud_scene.erp`, `hud_screen_scene.erp`, `hud_replay.erp` …, every copy alike) and otherwise adds `hud_yield.erp` (and `hud_yield_2.erp` … for other sets of archives) over every stock archive that carries them. The build lists `<prefix>: yields <parts> while <leaf> is on`.
+
 ## An editor entry of your own
 
 A `hud.slot` record in the same files adds an entry to the HUD editor with its own selection box, which the player moves, resizes and switches off. Native code reads the placement with `swofty/hud_slot.hpp` and draws there with the overlay: [HUD slots](/reference/std/hud-slots).
