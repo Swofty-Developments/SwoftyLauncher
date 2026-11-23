@@ -1,0 +1,19 @@
+{
+  "hud.element": {
+    "broadcast_tower": {
+      "$comment": "Hides the stock timing tower, the lap counter and every addon's records on them while the addon's leaf is on; the addon draws its own tower with the overlay.",
+      "prefix": "bc_tower",
+      "yield": {
+        "parts": [
+          "standings",
+          "replay",
+          "spectator",
+          "lap_counter"
+        ],
+        "while": {
+          "view_model": "view_model_data.hud_bc_tower"
+        }
+      }
+    }
+  }
+}
