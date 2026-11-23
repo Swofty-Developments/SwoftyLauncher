@@ -221,7 +221,8 @@ fn whose_cap(profile: &str) -> String {
 pub(super) fn banner_from(root: &Path, source: String, profile: String) -> Option<Banner> {
     let v = Vault::open(root, &source).ok()?;
     let table = v.careers();
-    let shown = table.drop_to_show();
+    let index = swofty_core::stdlib::careers::read(&swofty_core::stdlib::careers::data_path(root));
+    let shown = table.drop_to_show_in(&index);
     if let Some(newest) = shown.iter().max_by_key(|r| r.last_seen_at) {
         return Some(Banner::Dropped(Missing {
             profile,

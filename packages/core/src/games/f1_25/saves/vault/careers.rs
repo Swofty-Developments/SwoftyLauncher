@@ -1,7 +1,8 @@
 //! The vault's career table: `careers.json` in the vault folder, one row per
-//! career id, updated from the career index each snapshot stores. A career in
-//! the index of one snapshot and missing from the next one is
-//! `missing-since:<snapshot>`. Nothing here reads F1 25's save: the index comes
+//! career, updated from the career index each snapshot stores. A career keeps
+//! its row when the core renames it (same save slot guid, or an id in its
+//! `renamed_from`). A career in the index of one snapshot and missing from the
+//! next one under every id is `missing-since:<snapshot>`. Nothing here reads F1 25's save: the index comes
 //! from the core, so a launcher with no index yet (first run, EA before the
 //! core ran, core off) has no rows and never claims a career is gone.
 
@@ -9,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use crate::stdlib::careers::{Career, CareerAddon};
+use crate::stdlib::careers::{Career, CareerAddon, guid_of, same_profile};
 
 pub const FILE: &str = "careers.json";
 pub const INDEX_DIR: &str = "index";
@@ -93,6 +94,12 @@ pub struct Row {
     pub found_at: Option<i64>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub dismissed: bool,
+    /// The career's save slot key in the core's index.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub slot: Option<String>,
+    /// The ids the career had in earlier indexes: one career, kept as one row.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub was: Vec<String>,
 }
 
 fn is_false(b: &bool) -> bool {
@@ -100,6 +107,53 @@ fn is_false(b: &bool) -> bool {
 }
 
 impl Row {
+    /// The guid of the career's save slot.
+    pub fn guid(&self) -> Option<&str> {
+        self.slot
+            .as_deref()
+            .and_then(guid_of)
+            .or_else(|| guid_of(&self.career))
+    }
+
+    /// Whether index career `c` is this row's career, under this row's id or another one.
+    pub fn is(&self, c: &Career) -> bool {
+        if self.career == c.career
+            || self.was.contains(&c.career)
+            || c.renamed_from().any(|id| id == self.career)
+        {
+            return true;
+        }
+        matches!((self.guid(), c.guid()), (Some(a), Some(b)) if a.eq_ignore_ascii_case(b))
+            && same_profile(self.profile.as_deref(), c.profile.as_deref())
+    }
+
+    fn rename(&mut self, to: &str) {
+        let from = std::mem::replace(&mut self.career, to.to_owned());
+        self.was.retain(|w| w != to);
+        if !self.was.contains(&from) {
+            self.was.push(from);
+        }
+    }
+
+    /// Fold `other`, a row of the same career under another id, into this one.
+    fn absorb(&mut self, other: Row) {
+        if other.first_seen_at < self.first_seen_at {
+            self.first_seen = other.first_seen;
+            self.first_seen_at = other.first_seen_at;
+        }
+        if self.label.is_empty() {
+            self.label = other.label;
+        }
+        if other.status == Status::Archived {
+            self.status = Status::Archived;
+        }
+        for id in other.was.into_iter().chain([other.career]) {
+            if id != self.career && !self.was.contains(&id) {
+                self.was.push(id);
+            }
+        }
+    }
+
     pub fn name(&self) -> &str {
         match self.label.is_empty() {
             true => &self.career,
@@ -387,6 +441,15 @@ impl Careers {
         self.missing().filter(|r| !r.dismissed).collect()
     }
 
+    /// [`Self::drop_to_show`] less the careers `index`, the save's index now, holds in the save under
+    /// any id: a row an older check marked missing before its career was renamed is no loss.
+    pub fn drop_to_show_in(&self, index: &[Career]) -> Vec<&Row> {
+        self.drop_to_show()
+            .into_iter()
+            .filter(|r| !in_save(index).any(|c| r.is(c)))
+            .collect()
+    }
+
     pub fn dismiss(&mut self) -> bool {
         let mut any = false;
         for r in self
@@ -404,7 +467,11 @@ impl Careers {
     /// so an index without the career does not report it missing; the row is present again, and no longer
     /// dismissed, when an index holds the career again.
     pub fn forget(&mut self, id: &str) -> bool {
-        let Some(r) = self.careers.iter_mut().find(|r| r.career == id) else {
+        let Some(r) = self
+            .careers
+            .iter_mut()
+            .find(|r| r.career == id || r.was.iter().any(|w| w == id))
+        else {
             return false;
         };
         let before = (r.status.clone(), r.dismissed);
@@ -416,7 +483,11 @@ impl Careers {
     }
 
     pub fn archive(&mut self, id: &str) -> bool {
-        match self.careers.iter_mut().find(|r| r.career == id) {
+        match self
+            .careers
+            .iter_mut()
+            .find(|r| r.career == id || r.was.iter().any(|w| w == id))
+        {
             Some(r) => {
                 r.status = Status::Archived;
                 true
@@ -431,11 +502,7 @@ impl Careers {
     pub fn observe(&mut self, snapshot: &str, at: i64, index: &[Career]) -> Vec<(String, String)> {
         let mut dropped = Vec::new();
         let here: BTreeSet<&str> = in_save(index).map(|c| c.career.as_str()).collect();
-        let gone: BTreeSet<&str> = index
-            .iter()
-            .filter(|c| deleted(c))
-            .map(|c| c.career.as_str())
-            .collect();
+        let gone: Vec<&Career> = index.iter().filter(|c| deleted(c)).collect();
         for c in in_save(index) {
             let fresh = |r: &mut Row| {
                 r.mode = text(c, "mode").or(r.mode.take());
@@ -449,11 +516,24 @@ impl Careers {
                 r.profile = c.profile.clone().or(r.profile.take());
                 r.last_played = number(c, "last_saved").map(|ms| ms / 1000).or(r.last_played);
                 r.addons = c.addons.clone();
+                r.slot = text(c, "slot").or(r.slot.take());
                 r.last_seen = snapshot.to_owned();
                 r.last_seen_at = at;
             };
-            match self.careers.iter_mut().find(|r| r.career == c.career) {
+            let found = self
+                .careers
+                .iter()
+                .position(|r| r.career == c.career)
+                .or_else(|| {
+                    self.careers
+                        .iter()
+                        .position(|r| !here.contains(r.career.as_str()) && r.is(c))
+                });
+            match found.map(|i| &mut self.careers[i]) {
                 Some(r) => {
+                    if r.career != c.career {
+                        r.rename(&c.career);
+                    }
                     fresh(r);
                     if r.status != Status::Archived {
                         if r.status != Status::Present {
@@ -482,10 +562,29 @@ impl Careers {
                         status: Status::Present,
                         found_at: None,
                         dismissed: false,
+                        slot: None,
+                        was: Vec::new(),
                     };
                     fresh(&mut r);
                     self.careers.push(r);
                 }
+            }
+        }
+        let mut i = 0;
+        while i < self.careers.len() {
+            let r = &self.careers[i];
+            let into = match here.contains(r.career.as_str()) {
+                true => None,
+                false => in_save(index)
+                    .find(|c| r.is(c))
+                    .and_then(|c| self.careers.iter().position(|o| o.career == c.career)),
+            };
+            match into {
+                Some(j) => {
+                    let r = self.careers.remove(i);
+                    self.careers[if j > i { j - 1 } else { j }].absorb(r);
+                }
+                None => i += 1,
             }
         }
         let twins: Vec<&Career> = in_save(index).collect();
@@ -501,7 +600,7 @@ impl Careers {
                 }
                 continue;
             }
-            match (&r.status, gone.contains(r.career.as_str())) {
+            match (&r.status, gone.iter().any(|c| r.is(c))) {
                 (Status::Archived | Status::DeletedInGame, _) => {}
                 (Status::Present, true) => r.status = Status::DeletedInGame,
                 (Status::Present, false) => {
@@ -604,27 +703,32 @@ fn pos(c: &Career) -> (i64, i64) {
     (number(c, "season").unwrap_or(0), number(c, "round").unwrap_or(0))
 }
 
+/// The career of `list` that is `c`: the one with its id, else the one it is under another id.
+fn counterpart<'a>(list: &BTreeMap<&str, &'a Career>, c: &Career) -> Option<&'a Career> {
+    list.get(c.career.as_str())
+        .or_else(|| list.values().find(|o| o.same_career(c)))
+        .copied()
+}
+
 /// `now` is the index of the save as it is; `version` the index stored with
-/// the snapshot to restore.
+/// the snapshot to restore. A career under another id in one of them is the
+/// same career ([`Career::same_career`]).
 pub fn diff(now: &[Career], version: &[Career]) -> Diff {
     let have: BTreeMap<&str, &Career> = in_save(now).map(|c| (c.career.as_str(), c)).collect();
     let then: BTreeMap<&str, &Career> = in_save(version).map(|c| (c.career.as_str(), c)).collect();
     let mut out = Diff::default();
-    for (id, c) in &then {
-        match have.get(id) {
+    for c in then.values() {
+        match counterpart(&have, c) {
             None => out.get_back.push(brief(c)),
             Some(n) if pos(n) > pos(c) => out.progress.push((brief(n), brief(c))),
             Some(_) => {}
         }
     }
-    let flagged: BTreeSet<&str> = marked_missing(version)
-        .iter()
-        .map(|c| c.career.as_str())
-        .collect();
-    for (id, c) in &have {
-        if !then.contains_key(id) {
+    let flagged: Vec<&Career> = marked_missing(version);
+    for c in have.values() {
+        if counterpart(&then, c).is_none() {
             out.lose.push(brief(c));
-            if flagged.contains(id) {
+            if flagged.iter().any(|f| f.same_career(c)) {
                 out.marked_missing.push(brief(c));
             }
         }
@@ -832,6 +936,149 @@ mod tests {
         let shown: Vec<_> = t.drop_to_show().iter().map(|r| r.career.clone()).collect();
         assert_eq!(shown, ["b"]);
         assert!(t.find("a").unwrap().status.is_missing());
+    }
+
+    const GUID: &str = "667c9aad208c7d9c";
+    const LISTED: &str = "driver_career:667c9aad208c7d9c";
+    const LOADED: &str = "driver_career_progressive:667c9aad208c7d9c";
+
+    fn listed_rec(id: &str, slot: &str) -> String {
+        format!(
+            r#"{{"career":"{id}","profile":"default","slot":"{slot}","source":"slots","mode":"driver_career","status":"present","slot_season":3}}"#
+        )
+    }
+
+    fn loaded_rec(id: &str, slot: &str, renamed_from: &[&str], round: i64) -> String {
+        format!(
+            r#"{{"career":"{id}","profile":"default","slot":"{slot}","label":"Progressive: Max VERSTAPPEN, Red Bull, 2013","mode":"driver_career","status":"present","season":2013,"round":{round},"renamed_from":{}}}"#,
+            serde_json::to_string(renamed_from).unwrap()
+        )
+    }
+
+    #[test]
+    fn a_career_the_core_renames_at_its_load_keeps_one_row_and_raises_no_drop() {
+        let mut t = Careers::default();
+        assert!(t.observe("s1", 1, &table(&[listed_rec(LISTED, GUID)])).is_empty());
+        let dropped = t.observe("s2", 2, &table(&[loaded_rec(LOADED, GUID, &[], 5)]));
+        assert!(dropped.is_empty(), "{dropped:?}");
+        assert_eq!(t.careers.len(), 1);
+        let r = &t.careers[0];
+        assert_eq!(
+            (
+                r.career.as_str(),
+                r.was.as_slice(),
+                r.first_seen.as_str(),
+                r.last_seen.as_str()
+            ),
+            (LOADED, [LISTED.to_owned()].as_slice(), "s1", "s2")
+        );
+        assert_eq!(
+            (r.status.clone(), r.slot.as_deref()),
+            (Status::Present, Some(GUID))
+        );
+        assert_eq!(r.name(), "Progressive: Max VERSTAPPEN, Red Bull, 2013");
+        assert!(t.drop_to_show().is_empty());
+    }
+
+    #[test]
+    fn a_rename_the_core_records_pairs_a_slot_with_no_guid() {
+        let mut t = Careers::default();
+        t.observe("s1", 1, &table(&[listed_rec("driver_career:3", "3")]));
+        let renamed = loaded_rec("progressive.driver_career:3", "3", &["driver_career:3"], 1);
+        assert!(t.observe("s2", 2, &table(&[renamed])).is_empty());
+        assert_eq!(t.careers.len(), 1);
+        assert_eq!(t.careers[0].career, "progressive.driver_career:3");
+    }
+
+    #[test]
+    fn two_modes_slot_numbers_are_two_careers() {
+        let mut t = Careers::default();
+        t.observe("s1", 1, &table(&[listed_rec("my_team:3", "3")]));
+        let dropped = t.observe("s2", 2, &table(&[listed_rec("driver_career:3", "3")]));
+        assert_eq!(dropped, [("my_team:3".to_owned(), "s1".to_owned())]);
+        assert_eq!(t.careers.len(), 2);
+    }
+
+    #[test]
+    fn a_stale_missing_row_of_a_renamed_career_is_folded_into_its_row() {
+        let stale = Careers {
+            version: 1,
+            careers: vec![
+                Row {
+                    status: Status::MissingSince("s2".into()),
+                    found_at: Some(2),
+                    ..row(LISTED, "", "s1", 1)
+                },
+                row(LOADED, "Progressive 2013", "s2", 2),
+            ],
+        };
+        let now = table(&[loaded_rec(LOADED, GUID, &[LISTED], 7)]);
+        assert_eq!(stale.drop_to_show().len(), 1);
+        assert!(stale.drop_to_show_in(&now).is_empty());
+
+        let mut t = stale.clone();
+        assert!(t.observe("s3", 3, &now).is_empty());
+        assert_eq!(t.careers.len(), 1);
+        let r = &t.careers[0];
+        assert_eq!(
+            (r.career.as_str(), r.was.as_slice()),
+            (LOADED, [LISTED.to_owned()].as_slice())
+        );
+        assert_eq!((r.first_seen.as_str(), r.status.clone()), ("s1", Status::Present));
+        assert!(t.drop_to_show().is_empty());
+    }
+
+    fn row(id: &str, label: &str, seen: &str, at: i64) -> Row {
+        Row {
+            career: id.into(),
+            mode: Some("driver_career".into()),
+            label: label.into(),
+            driver: None,
+            team: None,
+            season: None,
+            round: None,
+            profile: Some("default".into()),
+            addons: Vec::new(),
+            first_seen: seen.into(),
+            first_seen_at: at,
+            last_seen: seen.into(),
+            last_seen_at: at,
+            last_played: None,
+            status: Status::Present,
+            found_at: None,
+            dismissed: false,
+            slot: None,
+            was: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn a_renamed_career_gone_from_the_save_is_still_a_drop() {
+        let mut t = Careers::default();
+        t.observe("s1", 1, &table(&[listed_rec(LISTED, GUID)]));
+        t.observe("s2", 2, &table(&[loaded_rec(LOADED, GUID, &[LISTED], 5)]));
+        let other = table(&[loaded_rec(
+            "driver_career_progressive:00000000000000b2",
+            "00000000000000b2",
+            &[],
+            1,
+        )
+        .replace("2013", "2014")]);
+        let dropped = t.observe("s3", 3, &other);
+        assert_eq!(dropped, [(LOADED.to_owned(), "s2".to_owned())]);
+        assert_eq!(t.drop_to_show_in(&other).len(), 1);
+        let gone = table(&[loaded_rec(LOADED, GUID, &[LISTED], 5).replace("present", "missing")]);
+        assert_eq!(t.drop_to_show_in(&gone).len(), 1);
+    }
+
+    #[test]
+    fn the_restore_preview_counts_a_renamed_career_once() {
+        let now = table(&[loaded_rec(LOADED, GUID, &[LISTED], 7)]);
+        let version = table(&[listed_rec(LISTED, GUID)]);
+        let d = diff(&now, &version);
+        assert!(d.get_back.is_empty() && d.lose.is_empty(), "{d:?}");
+        let d = diff(&version, &now);
+        assert!(d.get_back.is_empty() && d.lose.is_empty(), "{d:?}");
     }
 
     #[test]

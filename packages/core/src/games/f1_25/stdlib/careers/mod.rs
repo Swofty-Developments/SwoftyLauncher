@@ -136,6 +136,53 @@ impl Career {
             .and_then(Value::as_str)
             .filter(|v| !v.is_empty())
     }
+
+    /// The guid of the career's save slot, from its `slot` field or the end of its id.
+    pub fn guid(&self) -> Option<&str> {
+        self.field("slot")
+            .and_then(guid_of)
+            .or_else(|| guid_of(&self.career))
+    }
+
+    /// The ids the core's record had before the loaded career's id replaced them.
+    pub fn renamed_from(&self) -> impl Iterator<Item = &str> {
+        self.extra
+            .get("renamed_from")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+    }
+
+    /// Whether the core listed the record from the save slots and has not loaded the career since.
+    pub fn from_slots(&self) -> bool {
+        self.field("source") == Some("slots")
+    }
+
+    /// Whether `other` is this career under another id: one save slot guid in one profile, or an id
+    /// the core renamed one of them from. The core renames a career when it first loads it.
+    pub fn same_career(&self, other: &Career) -> bool {
+        if self.career == other.career {
+            return true;
+        }
+        let guid = matches!((self.guid(), other.guid()), (Some(a), Some(b)) if a.eq_ignore_ascii_case(b));
+        (guid && same_profile(self.profile.as_deref(), other.profile.as_deref()))
+            || self.renamed_from().any(|id| id == other.career)
+            || other.renamed_from().any(|id| id == self.career)
+    }
+}
+
+/// The save slot guid a career id or slot key ends in: 16 hex digits, not all zero. A slot the game
+/// gave no guid is keyed by its slot number, which another mode's slot can share.
+pub fn guid_of(key: &str) -> Option<&str> {
+    let tail = key.rsplit(':').next().unwrap_or(key);
+    (tail.len() == 16 && tail.bytes().all(|b| b.is_ascii_hexdigit()) && tail.bytes().any(|b| b != b'0'))
+        .then_some(tail)
+}
+
+/// Whether two records can be one career's: the same profile, or one has none yet.
+pub fn same_profile(a: Option<&str>, b: Option<&str>) -> bool {
+    a.is_none() || b.is_none() || a == b
 }
 
 #[cfg(test)]

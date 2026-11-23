@@ -119,15 +119,39 @@ pub fn sync(data: &Path, game: Option<&Path>, stamp: Option<&str>) -> crate::Res
 /// A restore puts a snapshot's careers back as the profile's list: the careers of `profile` (and the
 /// ones with no profile yet) in the index are replaced by those of `restored`, with their own details
 /// and last-played times, until the core lists the profile's careers again at the next Play. Other
-/// profiles' careers stay.
+/// profiles' careers stay. A restored career keeps the id the core gave it since ([`restored_ids`]).
 pub fn replace_profile(data: &Path, profile: &str, restored: &[Career]) -> crate::Result<()> {
     let mine = |c: &Career| c.profile.as_deref().is_none_or(|p| p == profile);
-    let mut list: Vec<Career> = read(&data_path(data)).into_iter().filter(|c| !mine(c)).collect();
-    list.extend(restored.iter().filter(|c| mine(c)).cloned());
+    let (now, mut list): (Vec<Career>, Vec<Career>) = read(&data_path(data)).into_iter().partition(mine);
+    let back: Vec<Career> = restored.iter().filter(|c| mine(c)).cloned().collect();
+    list.extend(restored_ids(&now, back));
     crate::write_json_shared(
         &data_path(data),
         &serde_json::json!({ "version": 1, "careers": list }),
     )
+}
+
+/// A restored record the core listed from the save slots before it loaded the career takes the id the
+/// core gave the career at its load since (`now` holds it under that id), so the next Play does not
+/// rename it again.
+pub(super) fn restored_ids(now: &[Career], mut back: Vec<Career>) -> Vec<Career> {
+    let ids: Vec<String> = back.iter().map(|c| c.career.clone()).collect();
+    for c in back.iter_mut().filter(|c| c.from_slots()) {
+        let Some(n) = now
+            .iter()
+            .find(|n| !n.from_slots() && !ids.contains(&n.career) && n.same_career(c))
+        else {
+            continue;
+        };
+        let mut was: Vec<String> = n.renamed_from().map(str::to_owned).collect();
+        if !was.contains(&c.career) {
+            was.push(c.career.clone());
+        }
+        c.extra.remove("source");
+        c.extra.insert("renamed_from".into(), Value::from(was));
+        c.career = n.career.clone();
+    }
+    back
 }
 
 /// Take a career that is gone from the save (missing or deleted in game) off the data folder's index. Only

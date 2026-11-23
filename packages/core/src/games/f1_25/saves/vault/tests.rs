@@ -1001,3 +1001,133 @@ fn copy_dir(from: &Path, to: &Path) {
         }
     }
 }
+
+const SLOT_GUID: &str = "667c9aad208c7d9c";
+const LISTED_ID: &str = "driver_career:667c9aad208c7d9c";
+const LOADED_ID: &str = "driver_career_progressive:667c9aad208c7d9c";
+
+fn write_records(root: &Path, records: &[serde_json::Value]) {
+    let path = root.join("data/careers/index.json");
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    std::fs::write(
+        path,
+        serde_json::json!({ "version": 1, "careers": records }).to_string(),
+    )
+    .unwrap();
+}
+
+fn listed_record() -> serde_json::Value {
+    serde_json::json!({
+        "career": LISTED_ID, "slot": SLOT_GUID, "source": "slots", "mode": "driver_career",
+        "status": "present", "slot_season": 3
+    })
+}
+
+fn loaded_record(round: i64) -> serde_json::Value {
+    serde_json::json!({
+        "career": LOADED_ID, "slot": SLOT_GUID, "mode": "driver_career", "status": "present",
+        "label": "Progressive: Max VERSTAPPEN, Red Bull, 2013", "season": 2013, "round": round,
+        "renamed_from": [LISTED_ID], "addons": [{"id": "swofty.progressive"}]
+    })
+}
+
+fn index_ids(root: &Path) -> Vec<String> {
+    crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&root.join("data")))
+        .into_iter()
+        .map(|c| c.career)
+        .collect()
+}
+
+#[test]
+fn a_career_renamed_at_its_load_is_no_drop_and_a_restore_keeps_its_new_id() {
+    let root = tmp("career-rename");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    write_records(&root, &[listed_record()]);
+    let listed = take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    write_records(&root, &[loaded_record(3)]);
+    take(&v, &loc, Reason::AfterSession, T0 + 100, &[3u8; 900]);
+    let t = v.careers();
+    assert_eq!(t.careers.len(), 1);
+    assert_eq!(
+        (t.careers[0].career.as_str(), t.careers[0].first_seen.as_str()),
+        (LOADED_ID, listed.id.as_str())
+    );
+    assert!(t.drop_to_show().is_empty());
+    assert!(!kinds(&v).contains(&EventKind::CareersMissing));
+
+    let diff = v.preview(&v.find(&listed.id).unwrap()).unwrap();
+    assert!(diff.get_back.is_empty() && diff.lose.is_empty(), "{diff:?}");
+
+    restore(&v, &listed.id, &loc, Running::default(), T0 + 200).unwrap();
+    assert_eq!(index_ids(&root), [LOADED_ID]);
+    let back = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&root.join("data")));
+    assert!(!back[0].from_slots());
+    let t = v.careers();
+    assert_eq!(t.careers.len(), 1);
+    assert_eq!(t.careers[0].status, careers::Status::Present);
+    assert!(t.drop_to_show().is_empty());
+    assert!(!kinds(&v).contains(&EventKind::CareersMissing));
+}
+
+fn stale_table(v: &Vault, held_old: &str, held_new: &str) {
+    let stale = serde_json::json!({ "version": 1, "careers": [
+        { "career": LISTED_ID, "mode": "driver_career", "first_seen": held_old, "first_seen_at": T0,
+          "last_seen": held_old, "last_seen_at": T0, "status": format!("missing-since:{held_new}"), "found_at": T0 + 100 },
+        { "career": LOADED_ID, "mode": "driver_career", "label": "Progressive 2013", "first_seen": held_new,
+          "first_seen_at": T0 + 100, "last_seen": held_new, "last_seen_at": T0 + 100, "status": "present" }
+    ]});
+    std::fs::write(v.dir.join(careers::FILE), stale.to_string()).unwrap();
+    assert_eq!(v.careers().drop_to_show().len(), 1);
+}
+
+#[test]
+fn a_stale_drop_of_a_renamed_career_clears_at_a_saves_page_restore_and_at_launcher_start() {
+    let root = tmp("career-rename-stale");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    write_records(&root, &[listed_record()]);
+    let old = take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    write_records(&root, &[loaded_record(4)]);
+    let newer = take(&v, &loc, Reason::AfterSession, T0 + 100, &[3u8; 900]);
+
+    stale_table(&v, &old.id, &newer.id);
+    restore(&v, &newer.id, &loc, Running::default(), T0 + 200).unwrap();
+    let t = v.careers();
+    assert_eq!(t.careers.len(), 1, "{:?}", t.careers);
+    assert_eq!(
+        (t.careers[0].career.as_str(), t.careers[0].first_seen.as_str()),
+        (LOADED_ID, old.id.as_str())
+    );
+    assert!(t.drop_to_show().is_empty());
+
+    stale_table(&v, &old.id, &newer.id);
+    v.check(&loc, Meta::new(Reason::LauncherStart), T0 + 300).unwrap();
+    let t = v.careers();
+    assert_eq!(t.careers.len(), 1);
+    assert!(t.drop_to_show().is_empty());
+    assert_eq!(t.careers[0].was, [LISTED_ID]);
+}
+
+#[test]
+fn a_renamed_career_whose_save_slot_is_gone_is_still_a_drop() {
+    let root = tmp("career-rename-lost");
+    let loc = steam(&root, "843502855", &[1u8; 900]);
+    let v = vault(&root, &loc);
+    write_records(&root, &[listed_record()]);
+    take(&v, &loc, Reason::AfterSession, T0, &[2u8; 900]);
+    write_records(&root, &[loaded_record(5)]);
+    let held = take(&v, &loc, Reason::AfterSession, T0 + 100, &[3u8; 900]);
+    let mut gone = loaded_record(5);
+    gone["status"] = "missing".into();
+    write_records(&root, &[gone]);
+    take(&v, &loc, Reason::BeforeSession, T0 + 200, &[4u8; 900]);
+    let t = v.careers();
+    let shown = t.drop_to_show();
+    assert_eq!(shown.len(), 1);
+    assert_eq!(
+        (shown[0].career.as_str(), shown[0].last_seen.as_str()),
+        (LOADED_ID, held.id.as_str())
+    );
+    assert!(kinds(&v).contains(&EventKind::CareersMissing));
+}

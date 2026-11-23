@@ -217,6 +217,8 @@ fn row(id: &str, status: Status, at: i64) -> Row {
         status,
         found_at: None,
         dismissed: false,
+        slot: None,
+        was: Vec::new(),
     }
 }
 
@@ -521,6 +523,42 @@ fn the_banner_names_the_missing_careers_and_the_version_to_restore() {
     }
     Vault::open(&d, "steam-1").unwrap().dismiss_drop().unwrap();
     assert!(banner_from(&d, "steam-1".into(), "vanilla".into()).is_none());
+}
+
+#[test]
+fn no_restore_banner_for_a_career_whose_save_slot_is_in_the_save_under_another_id() {
+    let d = data("renamed");
+    let listed = "driver_career:667c9aad208c7d9c";
+    let table = vault::careers::Careers {
+        version: 1,
+        careers: vec![
+            Row {
+                label: String::new(),
+                ..row(listed, Status::MissingSince("later".into()), 20)
+            },
+            row("driver_career_progressive:667c9aad208c7d9c", Status::Present, 30),
+        ],
+    };
+    table.write(&d.join("career-vault/steam-1")).unwrap();
+    let index = swofty_core::stdlib::careers::data_path(&d);
+    std::fs::create_dir_all(index.parent().unwrap()).unwrap();
+    let write = |status: &str| {
+        let rec = serde_json::json!({
+            "career": "driver_career_progressive:667c9aad208c7d9c", "slot": "667c9aad208c7d9c",
+            "profile": "vanilla", "status": status, "renamed_from": [listed]
+        });
+        std::fs::write(&index, serde_json::json!({ "careers": [rec] }).to_string()).unwrap();
+    };
+    write("present");
+    assert!(banner_from(&d, "steam-1".into(), "vanilla".into()).is_none());
+    write("missing");
+    match banner_from(&d, "steam-1".into(), "vanilla".into()) {
+        Some(Banner::Dropped(Missing { names, snapshot, .. })) => {
+            assert_eq!(names, [format!("{listed}, season 2016, round 7")]);
+            assert_eq!(snapshot, "snap-20");
+        }
+        _ => panic!("a career whose save slot is gone still raises the banner"),
+    }
 }
 
 #[test]

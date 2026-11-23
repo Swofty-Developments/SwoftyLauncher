@@ -1352,3 +1352,51 @@ fn a_session_records_the_patch_update_a_saved_career_was_saved_with() {
     assert_eq!(list[0].addons[0].version.as_deref(), Some("1.0.6"));
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn a_restored_slot_list_record_takes_the_id_the_core_gave_its_career_since() {
+    let now = parse(
+        r#"{"careers":[
+        {"career":"driver_career_progressive:667c9aad208c7d9c","profile":"default","slot":"667c9aad208c7d9c","renamed_from":["driver_career:667c9aad208c7d9c"]},
+        {"career":"driver_career:00000000000000b2","profile":"default","slot":"00000000000000b2","source":"slots"}]}"#,
+    );
+    let back = parse(
+        r#"{"careers":[
+        {"career":"driver_career:667c9aad208c7d9c","profile":"default","slot":"667c9aad208c7d9c","source":"slots","slot_season":2},
+        {"career":"driver_career:00000000000000c3","profile":"default","slot":"00000000000000c3","source":"slots"},
+        {"career":"my_team:00000000000000b2","profile":"default","slot":"00000000000000b2","source":"slots"}]}"#,
+    );
+    let out = restored_ids(&now, back);
+    let ids: Vec<&str> = out.iter().map(|c| c.career.as_str()).collect();
+    assert_eq!(
+        ids,
+        [
+            "driver_career_progressive:667c9aad208c7d9c",
+            "driver_career:00000000000000c3",
+            "my_team:00000000000000b2"
+        ]
+    );
+    assert!(!out[0].from_slots());
+    assert_eq!(out[0].extra.get("slot_season").and_then(Value::as_i64), Some(2));
+    assert_eq!(
+        out[0].renamed_from().collect::<Vec<_>>(),
+        ["driver_career:667c9aad208c7d9c"]
+    );
+    assert!(out[1].from_slots() && out[2].from_slots());
+}
+
+#[test]
+fn a_career_is_known_by_its_save_slot_guid_across_ids() {
+    let c = |json: &str| parse(&format!(r#"{{"careers":[{json}]}}"#)).remove(0);
+    let listed = c(r#"{"career":"driver_career:667c9aad208c7d9c","slot":"667c9aad208c7d9c"}"#);
+    let loaded = c(r#"{"career":"driver_career_progressive:667c9aad208c7d9c","profile":"default"}"#);
+    let elsewhere = c(r#"{"career":"driver_career_progressive:667c9aad208c7d9c","profile":"other"}"#);
+    let mine = c(r#"{"career":"driver_career:667c9aad208c7d9c","profile":"default"}"#);
+    assert!(listed.same_career(&loaded) && loaded.same_career(&listed));
+    assert!(mine.same_career(&loaded) && !mine.same_career(&elsewhere));
+    let numbered = c(r#"{"career":"my_team:3","slot":"3"}"#);
+    assert!(!numbered.same_career(&c(r#"{"career":"driver_career:3","slot":"3"}"#)));
+    assert!(numbered.same_career(&c(r#"{"career":"x.my_team:3","renamed_from":["my_team:3"]}"#)));
+    assert_eq!(guid_of("driver_career:0000000000000000"), None);
+    assert_eq!(guid_of("dc-00320000"), None);
+}
