@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
-use crate::game_folder::baseline::sha256_file;
+use crate::game_folder::baseline::{sha256_bytes, sha256_file};
+use crate::updates::transfer;
 use crate::{Error, Result, io_err, with_retry};
 
 use super::{ANTIVIRUS, EXTENSION_VERSION, REQUIRED, av_error, base_url, extension_dir, pin, virus_blocked};
@@ -26,6 +28,10 @@ fn verify_digest(path: &Path, name: &str, want: &str) -> Result<()> {
         Error::Io { source, .. } if virus_blocked(&source) => Error::Other(ANTIVIRUS.to_owned()),
         e => e,
     })?;
+    match_digest(name, &have, want)
+}
+
+fn match_digest(name: &str, have: &str, want: &str) -> Result<()> {
     if have != want {
         return Err(Error::Other(format!(
             "{name}: digest mismatch (have {have}, want {want}); refusing to use it"
@@ -172,31 +178,110 @@ pub(super) fn install_files(data: &Path, src: &Path, files: &[(&str, &str)]) -> 
 /// Download the pinned release from the artifact host and install it. The
 /// digests decide what is trusted; the host is only a transport.
 pub fn fetch(data: &Path) -> Result<Artifacts> {
-    fetch_release(data, &base_url(), EXTENSION_VERSION, &pinned_files()?)?;
+    fetch_release(
+        data,
+        &base_url(),
+        EXTENSION_VERSION,
+        &pinned_files()?,
+        &mut download,
+        &std::thread::sleep,
+    )?;
     artifacts(data)
 }
 
-/// Download every file into the staging directory, verify each one, and only
-/// then replace the installed extension. Any failure leaves the installed copy
-/// as it was and names the file and the reason.
-pub(super) fn fetch_release(data: &Path, base: &str, version: &str, files: &[(&str, &str)]) -> Result<()> {
+/// Where downloaded files that match their pins wait for the rest of the
+/// release. A download that breaks off keeps them, so the next one fetches
+/// only what is still missing.
+pub(super) fn download_dir(data: &Path) -> PathBuf {
+    data.join("extensions/.offline-play.download")
+}
+
+/// Bring every file into the download folder, kept from an earlier try when it
+/// still matches its pin, then verify them all and only then replace the
+/// installed extension. Any failure leaves the installed copy as it was and
+/// names the file and the reason.
+pub(super) fn fetch_release(
+    data: &Path,
+    base: &str,
+    version: &str,
+    files: &[(&str, &str)],
+    get: &mut dyn FnMut(&str) -> std::result::Result<Vec<u8>, Failure>,
+    sleep: &dyn Fn(Duration),
+) -> Result<()> {
     // Earlier launchers downloaded into this folder and could leave it behind.
     std::fs::remove_dir_all(data.join("extensions/.download")).ok();
-    let staging = staging_dir(data);
-    fresh_dir(&staging)?;
-    let done = files
+    let dir = download_dir(data);
+    files
         .iter()
         .try_for_each(|(name, digest)| {
+            let to = dir.join(name);
+            if verify_digest(&to, name, digest).is_ok() {
+                return Ok(());
+            }
             let url = format!("{}/v{version}/{name}", base.trim_end_matches('/'));
-            let to = staging.join(name);
-            download(&url, &to).map_err(|e| Error::Other(format!("offline play {version}: {e}")))?;
-            verify_digest(&to, name, digest)
-                .map_err(|e| Error::Other(format!("offline play {version}: {url}: {e}")))
+            let body = download_retrying(&url, get, sleep).map_err(|(f, attempts)| {
+                Error::Other(format!(
+                    "offline play {version}: {name}{}: {f}",
+                    transfer::attempts_note(attempts)
+                ))
+            })?;
+            match_digest(name, &sha256_bytes(&body), digest)
+                .map_err(|e| Error::Other(format!("offline play {version}: {url}: {e}")))?;
+            keep(&to, &body)
         })
-        .and_then(|()| commit(data, &staging, files))
-        .map_err(av_error);
-    std::fs::remove_dir_all(&staging).ok();
-    done
+        .and_then(|()| install_files(data, &dir, files))
+        .map_err(av_error)?;
+    std::fs::remove_dir_all(&dir).ok();
+    Ok(())
+}
+
+/// `get` for `url`, tried again with the shared backoff while it fails in a
+/// way the next try can get past. The failure carries the attempts made.
+fn download_retrying(
+    url: &str,
+    get: &mut dyn FnMut(&str) -> std::result::Result<Vec<u8>, Failure>,
+    sleep: &dyn Fn(Duration),
+) -> std::result::Result<Vec<u8>, (Failure, u32)> {
+    let last = std::cell::RefCell::new(String::new());
+    let (result, attempts) = transfer::retrying(
+        || {
+            get(url).inspect_err(|f| {
+                last.replace(f.detail.clone());
+            })
+        },
+        |r| r.as_ref().is_err_and(|f| f.transient),
+        |wait| {
+            eprintln!(
+                "swofty-core: {}; trying again in {} ms",
+                last.borrow(),
+                wait.as_millis()
+            );
+            sleep(wait);
+        },
+    );
+    result.map_err(|f| (f, attempts))
+}
+
+/// Write `body` under a temporary name, flush it to disk and only then give it
+/// its own name, so a file found under its own name is never half written.
+fn keep(to: &Path, body: &[u8]) -> Result<()> {
+    if let Some(parent) = to.parent() {
+        std::fs::create_dir_all(parent).map_err(io_err(parent))?;
+    }
+    let mut part = to.as_os_str().to_owned();
+    part.push(".part");
+    let part = PathBuf::from(part);
+    let kept = std::fs::File::create(&part)
+        .and_then(|mut f| {
+            std::io::Write::write_all(&mut f, body)?;
+            f.sync_all()
+        })
+        .map_err(io_err(&part))
+        .and_then(|()| with_retry(to, || std::fs::rename(&part, to)));
+    if kept.is_err() {
+        std::fs::remove_file(&part).ok();
+    }
+    kept
 }
 
 /// The reason given when the host could not be reached or its TLS failed. The
@@ -205,71 +290,99 @@ pub(super) const BLOCKED: &str = "the download was blocked on this PC or network
      scanning, a VPN or proxy, a network filter or a Wi-Fi login page; turning that off or trying another \
      network fixes it";
 
-/// A connection, DNS or TLS failure, as opposed to a reply from the host. A
-/// reply that isn't TLS (rustls `InvalidContentType`) arrives as `Io`.
-fn blocked(e: &ureq::Error) -> bool {
-    matches!(
-        e,
-        ureq::Error::Io(_)
-            | ureq::Error::Rustls(_)
-            | ureq::Error::Tls(_)
-            | ureq::Error::HostNotFound
-            | ureq::Error::ConnectionFailed
-            | ureq::Error::ConnectProxyFailed(_)
-            | ureq::Error::Timeout(_)
-    )
+/// Why a download brought no file, and whether trying again can get past it.
+#[derive(Debug)]
+pub(super) struct Failure {
+    pub(super) detail: String,
+    pub(super) blocked: bool,
+    pub(super) transient: bool,
 }
 
-pub(super) fn download(url: &str, to: &Path) -> std::result::Result<(), String> {
+impl std::fmt::Display for Failure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.blocked {
+            write!(f, "{BLOCKED}\n({})", self.detail)
+        } else {
+            f.write_str(&self.detail)
+        }
+    }
+}
+
+impl Failure {
+    /// A request that got no answer. A connection, DNS or TLS failure leads with
+    /// [`BLOCKED`]; one that broke or timed out on the way is tried again.
+    pub(super) fn call(url: &str, e: &ureq::Error) -> Self {
+        Self {
+            detail: format!("could not download {url}: {e}"),
+            blocked: transfer::transport(e),
+            transient: transfer::retryable_error(e) && !final_failure(e),
+        }
+    }
+
+    /// An answer that is not the file.
+    pub(super) fn status(url: &str, status: u16) -> Self {
+        let detail = if status == 404 {
+            format!("{url}: HTTP {status}: the release on the host has no such file")
+        } else {
+            format!("{url}: HTTP {status}")
+        };
+        Self {
+            detail,
+            blocked: false,
+            transient: transfer::retryable_status(status),
+        }
+    }
+
+    /// A body that stopped before its end.
+    pub(super) fn cut_off(detail: String, e: Option<&std::io::Error>) -> Self {
+        let inner = e.and_then(|e| e.get_ref()?.downcast_ref::<ureq::Error>());
+        Self {
+            detail,
+            blocked: false,
+            transient: e.is_none_or(transfer::broken) && !inner.is_some_and(final_failure),
+        }
+    }
+}
+
+/// A failure the next try would meet again: the connection was refused, or the
+/// file was still unfinished when the whole timeout ran out.
+fn final_failure(e: &ureq::Error) -> bool {
+    match e {
+        ureq::Error::Timeout(ureq::Timeout::Global) => true,
+        ureq::Error::Io(e) => e.kind() == std::io::ErrorKind::ConnectionRefused,
+        _ => false,
+    }
+}
+
+pub(super) fn download(url: &str) -> std::result::Result<Vec<u8>, Failure> {
     let resp = ureq::get(url)
         .config()
-        .timeout_connect(Some(std::time::Duration::from_secs(30)))
-        .timeout_global(Some(std::time::Duration::from_secs(300)))
+        .timeout_connect(Some(Duration::from_secs(30)))
+        .timeout_global(Some(Duration::from_secs(300)))
         .http_status_as_error(false)
         .build()
         .call()
-        .map_err(|e| {
-            let what = format!("could not download {url}: {e}");
-            if blocked(&e) {
-                format!("{BLOCKED}\n({what})")
-            } else {
-                what
-            }
-        })?;
+        .map_err(|e| Failure::call(url, &e))?;
     let status = resp.status();
-    if status == 404 {
-        return Err(format!(
-            "{url}: HTTP {status}: the release on the host has no such file"
-        ));
-    }
     if !status.is_success() {
-        return Err(format!("{url}: HTTP {status}"));
+        return Err(Failure::status(url, status.as_u16()));
     }
     let expected = resp.body().content_length();
     let mut body = Vec::new();
     let read = std::io::Read::read_to_end(&mut resp.into_body().into_reader(), &mut body);
     if let Err(e) = read {
-        return Err(format!(
-            "{url}: the download was cut off after {} bytes: {e}",
-            body.len()
+        return Err(Failure::cut_off(
+            format!("{url}: the download was cut off after {} bytes: {e}", body.len()),
+            Some(&e),
         ));
     }
     if let Some(n) = expected
         && body.len() as u64 != n
     {
-        return Err(format!(
-            "{url}: the download was cut off ({} of {n} bytes)",
-            body.len()
+        return Err(Failure::cut_off(
+            format!("{url}: the download was cut off ({} of {n} bytes)", body.len()),
+            None,
         ));
     }
-    if let Some(parent) = to.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| format!("{}: {e}", parent.display()))?;
-    }
-    std::fs::write(to, &body).map_err(|e| {
-        if virus_blocked(&e) {
-            ANTIVIRUS.to_owned()
-        } else {
-            format!("{}: {e}", to.display())
-        }
-    })
+    Ok(body)
 }

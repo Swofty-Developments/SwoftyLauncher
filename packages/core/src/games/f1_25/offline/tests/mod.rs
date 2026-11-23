@@ -8,7 +8,9 @@ use super::exec::exec_mode_in;
 use super::exec::{command_for, elf_interpreter};
 #[cfg(target_os = "linux")]
 use super::extension::set_executable;
-use super::extension::{BLOCKED, RUNNERS, download, fetch_release, install_files, staging_dir};
+use super::extension::{
+    BLOCKED, Failure, RUNNERS, download, download_dir, fetch_release, install_files, staging_dir,
+};
 use super::heal::heal_launcher;
 use super::*;
 use crate::game_folder::baseline::{DepotHashes, sha256_file};
@@ -80,7 +82,57 @@ fn digests(release: &[(&'static str, String)]) -> Vec<(&'static str, String)> {
 fn fetch_fake(d: &Path, base: &str, release: &[(&'static str, String)]) -> Result<()> {
     let pins = digests(release);
     let pins: Vec<(&str, &str)> = pins.iter().map(|(n, h)| (*n, h.as_str())).collect();
-    fetch_release(d, base, "9.9.9", &pins)
+    fetch_release(d, base, "9.9.9", &pins, &mut download, &std::thread::sleep)
+}
+
+const FAKE_HOST: &str = "https://host.test";
+
+fn fetch_from(
+    d: &Path,
+    release: &[(&'static str, String)],
+    get: &mut dyn FnMut(&str) -> std::result::Result<Vec<u8>, Failure>,
+    sleep: &dyn Fn(std::time::Duration),
+) -> Result<()> {
+    let pins = digests(release);
+    let pins: Vec<(&str, &str)> = pins.iter().map(|(n, h)| (*n, h.as_str())).collect();
+    fetch_release(d, FAKE_HOST, "9.9.9", &pins, get, sleep)
+}
+
+fn url_of(name: &str) -> String {
+    format!("{FAKE_HOST}/v9.9.9/{name}")
+}
+
+fn body_of(release: &[(&'static str, String)], url: &str) -> Vec<u8> {
+    release
+        .iter()
+        .find(|(n, _)| url_of(n) == url)
+        .map(|(_, b)| b.clone().into_bytes())
+        .unwrap()
+}
+
+fn reset(url: &str) -> Failure {
+    Failure::call(url, &ureq::Error::Io(std::io::ErrorKind::ConnectionReset.into()))
+}
+
+fn part_files(dir: &Path) -> Vec<PathBuf> {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return Vec::new();
+    };
+    entries
+        .flatten()
+        .flat_map(|e| {
+            let path = e.path();
+            if path.is_dir() {
+                part_files(&path)
+            } else {
+                path.extension()
+                    .is_some_and(|x| x == "part")
+                    .then_some(path)
+                    .into_iter()
+                    .collect()
+            }
+        })
+        .collect()
 }
 
 fn routes(
@@ -106,7 +158,8 @@ fn previous_install(d: &Path) -> PathBuf {
 fn assert_untouched(d: &Path, marker: &Path) {
     assert_eq!(std::fs::read_to_string(marker).unwrap(), "previous install");
     assert!(!extension_dir(d).join(REQUIRED[0]).exists());
-    assert!(!staging_dir(d).exists(), "the partial download is cleaned up");
+    assert!(!staging_dir(d).exists(), "nothing is left staged");
+    assert_eq!(part_files(&download_dir(d)), Vec::<PathBuf>::new());
 }
 
 /// A copy of this test binary whose ELF interpreter points at a loader

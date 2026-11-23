@@ -217,9 +217,10 @@ mod tests {
         let (reason, detail) = err.split_once('\n').unwrap();
         assert!(
             reason.starts_with(&format!(
-                "downloading the offline play extension: offline play {}: \
+                "downloading the offline play extension: offline play {}: {}: \
                  the download was blocked on this PC or network",
-                offline::EXTENSION_VERSION
+                offline::EXTENSION_VERSION,
+                offline::REQUIRED[0]
             )),
             "{err}"
         );
