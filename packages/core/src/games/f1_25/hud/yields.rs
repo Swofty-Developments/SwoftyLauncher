@@ -16,6 +16,7 @@ use super::screens;
 use super::stock::Stock;
 use super::stock_edit::{self, Take};
 use super::template::{self, Usage};
+use super::textures::Res;
 use super::{Built, Input, TemplateBase, composer::first, dials, err};
 use crate::Result;
 use crate::ui::node::{self, NodeExt};
@@ -495,7 +496,7 @@ pub fn apply(
     }
     let names: Vec<&str> = fresh.iter().map(|(n, _, _)| n.as_str()).collect();
     let carriers = stock.carriers(&names)?;
-    let mut groups: BTreeMap<Vec<String>, Vec<(String, &'static str, Vec<Vec<u8>>)>> = BTreeMap::new();
+    let mut groups: BTreeMap<Vec<String>, Vec<Res>> = BTreeMap::new();
     for (name, kind, bytes) in fresh {
         let erps = carriers.get(&name).cloned().unwrap_or_default();
         if erps.is_empty() {

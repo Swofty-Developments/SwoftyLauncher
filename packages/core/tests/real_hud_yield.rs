@@ -248,7 +248,7 @@ fn built_with(order: &[&str]) -> Option<()> {
             let all = paths(&scene);
             assert_eq!(
                 kids_of(&all, spot.inside),
-                [null.clone()],
+                std::slice::from_ref(&null),
                 "{part}: {}",
                 spot.scene
             );

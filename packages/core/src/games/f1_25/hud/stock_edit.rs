@@ -303,8 +303,8 @@ pub fn wrap_children(
     let at = find_mut(root, inside).ok_or_else(|| err(format!("{scene} has no {inside}")))?;
     let kids = idf::children_mut(at)?;
     let mut runs: Vec<(usize, usize)> = Vec::new();
-    for i in 0..kids.len() {
-        if !(kids[i].as_obj().is_some() && take.picks(&kids[i])) {
+    for (i, kid) in kids.iter().enumerate() {
+        if !(kid.as_obj().is_some() && take.picks(kid)) {
             continue;
         }
         match runs.last_mut() {
