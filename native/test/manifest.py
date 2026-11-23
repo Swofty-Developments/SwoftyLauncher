@@ -86,6 +86,7 @@ UNITS = [
     Unit('game_message_log', 'Stock game message log unit test'),
     Unit('garage_crew', 'Garage crew guard unit test'),
     Unit('garage_setup', 'Garage setup guard unit test'),
+    Unit('setup_rows', 'Setup rows unit test'),
     Unit('setup_steps', 'Setup steps read unit test'),
     Unit('garage_slots', 'Garage slot guard unit test'),
     Unit('gp_continue', 'Grand Prix continue guard unit test'),
