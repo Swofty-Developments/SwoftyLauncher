@@ -334,7 +334,7 @@ career::SeasonTeam slot = { .slot = 7, .team = teams::identities["constructor/to
 
 Each logo record holds one image per context. A context takes a single image of any size: the core scales it to the slice size of every array that context feeds (the team select context feeds two arrays of different sizes). The core builds the texture arrays from every logo record, slice by slice. Classic Seasons, car ports and season packs each change their own teams' slices, and all of them apply.
 
-Progressive changes logos per season through `team.logo.resolve`. From 1.10.29 the core defines it on the two menu sites that format a team logo key: the Choose Driver details panel (`driver_select`, `site_Game_DriverSelect_TeamLogoFormat`) and the Driver Career team select carousel (`team_select`, `site_Game_TeamSelect_TeamLogoFormat`). The event fires each time the game builds one of them, with the team's row label as `key()`: the label every logo slice is named by, a `team.identity`'s label for its own logos. `set_key` names another label, and the game shows that team's slice. The HUD, broadcast and hub contexts do not fire yet (experimental, in-game check pending). A site an addon already patches stays with that addon.
+Progressive changes logos per season through `team.logo.resolve`. From 1.10.29 the core defines it on the menu sites that format a team logo key: the Choose Driver details panel (`driver_select`, `site_Game_DriverSelect_TeamLogoFormat`), the Choose Driver grid cards (`driver_select`, `site_Game_DriverSelect_BadgeFormat`, array `teams.badges_broadcast`) and the Driver Career team select carousel (`team_select`, `site_Game_TeamSelect_TeamLogoFormat`). The event fires each time the game builds one of them, with the team's row label as `key()`: the label every logo slice is named by, a `team.identity`'s label for its own logos. `set_key` names another label, and the game shows that team's slice. The HUD, broadcast and hub contexts do not fire yet (experimental, in-game check pending). A site an addon already patches stays with that addon.
 
 <template #example>
 <Example root="swofty.progressive" code-file="native/src/logos.cpp" files="swofty.json, logos/williams_2017_driver_select.png">
@@ -374,7 +374,7 @@ teams::set_logo(teams::identities["game/williams"], teams::logos["swofty.progres
 
 ## Readiness and limits
 
-- **Partial.** The logo format sites (`site_Game_DriverSelect_TeamLogoFormat`, `site_Game_TeamSelect_TeamLogoFormat`) are L2 and shipped. The HUD badge builders are L1. The team record layout behind `Sess_Load_Teams` is L1, and `set_colours` waits on it.
+- **Partial.** The logo format sites (`site_Game_DriverSelect_TeamLogoFormat`, `site_Game_DriverSelect_BadgeFormat`, `site_Game_TeamSelect_TeamLogoFormat`) are L2 and shipped. The HUD badge builders are L1. The team record layout behind `Sess_Load_Teams` is L1, and `set_colours` waits on it.
 - **Unknown:** a single logo-key resolver (logos are formatted at several sites) and the display-name lookups behind `team.name.resolve`.
 - **Stat ids:** teams use ids up to 16382 (14 bits in the game's team keys, 0x3fff = none), from the install's store.
 - **A new team row needs all 30 keys,** `story_info` included, or the game reads garbage.

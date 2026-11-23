@@ -152,12 +152,13 @@ template <class R = g::TrackDataRecord> std::string fuel_track(void *setup, uint
 }
 
 // team.logo.resolve: a MidHook on each call to Ne_Format_String that builds a team logo key from the team record's
-// label (r8, the %s of "overrides.teams.driver_select_team_logos.%s" and of
-// "#overrides.team_logos.driver_career_2024_team_select.%s"). The payload's key is that label, the key the core's
+// label (r8, the %s of "overrides.teams.driver_select_team_logos.%s", of
+// "#overrides.team_logos.driver_career_2024_team_select.%s" and of the Choose Driver card's
+// "overrides.teams.badges_broadcast.%s"). The payload's key is that label, the key the core's
 // logo slices are named by (a team.identity's label for its own logos); set_key puts another label in r8, so the game
 // formats the other team's logo. Before the handlers run, a teams::set_logo override for the team picks the label of
 // the team whose slice holds that team.logo record in the site's array. Installed while the point has subscribers or
-// an override exists; not hot (the details panel and the carousel items are built on focus and on open).
+// an override exists; not hot (the details panel, the cards and the carousel items are built on focus and on open).
 struct LogoSite {
     const char *binding;
     swofty::teams::LogoContext context;
@@ -167,7 +168,10 @@ struct LogoSite {
 constexpr LogoSite LOGO_SITES[] = {
     {"site_Game_DriverSelect_TeamLogoFormat", swofty::teams::LogoContext::driver_select, "teams.driver_select_team_logos"},
     {"site_Game_TeamSelect_TeamLogoFormat", swofty::teams::LogoContext::team_select, "team_logos.driver_career_2024_team_select"},
+    // The Choose Driver grid cards (Game_DriverSelect_AddCard): their team logo is the broadcast badge.
+    {"site_Game_DriverSelect_BadgeFormat", swofty::teams::LogoContext::driver_select, "teams.badges_broadcast"},
 };
+constexpr size_t LOGO_SITE_COUNT = sizeof(LOGO_SITES) / sizeof(LOGO_SITES[0]);
 constexpr const char *LOGO_POINT = "team.logo.resolve";
 constexpr size_t MAX_LABEL = 128;
 
@@ -247,6 +251,7 @@ void logo_site(const LogoSite &site, safetyhook::Context &c)
 
 void logo_driver_select(safetyhook::Context &c) { logo_site(LOGO_SITES[0], c); }
 void logo_team_select(safetyhook::Context &c) { logo_site(LOGO_SITES[1], c); }
+void logo_driver_card(safetyhook::Context &c) { logo_site(LOGO_SITES[2], c); }
 
 class LogoLink final : public GameLink {
 public:
@@ -257,9 +262,9 @@ public:
         std::lock_guard<std::recursive_mutex> g(lock_);
         if (live_)
             return true;
-        constexpr safetyhook::MidHookFn FNS[] = {&logo_driver_select, &logo_team_select};
+        constexpr safetyhook::MidHookFn FNS[LOGO_SITE_COUNT] = {&logo_driver_select, &logo_team_select, &logo_driver_card};
         int placed = 0;
-        for (size_t i = 0; i < 2; i++) {
+        for (size_t i = 0; i < LOGO_SITE_COUNT; i++) {
             const char *b = LOGO_SITES[i].binding;
             uintptr_t at = ops_.resolve ? ops_.resolve(b) : 0;
             if (!at) {
@@ -284,7 +289,7 @@ public:
         }
         live_ = placed > 0;
         log("[hooks] team.logo.resolve " + std::string(live_ ? "live" : "unavailable") + " on " + std::to_string(placed) +
-            " of 2 logo format sites" + (late ? " (installed late)" : " (window stage)") + ": subscribers " + subscribers);
+            " of " + std::to_string(LOGO_SITE_COUNT) + " logo format sites" + (late ? " (installed late)" : " (window stage)") + ": subscribers " + subscribers);
         return live_;
     }
 
@@ -321,7 +326,7 @@ private:
 
     GameOps ops_;
     mutable std::recursive_mutex lock_;
-    safetyhook::MidHook hooks_[2];
+    safetyhook::MidHook hooks_[LOGO_SITE_COUNT];
     bool live_ = false, keep_ = false;
 };
 
