@@ -7,6 +7,7 @@
 
 #include <swofty/mixin.hpp>
 
+#include <chrono>
 #include <cstdarg>
 #include <cstdio>
 
@@ -161,7 +162,8 @@ void race_control_tick(const lv::Snapshot &published)
         return;
     const lv::Snapshot *s = lv::snap_read(&published, &g.read) ? &g.read : nullptr;
     uint64_t before = g.tracker.sessions();
-    rcl::Moments m = g.tracker.step(s, GetTickCount64());
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
+    rcl::Moments m = g.tracker.step(s, uint64_t(ms.count()));
     std::vector<td::events::Damage> tyres = g.tyres.step(s);
     if (!g.tracker.primed()) {
         lv::udp::Moments late = runtime::live_udp_take();
