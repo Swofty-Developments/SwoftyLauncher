@@ -60,8 +60,14 @@
   "packages/sdk/std/registries/hud.element/examples/must-fail/unknown-kind.json": {
     "hud_file": "e55825338324e229:81"
   },
+  "packages/sdk/std/registries/hud.element/examples/must-fail/yield-unknown-part@1.5.json": {
+    "hud_file": "080fd309047c2941:192"
+  },
   "packages/sdk/std/registries/hud.element/examples/scoped_dial.json": {
     "hud_file": "1e86c0c1e972396b:467"
+  },
+  "packages/sdk/std/registries/hud.element/examples/yield_parts@1.5.json": {
+    "hud_file": "a1c68075f393cc82:349"
   },
   "templates/addon/db/example.json": {
     "database_file": "a9f77ddc4afedb23:293",
