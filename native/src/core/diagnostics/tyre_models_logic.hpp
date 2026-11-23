@@ -3,10 +3,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
-
-#include "core/guards/cars/tyre_slots_logic.hpp"
 
 // Read-only check of the fitted tyre models (tyre_models.cpp). A tyre component keeps 5 sets of 3 models; the game
 // places a spawned fitted model on its wheel (render instance +0x2c real translation, model +0x278/+0x27c the wheel
@@ -100,31 +99,9 @@ inline std::string summary_line(const std::vector<Car> &cars, uint32_t session, 
 
 namespace runtime::tyre_models {
 
-constexpr uint8_t FIRST_UNGARAGED_VEHICLE = 23;
+constexpr uint8_t PROBE_VEHICLE = 23;
 
-struct Group {
-    uint32_t option = 0xffffffff;
-    uint64_t physical = 0, visual = 0;
-};
-
-enum class Repair { none, copy_new_to_old, copy_slot_to_both };
-
-inline bool group_usable(const Group &g) { return g.option <= 4 && g.physical && g.visual; }
-
-inline Repair plan_activation(uint8_t vehicle, const Group &old_group, const Group &new_group, bool slot_usable)
-{
-    if (vehicle < FIRST_UNGARAGED_VEHICLE || vehicle == 0xff)
-        return Repair::none;
-    if (group_usable(old_group) && group_usable(new_group))
-        return Repair::none;
-    if (group_usable(new_group))
-        return Repair::copy_new_to_old;
-    return slot_usable ? Repair::copy_slot_to_both : Repair::none;
-}
-
-}
-
-namespace runtime::tyre_models {
+inline bool switched_off(const char *value) { return value && (!strcmp(value, "0") || !strcmp(value, "off")); }
 
 constexpr size_t MAX_LIST = 64;
 
