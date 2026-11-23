@@ -81,10 +81,12 @@ int main()
     bad.sections.clear();
     expect(!c::check_layout(bad).ok, "an empty layout is refused");
 
-    std::array<const char *, c::LAYOUT_TABS> keys{"lng_cs_aerodynamics_title", "lng_cs_transmission_title", "", "", "lng_cs_brakes_title", "", "",
-                                                  "lng_cs_weight_distribution_title"};
+    std::array<const char *, c::LAYOUT_TABS> keys{
+        "lng_cs_aerodynamics_title",       "lng_cs_transmission_title", "", "", "lng_cs_brakes_title", "", "",
+        "lng_cs_weight_distribution_title"};
     auto titles = c::title_overrides(l, keys);
-    expect(titles.size() == 2 && titles[0].key == "lng_cs_aerodynamics_title" && titles[1].text == "Fuel mix", "titles go on the game's tab title keys");
+    expect(titles.size() == 2 && titles[0].key == "lng_cs_aerodynamics_title" && titles[1].text == "Fuel mix",
+           "titles go on the game's tab title keys");
 
     std::map<int, std::pair<float, float>> cells;
     std::map<int, int> steps_cells;
@@ -92,8 +94,16 @@ int main()
         cells[i] = {0.0f, 100.0f};
         steps_cells[i] = 5;
     }
-    auto rd = [&](int s, float &mn, float &mx, int &st) { mn = cells[s].first; mx = cells[s].second; st = steps_cells[s]; return true; };
-    auto wr = [&](int s, float mn, float mx, int st) { cells[s] = {mn, mx}; steps_cells[s] = st; };
+    auto rd = [&](int s, float &mn, float &mx, int &st) {
+        mn = cells[s].first;
+        mx = cells[s].second;
+        st = steps_cells[s];
+        return true;
+    };
+    auto wr = [&](int s, float mn, float mx, int st) {
+        cells[s] = {mn, mx};
+        steps_cells[s] = st;
+    };
     for (auto &r : l.sections[1].rows)
         r.steps = 20;
     c::ScopeSwitch sw;
@@ -104,7 +114,9 @@ int main()
     expect(sw.saved() == 4 && std::fabs(cells[38].first - 0.84f) < 1e-4f, "entering again does not stack swaps");
     expect(steps_cells[37] == 20 && steps_cells[0] == 5, "a row's steps swap its steps cell only");
     sw.leave(wr);
-    expect(sw.saved() == 0 && sw.active().empty() && cells[38].first == 0.0f && cells[40].second == 100.0f && steps_cells[39] == 5, "leaving puts every cell back, steps too");
+    expect(sw.saved() == 0 && sw.active().empty() && cells[38].first == 0.0f && cells[40].second == 100.0f &&
+               steps_cells[39] == 5,
+           "leaving puts every cell back, steps too");
     sw.leave(wr);
     expect(cells[37].first == 0.0f, "leaving twice is harmless");
 
@@ -113,9 +125,11 @@ int main()
     expect(c::slider_index("brake_duct_front") == 39 && c::slider_index("brake_bd_factor_front") == 39 &&
                c::slider_index("front_antiroll_bar") == 15 && c::slider_index("ballast") == 25 && c::slider_index("nope") == -1,
            "slider names resolve by the SDK name and by the database label");
-    expect(c::tab_index("aerodynamics") == 1 && c::tab_index("fuel_load") == 0 && c::tab_index("wings") == -1, "tab names resolve");
+    expect(c::tab_index("aerodynamics") == 1 && c::tab_index("fuel_load") == 0 && c::tab_index("wings") == -1,
+           "tab names resolve");
     auto t7 = c::tab_indexes(l, 7);
-    expect(t7.size() == 4 && t7[0] == 37 && t7[3] == 40 && c::tab_indexes(l, 3).empty(), "a tab's group array is its rows in order");
+    expect(t7.size() == 4 && t7[0] == 37 && t7[3] == 40 && c::tab_indexes(l, 3).empty(),
+           "a tab's group array is its rows in order");
     expect(std::string(c::name_key(37)) == "lng_cs_brake_ch_front" && std::string(c::name_key(2)).empty() &&
                std::string(c::unit_key(39)) == "lng_cs_brake_cd_range",
            "the text keys of the fuel rows are the game's");

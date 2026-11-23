@@ -35,7 +35,8 @@ int main()
     expect(c::read_setup_steps(base, read, steps) && steps[0] == 100 && steps[37] == 137 && steps[41] == 141,
            "the plain block is read when the selector byte is 0");
     image[c::SETUP_BLOCK_SELECT] = 1;
-    expect(c::read_setup_steps(base, read, steps) && steps[0] == 200 && steps[40] == 240, "the second block is read when the selector is set");
+    expect(c::read_setup_steps(base, read, steps) && steps[0] == 200 && steps[40] == 240,
+           "the second block is read when the selector is set");
     c::SetupSteps keep = steps;
     expect(!c::read_setup_steps(0, read, steps) && steps == keep, "a null block reads nothing");
     expect(!c::read_setup_steps(base + 0x300, read, steps) && steps == keep, "an unreadable block leaves the steps alone");

@@ -40,13 +40,15 @@ int main()
                p.layout.sections[2].tab == 0,
            "tab names resolve to the game's slots");
     auto fuel = c::tab_indexes(p.layout, 0);
-    expect(fuel.size() == 5 && fuel[0] == 26 && fuel[1] == 37 && fuel[4] == 40, "the fuel tab lists fuel load and sliders 37 to 40");
+    expect(fuel.size() == 5 && fuel[0] == 26 && fuel[1] == 37 && fuel[4] == 40,
+           "the fuel tab lists fuel load and sliders 37 to 40");
     auto swaps = c::cell_swaps(p.layout);
     int stepped = 0;
     for (const auto &s : swaps)
         stepped += s.steps == 20;
     expect(stepped == 4, "four rows carry 20 steps");
-    expect(p.layout.sections[1].rows[0].min == 42.0f && p.layout.sections[1].rows[0].max == 40.0f, "a descending ballast row keeps its order");
+    expect(p.layout.sections[1].rows[0].min == 42.0f && p.layout.sections[1].rows[0].max == 40.0f,
+           "a descending ballast row keeps its order");
 
     for (const char *bad : {"tab-out-of-range", "tab-misspelt", "rows-empty", "row-without-name", "steps-zero", "no-sections"}) {
         auto rec = read(dir + "must-fail/" + bad + ".json");
@@ -57,8 +59,9 @@ int main()
     }
 
     auto make = [](const char *id, const char *within) {
-        auto rec = swofty::json::parse(std::string("{\"within\":") + within +
-                                       ",\"sections\":[{\"tab\":1,\"title\":\"W\",\"rows\":[{\"slider\":\"front_wing\",\"name\":\"F\"}]}]}");
+        auto rec = swofty::json::parse(
+            std::string("{\"within\":") + within +
+            ",\"sections\":[{\"tab\":1,\"title\":\"W\",\"rows\":[{\"slider\":\"front_wing\",\"name\":\"F\"}]}]}");
         c::ParsedLayout out;
         std::string reason;
         if (!c::parse_setup_layout(id, rec, out, &reason))
