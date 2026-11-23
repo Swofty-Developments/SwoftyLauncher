@@ -26,11 +26,10 @@ pub(super) fn list(items: &[Brief]) -> String {
         .join(", ")
 }
 
+/// The version's label from why it was taken. A restore pins the version that already holds the save as it
+/// is rather than taking another, and that version keeps its own label.
 pub(super) fn version_label(s: &Snapshot) -> &'static str {
-    match s.pinned.iter().any(|p| p == "before-restore") {
-        true => tr("Before restore"),
-        false => reason_label(s.reason),
-    }
+    reason_label(s.reason)
 }
 
 pub(super) fn reason_label(r: Reason) -> &'static str {
