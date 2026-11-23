@@ -1,4 +1,5 @@
 #include "core/boxes/picker/picker.hpp"
+#include "core/hooks/hooks.hpp"
 
 #include "core/runtime/runtime.hpp"
 
@@ -13,6 +14,13 @@
 namespace era_picker {
 
 namespace {
+
+void note_list(const std::string &name)
+{
+    if (name.empty())
+        return;
+    swofty_core::hooks::update_facts([&](swofty_core::hooks::Facts &f) { f.entrant_list = name; });
+}
 
 constinit SessionLines lines;
 
@@ -160,6 +168,7 @@ void driver_career_load(uintptr_t ctx)
     if (pick.index < 0)
         stop_session_load(logic::career_stop(pick));
     ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = ptrs[size_t(pick.index)];
+    note_list(names[size_t(pick.index)]);
     if (lines.driver_career.note())
         swofty::log("[era] Driver Career load: %s", pick.line.c_str());
 }
@@ -325,6 +334,7 @@ void session_load_held(LoadSeen &seen)
         leave_front_end(ctx, career.kept);
         seen.ctx = ctx;
         seen.list = grand_prix_load(ctx, seen.what);
+        note_list(seen.list);
         seen.virtual_label = filled.label;
         if (career.career)
             apply_career_rules();
@@ -355,6 +365,7 @@ void session_load_held(LoadSeen &seen)
     last_seen = line;
     seen.setup_mode = setup_mode;
     seen.list = selected.name;
+    note_list(selected.name);
     if (!logic::oversized(selected.cars) && !logic::oversized(first.cars)) {
         time_trial_budget(reinterpret_cast<void *>(ctx), setup);
         return;

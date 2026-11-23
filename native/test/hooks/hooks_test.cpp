@@ -284,6 +284,12 @@ static void test_selectors()
     expect(sel(R"([{"setup_mode":"swofty.f1-1990/f1_1990"}])", f), "setup_mode");
     expect(sel(R"([{"vehicle_package":"swofty.f1-1990/f1_1990"}])", f) && !sel(R"([{"vehicle_package":"x/y"}])", f),
            "vehicle_package");
+    f.entrant_list = "f1_1990_tt";
+    expect(sel(R"([{"entrant_list":"f1_1990_tt"}])", f) && sel(R"([{"entrant_list":["f1_1990_gp","f1_1990_tt"]}])", f) &&
+               !sel(R"([{"entrant_list":"f1_1990_gp"}])", f) && summary(f).find("list f1_1990_tt") != std::string::npos,
+           "entrant_list");
+    f.entrant_list.clear();
+    expect(!sel(R"([{"entrant_list":"f1_1990_tt"}])", f), "entrant_list needs a list");
     expect(sel(R"([{"any":[{"content":"a/x"},{"content":"swofty.f1-1990/f1_career_1990"}]},{"not":{"track":"game/monaco"}}])", f),
            "any and not, and every entry must match");
     expect(!sel(R"([{"mode":"driver_career"},{"track":"game/monaco"}])", f), "one failing entry fails the array");

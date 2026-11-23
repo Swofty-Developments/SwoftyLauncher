@@ -29,6 +29,8 @@ struct Entrant {
 struct Facts {
     std::string mode;
     std::string content, content_registry, content_owner;
+    // The entrant list the session loads: the pressed box's list in Grand Prix and Time Trial (f1_1990_gp), the career's own in careers.
+    std::string entrant_list;
     std::vector<std::string> chain, owners;
     struct Career {
         std::string id, data_group;
@@ -132,6 +134,8 @@ inline std::string summary(const Facts &f)
         s += ", " + f.content;
     if (f.career && f.career->year)
         s += ", " + std::to_string(f.career->year);
+    if (!f.entrant_list.empty())
+        s += ", list " + f.entrant_list;
     return s;
 }
 
@@ -150,6 +154,7 @@ public:
         year,
         setup_mode,
         vehicle_package,
+        entrant_list,
         any,
         not_,
         all
@@ -233,7 +238,8 @@ private:
                                                                 {"session_type", Op::session_type},
                                                                 {"track", Op::track},
                                                                 {"setup_mode", Op::setup_mode},
-                                                                {"vehicle_package", Op::vehicle_package}};
+                                                                {"vehicle_package", Op::vehicle_package},
+                                                                {"entrant_list", Op::entrant_list}};
             bool known = false;
             for (auto &[name, op] : named)
                 if (key == name) {
@@ -342,6 +348,8 @@ private:
             return f.career && f.career->year >= n.from && f.career->year <= n.to;
         case Op::setup_mode:
             return f.session && any_of(n.values, f.session->setup_mode);
+        case Op::entrant_list:
+            return !f.entrant_list.empty() && any_of(n.values, f.entrant_list);
         case Op::vehicle_package:
             for (auto &w : n.values)
                 if (has(f.vehicle_packages, w))

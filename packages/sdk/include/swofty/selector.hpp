@@ -87,6 +87,7 @@ inline Selector mode(Mode m) { return detail::one("mode", detail::quote(detail::
 inline Selector track(std::string_view id) { return detail::one("track", detail::quote(id)); }
 inline Selector setup_mode(std::string_view id) { return detail::one("setup_mode", detail::quote(id)); }
 inline Selector vehicle_package(std::string_view id) { return detail::one("vehicle_package", detail::quote(id)); }
+inline Selector entrant_list(std::string_view name) { return detail::one("entrant_list", detail::quote(name)); }
 
 inline Selector year(int from, int to)
 {

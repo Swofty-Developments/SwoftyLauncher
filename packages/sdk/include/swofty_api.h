@@ -766,7 +766,7 @@ typedef struct SwoftyEra {
    ("/teams/slot=1/seats/0"). Selectors (layer filters, handler scopes) are a JSON array whose entries
    must all match: {"content": id}, {"content_exact": id}, {"owner": addon}, {"data_group": name},
    {"mode": "time_trial"}, {"session_type": ["race"]}, {"track": id}, {"year": [from, to]},
-   {"setup_mode": id}, {"vehicle_package": id}, {"any": [selector, ...]}, {"not": selector}. */
+   {"setup_mode": id}, {"vehicle_package": id}, {"entrant_list": name}, {"any": [selector, ...]}, {"not": selector}. */
 #define SWOFTY_REGISTRY_VERSION 1
 #define SWOFTY_HOOKS_VERSION 1
 #define SWOFTY_SERVICES_VERSION 1
