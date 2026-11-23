@@ -7,6 +7,7 @@
 #include <atomic>
 #include <cstring>
 #include <map>
+#include <set>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -112,6 +113,20 @@ struct Plan {
 
 std::vector<Entry> declared;
 std::map<std::string, std::vector<std::string>> extensions;
+// content.box_assets kind scene: a stock group that reads an addon ERP first only in one box's sessions. Asked for
+// before the manifest parse; at the parse the ERP list with the addon ERP first is appended and kept beside the stock
+// slot value, and box_groups_select stores one or the other.
+struct BoxExt {
+    std::string group, erp, box;
+    uint64_t size = 0;
+};
+struct BoxFlip {
+    uint64_t key = 0, stock = 0, mine = 0;
+    std::string group, erp, box;
+};
+std::vector<BoxExt> box_exts;
+std::vector<BoxFlip> box_flips;
+std::string box_selected;
 std::vector<std::string> auto_prefixes;
 std::string config_source;
 uintptr_t base;
@@ -912,6 +927,113 @@ void apply_overlay(Manifest &mf, const Probe &pr, const runtime::Overlay &ov)
         runtime::overlay_registered(registered, patched_groups);
 }
 
+// The box ERP lists of box_exts: each addon ERP's name registered, each group's list (addon ERP, then its stock ERPs)
+// appended to the manifest's ERP array. The group slots keep their stock value until box_groups_select.
+void apply_box_groups(Manifest &mf, const Probe &pr)
+{
+    if (box_exts.empty())
+        return;
+    struct Want {
+        const BoxExt *x;
+        uint64_t key, value, erp;
+        std::string group;
+    };
+    std::vector<Want> wants;
+    std::map<uint64_t, std::pair<const BoxExt *, bool>> erps_of; // erp hash -> (request, already named)
+    const uint64_t *erps = mf.array<uint64_t>(M_ERPS);
+    uint32_t nerps = mf.array_count(M_ERPS);
+    for (auto &x : box_exts) {
+        std::string group = x.group;
+        Slot *sl = mf.groups.find(runtime::fnv64(group));
+        if (!sl && group.rfind("asset_groups/", 0) != 0) {
+            group = "asset_groups/" + group;
+            sl = mf.groups.find(runtime::fnv64(group));
+        }
+        if (!sl) {
+            swofty::log("[assets] box groups: %s is not a group of the manifest; box %s keeps its stock list", x.group.c_str(),
+                        x.box.c_str());
+            continue;
+        }
+        uint64_t v = sl->value;
+        uint32_t start = uint32_t(v), count = uint32_t(v >> 32) & 0xffffff;
+        if (!count || uint64_t(start) + count > nerps) {
+            swofty::log("[assets] box groups: %s has no ERP list in the manifest (slot 0x%016llx); not switched", group.c_str(),
+                        (unsigned long long)v);
+            continue;
+        }
+        uint64_t eh = runtime::fnv64(pr.erp_scheme->fn(x.erp));
+        if (std::find(erps + start, erps + start + count, eh) != erps + start + count)
+            continue;
+        bool named = false;
+        if (Slot *ns = mf.names.find(eh)) {
+            std::string existing = mf.decode(ns->value);
+            if (existing != x.erp) {
+                swofty::log("[assets] box groups: erp hash %s of %s already names '%s'; %s keeps its stock list",
+                            hex(eh).c_str(), x.erp.c_str(), existing.c_str(), group.c_str());
+                continue;
+            }
+            named = true;
+        } else if (alias_has(eh)) {
+            swofty::log("[assets] box groups: erp hash %s of %s has a g_Asset_AliasNames entry; %s keeps its stock list",
+                        hex(eh).c_str(), x.erp.c_str(), group.c_str());
+            continue;
+        }
+        erps_of.emplace(eh, std::make_pair(&x, named));
+        wants.push_back({&x, sl->key, v, eh, group});
+    }
+    if (wants.empty())
+        return;
+    std::string why;
+    Words words(mf);
+    std::vector<uint16_t> tokens;
+    uint32_t token_base = mf.array_count(M_TOKENS);
+    std::map<uint64_t, uint32_t> tok_of;
+    for (auto &[eh, xn] : erps_of) {
+        if (xn.second)
+            continue;
+        tok_of[eh] = token_base + uint32_t(tokens.size());
+        if (!words.encode(xn.first->erp, tokens, why) || uint64_t(token_base) + tokens.size() > TOKEN_LIMIT) {
+            swofty::log("[assets] box groups: the ERP names do not fit the manifest (%s); no group switches",
+                        why.empty() ? "token index past 0xffffff" : why.c_str());
+            return;
+        }
+    }
+    std::vector<uint64_t> list;
+    for (auto &w : wants) {
+        uint32_t start = uint32_t(w.value), count = uint32_t(w.value >> 32) & 0xffffff;
+        list.push_back(w.erp);
+        list.insert(list.end(), erps + start, erps + start + count);
+    }
+    uint32_t tok_start = 0, erp_start = 0;
+    if (!words.commit(why) || !append(mf.m + M_TOKENS, tokens, tok_start, why) || !append(mf.m + M_ERPS, list, erp_start, why)) {
+        swofty::log("[assets] box groups: manifest arrays: %s; no group switches", why.c_str());
+        return;
+    }
+    std::set<uint64_t> ok;
+    for (auto &[eh, xn] : erps_of) {
+        if (!xn.second) {
+            uint64_t hi = pr.size_in_high ? xn.first->size : 0;
+            if (!mf.names.insert(eh, (hi << 32) | pr.erp_name_bits | tok_of[eh], why)) {
+                swofty::log("[assets] box groups: %s not registered: name map: %s", xn.first->erp.c_str(), why.c_str());
+                continue;
+            }
+        }
+        ok.insert(eh);
+    }
+    for (auto &w : wants) {
+        uint32_t count = uint32_t(w.value >> 32) & 0xffffff, mine = erp_start;
+        erp_start += count + 1;
+        if (!ok.count(w.erp))
+            continue;
+        uint64_t flags = (w.value >> 32) & 0xff000000u;
+        box_flips.push_back({w.key, w.value, ((flags | (count + 1)) << 32) | mine, w.group, w.x->erp, w.x->box});
+        swofty::log("[assets] box groups: %s (0x%016llx, flags 0x%02llx) reads %s first in box %s's sessions, then its %u "
+                    "stock ERP(s); stock list until that box is chosen",
+                    w.group.c_str(), (unsigned long long)w.key, (unsigned long long)(flags >> 24), w.x->erp.c_str(),
+                    w.x->box.c_str(), count);
+    }
+}
+
 void extend_entries(std::vector<Entry> &entries)
 {
     for (auto &[group, erps] : extensions) {
@@ -961,6 +1083,7 @@ void apply(uint8_t *m, const char *when, const runtime::Overlay *ov)
         {
             if (ov)
                 apply_overlay(mf, pr, *ov);
+            apply_box_groups(mf, pr);
         }
     } late{mf, pr, ov};
     if (entries.empty() && ov) {
@@ -1301,6 +1424,37 @@ int runtime::group_extend(const std::string &group, const std::string &erp)
     if (std::find(list.begin(), list.end(), e) == list.end())
         list.push_back(e);
     return SWOFTY_ASSET_OK;
+}
+
+int runtime::group_extend_box(const std::string &group, const std::string &erp, uint64_t size, const std::string &box)
+{
+    std::lock_guard<std::mutex> g(patch_lock);
+    if (!h_parse || patched)
+        return SWOFTY_ASSET_LATE;
+    box_exts.push_back({norm(group), norm(erp), box, size});
+    return SWOFTY_ASSET_OK;
+}
+
+void runtime::box_groups_select(const std::string &box)
+{
+    std::lock_guard<std::mutex> g(patch_lock);
+    void *m = patched.load();
+    if (!m || box_flips.empty() || box == box_selected)
+        return;
+    box_selected = box;
+    Manifest mf(static_cast<uint8_t *>(m));
+    for (auto &f : box_flips) {
+        Slot *s = mf.groups.find(f.key);
+        if (!s)
+            continue;
+        uint64_t want = f.box == box ? f.mine : f.stock;
+        if (s->value == want)
+            continue;
+        __atomic_store_n(&s->value, want, __ATOMIC_RELEASE);
+        std::string what = want == f.mine ? f.erp + " first" : std::string("its stock list");
+        swofty::log("[assets] box groups: %s now reads %s (box %s)", f.group.c_str(), what.c_str(),
+                    box.empty() ? "none" : box.c_str());
+    }
 }
 
 int runtime::group_add(const json::Value &entry)

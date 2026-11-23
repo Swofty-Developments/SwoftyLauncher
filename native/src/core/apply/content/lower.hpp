@@ -64,6 +64,7 @@ struct GarageArt {
     std::string id, addon, package, team, folder, root, game_path;
     std::string registry = "team.garage"; // or track.sponsors / content.box_assets (box_assets_lower.hpp)
     std::string kind, archive;            // content.box_assets: what it dresses; a ready archive of the addon instead of a folder
+    std::string box;                      // kind scene: the box (entrant list) whose sessions read the archive first
     bool srgb = true;
     std::vector<std::string> vehicles, groups, prefixes; // prefixes: the eaid names the archive may hold (empty: any)
 };

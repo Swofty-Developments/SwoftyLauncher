@@ -17,7 +17,7 @@
       "x-ref": "content.package"
     },
     "kind": {
-      "description": "What the resources dress; it picks the default root and is named in the core's log. garage: garage and pit lane art; sponsors: trackside sponsor boards; marshals: track marshal kit; crowd: the crowd; principal: team principal clothing; other: anything else.",
+      "description": "What the resources dress; it picks the default root and is named in the core's log. garage: garage and pit lane art; sponsors: trackside sponsor boards; marshals: track marshal kit; crowd: the crowd; principal: team principal clothing; scene: stock scene groups (the grid cutscene, a garage scene) named in groups; other: anything else.",
       "type": "string",
       "enum": [
         "garage",
@@ -25,6 +25,7 @@
         "marshals",
         "crowd",
         "principal",
+        "scene",
         "other"
       ]
     },
@@ -48,6 +49,14 @@
     "archive": {
       "$ref": "#/$defs/path",
       "description": "A ready .erp archive in the addon, listed as it is (any resource types, e.g. texture arrays or material bindings). It needs resources. One of textures and archive."
+    },
+    "groups": {
+      "description": "Kind scene only: the stock scene asset groups (names ending in .assetgroup, e.g. asset_groups/animation_package/scenes/cinematics/cinematicsgrid.assetgroup) that read the archive first while the package's box is the session's box (a box press or a career season of the box); every other session reads their stock list. Needs an archive and the package's entrant_list.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\.assetgroup$"
+      }
     },
     "resources": {
       "description": "The eaid:// name prefixes the archive (or the packed textures) may hold; the core refuses the record when a resource name starts with none of them.",

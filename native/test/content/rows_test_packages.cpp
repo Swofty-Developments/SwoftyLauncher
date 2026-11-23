@@ -501,8 +501,10 @@ void box_assets_tests()
         {"vehicle|mod.s/alfa", Value::object({{"label", "f50_alfa"}})},
         {"vehicle|mod.s/ferrari", Value::object({{"label", "f50_ferrari"}})},
         {"content.package|mod.s/f1_1950",
-         Value::object({{"teams", Value::array({team("alfa", "mod.s/alfa"), team("ferrari", "mod.s/ferrari"),
-                                                team("alfa_b", "mod.s/alfa")})}})}};
+         Value::object({{"entrant_list", "f5_1950"},
+                        {"teams", Value::array({team("alfa", "mod.s/alfa"), team("ferrari", "mod.s/ferrari"),
+                                                team("alfa_b", "mod.s/alfa")})}})},
+        {"content.package|mod.s/nolist", Value::object({{"teams", Value::array({team("alfa", "mod.s/alfa")})}})}};
     content::Lookup lookup = [&](const std::string &reg, const std::string &id) -> const Value * {
         auto it = recs.find(reg + "|" + id);
         return it == recs.end() ? nullptr : &it->second;
@@ -541,7 +543,23 @@ void box_assets_tests()
               lower(R"j({"package":"mod.s/f1_1950","textures":"s","root":"eaid://x/"})j").garages[0].root == "eaid://x/",
           "a record without kind is other, and its own root is kept");
 
+    content::Plan scene = lower(R"j({"package":"mod.s/f1_1950","kind":"scene","archive":"kit/blankets.erp",)j"
+                                R"j("groups":["asset_groups/animation_package/scenes/cinematics/cinematicsgrid.assetgroup"],)j"
+                                R"j("resources":["eaid://environment_package/cinematics/"]})j");
+    check(scene.garages.size() == 1 && scene.garages[0].kind == "scene" && scene.garages[0].box == "f5_1950" &&
+              scene.garages[0].groups.size() == 1 &&
+              scene.garages[0].groups[0] == "asset_groups/animation_package/scenes/cinematics/cinematicsgrid.assetgroup" &&
+              scene.garages[0].vehicles.empty(),
+          "kind scene goes to its named stock scene groups for the package's box, not to the car groups");
+
     for (const char *bad : {
+             R"j({"package":"mod.s/f1_1950","kind":"scene","textures":"s","groups":["a/b.assetgroup"]})j",
+             R"j({"package":"mod.s/f1_1950","kind":"scene","archive":"a.erp","resources":["eaid://x/"]})j",
+             R"j({"package":"mod.s/f1_1950","kind":"scene","archive":"a.erp","resources":["eaid://x/"],"groups":["a/b"]})j",
+             R"j({"package":"mod.s/f1_1950","kind":"crowd","archive":"a.erp","resources":["eaid://x/"],)j"
+             R"j("groups":["a/b.assetgroup"]})j",
+             R"j({"package":"mod.s/nolist","kind":"scene","archive":"a.erp","resources":["eaid://x/"],)j"
+             R"j("groups":["a/b.assetgroup"]})j",
              R"j({"kind":"crowd","textures":"s"})j",
              R"j({"package":"mod.s/nope","textures":"s"})j",
              R"j({"package":"mod.s/f1_1950","kind":"menus","textures":"s"})j",

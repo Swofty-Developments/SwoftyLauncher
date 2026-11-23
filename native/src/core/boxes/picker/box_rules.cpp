@@ -213,11 +213,13 @@ void put_back_box_options()
         box_rules.box_options_log.say("the player's " + put + " setting put back");
 }
 
-// Grid rules per box: the pressed box's rules.grid goes to box_grid.cpp; a box without the rule clears it.
+// Grid rules per box: the pressed box's rules.grid goes to box_grid.cpp; a box without the rule clears it. The box's
+// scene groups (content.box_assets kind scene) switch with it, on a box press and on a career season's load alike.
 void apply_grid(const RuleTarget &t, const char *list)
 {
     auto box = swofty_core::apply::content::grid_for_box(list);
     runtime::box_grid_set(box.rule, list);
+    runtime::box_groups_select(list ? std::string(list) : std::string());
     box_rules.grid_log.say(t.prefix + box.line);
 }
 
@@ -283,6 +285,7 @@ void put_back_drs()
 {
     forget_career_rules();
     runtime::box_grid_set(std::nullopt, std::string());
+    runtime::box_groups_select(std::string());
     runtime::quali_tyres_box(0, std::string());
     const std::string &h = box_rules.host;
     if (size_t n = box_rules.drs.put_back())

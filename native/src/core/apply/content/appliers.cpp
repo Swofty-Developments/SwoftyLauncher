@@ -790,6 +790,21 @@ void apply_garages(Expansion &x, Report &report, std::string_view reg = "team.ga
                 report.lines.push_back(o.line);
                 continue;
             }
+            if (g.kind == "scene") {
+                std::error_code fec;
+                auto size = std::filesystem::file_size(runtime::under_swofty("addons/" + g.addon + "/" + g.archive), fec);
+                std::size_t kept = 0;
+                for (auto &group : g.groups) {
+                    int rc = runtime::group_extend_box(group, g.game_path, fec ? 0 : uint64_t(size), g.box);
+                    std::string said = rc == SWOFTY_ASSET_OK ? " lists " + g.game_path + " first in box " + g.box + "'s sessions"
+                                                             : std::string(" not extended (the manifest is already parsed)");
+                    report.lines.push_back(tag + " " + g.id + ": " + group + said);
+                    kept += rc == SWOFTY_ASSET_OK;
+                }
+                if (!kept)
+                    report.refused++;
+                continue;
+            }
             std::size_t attached = 0;
             for (auto &group : g.groups) {
                 int rc = runtime::group_extend(group, g.game_path);
