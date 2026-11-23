@@ -28,6 +28,7 @@
 #include "core/hooks/core_events.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/hooks/player_facts.hpp"
+#include "core/hooks/setup_layout_hooks.hpp"
 #include "core/hooks/race_fuel_rules.hpp"
 #include "core/frontend/view_state.hpp"
 #include "core/hooks/session_points.hpp"
@@ -208,6 +209,7 @@ thread_local uintptr_t t_apply_block = 0;
 
 void d_apply_tuning(void *entry, void *mask, void *block)
 {
+    setup_layout_hooks::refresh();
     uintptr_t before = t_apply_block;
     t_apply_block = reinterpret_cast<uintptr_t>(block);
     g_apply->original<void>(entry, mask, block);
@@ -995,6 +997,7 @@ void arm_car_points()
         g_setup->keep(true);
         g_setup->install(false, "the core");
     }
+    setup_layout_hooks::arm();
 }
 
 }

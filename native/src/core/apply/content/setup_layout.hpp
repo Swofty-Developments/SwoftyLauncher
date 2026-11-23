@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <optional>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -100,6 +101,116 @@ inline std::array<bool, SETUP_SLIDER_COUNT> shown_sliders(const Layout &l)
             if (r.slider >= 0 && r.slider < SETUP_SLIDER_COUNT)
                 shown[r.slider] = true;
     return shown;
+}
+
+
+// The slider index of a layout's `slider` name: the SDK's SetupSlider names, and the car_setup.sliders labels the
+// stock database uses for the same index. -1 for a name that is none of them.
+inline int slider_index(const std::string &name)
+{
+    static const char *const names[SETUP_SLIDER_COUNT] = {
+        "front_wing", "rear_wing", "diff_on_throttle", "diff_off_throttle", "diff_mid_corner", "diff_high_speed",
+        "diff_preload", "front_camber", "rear_camber", "front_toe", "rear_toe", "front_suspension", "rear_suspension",
+        "front_ride_height", "rear_ride_height", "front_anti_roll_bar", "rear_anti_roll_bar", "brake_pressure",
+        "brake_bias", "brake_migration_a", "brake_migration_b", "tyre_pressure_0", "tyre_pressure_1", "tyre_pressure_2",
+        "tyre_pressure_3", "ballast", "fuel_load", "engine_braking", "ramp_differential", "inter_wet_pressure_0",
+        "inter_wet_pressure_1", "inter_wet_pressure_2", "inter_wet_pressure_3", "inter_wet_pressure_4",
+        "inter_wet_pressure_5", "inter_wet_pressure_6", "inter_wet_pressure_7", "brake_cooling_front",
+        "brake_cooling_rear", "brake_duct_front", "brake_duct_rear", "brake_migration_c"};
+    static const struct {
+        const char *label;
+        int index;
+    } labels[] = {{"on_throttle", 2},
+                  {"off_throttle", 3},
+                  {"mid_corner", 4},
+                  {"front_suspension_height", 13},
+                  {"rear_suspension_height", 14},
+                  {"front_antiroll_bar", 15},
+                  {"rear_antiroll_bar", 16},
+                  {"brake_bm", 19},
+                  {"brake_bm_input_start", 20},
+                  {"front_right_tyre_pressure", 21},
+                  {"front_left_tyre_pressure", 22},
+                  {"rear_right_tyre_pressure", 23},
+                  {"rear_left_tyre_pressure", 24},
+                  {"engine_braking_fraction", 27},
+                  {"ramp_differential", 28},
+                  {"brake_ch_front", 37},
+                  {"brake_ch_rear", 38},
+                  {"brake_bd_factor_front", 39},
+                  {"brake_bd_factor_rear", 40},
+                  {"brake_bm_input_end", 41}};
+    for (int i = 0; i < SETUP_SLIDER_COUNT; i++)
+        if (name == names[i])
+            return i;
+    for (const auto &l : labels)
+        if (name == l.label)
+            return l.index;
+    return -1;
+}
+
+// The game's own text key of a slider's name (Game_CarSetupVm_PopulateGarageMonitorSettings' switch), "" where the
+// switch shares its body (the diff and the inter and wet rows are not keyed one to one).
+inline const char *name_key(int slider)
+{
+    static const char *const keys[SETUP_SLIDER_COUNT] = {
+        "lng_cs_frong_wing_angle", "lng_cs_rear_wing_angle", "", "", "lng_cs_diff_adj_mid_corner",
+        "lng_cs_diff_adj_high_speed", "lng_cs_diff_adj_preload", "lng_cs_front_camber", "lng_cs_rear_camber",
+        "lng_cs_front_toe", "lng_cs_rear_toe", "lng_cs_front_suspension", "lng_cs_rear_suspension",
+        "lng_cs_front_suspension_height", "lng_cs_rear_suspension_height", "lng_cs_front_anti_roll_bar",
+        "lng_cs_rear_anti_roll_bar", "lng_cs_brake_pressure", "lng_cs_brake_bias", "lng_cs_brake_bm",
+        "lng_cs_brake_bm_input_range_start", "lng_cs_front_right_tyre_pressure", "lng_cs_front_left_tyre_pressure",
+        "lng_cs_rear_right_tyre_pressure", "lng_cs_rear_left_tyre_pressure", "lng_cs_weight_balance", "lng_cs_fuel_load",
+        "lng_cs_engine_braking", "lng_cs_diff_adj_ramp_diff", "lng_cs_front_right_tyre_pressure_inter",
+        "lng_cs_front_left_tyre_pressure_inter", "lng_cs_rear_right_tyre_pressure_inter",
+        "lng_cs_rear_left_tyre_pressure_inter", "lng_cs_front_right_tyre_pressure_wet",
+        "lng_cs_front_left_tyre_pressure_wet", "lng_cs_rear_right_tyre_pressure_wet", "lng_cs_rear_left_tyre_pressure_wet",
+        "lng_cs_brake_ch_front", "lng_cs_brake_ch_rear", "lng_cs_brake_bd_factor_front", "lng_cs_brake_bd_factor_rear",
+        "lng_cs_brake_bm_input_range_end"};
+    return slider >= 0 && slider < SETUP_SLIDER_COUNT ? keys[slider] : "";
+}
+
+// The text key of the unit string a slider's group shows ("lng_cs_*_range"), shared by the sliders of a group, "" where
+// the switch has none for it.
+inline const char *unit_key(int slider)
+{
+    if (slider == 37 || slider == 38)
+        return "lng_cs_brake_ch_range";
+    if (slider == 39 || slider == 40)
+        return "lng_cs_brake_cd_range";
+    if (slider == 26)
+        return "lng_cs_fuel_range";
+    if (slider == 25)
+        return "lng_cs_weight_distribution_range";
+    if (slider == 17)
+        return "lng_cs_brakes_pressure_range";
+    if (slider == 18)
+        return "lng_cs_brakes_bias_range";
+    return "";
+}
+
+// The game's own name of each tab slot (the group "name" BuildSetupGroupList sets, read from its table); a layout may
+// give `tab` as the number or as this name. -1 for a name that is none of them.
+inline constexpr const char *TAB_NAMES[LAYOUT_TABS] = {"fuel_load", "aerodynamics",         "transmission", "suspension_geometry",
+                                                       "suspension", "brakes", "tyres", "weight_distribution"};
+
+inline int tab_index(const std::string &name)
+{
+    for (int i = 0; i < LAYOUT_TABS; i++)
+        if (name == TAB_NAMES[i])
+            return i;
+    return -1;
+}
+
+// The group array of a tab: the slider indexes the layout lists for it, in order, empty when it has no section.
+inline std::vector<uint32_t> tab_indexes(const Layout &l, int tab)
+{
+    std::vector<uint32_t> out;
+    for (const auto &s : l.sections)
+        if (s.tab == tab)
+            for (const auto &r : s.rows)
+                out.push_back(uint32_t(r.slider));
+    return out;
 }
 
 struct CellSwap {

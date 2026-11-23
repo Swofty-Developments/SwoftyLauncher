@@ -73,3 +73,11 @@ The scope switch (`ScopeSwitch`) runs when the setup screen's VM initialises (`G
 - The value text of a row (`value_str`, and the `lng_cs_*_range` formats with `%.1f` and a unit key) is written by the game per slider; whether `unit` can be applied through `range_desc` alone, or needs the shared `lng_cs_*_range` keys set with the scope, is not read yet.
 - The stock screen's eighth tab is the fuel tab on some cars; a layout may use it.
 - A saved setup keeps all 42 steps, so a step saved in a scope returns the same row in that scope; outside it the same step is read by the stock slider of that index. Layouts should pick sliders whose stock use is inert in the scope's cars.
+
+## Hooks and the builds they run on
+
+The layout hooks (`native/src/core/hooks/setup_layout_hooks.cpp`) find three sites by byte scan, each on its own, on Steam 1.0.145 (build 26566308), where the KB addresses are not valid: `Game_CarSetupVm_BuildSetupGroupList` (0x140c154f0 there), `Game_CarSetupVm_PopulateGarageMonitorSettings` (0x140c18640) and the three `car_setup.sliders` cell arrays (leas inside the populate function, 0x150 apart). A site that does not resolve, or a hook that fails, logs one `[setups] layout:` line and leaves the stock screen. The layout is read from the file named by `SWOFTY_SETUP_LAYOUT_FILE` (a JSON file with the `setup.layout` record; the registry declaration is open) and the log of what the screen did is `SWOFTY_SETUP_LAYOUT_LOG=1`.
+
+`tab` is the game's own tab slot, a number or its name: 0 `fuel_load`, 1 `aerodynamics`, 2 `transmission`, 3 `suspension_geometry`, 4 `suspension`, 5 `brakes`, 6 `tyres`, 7 `weight_distribution`. `slider` is the SDK name or the stock database label.
+
+Row names go on the game's own text key for the slider (`lng_cs_*`), so the diff rows 2 and 3 have none yet. The unit goes on the group's shared range key (`lng_cs_brake_ch_range` for 37 and 38, `lng_cs_brake_cd_range` for 39 and 40, one each for fuel load, ballast and the two brake sliders), and only where every row sharing the key gives the same unit. `desc` is one text per group in the game and is not applied.

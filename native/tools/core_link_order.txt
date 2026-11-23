@@ -209,6 +209,7 @@ src/core/career/ops/track_fuel.cpp
 src/core/hooks/game_points.cpp
 src/core/hooks/session_points.cpp
 src/core/hooks/car_live.cpp
+src/core/hooks/setup_layout_hooks.cpp
 src/core/registry/older.cpp
 src/core/apply/content/logos.cpp
 src/core/apply/tracks/boot.cpp

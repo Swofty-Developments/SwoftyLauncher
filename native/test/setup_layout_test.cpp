@@ -110,6 +110,15 @@ int main()
 
     expect(std::fabs(c::display_value(0.84f, 1.0f, 8, 16) - 0.92f) < 1e-4f, "step 8 of 16 on 0.84..1.00 shows 0.92");
     expect(c::display_value(1, 2, 99, 10) == 2 && c::display_value(1, 2, -3, 10) == 1, "a step outside the range clamps");
+    expect(c::slider_index("brake_duct_front") == 39 && c::slider_index("brake_bd_factor_front") == 39 &&
+               c::slider_index("front_antiroll_bar") == 15 && c::slider_index("ballast") == 25 && c::slider_index("nope") == -1,
+           "slider names resolve by the SDK name and by the database label");
+    expect(c::tab_index("aerodynamics") == 1 && c::tab_index("fuel_load") == 0 && c::tab_index("wings") == -1, "tab names resolve");
+    auto t7 = c::tab_indexes(l, 7);
+    expect(t7.size() == 4 && t7[0] == 37 && t7[3] == 40 && c::tab_indexes(l, 3).empty(), "a tab's group array is its rows in order");
+    expect(std::string(c::name_key(37)) == "lng_cs_brake_ch_front" && std::string(c::name_key(2)).empty() &&
+               std::string(c::unit_key(39)) == "lng_cs_brake_cd_range",
+           "the text keys of the fuel rows are the game's");
     std::printf(failed ? "%d failed\n" : "all passed\n", failed);
     return failed ? 1 : 0;
 }

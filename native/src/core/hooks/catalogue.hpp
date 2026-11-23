@@ -107,7 +107,7 @@ inline constexpr Event EVENTS[] = {
     {"car.built", N, "swofty::cars::events::Built", 1, false, Fired::game, nullptr},
     {"car.reset", N, "swofty::cars::events::Reset", 1, false, Fired::game, nullptr},
     {"car.upgrades.replayed", N, "swofty::cars::events::UpgradesReplayed", 1, false, Fired::game, nullptr},
-    {"car.setup.applied", N, "swofty::cars::events::SetupApplied", 1, false, Fired::game, nullptr},
+    {"car.setup.applied", N, "swofty::cars::events::SetupApplied", 2, false, Fired::game, nullptr},
     {"car.parts.register", N, "swofty::cars::events::PartsRegister", 1, false, Fired::game, nullptr},
     {"car.damage", N, "swofty::cars::events::Damage", 1, true, Fired::game, nullptr},
     {"car.tyre.damage", N, "swofty::tyre_damage::events::Damage", 1, false, Fired::yes, nullptr},
