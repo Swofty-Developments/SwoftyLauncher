@@ -158,6 +158,9 @@ pub(super) fn install_files(data: &Path, src: &Path, files: &[(&str, &str)]) -> 
                 return Err(Error::Other(format!("{name}: not found in {}", src.display())));
             }
             let to = staging.join(name);
+            if let Some(parent) = to.parent() {
+                std::fs::create_dir_all(parent).map_err(io_err(parent.to_path_buf()))?;
+            }
             std::fs::copy(&from, &to).map(|_| ()).map_err(io_err(&to))
         })
         .and_then(|()| commit(data, &staging, files))
@@ -258,6 +261,9 @@ pub(super) fn download(url: &str, to: &Path) -> std::result::Result<(), String> 
             "{url}: the download was cut off ({} of {n} bytes)",
             body.len()
         ));
+    }
+    if let Some(parent) = to.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| format!("{}: {e}", parent.display()))?;
     }
     std::fs::write(to, &body).map_err(|e| {
         if virus_blocked(&e) {

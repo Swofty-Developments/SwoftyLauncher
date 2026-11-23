@@ -86,7 +86,9 @@ fn names_the_stub_when_only_it_is_gone_from_the_extension() {
     let dir = extension_dir(&d);
     std::fs::create_dir_all(&dir).unwrap();
     for name in REQUIRED {
-        std::fs::write(dir.join(name), "x").unwrap();
+        let to = dir.join(name);
+        std::fs::create_dir_all(to.parent().unwrap()).unwrap();
+        std::fs::write(to, "x").unwrap();
     }
     assert_eq!(stub_removed_from_extension(&d), None);
     std::fs::remove_file(dir.join(STUB)).unwrap();

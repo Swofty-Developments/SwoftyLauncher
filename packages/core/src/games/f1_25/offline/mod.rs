@@ -67,47 +67,70 @@ can work. Everything is undone when the game exits.
 We may collect anonymised usage data from your use of the launcher.";
 
 /// The extension release this manager pins.
-pub const EXTENSION_VERSION: &str = "0.3.13";
+pub const EXTENSION_VERSION: &str = "0.4.0";
 /// Where the artifacts are hosted (binaries; source lives in the repository).
 pub const DEFAULT_BASE_URL: &str = "https://swofty-developments.github.io/F1-OfflinePlay";
 pub const SOURCE_URL: &str = "https://github.com/Swofty-Developments/F1-OfflinePlay";
 
-/// Pinned digests for release v0.3.13. Every artifact is checked against its
-/// pin at install time and again at use time.
+/// Pinned digests for release v0.4.0. Every artifact is checked against its
+/// pin at install time and again at use time. The notice files are text that
+/// ships beside the binaries; they are verified like the rest but are never run
+/// or staged into the game folder.
 pub const PINS: &[(&str, &str)] = &[
     (
         "f1op_hook.dll",
-        "290fec68d2728280a9dc1009ca90b030efeb1c5d418cb8a5578a7b92dc8fb619",
+        "4d347140704dca05cc78b88794f8e8fe67aa6bd1f8be5004f974842e7c3d7133",
     ),
     (
         "f1op_stub.exe",
-        "272092e4492b327bcb814695ebaa85f056f7ac31143d9b54ff8fc16dd6c25d97",
+        "e428b80f183c5c95533ecb8a1d7fcf0b8ad8a9152e9b029d388c592508dcf727",
     ),
     (
         "f1op-prelaunch.exe",
-        "a3c0e01c7c044b07b343f6c161de343f30dfb958431ac72026330317993510d3",
+        "907fc221c7be99e561e5dfae0a17095aaae718d4caef81d67e623adc12187efc",
     ),
     (
         "f1op-probe.exe",
-        "7d958cfe25303f6be47b2e3c76c9e31b1a8dc12b051f397fedb912ebe827e9da",
+        "f268b062e17921c1a75d0e75d464bba78b649313852b628777928486a595a75f",
     ),
     (
         "f1op-prelaunch-linux-x86_64",
-        "6a2bcbc0190f1c14a69590ef117974fa2c4562fe7cda25ab8e733417a12e2271",
+        "098f9142b81671a4861b173787deddd39cc472931b5ad481e283f650af743966",
     ),
     (
         "f1op-probe-linux-x86_64",
         "8c5a3353f38ddcb511f3502d7b6ee1032ede344c3a8db74165e46dce2b3cb9b8",
     ),
+    (
+        "LICENSE.txt",
+        "5560fee8e4299e8046d5b043b86c7d6e8c27f756ca9492a46c15cb013cea10d7",
+    ),
+    (
+        "notices/README.md",
+        "074bb16d4908739956d8f2d37fe042bd76ebe57022c972b18d39afdf3e859133",
+    ),
+    (
+        "notices/AGENTS.md",
+        "33a324752952df10d1ce36e07886da535a008721be7976340304419f726dc54a",
+    ),
+    (
+        "notices/CLAUDE.md",
+        "5af4092cca6c0d23e49f16633f014fd43458c563659f243686175357fb6eb730",
+    ),
 ];
 
-/// The artifacts this platform runs or stages.
+/// The files this platform installs: the artifacts it runs or stages, then the
+/// notice files, which install beside them but are never run or staged.
 #[cfg(windows)]
 pub const REQUIRED: &[&str] = &[
     "f1op_hook.dll",
     "f1op_stub.exe",
     "f1op-prelaunch.exe",
     "f1op-probe.exe",
+    "LICENSE.txt",
+    "notices/README.md",
+    "notices/AGENTS.md",
+    "notices/CLAUDE.md",
 ];
 #[cfg(not(windows))]
 pub const REQUIRED: &[&str] = &[
@@ -115,6 +138,10 @@ pub const REQUIRED: &[&str] = &[
     "f1op_stub.exe",
     "f1op-prelaunch-linux-x86_64",
     "f1op-probe-linux-x86_64",
+    "LICENSE.txt",
+    "notices/README.md",
+    "notices/AGENTS.md",
+    "notices/CLAUDE.md",
 ];
 
 fn pin(name: &str) -> Option<&'static str> {

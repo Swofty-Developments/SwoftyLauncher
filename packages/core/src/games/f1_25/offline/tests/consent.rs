@@ -28,7 +28,9 @@ fn install_rejects_wrong_digests() {
     let src = d.join("src");
     std::fs::create_dir_all(&src).unwrap();
     for name in REQUIRED {
-        std::fs::write(src.join(name), "not the real thing").unwrap();
+        let to = src.join(name);
+        std::fs::create_dir_all(to.parent().unwrap()).unwrap();
+        std::fs::write(to, "not the real thing").unwrap();
     }
     let err = install(&d, &src).unwrap_err().to_string();
     assert!(err.contains("digest mismatch"), "{err}");
@@ -43,7 +45,9 @@ fn install_from_a_folder_leaves_no_staging_behind() {
     std::fs::create_dir_all(&src).unwrap();
     let release = fake_release();
     for (name, body) in &release {
-        std::fs::write(src.join(name), body).unwrap();
+        let to = src.join(name);
+        std::fs::create_dir_all(to.parent().unwrap()).unwrap();
+        std::fs::write(to, body).unwrap();
     }
     let pins = digests(&release);
     let pins: Vec<(&str, &str)> = pins.iter().map(|(n, h)| (*n, h.as_str())).collect();
