@@ -370,7 +370,12 @@
 [saves] custom_track_list count lines %s
 
 [log tracks/track_select.cpp]
+[tracks] track data lookup guard: %s%s
 %s
 [tracks] track select guard off (SWOFTY_TRACK_GUARD=%s)
+[tracks] track data lookup guard off (SWOFTY_TRACK_LOOKUP_GUARD=%s)
 [tracks] track select guard off: needs %s, which this build does not resolve
+[tracks] track data lookup guard off: needs %s, which this build does not resolve
+[tracks] track select guard off: needs %s, which this build does not resolve
+[tracks] track data lookup guard %s
 [tracks] track select guard %s
