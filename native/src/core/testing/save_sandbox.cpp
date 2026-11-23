@@ -39,11 +39,12 @@
 //
 // The EA copy has no Steam storage: its save device opens
 // <title folder>\<save>\<file> in place, and the title folder is a wide string held inline in the save system
-// (device+0x18, buffer size at +0x68, string at +0x78). The core wraps Start, checks the vtable, the slot and that
-// layout, then overwrites that string with saves/<profile>/ea, whose profile folder holds the save; a test run's
-// is <run>/saves/ea. Mount quits the game if this has not run, as on Steam. The EA device's vt+0x58 is
-// `xor eax, eax; ret`, so there is no upload to wrap, and a save is counted once its files in profile/ change and
-// then settle.
+// (device+0x18, buffer size at +0x68, string at +0x78). The save system's user interface (device+0x10) holds a copy
+// of that config at +0xa8 and asks "import profile data?" before a load when the two differ. The core wraps Start,
+// checks the vtable, the slot and both copies, then overwrites both strings with saves/<profile>/ea, whose profile
+// folder holds the save; a test run's is <run>/saves/ea. Mount quits the game if this has not run, as on Steam. The
+// EA device's vt+0x58 is `xor eax, eax; ret`, so there is no upload to wrap, and a save is counted once its files in
+// profile/ change and then settle.
 //
 // Fail closed: in test mode, any failure (a binding that does not resolve, a hook that does not
 // install, a device or interface that is not the expected one, an unusable run folder) logs why and
@@ -76,7 +77,7 @@ Backend backend = Backend::steam_remote;
 bool offered = false, settled = false, read_once = false, test_on = false, launcher_on = false;
 ss::Run run_info;
 std::wstring run_dir, saves_dir, remote_w, status_w;
-std::string run_id, remote_a, remote_a_unix;
+std::string run_id, remote_a, remote_a_unix, served_a;
 std::mutex lock;
 bool batch_open = false;
 std::string last_file;
@@ -451,32 +452,25 @@ void arm_steam_remote(void *device)
 
 bool make_dir(const std::wstring &p);
 
-ss::EaDevice read_ea_device(void *device)
+bool read_mem(uintptr_t at, void *out, size_t n)
 {
-    ss::EaDevice d;
-    auto at = reinterpret_cast<uintptr_t>(device);
-    d.start = start_addr;
-    d.readable = at && mem::read(at, d.vtable) && mem::readable(d.vtable, 0x10) && mem::read(d.vtable + 8, d.start_slot);
-    uintptr_t config = 0;
-    if (!d.readable || !mem::read(at + ss::EA_DEVICE_CONFIG, config) || !config ||
-        !mem::readable(config, ss::EA_CONFIG_INLINE + 2 * ss::EA_TITLE_CAP))
-        return d.readable = false, d;
-    mem::read(config + ss::EA_CONFIG_CAP, d.cap);
-    mem::read(config + ss::EA_CONFIG_PTR, d.ptr);
-    d.inline_at = config + ss::EA_CONFIG_INLINE;
-    if (d.ptr == d.inline_at) {
-        const wchar_t *w = reinterpret_cast<const wchar_t *>(d.inline_at);
-        size_t n = 0;
-        while (n < ss::EA_TITLE_CAP && w[n])
-            n++;
-        d.title.assign(w, n == ss::EA_TITLE_CAP ? 0 : n);
-    }
-    return d;
+    if (!mem::readable(at, n))
+        return false;
+    memcpy(out, reinterpret_cast<const void *>(at), n);
+    return true;
+}
+
+bool write_mem(uintptr_t at, const void *in, size_t n)
+{
+    if (!mem::readable(at, n))
+        return false;
+    memcpy(reinterpret_cast<void *>(at), in, n);
+    return true;
 }
 
 void arm_ea_local(void *device)
 {
-    ss::EaDevice d = read_ea_device(device);
+    ss::EaDevice d = ss::read_ea_device(reinterpret_cast<uintptr_t>(device), start_addr, read_mem);
     std::string why = ss::check_ea_device(d, ea_vtable_addr);
     if (!why.empty())
         fail_closed(why);
@@ -491,21 +485,22 @@ void arm_ea_local(void *device)
         fail_closed("the EA title folder " + title_a + " does not fit the save device's 260 character buffer");
     if (!make_dir(title + L"\\profile"))
         fail_closed("the EA title folder " + title_a + " could not be created");
-    auto *buf = reinterpret_cast<wchar_t *>(d.inline_at);
-    std::wstring before = d.title;
-    memcpy(buf, title.c_str(), (title.size() + 1) * sizeof(wchar_t));
-    if (std::wstring(buf) != title)
-        fail_closed("the save device's title folder did not take the launcher's folder");
+    std::wstring before = d.config.title;
+    why = ss::point_ea_device(d, title, read_mem, write_mem);
+    if (!why.empty())
+        fail_closed(why);
     {
         std::lock_guard<std::mutex> g(lock);
         ea_profile_w = title + L"\\profile";
         ea_saves.start(ss::stamp_of(std::filesystem::path(ea_profile_w)), GetTickCount64());
     }
     armed = true;
-    swofty::log("[saves] %s armed (%s %s): the EA save device's title folder %s is replaced by %s; "
-                "saves are read and written there; the EA copy's own savegame folder is not opened",
-                launcher_on ? "launcher saves" : "test sandbox", launcher_on ? "profile" : "run", run_id.c_str(),
-                runtime::narrow(before).c_str(), title_a.c_str());
+    swofty::log(
+        "[saves] %s armed (%s %s): the EA save device's title folder %s is replaced by %s in the save system "
+        "and in its user interface's copy of the title config (%s); saves are read and written there; the EA copy's own savegame "
+        "folder is not opened",
+        launcher_on ? "launcher saves" : "test sandbox", launcher_on ? "profile" : "run", run_id.c_str(),
+        runtime::narrow(before).c_str(), title_a.c_str(), d.config.name.c_str());
     status("armed", "");
 }
 
@@ -587,6 +582,7 @@ void read_launcher()
     std::string from = remote_a, title = backend == Backend::ea_local ? ss::ea_title_dir(remote_a_unix, run_id) : "";
     if (!title.empty())
         from = title + "\\profile";
+    served_a = from;
     swofty::log("[saves] launcher saves are on for profile %s: the game's profile save is served from %s", l.profile.c_str(),
                 from.c_str());
 }
@@ -622,6 +618,7 @@ void read_run()
     if (runtime::build_distribution() == "ea") {
         backend = Backend::ea_local;
         remote_a = runtime::narrow(saves_dir) + "\\" + ss::EA_DIR_NAME;
+        served_a = remote_a + "\\profile";
         swofty::log("[saves] test run %s: the save sandbox is required; the EA save device is pointed at %s", run_id.c_str(),
                     remote_a.c_str());
         return;
@@ -629,6 +626,7 @@ void read_run()
     std::wstring rem = saves_dir + L"\\" + runtime::wide(ss::REMOTE);
     remote_w = rem;
     remote_a = runtime::narrow(rem);
+    served_a = remote_a;
     if (!make_dir(rem))
         fail_closed("the sandbox folder " + remote_a + " could not be created");
     build_proxy();
@@ -647,16 +645,19 @@ bool save_sandbox_launcher_mode() { return mode == Mode::on && launcher_on; }
 std::string save_sandbox_source()
 {
     if (launcher_on && mode == Mode::on)
-        return "launcher saves (profile " + run_id + ", " + remote_a + ")";
+        return "launcher saves (profile " + run_id + ", " + served_a + ")";
     if (test_on && mode == Mode::on)
         return "test sandbox (run " + run_id + ")";
-    return "Steam native";
+    return runtime::build_distribution() == "ea" ? "the EA copy's own save folder" : "Steam native";
 }
 
 std::string save_sandbox_file()
 {
+    const bool ea = runtime::build_distribution() == "ea";
     std::lock_guard<std::mutex> g(lock);
-    return last_file;
+    if (!last_file.empty())
+        return last_file;
+    return ea ? "the EA save device reads the profile folder in place" : "save file not observed (Steam reads it natively)";
 }
 
 bool save_sandbox_armed() { return armed; }

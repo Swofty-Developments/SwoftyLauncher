@@ -320,17 +320,17 @@ std::vector<plain::Body> plain_bodies(bool at_save, const std::map<std::string, 
     return out;
 }
 
-void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager> &seen, bool ok)
+void log_load(const std::vector<cs::SlotRead> &reads, const std::vector<Manager> &seen, const int *result)
 {
+    const bool ok = result && *result == 0;
     unsigned n;
     {
         std::lock_guard<std::mutex> g(hooks.lock);
         n = loads;
     }
-    std::string file = runtime::save_sandbox_file();
-    swofty::log("[saves] profile load %u: %s from %s; %s", n, ok ? "read" : "FAILED to read",
-                runtime::save_sandbox_source().c_str(),
-                file.empty() ? "save file not observed (Steam reads it natively)" : file.c_str());
+    std::string failed = "FAILED to read (the game's load returned " + (result ? std::to_string(*result) : "nothing") + ")";
+    swofty::log("[saves] profile load %u: %s from %s; %s", n, ok ? "read" : failed.c_str(),
+                runtime::save_sandbox_source().c_str(), runtime::save_sandbox_file().c_str());
     if (!hooks.load_slot_manager) {
         swofty::log("[saves] profile load %u: career slots are not read on this build", n);
         return;
@@ -818,7 +818,7 @@ int *deserialise_entry(void *self, int *result, void *bag, uint8_t reset_on_erro
         }
         if (report)
             runtime::career_saves_listed(reads, true, true);
-        log_load(reads, seen, r && *r == 0);
+        log_load(reads, seen, r);
         runtime::direct_start_profile_loaded(r && *r == 0);
         // W4: the swofty_registry body this load kept, for the career snapshots.
         std::vector<uint8_t> entry;

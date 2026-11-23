@@ -383,9 +383,17 @@ inline bool valid_name(std::string_view n)
 }
 
 // The EA copy's save device (vtable bound as vt_Ne_SaveSystem2Win) has no Steam helper: it opens <title dir>\\<save>\\<file> in place.
-// Its title dir is the wide string at save system+0xc0 (device+0x18 = save system+0x50, so config+0x70), an
-// inline buffer of config+0x68 characters whose storage sits at config+0x78.
+// Game_Read_GameConfig builds one title config (the title's name, a string whose pointer is at +0x10; a u64 at +0x58;
+// the title dir, an inline wide buffer of +0x68 characters, pointer +0x70, storage +0x78) and copies it twice: into
+// the save system (+0x50, the device's +0x18) and into the save system's user interface (GameSaveSystemUserInterface,
+// the device's +0x10, at +0xa8). Before a load the interface's prompt (its vt+0x10) compares the load's config with
+// its own copy: a different title dir asks load_prev_save_confirmation_msg ("import profile data?"), and a load that
+// then fails asks corrupt_save_retry_confirmation. So the title dir is replaced in both copies.
+constexpr size_t EA_DEVICE_UI = 0x10;
 constexpr size_t EA_DEVICE_CONFIG = 0x18;
+constexpr size_t EA_UI_CONFIG = 0xa8;
+constexpr size_t EA_CONFIG_NAME_PTR = 0x10;
+constexpr size_t EA_NAME_CAP = 0x40;
 constexpr size_t EA_CONFIG_CAP = 0x68;
 constexpr size_t EA_CONFIG_PTR = 0x70;
 constexpr size_t EA_CONFIG_INLINE = 0x78;
@@ -393,13 +401,61 @@ constexpr size_t EA_TITLE_CAP = 0x104;
 constexpr const char *EA_TITLE_TAIL = "savegame\\ea";
 constexpr const char *EA_DIR_NAME = "ea";
 
-struct EaDevice {
+struct EaConfig {
     bool readable = false;
-    uintptr_t vtable = 0, start_slot = 0, start = 0;
+    uintptr_t at = 0;
     uint64_t cap = 0;
     uintptr_t ptr = 0, inline_at = 0;
     std::wstring title;
+    std::string name;
 };
+
+struct EaDevice {
+    bool readable = false;
+    uintptr_t vtable = 0, start_slot = 0, start = 0, ui = 0;
+    EaConfig config, ui_config;
+};
+
+// `read(at, out, n)` copies n bytes from address `at` and answers whether they were readable.
+template <class Read> EaConfig read_ea_config(uintptr_t at, Read &&read)
+{
+    EaConfig c;
+    c.at = at;
+    uintptr_t name = 0;
+    c.readable = at && read(at + EA_CONFIG_CAP, &c.cap, sizeof c.cap) && read(at + EA_CONFIG_PTR, &c.ptr, sizeof c.ptr) &&
+                 read(at + EA_CONFIG_NAME_PTR, &name, sizeof name);
+    if (!c.readable)
+        return c;
+    c.inline_at = at + EA_CONFIG_INLINE;
+    uint16_t w[EA_TITLE_CAP] = {};
+    if (c.ptr == c.inline_at && read(c.inline_at, w, sizeof w)) {
+        size_t n = 0;
+        while (n < EA_TITLE_CAP && w[n])
+            n++;
+        if (n < EA_TITLE_CAP)
+            for (size_t i = 0; i < n; i++)
+                c.title += wchar_t(w[i]);
+    }
+    for (char ch = 0; name && c.name.size() < EA_NAME_CAP && read(name + c.name.size(), &ch, 1) && ch;)
+        c.name += ch;
+    return c;
+}
+
+template <class Read> EaDevice read_ea_device(uintptr_t device, uintptr_t start, Read &&read)
+{
+    EaDevice d;
+    d.start = start;
+    uintptr_t config = 0;
+    d.readable = device && read(device, &d.vtable, sizeof d.vtable) && d.vtable &&
+                 read(d.vtable + 8, &d.start_slot, sizeof d.start_slot) &&
+                 read(device + EA_DEVICE_CONFIG, &config, sizeof config) && read(device + EA_DEVICE_UI, &d.ui, sizeof d.ui);
+    if (!d.readable)
+        return d;
+    d.config = read_ea_config(config, read);
+    d.ui_config = read_ea_config(d.ui ? d.ui + EA_UI_CONFIG : 0, read);
+    d.readable = d.config.readable;
+    return d;
+}
 
 inline bool ends_with_nocase(const std::wstring &s, std::wstring_view tail)
 {
@@ -425,12 +481,42 @@ inline std::string check_ea_device(const EaDevice &d, uintptr_t expected_vtable)
         return "the save device's vtable slot +0x08 is not Ne_SaveSystem2Win_Start: not the NeSaveSystem2Win device";
     if (expected_vtable && d.vtable != expected_vtable)
         return "the save device's vtable is not the EA build's NeSaveSystem2Win";
-    if (d.cap != EA_TITLE_CAP)
+    if (d.config.cap != EA_TITLE_CAP)
         return "the save device's title folder buffer is not 260 characters: not the layout the EA backend was written for";
-    if (!d.ptr || d.ptr != d.inline_at)
+    if (!d.config.ptr || d.config.ptr != d.config.inline_at)
         return "the save device's title folder is not held inline in its save system";
-    if (!ends_with_nocase(d.title, L"\\savegame\\ea"))
+    if (!ends_with_nocase(d.config.title, L"\\savegame\\ea"))
         return "the save device's title folder does not end in savegame\\ea: it is not the EA copy's save folder";
+    if (!d.ui || !d.ui_config.readable)
+        return "the save device's user interface (+0x10) is not readable";
+    if (d.ui_config.cap != EA_TITLE_CAP || d.ui_config.ptr != d.ui_config.inline_at)
+        return "the save system's user interface does not hold its copy of the title folder inline (+0x110, +0x118): not "
+               "the layout the EA backend was written for";
+    if (d.config.name.empty() || d.ui_config.name != d.config.name || d.ui_config.title != d.config.title)
+        return "the save system's user interface (+0xa8) does not hold a copy of the save device's title config";
+    return {};
+}
+
+// `write(at, in, n)` copies n bytes to address `at` and answers whether it could.
+template <class Write> bool write_ea_title(const EaConfig &c, const std::wstring &title, Write &&write)
+{
+    if (!c.inline_at || title.empty() || title.size() >= EA_TITLE_CAP)
+        return false;
+    std::vector<uint16_t> w(title.begin(), title.end());
+    w.push_back(0);
+    return write(c.inline_at, w.data(), w.size() * sizeof(uint16_t));
+}
+
+// Points both copies of the title dir at `title`, the interface's first, and reads them back.
+template <class Read, class Write>
+std::string point_ea_device(const EaDevice &d, const std::wstring &title, Read &&read, Write &&write)
+{
+    if (title.empty() || title.size() >= EA_TITLE_CAP)
+        return "the title folder does not fit the save device's 260 character buffer";
+    if (!write_ea_title(d.ui_config, title, write) || read_ea_config(d.ui_config.at, read).title != title)
+        return "the save system's user interface did not take the launcher's folder";
+    if (!write_ea_title(d.config, title, write) || read_ea_config(d.config.at, read).title != title)
+        return "the save device's title folder did not take the launcher's folder";
     return {};
 }
 

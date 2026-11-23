@@ -5,6 +5,7 @@
 #include "core/testing/save_sandbox_logic.hpp"
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <random>
 #include <string>
@@ -262,15 +263,140 @@ static void launcher_store(const fs::path &tmp)
     fs::remove_all(tmp / "saves");
 }
 
+// The EA copy's save device as Game_Read_GameConfig and Ne_SaveSystem_InitDevice lay it out: the device (vtable,
+// user interface +0x10, config +0x18), the save system's title config and the user interface's copy of it at +0xa8.
+struct FakeEa {
+    alignas(16) uint8_t mem[0x1000] = {};
+    static constexpr size_t VTABLE = 0x40, CONFIG = 0x100, UI = 0x500, NAME = 0xa00, UI_NAME = 0xa80;
+    static constexpr uintptr_t START = 0x140001000;
+
+    uintptr_t at(size_t off) { return reinterpret_cast<uintptr_t>(mem + off); }
+    template <class T> void put(size_t off, T v) { memcpy(mem + off, &v, sizeof v); }
+    void wide(size_t off, const std::wstring &s)
+    {
+        for (size_t i = 0; i <= s.size(); i++)
+            put<uint16_t>(off + 2 * i, i < s.size() ? uint16_t(s[i]) : 0);
+    }
+    void config(size_t off, size_t name_off, const std::wstring &title)
+    {
+        put<uint64_t>(off + 0x08, ss::EA_NAME_CAP);
+        put<uintptr_t>(off + ss::EA_CONFIG_NAME_PTR, at(name_off));
+        memcpy(mem + name_off, "F1 25", 6);
+        put<uint64_t>(off + ss::EA_CONFIG_CAP, ss::EA_TITLE_CAP);
+        put<uintptr_t>(off + ss::EA_CONFIG_PTR, at(off + ss::EA_CONFIG_INLINE));
+        wide(off + ss::EA_CONFIG_INLINE, title);
+    }
+    FakeEa(const std::wstring &title)
+    {
+        put<uintptr_t>(0, at(VTABLE));
+        put<uintptr_t>(VTABLE + 8, START);
+        put<uintptr_t>(ss::EA_DEVICE_UI, at(UI));
+        put<uintptr_t>(ss::EA_DEVICE_CONFIG, at(CONFIG));
+        config(CONFIG, NAME, title);
+        config(UI + ss::EA_UI_CONFIG, UI_NAME, title);
+    }
+    uintptr_t device() { return at(0); }
+    std::wstring title_at(size_t config_off)
+    {
+        std::wstring s;
+        for (size_t i = 0;; i++) {
+            uint16_t c = 0;
+            memcpy(&c, mem + config_off + ss::EA_CONFIG_INLINE + 2 * i, 2);
+            if (!c)
+                return s;
+            s += wchar_t(c);
+        }
+    }
+};
+
+static bool host_read(uintptr_t at, void *out, size_t n)
+{
+    memcpy(out, reinterpret_cast<const void *>(at), n);
+    return true;
+}
+
+static bool host_write(uintptr_t at, const void *in, size_t n)
+{
+    memcpy(reinterpret_cast<void *>(at), in, n);
+    return true;
+}
+
+// The user interface's prompt before a load (vt+0x10): the load's config against its own copy, by name and title.
+static bool asks_import(FakeEa &f)
+{
+    ss::EaDevice d = ss::read_ea_device(f.device(), FakeEa::START, host_read);
+    return d.config.name != d.ui_config.name || d.config.title != d.ui_config.title;
+}
+
+static void ea_device_mapping()
+{
+    const std::wstring own = L"C:\\users\\steamuser\\AppData\\Local\\F1 25\\savegame\\ea";
+    const std::wstring store = L"Z:\\home\\u\\.local\\share\\swofty\\saves\\default\\ea";
+    FakeEa f(own);
+    uintptr_t vt = f.at(FakeEa::VTABLE);
+    ss::EaDevice d = ss::read_ea_device(f.device(), FakeEa::START, host_read);
+    expect(d.readable && d.config.title == own && d.config.name == "F1 25" && d.ui == f.at(FakeEa::UI) &&
+               d.ui_config.title == own && d.ui_config.name == "F1 25",
+           "ea device: the device's title config and its user interface's copy are read");
+    expect(ss::check_ea_device(d, vt).empty(), "ea device: the expected layout passes");
+    expect(!asks_import(f), "ea device: the game's own folder in both copies asks nothing before a load");
+
+    FakeEa only_device(own);
+    ss::EaDevice od = ss::read_ea_device(only_device.device(), FakeEa::START, host_read);
+    expect(ss::write_ea_title(od.config, store, host_write) && asks_import(only_device),
+           "ea device: pointing only the save system at the store makes the prompt ask to import profile data");
+
+    std::vector<uint8_t> before(f.mem, f.mem + sizeof f.mem);
+    expect(ss::point_ea_device(d, store, host_read, host_write).empty(), "ea device: both copies take the store");
+    expect(f.title_at(FakeEa::CONFIG) == store && f.title_at(FakeEa::UI + ss::EA_UI_CONFIG) == store,
+           "ea device: the save system and its user interface both name the store");
+    expect(!asks_import(f), "ea device: with both copies on the store the game asks nothing before a load");
+    size_t changed_outside = 0;
+    for (size_t i = 0; i < sizeof f.mem; i++) {
+        bool in_title =
+            (i >= FakeEa::CONFIG + ss::EA_CONFIG_INLINE && i < FakeEa::CONFIG + ss::EA_CONFIG_INLINE + 2 * ss::EA_TITLE_CAP) ||
+            (i >= FakeEa::UI + ss::EA_UI_CONFIG + ss::EA_CONFIG_INLINE &&
+             i < FakeEa::UI + ss::EA_UI_CONFIG + ss::EA_CONFIG_INLINE + 2 * ss::EA_TITLE_CAP);
+        changed_outside += !in_title && f.mem[i] != before[i];
+    }
+    expect(changed_outside == 0, "ea device: nothing outside the two title buffers is written");
+    expect(!ss::point_ea_device(d, std::wstring(ss::EA_TITLE_CAP, L'a'), host_read, host_write).empty() &&
+               f.title_at(FakeEa::CONFIG) == store,
+           "ea device: a folder that does not fit the buffer is refused before anything is written");
+    expect(ss::point_ea_device(d, std::wstring(ss::EA_TITLE_CAP - 1, L'a'), host_read, host_write).empty(),
+           "ea device: a folder of 259 characters fits");
+
+    auto bad = [&](auto edit, const char *what) {
+        FakeEa e(own);
+        edit(e);
+        expect(!ss::check_ea_device(ss::read_ea_device(e.device(), FakeEa::START, host_read), vt).empty(), what);
+    };
+    bad([](FakeEa &e) { e.put<uintptr_t>(ss::EA_DEVICE_UI, 0); }, "ea device: no user interface fails closed");
+    bad([](FakeEa &e) { e.put<uint64_t>(FakeEa::UI + ss::EA_UI_CONFIG + ss::EA_CONFIG_CAP, 0x80); },
+        "ea device: a user interface copy of another buffer size fails closed");
+    bad([](FakeEa &e) { e.put<uintptr_t>(FakeEa::UI + ss::EA_UI_CONFIG + ss::EA_CONFIG_PTR, e.at(0x900)); },
+        "ea device: a user interface copy held outside the interface fails closed");
+    bad([](FakeEa &e) { e.wide(FakeEa::UI + ss::EA_UI_CONFIG + ss::EA_CONFIG_INLINE, L"C:\\other\\savegame\\ea"); },
+        "ea device: a user interface naming another folder fails closed");
+    bad([](FakeEa &e) { memcpy(e.mem + FakeEa::UI_NAME, "F1 24", 6); },
+        "ea device: a user interface naming another title fails closed");
+    bad([](FakeEa &e) { e.put<uintptr_t>(FakeEa::VTABLE + 8, FakeEa::START + 0x10); },
+        "ea device: a vtable slot that is not Start fails closed");
+}
+
 static void ea_backend(const fs::path &tmp)
 {
     ss::EaDevice d;
     d.readable = true;
     d.vtable = 0x1000;
     d.start = d.start_slot = 0x2000;
-    d.cap = 0x104;
-    d.inline_at = d.ptr = 0x5000;
-    d.title = L"C:\\users\\steamuser\\AppData\\Local\\F1 25\\savegame\\ea";
+    d.config.cap = d.ui_config.cap = 0x104;
+    d.config.inline_at = d.config.ptr = 0x5000;
+    d.ui = 0x6000;
+    d.ui_config.readable = true;
+    d.ui_config.inline_at = d.ui_config.ptr = 0x6120;
+    d.config.title = d.ui_config.title = L"C:\\users\\steamuser\\AppData\\Local\\F1 25\\savegame\\ea";
+    d.config.name = d.ui_config.name = "F1 25";
     expect(ss::check_ea_device(d, 0x1000).empty(), "ea device: the expected layout passes");
     auto bad = [&](auto edit, const char *what) {
         ss::EaDevice e = d;
@@ -280,12 +406,14 @@ static void ea_backend(const fs::path &tmp)
     bad([](ss::EaDevice &e) { e.readable = false; }, "ea device: unreadable fails closed");
     bad([](ss::EaDevice &e) { e.start_slot = 0x3000; }, "ea device: a vtable slot that is not Start fails closed");
     bad([](ss::EaDevice &e) { e.vtable = 0x1008; }, "ea device: another vtable fails closed");
-    bad([](ss::EaDevice &e) { e.cap = 0x80; }, "ea device: another buffer size fails closed");
-    bad([](ss::EaDevice &e) { e.ptr = 0x9000; }, "ea device: a title folder held outside the save system fails closed");
-    bad([](ss::EaDevice &e) { e.title = L"C:\\users\\x\\savegame"; },
+    bad([](ss::EaDevice &e) { e.config.cap = 0x80; }, "ea device: another buffer size fails closed");
+    bad([](ss::EaDevice &e) { e.config.ptr = 0x9000; }, "ea device: a title folder held outside the save system fails closed");
+    bad([](ss::EaDevice &e) { e.config.title = e.ui_config.title = L"C:\\users\\x\\savegame"; },
         "ea device: a title folder that is not savegame\\ea fails closed");
-    bad([](ss::EaDevice &e) { e.title.clear(); }, "ea device: an unterminated or empty title folder fails closed");
-    d.title = L"C:\\USERS\\X\\SAVEGAME\\EA";
+    bad([](ss::EaDevice &e) { e.config.title.clear(); }, "ea device: an unterminated or empty title folder fails closed");
+    bad([](ss::EaDevice &e) { e.ui_config.readable = false; }, "ea device: an unreadable user interface fails closed");
+    bad([](ss::EaDevice &e) { e.config.name = e.ui_config.name = ""; }, "ea device: a title config with no name fails closed");
+    d.config.title = d.ui_config.title = L"C:\\USERS\\X\\SAVEGAME\\EA";
     expect(ss::check_ea_device(d, 0x1000).empty(), "ea device: the folder match ignores case");
 
     expect(ss::ea_title_dir("Z:\\home\\u\\saves\\default\\remote", "default") == "Z:\\home\\u\\saves\\default\\ea",
@@ -477,6 +605,7 @@ int main(int argc, char **argv)
     launcher();
     launcher_store(tmp);
     pair(tmp / "pair");
+    ea_device_mapping();
     ea_backend(tmp);
     ea_test_run(tmp);
     printf("%s (%d failure(s))\n", fails ? "SOME FAILED" : "ALL PASSED", fails);
