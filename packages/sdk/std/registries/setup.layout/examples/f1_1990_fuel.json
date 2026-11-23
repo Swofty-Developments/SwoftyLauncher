@@ -1,0 +1,38 @@
+{
+  "setup.layout": {
+    "f1_1990": {
+      "within": [
+        { "owner": "swofty.f1-1990" },
+        { "data_group": "f1_career_1990" }
+      ],
+      "sections": [
+        {
+          "tab": "aerodynamics",
+          "title": "Wings",
+          "rows": [
+            { "slider": "front_wing", "name": "Front flap", "unit": "setting", "min": 0, "max": 50 },
+            { "slider": "rear_wing", "name": "Rear flap", "unit": "setting", "min": 0, "max": 50 }
+          ]
+        },
+        {
+          "tab": "weight_distribution",
+          "title": "Ballast",
+          "rows": [
+            { "slider": "ballast", "name": "Ballast position", "unit": "%", "min": 42, "max": 40 }
+          ]
+        },
+        {
+          "tab": 0,
+          "title": "Fuel",
+          "rows": [
+            { "slider": "fuel_load", "name": "Fuel load", "unit": "kg" },
+            { "slider": "brake_cooling_front", "name": "Lean", "unit": "%", "min": 83.3, "max": 100, "steps": 20 },
+            { "slider": "brake_cooling_rear", "name": "Standard", "unit": "%", "min": 90.9, "max": 111.1, "steps": 20 },
+            { "slider": "brake_duct_front", "name": "Rich", "unit": "%", "min": 98, "max": 122, "steps": 20 },
+            { "slider": "brake_duct_rear", "name": "Max", "unit": "%", "min": 102, "max": 128, "steps": 20 }
+          ]
+        }
+      ]
+    }
+  }
+}

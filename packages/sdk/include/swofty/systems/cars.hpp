@@ -381,6 +381,34 @@ struct Profile {
 SWOFTY_RECORD(Profile, within, when, cars, ai_only, player_only, priority, power_scale, limiter_offset_rpm, lift_scale,
               drag_scale, grip_scale, ai_grip_scale, fuel_modes, scope)
 
+// One row of a setup screen layout (setup.layout 1.0, experimental): the slider, as an SDK SetupSlider name or the
+// stock database label, with its own name, unit, displayed range and, for the four brake sliders 37 to 40, step count.
+struct SetupLayoutRow {
+    std::string slider;
+    std::string name;
+    std::string desc;
+    std::string unit;
+    std::optional<float> min, max;
+    std::optional<int32_t> steps;
+};
+SWOFTY_RECORD(SetupLayoutRow, slider, name, desc, unit, min, max, steps)
+
+struct SetupLayoutSection {
+    json::Value tab;
+    std::string title;
+    std::vector<SetupLayoutRow> rows;
+};
+SWOFTY_RECORD(SetupLayoutSection, tab, title, rows)
+
+// The car setup screen of one scope: which sliders show in which tab slot, in which order, with their own names and
+// ranges (docs/reference/std/setup-layout.md). within: the selectors of content/layers.
+struct SetupLayout {
+    static constexpr Version version{1, 0};
+    json::Value within;
+    std::vector<SetupLayoutSection> sections;
+};
+SWOFTY_RECORD(SetupLayout, within, sections)
+
 struct Part {
     std::string node;
     float detach_at = 0;
@@ -398,6 +426,7 @@ inline Registry<Vehicle> vehicles{"vehicle", {.applies = Applies::boot}};
 inline Registry<Package> packages{"vehicle.package", {.applies = Applies::boot}};
 inline Registry<Handling> handling{"vehicle.handling", {.applies = Applies::session}};
 inline Registry<Profile> profiles{"car.profile", {.applies = Applies::read, .snapshot = true}};
+inline Registry<SetupLayout> setup_layouts{"setup.layout", {.applies = Applies::read}};
 
 inline Result reset_upgrades(int) { return Result::unavailable; }
 

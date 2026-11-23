@@ -1,6 +1,7 @@
 #include "core/hooks/setup_layout_hooks.hpp"
 
-#include "core/apply/content/setup_layout.hpp"
+#include "core/apply/content/setup_layout_parse.hpp"
+#include "core/registry/table.hpp"
 #include "core/hooks/context.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/runtime/build.hpp"
@@ -42,8 +43,8 @@
 // never entered), and the layout is left again, with its cells and strings put back, whenever the scope's facts stop
 // matching (checked at every populate and at every Car_Setup_ApplyTuning, so a session in another mode restores before
 // its cars are tuned). A row's name goes on the game's own text key for that slider (the lang override), the unit on the
-// group's shared range key when every row of that group agrees. The layout comes from SWOFTY_SETUP_LAYOUT_FILE (a
-// JSON file with the `setup.layout` record, the registry declaration is open) and the probe from
+// group's shared range key when every row of that group agrees. The layouts are the registry's setup.layout records, and SWOFTY_SETUP_LAYOUT_FILE (a
+// JSON file with the `setup.layout` record, read in addition to the registry's, for development) and the probe from
 // SWOFTY_SETUP_LAYOUT_LOG=1.
 
 namespace {
@@ -66,10 +67,7 @@ std::mutex g_lock;
 bool g_armed, g_probe, g_cells_ok;
 uintptr_t g_max, g_min, g_steps;
 
-struct Entry {
-    c::Layout layout;
-    std::shared_ptr<hooks::Selectors> within;
-};
+using Entry = c::ParsedLayout;
 std::vector<Entry> g_layouts;
 int g_active = -1;
 c::ScopeSwitch g_switch;
@@ -109,108 +107,50 @@ void write_cells(int slider, float mn, float mx, int steps)
     std::memcpy(reinterpret_cast<void *>(d), &steps, sizeof steps);
 }
 
-const swofty::json::Value &member(const swofty::json::Value &v, const char *k)
+bool add_layout(const std::string &id, const swofty::json::Value &rec, const char *from)
 {
-    static const swofty::json::Value none;
-    return v.is_object() ? v[k] : none;
-}
-
-bool parse_layout(const std::string &id, const swofty::json::Value &rec, Entry &out)
-{
-    out.layout.id = id;
-    const auto &sections = member(rec, "sections");
-    if (!sections.is_array())
-        return false;
-    for (size_t i = 0; i < sections.size(); i++) {
-        const auto &s = sections[i];
-        c::LayoutSection sec;
-        const auto &tab = member(s, "tab");
-        if (tab.is_string())
-            sec.tab = c::tab_index(*tab.if_string());
-        else if (tab.is_number())
-            sec.tab = int(tab.as_int(-1));
-        if (const auto *t = member(s, "title").if_string())
-            sec.title = *t;
-        const auto &rows = member(s, "rows");
-        for (size_t j = 0; rows.is_array() && j < rows.size(); j++) {
-            const auto &r = rows[j];
-            c::LayoutRow row;
-            const auto &slider = member(r, "slider");
-            row.slider = slider.is_string() ? c::slider_index(*slider.if_string()) : int(slider.as_int(-1));
-            if (const auto *n = member(r, "name").if_string())
-                row.name = *n;
-            if (const auto *n = member(r, "desc").if_string())
-                row.desc = *n;
-            if (const auto *n = member(r, "unit").if_string())
-                row.unit = *n;
-            if (member(r, "min").is_number() && member(r, "max").is_number()) {
-                row.min = float(member(r, "min").as_double());
-                row.max = float(member(r, "max").as_double());
-            }
-            if (member(r, "steps").is_number())
-                row.steps = int(member(r, "steps").as_int());
-            sec.rows.push_back(std::move(row));
-        }
-        out.layout.sections.push_back(std::move(sec));
-    }
-    auto v = c::check_layout(out.layout);
-    if (!v.ok) {
-        swofty::log("[setups] layout %s refused: %s", id.c_str(), v.why.c_str());
+    Entry e;
+    std::string why;
+    if (!c::parse_setup_layout(id, rec, e, &why)) {
+        say_once("[setups] layout " + id + " (" + from + ") refused: " + why);
         return false;
     }
-    const auto &within = member(rec, "within");
-    if (!within.is_null()) {
-        swofty::json::Value list = within.is_array() ? within : swofty::json::Value::array();
-        if (!within.is_array())
-            list.push_back(within);
-        auto sel = std::make_shared<hooks::Selectors>();
-        std::string why;
-        if (!hooks::Selectors::compile(swofty::json::dump(list), *sel, &why)) {
-            swofty::log("[setups] layout %s refused: its within does not compile (%s)", id.c_str(), why.c_str());
-            return false;
-        }
-        if (!sel->empty())
-            out.within = std::move(sel);
-    }
+    g_layouts.push_back(std::move(e));
     return true;
 }
 
 void load_layouts()
 {
+    g_layouts.clear();
+    auto &store = swofty_core::registry::store();
+    for (const std::string &id : store.list("setup.layout", "")) {
+        auto rec = store.get("setup.layout", id);
+        if (rec.status == swofty_core::registry::Status::ok)
+            add_layout(id, rec.value, "registry");
+    }
+    size_t from_registry = g_layouts.size();
     const char *path = std::getenv("SWOFTY_SETUP_LAYOUT_FILE");
-    if (!path || !*path)
-        return;
-    std::ifstream f(path, std::ios::binary);
-    std::stringstream ss;
-    ss << f.rdbuf();
-    if (!f || ss.str().empty()) {
-        swofty::log("[setups] layout file %s cannot be read", path);
-        return;
+    if (path && *path) {
+        std::ifstream f(path, std::ios::binary);
+        std::stringstream ss;
+        ss << f.rdbuf();
+        swofty::json::Error err;
+        auto doc = ss.str().empty() ? swofty::json::Value() : swofty::json::parse(ss.str(), &err);
+        const auto &all = doc.is_object() ? doc["setup.layout"] : doc;
+        if (!all.is_object())
+            swofty::log("[setups] layout file %s cannot be read or has no setup.layout record", path);
+        else
+            for (const auto &kv : *all.if_object())
+                add_layout("file/" + kv.first, kv.second, "SWOFTY_SETUP_LAYOUT_FILE");
     }
-    swofty::json::Error err;
-    auto doc = swofty::json::parse(ss.str(), &err);
-    const auto &all = member(doc, "setup.layout");
-    if (!all.is_object()) {
-        swofty::log("[setups] layout file %s has no setup.layout record", path);
-        return;
-    }
-    for (const auto &kv : *all.if_object()) {
-        Entry e;
-        if (parse_layout(kv.first, kv.second, e))
-            g_layouts.push_back(std::move(e));
-    }
-    swofty::log("[setups] %zu setup layout(s) from %s", g_layouts.size(), path);
+    say_once("[setups] " + std::to_string(g_layouts.size()) + " setup layout(s): " + std::to_string(from_registry) +
+             " from the registry, " + std::to_string(g_layouts.size() - from_registry) + " from SWOFTY_SETUP_LAYOUT_FILE");
 }
 
 int wanted()
 {
     auto facts = hooks::core().current();
-    if (!facts)
-        return -1;
-    for (int i = int(g_layouts.size()) - 1; i >= 0; i--)
-        if (!g_layouts[i].within || g_layouts[i].within->match(*facts))
-            return i;
-    return -1;
+    return c::pick_layout(g_layouts, facts.get());
 }
 
 void put_strings(const c::Layout &l)
@@ -287,6 +227,16 @@ void refresh_locked()
     swofty::log("[setups] layout %s entered: %zu cell swap(s), %zu text(s)", l.id.c_str(), g_switch.saved(), g_keys.size());
 }
 
+void reload_locked()
+{
+    if (g_active >= 0) {
+        g_switch.leave(write_cells);
+        drop_strings();
+        g_active = -1;
+    }
+    load_layouts();
+}
+
 uint64_t d_build(void *vm, uint32_t *idx, uint32_t count, void *node, uint32_t tab)
 {
     std::lock_guard<std::mutex> g(g_lock);
@@ -319,6 +269,7 @@ uint64_t d_populate(void *vm)
 {
     {
         std::lock_guard<std::mutex> g(g_lock);
+        reload_locked();
         refresh_locked();
         if (g_probe) {
             auto facts = hooks::core().current();
@@ -347,9 +298,6 @@ void arm()
 {
     char probe[8] = {};
     g_probe = GetEnvironmentVariableA("SWOFTY_SETUP_LAYOUT_LOG", probe, sizeof probe) && probe[0] && probe[0] != '0';
-    load_layouts();
-    if (g_layouts.empty() && !g_probe)
-        return;
     uintptr_t cells = runtime::find(S_CELLS, "setups", "setups");
     uintptr_t build = runtime::find(S_BUILD, "setups", "setups");
     uintptr_t populate = runtime::find(S_POPULATE, "setups", "setups");
@@ -383,7 +331,7 @@ void arm()
         return;
     }
     g_armed = true;
-    swofty::log("[setups] layout hooks armed: %zu layout(s), probe %s", g_layouts.size(), g_probe ? "on" : "off");
+    swofty::log("[setups] layout hooks armed: layouts are read when the setup screen opens, probe %s", g_probe ? "on" : "off");
 }
 
 }

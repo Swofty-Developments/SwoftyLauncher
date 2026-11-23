@@ -132,6 +132,10 @@ const SCHEMAS: &[(&str, &str)] = &[
         include_str!("../../../../../sdk/std/registries/session.points/1.0.json"),
     ),
     (
+        "setup.layout",
+        include_str!("../../../../../sdk/std/registries/setup.layout/1.0.json"),
+    ),
+    (
         "suit",
         include_str!("../../../../../sdk/std/registries/suit/1.0.json"),
     ),

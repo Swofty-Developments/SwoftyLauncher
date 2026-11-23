@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "setup.layout 1.0",
+  "x-registry": "setup.layout",
+  "x-version": "1.0",
+  "x-applies": "read",
+  "x-snapshot": false,
+  "description": "cars::SetupLayout (experimental): the car setup screen of one scope. Each section is one of the screen's 8 tab slots with the sliders it lists, in order; a slider no section lists has no row. A row gives its slider its own name and unit, its own displayed range (min and max, min may be above max) and, for the four brake sliders 37 to 40, its own step count. Where the within selectors (the ones content and layers take) do not match, the screen is the game's. A layout's steps need the scope's handling to pin the four brake F1Tuning ranges to min == max.",
+  "type": "object",
+  "properties": {
+    "within": {
+      "description": "Selector array or object (owner, data_group, setup_mode, vehicle_package, ...): the layout shows where every selector matches. Without it the layout applies everywhere.",
+      "type": [
+        "array",
+        "object",
+        "null"
+      ]
+    },
+    "sections": {
+      "description": "The tab slots the layout fills. A slot without a section shows no rows.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "properties": {
+          "tab": {
+            "description": "The tab slot: 0 to 7, or its name (fuel_load, aerodynamics, transmission, suspension_geometry, suspension, brakes, tyres, weight_distribution).",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 7
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "fuel_load",
+                  "aerodynamics",
+                  "transmission",
+                  "suspension_geometry",
+                  "suspension",
+                  "brakes",
+                  "tyres",
+                  "weight_distribution"
+                ]
+              }
+            ]
+          },
+          "title": {
+            "description": "The tab's title text.",
+            "type": "string",
+            "minLength": 1
+          },
+          "rows": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {
+              "type": "object",
+              "properties": {
+                "slider": {
+                  "description": "The slider: an SDK SetupSlider name (front_wing, brake_duct_front, ...) or the stock database label (brake_bd_factor_front, front_antiroll_bar, ...).",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "description": "The row's name.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "desc": {
+                  "description": "The row's description. The game keeps one per group, so the core does not apply it yet.",
+                  "type": "string"
+                },
+                "unit": {
+                  "description": "The unit text of the row's group; rows sharing a group must agree.",
+                  "type": "string"
+                },
+                "min": {
+                  "description": "The number shown at step 0. With max; may be above max.",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "max": {
+                  "description": "The number shown at the last step.",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "steps": {
+                  "description": "The number of steps, brake sliders 37 to 40 only (brake_cooling_front, brake_cooling_rear, brake_duct_front, brake_duct_rear). Needs the scope's handling to pin those four F1Tuning ranges to min == max.",
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              },
+              "required": [
+                "slider",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "tab",
+          "title",
+          "rows"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "sections"
+  ],
+  "additionalProperties": false
+}

@@ -171,6 +171,7 @@ inline
   src/core/hooks/core_events.cpp  swofty::cars::packages
   src/core/hooks/core_events.cpp  swofty::cars::handling
   src/core/hooks/core_events.cpp  swofty::cars::profiles
+  src/core/hooks/core_events.cpp  swofty::cars::setup_layouts
   src/core/hooks/core_events.cpp  swofty::sessions::points
   src/core/hooks/core_events.cpp  swofty::content::packages
   src/core/hooks/core_events.cpp  swofty::content::era_boxes

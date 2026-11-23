@@ -46,6 +46,7 @@ template <class Declare> std::size_t declare_system_registries(Declare &&declare
     one(cars::packages);
     one(cars::handling);
     one(cars::profiles);
+    one(cars::setup_layouts);
     one(sounds::engine_sounds);
     one(content::packages);
     one(content::era_boxes);
