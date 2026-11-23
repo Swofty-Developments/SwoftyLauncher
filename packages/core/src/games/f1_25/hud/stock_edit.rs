@@ -140,24 +140,12 @@ pub fn wrap_scene(
     let mut pkg = Pkg::parse(bytes)?;
     let root = scene_root(&pkg)?;
     let all = idf::elements(root);
-    let nulls: Vec<&Node> = all
-        .iter()
-        .filter(|(_, e)| crate::ui::catalog::element_type(e) == "eNull")
-        .map(|(_, e)| *e)
-        .collect();
-    let tmpl = nulls
-        .iter()
-        .find(|e| !drawn(e))
-        .or(nulls.first())
-        .copied()
-        .or(donor)
-        .map(idf::detached)
-        .ok_or_else(|| {
-            err(format!(
-                "stock_nodes {}: the scene has no eNull to clone a wrapper from",
-                s.template
-            ))
-        })?;
+    let tmpl = wrapper_template(root, donor).ok_or_else(|| {
+        err(format!(
+            "stock_nodes {}: the scene has no eNull to clone a wrapper from",
+            s.template
+        ))
+    })?;
     let scene = s.scene.clone().unwrap_or_default();
     let mut names = Vec::new();
     for el in &s.wrap {
@@ -200,18 +188,7 @@ pub fn wrap_scene(
         let parent = child_at_mut(root, &path)?;
         let kids = parent.o_mut()?.at_mut("children")?.a_mut()?;
         let inner = std::mem::replace(&mut kids[i], Node::Val(Val::bool(false)));
-        let mut w = idf::detached(&tmpl);
-        idf::rename(&mut w, name)?;
-        idf::set_param_like(&mut w, "guid", Val::str(guid(&scene, name)))?;
-        idf::set_transform(&mut w, [0.0; 3], super::geom::QUAT_IDENTITY, [1.0; 3])?;
-        idf::clear_list(&mut w, "children")?;
-        idf::clear_list(&mut w, "anims")?;
-        idf::clear_list(&mut w, "geoms")?;
-        if idf::param(&w, "isHidden").is_some() {
-            idf::set_param_like(&mut w, "isHidden", Val::bool(false))?;
-        }
-        idf::children_mut(&mut w)?.push(inner);
-        kids[i] = w;
+        kids[i] = wrapper(&tmpl, &scene, name, vec![inner])?;
     }
     for kid in idf::children_mut(root)? {
         let n = idf::elem_name(kid).to_owned();
@@ -228,6 +205,148 @@ pub fn wrap_scene(
                 "stock_nodes {}: the stock element {last} changed its id",
                 s.template
             )));
+        }
+    }
+    Ok((pkg.to_bytes()?, names))
+}
+
+/// A null to wrap stock elements in: a copy of one of the scene's nulls, an undrawn one when there
+/// is one, or of `donor` (a null of another scene) when the scene has none.
+fn wrapper_template(root: &Node, donor: Option<&Node>) -> Option<Node> {
+    let all = idf::elements(root);
+    let nulls: Vec<&Node> = all
+        .iter()
+        .filter(|(_, e)| crate::ui::catalog::element_type(e) == "eNull")
+        .map(|(_, e)| *e)
+        .collect();
+    nulls
+        .iter()
+        .find(|e| !drawn(e))
+        .or(nulls.first())
+        .copied()
+        .or(donor)
+        .map(idf::detached)
+}
+
+/// The null `name` made from `tmpl`, with no art and no transform of its own, holding `inner`.
+fn wrapper(tmpl: &Node, scene: &str, name: &str, inner: Vec<Node>) -> Result<Node> {
+    let mut w = idf::detached(tmpl);
+    idf::rename(&mut w, name)?;
+    idf::set_param_like(&mut w, "guid", Val::str(guid(scene, name)))?;
+    idf::set_transform(&mut w, [0.0; 3], super::geom::QUAT_IDENTITY, [1.0; 3])?;
+    idf::clear_list(&mut w, "children")?;
+    idf::clear_list(&mut w, "anims")?;
+    idf::clear_list(&mut w, "geoms")?;
+    if idf::param(&w, "isHidden").is_some() {
+        idf::set_param_like(&mut w, "isHidden", Val::bool(false))?;
+    }
+    idf::children_mut(&mut w)?.extend(inner);
+    Ok(w)
+}
+
+/// The children of an element a [`wrap_children`] null takes, each matched by its own name or the
+/// name of an element inside it.
+#[derive(Debug, Clone, Copy)]
+pub enum Take {
+    All,
+    Except(&'static [&'static str]),
+    Only(&'static [&'static str]),
+}
+
+impl Take {
+    fn picks(self, child: &Node) -> bool {
+        let holds = |names: &[&str]| names.iter().any(|n| idf::find(child, n).is_some());
+        match self {
+            Take::All => true,
+            Take::Except(names) => !holds(names),
+            Take::Only(names) => holds(names),
+        }
+    }
+}
+
+fn find_mut<'a>(e: &'a mut Node, name: &str) -> Option<&'a mut Node> {
+    if idf::elem_name(e) == name {
+        return Some(e);
+    }
+    let kids = e.o_mut().ok()?.get_mut("children")?.a_mut().ok()?;
+    kids.iter_mut()
+        .filter(|c| c.as_obj().is_some())
+        .find_map(|c| find_mut(c, name))
+}
+
+/// The scene with a new null inside the element `inside` (the scene root's name for the root) around
+/// each run of its children that `take` picks, in the place of the run: `name` around the first,
+/// `name_2` around the second and so on, so the drawing order stays. Every name stays, the ids of the
+/// moved subtrees follow their new paths and the lookup grows by the nulls. A scene another record
+/// wrapped this way already gets the new null around that one. Returns the bytes and the null names.
+pub fn wrap_children(
+    bytes: &[u8],
+    scene: &str,
+    inside: &str,
+    take: Take,
+    name: &str,
+    donor: Option<&Node>,
+) -> Result<(Vec<u8>, Vec<String>)> {
+    let mut pkg = Pkg::parse(bytes)?;
+    let root = scene_root(&pkg)?;
+    let tmpl = wrapper_template(root, donor)
+        .ok_or_else(|| err(format!("{scene}: the scene has no eNull to clone {name} from")))?;
+    if idf::find(root, name).is_some() {
+        return Err(err(format!("{scene} already has {name}")));
+    }
+    let stock_ids = idf::id_map(root);
+    let root = idf::scenes_mut(&mut pkg)?
+        .first_mut()
+        .ok_or_else(|| err("the file has no scene"))?
+        .o_mut()?
+        .at_mut("scene")?;
+    let at = find_mut(root, inside).ok_or_else(|| err(format!("{scene} has no {inside}")))?;
+    let kids = idf::children_mut(at)?;
+    let mut runs: Vec<(usize, usize)> = Vec::new();
+    for i in 0..kids.len() {
+        if !(kids[i].as_obj().is_some() && take.picks(&kids[i])) {
+            continue;
+        }
+        match runs.last_mut() {
+            Some((_, end)) if *end == i => *end = i + 1,
+            _ => runs.push((i, i + 1)),
+        }
+    }
+    if runs.is_empty() {
+        return Err(err(format!("{scene}: {inside} has nothing for {name} to hold")));
+    }
+    let names: Vec<String> = (0..runs.len())
+        .map(|k| match k {
+            0 => name.to_owned(),
+            k => format!("{name}_{}", k + 1),
+        })
+        .collect();
+    let mut moved_names = BTreeSet::new();
+    for ((from, to), null) in runs.iter().zip(&names).rev() {
+        let moved: Vec<Node> = kids.drain(*from..*to).collect();
+        moved_names.extend(moved.iter().map(|k| idf::elem_name(k).to_owned()));
+        kids.insert(*from, wrapper(&tmpl, scene, null, moved)?);
+    }
+    for kid in idf::children_mut(root)? {
+        let n = idf::elem_name(kid).to_owned();
+        idf::recompute_ids(kid, &n)?;
+    }
+    let entry = &mut idf::scenes_mut(&mut pkg)?[0];
+    idf::relookup(entry)?;
+    let after = idf::id_map(scene_root(&pkg)?);
+    let inside_path = |k: &str| {
+        let parts: Vec<&str> = k.split('.').collect();
+        parts
+            .iter()
+            .position(|p| *p == inside)
+            .is_some_and(|i| parts.get(i + 1).is_some_and(|n| moved_names.contains(*n)))
+            || (inside == super::screens::SCENE_ROOT
+                && parts.first().is_some_and(|n| moved_names.contains(*n)))
+    };
+    for (k, v) in &stock_ids {
+        if !inside_path(k) && after.get(k) != Some(v) {
+            let last = k.rsplit('.').next().unwrap_or(k);
+            return Err(err(format!("{scene}: the element {last} changed its id")));
         }
     }
     Ok((pkg.to_bytes()?, names))

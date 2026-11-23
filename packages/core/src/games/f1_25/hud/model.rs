@@ -471,6 +471,15 @@ pub struct StockNodes {
     pub while_: Option<Bind>,
 }
 
+/// Parts of the HUD hidden whole, stock and every record on them, while `while` is true.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Yield {
+    pub parts: Vec<String>,
+    #[serde(rename = "while")]
+    pub while_: Bind,
+}
+
 /// One fill quad refilled from a sprite through its mesh slot.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -648,6 +657,9 @@ pub struct HudElement {
     pub clock: Option<Clock>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub variants: BTreeMap<String, Variant>,
+    /// The parts this record hides whole while its leaf is on, in place of a dial, scene or screen.
+    #[serde(default, rename = "yield", skip_serializing_if = "Option::is_none")]
+    pub yields: Option<Yield>,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_json::Value>,
 }
@@ -673,20 +685,20 @@ impl HudElement {
         let mut v = value.clone();
         if let Some(o) = v.as_object_mut() {
             o.remove("$comment");
-            let targets = ["dial", "scene", "screen"]
+            let targets = ["dial", "scene", "screen", "yield"]
                 .iter()
                 .filter(|k| o.contains_key(**k))
                 .count();
             match targets {
                 0 => {
                     return Err(err(
-                        "record: missing field `dial` (or `scene` and `parent_ui`, or `screen`)",
+                        "record: missing field `dial` (or `scene` and `parent_ui`, `screen` or `yield`)",
                     ));
                 }
                 1 => {}
                 _ => {
                     return Err(err(
-                        "record: a record has a dial, a scene target or a screen, not two",
+                        "record: a record has a dial, a scene target, a screen or a yield, not two",
                     ));
                 }
             }
@@ -790,6 +802,9 @@ impl HudElement {
     /// removes or replaces is free inside that variant, its placements name elements that are
     /// there, and its decisions show elements that are there.
     pub fn check(&self) -> Result<()> {
+        if let Some(y) = &self.yields {
+            return self.check_yield(y);
+        }
         self.check_scene_target()?;
         check_tree(&self.elements, &self.decisions)?;
         for e in &self.elements {
@@ -827,6 +842,35 @@ impl HudElement {
             return Err(err(
                 "a scene target does not take motion: its triggers need the record's control group (a dial or screen record)",
             ));
+        }
+        Ok(())
+    }
+
+    fn check_yield(&self, y: &Yield) -> Result<()> {
+        let bare = Self {
+            prefix: self.prefix.clone(),
+            yields: self.yields.clone(),
+            ..serde_json::from_value(serde_json::json!({ "dial": "f1_26" })).expect("a bare record")
+        };
+        if *self != bare {
+            return Err(err(
+                "a yield record takes yield and prefix only: it hides parts and draws nothing",
+            ));
+        }
+        if y.parts.is_empty() {
+            return Err(err("yield: parts names at least one part"));
+        }
+        for p in &y.parts {
+            if super::yields::part(p).is_none() {
+                return Err(err(format!(
+                    "yield: {p} is none of {}",
+                    super::yields::KEYS.join(", ")
+                )));
+            }
+        }
+        y.while_.check()?;
+        if y.while_.view_model.is_none() && y.while_.path.is_none() {
+            return Err(err("yield: while is a view_model leaf or a path"));
         }
         Ok(())
     }

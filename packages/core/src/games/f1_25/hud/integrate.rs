@@ -213,6 +213,7 @@ pub fn compose_in_build(
             .filter_map(|s| s.scene.as_deref()),
     );
     written.extend(shared.iter().map(String::as_str));
+    written.extend(super::yields::written(inputs));
     if inputs.iter().any(|i| i.record.screen.is_some()) {
         written.extend(screen_build::written());
     }

@@ -1123,3 +1123,464 @@ fn records_that_differ_stay_apart() {
     let b = shared_input("differ-f", "x.b", None);
     assert_eq!(shared_records(vec![a, b]).unwrap().0.len(), 2);
 }
+
+const YIELD_LEAF: &str = "view_model_data.hud_y_on";
+
+fn yield_input(addon: &str, parts: &[&str]) -> Input {
+    Input {
+        addon: addon.into(),
+        key: "yield".into(),
+        dir: std::env::temp_dir(),
+        record: HudElement::parse(&serde_json::json!({
+            "yield": { "parts": parts, "while": { "view_model": YIELD_LEAF } }
+        }))
+        .unwrap(),
+    }
+}
+
+/// Every copy of every resource in `out`, by name.
+fn copies(out: &Output) -> BTreeMap<String, Vec<Vec<u8>>> {
+    let mut m: BTreeMap<String, Vec<Vec<u8>>> = BTreeMap::new();
+    for a in &out.archives {
+        for r in Erp::parse(&a.bytes).unwrap().resources {
+            m.entry(r.name.clone())
+                .or_default()
+                .push(r.fragments[0].data().unwrap());
+        }
+    }
+    m
+}
+
+fn one_copy(out: &Output, name: &str) -> Vec<u8> {
+    let all = copies(out)
+        .remove(name)
+        .unwrap_or_else(|| panic!("{name} is not composed"));
+    assert!(all.iter().all(|c| *c == all[0]), "{name}: the copies differ");
+    all[0].clone()
+}
+
+fn splice_out(e: &mut swofty_formats::pkg::Node, name: &str) -> bool {
+    let Ok(kids) = crate::ui::idf::children_mut(e) else {
+        return false;
+    };
+    if let Some(i) = kids
+        .iter()
+        .position(|c| c.as_obj().is_some() && crate::ui::idf::elem_name(c) == name)
+    {
+        let mut null = kids.remove(i);
+        let inner = std::mem::take(crate::ui::idf::children_mut(&mut null).unwrap());
+        for (k, c) in inner.into_iter().enumerate() {
+            kids.insert(i + k, c);
+        }
+        return true;
+    }
+    kids.iter_mut()
+        .filter(|c| c.as_obj().is_some())
+        .any(|c| splice_out(c, name))
+}
+
+/// The scene with the nulls `name`, `name_2` … taken out and their children back in their place.
+fn unyield(bytes: &[u8], name: &str) -> Vec<u8> {
+    let mut pkg = Pkg::parse(bytes).unwrap();
+    let entry = &mut crate::ui::idf::scenes_mut(&mut pkg).unwrap()[0];
+    let root = entry.o_mut().unwrap().at_mut("scene").unwrap();
+    assert!(splice_out(root, name), "no {name}");
+    for k in 2.. {
+        if !splice_out(root, &format!("{name}_{k}")) {
+            break;
+        }
+    }
+    for kid in crate::ui::idf::children_mut(root).unwrap() {
+        let n = crate::ui::idf::elem_name(kid).to_owned();
+        crate::ui::idf::recompute_ids(kid, &n).unwrap();
+    }
+    crate::ui::idf::relookup(entry).unwrap();
+    pkg.to_bytes().unwrap()
+}
+
+/// Every element of a scene by path, with its own fields (its id among them) and not its children,
+/// and the scene's lookup.
+fn scene_view(bytes: &[u8]) -> Vec<(String, String)> {
+    let p = Pkg::parse(bytes).unwrap();
+    let entry = &crate::ui::idf::scenes(&p).unwrap()[0];
+    let mut out: Vec<(String, String)> = crate::ui::idf::elements(stock_edit::scene_root(&p).unwrap())
+        .into_iter()
+        .map(|(path, e)| {
+            let mut own = crate::ui::idf::detached(e);
+            crate::ui::idf::clear_list(&mut own, "children").ok();
+            (path, crate::ui::node::canonical(&own))
+        })
+        .collect();
+    let lookup = entry.as_obj().unwrap().get("nodeidlookup").unwrap();
+    out.push(("nodeidlookup".into(), crate::ui::node::canonical(lookup)));
+    out
+}
+
+/// The template with every yield group of `pfx` taken out.
+fn ungrouped(bytes: &[u8], pfx: &str) -> String {
+    let mut pkg = Pkg::parse(bytes).unwrap();
+    let mut paths = Vec::new();
+    crate::ui::node::node_paths_of(&pkg.root, "", &mut paths);
+    let groups: Vec<String> = paths
+        .iter()
+        .map(|(p, _)| p.clone())
+        .filter(|p| {
+            p.rsplit('.')
+                .next()
+                .is_some_and(|n| n.starts_with(&format!("{pfx}_yield_")))
+        })
+        .collect();
+    for g in groups {
+        let (parent, name) = g.rsplit_once('.').unwrap();
+        let at = crate::ui::node::find_path(&pkg.root, parent).unwrap();
+        let p = crate::ui::node::node_at_mut(&mut pkg.root, &at).unwrap();
+        p.slot_mut(crate::ui::node::CHILDREN)
+            .unwrap()
+            .retain(|c| !(c.is_node() && c.name() == name));
+    }
+    crate::ui::node::canonical(&pkg.root)
+}
+
+fn chain_of(n: &swofty_formats::pkg::Node) -> Vec<String> {
+    n.slot(crate::ui::node::LAYOUT)
+        .unwrap()
+        .iter()
+        .flat_map(|c| c.as_arr().unwrap().items.clone())
+        .map(|o| o.as_obj().unwrap().str_at("debugName").unwrap().to_owned())
+        .collect()
+}
+
+fn element_paths(bytes: &[u8]) -> Vec<String> {
+    let p = Pkg::parse(bytes).unwrap();
+    assert!(crate::ui::idf::id_problems(&p).unwrap().is_empty());
+    crate::ui::idf::elements(stock_edit::scene_root(&p).unwrap())
+        .into_iter()
+        .map(|(p, _)| p)
+        .collect()
+}
+
+fn template_of(stock: &dyn Stock, name: &str) -> Vec<u8> {
+    stock.read(yields::stock_erp(name), name).unwrap().remove(0)
+}
+
+/// Checks the yield's template groups in `out`: one per hook, the null's visible bound to NOT the leaf.
+fn assert_hooks(out: &Output, pfx: &str, parts: &[&str]) {
+    for part in parts {
+        for (i, spot) in yields::part(part).unwrap().spots.iter().enumerate() {
+            for hook in spot.hooks {
+                let t = Pkg::parse(&one_copy(out, hook.template)).unwrap();
+                let path = format!(
+                    "{}.{}.{}",
+                    hook.parent,
+                    yields::group_name(pfx, part),
+                    yields::node_name(i)
+                );
+                let at = crate::ui::node::find_path(&t.root, &path).unwrap_or_else(|_| panic!("{path}"));
+                let n = crate::ui::node::node_at(&t.root, &at).unwrap();
+                let mut want: Vec<String> = hook.via.iter().map(|s| (*s).to_owned()).collect();
+                want.push(yields::null_name(pfx));
+                assert_eq!(chain_of(n), want, "{path}");
+                let vis = n.props().unwrap().get("visible").unwrap().as_obj().unwrap();
+                assert_eq!(vis.str_at("dbentry").unwrap(), format!("#{YIELD_LEAF}"), "{path}");
+                assert_eq!(
+                    vis.get("dbentrynegate")
+                        .and_then(|v| v.as_val())
+                        .and_then(stock_edit::as_bool),
+                    Some(true),
+                    "{path}"
+                );
+                assert_eq!(
+                    vis.get("value")
+                        .and_then(|v| v.as_val())
+                        .and_then(stock_edit::as_bool),
+                    Some(true),
+                    "{path}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn a_yield_alone_wraps_every_part_and_leaves_the_rest_as_the_game_has_it() {
+    let Some(stock) = game() else { return };
+    let input = yield_input("swofty.yielder", &yields::KEYS);
+    let pfx = prefix_for("swofty.yielder", "yield", None).unwrap();
+    let out = compose(&stock, std::slice::from_ref(&input)).unwrap();
+    assert!(check::uncovered(&stock, &out.archives).unwrap().is_empty());
+    let null = yields::null_name(&pfx);
+    for part in yields::PARTS {
+        for spot in part.spots {
+            let composed = one_copy(&out, spot.scene);
+            let paths = element_paths(&composed);
+            let held: Vec<&String> = paths
+                .iter()
+                .filter(|p| p.split('.').any(|s| s == null) && !p.ends_with(&null))
+                .collect();
+            assert!(!held.is_empty(), "{} holds nothing in {}", null, spot.scene);
+            let stock_scene = template_of(&stock, spot.scene);
+            assert_eq!(
+                scene_view(&unyield(&composed, &null)),
+                scene_view(&stock_scene),
+                "{}",
+                spot.scene
+            );
+        }
+    }
+    assert_hooks(&out, &pfx, &yields::KEYS);
+    for t in [dials::TEMPLATE, dials::SPECTATOR, screens::REPLAY_UI] {
+        let stock_t = Pkg::parse(&template_of(&stock, t)).unwrap();
+        assert_eq!(
+            ungrouped(&one_copy(&out, t), &pfx),
+            crate::ui::node::canonical(&stock_t.root),
+            "{t}"
+        );
+    }
+    let dial = element_paths(&one_copy(&out, dials::F125.scene));
+    for part in dials::STOCK_KIDS {
+        let want = format!("{}.{null}.{part}", dials::CUSTOMISATION);
+        assert!(dial.contains(&want), "{want}");
+    }
+    let replay = element_paths(&one_copy(&out, screens::REPLAY_SCENE));
+    assert!(replay.contains(&format!("{}.replay_interface", screens::REPLAY_GROUP)));
+    assert!(replay.contains(&format!(
+        "{}.{null}.{}",
+        screens::REPLAY_GROUP,
+        screens::REPLAY_TABLE
+    )));
+    let spect = element_paths(&one_copy(&out, screens::SPECT_SCREEN));
+    assert!(spect.contains(&format!("{null}.{}", screens::SPECT_HEADER_EL)));
+    assert!(spect.contains(&"dial_complete".to_owned()));
+}
+
+fn season_inputs(dir: &Path) -> Vec<Input> {
+    let flag_node = "hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message";
+    let tower = |addon: &str| {
+        let mut v = tower_record();
+        let o = v.as_object_mut().unwrap();
+        o.remove("restyle");
+        o.insert(
+            "stock_nodes".into(),
+            serde_json::json!([
+                { "template": screens::LAPC_PARENT, "scene": screens::LAPC_SCENE,
+                  "hide": ["car_category_logo", "session_icon", "centre_lap_value", "separator_bg", "separator_bg_top", "centre_formation"],
+                  "wrap": ["edge_base", "edge_border", "lap_bg", "lockup"],
+                  "while": { "view_model": "view_model_data.hud_tt_show" } },
+                { "template": flag_node, "hide": ["boundless"], "while": { "view_model": "view_model_data.hud_tt_show" } }
+            ]),
+        );
+        Input {
+            addon: addon.into(),
+            key: "tower".into(),
+            dir: dir.to_path_buf(),
+            record: HudElement::parse(&v).unwrap(),
+        }
+    };
+    let onboard = |addon: &str| {
+        Input {
+        addon: addon.into(),
+        key: "onboard".into(),
+        dir: dir.to_path_buf(),
+        record: HudElement::parse(&serde_json::json!({
+            "dial": "f1_25",
+            "stock": "hide",
+            "switch": { "view_model": format!("view_model_data.hud_{}_dial", addon.replace('.', "_")), "default": false },
+            "sprites": { "base": { "png": "art/base.png", "bounds": [-60, -20, 60, 20] } },
+            "elements": [ { "kind": "sprite", "id": "base", "sprite": "base", "layer": 20 } ]
+        }))
+        .unwrap(),
+    }
+    };
+    vec![
+        tower("two.season"),
+        onboard("two.season"),
+        tower("one.season"),
+        onboard("one.season"),
+    ]
+}
+
+const SEASON_PARTS: [&str; 6] = [
+    "f1_25",
+    "standings",
+    "replay",
+    "spectator",
+    "lap_counter",
+    "flag_box",
+];
+
+#[test]
+fn a_yield_holds_every_season_record_in_either_load_order() {
+    let Some(stock) = game() else { return };
+    let dir = addon_dir("yield-seasons");
+    let seasons = season_inputs(&dir);
+    let y = yield_input("zz.broadcast", &SEASON_PARTS);
+    let pfx = prefix_for("zz.broadcast", "yield", None).unwrap();
+    let null = yields::null_name(&pfx);
+    let without = compose(&stock, &seasons).unwrap();
+    let mut first = vec![y.clone()];
+    first.extend(seasons.iter().cloned());
+    let mut last = seasons.clone();
+    last.push(y.clone());
+    let a = compose(&stock, &first).unwrap();
+    let b = compose(&stock, &last).unwrap();
+    for out in [&a, &b] {
+        assert!(check::uncovered(&stock, &out.archives).unwrap().is_empty());
+        assert_hooks(out, &pfx, &SEASON_PARTS);
+        for part in SEASON_PARTS {
+            for spot in yields::part(part).unwrap().spots {
+                let with = one_copy(out, spot.scene);
+                let paths = element_paths(&with);
+                for p in paths.iter().filter(|p| p.contains(".s") || p.contains("season")) {
+                    let leaf = p.rsplit('.').next().unwrap();
+                    if leaf.starts_with("one_season") || leaf.starts_with("two_season") {
+                        let held = p
+                            .split('.')
+                            .any(|s| s == null || s.starts_with(&format!("{null}_")));
+                        let around = paths
+                            .iter()
+                            .any(|q| q.starts_with(&format!("{p}.")) && q.ends_with(&format!(".{null}")));
+                        assert!(held || around, "{p} is outside {null} in {}", spot.scene);
+                    }
+                }
+                let before = match copies(&without).remove(spot.scene) {
+                    Some(c) => c[0].clone(),
+                    None => template_of(&stock, spot.scene),
+                };
+                assert_eq!(
+                    scene_view(&unyield(&with, &null)),
+                    scene_view(&before),
+                    "{}",
+                    spot.scene
+                );
+            }
+        }
+        for t in [dials::TEMPLATE, dials::SPECTATOR, screens::REPLAY_UI] {
+            let before = match copies(&without).remove(t) {
+                Some(c) => c[0].clone(),
+                None => template_of(&stock, t),
+            };
+            assert_eq!(
+                ungrouped(&one_copy(out, t), &pfx),
+                crate::ui::node::canonical(&Pkg::parse(&before).unwrap().root),
+                "{t}"
+            );
+        }
+    }
+    let yielded = |out: &Output| -> BTreeMap<String, Vec<u8>> {
+        copies(out)
+            .into_iter()
+            .filter(|(n, _)| {
+                SEASON_PARTS
+                    .iter()
+                    .any(|p| yields::part(p).unwrap().spots.iter().any(|s| s.scene == n))
+            })
+            .map(|(n, c)| (n, c[0].clone()))
+            .collect()
+    };
+    assert_eq!(
+        yielded(&a).keys().collect::<Vec<_>>(),
+        yielded(&b).keys().collect::<Vec<_>>()
+    );
+    std::fs::remove_dir_all(dir).ok();
+}
+
+/// A stock with some resources replaced whole, as another addon's archive change leaves them.
+struct Replaced<'a> {
+    inner: &'a GameStock,
+    files: BTreeMap<String, Vec<u8>>,
+}
+
+impl Stock for Replaced<'_> {
+    fn read(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        match self.files.get(resource) {
+            Some(b) => Ok(vec![b.clone()]),
+            None => self.inner.read(erp, resource),
+        }
+    }
+
+    fn layout(&self, name: &str, kind: &str, fragments: usize) -> Result<Resource> {
+        self.inner.layout(name, kind, fragments)
+    }
+
+    fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)> {
+        self.inner.header()
+    }
+
+    fn carriers(&self, names: &[&str]) -> Result<BTreeMap<String, Vec<String>>> {
+        self.inner.carriers(names)
+    }
+
+    fn game_copy(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        self.inner.read(erp, resource)
+    }
+}
+
+#[test]
+fn a_yield_holds_another_addons_whole_scene_and_template() {
+    let Some(stock) = game() else { return };
+    let dir = addon_dir("yield-whole");
+    let halo = Input {
+        addon: "nick.halo".into(),
+        key: "halo".into(),
+        dir: dir.clone(),
+        record: HudElement::parse(&serde_json::json!({
+            "dial": "f1_25",
+            "stock": "hide",
+            "prefix": "halo",
+            "sprites": { "base": { "png": "art/base.png", "bounds": [-60, -20, 60, 20] } },
+            "elements": [ { "kind": "sprite", "id": "base", "sprite": "base", "layer": 20 } ]
+        }))
+        .unwrap(),
+    };
+    let theirs = compose(&stock, &[halo]).unwrap();
+    let scene = one_copy(&theirs, dials::F125.scene);
+    let tmpl = one_copy(&theirs, dials::TEMPLATE);
+    let replaced = Replaced {
+        inner: &stock,
+        files: BTreeMap::from([
+            (dials::F125.scene.to_owned(), scene.clone()),
+            (dials::TEMPLATE.to_owned(), tmpl.clone()),
+        ]),
+    };
+    let pfx = prefix_for("zz.broadcast", "yield", None).unwrap();
+    let null = yields::null_name(&pfx);
+    let out = compose(&replaced, &[yield_input("zz.broadcast", &["f1_25"])]).unwrap();
+    let with = one_copy(&out, dials::F125.scene);
+    let paths = element_paths(&with);
+    let kids: Vec<&String> = paths
+        .iter()
+        .filter(|p| p.starts_with(&format!("{}.", dials::CUSTOMISATION)) && p.matches('.').count() == 1)
+        .collect();
+    assert_eq!(kids, [&format!("{}.{null}", dials::CUSTOMISATION)]);
+    assert!(paths.contains(&format!("{}.{null}.halo", dials::CUSTOMISATION)));
+    assert_eq!(scene_view(&unyield(&with, &null)), scene_view(&scene));
+    let t = one_copy(&out, dials::TEMPLATE);
+    assert_eq!(
+        ungrouped(&t, &pfx),
+        crate::ui::node::canonical(&Pkg::parse(&tmpl).unwrap().root)
+    );
+    let tp = Pkg::parse(&t).unwrap();
+    assert!(crate::ui::node::find_path(&tp.root, &format!("{}.halo_ctl", dials::F125.race_parent)).is_ok());
+    assert_hooks(&out, &pfx, &["f1_25"]);
+    std::fs::remove_dir_all(dir).ok();
+}
+
+#[test]
+fn a_yield_record_takes_known_parts_and_nothing_to_draw() {
+    let bad = [
+        serde_json::json!({ "yield": { "parts": ["tyres"], "while": { "view_model": YIELD_LEAF } } }),
+        serde_json::json!({ "yield": { "parts": [], "while": { "view_model": YIELD_LEAF } } }),
+        serde_json::json!({ "yield": { "parts": ["f1_25"], "while": { "game": "revs" } } }),
+        serde_json::json!({ "yield": { "parts": ["f1_25"], "while": { "view_model": YIELD_LEAF } }, "elements": [] , "stock": "hide" }),
+        serde_json::json!({ "yield": { "parts": ["f1_25"], "while": { "view_model": YIELD_LEAF } }, "dial": "f1_25" }),
+    ];
+    for v in bad {
+        assert!(HudElement::parse(&v).is_err(), "{v}");
+    }
+    let ok = HudElement::parse(&serde_json::json!({
+        "prefix": "fbo_dial",
+        "yield": { "parts": ["f1_25", "f1_26", "f2"], "while": { "view_model": YIELD_LEAF } }
+    }))
+    .unwrap();
+    assert_eq!(ok.yields.unwrap().parts.len(), 3);
+}

@@ -105,9 +105,15 @@ pub fn compose_with(
             .map_err(|e| err(format!("{}/{}: {e}", input.addon, input.key)))?;
         is_screen.push(t.is_some());
     }
+    let yields: Vec<(String, &Input)> = inputs
+        .iter()
+        .zip(&pfx_of)
+        .filter(|(i, _)| i.record.yields.is_some())
+        .map(|(i, p)| (p.clone(), i))
+        .collect();
     let mut live: Vec<Expanded> = Vec::new();
     for (i, input) in inputs.iter().enumerate() {
-        if input.record.scene_target().is_some() || is_screen[i] {
+        if input.record.scene_target().is_some() || is_screen[i] || input.record.yields.is_some() {
             continue;
         }
         live.push(Expanded {
@@ -137,7 +143,7 @@ pub fn compose_with(
     let mut resources: BTreeMap<String, Res> = BTreeMap::new();
     let mut loaded: Vec<Loaded> = Vec::new();
     for (i, input) in inputs.iter().enumerate() {
-        if is_screen[i] {
+        if is_screen[i] || input.record.yields.is_some() {
             loaded.push(Loaded {
                 sprites: Sprites::new(),
                 resources: Vec::new(),
@@ -268,7 +274,7 @@ pub fn compose_with(
         if want_preview {
             for (i, input) in inputs.iter().enumerate() {
                 let rec = &input.record;
-                if rec.scene_target().is_some() || is_screen[i] {
+                if rec.scene_target().is_some() || is_screen[i] || rec.yields.is_some() {
                     continue;
                 }
                 let state = rec.editor.as_ref().map(|e| e.preview.clone()).unwrap_or_default();
@@ -512,6 +518,7 @@ pub fn compose_with(
     }
     out.archives
         .extend(screen_build::archives(stock, &screens_out, packer)?);
+    super::yields::apply(stock, &yields, base, &mut out.archives, &mut out.lines, packer)?;
     cover_carriers(stock, &mut out.archives, &mut out.lines)?;
     Ok(out)
 }

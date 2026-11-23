@@ -26,6 +26,7 @@ pub mod template;
 pub mod textures;
 pub mod units;
 pub mod walk;
+pub mod yields;
 
 use std::path::{Path, PathBuf};
 
