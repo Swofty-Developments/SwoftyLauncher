@@ -21,6 +21,7 @@
 #include <swofty/hud_slot.hpp>
 #include <swofty/log_csv.hpp>
 #include <swofty/mem.hpp>
+#include <swofty/overlay_path.hpp>
 #include <swofty/settings_struct.hpp>
 #include <swofty/timing.hpp>
 #include <swofty/hooks.hpp>
