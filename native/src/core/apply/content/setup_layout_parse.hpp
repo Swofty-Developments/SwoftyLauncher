@@ -69,6 +69,16 @@ inline bool parse_setup_layout(const std::string &id, const swofty::json::Value 
             }
             if (member(r, "steps").is_number())
                 row.steps = int(member(r, "steps").as_int());
+            if (const auto *n = member(r, "format").if_string())
+                row.format = *n;
+            if (member(r, "decimals").is_number())
+                row.decimals = int(member(r, "decimals").as_int());
+            row.group = member(r, "group").as_bool(false);
+            const auto &labels = member(r, "labels");
+            for (size_t k = 0; labels.is_array() && k < labels.size(); k++)
+                row.labels.push_back(labels[k].is_string() ? *labels[k].if_string() : std::string());
+            if (const auto *n = member(r, "range_text").if_string())
+                row.range_text = *n;
             sec.rows.push_back(std::move(row));
         }
         out.layout.sections.push_back(std::move(sec));

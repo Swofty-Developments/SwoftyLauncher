@@ -46,8 +46,7 @@ struct Package {
     StatId stat_id = StatId::automatic;
     json::Value extra;
 };
-SWOFTY_RECORD(Package, donor, resource_path, ai_package_folder, driver_animation_set, halo, aero_2026, setups_from,
-              stat_id)
+SWOFTY_RECORD(Package, donor, resource_path, ai_package_folder, driver_animation_set, halo, aero_2026, setups_from, stat_id)
 
 struct AiSlot {
     Ref<ai::TrackPack> track_pack;
@@ -90,8 +89,8 @@ struct SuspensionDamage {
           parts_detach_scale = 1.5f, linear_fracture_limit = 50, angular_fracture_limit = 30;
     json::Value extra;
 };
-SWOFTY_RECORD(SuspensionDamage, speed_threshold, front_damage_scale, rear_damage_scale, wheel_detach_scale,
-              parts_detach_scale, linear_fracture_limit, angular_fracture_limit)
+SWOFTY_RECORD(SuspensionDamage, speed_threshold, front_damage_scale, rear_damage_scale, wheel_detach_scale, parts_detach_scale,
+              linear_fracture_limit, angular_fracture_limit)
 
 struct Chassis {
     float mass = 0, moi_x = 0, moi_y = 0, moi_z = 0, com_y = 0, com_z = 0;
@@ -113,8 +112,7 @@ struct Drs {
 SWOFTY_RECORD(Drs, hardware, angle, open_close_speed)
 
 struct F1Aero {
-    float front_coeff_lift_multiplier = 1, rear_coeff_lift_multiplier = 1, body_drag_coeff_min = 0,
-          body_drag_coeff_max = 0;
+    float front_coeff_lift_multiplier = 1, rear_coeff_lift_multiplier = 1, body_drag_coeff_min = 0, body_drag_coeff_max = 0;
     Curve front_coeff_lift_vs_ride_height, rear_coeff_lift_vs_ride_height;
     Slipstream slipstream;
     Drs drs;
@@ -136,8 +134,8 @@ struct Engine {
     float wear_ice_rate = 0, wear_tc_rate = 0, wear_mguh_rate = 0, wear_ce_rate = 0;
     json::Value extra;
 };
-SWOFTY_RECORD(Engine, revs_power_spline, idle_rotation_rate, limiter_rotation_rate, mass, inertia, wear_ice_rate,
-              wear_tc_rate, wear_mguh_rate, wear_ce_rate)
+SWOFTY_RECORD(Engine, revs_power_spline, idle_rotation_rate, limiter_rotation_rate, mass, inertia, wear_ice_rate, wear_tc_rate,
+              wear_mguh_rate, wear_ce_rate)
 
 struct FuelTank {
     float fuel_mass = 0, fuel_bsfc_min = 0;
@@ -178,8 +176,8 @@ struct Tuning {
         rear_suspension_camber, front_suspension_toe, rear_suspension_toe, front_suspension_rest_length,
         rear_suspension_rest_length, front_ride_height, rear_ride_height, front_suspension_spring_constant,
         rear_suspension_spring_constant, front_suspension_third_spring, rear_suspension_third_spring,
-        front_suspension_anti_roll_bar, rear_suspension_anti_roll_bar, brake_pressure, brake_migration,
-        front_tyre_pressure, rear_tyre_pressure;
+        front_suspension_anti_roll_bar, rear_suspension_anti_roll_bar, brake_pressure, brake_migration, front_tyre_pressure,
+        rear_tyre_pressure;
     json::Value extra;
 };
 SWOFTY_RECORD(Tuning, differential_on_throttle_multiple_min, brake_bias_max, chassis_com_z, engine_braking,
@@ -211,10 +209,9 @@ struct GearBox {
     bool allow_gear_ratio_tuning = false, allow_h_pattern = false;
     json::Value extra;
 };
-SWOFTY_RECORD(GearBox, final_drive_ratio, gear_ratio_reverse, ratios, up_speed_multiple, down_speed_multiple,
-              upshift_clutch_time, upshift_gear_delay, time_off_throttle_gear_up, downshift_clutch_time,
-              downshift_gear_delay, time_on_throttle_gear_down, max_clutch_torque, allow_gear_ratio_tuning,
-              allow_h_pattern)
+SWOFTY_RECORD(GearBox, final_drive_ratio, gear_ratio_reverse, ratios, up_speed_multiple, down_speed_multiple, upshift_clutch_time,
+              upshift_gear_delay, time_off_throttle_gear_up, downshift_clutch_time, downshift_gear_delay,
+              time_on_throttle_gear_down, max_clutch_torque, allow_gear_ratio_tuning, allow_h_pattern)
 
 enum class TurboMode { off, lag_spoof, full };
 SWOFTY_ENUM(TurboMode, off, lag_spoof, full)
@@ -227,18 +224,16 @@ struct Turbo {
 SWOFTY_RECORD(Turbo, mode, max_boost)
 
 struct Axle {
-    float rest_x = 0, rest_z = 0, rest_length = 0, min_height = 0, max_height = 0, bump_stop_height = 0,
-          ride_height_offset = 0;
-    float spring_constant = 0, third_spring_constant = 0, anti_roll_constant = 0, slow_bump_damping = 0,
-          fast_bump_damping = 0, slow_rebound_damping = 0, fast_rebound_damping = 0;
+    float rest_x = 0, rest_z = 0, rest_length = 0, min_height = 0, max_height = 0, bump_stop_height = 0, ride_height_offset = 0;
+    float spring_constant = 0, third_spring_constant = 0, anti_roll_constant = 0, slow_bump_damping = 0, fast_bump_damping = 0,
+          slow_rebound_damping = 0, fast_rebound_damping = 0;
     float bump_stop_rising_spring = 0, bump_stop_rising_damping = 0;
     float grip_multiplier = 1, tyre_radius = 0;
     json::Value extra;
 };
-SWOFTY_RECORD(Axle, rest_x, rest_z, rest_length, min_height, max_height, bump_stop_height, ride_height_offset,
-              spring_constant, third_spring_constant, anti_roll_constant, slow_bump_damping, fast_bump_damping,
-              slow_rebound_damping, fast_rebound_damping, bump_stop_rising_spring, bump_stop_rising_damping,
-              grip_multiplier, tyre_radius)
+SWOFTY_RECORD(Axle, rest_x, rest_z, rest_length, min_height, max_height, bump_stop_height, ride_height_offset, spring_constant,
+              third_spring_constant, anti_roll_constant, slow_bump_damping, fast_bump_damping, slow_rebound_damping,
+              fast_rebound_damping, bump_stop_rising_spring, bump_stop_rising_damping, grip_multiplier, tyre_radius)
 
 struct Suspension {
     Axle front, rear;
@@ -248,8 +243,8 @@ struct Suspension {
 SWOFTY_RECORD(Suspension, front, rear, use_model_positions)
 
 struct BrakeEcu {
-    float brake_front = 0, brake_rear = 0, brake_front_backwards = 0, brake_rear_backwards = 0,
-          brake_front_forwards = 0, brake_rear_forwards = 0;
+    float brake_front = 0, brake_rear = 0, brake_front_backwards = 0, brake_rear_backwards = 0, brake_front_forwards = 0,
+          brake_rear_forwards = 0;
     float brake_migration_torque = 0, brake_migration_torque_ai = 0, brake_pressure = 0;
     json::Value extra;
 };
@@ -345,9 +340,9 @@ struct Handling {
         return rad_upgrades.back();
     }
 };
-SWOFTY_RECORD(Handling, from, vtf, cls, damage_scale, chassis, f1_aero, core_aero, wing_damage, suspension_damage,
-              tyre_damage, body_damage, tyres, engine, gearbox, fuel_tank, fuel_ecu, brake_ecu, steering, differential,
-              suspension, tuning, assists, turbo, ers, plank, rad_upgrades, edits, remove)
+SWOFTY_RECORD(Handling, from, vtf, cls, damage_scale, chassis, f1_aero, core_aero, wing_damage, suspension_damage, tyre_damage,
+              body_damage, tyres, engine, gearbox, fuel_tank, fuel_ecu, brake_ecu, steering, differential, suspension, tuning,
+              assists, turbo, ers, plank, rad_upgrades, edits, remove)
 
 // The cars a car.profile applies to. Each list that is set has to match, and one entry of it is enough. team takes
 // a team.identity id (<addon>/<key>), game/<row label>, constructor/<key> or the active box's team key ("mercedes");
@@ -382,7 +377,8 @@ SWOFTY_RECORD(Profile, within, when, cars, ai_only, player_only, priority, power
               drag_scale, grip_scale, ai_grip_scale, fuel_modes, scope)
 
 // One row of a setup screen layout (setup.layout 1.0, experimental): the slider, as an SDK SetupSlider name or the
-// stock database label, with its own name, unit, displayed range and, for the four brake sliders 37 to 40, step count.
+// stock database label, with its own name, unit, displayed range and step count, and its own value and range text
+// (format, decimals, group, labels, range_text).
 struct SetupLayoutRow {
     std::string slider;
     std::string name;
@@ -390,8 +386,13 @@ struct SetupLayoutRow {
     std::string unit;
     std::optional<float> min, max;
     std::optional<int32_t> steps;
+    std::string format;
+    std::optional<int32_t> decimals;
+    bool group = false;
+    std::vector<std::string> labels;
+    std::optional<std::string> range_text;
 };
-SWOFTY_RECORD(SetupLayoutRow, slider, name, desc, unit, min, max, steps)
+SWOFTY_RECORD(SetupLayoutRow, slider, name, desc, unit, min, max, steps, format, decimals, group, labels, range_text)
 
 struct SetupLayoutSection {
     json::Value tab;
@@ -435,27 +436,27 @@ namespace live {
 // The fields set() can write, by part. Units and ranges are the handling file's; set() refuses a value
 // outside the range with Result::invalid.
 enum class Field : uint32_t {
-    steering_lock = SWOFTY_CAR_STEERING_LOCK,                  // Steering/MaxSteeringLock, rad, 0.01 .. 1.5708
-    clutch_torque = SWOFTY_CAR_CLUTCH_TORQUE,                  // GearBox/MaxClutchTorque, multiple of engine torque
-    diff_on_throttle = SWOFTY_CAR_DIFF_ON_THROTTLE,            // setup differential on throttle, 0 .. 1
-    diff_off_throttle = SWOFTY_CAR_DIFF_OFF_THROTTLE,          // setup differential off throttle, 0 .. 1
-    turbo_max_boost = SWOFTY_CAR_TURBO_MAX_BOOST,              // Turbo/MaxBoost, bar
-    fuel_mass = SWOFTY_CAR_FUEL_MASS,                          // kg in the tank, up to its capacity
-    wing_speed_threshold = SWOFTY_CAR_WING_SPEED_THRESHOLD,    // F1WingDamage, read on every hit
+    steering_lock = SWOFTY_CAR_STEERING_LOCK,               // Steering/MaxSteeringLock, rad, 0.01 .. 1.5708
+    clutch_torque = SWOFTY_CAR_CLUTCH_TORQUE,               // GearBox/MaxClutchTorque, multiple of engine torque
+    diff_on_throttle = SWOFTY_CAR_DIFF_ON_THROTTLE,         // setup differential on throttle, 0 .. 1
+    diff_off_throttle = SWOFTY_CAR_DIFF_OFF_THROTTLE,       // setup differential off throttle, 0 .. 1
+    turbo_max_boost = SWOFTY_CAR_TURBO_MAX_BOOST,           // Turbo/MaxBoost, bar
+    fuel_mass = SWOFTY_CAR_FUEL_MASS,                       // kg in the tank, up to its capacity
+    wing_speed_threshold = SWOFTY_CAR_WING_SPEED_THRESHOLD, // F1WingDamage, read on every hit
     wing_damage_scale = SWOFTY_CAR_WING_DAMAGE_SCALE,
     wing_chassis_damage_multiple = SWOFTY_CAR_WING_CHASSIS_DAMAGE_MULTIPLE,
     wing_side_detach_scale = SWOFTY_CAR_WING_SIDE_DETACH_SCALE,
     wing_full_detach_scale = SWOFTY_CAR_WING_FULL_DETACH_SCALE,
-    susp_speed_threshold = SWOFTY_CAR_SUSP_SPEED_THRESHOLD,    // F1SuspensionDamage, read on every hit
+    susp_speed_threshold = SWOFTY_CAR_SUSP_SPEED_THRESHOLD, // F1SuspensionDamage, read on every hit
     susp_front_damage_scale = SWOFTY_CAR_SUSP_FRONT_DAMAGE_SCALE,
     susp_rear_damage_scale = SWOFTY_CAR_SUSP_REAR_DAMAGE_SCALE,
     susp_wheel_detach_scale = SWOFTY_CAR_SUSP_WHEEL_DETACH_SCALE,
     susp_parts_detach_scale = SWOFTY_CAR_SUSP_PARTS_DETACH_SCALE,
     susp_linear_fracture_limit = SWOFTY_CAR_SUSP_LINEAR_FRACTURE_LIMIT,
     susp_angular_fracture_limit = SWOFTY_CAR_SUSP_ANGULAR_FRACTURE_LIMIT,
-    engine_limiter = SWOFTY_CAR_ENGINE_LIMITER,                // Engine/LimiterRotationRate (rad/s); the core re-runs the derived limiter
-    final_drive = SWOFTY_CAR_FINAL_DRIVE,                      // GearBox/FinalDriveRatio; the core rebuilds the ratio table
-    gear_ratio_1 = SWOFTY_CAR_GEAR_RATIO_1,                    // GearBox ratio of 1st .. 9th; the same rebuild
+    engine_limiter = SWOFTY_CAR_ENGINE_LIMITER, // Engine/LimiterRotationRate (rad/s); the core re-runs the derived limiter
+    final_drive = SWOFTY_CAR_FINAL_DRIVE,       // GearBox/FinalDriveRatio; the core rebuilds the ratio table
+    gear_ratio_1 = SWOFTY_CAR_GEAR_RATIO_1,     // GearBox ratio of 1st .. 9th; the same rebuild
     gear_ratio_2 = SWOFTY_CAR_GEAR_RATIO_1 + 1,
     gear_ratio_3 = SWOFTY_CAR_GEAR_RATIO_1 + 2,
     gear_ratio_4 = SWOFTY_CAR_GEAR_RATIO_1 + 3,
@@ -464,17 +465,18 @@ enum class Field : uint32_t {
     gear_ratio_7 = SWOFTY_CAR_GEAR_RATIO_1 + 6,
     gear_ratio_8 = SWOFTY_CAR_GEAR_RATIO_1 + 7,
     gear_ratio_9 = SWOFTY_CAR_GEAR_RATIO_1 + 8,
-    aero_lift_scale = SWOFTY_CAR_AERO_LIFT_SCALE,              // F1Aero/lift_scale, multiplies the body lift; an R&D replay resets it to 1
-    aero_drag_scale = SWOFTY_CAR_AERO_DRAG_SCALE,              // F1Aero/drag_scale, multiplies the body drag
-    engine_power_scale = SWOFTY_CAR_ENGINE_POWER_SCALE,        // the core's handler on the engine drive torque; writes no game data
-    engine_limiter_offset_rpm = SWOFTY_CAR_ENGINE_LIMITER_OFFSET_RPM, // negative: the torque is cut that many rpm under the limiter
-    ai_grip_scale = SWOFTY_CAR_AI_GRIP_SCALE,                  // the AI's table grip input, dry weather only
+    aero_lift_scale = SWOFTY_CAR_AERO_LIFT_SCALE, // F1Aero/lift_scale, multiplies the body lift; an R&D replay resets it to 1
+    aero_drag_scale = SWOFTY_CAR_AERO_DRAG_SCALE, // F1Aero/drag_scale, multiplies the body drag
+    engine_power_scale = SWOFTY_CAR_ENGINE_POWER_SCALE, // the core's handler on the engine drive torque; writes no game data
+    engine_limiter_offset_rpm =
+        SWOFTY_CAR_ENGINE_LIMITER_OFFSET_RPM,                   // negative: the torque is cut that many rpm under the limiter
+    ai_grip_scale = SWOFTY_CAR_AI_GRIP_SCALE,                   // the AI's table grip input, dry weather only
     tyres_front_grip_scale = SWOFTY_CAR_TYRES_FRONT_GRIP_SCALE, // Suspension Tyre Front/GripMultiplier
     tyres_rear_grip_scale = SWOFTY_CAR_TYRES_REAR_GRIP_SCALE,
-    chassis_ballast_kg = SWOFTY_CAR_CHASSIS_BALLAST_KG,        // kilograms added to the VTF mass, then the chassis reset
-    brakes_bias = SWOFTY_CAR_BRAKES_BIAS,                      // BrakeECU bias, 0 .. 1
+    chassis_ballast_kg = SWOFTY_CAR_CHASSIS_BALLAST_KG, // kilograms added to the VTF mass, then the chassis reset
+    brakes_bias = SWOFTY_CAR_BRAKES_BIAS,               // BrakeECU bias, 0 .. 1
     brakes_pressure = SWOFTY_CAR_BRAKES_PRESSURE,
-    susp_front_camber = SWOFTY_CAR_SUSP_FRONT_CAMBER,          // the axle's setup camber, toe, anti-roll bar and ride height offset
+    susp_front_camber = SWOFTY_CAR_SUSP_FRONT_CAMBER, // the axle's setup camber, toe, anti-roll bar and ride height offset
     susp_front_toe = SWOFTY_CAR_SUSP_FRONT_TOE,
     susp_front_anti_roll = SWOFTY_CAR_SUSP_FRONT_ANTI_ROLL,
     susp_front_ride_height_offset = SWOFTY_CAR_SUSP_FRONT_RIDE_HEIGHT_OFFSET,
@@ -487,7 +489,7 @@ enum class Field : uint32_t {
     aero_slipstream_rear_wing = SWOFTY_CAR_AERO_SLIPSTREAM_REAR_WING,
     aero_slipstream_lift = SWOFTY_CAR_AERO_SLIPSTREAM_LIFT,
     aero_slipstream_car_width = SWOFTY_CAR_AERO_SLIPSTREAM_CAR_WIDTH,
-    ai_blocking_fraction_of_follow_speed = SWOFTY_CAR_AI_BLOCKING_FRACTION,   // layers only; per car, read on every AI tick
+    ai_blocking_fraction_of_follow_speed = SWOFTY_CAR_AI_BLOCKING_FRACTION, // layers only; per car, read on every AI tick
     ai_blocking_fraction_of_follow_speed_at_race_start = SWOFTY_CAR_AI_BLOCKING_FRACTION_RACE_START,
     ai_blocking_max_blocking_distance = SWOFTY_CAR_AI_BLOCKING_MAX_DISTANCE,
     ai_blocking_max_blocking_distance_at_race_start = SWOFTY_CAR_AI_BLOCKING_MAX_DISTANCE_RACE_START,
@@ -505,7 +507,8 @@ enum class Field : uint32_t {
     ai_offset_variation_radius_scalar_graph = SWOFTY_CAR_AI_OFFSET_VARIATION_RADIUS_SCALAR_GRAPH,
     ai_overtake_attacker_close_enough_car_lengths = SWOFTY_CAR_AI_OVERTAKE_ATTACKER_CLOSE_ENOUGH_CAR_LENGTHS,
     ai_overtake_braking_zone_abort_overtake_time = SWOFTY_CAR_AI_OVERTAKE_BRAKING_ZONE_ABORT_OVERTAKE_TIME,
-    ai_overtake_close_range_car_lengths_to_continue_overtake = SWOFTY_CAR_AI_OVERTAKE_CLOSE_RANGE_CAR_LENGTHS_TO_CONTINUE_OVERTAKE,
+    ai_overtake_close_range_car_lengths_to_continue_overtake =
+        SWOFTY_CAR_AI_OVERTAKE_CLOSE_RANGE_CAR_LENGTHS_TO_CONTINUE_OVERTAKE,
     ai_overtake_close_range_car_lengths_to_start_overtake = SWOFTY_CAR_AI_OVERTAKE_CLOSE_RANGE_CAR_LENGTHS_TO_START_OVERTAKE,
     ai_overtake_oppertunist_overtake_time = SWOFTY_CAR_AI_OVERTAKE_OPPERTUNIST_OVERTAKE_TIME,
     ai_overtake_oppertunist_overtake_track_speed_difference = SWOFTY_CAR_AI_OVERTAKE_OPPERTUNIST_OVERTAKE_TRACK_SPEED_DIFFERENCE,
@@ -526,7 +529,8 @@ enum class Field : uint32_t {
     ai_space_seeking_first_speed_below_follow = SWOFTY_CAR_AI_SPACE_SEEKING_FIRST_SPEED_BELOW_FOLLOW,
     ai_space_seeking_car_in_front_needed = SWOFTY_CAR_AI_SPACE_SEEKING_CAR_IN_FRONT_NEEDED,
     ai_space_seeking_remember_crowed = SWOFTY_CAR_AI_SPACE_SEEKING_REMEMBER_CROWED,
-    ai_space_seeking_concede_overtake_blocked_by_crowed_time = SWOFTY_CAR_AI_SPACE_SEEKING_CONCEDE_OVERTAKE_BLOCKED_BY_CROWED_TIME,
+    ai_space_seeking_concede_overtake_blocked_by_crowed_time =
+        SWOFTY_CAR_AI_SPACE_SEEKING_CONCEDE_OVERTAKE_BLOCKED_BY_CROWED_TIME,
     ai_space_seeking_total_queue_needed = SWOFTY_CAR_AI_SPACE_SEEKING_TOTAL_QUEUE_NEEDED,
     ai_space_seeking_distance_braking_point = SWOFTY_CAR_AI_SPACE_SEEKING_DISTANCE_BRAKING_POINT,
     ai_space_seeking_time_to_switch_sides = SWOFTY_CAR_AI_SPACE_SEEKING_TIME_TO_SWITCH_SIDES,
@@ -600,7 +604,12 @@ namespace swofty::cars::live {
 
 class Car;
 
-enum class FuelMix : uint32_t { lean = SWOFTY_CAR_FUEL_MIX_LEAN, standard = SWOFTY_CAR_FUEL_MIX_STANDARD, rich = SWOFTY_CAR_FUEL_MIX_RICH, max = SWOFTY_CAR_FUEL_MIX_MAX };
+enum class FuelMix : uint32_t {
+    lean = SWOFTY_CAR_FUEL_MIX_LEAN,
+    standard = SWOFTY_CAR_FUEL_MIX_STANDARD,
+    rich = SWOFTY_CAR_FUEL_MIX_RICH,
+    max = SWOFTY_CAR_FUEL_MIX_MAX
+};
 
 // Offers the mixes in mask (FuelMix bits) on the MFD of every car while the mask stays set; 0 withdraws the owner's
 // request. The mode tables themselves are fields: "fuel_ecu.fuel_burn_scale.rich", "fuel_ecu.fuel_power_scale.max",
@@ -741,7 +750,6 @@ inline std::vector<Car> cars()
     return out;
 }
 
-
 enum class Op : uint32_t { set = SWOFTY_CAR_OP_SET, scale = SWOFTY_CAR_OP_SCALE, add = SWOFTY_CAR_OP_ADD };
 
 // Which cars a layer reaches: every car (also the ones built later), or the cars that are on track when the
@@ -825,8 +833,8 @@ private:
         std::vector<uint32_t> targets = cars.every() ? std::vector<uint32_t>{SWOFTY_CAR_ALL} : cars.indices();
         for (uint32_t index : targets) {
             uint32_t token = 0;
-            Result r = swofty::detail::result(t->layer("addon", index, static_cast<uint32_t>(*f),
-                                                       static_cast<uint32_t>(op), value, priority, &token));
+            Result r = swofty::detail::result(
+                t->layer("addon", index, static_cast<uint32_t>(*f), static_cast<uint32_t>(op), value, priority, &token));
             if (r != Result::ok) {
                 l.result_ = r;
                 l.release();
@@ -916,13 +924,48 @@ struct UpgradesReplayed {
 
 // The index of a setup slider: the order of the game's car_setup.sliders table.
 enum class SetupSlider : uint32_t {
-    front_wing = 0, rear_wing, diff_on_throttle, diff_off_throttle, diff_mid_corner, diff_high_speed, diff_preload,
-    front_camber, rear_camber, front_toe, rear_toe, front_suspension, rear_suspension, front_ride_height,
-    rear_ride_height, front_anti_roll_bar, rear_anti_roll_bar, brake_pressure, brake_bias, brake_migration_a,
-    brake_migration_b, tyre_pressure_0, tyre_pressure_1, tyre_pressure_2, tyre_pressure_3, ballast, fuel_load,
-    engine_braking, ramp_differential, inter_wet_pressure_0, inter_wet_pressure_1, inter_wet_pressure_2,
-    inter_wet_pressure_3, inter_wet_pressure_4, inter_wet_pressure_5, inter_wet_pressure_6, inter_wet_pressure_7,
-    brake_cooling_front, brake_cooling_rear, brake_duct_front, brake_duct_rear, brake_migration_c
+    front_wing = 0,
+    rear_wing,
+    diff_on_throttle,
+    diff_off_throttle,
+    diff_mid_corner,
+    diff_high_speed,
+    diff_preload,
+    front_camber,
+    rear_camber,
+    front_toe,
+    rear_toe,
+    front_suspension,
+    rear_suspension,
+    front_ride_height,
+    rear_ride_height,
+    front_anti_roll_bar,
+    rear_anti_roll_bar,
+    brake_pressure,
+    brake_bias,
+    brake_migration_a,
+    brake_migration_b,
+    tyre_pressure_0,
+    tyre_pressure_1,
+    tyre_pressure_2,
+    tyre_pressure_3,
+    ballast,
+    fuel_load,
+    engine_braking,
+    ramp_differential,
+    inter_wet_pressure_0,
+    inter_wet_pressure_1,
+    inter_wet_pressure_2,
+    inter_wet_pressure_3,
+    inter_wet_pressure_4,
+    inter_wet_pressure_5,
+    inter_wet_pressure_6,
+    inter_wet_pressure_7,
+    brake_cooling_front,
+    brake_cooling_rear,
+    brake_duct_front,
+    brake_duct_rear,
+    brake_migration_c
 };
 inline constexpr uint32_t setup_slider_count = 42;
 

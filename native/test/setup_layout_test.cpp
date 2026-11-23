@@ -68,7 +68,7 @@ int main()
     expect(!c::check_layout(bad).ok, "min equal to max is refused");
     bad = l;
     bad.sections[0].rows[0].steps = 10;
-    expect(!c::check_layout(bad).ok, "steps on a slider outside 37 to 40 are refused");
+    expect(c::check_layout(bad).ok, "steps on any slider are fine");
     bad = l;
     bad.sections[1].rows[0].steps = 0;
     expect(!c::check_layout(bad).ok, "zero steps are refused");
@@ -133,6 +133,56 @@ int main()
     expect(std::string(c::name_key(37)) == "lng_cs_brake_ch_front" && std::string(c::name_key(2)).empty() &&
                std::string(c::unit_key(39)) == "lng_cs_brake_cd_range",
            "the text keys of the fuel rows are the game's");
+    c::LayoutRow tr;
+    tr.slider = 11;
+    tr.name = "Spring";
+    tr.min = 1050.0f;
+    tr.max = 1350.0f;
+    tr.steps = 6;
+    tr.format = "{v} lb/in";
+    tr.group = true;
+    expect(c::value_text(tr, 0, 6) == "1,050 lb/in" && c::value_text(tr, 6, 6) == "1,350 lb/in" &&
+               c::value_text(tr, 3, 6) == "1,200 lb/in",
+           "format with a thousands separator over lerp(min, max, step / steps)");
+    expect(c::range_text_of(tr, 6) == "1,050 - 1,350 lb/in", "an absent range_text is min to max through format");
+    tr.range_text = "";
+    expect(c::range_text_of(tr, 6).empty(), "an empty range_text hides the range");
+    tr.range_text = "Soft to firm";
+    expect(c::range_text_of(tr, 6) == "Soft to firm", "a string range_text replaces it");
+    c::LayoutRow dr;
+    dr.slider = 0;
+    dr.name = "Flap";
+    dr.min = 0.0f;
+    dr.max = 1.0f;
+    dr.steps = 4;
+    dr.decimals = 2;
+    dr.format = "Blade {v}";
+    expect(c::value_text(dr, 1, 4) == "Blade 0.25", "decimals fix the digits");
+    dr.decimals.reset();
+    expect(c::value_text(dr, 1, 4) == "Blade 0.25" && c::value_text(dr, 2, 4) == "Blade 0.50",
+           "absent decimals show the step size exactly");
+    c::LayoutRow lr;
+    lr.slider = 2;
+    lr.name = "Gear";
+    lr.labels = {"Short", "Medium", "Long", "Very long"};
+    expect(c::row_steps(lr, 5) == 3 && c::value_text(lr, 2, 3) == "Long" && c::value_text(lr, 9, 3) == "Very long",
+           "labels set the steps and replace the number");
+    expect(c::range_text_of(lr, 3) == "Short - Very long", "labelled rows range from the first to the last label");
+    c::Layout ll = l;
+    ll.sections[0].rows[0].labels = {"A", "B", "C"};
+    ll.sections[0].rows[0].steps = 5;
+    expect(!c::check_layout(ll).ok, "steps that disagree with the labels are refused");
+    ll.sections[0].rows[0].steps = 2;
+    expect(c::check_layout(ll).ok, "steps that agree with the labels are fine");
+    ll.sections[0].rows[0].labels = {"A"};
+    ll.sections[0].rows[0].steps.reset();
+    expect(!c::check_layout(ll).ok, "one label is refused");
+    ll = l;
+    ll.sections[0].rows[0].decimals = 4;
+    expect(!c::check_layout(ll).ok, "decimals above 3 are refused");
+    ll = l;
+    ll.sections[0].rows[0].format = "no number";
+    expect(!c::check_layout(ll).ok, "a format needs {v}");
     std::printf(failed ? "%d failed\n" : "all passed\n", failed);
     return failed ? 1 : 0;
 }

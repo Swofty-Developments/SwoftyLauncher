@@ -3,6 +3,8 @@
 #include <array>
 #include <cstdint>
 #include <optional>
+#include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -25,8 +27,6 @@ namespace swofty_core::apply::content {
 
 inline constexpr int LAYOUT_TABS = 8;
 inline constexpr int LAYOUT_TAB_ROWS = 10;
-inline constexpr int LAYOUT_STEP_FIRST = 37;
-inline constexpr int LAYOUT_STEP_LAST = 40;
 inline constexpr int LAYOUT_STEPS_MAX = 100;
 
 struct LayoutRow {
@@ -36,6 +36,11 @@ struct LayoutRow {
     std::optional<float> min, max;
     std::optional<int> steps;
     std::string unit;
+    std::string format;
+    std::optional<int> decimals;
+    bool group = false;
+    std::vector<std::string> labels;
+    std::optional<std::string> range_text;
 };
 
 struct LayoutSection {
@@ -80,11 +85,20 @@ inline LayoutVerdict check_layout(const Layout &l)
                 return {false, "a row needs a name"};
             if (r.min && r.max && *r.min == *r.max)
                 return {false, "a row's min and max must differ"};
-            if (r.steps) {
-                if (r.slider < LAYOUT_STEP_FIRST || r.slider > LAYOUT_STEP_LAST)
-                    return {false, "only the brake sliders 37 to 40 take their own steps"};
-                if (*r.steps < 1 || *r.steps > LAYOUT_STEPS_MAX)
-                    return {false, "a row's steps are 1 to 100"};
+            if (r.steps && (*r.steps < 1 || *r.steps > LAYOUT_STEPS_MAX))
+                return {false, "a row's steps are 1 to 100"};
+            if (r.decimals && (*r.decimals < 0 || *r.decimals > 3))
+                return {false, "a row's decimals are 0 to 3"};
+            if (!r.format.empty() && r.format.find("{v}") == std::string::npos)
+                return {false, "a row's format needs {v}"};
+            if (!r.labels.empty()) {
+                if (r.labels.size() < 2 || int(r.labels.size()) > LAYOUT_STEPS_MAX + 1)
+                    return {false, "a row's labels are 2 to 101"};
+                for (const auto &t : r.labels)
+                    if (t.empty())
+                        return {false, "a label is empty"};
+                if (r.steps && *r.steps != int(r.labels.size()) - 1)
+                    return {false, "a row's steps must be one fewer than its labels"};
             }
             if (bool(r.min) != bool(r.max))
                 return {false, "a row gives both min and max or neither"};
@@ -285,8 +299,12 @@ inline std::vector<CellSwap> cell_swaps(const Layout &l)
     std::vector<CellSwap> out;
     for (const auto &s : l.sections)
         for (const auto &r : s.rows)
-            if ((r.min && r.max) || r.steps)
-                out.push_back({r.slider, r.min.value_or(0), r.max.value_or(0), r.steps.value_or(0), bool(r.min && r.max)});
+            if ((r.min && r.max) || r.steps || !r.labels.empty())
+                out.push_back({r.slider, r.min.value_or(0), r.max.value_or(0),
+                               r.steps            ? *r.steps
+                               : r.labels.empty() ? 0
+                                                  : int(r.labels.size()) - 1,
+                               bool(r.min && r.max)});
     return out;
 }
 
@@ -341,6 +359,89 @@ private:
     std::vector<CellSnapshot> saved_;
     std::string active_;
 };
+
+// The number text of a row: decimals as given, else the fewest (0 to 3) that show the row's step size exactly; a
+// thousands separator when `group`.
+inline int row_decimals(const LayoutRow &r, int steps)
+{
+    if (r.decimals)
+        return *r.decimals;
+    if (!r.min || !r.max || steps <= 0)
+        return 0;
+    double size = std::fabs(double(*r.max) - double(*r.min)) / double(steps);
+    for (int d = 0; d < 3; d++) {
+        double k = std::pow(10.0, d);
+        if (std::fabs(size * k - std::round(size * k)) < 1e-3 &&
+            std::fabs(double(*r.min) * k - std::round(double(*r.min) * k)) < 1e-3)
+            return d;
+    }
+    return 3;
+}
+
+inline std::string group_digits(const std::string &number)
+{
+    size_t start = (!number.empty() && number[0] == '-') ? 1 : 0, dot = number.find('.');
+    size_t end = dot == std::string::npos ? number.size() : dot;
+    std::string out = number.substr(0, start);
+    for (size_t i = start; i < end; i++) {
+        out += number[i];
+        size_t left = end - i - 1;
+        if (left && left % 3 == 0)
+            out += ',';
+    }
+    return out + number.substr(end);
+}
+
+inline std::string number_text(const LayoutRow &r, double v, int steps)
+{
+    char buf[64];
+    std::snprintf(buf, sizeof buf, "%.*f", row_decimals(r, steps), v);
+    std::string t = buf;
+    if (t.rfind("-0", 0) == 0 && t.find_first_not_of("-0.") == std::string::npos)
+        t.erase(0, 1);
+    return r.group ? group_digits(t) : t;
+}
+
+inline std::string fill_format(const std::string &format, const std::string &value)
+{
+    std::string f = format.empty() ? std::string("{v}") : format, out;
+    size_t at = f.find("{v}");
+    if (at == std::string::npos)
+        return f;
+    return f.substr(0, at) + value + f.substr(at + 3);
+}
+
+inline int row_steps(const LayoutRow &r, int game_steps)
+{
+    return r.steps ? *r.steps : r.labels.empty() ? game_steps : int(r.labels.size()) - 1;
+}
+
+// The text beside the bar at a step: its label, else format over the number at that step.
+inline std::string value_text(const LayoutRow &r, int step, int steps)
+{
+    int s = step < 0 ? 0 : step > steps ? steps : step;
+    if (!r.labels.empty())
+        return r.labels[size_t(s)];
+    if (!r.min || !r.max)
+        return {};
+    double v = double(*r.min) + (double(*r.max) - double(*r.min)) * double(s) / double(steps > 0 ? steps : 1);
+    return fill_format(r.format, number_text(r, v, steps));
+}
+
+// The right-hand text: range_text (empty hides it), else the row's own min to max through format.
+inline std::string range_text_of(const LayoutRow &r, int steps)
+{
+    if (r.range_text)
+        return *r.range_text;
+    if (!r.labels.empty())
+        return r.labels.front() + " - " + r.labels.back();
+    if (!r.min || !r.max)
+        return {};
+    return fill_format(r.format, number_text(r, double(*r.min), steps) + " - " + number_text(r, double(*r.max), steps));
+}
+
+// Whether the row takes over the value or range text (the game's own text stays otherwise).
+inline bool controls_text(const LayoutRow &r) { return !r.format.empty() || !r.labels.empty() || r.range_text || r.min; }
 
 // The displayed number of a step over a row's range.
 inline float display_value(float min, float max, int step, int steps)

@@ -260,3 +260,4 @@ loader/version.c: if (!VirtualProtect(slot, sizeof *slot, PAGE_READWRITE, &old))
 loader/version.c: if (!VirtualProtect(at, 1, PAGE_EXECUTE_READWRITE, &old)) => outside kernel32 kernelbase
 core/hooks/setup_layout_hooks.cpp: auto b = runtime::loader::install(h_build, build, S_BUILD.what, reinterpret_cast<void *>(&d_build)); => inline sig S_BUILD
 core/hooks/setup_layout_hooks.cpp: auto p = runtime::loader::install(h_populate, populate, S_POPULATE.what, reinterpret_cast<void *>(&d_populate)); => inline sig S_POPULATE
+core/hooks/setup_layout_hooks.cpp: auto ch = runtime::loader::install(h_changed, changed, S_VALUE_CHANGED.what, reinterpret_cast<void *>(&d_changed)); => inline sig S_VALUE_CHANGED

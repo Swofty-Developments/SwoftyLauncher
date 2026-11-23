@@ -92,13 +92,45 @@
                   ]
                 },
                 "steps": {
-                  "description": "The number of steps, brake sliders 37 to 40 only (brake_cooling_front, brake_cooling_rear, brake_duct_front, brake_duct_rear). Needs the scope's handling to pin those four F1Tuning ranges to min == max.",
+                  "description": "The number of steps of this slider while the scope is on. Any slider. The game keeps a saved setup as raw step indexes, so a layout that changes a slider's steps owns the presets and saved setups of that slider. With labels, steps must equal labels.length - 1 (or be left out).",
                   "type": [
                     "integer",
                     "null"
                   ],
                   "minimum": 1,
                   "maximum": 100
+                },
+                "format": {
+                  "description": "The value text beside the bar; {v} is the number at the current step, lerp(min, max, step / steps). For example \"{v} lb/in\", \"{v} rpm\", \"Blade {v}\".",
+                  "type": "string",
+                  "pattern": "\\{v\\}"
+                },
+                "decimals": {
+                  "description": "Decimal places of {v}, 0 to 3. Absent: the fewest that show the step size exactly.",
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 3
+                },
+                "group": {
+                  "description": "A thousands separator in {v} (1,050).",
+                  "type": "boolean"
+                },
+                "labels": {
+                  "description": "One text per step, shown instead of the number; steps = labels.length - 1.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 2,
+                  "maxItems": 101
+                },
+                "range_text": {
+                  "description": "The right-hand text of the row. A string replaces it, an empty string hides it. Absent: the row's own min to max through format (\"1,050 - 1,350 lb/in\"), or the first and last label; never the game's Soft/Firm or Min/Max text.",
+                  "type": "string"
                 }
               },
               "required": [

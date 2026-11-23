@@ -1,5 +1,7 @@
 #include "core/hooks/setup_layout_hooks.hpp"
 
+#include "core/frontend/vm_string.hpp"
+
 #include "core/apply/content/setup_layout_parse.hpp"
 #include "core/registry/table.hpp"
 #include "core/hooks/context.hpp"
@@ -8,6 +10,7 @@
 #include "core/runtime/loader/hook_install.hpp"
 #include "core/runtime/runtime.hpp"
 
+#include <swofty/game.hpp>
 #include <swofty/json.hpp>
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -76,7 +79,16 @@ const runtime::Sig S_CELLS{
     0,
     0};
 
-safetyhook::InlineHook h_build, h_populate;
+const runtime::Sig S_VALUE_CHANGED{"Car_Setup_OnValueChanged",
+                                   "41 57 41 56 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 B4 24 F0 00 00 00 83 7A 08 02 0F 84 ?? "
+                                   "?? ?? ?? 48 89 CE 48 8B 42 10 4C 8B 00 B9 E0 08 00 00 BA 02 00 00 00 B8 20 06 00 00 41",
+                                   0xc1e690,
+                                   runtime::Sig::addr,
+                                   0,
+                                   0,
+                                   0};
+
+safetyhook::InlineHook h_build, h_populate, h_changed;
 std::mutex g_lock;
 bool g_armed, g_probe, g_cells_ok;
 uintptr_t g_max, g_min, g_steps;
@@ -252,6 +264,66 @@ void reload_locked()
     load_layouts();
 }
 
+constexpr uintptr_t VM_ENTRY_FIRST = 0x360, VM_ENTRY_GROUP = 0x840, VM_ENTRY_STRIDE = 0x2c0, VM_SETUP = 0x268;
+constexpr uintptr_t SETUP_STEPS = 0x70, SETUP_SLOT_SIZE = 0x550;
+
+bool entry_parent(void *vm, int slider, void *&parent)
+{
+    uintptr_t at =
+        uintptr_t(vm) + VM_ENTRY_FIRST + uintptr_t(slider / 3) * VM_ENTRY_GROUP + uintptr_t(slider % 3) * VM_ENTRY_STRIDE;
+    uintptr_t node = 0;
+    if (!swofty::mem::read(at, node) || !node)
+        return false;
+    parent = reinterpret_cast<void *>(node + 8);
+    return true;
+}
+
+bool stored_step(void *vm, int slider, int &step)
+{
+    uintptr_t setup = 0;
+    uint8_t slot = 0;
+    if (!swofty::mem::read(uintptr_t(vm) + VM_SETUP, setup) || !setup || !swofty::mem::read(setup + 1, slot))
+        return false;
+    return swofty::mem::read(setup + SETUP_STEPS + uintptr_t(slider) * 4 + uintptr_t(slot) * SETUP_SLOT_SIZE, step);
+}
+
+void put_row_texts(void *vm)
+{
+    if (g_active < 0 || !vm)
+        return;
+    void *reg = *swofty::game::g_Vm_Registry;
+    if (!reg)
+        return;
+    for (const auto &sec : g_layouts[g_active].layout.sections)
+        for (const auto &r : sec.rows) {
+            if (!c::controls_text(r))
+                continue;
+            float mn = 0, mx = 0;
+            int game_steps = 0, step = 0;
+            void *parent = nullptr;
+            if (!read_cells(r.slider, mn, mx, game_steps) || !entry_parent(vm, r.slider, parent) ||
+                !stored_step(vm, r.slider, step))
+                continue;
+            int steps = game_steps > 0 ? game_steps : 1;
+            uint8_t no = 0;
+            std::string value = c::value_text(r, step, steps), range = c::range_text_of(r, steps);
+            if (!value.empty())
+                frontend::vm::set_string(reg, parent, "value_str", value.c_str());
+            swofty::game::Vm_Set_Bool(reg, parent, "range_localise", &no, 1);
+            frontend::vm::set_string(reg, parent, "range_desc", range.c_str());
+            if (g_probe)
+                swofty::log("[setup-layout] slider %d step %d/%d text '%s' range '%s'", r.slider, step, steps, value.c_str(),
+                            range.c_str());
+        }
+}
+
+void d_changed(void *vm, void *change)
+{
+    h_changed.call<void>(vm, change);
+    std::lock_guard<std::mutex> g(g_lock);
+    put_row_texts(vm);
+}
+
 uint64_t d_build(void *vm, uint32_t *idx, uint32_t count, void *node, uint32_t tab)
 {
     std::lock_guard<std::mutex> g(g_lock);
@@ -294,7 +366,10 @@ uint64_t d_populate(void *vm)
             probe_cells("populate");
         }
     }
-    return h_populate.call<uint64_t>(vm);
+    uint64_t r = h_populate.call<uint64_t>(vm);
+    std::lock_guard<std::mutex> g(g_lock);
+    put_row_texts(vm);
+    return r;
 }
 
 }
@@ -316,6 +391,7 @@ void arm()
     uintptr_t cells = runtime::find(S_CELLS, "setups", "setups");
     uintptr_t build = runtime::find(S_BUILD, "setups", "setups");
     uintptr_t populate = runtime::find(S_POPULATE, "setups", "setups");
+    uintptr_t changed = runtime::find(S_VALUE_CHANGED, "setups", "setups");
     if (!build || !populate || !cells) {
         swofty::log("[setups] layout: %s did not resolve on this build; the setup screen stays the game's", !build ? S_BUILD.what
                                                                                                             : !populate
@@ -347,6 +423,15 @@ void arm()
         h_populate = {};
         return;
     }
+    if (changed) {
+        auto ch = runtime::loader::install(h_changed, changed, S_VALUE_CHANGED.what, reinterpret_cast<void *>(&d_changed));
+        if (!ch) {
+            swofty::log("[setups] layout: the value-change hook failed (%s); row texts refresh only when the screen opens",
+                        ch.error.c_str());
+            h_changed = {};
+        }
+    } else
+        swofty::log("[setups] layout: %s did not resolve; row texts refresh only when the screen opens", S_VALUE_CHANGED.what);
     g_armed = true;
     swofty::log("[setups] layout hooks armed: layouts are read when the setup screen opens, probe %s", g_probe ? "on" : "off");
 }
