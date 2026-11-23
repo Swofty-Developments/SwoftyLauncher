@@ -238,8 +238,18 @@ static void slot_list()
     expect(ad.adopt("progressive.driver_career:00000000000000a1") && ad.size() == 1 &&
                ad.knows("progressive.driver_career:00000000000000a1") && !ad.adopt("driver_career:new1"),
            "the loaded career's id replaces the slot list's name for it");
+    {
+        const Value &rec = *ad.find("progressive.driver_career:00000000000000a1");
+        const swofty::json::Array *from = rec["renamed_from"].if_array();
+        expect(from && from->size() == 1 && (*from)[0].as_string() == "driver_career:00000000000000a1" &&
+                   !rec.contains("source") && rec["slot"].as_string() == "00000000000000a1",
+               "the record keeps the slot list's id in renamed_from, so the vault knows it is one career");
+    }
     r = ad.apply_list({slot(1, 0xa1)}, ctx("s1", false));
     expect(!r.changed && !r.deleted.size(), "and the next list matches it by its slot key");
+    expect(!ad.adopt("progressive.driver_career:00000000000000a1") &&
+               ad.find("progressive.driver_career:00000000000000a1")->operator[]("renamed_from").if_array()->size() == 1,
+           "a second load of the career renames nothing");
 
     cs::Index tk;
     tk.apply_list({slot(3, 0xc3, 9, cs::FLAG_MY_TEAM)}, ctx("s1", true));

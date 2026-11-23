@@ -282,6 +282,15 @@ public:
         Value *c = find_by_tail(tail);
         if (!c || str(*c, "source") != "slots")
             return false;
+        std::string was(str(*c, "career"));
+        Value &from = (*c)["renamed_from"];
+        if (!from.is_array())
+            from = Value::array();
+        bool known = false;
+        for (const Value &w : *from.if_array())
+            known = known || w.as_string() == was;
+        if (!known)
+            from.push_back(Value(was));
         (*c)["career"] = Value(std::string(id));
         c->erase("source");
         return true;
