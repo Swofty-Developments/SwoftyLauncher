@@ -113,16 +113,10 @@ int main()
           "both groups missing take the fitted slot");
     CHECK(tmod::plan_activation(25, none, none, false) == tmod::Repair::none, "no usable slot means no repair");
 
-    tmod::FrameBound fb;
-    for (int frame = 0; frame < 3; frame++)
-        for (uint32_t i = 0; i < 27; i++)
-            tmod::frame_step(fb, i);
-    CHECK(fb.bound == 27, "the caller's per-frame count is learned from two equal frames");
-    CHECK(tmod::is_last_of_frame(fb, 26) && !tmod::is_last_of_frame(fb, 25), "only the last index ends the frame");
-    tmod::FrameBound young;
-    for (uint32_t i = 0; i < 27; i++)
-        tmod::frame_step(young, i);
-    CHECK(young.bound == 0 && !tmod::is_last_of_frame(young, 26), "nothing is learned from one frame");
+    CHECK(tmod::learned_bound(26, 999) == 0, "nothing is learned from a handful of calls");
+    CHECK(tmod::learned_bound(26, 5000) == 27, "the caller's vehicle count is the highest index seen plus one");
+    CHECK(tmod::is_last_vehicle(27, 26) && !tmod::is_last_vehicle(27, 25) && !tmod::is_last_vehicle(0, 0),
+          "only the last index of a learned bound triggers the extras");
     bool has[64] = {};
     uint32_t out[64];
     has[27] = has[29] = true;

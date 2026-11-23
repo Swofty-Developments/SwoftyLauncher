@@ -80,10 +80,10 @@ bool update_counting = false;
 uint32_t session = 0;
 std::atomic<uint32_t> list_extra_total{0}, list_extra_mask{0};
 std::atomic<bool> list_fix{true};
-tmod::FrameBound frame;
+std::atomic<uint32_t> seen_max{0}, seen_calls{0}, learned{0};
 std::atomic<int> list_logged{0};
 
-void update_extras(void *system, void *a3, void *camera, float scale)
+void update_extras(void *system, float dt, void *camera, float scale, uint32_t cam)
 {
     uintptr_t sys = uintptr_t(system), begin = 0, end = 0;
     if (!mem::read(sys + SYSTEM_LIST, begin) || !mem::read(sys + SYSTEM_LIST_END, end) || !begin || end <= begin)
@@ -92,14 +92,14 @@ void update_extras(void *system, void *a3, void *camera, float scale)
     if (count > tmod::MAX_LIST)
         return;
     bool has_car[tmod::MAX_LIST] = {};
-    for (uint64_t i = frame.bound; i < count; i++) {
+    for (uint64_t i = learned.load(); i < count; i++) {
         uintptr_t entry = 0, car = 0;
         has_car[i] = mem::read(begin + i * sizeof(uintptr_t), entry) && entry && mem::read(entry + TC_CAR, car) && car;
     }
     uint32_t todo[tmod::MAX_LIST];
-    size_t n = tmod::extra_updates(count, frame.bound, has_car, todo, tmod::MAX_LIST);
+    size_t n = tmod::extra_updates(count, learned.load(), has_car, todo, tmod::MAX_LIST);
     for (size_t k = 0; k < n; k++) {
-        update_hook_handle.call<void>(system, uint8_t(todo[k]), a3, camera, scale);
+        update_hook_handle.call<void>(system, uint8_t(todo[k]), dt, camera, scale, cam);
         uintptr_t entry = 0, car = 0, live = 0;
         uint8_t id = 0xff;
         if (mem::read(begin + todo[k] * sizeof(uintptr_t), entry) && mem::read(entry + TC_CAR, car) &&
@@ -114,21 +114,29 @@ void update_extras(void *system, void *a3, void *camera, float scale)
                 ids += (ids.empty() ? "" : ", ") + std::to_string(v);
         swofty::log("[tyres] list fix, session %u: the caller updates %u of %llu tyre system entries; %zu more are updated after "
                     "it (vehicle(s) %s)",
-                    session, frame.bound, (unsigned long long)count, n, ids.c_str());
+                    session, learned.load(), (unsigned long long)count, n, ids.c_str());
     }
 }
 
-void update_vehicle_hook(void *system, uint8_t idx, void *a3, void *camera, float scale)
+void update_vehicle_hook(void *system, uint8_t idx, float dt, void *camera, float scale, uint32_t cam)
 {
     update_system.store(uintptr_t(system), std::memory_order_relaxed);
     if (idx < COUNT_IDS)
         update_counts[idx].fetch_add(1, std::memory_order_relaxed);
-    update_hook_handle.call<void>(system, idx, a3, camera, scale);
+    update_hook_handle.call<void>(system, idx, dt, camera, scale, cam);
     if (!list_fix.load(std::memory_order_relaxed))
         return;
-    tmod::frame_step(frame, idx);
-    if (tmod::is_last_of_frame(frame, idx))
-        update_extras(system, a3, camera, scale);
+    uint32_t top = seen_max.load(std::memory_order_relaxed);
+    while (idx > top && !seen_max.compare_exchange_weak(top, idx, std::memory_order_relaxed)) {
+    }
+    uint32_t calls = seen_calls.fetch_add(1, std::memory_order_relaxed) + 1;
+    uint32_t bound = learned.load(std::memory_order_relaxed);
+    if (!bound && calls >= tmod::LEARN_CALLS) {
+        bound = tmod::learned_bound(seen_max.load(), calls);
+        learned.store(bound);
+    }
+    if (tmod::is_last_vehicle(bound, idx))
+        update_extras(system, dt, camera, scale, cam);
 }
 
 void (*start_orig)(void *) = nullptr;
@@ -374,7 +382,7 @@ void log_update_counts(const char *when, uintptr_t car_list)
         swofty::log("[tyres] tyre system list (%s): idx %llu entry %p car %p vehicle %u", when, (unsigned long long)i,
                     (void *)entry, (void *)car, unsigned(id));
     }
-    swofty::log("[tyres] list fix (%s): bound %u, %u extra update(s) so far", when, frame.bound, list_extra_total.load());
+    swofty::log("[tyres] list fix (%s): bound %u, %u extra update(s) so far", when, learned.load(), list_extra_total.load());
     for (uint8_t v = 22; v < 26; v++) {
         uintptr_t entry = 0, comp = tyre_component_of(car_list, v), parent = 0;
         bool in = begin && v < (end - begin) / sizeof(uintptr_t) && mem::read(begin + v * sizeof(uintptr_t), entry);
@@ -430,6 +438,9 @@ void on_start(void *c)
         n.store(0);
     list_extra_total = 0;
     list_extra_mask = 0;
+    seen_max = 0;
+    seen_calls = 0;
+    learned = 0;
     list_logged = 0;
     stage = 0;
 }

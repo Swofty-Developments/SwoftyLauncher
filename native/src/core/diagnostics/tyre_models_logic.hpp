@@ -128,26 +128,11 @@ namespace runtime::tyre_models {
 
 constexpr size_t MAX_LIST = 64;
 
-struct FrameBound {
-    uint32_t last_max = 0, candidate = 0, bound = 0;
-    bool seen = false;
-};
+constexpr uint32_t LEARN_CALLS = 1000;
 
-inline void frame_step(FrameBound &f, uint32_t idx)
-{
-    if (idx == 0 && f.seen) {
-        uint32_t n = f.last_max + 1;
-        if (n == f.candidate)
-            f.bound = n;
-        f.candidate = n;
-        f.last_max = 0;
-    } else if (idx > f.last_max) {
-        f.last_max = idx;
-    }
-    f.seen = true;
-}
+inline uint32_t learned_bound(uint32_t max_seen, uint32_t calls) { return calls >= LEARN_CALLS ? max_seen + 1 : 0; }
 
-inline bool is_last_of_frame(const FrameBound &f, uint32_t idx) { return f.bound && idx + 1 == f.bound; }
+inline bool is_last_vehicle(uint32_t bound, uint32_t idx) { return bound && idx + 1 == bound; }
 
 inline size_t extra_updates(uint64_t count, uint32_t bound, const bool *has_car, uint32_t *out, size_t room)
 {
