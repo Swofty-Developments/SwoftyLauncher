@@ -111,8 +111,8 @@ struct PackageUi {
 SWOFTY_RECORD(PackageUi, package, textures, root, srgb, archives)
 SWOFTY_RECORD_REGISTRY(PackageUi, "ui.per_package")
 
-enum class BoxAssetKind { garage, sponsors, marshals, crowd, principal, other };
-SWOFTY_ENUM(BoxAssetKind, garage, sponsors, marshals, crowd, principal, other)
+enum class BoxAssetKind { garage, sponsors, marshals, crowd, principal, scene, other };
+SWOFTY_ENUM(BoxAssetKind, garage, sponsors, marshals, crowd, principal, scene, other)
 
 // Stock-named resources only one box's sessions load: a folder of .dds and .png files the core packs (the
 // teams::Garage way), or a ready .erp of the addon. The archive is listed first in the asset groups of the box's
@@ -128,9 +128,10 @@ struct BoxAssets {
     bool srgb = true;                   // a .png is encoded as sRGB BC7
     Path archive;                       // or a ready .erp archive of the addon
     std::vector<std::string> resources; // the eaid:// name prefixes it may hold (required with archive)
+    std::vector<std::string> groups;    // kind scene: the stock scene asset groups (.assetgroup) that read the archive first
     json::Value extra;
 };
-SWOFTY_RECORD(BoxAssets, package, kind, entry, textures, root, srgb, archive, resources)
+SWOFTY_RECORD(BoxAssets, package, kind, entry, textures, root, srgb, archive, resources, groups)
 SWOFTY_RECORD_REGISTRY(BoxAssets, "content.box_assets")
 
 inline Registry<Package> packages{"content.package", {.applies = Applies::content}};
