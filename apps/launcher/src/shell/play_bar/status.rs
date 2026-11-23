@@ -252,11 +252,16 @@ impl Shell {
                             "Launcher saves could not be used, so F1 25 closed before loading a save",
                         )))
                         .child(
-                            link("steam-once", tr("Play once with your Steam saves"), p).on_click(
-                                cx.listener(|this, _, window, cx| {
-                                    crate::shell::Launching::play_with_steam_saves(this, window, cx)
-                                }),
-                            ),
+                            link(
+                                "steam-once",
+                                super::save_area::play_once_label(
+                                    self.game.install.as_ref().map(|i| i.source),
+                                ),
+                                p,
+                            )
+                            .on_click(cx.listener(|this, _, window, cx| {
+                                crate::shell::Launching::play_with_steam_saves(this, window, cx)
+                            })),
                         )
                         .child(
                             link("saves-log", tr("Open logs"), p)

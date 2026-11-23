@@ -22,7 +22,9 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let vr = self.launch_mode().is_vr();
         let start_store = self.prefs.start_store;
-        let start_label = match self.game.install.as_ref().map(|i| i.source) {
+        let source = self.game.install.as_ref().map(|i| i.source);
+        let once_label = super::save_area::play_once_label(source);
+        let start_label = match source {
             Some(Source::EaApp) => tr("Start the EA app automatically"),
             _ => tr("Start Steam automatically"),
         };
@@ -88,16 +90,14 @@ impl Shell {
                                 }),
                         )
                         .when(saves_on, |menu| {
-                            menu.item(
-                                PopupMenuItem::new(tr("Play once with your Steam saves"))
-                                    .icon(IconName::Play)
-                                    .on_click(move |_, window, cx| {
-                                        once.update(cx, |s, cx| {
-                                            crate::shell::Launching::play_with_steam_saves(s, window, cx)
-                                        })
-                                        .ok();
-                                    }),
-                            )
+                            menu.item(PopupMenuItem::new(once_label).icon(IconName::Play).on_click(
+                                move |_, window, cx| {
+                                    once.update(cx, |s, cx| {
+                                        crate::shell::Launching::play_with_steam_saves(s, window, cx)
+                                    })
+                                    .ok();
+                                },
+                            ))
                         })
                     })
                     .separator()

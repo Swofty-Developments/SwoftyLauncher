@@ -115,6 +115,7 @@
   "Play in VR": "以 VR 模式游戏",
   "Play keeps a copy of your {what} on F1 25's drive and links the game's files to it, which keeps Play fast ({size}). Press Play to rebuild it after clearing.": "“开始游戏”会在 F1 25 所在磁盘上保留一份你的{what}副本，并将游戏文件链接到它，以加快启动（{size}）。清除后按“开始游戏”即可重新生成。",
   "Play once with your Steam saves": "使用 Steam 存档玩一次",
+  "Play once with your EA app saves": "使用 EA app 存档玩一次",
   "Play this copy": "玩这个副本",
   "Play with console": "带控制台游戏",
   "Press {button} and say what you were doing when it crashed.": "按 {button}，并说明崩溃时你正在做什么。",

@@ -10,6 +10,14 @@ pub(crate) struct Line {
     pub warn: bool,
 }
 
+/// The menu item and link that run one session on the game copy's own save.
+pub(crate) fn play_once_label(source: Option<Source>) -> &'static str {
+    match source {
+        Some(Source::EaApp) => tr("Play once with your EA app saves"),
+        _ => tr("Play once with your Steam saves"),
+    }
+}
+
 pub(crate) fn line(
     profile: &Profile,
     source: Source,
@@ -41,7 +49,10 @@ pub(crate) fn line(
                 Why::Vanilla => tr("Vanilla profile"),
                 Why::LauncherSavesOff => tr("launcher saves are off"),
                 Why::EaCopy => tr("launcher saves are not available on the EA app copy"),
-                Why::SteamOnce => tr("you chose to play once with your Steam saves"),
+                Why::SteamOnce => match ea {
+                    true => tr("you chose to play once with your EA app saves"),
+                    false => tr("you chose to play once with your Steam saves"),
+                },
             }),
             warn: true,
         },
@@ -108,6 +119,32 @@ mod tests {
                 true
             )
         );
+    }
+
+    #[test]
+    fn play_once_on_the_ea_app_copy_names_the_ea_app_save() {
+        let l = line(&profile("grid"), Source::EaApp, None, true);
+        assert_eq!(
+            (l.headline.as_str(), l.reason, l.warn),
+            (
+                "Saves: the EA app's own save (your launcher careers are not used on this run)",
+                Some("you chose to play once with your EA app saves"),
+                true
+            )
+        );
+    }
+
+    #[test]
+    fn the_play_once_item_names_the_copy_whose_save_it_plays() {
+        assert_eq!(
+            play_once_label(Some(Source::EaApp)),
+            "Play once with your EA app saves"
+        );
+        assert_eq!(
+            play_once_label(Some(Source::Steam)),
+            "Play once with your Steam saves"
+        );
+        assert_eq!(play_once_label(None), "Play once with your Steam saves");
     }
 
     #[test]
