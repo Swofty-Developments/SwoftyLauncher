@@ -239,6 +239,51 @@ static void test_short_reads()
     CHECK(!read(k.standings, fake_read, &k, v), "a table session longer than MAX_RECORDS fails the read");
 }
 
+static void test_sessions()
+{
+    Fake f = season();
+    Standings s;
+    read(f.standings, fake_read, &f, s);
+    const std::vector<uint32_t> both = {12, 15};
+    CHECK(s.sessions.size() == 2 && s.sessions[0] == both && s.sessions[1] == both,
+          "each round lists its results sessions in order");
+}
+
+// The constructors' side: two teams, the table's last session in the game's order, the points per round summed by
+// team key.
+static void test_constructors()
+{
+    Fake f;
+    uint32_t red = key_of(3, 2), blue = key_of(8, 2);
+    put_rounds(f, f.standings + sd::POINTS_ROUNDS,
+               {{{12, {{red, 15}, {blue, 6}}}, {15, {{red, 43}, {blue, 15}}}}, {{15, {{blue, 25}, {red, 18}}}}}, sd::RECORD_SIZE);
+    put_rounds(f, f.standings + sd::TABLE_ROUNDS,
+               {{{12, {{red, 15}, {blue, 6}}}, {15, {{red, 58}, {blue, 21}}}}, {{15, {{red, 76}, {blue, 46}}}}}, sd::RECORD_SIZE);
+    Constructors c;
+    CHECK(read_constructors(f.standings, fake_read, &f, c) && c.teams.size() == 2, "the constructors' table reads");
+    CHECK(c.teams.size() == 2 && (c.teams[0].key >> 16) == 3 && c.teams[0].points == 76 && c.teams[1].points == 46,
+          "the teams come in the table's order with its totals");
+    CHECK(c.rounds == 2 && c.teams[0].rounds.size() == 2 && c.teams[0].rounds[0] == 58 && c.teams[0].rounds[1] == 18,
+          "a team's round adds up its sessions' points");
+}
+
+static void test_start_order()
+{
+    Fake f;
+    uint64_t list = f.alloc(3 * START_ORDER_SIZE);
+    f.put32(list, key_of(8, 2));
+    f.put32(list + 8, key_of(3, 2));
+    f.put32(list + 16, key_of(5, 2));
+    f.put64(f.standings + START_ORDER, list);
+    f.put64(f.standings + START_ORDER + 8, list + 3 * START_ORDER_SIZE);
+    Constructors c;
+    CHECK(read_constructors(f.standings, fake_read, &f, c) && c.teams.size() == 3 && (c.teams[0].key >> 16) == 8 &&
+              (c.teams[2].key >> 16) == 5 && c.teams[0].points == 0 && c.rounds == 0,
+          "with nothing scored the season-start order lists the teams on 0 points");
+    f.put64(f.standings + START_ORDER + 8, list + 3 * START_ORDER_SIZE + 3);
+    CHECK(!read_constructors(f.standings, fake_read, &f, c), "a start order that is not whole entries fails the read");
+}
+
 static void test_json()
 {
     Fake f = season();
@@ -263,6 +308,9 @@ int main()
     test_key_match();
     test_empty_and_trailing();
     test_short_reads();
+    test_sessions();
+    test_constructors();
+    test_start_order();
     test_json();
     if (failures) {
         printf("%d failure(s)\n", failures);

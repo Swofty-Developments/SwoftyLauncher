@@ -45,6 +45,24 @@ struct Driver {
 struct Standings {
     size_t rounds = 0;
     std::vector<Driver> drivers;
+    std::vector<std::vector<uint32_t>> sessions;
+};
+
+// The constructors' side of a season's standings is the same model at Season +0x3b8: the points per round and session
+// (+0x20, records {u32 team key, i32 points}) and the sorted cumulative table (+0x40). Until a session is scored its
+// table is empty and the game shows the season-start order at +0xd8..+0xe0 ({u32 team key, u32} elements, filled by
+// 0x1413cf8a0 from the rebuild's team order).
+constexpr size_t SEASON_CONSTRUCTORS = 0x3b8, START_ORDER = 0xd8, START_ORDER_SIZE = 8;
+
+struct Team {
+    uint32_t key = 0;
+    int32_t points = 0;
+    std::vector<int32_t> rounds;
+};
+
+struct Constructors {
+    size_t rounds = 0;
+    std::vector<Team> teams;
 };
 
 struct ResultRecord {
@@ -154,6 +172,10 @@ inline bool read(uint64_t standings, sd::Read read, void *user, Standings &out)
         return false;
     out = {};
     out.rounds = std::max(points.size(), results.size());
+    out.sessions.resize(out.rounds);
+    for (size_t r = 0; r < results.size(); r++)
+        for (const ResultsSession &s : results[r])
+            out.sessions[r].push_back(s.id);
     for (const sd::Record &entry : order) {
         Driver d;
         d.key = entry.key;
@@ -172,6 +194,49 @@ inline bool read(uint64_t standings, sd::Read read, void *user, Standings &out)
                         break;
                     }
         out.drivers.push_back(std::move(d));
+    }
+    return true;
+}
+
+inline bool read_start_order(uint64_t side, sd::Read read, void *user, std::vector<sd::Record> &out)
+{
+    uint64_t b = 0, e = 0;
+    if (!sd::read_as(read, user, side + START_ORDER, b) || !sd::read_as(read, user, side + START_ORDER + 8, e) || e < b ||
+        (e - b) % START_ORDER_SIZE || (e - b) / START_ORDER_SIZE > sd::MAX_RECORDS)
+        return false;
+    for (uint64_t p = b; p < e; p += START_ORDER_SIZE) {
+        uint32_t key = 0;
+        if (!sd::read_as(read, user, p, key))
+            return false;
+        out.push_back({key, 0});
+    }
+    return true;
+}
+
+// The constructors' standings at `side` (Season + SEASON_CONSTRUCTORS): the table's latest session gives the order and
+// the totals, the season-start order while nothing is scored; each round's points add up its points sessions. False
+// when a vector, session or record the read walks doesn't read whole.
+inline bool read_constructors(uint64_t side, sd::Read read, void *user, Constructors &out)
+{
+    std::vector<sd::Record> order;
+    std::vector<sd::PointsRound> points;
+    if (!read_order(side, read, user, order) || !sd::read_points(side, read, user, points))
+        return false;
+    if (order.empty() && !read_start_order(side, read, user, order))
+        return false;
+    out = {};
+    out.rounds = points.size();
+    for (const sd::Record &entry : order) {
+        Team t;
+        t.key = entry.key;
+        t.points = entry.points;
+        t.rounds.resize(out.rounds);
+        for (size_t r = 0; r < points.size(); r++)
+            for (const sd::PointsSession &s : points[r])
+                for (const sd::Record &rec : s.records)
+                    if (sd::same_key(rec.key, entry.key))
+                        t.rounds[r] += rec.points;
+        out.teams.push_back(std::move(t));
     }
     return true;
 }
