@@ -350,7 +350,7 @@ A record is not bound to the dials. With `screen` in place of `dial` its element
 
 ## Yield a part
 
-A record with `yield` in place of `dial`, `scene` or `screen` hides whole parts of the HUD while its leaf is on: the game's own part and every addon's records on it. It draws nothing and has no sprites or elements. An addon that draws a part with the [overlay](/reference/std/overlay) yields that part, so a season HUD's tower or dial gives way to it.
+A record with `yield` in place of `dial`, `scene` or `screen` hides whole parts of the HUD while its leaf is on: the game's own part and every addon's records on it. It draws nothing and has no sprites or elements. An addon that draws a part with the [overlay](/reference/std/overlay) yields that part, and a season HUD's tower or dial on it is hidden with the stock one.
 
 ```jsonc [hud/yield.json]
 {
@@ -406,16 +406,21 @@ Scenes are `eaid://ui_package/…` paths; the dials' and the standings' template
 For each part the composer puts one null `<prefix>_yield` inside the element of the table and moves that element's children into it, and adds a group `<prefix>_yield_<part>` under each template node with one node `v_yield` (`v_yield_1` for a part's second scene) whose `visible` is NOT the leaf, default true:
 
 ```text
-dial_complete.idf                                   hud_dynamic_templates.ui
-  Scene Root                                          hud_f1_dial.osd_visibility_option.f1_dial_child
-    boundless_customisation                             fbo_dial_yield_f1_25
-      fbo_dial_yield            <- visible = NOT hud_fbo_dial    v_yield   layout fbo_dial_yield
+dial_complete.idf
+  Scene Root
+    boundless_customisation
+      fbo_dial_yield                      the null, shown while hud_fbo_dial is off
         frame, fuel, holder_central, pit_indicator
-        s11_onboard…, halo…     (every record's elements and wrappers)
+        s11_onboard…, s11_onboard_w_…     every record's elements and wrappers
     tl_customisation, br_customisation
+
+hud_dynamic_templates.ui
+  hud_f1_dial.osd_visibility_option.f1_dial_child
+    fbo_dial_yield_f1_25                  the group
+      v_yield                             layout fbo_dial_yield, visible = NOT view_model_data.hud_fbo_dial
 ```
 
-The nulls go in after every other step of the composer and after every other addon's archive changes to those scenes (a whole replacement such as Project Halo's `dial_complete.idf` included), so they hold every record whatever the load order and prefixes. The ids of the moved elements follow their new paths, every name stays, and the drawing order stays: where the picked children are not next to each other (records' hosts after `replay_interface` on the replay screen), each run gets its own null, `<prefix>_yield`, `<prefix>_yield_2` … with a node each (`v_yield`, `v_yield_2` …). Several yield records on one part nest their nulls in the order of their prefixes. A yield binds only its own null, so it never meets another addon's claim on a stock element, and it does not count as one. The HUD editor runs no template, so it shows the part as it is without the yield.
+The nulls go in after every other step of the composer and after every other addon's archive changes to those scenes, a whole-file replacement of the scene included. They hold every record whatever the load order and prefixes. The ids of the moved elements follow their new paths, every name stays, and the drawing order stays: where the picked children are not next to each other (records' hosts after `replay_interface` on the replay screen), each run gets its own null, `<prefix>_yield`, `<prefix>_yield_2` … with a node each (`v_yield`, `v_yield_2` …). Several yield records on one part nest their nulls in the order of their prefixes. A yield binds only its own null: it never meets another addon's claim on a stock element and does not count as one. The HUD editor runs no template and shows the part as it is without the yield.
 
 The composer writes a part's scene and template where it already writes them (`hud_scene.erp`, `hud_screen_scene.erp`, `hud_replay.erp` …, every copy alike) and otherwise adds `hud_yield.erp` (and `hud_yield_2.erp` … for other sets of archives) over every stock archive that carries them. The build lists `<prefix>: yields <parts> while <leaf> is on`.
 
