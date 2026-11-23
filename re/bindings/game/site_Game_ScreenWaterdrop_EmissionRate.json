@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "site_Game_ScreenWaterdrop_EmissionRate",
+ "table": "globals",
+ "author": "WillsB3",
+ "row": {
+  "addr": "0x1433aff7d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:own capstone disasm 0x1433b23d0-0x1433b3bd4;xref:0x1433b24f5,0x1433b250a,0x1433b257f",
+  "notes": "XMM0 carries the computed emission rate immediately before the store to emitter state (RCX) + 0x20. The following rate gate uses XMM0 and the spawn interval divides by the stored value. Validate the stock emitter identity before altering the rate."
+ },
+ "signature": {
+  "id": "game.screen_waterdrop_emission_rate",
+  "section": ".xtls",
+  "pattern": "C5 E2 59 05 ?? ?? ?? ?? C5 FA 11 41 20 C5 FA 10 1D",
+  "match": "0x1433aff75",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1433aff7d",
+  "kind": "mid",
+  "expect": "C5 FA 11 41 20",
+  "names": [
+   "site_Game_ScreenWaterdrop_EmissionRate"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-21",
+    "by": "WillsB3",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1433b24f5",
+  "made_on_target": "0x1433b24fd",
+  "twin": "made on steam-26566308; the target 0x1433b24fd is KB 0x1433aff7d: Game_VfxManager_Initialise (0x337cfa0) and Game_F1os_Create_SetPlayerInfo (0x33d9080) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "WillsB3",
+   "date": "2026-11-23",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1433b24f5",
+    "target": "0x1433b24fd"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "730150de647ccdf551d4d5ceed6ef342a32d15599944bfe1edcb84d89faa37e2"
+  }
+ ]
+}
