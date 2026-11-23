@@ -1064,9 +1064,11 @@ template <class Tag> struct Ops {
             else {
                 it->car = p.car;
                 it->progress = p.progress;
-                it->has_steps = p.has_steps;
-                for (int i = 0; i < 42; i++)
-                    it->steps[i] = p.steps[i];
+                if (p.has_steps || p.what != What::setup) {
+                    it->has_steps = p.has_steps;
+                    for (int i = 0; i < 42; i++)
+                        it->steps[i] = p.steps[i];
+                }
             }
         }
         return out;

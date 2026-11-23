@@ -216,6 +216,8 @@ void d_apply_tuning(void *entry, void *mask, void *block)
     t_apply_block = before;
 }
 
+std::atomic<uint32_t> g_setup_paths{0};
+
 void m_setup(safetyhook::Context &ctx)
 {
     lock_setup_entry(ctx.rsi);
@@ -226,7 +228,23 @@ void m_setup(safetyhook::Context &ctx)
         std::memcpy(out, reinterpret_cast<const void *>(a), n);
         return true;
     };
-    bool got = t_apply_block && apply::content::read_setup_steps(t_apply_block, read, steps);
+    bool hooked = t_apply_block != 0;
+    bool got = hooked && apply::content::read_setup_steps(t_apply_block, read, steps);
+    uint32_t path = got ? 0 : 1;
+    if (!got && ctx.rsi) {
+        uint8_t slot = 0;
+        if (read(ctx.rsi + 1, &slot, 1) && slot < 4)
+            got = apply::content::read_setup_steps(ctx.rsi + 0x68 + uintptr_t(slot) * 0x550, read, steps);
+        if (got)
+            path = 2;
+    }
+    uint32_t bit = 1u << (path + (hooked ? 0 : 3));
+    if (!(g_setup_paths.fetch_or(bit, std::memory_order_relaxed) & bit))
+        swofty::log("[setup] setup applied (thread %lu, ApplyTuning entry hook %s): steps %s", GetCurrentThreadId(),
+                    hooked ? "ran" : "did not run",
+                    path == 0   ? "from the hook's block"
+                    : path == 2 ? "from the setup entry's active block"
+                                : "not read");
     Ops::setup_applied(ctx.rdi, got ? steps.data() : nullptr);
 }
 
