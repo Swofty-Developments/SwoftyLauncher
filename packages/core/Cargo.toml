@@ -10,7 +10,7 @@ repository.workspace = true
 [dependencies]
 aes.workspace = true
 flate2.workspace = true
-libloading = "0.8"
+libloading = "0.9"
 md-5.workspace = true
 memchr = "2"
 png.workspace = true

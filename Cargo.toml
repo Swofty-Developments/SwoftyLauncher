@@ -22,13 +22,13 @@ swofty-sdk = { path = "packages/sdk" }
 swofty-shaders = { path = "packages/shaders" }
 aes = "0.9"
 anyhow = "1"
-base64 = "0.22"
+base64 = "0.23"
 bcdec_rs = "0.2"
 clap = { version = "4", features = ["derive", "env", "string"] }
 flate2 = "1"
 md-5 = "0.11"
 png = "0.18"
-rars = { version = "=0.12.4", default-features = false }
+rars = { version = "=0.13.0", default-features = false }
 regex = "1"
 ring = "0.17"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
