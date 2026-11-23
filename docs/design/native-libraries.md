@@ -91,6 +91,7 @@ Status: stub. `native/src/core/events/events.cpp` returns `unavailable` from eve
 | `load_image(id, file)` | `ok`, or `invalid` for a bad id, a missing file or a file that is not PNG or uncompressed DDS |
 | `image(paint, id, ...)` | `ok`, or `invalid` for an unknown id |
 | v2: shapes, styled text, `image_uv` / `image_nine` / `image_size`, clip / transform / opacity stacks, `safe_area`, `ui_scale` | present when the core exports `SwoftyCoreOverlayVersion` returning 2 or more |
+| v6: `load_font` / `load_font_memory` (TrueType and OpenType through stb_truetype, glyphs rasterised to SDF atlas pages on first use), `SwoftyTextStyle.font_id`, `polygon_concave` (ear clipping) | present when `SwoftyCoreOverlayVersion` returns 6 or more |
 
 Drawing uses immediate mode:
 

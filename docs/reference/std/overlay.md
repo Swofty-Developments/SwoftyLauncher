@@ -38,7 +38,7 @@ To check whether `on_paint`, `remove` or `load_image` succeeded, use the returne
 
 ## Text
 
-The built-in font is Titillium Web SemiBold ([SIL Open Font License 1.1](https://openfontlicense.org)), drawn from a signed distance field atlas, so it stays sharp from 12 to 72 pixels and beyond. It covers ASCII, Latin-1, curly quotes, dashes, the bullet, the ellipsis, `€` and `™`, and applies the font's kerning. `font_size` is the font's em size in pixels and the height of one line box; the capitals and descenders sit centred in it. Lines after the first advance by `line_height × font_size`.
+The built-in font is Titillium Web SemiBold ([SIL Open Font License 1.1](https://openfontlicense.org)), drawn from a signed distance field atlas, so it stays sharp from 12 to 72 pixels and beyond. It covers ASCII, Latin-1, curly quotes, dashes, the bullet, the ellipsis, `€` and `™`, and applies the font's kerning; an addon can also load its own fonts ([v6](#fonts-and-concave-shapes-v6)). `font_size` is the font's em size in pixels and the height of one line box; the capitals and descenders sit centred in it. Lines after the first advance by `line_height × font_size`.
 
 ## v2 calls
 
@@ -142,6 +142,89 @@ if (ov::load_image_rgba("atlas", 256, 64, px.data()) == ov::Result::ok)
 [overlay] api: author.my-addon load_image_rgba atlas (256x64) -> ok (slot 3)
 ```
 
+## Fonts and concave shapes (v6)
+
+A core whose `SwoftyCoreOverlayVersion` returns 6 or more also loads fonts and fills concave polygons; `v6()` returns `true` there.
+
+```cpp [native/src/my_plugin.cpp]
+#include <swofty/overlay.hpp>
+
+#include <iterator>
+#include <vector>
+
+namespace ov = swofty::overlay;
+
+static std::vector<float> tab;
+
+static void paint(SwoftyPaint *p, void *)
+{
+    float s = ov::ui_scale(p);
+    ov::TextStyle title;
+    title.font = "display";
+    title.size = 48 * s;
+    title.tracking = 1 * s;
+    title.outline = 0x000000ff;
+    title.outline_px = 2 * s;
+    ov::text(p, 100 * s, 100 * s, title, "FASTEST LAP");
+
+    float w = 0, h = 0;
+    ov::measure(p, title, "FASTEST LAP", &w, &h);
+    ov::rect(p, 100 * s, 100 * s + h, w, 4 * s, 0xe10600ff);
+
+    ov::TextStyle number = title;
+    number.font = "numbers";
+    number.align = ov::align::right | ov::align::baseline;
+    ov::text(p, 1820 * s, 140 * s, number, "1:23.456");
+
+    ov::push_scale(p, s, s);
+    ov::polygon_concave(p, tab.data(), uint32_t(tab.size() / 2), 0x15151ce0);
+    ov::polyline(p, tab.data(), uint32_t(tab.size() / 2), 2, 0xe10600ff, true);
+    ov::pop_transform(p);
+}
+
+SWOFTY_ON_LOAD
+{
+    if (!ov::available() || !ov::v6())
+        return;
+    ov::load_font("display", "fonts/Display-Bold.ttf");
+    ov::load_font("numbers", "fonts/Numbers-Black.otf");
+
+    // x, y, in tangent, out tangent; tangents are relative to their vertex, as After Effects stores shape paths.
+    const ov::PathVertex shape[] = {
+        {1500, 200, 0, 0, 0, 0},   {1700, 200, 0, 0, 40, 0}, {1740, 240, 0, -40, 0, 0},
+        {1700, 280, 40, 0, 0, 0},  {1500, 280, 0, 0, 0, 0},  {1540, 240, 0, 0, 0, 0},
+    };
+    ov::flatten_path(shape, std::size(shape), true, tab);
+    ov::on_paint(paint);
+}
+```
+
+An addon that unpacks a font itself passes the bytes; the core copies them:
+
+```cpp
+std::vector<uint8_t> bytes = unpack_font();
+ov::load_font_memory("numbers", bytes.data(), bytes.size());
+```
+
+| Call | Does |
+|---|---|
+| `v6()` | `true` when the core implements the calls below |
+| `load_font(id, file)` | loads a TrueType or OpenType font (TrueType or CFF outlines) from the addon folder under `id`. Loading an `id` again replaces it. `invalid` for an empty id, a path outside the addon folder, a missing, empty or unreadable file, a file over 32 MB, or bytes that are not a font; `unavailable` on a core before version 6 |
+| `load_font_memory(id, bytes, size)` | loads a font from `size` bytes in memory; the core copies them. Same results as `load_font` |
+| `TextStyle::font` | the id of a font the addon loaded; `text`, `text_in` and `measure` with the style draw and measure in it. Empty, or an id the addon has not loaded, is the built-in font, and so is every font on a core before version 6 |
+| `polygon_concave(paint, xy, count, rgba)` | filled simple polygon through `count` points, convex or concave, either winding, with the one-pixel anti-aliased edge of `polygon`. A last point equal to the first is dropped. Up to 2048 points; draws nothing on a core before version 6 |
+| `PathVertex`, `flatten_path(vertices, count, closed, xy, tolerance = 0.25f)` | in `swofty/overlay_path.hpp`, which `swofty/overlay.hpp` includes: flattens a cubic bezier path into points (`x0, y0, x1, y1, …`) for `polygon_concave`, `polygon` and `polyline` and returns how many. A segment runs from a vertex along its out tangent (`out_x`, `out_y`) to the next vertex's in tangent (`in_x`, `in_y`); tangents are relative to their vertex and zero tangents make a straight segment. A closed path also runs from the last vertex back to the first and does not repeat the first point. Points stay within `tolerance` of the curve, in the path's units |
+
+A font draws like the built-in font: `size` is its em size and one line box, with its capitals (the height of `H`) and descenders (the lowest of `g`, `j`, `p`, `q`, `y`) centred in the box. Kerning comes from the font's `kern` table or its GPOS pair adjustments; tracking, line height, wrapping, alignment, outline and shadow apply as they do to the built-in font. A codepoint the font lacks draws from the built-in font, and one neither has draws as the built-in `?`; a tab and a no-break space draw as the font's space. One codepoint draws one glyph: ligatures and other GSUB substitutions are not applied.
+
+Each glyph is rasterised into a signed distance field the first time it draws, at 64 pixels per em with an 8 pixel spread, onto 1024×1024 atlas pages, so it stays sharp at any size. `load_font` rasterises printable ASCII (U+0020 to U+007E) before it returns. A font holds up to 8 pages, and each page takes one of the overlay's image slots; a glyph past them draws nothing. Fonts belong to the addon that loaded them.
+
+```text [swofty/loader.log]
+[overlay] api: author.my-addon load_font display (swofty/addons/author.my-addon/fonts/Display-Bold.ttf: Display Bold, TrueType outlines, 95 glyphs on 1 page(s)) -> ok
+```
+
+The C table reads the font id from `SwoftyTextStyle.font_id` (`const char *`, v6); `NULL` or `""` is the built-in font.
+
 ## Toolkit
 
 `swofty/overlay_ui.hpp` (namespace `swofty::overlay::ui`) is a header-only immediate-mode toolkit built on the calls above. Keep one `State` per addon and make a `Ui` at the top of each paint callback. Rects are framebuffer pixels; the `Theme` sizes are for 1920×1080 and scale with `ui_scale()`.
@@ -208,7 +291,7 @@ static void paint(SwoftyPaint *p, void *)
 
 ## Limits
 
-A frame holds up to 131,072 vertices across every paint callback; primitives past that are dropped, and `swofty/loader.log` says so once. The core keeps the layouts of up to 512 recently drawn strings, so a string drawn every frame with the same style is laid out once. The core holds up to 255 loaded images. Each image uploads to the GPU once, the first frame after `load_image`; loading the same `id` again replaces it.
+A frame holds up to 131,072 vertices across every paint callback; primitives past that are dropped, and `swofty/loader.log` says so once. The core keeps the layouts of up to 512 recently drawn strings, so a string drawn every frame with the same style is laid out once. The core holds up to 255 loaded images, font atlas pages included. Each image uploads to the GPU once, the first frame after `load_image`; loading the same `id` again replaces it.
 
 ## Callbacks
 
