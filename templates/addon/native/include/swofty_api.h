@@ -1367,7 +1367,8 @@ typedef struct SwoftyLiveTurn {
    SWOFTY_LIVE_HAVE_FIA_FLAG: fia_flag, the flag shown to the car (-1 invalid, 0 none, 1 green, 2 blue, 3 yellow).
    SWOFTY_LIVE_HAVE_DRIVER_STATUS: driver_status, 0 in the garage, 1 flying lap, 2 in lap, 3 out lap, 4 on track.
    SWOFTY_LIVE_HAVE_PIT_TIMING: pit_lane_timer_active, 1 while the car is in the pit lane; pit_lane_ms, the time in
-   the pit lane of the current or last visit; pit_stop_ms, the time stationary in the box.
+   the pit lane of the current visit, held at the last visit's time after the car leaves the lane; pit_stop_ms, the
+   time stationary in the box, held the same way.
    SWOFTY_LIVE_HAVE_IDENTITY: race_number; team_id and driver_id, the team and driver ids the game sends over UDP
    (before the core's stock id rewrite); team_colour, the livery's first colour as 0xRRGGBB (0 where the game sends
    none).

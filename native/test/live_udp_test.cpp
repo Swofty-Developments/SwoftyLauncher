@@ -167,6 +167,13 @@ static void test_cars()
     expect(d.pit_lane_timer_active == 1 && d.pit_lane_ms == 10000 && d.pit_stop_ms == 2000,
            "pit lane timer on, 10.000 s in the lane, 2.000 s in the box");
     expect(swofty::live::safety_car_delta_s(d) == -1.25f, "Lap Data safetyCarDelta -1.25 s at entry+28 (2025)");
+    e[32 + 14] = 0;
+    lap[29 + 2 * 57 + 47] = lap[29 + 2 * 57 + 48] = lap[29 + 2 * 57 + 49] = lap[29 + 2 * 57 + 50] = 0;
+    feed(u, lap);
+    lv::Snapshot out = snapshot();
+    merge(u, out);
+    expect(out.details[2].pit_lane_timer_active == 0 && out.details[2].pit_lane_ms == 10000 && out.details[2].pit_stop_ms == 2000,
+           "out of the lane the game sends 0: the last visit's times hold");
     expect(swofty::live::drs_allowed(d) == true && d.drs_distance_m == 120.f && swofty::live::pit_limiter(d) == true &&
                swofty::live::fia_flag(d) == int8_t(2),
            "Car Status: DRS allowed 120 m out, limiter on, blue flag");
@@ -257,6 +264,13 @@ static void test_classification()
                c.best_lap_ms == 91500 && c.race_ms == 512250 && c.penalties_s == 5,
            "vehicle 0: P2 from P1, 5 laps, 18 points, one stop, best 1:31.500, 8:32.250, 5 s of penalties");
     expect(m.classifications[0].entries[1].position == 1 && m.classifications[0].entries[1].points == 25, "vehicle 1 won");
+    feed(u, fc);
+    feed(u, fc);
+    expect(u.take().classifications.empty(), "the game sends it again every few seconds: the same one fires once");
+    b[3] = 26;
+    feed(u, fc);
+    m = u.take();
+    expect(m.classifications.size() == 1 && m.classifications[0].entries[1].points == 26, "a changed one fires again");
 }
 
 static void test_messages()

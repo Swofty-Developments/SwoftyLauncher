@@ -191,7 +191,7 @@ typedef struct SwoftyLiveCarDetail {
     uint8_t race_number;           // SWOFTY_LIVE_HAVE_IDENTITY
     uint16_t team_id;              // the UDP team id (SWOFTY_LIVE_HAVE_IDENTITY)
     uint32_t pit_lane_ms;          // in the pit lane, this or the last visit (SWOFTY_LIVE_HAVE_PIT_TIMING)
-    uint32_t pit_stop_ms;          // stationary in the box (SWOFTY_LIVE_HAVE_PIT_TIMING)
+    uint32_t pit_stop_ms;          // stationary in the box, this or the last visit (SWOFTY_LIVE_HAVE_PIT_TIMING)
     uint32_t team_colour;          // 0xRRGGBB, the livery's first colour; 0 when the game sends none (SWOFTY_LIVE_HAVE_IDENTITY)
     uint16_t driver_id;            // the UDP driver id, before the core's stock id rewrite (SWOFTY_LIVE_HAVE_IDENTITY)
     uint8_t pad[2];
@@ -519,7 +519,7 @@ The values below have no verified memory source. The core decodes them from the 
 | `personal_best_sector_ms` | `HAVE_SECTOR_BESTS` | Session History (11) `m_bestSectorNLapNum` and that lap's sector time | yes | no |
 | `safety_car_delta_s` | `HAVE_SC_DELTA` | Lap Data (2) `m_safetyCarDelta` | yes | yes |
 
-`driver_id` is the `stat_id` of the car's `entrants.drivers` row for a stock driver; `live::driver_identity` reads its code and names ([Driver names](#driver-names)). `safety_car_delta_s` is the game's delta to the time the safety car or the virtual safety car requires; the game sends it in every Lap Data packet and it means something while `safety_car` reads 1 or 2. The session's best sector is the lowest `personal_best_sector_ms` over the cars. Session History carries one car per packet, so a car's bests refresh about once a second per car on the game's rotation.
+`driver_id` is the `stat_id` of the car's `entrants.drivers` row for a stock driver; `live::driver_identity` reads its code and names ([Driver names](#driver-names)). The game sends 0 for both pit times once the car is out of the pit lane; the core holds the last visit's values until the next visit starts. `safety_car_delta_s` is the game's delta to the time the safety car or the virtual safety car requires; the game sends it in every Lap Data packet and it means something while `safety_car` reads 1 or 2. The session's best sector is the lowest `personal_best_sector_ms` over the cars. Session History carries one car per packet, so a car's bests refresh about once a second per car on the game's rotation.
 
 The car index of a UDP packet is taken as the vehicle id, as for the telemetry feed (see [Telemetry](./telemetry#availability)). The race control messages (penalties, served penalties, DRS, start lights, the safety car phase and the fastest lap) fire as events; see [Race control](./race-control#race-control-messages). The 2026 rows read the 2025 entry offsets of the packets whose 2026 size the telemetry decoder knows; the 2026 Session and Participants layouts past the team id are not catalogued.
 
