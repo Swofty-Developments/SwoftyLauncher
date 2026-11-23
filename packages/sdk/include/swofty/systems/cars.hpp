@@ -574,7 +574,8 @@ class Car;
 enum class FuelMix : uint32_t { lean = SWOFTY_CAR_FUEL_MIX_LEAN, standard = SWOFTY_CAR_FUEL_MIX_STANDARD, rich = SWOFTY_CAR_FUEL_MIX_RICH, max = SWOFTY_CAR_FUEL_MIX_MAX };
 
 // Offers the mixes in mask (FuelMix bits) on the MFD of every car while the mask stays set; 0 withdraws the owner's
-// request. The mode tables themselves are fields: "fuel_ecu.fuel_burn_scale.rich", "fuel_ecu.fuel_power_scale.max",
+// request. Max is offered in race sessions too: the game hides that row in a race (sessions 15 to 17) and the core
+// lifts the rule while any owner's mask holds Max, then puts it back. The mode tables themselves are fields: "fuel_ecu.fuel_burn_scale.rich", "fuel_ecu.fuel_power_scale.max",
 // "fuel_ecu.fuel_revs_scale.lean", "fuel_ecu.temperature_scale.standard" (burn, power, revs, temperature x lean,
 // standard, rich, max).
 inline Result unlock_fuel_mixes(std::string_view owner, uint32_t mask)

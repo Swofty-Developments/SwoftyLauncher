@@ -1,6 +1,8 @@
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
+#include <windows.h>
+
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
@@ -726,7 +728,13 @@ void frame(double, void *)
     {
         mem::Trust trust(runtime::HEAP_TRUST_MS);
         perf::Scope scope(unlock_probe);
-        Ops::unlock_tick();
+        const int gate = Ops::unlock_tick();
+        if (gate > 0) {
+            static std::atomic<bool> told{false};
+            if (!told.exchange(true))
+                swofty::log("[cars] fuel mix: an add-on unlocked Max, so the MFD offers it in race sessions too "
+                            "(site_Game_Mfd_FuelMixMaxRaceGate patched); the rule is put back when the unlock clears");
+        }
         Ops::racecraft_tick();
     }
     const frontend::view::State view_now = frontend::view::current();
@@ -848,6 +856,28 @@ void setup()
             };
         else
             swofty::log("[cars] fuel_ecu fields off: Car_FuelEcu_SetMode_Thunk does not resolve");
+        e.race_max_gate = [](bool lifted) {
+            static const uintptr_t at = swofty::api->resolve("site_Game_Mfd_FuelMixMaxRaceGate");
+            if (!at)
+                return false;
+            static const uint16_t stock = 0x2172, lifted_bytes = 0x9090;
+            uint16_t now = 0;
+            if (!mem::read(at, now))
+                return false;
+            const uint16_t want = lifted ? lifted_bytes : stock, from = lifted ? stock : lifted_bytes;
+            if (now == want)
+                return true;
+            if (now != from)
+                return false;
+            DWORD old = 0, back = 0;
+            auto p = reinterpret_cast<void *>(at);
+            if (!VirtualProtect(p, sizeof want, PAGE_EXECUTE_READWRITE, &old))
+                return false;
+            std::memcpy(p, &want, sizeof want);
+            VirtualProtect(p, sizeof want, old, &back);
+            FlushInstructionCache(GetCurrentProcess(), p, sizeof want);
+            return true;
+        };
         e.mode_avail = [rva = runtime::car_layout::mode_avail_rva(build)] {
             uintptr_t at = swofty::api->module_base() + rva, ptr = 0;
             return mem::read(at, ptr) && mem::object_like(ptr) ? ptr : uintptr_t(0);

@@ -176,6 +176,7 @@ core/hooks/game_points.hpp: make(add, ADD_ACTIVITY, reinterpret_cast<void *>(&d_
 core/hooks/game_points.hpp: make(decide, DECIDE, reinterpret_cast<void *>(&d_decide), ce::ContractDecide::version); => inline spec DECIDE
 core/hooks/game_points.hpp: make(sign, SIGN, reinterpret_cast<void *>(&d_sign), ce::ContractSign::version); => inline spec SIGN
 core/hooks/game_points.hpp: make(fuel, FUEL, reinterpret_cast<void *>(&d_fuel), te::FuelLoad::version); => inline spec FUEL
+core/hooks/car_live.cpp: if (!VirtualProtect(p, sizeof want, PAGE_EXECUTE_READWRITE, &old)) => bytes=2 binding site_Game_Mfd_FuelMixMaxRaceGate
 core/hooks/session_points.cpp: if (!VirtualProtect(slot, sizeof(void *), PAGE_READWRITE, &old)) => via
 core/hooks/session_points.hpp: bool install(bool late, const std::string &subscribers) override => none
 core/hooks/session_points.hpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn_); => via

@@ -623,7 +623,7 @@ SWOFTY_ON_LOAD
 
 A change the game makes cannot be told from the player's: the core has no mix-changed event, so the addon records the mix it wants (here `chosen`, taken from `fuel_mix(car)` while the player drives) and re-applies it.
 
-`unlock_fuel_mixes` clears the availability entries of the mixes in the mask for every car, every frame, until the mask is 0 again. `fuel_mix(car)` reads a car's current mix. The availability table (`g_EngineModeAvail`, KB notes in car.md) has no independent verify row; the core reads it through checked memory and answers `Result::unavailable` on a build without checked car layouts.
+`unlock_fuel_mixes` clears the availability entries of the mixes in the mask for every car, every frame, until the mask is 0 again. While any owner's mask holds Max the core also lifts the game's race rule for the Max row (`Game_Mfd_FuelMix_BuildOptions` skips it in race sessions 15 to 17, `site_Game_Mfd_FuelMixMaxRaceGate`), so the MFD offers Max in a Grand Prix race and the driver can step into it and stay on it; the two bytes are put back when the last Max unlock clears, and without an unlock the game's code is untouched. The core logs `[cars] fuel mix: an add-on unlocked Max` once when it lifts the rule. `fuel_mix(car)` reads a car's current mix. The availability table (`g_EngineModeAvail`, KB notes in car.md) has no independent verify row; the core reads it through checked memory and answers `Result::unavailable` on a build without checked car layouts.
 
 ## Handling records
 

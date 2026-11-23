@@ -326,6 +326,9 @@ struct Env {
     std::function<void(uintptr_t fuel_ecu, int mode)> fuel_set_mode;
     // The address of the object g_Game_EngineModeAvail points at (runtime::car_layout::mode_avail_rva), or 0.
     std::function<uintptr_t()> mode_avail;
+    // Lifts (true) or puts back (false) the race rule that keeps the Max row out of the MFD's fuel-mix options
+    // (site_Game_Mfd_FuelMixMaxRaceGate); returns whether the code is in the asked state afterwards.
+    std::function<bool(bool lifted)> race_max_gate;
     std::function<uintptr_t(uint32_t index, uintptr_t car)> tyre_component;
     std::function<void(uintptr_t tyre_component)> tyre_refit;
     // Whether the KB row a field needs has its independent agree verify row; null means every row is ready.
@@ -1108,12 +1111,34 @@ template <class Tag> struct Ops {
         return m;
     }
 
+    static inline bool race_gate_lifted = false;
+
+    // Keeps the MFD's race rule for the Max row lifted exactly while an owner's mask holds Max: 1 when this call
+    // lifted it, -1 when it put the rule back, 0 otherwise. A call that cannot change the code is retried next frame.
+    static int race_gate_sync(uint32_t mask)
+    {
+        const bool want = (mask & SWOFTY_CAR_FUEL_MIX_MAX) != 0;
+        if (want == race_gate_lifted || !env.race_max_gate)
+            return 0;
+        if (!env.race_max_gate(want))
+            return 0;
+        race_gate_lifted = want;
+        return want ? 1 : -1;
+    }
+
     // Marks each requested mix available (the entry 0) for every car on track. The MFD's mask and the controller
     // read the entry (Game_Mfd_FuelMix_Refresh, Sess_ControllerSystem_ApplyRecord), so the game's own locks, such as
     // the practice fuel programme's, are reasserted by the game and cleared again on the next frame.
-    static void unlock_tick()
+    static int unlock_tick()
     {
         uint32_t mask = unlocked_mask();
+        const int gate = race_gate_sync(mask);
+        unlock_tick_entries(mask);
+        return gate;
+    }
+
+    static void unlock_tick_entries(uint32_t mask)
+    {
         if (!mask || !env.mode_avail || !env.write)
             return;
         uint32_t n = 0;

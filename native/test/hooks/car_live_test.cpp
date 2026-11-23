@@ -644,6 +644,35 @@ static void v3_fuel()
     expect(Ops::op_unlock_fuel_mixes("a", 0) == SWOFTY_ASSET_OK && Ops::unlocked_mask() == 0,
            "withdrawing the mask stops the writes");
 
+    {
+        std::vector<bool> asked;
+        bool refuse = false;
+        cl::Env saved = Ops::env;
+        Ops::env.race_max_gate = [&](bool lifted) {
+            asked.push_back(lifted);
+            return !refuse;
+        };
+        expect(Ops::op_unlock_fuel_mixes("g", SWOFTY_CAR_FUEL_MIX_RICH) == SWOFTY_ASSET_OK && Ops::unlock_tick() == 0 &&
+                   asked.empty(),
+               "an unlock without max leaves the race rule alone");
+        expect(Ops::op_unlock_fuel_mixes("g", SWOFTY_CAR_FUEL_MIX_MAX) == SWOFTY_ASSET_OK && Ops::unlock_tick() == 1 &&
+                   asked.size() == 1 && asked[0],
+               "unlocking max lifts the race rule once");
+        expect(Ops::unlock_tick() == 0 && asked.size() == 1, "a lifted rule is not asked again");
+        expect(Ops::op_unlock_fuel_mixes("h", SWOFTY_CAR_FUEL_MIX_MAX) == SWOFTY_ASSET_OK &&
+                   Ops::op_unlock_fuel_mixes("g", 0) == SWOFTY_ASSET_OK && Ops::unlock_tick() == 0 && asked.size() == 1,
+               "the rule stays lifted while any owner holds max");
+        refuse = true;
+        expect(Ops::op_unlock_fuel_mixes("h", 0) == SWOFTY_ASSET_OK && Ops::unlock_tick() == 0 && asked.size() == 2 &&
+                   !asked[1] && Ops::race_gate_lifted,
+               "a rule that cannot be put back stays marked lifted");
+        refuse = false;
+        expect(Ops::unlock_tick() == -1 && asked.size() == 3 && !Ops::race_gate_lifted,
+               "clearing the last unlock puts the rule back");
+        expect(Ops::unlock_tick() == 0 && asked.size() == 3, "a restored rule is not asked again");
+        Ops::env = saved;
+    }
+
     expect(SWOFTY_CAR_OPS_VERSION >= 4 && Ops::table.version >= 4 && Ops::table.set_fuel_mix == Ops::op_set_fuel_mix,
            "the op table offers set_fuel_mix from version 4");
     calls.clear();
