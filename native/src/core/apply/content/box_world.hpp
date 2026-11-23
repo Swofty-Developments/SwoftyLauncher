@@ -287,9 +287,11 @@ inline bool name_ok(std::string_view s)
     return true;
 }
 
+// The layer row's worldAssetGroup: the group name with its .assetgroup suffix, as on every stock layer row (the
+// engine hashes the name as written, and the addon registers <code>_<name>.assetgroup).
 inline std::string world_group(const std::string &name)
 {
-    return "asset_groups/environment_package/tracks/[FILENAME]/wep/[FILENAME]_" + name;
+    return "asset_groups/environment_package/tracks/[FILENAME]/wep/[FILENAME]_" + name + ".assetgroup";
 }
 
 inline std::string world_eri(const std::string &name)
