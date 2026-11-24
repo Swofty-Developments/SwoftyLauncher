@@ -111,7 +111,7 @@ impl Setup for Played {
 
     fn fingerprint(&self) -> Option<Fingerprint> {
         let p = self.store.profile(&self.profile).ok()?;
-        addon_set::fingerprint(&self.store, &p, &self.game_build).ok()
+        addon_set::fingerprint(&self.store, &p, &self.game_build, None).ok()
     }
 
     fn registry_ids(&self) -> Value {
@@ -152,7 +152,7 @@ struct Shared {
 enum Slot {
     Working,
     Idle,
-    Made(Made),
+    Made(Box<Made>),
 }
 
 struct Made {
@@ -207,7 +207,7 @@ impl Session {
                                 took.as_secs_f64()
                             ),
                         });
-                        Slot::Made(made)
+                        Slot::Made(Box::new(made))
                     }
                     Err(_) => Slot::Idle,
                 };
@@ -251,7 +251,7 @@ impl Session {
                 "addon set fingerprint: {why} in {:.1} s",
                 took.as_secs_f64()
             ));
-            *slot = Slot::Made(made);
+            *slot = Slot::Made(Box::new(made));
         }
         let Slot::Made(made) = &*slot else {
             return None;
@@ -293,6 +293,7 @@ mod tests {
                 build_id: "1".into(),
                 exe_sha256: "exe".into(),
             },
+            None,
             vec![
                 print(CORE_ID, Source::Builtin("a".into()), None),
                 print("swofty.std", Source::Builtin("b".into()), None),
@@ -349,7 +350,7 @@ mod tests {
     fn made_print(v: usize) -> Fingerprint {
         let mut a = print("t.a", Source::Content("a".repeat(64)), None);
         a.version = Version::new(1, v as u64, 0);
-        Fingerprint::new(game_build(), vec![a], BTreeMap::new(), None)
+        Fingerprint::new(game_build(), None, vec![a], BTreeMap::new(), None)
     }
 
     fn game_build() -> Identity {

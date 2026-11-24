@@ -60,6 +60,11 @@ impl Game {
             identity,
         })
     }
+
+    /// F1 25's FileVersion here, as the exe's VERSIONINFO resource names it.
+    pub fn version(&self) -> Option<String> {
+        crate::game_folder::exe_version::read(&self.dir.join(crate::GAME_EXE))
+    }
 }
 
 /// The store a game folder came from.

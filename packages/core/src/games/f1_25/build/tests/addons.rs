@@ -535,7 +535,7 @@ fn fingerprints_count_what_the_build_made_not_the_rest_of_the_folders() {
         .unwrap();
         let print = || {
             let p = store.profile("default").unwrap();
-            fingerprint::fingerprint(&store, &p, &game.identity).unwrap()
+            fingerprint::fingerprint(&store, &p, &game.identity, None).unwrap()
         };
         let before = print();
         build(&store, "default", &game).unwrap();

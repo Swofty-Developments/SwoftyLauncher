@@ -447,6 +447,7 @@ fn fingerprint() -> Value {
             build_id: "26566308".into(),
             exe_sha256: BUILD.into(),
         },
+        None,
         vec![
             print(crate::addons::builtin::CORE_ID, Source::Builtin("core".into())),
             print("swofty.std", Source::Builtin("std".into())),

@@ -160,7 +160,7 @@ pub(crate) fn run(
         .ok_or_else(|| tr("the Addon Browser can't be reached").to_owned())?;
     let game =
         swofty_core::install::Game::locate(&store.root, dir.to_path_buf()).map_err(|e| e.to_string())?;
-    let mut own = Own::read(store, Some(game.identity.exe_sha256.clone())).map_err(|e| e.to_string())?;
+    let mut own = Own::read(store, Some(&game)).map_err(|e| e.to_string())?;
     own.catalog = latest.clone();
     let plan = matching::plan_for(host, &own);
     if let Some(blocker) = plan.blockers.first() {

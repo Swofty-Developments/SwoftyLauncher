@@ -133,6 +133,9 @@ pub struct RoomAddons {
     /// The SHA-256 of the host's game executable, from a server that lists it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub game: Option<String>,
+    /// The host's F1 25 FileVersion, from a server that lists it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub game_version: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dlc: Option<bool>,
 }
@@ -162,6 +165,9 @@ pub struct HostPrint {
     pub launcher: String,
     #[serde(default)]
     pub exe_sha256: String,
+    /// The host's F1 25 FileVersion, from a module and a host launcher that know it.
+    #[serde(default)]
+    pub game_version: Option<String>,
     #[serde(default)]
     pub dlc: Option<bool>,
     #[serde(default)]

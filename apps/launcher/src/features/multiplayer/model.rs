@@ -98,7 +98,10 @@ pub(crate) fn room_fit(room: &RoomSummary, mine: Option<&OwnPrint>) -> Fit {
     let plan = matching::plan(
         &addons,
         listing.launcher.as_deref(),
-        listing.game.as_deref(),
+        matching::HostGame {
+            exe_sha256: listing.game.as_deref(),
+            version: listing.game_version.as_deref(),
+        },
         listing.dlc,
         own,
     );

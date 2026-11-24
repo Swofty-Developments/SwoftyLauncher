@@ -43,18 +43,18 @@ pub(super) fn room_sizes() -> RangeInclusive<u8> {
 pub(super) fn read_local(store: &Store, profile: &str, dir: &Path) -> Result<Local, String> {
     let game = Game::locate(&store.root, dir.to_path_buf()).map_err(|e| e.to_string())?;
     let profile = store.profile(profile).map_err(|e| e.to_string())?;
-    Local::read(store, &profile, &game.identity).map_err(|e| e.to_string())
+    Local::read(store, &profile, &game).map_err(|e| e.to_string())
 }
 
 /// This player's side for the room list: what the player has to match a host with, and the own profile's
 /// fingerprint when that profile reads. A profile that fails its own checks leaves only the digest out.
 pub(super) fn read_own(store: &Store, profile: &str, dir: &Path) -> Result<OwnPrint, String> {
     let game = Game::locate(&store.root, dir.to_path_buf()).map_err(|e| e.to_string())?;
-    let own = Own::read(store, Some(game.identity.exe_sha256.clone())).ok();
+    let own = Own::read(store, Some(&game)).ok();
     let local = store
         .profile(profile)
         .map_err(|e| e.to_string())
-        .and_then(|p| Local::read(store, &p, &game.identity).map_err(|e| e.to_string()))
+        .and_then(|p| Local::read(store, &p, &game).map_err(|e| e.to_string()))
         .inspect_err(|e| eprintln!("swofty-launcher: this profile's addons don't read as a whole: {e}"))
         .ok();
     Ok(OwnPrint::of(local.as_ref(), own))

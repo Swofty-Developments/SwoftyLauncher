@@ -71,10 +71,18 @@ fn have(v: &str, from: Option<&str>) -> Have {
     }
 }
 
+fn exe(sha: &str) -> HostGame<'_> {
+    HostGame {
+        exe_sha256: Some(sha),
+        version: None,
+    }
+}
+
 fn own(have: &[(&str, Have)], catalog: Vec<Addon>) -> Own {
     Own {
         launcher: "1.10.14".into(),
         exe_sha256: Some(sha('e')),
+        game_version: None,
         dlc: None,
         have: have.iter().map(|(id, h)| ((*id).to_owned(), h.clone())).collect(),
         catalog,
@@ -110,7 +118,7 @@ fn an_addon_installed_at_the_hosts_version_needs_nothing() {
     let plan = plan(
         &[host("x.a", "A", "1.0.0", Some(&sha('a')), Some(0))],
         Some("1.10.14"),
-        Some(&sha('e')),
+        exe(&sha('e')),
         None,
         &own(&[("x.a", have("1.0.0", Some(&sha('a'))))], Vec::new()),
     );
@@ -123,7 +131,7 @@ fn a_missing_addon_installs_from_the_addon_browser_when_it_lists_the_hosts_copy(
     let plan = plan(
         &[host("x.s", "SWOFTY 2012", "1.2.0", Some(&sha('b')), Some(1))],
         None,
-        None,
+        HostGame::default(),
         None,
         &own(&[], vec![season]),
     );
@@ -144,7 +152,7 @@ fn another_version_installs_the_hosts_and_replaces_the_players_copy() {
     let plan = plan(
         &[host("x.dm", "Driver Manager", "0.1.3", Some(&sha('c')), None)],
         None,
-        None,
+        HostGame::default(),
         None,
         &own(&[("x.dm", have("0.1.4", Some(&sha('d'))))], vec![dm]),
     );
@@ -158,9 +166,9 @@ fn the_same_version_from_another_download_is_reinstalled_only_when_the_hosts_is_
     let a = listed("x.a", "A", vec![version("1.0.0", &sha('a'), 1)]);
     let mine = [("x.a", have("1.0.0", Some(&sha('z'))))];
     let wanted = [host("x.a", "A", "1.0.0", Some(&sha('a')), None)];
-    let listed_plan = plan(&wanted, None, None, None, &own(&mine, vec![a]));
+    let listed_plan = plan(&wanted, None, HostGame::default(), None, &own(&mine, vec![a]));
     assert_eq!(listed_plan.installs.len(), 1);
-    let unlisted = plan(&wanted, None, None, None, &own(&mine, Vec::new()));
+    let unlisted = plan(&wanted, None, HostGame::default(), None, &own(&mine, Vec::new()));
     assert_eq!(
         unlisted,
         Plan::default(),
@@ -179,7 +187,7 @@ fn an_addon_the_addon_browser_does_not_list_at_the_hosts_version_blocks_the_matc
             host("x.file", "From a file", "1.0.0", None, None),
         ],
         None,
-        None,
+        HostGame::default(),
         None,
         &own(&[], vec![a, other]),
     );
@@ -203,9 +211,35 @@ fn an_addon_the_addon_browser_does_not_list_at_the_hosts_version_blocks_the_matc
 }
 
 #[test]
+fn the_ea_and_steam_copies_of_one_game_version_match() {
+    let (steam, ea) = (sha('e'), sha('f'));
+    let mut me = own(&[], Vec::new());
+    me.game_version = Some("1.0.145.2472".into());
+    let ea_host = HostGame {
+        exe_sha256: Some(&ea),
+        version: Some("1.0.145.2472"),
+    };
+    assert!(plan(&[], None, ea_host, None, &me).blockers.is_empty());
+    let host = HostPrint {
+        exe_sha256: ea.clone(),
+        game_version: Some("1.0.145.2472".into()),
+        ..HostPrint::default()
+    };
+    assert!(plan_for(&host, &me).blockers.is_empty());
+    let older = HostGame {
+        exe_sha256: Some(&steam),
+        version: Some("1.0.141.7865"),
+    };
+    assert_eq!(plan(&[], None, older, None, &me).blockers, [Blocker::Game]);
+    assert_eq!(plan(&[], None, exe(&ea), None, &me).blockers, [Blocker::Game]);
+    me.game_version = None;
+    assert_eq!(plan(&[], None, ea_host, None, &me).blockers, [Blocker::Game]);
+}
+
+#[test]
 fn another_launcher_or_game_build_blocks_the_match() {
     let me = own(&[], Vec::new());
-    let other = plan(&[], Some("1.10.12"), Some(&sha('f')), None, &me);
+    let other = plan(&[], Some("1.10.12"), exe(&sha('f')), None, &me);
     assert_eq!(
         other.blockers,
         [
@@ -216,13 +250,13 @@ fn another_launcher_or_game_build_blocks_the_match() {
         ]
     );
     assert!(
-        plan(&[], Some("1.10.14"), Some(&sha('E')), None, &me)
+        plan(&[], Some("1.10.14"), exe(&sha('E')), None, &me)
             .blockers
             .is_empty()
     );
     let mut core = host(CORE_ID, "Core", "9.0.0", None, Some(0));
     core.builtin = true;
-    let builtin = plan(&[core], None, None, None, &me);
+    let builtin = plan(&[core], None, HostGame::default(), None, &me);
     assert!(matches!(builtin.blockers[..], [Blocker::Builtin { .. }]));
 }
 
@@ -262,7 +296,7 @@ fn two_installs() -> (Plan, Vec<Addon>) {
             host("x.b", "B", "2.0.0", Some(&sha('b')), Some(1)),
         ],
         None,
-        None,
+        HostGame::default(),
         None,
         &own(&[], vec![a.clone(), b.clone()]),
     );

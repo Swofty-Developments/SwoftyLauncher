@@ -864,6 +864,7 @@ mod tests {
                 build_id: "1".into(),
                 exe_sha256: "e".repeat(64),
             },
+            None,
             Vec::new(),
             Default::default(),
             None,

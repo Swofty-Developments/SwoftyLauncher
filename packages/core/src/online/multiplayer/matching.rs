@@ -9,6 +9,7 @@ use super::types::{HostAddon, HostPrint, RoomAddons};
 use crate::addons::builtin::CORE_ID;
 use crate::catalog::requires::Event;
 use crate::catalog::{self, Addon, Stage};
+use crate::install::Game;
 use crate::manifest::{AddonManifest, Multiplayer};
 use crate::profile::Profile;
 use crate::store::Store;
@@ -33,13 +34,14 @@ pub struct Have {
 pub struct Own {
     pub launcher: String,
     pub exe_sha256: Option<String>,
+    pub game_version: Option<String>,
     pub dlc: Option<bool>,
     pub have: BTreeMap<String, Have>,
     pub catalog: Vec<Addon>,
 }
 
 impl Own {
-    pub fn read(store: &Store, exe_sha256: Option<String>) -> crate::Result<Own> {
+    pub fn read(store: &Store, game: Option<&Game>) -> crate::Result<Own> {
         let have = store
             .addons()?
             .values()
@@ -56,12 +58,32 @@ impl Own {
             .collect();
         Ok(Own {
             launcher: crate::updates::release::current_version().to_string(),
-            exe_sha256,
+            exe_sha256: game.map(|g| g.identity.exe_sha256.clone()),
+            game_version: game.and_then(Game::version),
             dlc: None,
             have,
             catalog: catalog::cached(&store.root).unwrap_or_default(),
         })
     }
+
+    /// Whether the host's `game` is another game than this player's: another FileVersion when both sides
+    /// know theirs, else another exe. An unknown side never differs.
+    fn plays_another_game(&self, game: HostGame<'_>) -> bool {
+        match (game.version, self.game_version.as_deref()) {
+            (Some(host), Some(mine)) => host != mine,
+            _ => matches!(
+                (game.exe_sha256, self.exe_sha256.as_deref()),
+                (Some(host), Some(mine)) if !host.eq_ignore_ascii_case(mine)
+            ),
+        }
+    }
+}
+
+/// The host's game as its fingerprint or its room listing names it.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct HostGame<'a> {
+    pub exe_sha256: Option<&'a str>,
+    pub version: Option<&'a str>,
 }
 
 /// Why the Addon Browser can't give the host's copy of an addon.
@@ -218,7 +240,7 @@ pub fn needs(addons: &[HostAddon], launcher: Option<&str>, own: &Own) -> Vec<Nee
 pub fn plan(
     addons: &[HostAddon],
     launcher: Option<&str>,
-    game: Option<&str>,
+    game: HostGame<'_>,
     dlc: Option<bool>,
     own: &Own,
 ) -> Plan {
@@ -228,9 +250,7 @@ pub fn plan(
             host: host.to_owned(),
         });
     }
-    if let (Some(host), Some(mine)) = (game, own.exe_sha256.as_deref())
-        && !host.eq_ignore_ascii_case(mine)
-    {
+    if own.plays_another_game(game) {
         out.blockers.push(Blocker::Game);
     }
     if let (Some(host), Some(mine)) = (dlc, own.dlc)
@@ -253,7 +273,10 @@ pub fn plan_for(host: &HostPrint, own: &Own) -> Plan {
     plan(
         &host.addons,
         Some(host.launcher.as_str()).filter(|l| !l.is_empty()),
-        Some(host.exe_sha256.as_str()).filter(|g| !g.is_empty()),
+        HostGame {
+            exe_sha256: Some(host.exe_sha256.as_str()).filter(|g| !g.is_empty()),
+            version: host.game_version.as_deref(),
+        },
         host.dlc,
         own,
     )

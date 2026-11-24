@@ -30,8 +30,12 @@ pub struct Fingerprint {
     pub version: u32,
     /// The launcher that made it, for showing; the core's `builtin` source covers it.
     pub launcher: String,
-    /// The digest covers only `exe_sha256`; `build_id` is for showing.
+    /// The digest covers `exe_sha256` only while `game_version` is unknown; `build_id` is for showing.
     pub game_build: Identity,
+    /// F1 25's FileVersion, `major.minor.build.revision`, when the launcher could read it. EA and Steam
+    /// exes of one version differ, so the digest and the comparison take it in place of `exe_sha256`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub game_version: Option<String>,
     /// Sorted by id.
     pub addons: Vec<AddonPrint>,
     /// Addon id to option id to value.
@@ -118,6 +122,7 @@ pub enum Source {
 impl Fingerprint {
     pub fn new(
         game_build: Identity,
+        game_version: Option<String>,
         mut addons: Vec<AddonPrint>,
         options: BTreeMap<String, BTreeMap<String, Value>>,
         dlc: Option<bool>,
@@ -127,6 +132,7 @@ impl Fingerprint {
             version: VERSION,
             launcher: env!("CARGO_PKG_VERSION").into(),
             game_build,
+            game_version,
             addons,
             options,
             dlc,
@@ -165,9 +171,13 @@ impl Fingerprint {
                 one
             })
             .collect();
+        let game_build = match &self.game_version {
+            Some(version) => serde_json::json!({ "version": version }),
+            None => serde_json::json!({ "exe_sha256": self.game_build.exe_sha256.to_ascii_lowercase() }),
+        };
         let doc = serde_json::json!({
             "version": self.version,
-            "game_build": { "exe_sha256": self.game_build.exe_sha256.to_ascii_lowercase() },
+            "game_build": game_build,
             "addons": addons,
             "options": self.options,
             "dlc": self.dlc,
@@ -181,7 +191,13 @@ impl Fingerprint {
         for a in &mut self.addons {
             a.stat_ids = stat_ids_of(ids, &a.id);
         }
-        Self::new(self.game_build, self.addons, self.options, self.dlc)
+        Self::new(
+            self.game_build,
+            self.game_version,
+            self.addons,
+            self.options,
+            self.dlc,
+        )
     }
 }
 
@@ -225,8 +241,13 @@ pub fn registry_ids(data: &Path) -> Value {
         .unwrap_or(Value::Null)
 }
 
-/// The fingerprint of `profile` as its build would load it, on the game `game_build`.
-pub fn fingerprint(store: &Store, profile: &Profile, game_build: &Identity) -> Result<Fingerprint> {
+/// The fingerprint of `profile` as its build would load it, on the game `game_build` of F1 25 `game_version`.
+pub fn fingerprint(
+    store: &Store,
+    profile: &Profile,
+    game_build: &Identity,
+    game_version: Option<String>,
+) -> Result<Fingerprint> {
     let registry_ids = registry_ids(&store.root);
     let installed = store.addons()?;
     let load = crate::profile::resolver::resolve(profile, &installed)?.order;
@@ -286,7 +307,13 @@ pub fn fingerprint(store: &Store, profile: &Profile, game_build: &Identity) -> R
         }
     }
     hashes.save();
-    Ok(Fingerprint::new(game_build.clone(), addons, options, None))
+    Ok(Fingerprint::new(
+        game_build.clone(),
+        game_version,
+        addons,
+        options,
+        None,
+    ))
 }
 
 fn changes_data(m: &AddonManifest) -> bool {
@@ -664,6 +691,7 @@ mod tests {
     fn host() -> Fingerprint {
         Fingerprint::new(
             game(),
+            None,
             vec![
                 installed_from(print("t.a", "1.0.0", content("a"), Some(0)), "1"),
                 installed_from(print("t.b", "2.0.0", content("b"), Some(1)), "2"),
@@ -684,7 +712,7 @@ mod tests {
         let mut shuffled = f.addons.clone();
         shuffled.reverse();
         shuffled[0].name = "Another name".into();
-        let again = Fingerprint::new(game(), shuffled, f.options.clone(), None);
+        let again = Fingerprint::new(game(), None, shuffled, f.options.clone(), None);
         assert_eq!(again.digest, f.digest);
         assert_eq!(ids(&again), ["t.a", "t.b", "t.code"]);
 
@@ -707,11 +735,42 @@ mod tests {
                 c.options.get_mut("t.a").unwrap().insert("laps".into(), json!(6));
             }),
             changed(&|c| c.game_build.exe_sha256 = "b".repeat(64)),
+            changed(&|c| c.game_version = Some("1.0.145.2472".into())),
             changed(&|c| c.dlc = Some(true)),
         ] {
             assert_ne!(d, f.digest);
         }
         assert_eq!(changed(&|c| c.addons[0].registry = None), f.digest);
+    }
+
+    fn on_game(f: Fingerprint, exe: &str, version: Option<&str>) -> Fingerprint {
+        let mut game = f.game_build.clone();
+        game.exe_sha256 = exe.repeat(64);
+        Fingerprint::new(game, version.map(Into::into), f.addons, f.options, f.dlc)
+    }
+
+    #[test]
+    fn a_known_game_version_takes_the_exes_place_in_the_digest() {
+        let steam = on_game(host(), "a", Some("1.0.145.2472"));
+        assert_eq!(
+            steam.digest,
+            "a35ddde10926166c98fcf33325906c52b563e56a632c9b8981120c52784eb400"
+        );
+        assert_eq!(on_game(host(), "b", Some("1.0.145.2472")).digest, steam.digest);
+        assert_ne!(on_game(host(), "a", Some("1.0.141.7865")).digest, steam.digest);
+        assert_eq!(on_game(host(), "a", None).digest, host().digest);
+        assert!(
+            serde_json::to_value(host())
+                .unwrap()
+                .get("game_version")
+                .is_none()
+        );
+        let read: Fingerprint = serde_json::from_str(&serde_json::to_string(&steam).unwrap()).unwrap();
+        assert_eq!(read, steam);
+        assert_eq!(
+            steam.clone().with_registry_ids(&Value::Null).game_version,
+            steam.game_version
+        );
     }
 
     #[test]
@@ -722,7 +781,7 @@ mod tests {
         put(&store, code("t.code1"), &[("native/x.dll", "c1")]);
         put(&store, code("t.code2"), &[("native/x.dll", "c2")]);
         let p = profile(&["t.data1", "t.code1", "t.data2", "t.code2"]);
-        let first = fingerprint(&store, &p, &game()).unwrap();
+        let first = fingerprint(&store, &p, &game(), None).unwrap();
         assert_eq!(
             ids(&first),
             ["swofty.core", "t.code1", "t.code2", "t.data1", "t.data2"]
@@ -740,21 +799,21 @@ mod tests {
             ]
         );
         assert!(store.root.join(HASHES_FILE).is_file());
-        assert_eq!(fingerprint(&store, &p, &game()).unwrap(), first);
+        assert_eq!(fingerprint(&store, &p, &game(), None).unwrap(), first);
 
         let code_swapped = profile(&["t.data1", "t.code2", "t.data2", "t.code1"]);
         assert_eq!(
-            fingerprint(&store, &code_swapped, &game()).unwrap().digest,
+            fingerprint(&store, &code_swapped, &game(), None).unwrap().digest,
             first.digest
         );
         let data_swapped = profile(&["t.data2", "t.code1", "t.data1", "t.code2"]);
         assert_ne!(
-            fingerprint(&store, &data_swapped, &game()).unwrap().digest,
+            fingerprint(&store, &data_swapped, &game(), None).unwrap().digest,
             first.digest
         );
 
         std::fs::write(store.addons_dir().join("t.code1/native/x.dll"), "c1 changed").unwrap();
-        let edited = fingerprint(&store, &p, &game()).unwrap();
+        let edited = fingerprint(&store, &p, &game(), None).unwrap();
         assert_ne!(edited.addons[1].source, first.addons[1].source);
         assert_eq!(edited.addons[2].source, first.addons[2].source);
         std::fs::remove_dir_all(&store.root).ok();
@@ -799,15 +858,18 @@ mod tests {
         let mut p = profile(&all);
         let installed = store.addons().unwrap();
         p.set_option(&installed["t.cars"], "laps", json!(7)).unwrap();
-        let f = fingerprint(&store, &p, &game()).unwrap();
+        let f = fingerprint(&store, &p, &game(), None).unwrap();
         assert_eq!(ids(&f), ["swofty.core", "t.cars", "t.kept-helmets"]);
         assert_eq!(f.options, options(&[("t.cars", "laps", json!(7))]));
 
-        let without = fingerprint(&store, &profile(&["t.kept-helmets", "t.cars"]), &game()).unwrap();
+        let without = fingerprint(&store, &profile(&["t.kept-helmets", "t.cars"]), &game(), None).unwrap();
         let mut seven = profile(&["t.kept-helmets", "t.cars"]);
         seven.set_option(&installed["t.cars"], "laps", json!(7)).unwrap();
         assert_ne!(without.digest, f.digest);
-        assert_eq!(fingerprint(&store, &seven, &game()).unwrap().digest, f.digest);
+        assert_eq!(
+            fingerprint(&store, &seven, &game(), None).unwrap().digest,
+            f.digest
+        );
         std::fs::remove_dir_all(&store.root).ok();
     }
 
@@ -858,7 +920,7 @@ mod tests {
         let store = store("registry");
         put(&store, data("t.a"), &[("db/ops.json", "1")]);
         let p = profile(&["t.a"]);
-        let print = |store: &Store| fingerprint(store, &p, &game()).unwrap().addons[1].clone();
+        let print = |store: &Store| fingerprint(store, &p, &game(), None).unwrap().addons[1].clone();
         let before = print(&store);
         assert!(matches!(before.source, Source::Content(_)));
         assert_eq!(before.registry, None);
@@ -899,8 +961,8 @@ mod tests {
         catalog::record_install(&downloaded, "t.a", &v).unwrap();
         let p = profile(&["t.a"]);
         let (local, host) = (
-            fingerprint(&dropped, &p, &game()).unwrap(),
-            fingerprint(&downloaded, &p, &game()).unwrap(),
+            fingerprint(&dropped, &p, &game(), None).unwrap(),
+            fingerprint(&downloaded, &p, &game(), None).unwrap(),
         );
         assert_eq!(local.addons[1].registry, None);
         assert_eq!(host.addons[1].registry, Some("ab".repeat(32)));
@@ -925,7 +987,7 @@ mod tests {
         std::fs::write(data_dir.join("drivers.json"), r#"{"drivers":["a"]}"#).unwrap();
         let mut p = profile(&["t.hook", "t.plain"]);
         let inputs = |p: &Profile| {
-            let f = fingerprint(&store, p, &game()).unwrap();
+            let f = fingerprint(&store, p, &game(), None).unwrap();
             assert_eq!(f.addons[2].inputs, None);
             f.addons[1].inputs.clone().unwrap()
         };
@@ -969,7 +1031,7 @@ mod tests {
                 std::fs::write(data.join("importer.json"), record).unwrap();
                 let local = json!({ "mods": { "one": { "at": at } }, "last": { "at": at, "files": [file], "mods": ["one"] } });
                 std::fs::write(data.join(".importer-local.json"), local.to_string()).unwrap();
-                let f = fingerprint(&store, &p, &game()).unwrap();
+                let f = fingerprint(&store, &p, &game(), None).unwrap();
                 std::fs::remove_dir_all(&store.root).ok();
                 f
             })
@@ -981,7 +1043,7 @@ mod tests {
     #[test]
     fn the_core_print_covers_the_launcher_and_its_database_operations() {
         let store = store("core");
-        let f = fingerprint(&store, &profile(&[]), &game()).unwrap();
+        let f = fingerprint(&store, &profile(&[]), &game(), None).unwrap();
         let Source::Builtin(sha) = &f.addons[0].source else {
             panic!("{:?}", f.addons[0].source);
         };
@@ -1031,13 +1093,13 @@ mod tests {
             std::fs::write(&file, json!({ "ids": { "content.package": ids } }).to_string()).unwrap()
         };
         write(json!({ "t.a/season": { "id": 116 } }));
-        let before = fingerprint(&store, &p, &game()).unwrap();
+        let before = fingerprint(&store, &p, &game(), None).unwrap();
         assert_eq!(
             before.clone().with_registry_ids(&registry_ids(&store.root)),
             before
         );
         write(json!({ "t.a/season": { "id": 116 }, "t.b/season": { "id": 117 } }));
-        let fresh = fingerprint(&store, &p, &game()).unwrap();
+        let fresh = fingerprint(&store, &p, &game(), None).unwrap();
         assert_ne!(fresh.digest, before.digest);
         assert_eq!(before.with_registry_ids(&registry_ids(&store.root)), fresh);
         std::fs::remove_dir_all(&store.root).ok();
@@ -1054,7 +1116,7 @@ mod tests {
         put(&store, hook, &[]);
         let mut p = profile(&[DM]);
         let inputs = |p: &Profile| {
-            fingerprint(&store, p, &game()).unwrap().addons[1]
+            fingerprint(&store, p, &game(), None).unwrap().addons[1]
                 .inputs
                 .clone()
                 .unwrap()
@@ -1105,7 +1167,7 @@ mod tests {
         let data_dir = store.addon_data_dir("t.hook");
         std::fs::create_dir_all(&data_dir).unwrap();
         let inputs = || {
-            fingerprint(&store, &p, &game()).unwrap().addons[1]
+            fingerprint(&store, &p, &game(), None).unwrap().addons[1]
                 .inputs
                 .clone()
                 .unwrap()
@@ -1150,7 +1212,7 @@ mod tests {
     }
 
     fn with(addons: Vec<AddonPrint>) -> Fingerprint {
-        Fingerprint::new(game(), addons, BTreeMap::new(), None)
+        Fingerprint::new(game(), None, addons, BTreeMap::new(), None)
     }
 
     fn cars(a: i64, b: i64) -> Output {
@@ -1278,7 +1340,13 @@ mod tests {
                 a.stat_ids = ids.iter().map(|(k, v)| ((*k).to_owned(), *v)).collect();
             }
         }
-        Fingerprint::new(f.game_build.clone(), f.addons, f.options, None)
+        Fingerprint::new(
+            f.game_build.clone(),
+            f.game_version.clone(),
+            f.addons,
+            f.options,
+            None,
+        )
     }
 
     #[test]
@@ -1321,7 +1389,7 @@ mod tests {
                     ("README.txt", &readme),
                 ],
             );
-            let f = fingerprint(&s, &profile(&["dbedit.grid"]), &game()).unwrap();
+            let f = fingerprint(&s, &profile(&["dbedit.grid"]), &game(), None).unwrap();
             std::fs::remove_dir_all(&s.root).ok();
             f
         };
