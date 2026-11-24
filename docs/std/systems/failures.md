@@ -1,6 +1,6 @@
 ---
 title: Failures, damage and retiring
-description: Reported findings on F1 25's mechanical failures, terminal damage, garage repairs, result statuses, session restarts and crashes to avoid, from the Terminal Damage addon. Not yet independently verified.
+description: Reported findings on F1 25's mechanical failures, terminal damage, garage repairs, result statuses and session restarts, from the Terminal Damage addon. Not yet independently verified.
 ---
 
 # Failures, damage and retiring
@@ -187,14 +187,6 @@ These `f1_suspension_damage.*` layers worked in a Montreal race on the player's 
 | `rear_damage_scale` | `set` | 0.0001 | 50 |
 
 `get` returned the composed values at once, and 30 seconds later the car's own `F1SuspensionDamage` held them too. After a 23 m/s hit on the rear left, the game's damage on that corner was 0.31.
-
-## Crashes to avoid
-
-These come from crash reports sent with **Send Logs** while Terminal Damage did each of them:
-
-- **Tearing a wheel off through its damage.** Terminal Damage 0.76.0 to 0.76.3 set a corner's damage just past the wheel detach limit, so the game detached the wheel in its next update. In four reports F1 25 crashed about 30 ms later, in its tyre wear estimate on a key that isn't a number, and in others in its animation code ([Send logs](/using/send-logs) lists both). One log showed wheel geometry that isn't a number after 3 of 20 such wheels. To break a corner, set it to state 2 with `0x144656a80` instead: the wheel stays on.
-- **A flashback after a lost wheel.** The game refuses a flashback while the player's car is rated terminal: the `VehicleDamageMonitor` recordable's `canJumpIn` (slot 9, thunk `0x142f16d70`) rates the car with `0x142f168b0` into a record like the one under [Terminal damage](#terminal-damage) and refuses at an overall state of 5. An addon that lifts the refusal should keep it while part 3 (wheel lost) is at 5. In four reports the refusal was lifted with a wheel off, and the game crashed within seconds of the flashback, in the race progress update or in the replay.
-- **A replay after the garage crew pushed the car in.** Terminal Damage spawned the garage crew during a race (`SpawnGarageCrew`, `0x140388cf0`) to push a broken car into its garage. In two players' reports F1 25 later crashed while a replay played, in `Ne_ReplayRecordable_ReadFrom` and then `0x14038e4f0+0x174`.
 
 ## What's still missing
 
