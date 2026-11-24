@@ -221,6 +221,7 @@ UNITS = [
     Unit('pacing_logic', 'Frame pacing logic unit test'),
     Unit('state_logic', 'State folder unit test', 'zig'),
     Unit('udp_ids', 'UDP id rewrite unit test', 'zig'),
+    Unit('iat_scan', 'Protected exe pointer table scan unit test', 'zig'),
     Unit('udp_telemetry', 'UDP telemetry feed fill unit test', 'zig'),
     Unit('view_flow', 'View flow node unit test', 'zig'),
     Unit('pause_edge', 'Pause edge unit test', 'zig'),
