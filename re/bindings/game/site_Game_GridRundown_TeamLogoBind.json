@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Game_GridRundown_TeamLogoBind",
+ "table": "globals",
+ "author": "vmknolle",
+ "row": {
+  "addr": "0x141844a72",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "xref:0x141841a70,0x14184236e,0x1418449c3,0x141844a4c,0x141844a72;sig:game.grid_rundown_team_logo_bind",
+  "notes": "The broadcast grid rundown card's team logo. Card fill 0x141841a70 declares the 'team' holder at +0x148. In the driver info builder 0x141843640, 0x1418449c3 calls 0x1423eee30 (a thunk into the protected section) with edx = [rdi-0x10], the entrant's team key: set in byte 0, stat id in the high word, 0x3fff = no team. It returns at [rsp+0x178] an entry whose +8 holds a node handle. The entrants UI loader (Steam 0x1424b2a10, 'UI Texture Asset: couldn't find valid handle for path %s') resolves that handle once at boot from '#overrides.broadcast_ui_generic.grid_team_logos.<texture key>' through Vm_Resolve_RegistryNode; scene5 log, caller Steam 0x1424b30c0. At this site (0x141844a72, mov rax,[rcx]), rcx is the address of the handle the holder takes: [rsp+0x178]+8, or r12 when there is no entry. The code then links the handle and binds the holder through Steam 0x140977b70, after the same holder type check (Steam 0x146ca7550) the menu logo binder makes after its own Vm_Resolve_RegistryNode call (Steam 0x141687b03). rcx is not read after the load, and rdi still holds the entrant. Steam 26566308: 0x141846252."
+ },
+ "signature": {
+  "id": "game.grid_rundown_team_logo_bind",
+  "section": ".xtls",
+  "pattern": "48 8B 84 24 78 01 00 00 48 8D 48 08 48 85 C0 49 0F 44 CC C5 F8 57 C0 C5 F8 29 44 24 50 48 C7 44 24 60 00 00 00 00 48 8B 01 48 85 C0",
+  "match": "0x141844a4c",
+  "anchor": "0x26",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141844a72",
+  "kind": "mid",
+  "names": [
+   "site_Game_GridRundown_TeamLogoBind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-24",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/game_points.cpp"
+  ]
+ },
+ "proofs": []
+}

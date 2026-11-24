@@ -10,6 +10,7 @@
 #include <string>
 
 #include "core/apply/content/teams.hpp"
+#include "core/career/ops/tables.hpp"
 #include "core/hooks/game_points.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/registry/table.hpp"
@@ -159,19 +160,16 @@ template <class R = g::TrackDataRecord> std::string fuel_track(void *setup, uint
 // formats the other team's logo. Before the handlers run, a teams::set_logo override for the team picks the label of
 // the team whose slice holds that team.logo record in the site's array. Installed while the point has subscribers or
 // an override exists; not hot (the details panel, the cards and the carousel items are built on focus and on open).
-// A full-key site sees the finished key in rdx instead: the entry of Vm_Resolve_RegistryNode, which resolves every
-// '#overrides.' image path the UI binds, filtered to one array's paths (`match`, without the leading '#'). The broadcast
-// grid rundown card before a race resolves its team logo there ('#overrides.broadcast_ui_generic.grid_team_logos.<label>';
-// no format site builds it). Its last '.' segment is the label, and set_key swaps that segment. The resolver reads the
-// path only during the call, so the swapped path is the core's own interned string. That entry is hot (2166 call
-// sites): a path outside the array costs a null check and one prefix compare, and the hook stays off without
-// subscribers.
+// The broadcast grid rundown card before a race formats no key: its 'team' holder takes a node handle the entrants UI
+// resolved once at boot from '#overrides.broadcast_ui_generic.grid_team_logos.<texture key>' and keeps per team. That
+// site (a grid card site) reads the entrant's team row label from its stat id and, when set_key names another label,
+// gives the holder the node of that label's path, resolved the way the menu logo binders resolve theirs
+// (Vm_Resolve_RegistryNode on g_Vm_Registry, a '#' path, no create record).
 struct LogoSite {
     const char *binding;
     swofty::teams::LogoContext context;
     const char *array;
-    bool full_key = false;
-    const char *match = nullptr;
+    bool grid_card = false;
 };
 
 constexpr LogoSite LOGO_SITES[] = {
@@ -179,17 +177,18 @@ constexpr LogoSite LOGO_SITES[] = {
     {"site_Game_TeamSelect_TeamLogoFormat", swofty::teams::LogoContext::team_select, "team_logos.driver_career_2024_team_select"},
     // The Choose Driver grid cards (Game_DriverSelect_AddCard): their team logo is the broadcast badge.
     {"site_Game_DriverSelect_BadgeFormat", swofty::teams::LogoContext::driver_select, "teams.badges_broadcast"},
-    // The broadcast grid rundown cards before the race: their 'team' holder resolves the grid team logo path.
-    {"Vm_Resolve_RegistryNode", swofty::teams::LogoContext::broadcast, "broadcast_ui_generic.grid_team_logos", true,
-     "overrides.broadcast_ui_generic.grid_team_logos."},
+    // The broadcast grid rundown cards before the race: rcx points at the handle the card's 'team' holder takes.
+    {"site_Game_GridRundown_TeamLogoBind", swofty::teams::LogoContext::broadcast, "broadcast_ui_generic.grid_team_logos",
+     true},
 };
 constexpr size_t LOGO_SITE_COUNT = sizeof(LOGO_SITES) / sizeof(LOGO_SITES[0]);
 constexpr const char *LOGO_POINT = "team.logo.resolve";
+constexpr const char *GRID_LOGO_PATH = "#overrides.broadcast_ui_generic.grid_team_logos.";
 constexpr size_t MAX_LABEL = 128;
-constexpr size_t MAX_KEY = 256;
-constexpr size_t LOGGED_KEYS = 24;
+constexpr size_t LOGGED_CARDS = 24;
 
 Table *logo_table = nullptr;
+uintptr_t vm_resolve = 0, vm_registry = 0;
 
 // The labels put in r8 outlive the format call: each distinct one is kept for the rest of the run.
 const char *intern_label(const std::string &label)
@@ -230,50 +229,9 @@ struct LogoSlot {
     swofty::teams::events::LogoResolve *payload;
 };
 
-// The first distinct keys a full-key site sees, once each, with the caller (the return address at the resolver's
-// entry): the log names the game code that resolves the array's paths.
-void note_key(const LogoSite &site, const std::string &key, uintptr_t rsp)
+// The label the site shows for a team row label: the set_logo override's, then whatever the handlers set.
+std::string fire_logo(const LogoSite &site, const std::string &label)
 {
-    static auto *m = new std::mutex;
-    static auto *seen = new std::set<std::string>;
-    std::lock_guard<std::mutex> g(*m);
-    if (seen->size() >= LOGGED_KEYS || !seen->insert(key).second)
-        return;
-    uintptr_t caller = 0;
-    bool read = rsp && mem::read(rsp, caller);
-    swofty::log("[hooks] team.logo.resolve: %s key '%s' (caller %s0x%llx)", site.binding, key.c_str(), read ? "" : "unread ",
-                static_cast<unsigned long long>(caller));
-}
-
-// A path of the site's array: the resolver's callers pass a NUL-terminated path or null (KB Vm_Resolve_RegistryNode).
-bool in_array(const LogoSite &site, uintptr_t path)
-{
-    if (!path)
-        return false;
-    const char *p = reinterpret_cast<const char *>(path);
-    if (*p == '#')
-        p++;
-    return std::strncmp(p, site.match, std::strlen(site.match)) == 0;
-}
-
-void logo_site(const LogoSite &site, safetyhook::Context &c)
-{
-    std::string label, prefix;
-    if (site.full_key) {
-        if (site.match && !in_array(site, uintptr_t(c.rdx)))
-            return;
-        std::string key;
-        if (!c.rdx || !mem::c_string(uintptr_t(c.rdx), key, MAX_KEY) || key.empty())
-            return;
-        note_key(site, key, uintptr_t(c.rsp));
-        size_t dot = key.rfind('.');
-        if (key.rfind("eaid://", 0) == 0 || dot == std::string::npos || dot + 1 >= key.size() ||
-            key.size() - dot - 1 >= MAX_LABEL)
-            return;
-        prefix = key.substr(0, dot + 1);
-        label = key.substr(dot + 1);
-    } else if (!c.r8 || !mem::c_string(uintptr_t(c.r8), label, MAX_LABEL) || label.empty())
-        return;
     std::string team = team_of_label(label);
     std::string from = override_label(team, site.array);
     namespace tev = swofty::teams::events;
@@ -298,18 +256,74 @@ void logo_site(const LogoSite &site, safetyhook::Context &c)
         int replaced = 0;
         logo_table->fire("", LOGO_POINT, &e, &replaced);
     }
-    if (slot.key == label)
+    return slot.key;
+}
+
+void logo_site(const LogoSite &site, safetyhook::Context &c)
+{
+    std::string label;
+    if (!c.r8 || !mem::c_string(uintptr_t(c.r8), label, MAX_LABEL) || label.empty())
         return;
-    if (site.full_key)
-        c.rdx = uintptr_t(intern_label(prefix + slot.key));
-    else
-        c.r8 = uintptr_t(intern_label(slot.key));
+    std::string key = fire_logo(site, label);
+    if (key != label)
+        c.r8 = uintptr_t(intern_label(key));
+}
+
+// The address of the node handle of the grid logo path of `key`, or 0 when the path resolves to no node (a key the
+// array's name list does not hold). The resolver reads the path only during the call and returns node+8 of a node
+// the registry keeps, or the empty handle.
+uintptr_t grid_logo_handle(const std::string &key)
+{
+    using Resolve = void **(*)(void *registry, const char *path, const void *base, void *create);
+    static const uintptr_t no_base = 0;
+    void *registry = nullptr;
+    if (!vm_resolve || !vm_registry || !mem::read(vm_registry, registry) || !registry)
+        return 0;
+    std::string path = std::string(GRID_LOGO_PATH) + key;
+    void **ret = reinterpret_cast<Resolve>(vm_resolve)(registry, path.c_str(), &no_base, nullptr);
+    return ret && *ret ? uintptr_t(ret) : 0;
+}
+
+// The first cards, once per team and key: the log shows what the grid rundown card asked for and what it got.
+void note_card(const std::string &label, uint32_t stat, const std::string &key, const char *result)
+{
+    static auto *m = new std::mutex;
+    static auto *seen = new std::set<std::string>;
+    std::lock_guard<std::mutex> g(*m);
+    if (seen->size() >= LOGGED_CARDS || !seen->insert(label + "/" + key).second)
+        return;
+    swofty::log("[hooks] team.logo.resolve: grid rundown card %s (stat %u) -> %s: %s", label.c_str(), stat, key.c_str(),
+                result);
+}
+
+// At the card's 'team' holder bind: rcx is the address of the handle the holder takes (the team's boot-resolved
+// node, or the default), rdi-0x10 the entrant's team key (set in byte 0, stat id in the high word; 0x3fff = none).
+void logo_grid_card(const LogoSite &site, safetyhook::Context &c)
+{
+    uint8_t set = 0xff;
+    uint16_t stat = 0x3fff;
+    if (!c.rdi || !mem::read(uintptr_t(c.rdi) - 0x10, set) || !mem::read(uintptr_t(c.rdi) - 0xe, stat) || set != 0 ||
+        stat == 0x3fff)
+        return;
+    namespace live = ::career::ops::live;
+    if (!live::labels())
+        return;
+    std::string label = live::team_label(stat);
+    if (label.empty())
+        return;
+    std::string key = fire_logo(site, label);
+    if (key == label)
+        return;
+    uintptr_t h = grid_logo_handle(key);
+    note_card(label, stat, key, h ? "swapped" : "no such key in the array, stock logo kept");
+    if (h)
+        c.rcx = h;
 }
 
 void logo_driver_select(safetyhook::Context &c) { logo_site(LOGO_SITES[0], c); }
 void logo_team_select(safetyhook::Context &c) { logo_site(LOGO_SITES[1], c); }
 void logo_driver_card(safetyhook::Context &c) { logo_site(LOGO_SITES[2], c); }
-void logo_grid_rundown(safetyhook::Context &c) { logo_site(LOGO_SITES[3], c); }
+void logo_grid_rundown(safetyhook::Context &c) { logo_grid_card(LOGO_SITES[3], c); }
 
 class LogoLink final : public GameLink {
 public:
@@ -322,9 +336,17 @@ public:
             return true;
         constexpr safetyhook::MidHookFn FNS[LOGO_SITE_COUNT] = {&logo_driver_select, &logo_team_select, &logo_driver_card,
                                                                  &logo_grid_rundown};
+        // The grid card site swaps through the registry resolver; without it that site stays stock.
+        vm_resolve = ops_.resolve ? ops_.resolve("Vm_Resolve_RegistryNode") : 0;
+        vm_registry = ops_.resolve ? ops_.resolve("g_Vm_Registry") : 0;
         int placed = 0;
         for (size_t i = 0; i < LOGO_SITE_COUNT; i++) {
             const char *b = LOGO_SITES[i].binding;
+            if (LOGO_SITES[i].grid_card && (!vm_resolve || !vm_registry)) {
+                log(std::string("[hooks] team.logo.resolve: ") + b +
+                    " needs Vm_Resolve_RegistryNode and g_Vm_Registry, which do not resolve; that site stays stock");
+                continue;
+            }
             uintptr_t at = ops_.resolve ? ops_.resolve(b) : 0;
             if (!at) {
                 log(std::string("[hooks] team.logo.resolve: ") + b + " does not resolve on this build; that site stays stock");
