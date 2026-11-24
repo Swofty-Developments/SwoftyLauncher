@@ -424,3 +424,103 @@ static void box_grid_commit()
 static loader::FunctionSet box_grid_core_set{loader::CoreSetId::box_grid, box_grid_mixins, box_grid_commit};
 
 }
+
+// Video redirects per box (content.package videos, core/apply/content/box_videos.hpp). Every UI video opens through
+// Ne_VideoPlayer_OpenFile(player, path, options, ...), which copies the C string path (adding videos/ when it is
+// missing) into its own 0x104 buffer before Bink opens it. The wrap hands the game the redirected path while the
+// session's box has a redirect for it; the string lives in a fixed buffer per thread until the next open on that
+// thread, longer than the call that copies it. Off with SWOFTY_BOX_VIDEOS=0; installed only when a package names one.
+namespace {
+
+constexpr const char *VIDEO_MIXIN = "swofty_core.dll (video redirects per box)";
+constexpr const char *OPEN_FN = "Ne_VideoPlayer_OpenFile";
+constexpr int VIDEO_LOG_LINES = 16;
+
+using Open_t = void(void *player, const char *path, void *options, uint8_t a, uint8_t b, uint8_t c);
+
+struct VideoHooks : runtime::loader::HookSet<> {
+    runtime::loader::Original<Open_t> open_file;
+};
+
+constinit VideoHooks video_hooks;
+bool videos_wanted = false;
+std::string video_box;
+std::vector<swofty_core::apply::content::VideoRedirect> video_redirects;
+std::atomic<bool> videos_on{false};
+std::atomic<int> video_lines{0};
+thread_local char video_path[0x100];
+
+void open_entry(void *player, const char *path, void *options, uint8_t a, uint8_t b, uint8_t c)
+{
+    const char *use = path;
+    if (path && videos_on.load(std::memory_order_relaxed)) {
+        std::optional<std::string> to;
+        std::string box;
+        {
+            std::lock_guard<std::mutex> g(video_hooks.lock);
+            to = swofty_core::apply::content::video_redirect(video_redirects, path);
+            box = video_box;
+        }
+        if (to && to->size() < sizeof video_path) {
+            memcpy(video_path, to->c_str(), to->size() + 1);
+            use = video_path;
+            if (video_lines.fetch_add(1, std::memory_order_relaxed) < VIDEO_LOG_LINES)
+                swofty::log("[videos] box %s: %s -> %s", box.c_str(), path, video_path);
+        }
+    }
+    video_hooks.open_file(player, use, options, a, b, c);
+}
+
+}
+
+namespace runtime {
+
+void box_videos_select(const std::string &box)
+{
+    std::lock_guard<std::mutex> g(video_hooks.lock);
+    if (!videos_wanted || box == video_box)
+        return;
+    video_box = box;
+    auto pick = swofty_core::apply::content::videos_for_box(box);
+    video_redirects = std::move(pick.redirects);
+    videos_on.store(!video_redirects.empty(), std::memory_order_relaxed);
+    if (!box.empty())
+        swofty::log("[videos] %s", pick.line.c_str());
+}
+
+static std::vector<CoreMixins> box_videos_mixins()
+{
+    std::vector<CoreMixins> out;
+    if (video_hooks.gate.offered() || !code_ready())
+        return out;
+    if (!swofty_core::apply::content::any_video_redirect())
+        return out;
+    video_hooks.gate.offer();
+    char v[16] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_BOX_VIDEOS", v, sizeof v);
+    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+        swofty::log("[videos] video redirects per box off (SWOFTY_BOX_VIDEOS=%s)", v);
+        return out;
+    }
+    if (!swofty::api->resolve(OPEN_FN)) {
+        swofty::log("[videos] video redirects per box off: this build does not resolve %s", OPEN_FN);
+        return out;
+    }
+    videos_wanted = true;
+    out.push_back({VIDEO_MIXIN, {{OPEN_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&open_entry, video_hooks.open_file.slot()}}});
+    return out;
+}
+
+static void box_videos_commit()
+{
+    if (!videos_wanted || !video_hooks.gate.settle())
+        return;
+    swofty::log("[videos] video redirects per box %s",
+                loader::install_state(core_mixins_active(VIDEO_MIXIN),
+                                      "armed: a box's content.package videos swap the paths Ne_VideoPlayer_OpenFile opens",
+                                      "did not install (see the [core] lines); every box plays the stock videos"));
+}
+
+static loader::FunctionSet box_videos_core_set{loader::CoreSetId::box_videos, box_videos_mixins, box_videos_commit};
+
+}

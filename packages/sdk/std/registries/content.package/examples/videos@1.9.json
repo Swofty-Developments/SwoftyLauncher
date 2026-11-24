@@ -1,0 +1,18 @@
+{
+  "content.package": {
+    "f5_1950": {
+      "$comment": "1950: the track intro plays the 2025 video (no active aero) instead of the 2026 one",
+      "title": {
+        "literal": "F1 1950"
+      },
+      "entrant_list": "f5_1950",
+      "season": 1950,
+      "videos": [
+        {
+          "from": "track_map/26/",
+          "to": "track_map/"
+        }
+      ]
+    }
+  }
+}

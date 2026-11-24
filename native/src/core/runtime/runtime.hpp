@@ -355,6 +355,9 @@ int group_extend(const std::string &group, const std::string &erp);
 int group_extend_box(const std::string &group, const std::string &erp, uint64_t size, const std::string &box);
 // Switches the groups of group_extend_box to the box's ERP lists, or to their stock lists for any other box ("" = none).
 void box_groups_select(const std::string &box);
+// Video redirects per box (content.package videos, boxes/box_grid.cpp): the session's box ("" = none) whose redirects
+// Ne_VideoPlayer_OpenFile applies.
+void box_videos_select(const std::string &box);
 void own_item(uint32_t key, const std::string &addon, const std::string &what);
 int db_add(const json::Value &entry);
 void db_older_edits(const std::function<void(uint64_t key, int tag, const std::string &text)> &fn);

@@ -69,7 +69,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "content.package",
-        include_str!("../../../../../sdk/std/registries/content.package/1.8.json"),
+        include_str!("../../../../../sdk/std/registries/content.package/1.9.json"),
     ),
     (
         "driver.head",

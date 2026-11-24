@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/apply/content/box_options.hpp"
+#include "core/apply/content/box_videos.hpp"
 #include "core/apply/content/career_rules.hpp"
 #include "core/apply/content/race_fuel.hpp"
 #include "core/apply/content/setup_locks.hpp"
@@ -85,6 +86,10 @@ struct GridBox {
 };
 GridBox grid_for_box(const std::string &entrant_list);
 bool any_grid_rule();
+// The video redirects of the box with this entrant list (box_videos.hpp): its content.package's videos entries, and the
+// line to log. any_video_redirect: whether any loaded content.package has a videos entry.
+VideosPick videos_for_box(const std::string &entrant_list);
+bool any_video_redirect();
 // The drivers of the content.package of the box with this entrant list (0 when it has none): how far past 22 cars the
 // era picker raises its grid.
 size_t seats_for_box(const std::string &entrant_list);
