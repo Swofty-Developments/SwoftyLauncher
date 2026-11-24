@@ -4,6 +4,7 @@
 #include <swofty/mem.hpp>
 
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
 #include <mutex>
 #include <set>
@@ -283,37 +284,43 @@ uintptr_t grid_logo_handle(const std::string &key)
     return ret && *ret ? uintptr_t(ret) : 0;
 }
 
-// The first cards, once per team and key: the log shows what the grid rundown card asked for and what it got.
-void note_card(const std::string &label, uint32_t stat, const std::string &key, const char *result)
+// The first cards, once per team and outcome: the log shows what the grid rundown card asked for and what it got.
+void note_card(const std::string &what, const std::string &result)
 {
     static auto *m = new std::mutex;
     static auto *seen = new std::set<std::string>;
     std::lock_guard<std::mutex> g(*m);
-    if (seen->size() >= LOGGED_CARDS || !seen->insert(label + "/" + key).second)
+    if (seen->size() >= LOGGED_CARDS || !seen->insert(what + "/" + result).second)
         return;
-    swofty::log("[hooks] team.logo.resolve: grid rundown card %s (stat %u) -> %s: %s", label.c_str(), stat, key.c_str(), result);
+    swofty::log("[hooks] team.logo.resolve: grid rundown card %s: %s", what.c_str(), result.c_str());
 }
 
 // At the card's 'team' holder bind: rcx is the address of the handle the holder takes (the team's boot-resolved
 // node, or the default), rdi-0x10 the entrant's team key (set in byte 0, stat id in the high word; 0x3fff = none).
 void logo_grid_card(const LogoSite &site, safetyhook::Context &c)
 {
-    uint8_t set = 0xff;
-    uint16_t stat = 0x3fff;
-    if (!c.rdi || !mem::read(uintptr_t(c.rdi) - 0x10, set) || !mem::read(uintptr_t(c.rdi) - 0xe, stat) || set != 0 ||
-        stat == 0x3fff)
+    uint32_t team_key = 0;
+    if (!c.rdi || !mem::read(uintptr_t(c.rdi) - 0x10, team_key))
+        return note_card("?", "the entrant's team key is not readable; not fired");
+    uint32_t stat = team_key >> 16;
+    char raw[16];
+    std::snprintf(raw, sizeof raw, "0x%08x", team_key);
+    if (stat == 0x3fff)
         return;
+    if ((team_key & 0xff) != 0)
+        return note_card(raw, "a team of another set than the database's; not fired");
     namespace live = ::career::ops::live;
     if (!live::labels())
-        return;
+        return note_card(raw, "the database labels are not loaded; not fired");
     std::string label = live::team_label(stat);
     if (label.empty())
-        return;
+        return note_card(raw, "no entrants.teams row has this stat id; not fired");
+    std::string what = label + " (stat " + std::to_string(stat) + ")";
     std::string key = fire_logo(site, label);
     if (key == label)
-        return;
+        return note_card(what, "stock logo");
     uintptr_t h = grid_logo_handle(key);
-    note_card(label, stat, key, h ? "swapped" : "no such key in the array, stock logo kept");
+    note_card(what, h ? "-> " + key + ": swapped" : "-> " + key + ": no such key in the array, stock logo kept");
     if (h)
         c.rcx = h;
 }
