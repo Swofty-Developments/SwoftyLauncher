@@ -15,6 +15,7 @@
 #include "core/apply/scheduler.hpp"
 #include "core/apply/tracks/base.hpp"
 #include "core/apply/tracks/seed.hpp"
+#include "core/career/plain_saves.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -784,8 +785,11 @@ void session_load(const char *source)
     bool flow = from == "StateLoadSession";
     std::string ran;
     SessionFacts f = game::at_session_load(&ran);
-    if (!ran.empty())
+    if (!ran.empty()) {
         swofty::log("[apply] session start (%s): %s; the session is left unknown", from.c_str(), ran.c_str());
+        if (flow)
+            career::plain_saves::note_already_ran();
+    }
     if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
         note_mode(k, "the session load");
     if (!scheduler().session_enter(f, flow))

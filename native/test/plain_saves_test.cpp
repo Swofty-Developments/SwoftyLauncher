@@ -4,6 +4,7 @@
 // builds and runs it.
 #include "core/career/plain_saves_logic.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstdio>
 #include <cstring>
@@ -503,6 +504,33 @@ static void table_model()
            "model: our bag read in place of the loaded one fills the table once and nothing reads it again");
 }
 
+static void load_loop(const fs::path &dir)
+{
+    ps::LoadLoop loop;
+    bool tipped = false;
+    for (int i = 0; i < ps::LoadLoop::THRESHOLD - 1; i++)
+        tipped |= loop.note();
+    expect(!tipped && !loop.paused(), "load loop: two already-ran passes keep writing");
+    expect(loop.note() && loop.paused(), "load loop: the third pass pauses the writes and reports it once");
+    expect(!loop.note() && loop.paused(), "load loop: later passes stay paused without reporting again");
+
+    ps::Root root(dir);
+    std::string why;
+    ps::LoadLoop gate;
+    auto pass = [&](const char *name) {
+        gate.note();
+        if (!gate.paused())
+            root.write_generation(header("save"), {body(name, "x", "game", 1, true)}, why);
+    };
+    root.write_generation(header("save"), {body("gm_restore_point", "good", "game", 1, true)}, why);
+    for (int i = 0; i < 6; i++)
+        pass("gm_stuck");
+    expect(root.generations().size() == 3, "load loop: two passes wrote, the other four were not written (3 generations)");
+    auto gens = root.generations();
+    auto oldest = *std::min_element(gens.begin(), gens.end());
+    expect(fs::exists(root.generation_dir(oldest) / ps::MANIFEST), "load loop: the pre-loop restore point is untouched");
+}
+
 int main(int argc, char **argv)
 {
     fs::path tmp = argc > 1 ? fs::path(argv[1]) : fs::temp_directory_path() / "plain_saves_test";
@@ -516,6 +544,7 @@ int main(int argc, char **argv)
     one_shot(tmp / "once");
     swaps();
     table_model();
+    load_loop(tmp / "loop");
     fs::remove_all(tmp);
     printf("%s (%d failure(s))\n", fails ? "SOME FAILED" : "ALL PASSED", fails);
     return fails ? 1 : 0;

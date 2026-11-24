@@ -41,6 +41,23 @@ constexpr const char *INJECTED = "injected.json";
 constexpr const char *INJECT_APPLYING = "inject.applying.json";
 constexpr size_t MAX_SCAN = 4096;
 
+// A career save stuck in the "session already ran" load loop passes StateLoadSession again and again, and every pass makes the
+// save change. `note` counts the passes of one game session; from the THRESHOLD-th on, `paused` holds and no new generation is
+// written, so the restore points from before the loop survive the launcher's pruning.
+struct LoadLoop {
+    static constexpr int THRESHOLD = 3;
+    int passes = 0;
+
+    bool paused() const { return passes >= THRESHOLD; }
+
+    // Count one pass; true only for the pass that pauses the writes.
+    bool note()
+    {
+        passes++;
+        return passes == THRESHOLD;
+    }
+};
+
 inline std::string hex16(uint64_t v)
 {
     char b[24];

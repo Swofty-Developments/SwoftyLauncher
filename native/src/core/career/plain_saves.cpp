@@ -277,10 +277,30 @@ std::vector<Added> at_load(Plan &plan, const std::map<std::string, std::string> 
     return out;
 }
 
+namespace {
+std::mutex loop_lock;
+LoadLoop load_loop;
+}
+
+void note_already_ran()
+{
+    std::lock_guard<std::mutex> g(loop_lock);
+    if (load_loop.note())
+        swofty::log("[saves] plain store: the session already ran %d times in this game session, a load loop; no new generation is "
+                    "written until the game restarts, so the restore points stay",
+                    LoadLoop::THRESHOLD);
+}
+
+bool writes_paused()
+{
+    std::lock_guard<std::mutex> g(loop_lock);
+    return load_loop.paused();
+}
+
 void write_async(const char *event, std::vector<Body> bodies)
 {
     const Config &c = config();
-    if (!c.on)
+    if (!c.on || writes_paused())
         return;
     Header h = header_for(c, event);
     std::string ev = event;
