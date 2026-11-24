@@ -22,8 +22,8 @@ pub const FLOW_FRONTEND: &str = "2025_asset_groups/ui_package/flow_frontend.erp"
 pub const REPLAY_SCREEN_ERP: &str = "2025_asset_groups/ui_package/screens/replays_and_highlights.erp";
 pub const SPECTATOR_ERP: &str = "2025_asset_groups/ui_package/screens/hud_spectator_2.erp";
 
-/// The host of every screen record: the bottom cap of the standings board, the one unit scene of the
-/// board with a quad mesh of its own.
+/// The scene every screen record's host is made from ([`host_scene`]): the bottom cap of the standings
+/// board, the one unit scene of the board with a quad mesh of its own.
 pub const CAP: &str = "eaid://ui_package/art/osd/units/driver_position_table/driver_position_bottom_cap.idf";
 pub const CAP_MESH: &str = "pill_base";
 pub const CAP_NULL: &str = "driver_group";
@@ -417,6 +417,12 @@ impl ScreenFacts {
     pub fn host_name(&self, pfx: &str) -> String {
         format!("{pfx}_host")
     }
+}
+
+/// The record's own host scene: a copy of the cap that holds only that record's root and editor
+/// copy, which every screen the record is on instances.
+pub fn host_scene(pfx: &str) -> String {
+    format!("{}_{pfx}.idf", CAP.strip_suffix(".idf").unwrap_or(CAP))
 }
 
 /// One screen a record shows its elements on, with the leaf that shows it there.

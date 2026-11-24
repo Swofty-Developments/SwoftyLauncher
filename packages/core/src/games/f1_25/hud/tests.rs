@@ -316,7 +316,8 @@ fn a_screen_record_composes_the_three_screens_and_the_banner() {
     assert!(check::unpadded_clips(&out.archives).unwrap().is_empty());
     let also = Erp::parse(&out.archives[5].bytes).unwrap();
     let main = Erp::parse(&out.archives[2].bytes).unwrap();
-    for name in [screens::CAP, screens::STACKED, screens::STACKED_UIPRE] {
+    let own = screens::host_scene("test_tower");
+    for name in [own.as_str(), screens::STACKED, screens::STACKED_UIPRE] {
         assert_eq!(
             also.find(name).unwrap().fragments[0].data().unwrap(),
             main.find(name).unwrap().fragments[0].data().unwrap(),
@@ -329,7 +330,15 @@ fn a_screen_record_composes_the_three_screens_and_the_banner() {
             .any(|r| r.name.ends_with("test_tower_strip.tif.image"))
     );
     let scene = Erp::parse(&out.archives[2].bytes).unwrap();
-    let cap = pkg_in(&scene, screens::CAP);
+    assert!(
+        scene.find(screens::CAP).is_err(),
+        "the stock cap stays the game's"
+    );
+    let cap = pkg_in(&scene, &own);
+    assert_eq!(
+        crate::ui::idf::scene_name(&crate::ui::idf::scenes(&cap).unwrap()[0]),
+        Some(crate::ui::idf::scene_id(&own))
+    );
     assert!(crate::ui::idf::id_problems(&cap).unwrap().is_empty());
     let root = stock_edit::scene_root(&cap).unwrap();
     let mine = crate::ui::idf::find(root, "test_tower").unwrap();
@@ -342,7 +351,8 @@ fn a_screen_record_composes_the_three_screens_and_the_banner() {
     let stacked = pkg_in(&scene, screens::STACKED);
     assert!(crate::ui::idf::id_problems(&stacked).unwrap().is_empty());
     let host = crate::ui::idf::find(stock_edit::scene_root(&stacked).unwrap(), "test_tower_host").unwrap();
-    assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(screens::CAP));
+    assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(own.as_str()));
+    assert_eq!(crate::ui::idf::xref(host), Some(crate::ui::idf::scene_id(&own)));
     let pv = crate::ui::idf::find(root, "test_tower_pv").expect("the editor copy");
     assert_ne!(
         crate::ui::idf::param(pv, "isHidden").and_then(stock_edit::as_bool),
@@ -407,9 +417,8 @@ fn a_screen_record_composes_the_three_screens_and_the_banner() {
     }
     assert!(scene.find(stock_edit::BANNER_SYSTEM).is_ok());
 
-    let mut ours: std::collections::BTreeSet<String> = ["test_tower_ctl", "test_tower_sn0", "test_tower_sn1"]
-        .map(String::from)
-        .into();
+    let mut ours: std::collections::BTreeSet<String> =
+        ["test_tower_ctl", "test_tower_sn0"].map(String::from).into();
     for (_, _, _, hide, _) in stock_edit::BANNER_SCENES {
         ours.extend(hide.iter().map(|h| format!("test_tower_hide_{h}")));
     }
@@ -446,16 +455,14 @@ fn a_screen_record_composes_the_three_screens_and_the_banner() {
         grp.slot(crate::ui::node::CHILDREN).unwrap().len(),
         screens::LAPC_HIDE.len()
     );
-    for root in ["v_test_tower", "v_test_tower_pv"] {
-        assert!(
-            crate::ui::node::find_path(
-                &t.root,
-                &format!("{}.test_tower_sn1.{root}", screens::STANDINGS_CAP_NODE)
-            )
-            .is_ok(),
-            "{root}"
-        );
-    }
+    assert!(
+        crate::ui::node::find_path(
+            &t.root,
+            &format!("{}.test_tower_sn1", screens::STANDINGS_CAP_NODE)
+        )
+        .is_err(),
+        "the stock cap holds no record, so nothing hides one there"
+    );
     assert!(crate::ui::node::find_path(
         &t.root,
         "hud_notifications_dynamic_p2.osd_visibility_option.hud_notifications_dynamic_p2.notification_0.hud_message.right.central_message.test_tower_hide_ms_colour"
@@ -484,7 +491,7 @@ fn a_screen_record_composes_the_three_screens_and_the_banner() {
     let table = pkg_in(&spec, screens::SPECT_TABLE);
     assert!(crate::ui::idf::id_problems(&table).unwrap().is_empty());
     let host = crate::ui::idf::find(stock_edit::scene_root(&table).unwrap(), "test_tower_host").unwrap();
-    assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(screens::CAP));
+    assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(own.as_str()));
 
     let replay = Erp::parse(&out.archives[3].bytes).unwrap();
     assert_eq!(
@@ -508,7 +515,11 @@ fn a_screen_record_composes_the_three_screens_and_the_banner() {
     let rs = pkg_in(&replay, screens::REPLAY_SCENE);
     assert!(crate::ui::idf::id_problems(&rs).unwrap().is_empty());
     let host = crate::ui::idf::find(stock_edit::scene_root(&rs).unwrap(), "test_tower_host").unwrap();
-    assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(screens::CAP));
+    assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(own.as_str()));
+    assert_eq!(
+        crate::ui::idf::param_str(host, "XrefMaterialBinding"),
+        Some(crate::ui::idf::material_binding(screens::CAP).as_str())
+    );
     let p = crate::ui::idf::position(host).unwrap();
     assert!((p[0] - screens::REPLAY_POS[0]).abs() < 1e-4 && (p[1] - screens::REPLAY_POS[1]).abs() < 1e-4);
     let rs2 = Erp::parse(&out.archives[4].bytes).unwrap();
@@ -655,7 +666,7 @@ fn a_resource_carried_outside_the_made_for_archives_goes_there_too() {
 }
 
 #[test]
-fn two_screen_records_hide_each_others_roots_in_their_hosts() {
+fn two_screen_records_get_a_host_scene_each() {
     let Some(stock) = game() else { return };
     let dir = addon_dir("two-screens");
     let mk = |addon: &str| {
@@ -680,53 +691,80 @@ fn two_screen_records_hide_each_others_roots_in_their_hosts() {
         let built = out.archives.iter().find(|x| x.file == name).unwrap();
         Erp::parse(&built.bytes).unwrap()
     };
+    let scene = file("hud_screen_scene.erp");
+    assert!(
+        scene.find(screens::CAP).is_err(),
+        "the stock cap stays the game's"
+    );
+    let cap = Pkg::parse(&stock.read(screens::FLOW_RACE, screens::CAP).unwrap()[0]).unwrap();
+    let cap_slots = walk::cost(stock_edit::scene_root(&cap).unwrap()).slots;
+    let mut hosts = 0;
+    for (me, other) in [(a, b), (b, a)] {
+        let host = pkg_in(&scene, &screens::host_scene(me));
+        assert!(crate::ui::idf::id_problems(&host).unwrap().is_empty(), "{me}");
+        let root = stock_edit::scene_root(&host).unwrap();
+        for name in [me.clone(), screen_build::preview_root(me)] {
+            assert!(
+                crate::ui::idf::find(root, &name).is_some(),
+                "{name} in {me}'s host"
+            );
+        }
+        for name in [other.clone(), screen_build::preview_root(other)] {
+            assert!(
+                crate::ui::idf::find(root, &name).is_none(),
+                "{name} in {me}'s host"
+            );
+        }
+        hosts += walk::cost(root).slots;
+    }
+    let board = walk::board_line(
+        "standings",
+        walk::Board {
+            cap: cap_slots,
+            hosts,
+            records: 2,
+        },
+    );
+    assert!(out.lines.contains(&board), "{board}");
     let checks = [
         (
             pkg_in(&file("hud_template.erp"), dials::TEMPLATE),
             screens::STANDINGS_PARENT,
+            pkg_in(&scene, screens::STACKED),
         ),
         (
             pkg_in(&file("hud_spectator.erp"), dials::SPECTATOR),
             screens::SPECT_PARENT,
+            pkg_in(&file("hud_spectator.erp"), screens::SPECT_TABLE),
         ),
         (
             pkg_in(&file("hud_replay.erp"), screens::REPLAY_UI),
             screens::REPLAY_ROOT,
+            pkg_in(&file("hud_replay.erp"), screens::REPLAY_SCENE),
         ),
     ];
-    for (t, parent) in &checks {
-        for (me, other) in [(a, b), (b, a)] {
-            for (node, el) in [
-                (format!("o_{other}"), other.clone()),
-                (format!("o_{other}_pv"), screen_build::preview_root(other)),
-            ] {
-                let path = format!("{parent}.{me}_ctl.host_n.{node}");
-                let at = crate::ui::node::find_path(&t.root, &path).unwrap_or_else(|_| panic!("{path}"));
-                let n = crate::ui::node::node_at(&t.root, &at).unwrap();
-                let layout: Vec<String> = n
-                    .slot(crate::ui::node::LAYOUT)
-                    .unwrap()
-                    .iter()
-                    .flat_map(|c| c.as_arr().unwrap().items.iter())
-                    .map(|o| o.as_obj().unwrap().str_at("debugName").unwrap().to_owned())
-                    .collect();
-                assert_eq!(layout, std::slice::from_ref(&el), "{path}");
-                let vis = n.props().unwrap().get("visible").unwrap().as_obj().unwrap();
-                assert_eq!(
-                    vis.get("value")
-                        .and_then(swofty_formats::pkg::Node::as_val)
-                        .and_then(stock_edit::as_bool),
-                    Some(false),
-                    "{path}"
-                );
-            }
-            assert!(
-                crate::ui::node::find_path(&t.root, &format!("{parent}.{me}_ctl.host_n.o_{me}")).is_err(),
-                "{me} does not hide its own root"
+    for (t, parent, instances) in &checks {
+        let iroot = stock_edit::scene_root(instances).unwrap();
+        for me in [a, b] {
+            let host_n = format!("{parent}.{me}_ctl.host_n");
+            let at = crate::ui::node::find_path(&t.root, &host_n).unwrap_or_else(|_| panic!("{host_n}"));
+            let n = crate::ui::node::node_at(&t.root, &at).unwrap();
+            let inner: Vec<&str> = n
+                .slot(crate::ui::node::CHILDREN)
+                .unwrap()
+                .iter()
+                .filter(|c| c.is_node())
+                .map(|c| c.name())
+                .collect();
+            assert!(!inner.iter().any(|k| k.starts_with("o_")), "{host_n}: {inner:?}");
+            let h = crate::ui::idf::find(iroot, &screens::standings().host_name(me)).unwrap();
+            assert_eq!(
+                crate::ui::idf::param_str(h, "fileRef"),
+                Some(screens::host_scene(me).as_str()),
+                "{parent}"
             );
         }
     }
-    let scene = file("hud_screen_scene.erp");
     let pre = swofty_formats::uipre::Uipre::parse(
         &scene.find(screens::STACKED_UIPRE).unwrap().fragments[0]
             .data()
@@ -735,14 +773,19 @@ fn two_screen_records_hide_each_others_roots_in_their_hosts() {
     .unwrap();
     for (me, other) in [(a, b), (b, a)] {
         let inside = pre.element_ids_in(&screens::standings().host_name(me));
+        assert!(
+            inside.contains(&swofty_formats::uipre::element_id(&screen_build::preview_root(
+                me
+            )))
+        );
         for name in [other.clone(), screen_build::preview_root(other)] {
             assert!(
-                inside.contains(&swofty_formats::uipre::element_id(&name)),
-                "{name} hidden in {me}'s host in the editor"
+                !inside.contains(&swofty_formats::uipre::element_id(&name)),
+                "{name} set in {me}'s host in the editor"
             );
         }
     }
-    assert!(out.lines.iter().any(|l| l.contains("other screen records")));
+    assert!(!out.lines.iter().any(|l| l.contains("other screen records")));
     std::fs::remove_dir_all(dir).ok();
 }
 

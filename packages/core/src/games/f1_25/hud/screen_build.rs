@@ -1,7 +1,9 @@
-//! Composing `screen` records: the elements grow the host scene (the standings board's bottom cap)
-//! once; every screen the record names gets a clone of the host instanced into its own stock scene
-//! and a `<prefix>_ctl` group in its template that shows the instance and masks the stock board
-//! while the record's `show` leaf is true. `stock_nodes` and `restyle` ride along.
+//! Composing `screen` records: each record's elements go in a host scene of its own, a copy of the
+//! standings board's bottom cap that holds only that record's root and editor copy
+//! ([`screens::host_scene`]); the stock cap stays as the game has it. Every screen the record names
+//! gets an instance of the record's host in its own stock scene and a `<prefix>_ctl` group in its
+//! template that shows the instance and masks the stock board while the record's `show` leaf is
+//! true. `stock_nodes` and `restyle` ride along.
 //!
 //! The instance, mask and control-group shapes are Project Halo's `tower_native.py`
 //! (`build_stacked`, `build_template`, `build_replay_scene`, `build_replay_template`,
@@ -31,8 +33,9 @@ fn err(msg: impl std::fmt::Display) -> Error {
     Error::Other(format!("hud: {msg}"))
 }
 
-/// The host scene as the scene builder sees it: the bottom cap, its `pill_base` quad as the sprite
-/// mesh, the standings parent as its template node.
+/// The host scenes as the scene builder sees them: the bottom cap, its `pill_base` quad as the sprite
+/// mesh, the standings parent as its template node. Anim, mesh and guid names stay the cap's in every
+/// record's own host.
 pub const CAP_FACTS: DialFacts = DialFacts {
     dial: Dial::F126,
     scene: screens::CAP,
@@ -48,8 +51,8 @@ pub const CAP_FACTS: DialFacts = DialFacts {
 /// What the screen records added, per archive.
 #[derive(Debug, Default)]
 pub struct Out {
-    /// Into `hud_screen_scene.erp`: the host scene, the instance scene of the standings, its `.uipre`,
-    /// the sprites and the restyled scenes.
+    /// Into `hud_screen_scene.erp`: the records' host scenes, the instance scene of the standings,
+    /// its `.uipre`, the sprites and the restyled scenes.
     pub scene: Vec<Res>,
     pub replay_template: Vec<Res>,
     pub replay_scene: Vec<Res>,
@@ -70,9 +73,40 @@ struct Rec<'a> {
     restyles: Vec<Restyle>,
 }
 
-/// The editor copy of a record's root in the host scene.
+/// The editor copy of a record's root in its host scene.
 pub fn preview_root(pfx: &str) -> String {
     format!("{pfx}_pv")
+}
+
+/// The host scene of the record `pfx` out of the cap grown with every record of `all`: the cap's own
+/// elements and the record's root and editor copy, the other records' left out, under the scene
+/// name of [`screens::host_scene`].
+pub fn own_host(grown: &[u8], pfx: &str, all: &[String]) -> Result<Vec<u8>> {
+    let others: BTreeSet<String> = all
+        .iter()
+        .filter(|p| p.as_str() != pfx)
+        .flat_map(|p| [p.clone(), preview_root(p)])
+        .collect();
+    let mut pkg = Pkg::parse(grown)?;
+    let entry = idf::scenes_mut(&mut pkg)?
+        .first_mut()
+        .ok_or_else(|| err("the host has no scene"))?;
+    entry.o_mut()?.set(
+        "name",
+        Node::Val(Val::raw(
+            *b"ui64",
+            idf::scene_id(&screens::host_scene(pfx)).to_le_bytes(),
+        )),
+    );
+    let root = entry.o_mut()?.at_mut("scene")?;
+    idf::children_mut(root)?.retain(|c| c.as_obj().is_none() || !others.contains(idf::elem_name(c)));
+    for want in [pfx.to_owned(), preview_root(pfx)] {
+        if idf::find(root, &want).is_none() {
+            return Err(err(format!("{pfx}: the host scene has no {want}")));
+        }
+    }
+    idf::relookup(entry)?;
+    Ok(pkg.to_bytes()?)
 }
 
 fn load_sprites(
@@ -193,9 +227,10 @@ pub fn instance_at(
     })
 }
 
-/// The instance scene with one host instance per prefix: a clone of the facts' reference, retargeted
-/// to the host scene when it is not one already, at the facts' position and scale. Every stock id
-/// stays; the lookup grows by the new names.
+/// The instance scene with one host instance per prefix: a clone of the facts' reference to the cap
+/// (retargeted to the cap first when it is not one already), pointed at the record's own host scene
+/// with the cap's material binding kept, at the facts' position and scale. Every stock id stays; the
+/// lookup grows by the new names.
 pub fn add_instances(
     bytes: &[u8],
     facts: &ScreenFacts,
@@ -246,6 +281,11 @@ pub fn add_instances(
         )?;
         if facts.instance.retarget {
             idf::retarget(&mut h, &facts.host.scene)?;
+        }
+        let binding = idf::param_str(&h, "XrefMaterialBinding").map(str::to_owned);
+        idf::retarget(&mut h, &screens::host_scene(pfx))?;
+        if let Some(b) = binding {
+            idf::set_param_like(&mut h, "XrefMaterialBinding", Val::str(b))?;
         }
         idf::clear_list(&mut h, "children")?;
         idf::clear_list(&mut h, "anims")?;
@@ -340,19 +380,18 @@ fn path_decision(d: &Decision, plan: &Plan, base: &str) -> Result<Node> {
 
 /// The `<prefix>_ctl` group of one record on one screen: the masks (visible <- NOT show, default
 /// true), the host switch `host_n` (visible <- show, default false) holding the cap's own graphics
-/// and the editor copy hidden, the roots of the `others` (every other screen record in the shared
-/// host scene) and their editor copies hidden, the root shown (or following the screen's own switch)
-/// and every bound node of the plan, then the screen's extra hide on the instance and the session
-/// clock's formatter when a text reads it. Bound nodes keep their own layout paths: a node's chain continues its
-/// parent's, so under `host_n` they address elements inside the instance. `hud_root` is the stock
-/// HUD template, where the texture tags and the clock formatter come from.
+/// and the editor copy hidden, the root shown (or following the screen's own switch) and every bound
+/// node of the plan, then the screen's extra hide on the instance and the session clock's formatter
+/// when a text reads it. The record's host scene holds no other record's root, so nothing else needs
+/// hiding. Bound nodes keep their own layout paths: a node's chain continues its parent's, so under
+/// `host_n` they address elements inside the instance. `hud_root` is the stock HUD template, where
+/// the texture tags and the clock formatter come from.
 pub fn control_group(
     facts: &ScreenFacts,
     show: &Bind,
     hide: &[String],
     plan: &Plan,
     pfx: &str,
-    others: &[String],
     hud_root: &Node,
 ) -> Result<(Node, Known)> {
     let sw = template::resolve(show, Usage::Visible, "show")?;
@@ -375,12 +414,6 @@ pub fn control_group(
         node::hidden("v_cap", &[screens::CAP_ANIM]),
         node::hidden("v_pv", &[&pv]),
     ];
-    // every record's root sits in the one host scene, so each host instance holds the others' roots
-    // too; `isHidden` does not hold in game, so they get static hides here
-    for o in others.iter().filter(|o| o.as_str() != pfx) {
-        inner.push(node::hidden(&format!("o_{o}"), &[o]));
-        inner.push(node::hidden(&format!("o_{o}_pv"), &[&preview_root(o)]));
-    }
     inner.push(match &facts.root_switch {
         Some(db) => {
             known.push((db.clone(), *b"bool"));
@@ -501,7 +534,6 @@ pub fn attach(
     hide: &[String],
     plan: &Plan,
     pfx: &str,
-    others: &[String],
     hud_root: &Node,
 ) -> Result<usize> {
     let parent = facts.parent_ui.as_str();
@@ -513,7 +545,7 @@ pub fn attach(
             "{parent}: the node's id is not the hash of its path"
         )));
     }
-    let (mut grp, known) = control_group(facts, show, hide, plan, pfx, others, hud_root)?;
+    let (mut grp, known) = control_group(facts, show, hide, plan, pfx, hud_root)?;
     if target
         .slot(node::CHILDREN)?
         .iter()
@@ -645,8 +677,8 @@ fn claims(stock: &dyn Stock, recs: &[Rec], race: &Pkg, spectator: &Pkg) -> Resul
     Ok(())
 }
 
-/// Every addon with a screen record (each grows the host scene), and the ones whose removal alone
-/// brings `board` back to where `over` is false.
+/// Every addon with a record on the board (`members` of `recs`, whose host scenes take `own_slots`
+/// each), and the ones whose removal alone brings `board` back to where `over` is false.
 fn turn_off(
     board: walk::Board,
     recs: &[Rec],
@@ -654,22 +686,30 @@ fn turn_off(
     own_slots: &[usize],
     over: fn(&walk::Board) -> bool,
 ) -> (Vec<String>, Vec<String>) {
-    let ours = conflict::addons_of(recs.iter().map(|r| r.input.addon.as_str()));
+    let ours = conflict::addons_of(members.iter().map(|i| recs[*i].input.addon.as_str()));
     let off = ours
         .iter()
         .filter(|a| {
-            let slots = recs
+            let mine: Vec<usize> = members
                 .iter()
-                .zip(own_slots)
-                .filter(|(r, _)| r.input.addon == **a)
-                .map(|(_, s)| s)
-                .sum();
-            let here = members.iter().filter(|i| recs[**i].input.addon == **a).count();
-            !over(&board.without(slots, here))
+                .copied()
+                .filter(|i| recs[*i].input.addon == **a)
+                .collect();
+            let slots = mine.iter().map(|i| own_slots[*i]).sum();
+            !over(&board.without(slots, mine.len()))
         })
         .cloned()
         .collect();
     (ours, off)
+}
+
+/// The board of a screen whose records are `members`, beside a stock cap of `cap` slots.
+fn board_of(cap: usize, members: &[usize], own_slots: &[usize]) -> walk::Board {
+    walk::Board {
+        cap,
+        hosts: members.iter().map(|i| own_slots[*i]).sum(),
+        records: members.len(),
+    }
 }
 
 /// The refusal of a board past the UI tree's slot limit, naming every addon on it and the ones to
@@ -688,7 +728,7 @@ fn too_big(
             &facts.instance.scene,
             conflict::Kind::Walk {
                 screen: screen.to_owned(),
-                host: board.host,
+                board: board.slots(),
                 instances: board.instances(),
                 slots: board.tree(),
                 off,
@@ -778,22 +818,22 @@ pub fn compose_screens(
             .unwrap_or_default();
         previews.push(cap.add_scene_record_in(&r.input.record, &r.pfx, &r.sprites, Mode::Preview(&state))?);
     }
-    let host = cap.finish(None)?;
-    let mut host_slots = 0;
-    let mut own_slots = vec![0; recs.len()];
-    if let Ok(host_pkg) = Pkg::parse(&host)
-        && let Ok(host_root) = stock_edit::scene_root(&host_pkg)
-    {
-        host_slots = walk::cost(host_root).slots;
-        for (r, own) in recs.iter().zip(&mut own_slots) {
-            let cost = |name: &str| idf::find(host_root, name).map(walk::cost).unwrap_or_default();
-            let (live, preview) = (cost(&r.pfx), cost(&preview_root(&r.pfx)));
-            *own = live.slots + preview.slots;
-            out.lines
-                .extend(walk::lines(&r.input.addon, &r.pfx, live, preview));
-        }
+    let grown = cap.finish(None)?;
+    let all_pfx: Vec<String> = recs.iter().map(|r| r.pfx.clone()).collect();
+    let cap_slots = walk::cost(stock_edit::scene_root(&Pkg::parse(&cap_bytes)?)?).slots;
+    let mut own_slots = Vec::with_capacity(recs.len());
+    for r in &recs {
+        let bytes = own_host(&grown, &r.pfx, &all_pfx)?;
+        let pkg = Pkg::parse(&bytes)?;
+        let root = stock_edit::scene_root(&pkg)?;
+        let cost = |name: &str| idf::find(root, name).map(walk::cost).unwrap_or_default();
+        let (live, preview) = (cost(&r.pfx), cost(&preview_root(&r.pfx)));
+        own_slots.push(walk::cost(root).slots);
+        out.lines
+            .extend(walk::lines(&r.input.addon, &r.pfx, live, preview));
+        out.scene
+            .push((screens::host_scene(&r.pfx), "UILayout", vec![bytes]));
     }
-    out.scene.push((screens::CAP.to_owned(), "UILayout", vec![host]));
     let planned: Vec<&Plan> = plans.iter().collect();
     if planned.iter().any(|p| !p.clips.is_empty()) {
         let clip_template = race_read(super::dials::CLIP_TEMPLATE)?;
@@ -816,10 +856,7 @@ pub fn compose_screens(
         }
     }
     for (key, (facts, members)) in &by_screen {
-        let board = walk::Board {
-            host: host_slots,
-            records: members.len(),
-        };
+        let board = board_of(cap_slots, members, &own_slots);
         out.lines.push(walk::board_line(key, board));
         if board.over() {
             return Err(too_big(key, facts, board, &recs, members, &own_slots));
@@ -829,7 +866,6 @@ pub fn compose_screens(
             out.editor = Some(walk::EditorOver { addons, off, board });
         }
     }
-    let all_pfx: Vec<String> = recs.iter().map(|r| r.pfx.clone()).collect();
     let mut replay: Option<(Pkg, Pkg)> = None;
     let mut standings = false;
     for (key, (facts, members)) in &by_screen {
@@ -893,7 +929,6 @@ pub fn compose_screens(
             let target = r.targets.iter().find(|t| t.facts.key == *key).expect("a member");
             let show = &target.show;
             let hide = &target.hide;
-            let others: Vec<String> = all_pfx.iter().filter(|p| **p != r.pfx).cloned().collect();
             let checked = match template_of_path(&facts.parent_ui) {
                 "spectator" => {
                     let tags = StockTags::spectator(
@@ -912,7 +947,6 @@ pub fn compose_screens(
                         hide,
                         &plans[ri],
                         &r.pfx,
-                        &others,
                         &race_stock.root,
                     )?
                 }
@@ -937,7 +971,6 @@ pub fn compose_screens(
                         hide,
                         &plans[ri],
                         &r.pfx,
-                        &others,
                         &race_stock.root,
                     )?
                 }
@@ -949,19 +982,10 @@ pub fn compose_screens(
                     hide,
                     &plans[ri],
                     &r.pfx,
-                    &others,
                     &race_stock.root,
                 )?,
             };
             let plan = &plans[ri];
-            if !others.is_empty() {
-                out.lines.push(format!(
-                    "{}: screen {key}: host_n hides the roots of {} other screen records ({} static template nodes)",
-                    r.pfx,
-                    others.len(),
-                    2 * others.len()
-                ));
-            }
             out.lines.push(format!(
                 "{}: screen {key} in {}: {} bound nodes, {} masks, {checked} bindings checked",
                 r.pfx,
@@ -992,15 +1016,7 @@ pub fn compose_screens(
             let pv = &previews[ri];
             instances.push(editor::Instanced {
                 host: screens::standings().host_name(&r.pfx),
-                hide: [screens::CAP_ANIM.to_owned(), r.pfx.clone()]
-                    .into_iter()
-                    .chain(
-                        all_pfx
-                            .iter()
-                            .filter(|p| **p != r.pfx)
-                            .flat_map(|p| [p.clone(), preview_root(p)]),
-                    )
-                    .collect(),
+                hide: vec![screens::CAP_ANIM.to_owned(), r.pfx.clone()],
                 show: vec![pv.root.clone()],
                 texts: pv.pv_texts.clone(),
                 loc: Vec::new(),
@@ -1024,18 +1040,7 @@ pub fn compose_screens(
     let mut by_pfx: Vec<&Rec> = recs.iter().collect();
     by_pfx.sort_by(|a, b| a.pfx.cmp(&b.pfx));
     for r in by_pfx {
-        let mut nodes: Vec<StockNodes> = r.stock_nodes.clone();
-        if r.targets.iter().any(|t| t.facts.key == "standings") {
-            nodes.push(StockNodes {
-                ui: None,
-                template: screens::STANDINGS_CAP_NODE.to_owned(),
-                scene: Some(screens::CAP.to_owned()),
-                hide: vec![r.pfx.clone(), preview_root(&r.pfx)],
-                wrap: Vec::new(),
-                while_: None,
-            });
-        }
-        for (i, s) in nodes.iter().enumerate() {
+        for (i, s) in r.stock_nodes.iter().enumerate() {
             let (live, stock_pkg): (&mut Pkg, &Pkg) = match template_of_path(&s.template) {
                 "spectator" => (&mut *spectator, spec_stock),
                 "replay" => {
@@ -1055,10 +1060,6 @@ pub fn compose_screens(
                     ))
                 })?,
             };
-            if scene == screens::CAP {
-                // the host scene's stock parts, not ours: check against the stock cap
-                let _ = &cap_bytes;
-            }
             let root = match scene_cache.get(&scene) {
                 Some(n) => n.clone(),
                 None => {
@@ -1068,24 +1069,6 @@ pub fn compose_screens(
                     scene_cache.insert(scene.clone(), n.clone());
                     n
                 }
-            };
-            let own =
-                scene == screens::CAP && s.hide.iter().all(|h| *h == r.pfx || *h == preview_root(&r.pfx));
-            let s = if own {
-                // our own roots are not stock elements: hide them statically without the stock checks
-                let name = format!("{}_sn{i}", r.pfx);
-                let at = node::find_path(&live.root, &s.template)?;
-                let target = node::node_at_mut(&mut live.root, &at)?;
-                let mut grp = stock_edit::stock_nodes_group(s, &name, &[])?;
-                node::fix_ids(&mut grp, Some(&s.template));
-                target.slot_mut(node::CHILDREN)?.push(grp);
-                out.lines.push(format!(
-                    "{}: {} hides the host root and its editor copy in the stock cap instance",
-                    r.pfx, s.template
-                ));
-                continue;
-            } else {
-                s
             };
             let (s, moved) = stock_edit::share(s, &scene, taken.entry(scene.clone()).or_default());
             let s = &s;
@@ -1372,7 +1355,6 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
-            &[],
             &fake_template(),
         )
         .unwrap();
@@ -1419,7 +1401,6 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
-            &[],
             &fake_template(),
         )
         .unwrap();
@@ -1441,7 +1422,6 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
-            &[],
             &fake_template(),
         )
         .unwrap();
@@ -1454,47 +1434,6 @@ mod tests {
                     .to_vec()
             ]
         );
-    }
-
-    #[test]
-    fn the_host_hides_the_other_records_roots() {
-        let show = Bind::leaf("view_model_data.hud_tt_show");
-        let others = ["tt".to_owned(), "uu".to_owned(), "vv".to_owned()];
-        let (grp, _) = control_group(
-            &screens::standings(),
-            &show,
-            &[],
-            &plan("tt"),
-            "tt",
-            &others,
-            &fake_template(),
-        )
-        .unwrap();
-        let host = &grp.slot(node::CHILDREN).unwrap()[1];
-        let inner: Vec<&Node> = host.slot(node::CHILDREN).unwrap().iter().collect();
-        let names: Vec<&str> = inner.iter().map(|k| k.name()).collect();
-        assert_eq!(
-            names,
-            [
-                "v_cap", "v_pv", "o_uu", "o_uu_pv", "o_vv", "o_vv_pv", "root_n", "v_tt_r00"
-            ]
-        );
-        for (n, el) in [(2, "uu"), (3, "uu_pv"), (4, "vv"), (5, "vv_pv")] {
-            assert_eq!(layout_of(inner[n]), vec![vec![el.to_owned()]]);
-            assert_eq!(
-                inner[n]
-                    .props()
-                    .unwrap()
-                    .get("visible")
-                    .unwrap()
-                    .as_obj()
-                    .unwrap()
-                    .get("value")
-                    .and_then(Node::as_val)
-                    .and_then(stock_edit::as_bool),
-                Some(false)
-            );
-        }
     }
 
     #[test]
@@ -1511,7 +1450,6 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
-            &[],
             &fake_template(),
         )
         .unwrap();
@@ -1545,7 +1483,6 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
-            &[],
             &fake_template(),
         )
         .unwrap_err();
@@ -1589,5 +1526,302 @@ mod tests {
         assert_eq!(CAP_FACTS.scene, screens::CAP);
         assert_eq!(CAP_FACTS.quad, "pill_base");
         assert!(written().contains(&screens::STACKED));
+    }
+
+    fn el(name: &str, ty: &str, kids: Vec<Node>) -> Node {
+        let mut t = ty.as_bytes().to_vec();
+        t.resize(16, 0);
+        node::obj(vec![
+            ("name", node::s(name)),
+            ("typeName", Node::Val(Val::raw(*b"shnm", t))),
+            ("elementId", node::u32v(0)),
+            ("params", node::arr(vec![])),
+            ("children", node::arr(kids)),
+        ])
+    }
+
+    fn leaf(name: &str) -> Node {
+        el(name, "eNull", vec![])
+    }
+
+    fn scene_bytes(path: &str, kids: Vec<Node>) -> Vec<u8> {
+        let mut root = el("Scene Root", "eScene", kids);
+        for kid in idf::children_mut(&mut root).unwrap() {
+            let n = idf::elem_name(kid).to_owned();
+            idf::recompute_ids(kid, &n).unwrap();
+        }
+        let mut entry = node::obj(vec![
+            ("scene", root),
+            (
+                "name",
+                Node::Val(Val::raw(*b"ui64", idf::scene_id(path).to_le_bytes())),
+            ),
+            ("nodeidlookup", node::arr(vec![])),
+        ]);
+        idf::relookup(&mut entry).unwrap();
+        Pkg {
+            name: [0; 4],
+            root: node::obj(vec![("scenelist", node::arr(vec![entry]))]),
+            vca: Vec::new(),
+            layout: None,
+        }
+        .to_bytes()
+        .unwrap()
+    }
+
+    fn top_names(bytes: &[u8]) -> Vec<String> {
+        let p = Pkg::parse(bytes).unwrap();
+        let root = stock_edit::scene_root(&p).unwrap();
+        root.o()
+            .unwrap()
+            .at("children")
+            .unwrap()
+            .a()
+            .unwrap()
+            .iter()
+            .filter(|c| c.as_obj().is_some())
+            .map(|c| idf::elem_name(c).to_owned())
+            .collect()
+    }
+
+    fn record_root(pfx: &str, rows: usize) -> Node {
+        let rows = (0..rows).map(|i| leaf(&format!("{pfx}_r{i:02}"))).collect();
+        el(pfx, "eNull", vec![el(&format!("{pfx}_stack"), "eStacker", rows)])
+    }
+
+    /// The cap as the builder leaves it with three records in it.
+    fn grown_cap() -> Vec<u8> {
+        let mut kids = vec![el(
+            screens::CAP_ANIM,
+            "eNull",
+            vec![el(screens::CAP_NULL, "eNull", vec![leaf(screens::CAP_MESH)])],
+        )];
+        for (pfx, rows) in [("aa", 3), ("bb", 30), ("cc", 5)] {
+            kids.push(record_root(pfx, rows));
+            kids.push(record_root(&preview_root(pfx), 2));
+        }
+        scene_bytes(screens::CAP, kids)
+    }
+
+    #[test]
+    fn each_record_gets_a_host_scene_with_only_its_own_root_and_editor_copy() {
+        let grown = grown_cap();
+        let all: Vec<String> = ["aa", "bb", "cc"].map(String::from).to_vec();
+        let stock = scene_bytes(
+            screens::CAP,
+            vec![el(
+                screens::CAP_ANIM,
+                "eNull",
+                vec![el(screens::CAP_NULL, "eNull", vec![leaf(screens::CAP_MESH)])],
+            )],
+        );
+        let cap = walk::cost(stock_edit::scene_root(&Pkg::parse(&stock).unwrap()).unwrap());
+        let mut hosts = 0;
+        for pfx in &all {
+            let own = own_host(&grown, pfx, &all).unwrap();
+            assert_eq!(
+                top_names(&own),
+                [screens::CAP_ANIM.to_owned(), pfx.clone(), preview_root(pfx)]
+            );
+            let p = Pkg::parse(&own).unwrap();
+            let entry = &idf::scenes(&p).unwrap()[0];
+            assert_eq!(
+                idf::scene_name(entry),
+                Some(idf::scene_id(&screens::host_scene(pfx)))
+            );
+            assert!(idf::id_problems(&p).unwrap().is_empty(), "{pfx}");
+            let root = stock_edit::scene_root(&p).unwrap();
+            for other in all.iter().filter(|o| *o != pfx) {
+                for name in [other.clone(), preview_root(other), format!("{other}_r00")] {
+                    assert!(idf::find(root, &name).is_none(), "{name} in {pfx}'s host");
+                }
+            }
+            let g = Pkg::parse(&grown).unwrap();
+            let groot = stock_edit::scene_root(&g).unwrap();
+            let mine = walk::cost(idf::find(groot, pfx).unwrap()).slots
+                + walk::cost(idf::find(groot, &preview_root(pfx)).unwrap()).slots;
+            assert_eq!(walk::cost(root).slots, cap.slots + mine, "{pfx}");
+            hosts += walk::cost(root).slots;
+        }
+        let grown_slots = walk::cost(stock_edit::scene_root(&Pkg::parse(&grown).unwrap()).unwrap()).slots;
+        let board = walk::Board {
+            cap: cap.slots,
+            hosts,
+            records: all.len(),
+        };
+        assert!(board.slots() <= (1 + all.len()) * cap.slots + grown_slots);
+        assert!(board.slots() < (1 + all.len()) * grown_slots);
+        assert_eq!(
+            screens::host_scene("aa"),
+            "eaid://ui_package/art/osd/units/driver_position_table/driver_position_bottom_cap_aa.idf"
+        );
+        let e = own_host(&grown, "dd", &all).unwrap_err();
+        assert!(e.to_string().contains("dd: the host scene has no dd"), "{e}");
+    }
+
+    fn xref_el(name: &str, file_ref: &str) -> Node {
+        let mut e = el(name, "eXRef", vec![]);
+        idf::set_param_like(
+            &mut e,
+            "XrefMaterialBinding",
+            Val::str(idf::material_binding(file_ref)),
+        )
+        .unwrap();
+        idf::retarget(&mut e, file_ref).unwrap();
+        e
+    }
+
+    #[test]
+    fn the_instances_point_at_their_records_own_hosts_with_the_caps_binding() {
+        let all = ["aa".to_owned(), "bb".to_owned()];
+        let no_read = |_: &str| -> Result<Vec<u8>> { Err(err("no other scene")) };
+        let stacked = scene_bytes(
+            screens::STACKED,
+            vec![el(
+                "wrap",
+                "eNull",
+                vec![
+                    leaf(screens::STACKED_MASK),
+                    el(
+                        screens::STACKED_STACKER,
+                        "eStacker",
+                        vec![xref_el(screens::STACKED_CAP_REF, screens::CAP)],
+                    ),
+                ],
+            )],
+        );
+        let table = "eaid://ui_package/art/components/theatre/the_driver_position_table.idf";
+        let mut header = leaf(screens::REPLAY_HEADER);
+        header
+            .o_mut()
+            .unwrap()
+            .set("position", Node::Val(idf::vec3([-9.2, 5.0, 0.0, 0.0])));
+        let replay = scene_bytes(
+            screens::REPLAY_SCENE,
+            vec![el(
+                screens::REPLAY_GROUP,
+                "eNull",
+                vec![xref_el(screens::REPLAY_TABLE, table), header],
+            )],
+        );
+        for (facts, bytes) in [(screens::standings(), stacked), (screens::replay(), replay)] {
+            let out = add_instances(&bytes, &facts, &all, &no_read).unwrap();
+            let p = Pkg::parse(&out).unwrap();
+            assert!(idf::id_problems(&p).unwrap().is_empty(), "{}", facts.key);
+            assert!(idf::xref_mismatches(&p).unwrap().is_empty(), "{}", facts.key);
+            let root = stock_edit::scene_root(&p).unwrap();
+            for pfx in &all {
+                let h = idf::find(root, &facts.host_name(pfx)).unwrap();
+                let own = screens::host_scene(pfx);
+                assert_eq!(idf::param_str(h, "fileRef"), Some(own.as_str()), "{}", facts.key);
+                assert_eq!(idf::xref(h), Some(idf::scene_id(&own)), "{}", facts.key);
+                assert_eq!(
+                    idf::param_str(h, "XrefMaterialBinding"),
+                    Some(idf::material_binding(screens::CAP).as_str()),
+                    "{}",
+                    facts.key
+                );
+            }
+            let stock = idf::find(root, &facts.instance.clone).unwrap();
+            let stock_ref = match facts.key.as_str() {
+                "standings" => screens::CAP,
+                _ => table,
+            };
+            assert_eq!(
+                idf::param_str(stock, "fileRef"),
+                Some(stock_ref),
+                "the stock board keeps its scene"
+            );
+        }
+    }
+
+    fn screen_input(addon: &str, key: &str) -> Input {
+        let pfx = format!("{}_{key}", addon.replace('.', "_"));
+        Input {
+            addon: addon.into(),
+            key: key.into(),
+            dir: std::env::temp_dir(),
+            record: super::super::model::HudElement::parse(&serde_json::json!({
+                "screen": "standings",
+                "prefix": pfx,
+                "show": { "view_model": format!("view_model_data.hud_{pfx}_show") },
+                "elements": []
+            }))
+            .unwrap(),
+        }
+    }
+
+    fn rec(input: &Input) -> Rec<'_> {
+        Rec {
+            input,
+            pfx: input.record.prefix.clone().unwrap_or_default(),
+            targets: screens::targets(&input.record).unwrap().unwrap(),
+            sprites: Sprites::new(),
+            stock_nodes: Vec::new(),
+            restyles: Vec::new(),
+        }
+    }
+
+    const CAP_SLOTS: usize = 8;
+
+    /// SWOFTY 2010, SWOFTY 2011 and TV Timing Tower with the walk slots their own host scenes take
+    /// (each record's root and editor copy beside a copy of the cap): one shared host scene took the
+    /// race tree past the limit, a host scene each keeps it inside.
+    #[test]
+    fn the_players_three_towers_fit_the_board() {
+        let own = [2291 + CAP_SLOTS, 2292 + CAP_SLOTS, 9510 + CAP_SLOTS];
+        let board = board_of(CAP_SLOTS, &[0, 1, 2], &own);
+        let shared = walk::Board {
+            cap: 0,
+            hosts: 4 * (CAP_SLOTS + 2291 + 2292 + 9510),
+            records: 3,
+        };
+        assert!(shared.over());
+        assert_eq!((board.slots(), board.tree()), (14125, 31625));
+        assert!(!board.over() && !board.editor_over());
+    }
+
+    #[test]
+    fn a_board_still_too_big_is_refused_naming_the_addons_on_it_and_which_to_turn_off() {
+        let mut inputs = vec![screen_input("small.tower", "t")];
+        inputs.extend((0..6).map(|i| screen_input("big.tower", &format!("t{i}"))));
+        inputs.push(screen_input("other.tower", "t"));
+        let recs: Vec<Rec> = inputs.iter().map(rec).collect();
+        let mut own = vec![2300];
+        own.extend([9518; 6]);
+        own.push(9518);
+        let members: Vec<usize> = (0..7).collect();
+        let board = board_of(CAP_SLOTS, &members, &own);
+        assert_eq!(
+            (board.instances(), board.slots(), board.tree()),
+            (8, 59416, 76916)
+        );
+        assert!(board.over());
+        let e = too_big("standings", &screens::standings(), board, &recs, &members, &own);
+        let Error::HudConflict(c) = e else {
+            panic!("not a conflict: {e}")
+        };
+        assert_eq!(c.addons, ["small.tower", "big.tower"]);
+        assert_eq!(c.resource, screens::STACKED);
+        assert_eq!(
+            c.kind,
+            conflict::Kind::Walk {
+                screen: "standings".into(),
+                board: 59416,
+                instances: 8,
+                slots: 76916,
+                off: vec!["big.tower".into()],
+            }
+        );
+        assert!(
+            c.to_string()
+                .contains("small.tower, big.tower together make the Track Position list too big"),
+            "{c}"
+        );
+        assert!(
+            c.to_string()
+                .ends_with("(the board holds 8 host scenes, 59416 walk slots in all)"),
+            "{c}"
+        );
     }
 }
