@@ -203,6 +203,7 @@ impl Pipeline<'_, '_> {
             .lines
             .extend(composed.lines.iter().map(|l| format!("hud: {l}")));
         built.warnings.extend(composed.warnings);
+        built.report.hud_editor = composed.editor;
         Ok(composed.ops)
     }
 

@@ -149,22 +149,31 @@ pub fn lines(addon: &str, pfx: &str, live: Cost, preview: Cost) -> Vec<String> {
     out
 }
 
-/// The build lines for the board of `screen`; the HUD customisation warning for the standings only.
-pub fn board_lines(screen: &str, b: Board) -> Vec<String> {
-    let mut out = vec![format!(
+/// The build line for the board of `screen`; the standings line also counts HUD customisation's tree.
+pub fn board_line(screen: &str, b: Board) -> String {
+    let mut line = format!(
         "screen {screen}: the board holds the host scene {} times ({} walk slots each, {} in all); the screen's UI tree about {} of the {SLOT_LIMIT} slots it can index",
         b.instances(),
         b.host,
         b.slots(),
         b.tree()
-    )];
-    if screen == "standings" && b.editor_over() {
-        out.push(format!(
-            "warning: screen {screen}: HUD customisation would hold about {} of the {SLOT_LIMIT} slots of one UI tree; the game can close when it opens",
+    );
+    if screen == "standings" {
+        line.push_str(&format!(
+            "; HUD customisation's tree about {} ({EDITOR_BOARDS} boards)",
             b.editor()
         ));
     }
-    out
+    line
+}
+
+/// HUD customisation's tree past the slot limit: the addons with a record on the standings, and
+/// the ones whose removal alone brings the tree back inside.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EditorOver {
+    pub addons: Vec<String>,
+    pub off: Vec<String>,
+    pub board: Board,
 }
 
 #[cfg(test)]
@@ -246,17 +255,16 @@ mod tests {
         };
         assert_eq!(board.editor(), 66306);
         assert!(!board.over() && board.editor_over());
-        let out = board_lines("standings", board);
-        assert_eq!(out.len(), 2, "{out:?}");
+        let line = board_line("standings", board);
         assert!(
-            out[0].contains("2 times (10915 walk slots each, 21830 in all)"),
-            "{out:?}"
+            line.contains("2 times (10915 walk slots each, 21830 in all)"),
+            "{line}"
         );
         assert!(
-            out[1].starts_with("warning: screen standings: HUD customisation"),
-            "{out:?}"
+            line.ends_with("; HUD customisation's tree about 66306 (3 boards)"),
+            "{line}"
         );
-        assert_eq!(board_lines("replay", board).len(), 1);
+        assert!(!board_line("replay", board).contains("HUD customisation"));
     }
 
     const CAP: usize = 8;
@@ -287,7 +295,7 @@ mod tests {
         for own in [S10, S11, TVTT] {
             assert!(!board.without(own, 1).over(), "{own}");
         }
-        assert!(board_lines("standings", board)[0].contains("4 times (14101 walk slots each, 56404 in all)"));
+        assert!(board_line("standings", board).contains("4 times (14101 walk slots each, 56404 in all)"));
     }
 
     #[test]
@@ -314,6 +322,24 @@ mod tests {
         };
         assert_eq!(one.slots(), 35427);
         assert!(!one.over() && one.editor_over());
+    }
+
+    /// The 1.10.35 report: SWOFTY 2010, SWOFTY 2011 and a third tower of 2,708 walk slots race inside
+    /// the limit, and HUD customisation's tree of twelve host scenes does not. Each one turned off
+    /// brings HUD customisation back inside.
+    #[test]
+    fn two_seasons_and_a_small_tower_race_and_overflow_hud_customisation() {
+        let third = 2708;
+        let board = Board {
+            host: CAP + S10 + S11 + third,
+            records: 3,
+        };
+        assert_eq!((board.host, board.slots(), board.tree()), (7299, 29196, 46696));
+        assert_eq!(board.editor(), 88404);
+        assert!(!board.over() && board.editor_over());
+        for own in [S10, S11, third] {
+            assert!(!board.without(own, 1).editor_over(), "{own}");
+        }
     }
 
     /// The three roots of the race-start abort as siblings: their stacks of 62, 62 and 129 do not add

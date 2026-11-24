@@ -57,6 +57,8 @@ pub struct Out {
     pub spectator_scene: Vec<Res>,
     pub spectator_used: bool,
     pub lines: Vec<String>,
+    /// The standings board makes HUD customisation's tree too big.
+    pub editor: Option<walk::EditorOver>,
 }
 
 struct Rec<'a> {
@@ -643,17 +645,15 @@ fn claims(stock: &dyn Stock, recs: &[Rec], race: &Pkg, spectator: &Pkg) -> Resul
     Ok(())
 }
 
-/// The refusal of a board past the UI tree's slot limit: every addon with a screen record grows the
-/// host scene, so all of them are named, and the ones that bring the board back inside the limit on
-/// their own are the ones to turn off.
-fn too_big(
-    screen: &str,
-    facts: &ScreenFacts,
+/// Every addon with a screen record (each grows the host scene), and the ones whose removal alone
+/// brings `board` back to where `over` is false.
+fn turn_off(
     board: walk::Board,
     recs: &[Rec],
     members: &[usize],
     own_slots: &[usize],
-) -> Error {
+    over: fn(&walk::Board) -> bool,
+) -> (Vec<String>, Vec<String>) {
     let ours = conflict::addons_of(recs.iter().map(|r| r.input.addon.as_str()));
     let off = ours
         .iter()
@@ -665,10 +665,24 @@ fn too_big(
                 .map(|(_, s)| s)
                 .sum();
             let here = members.iter().filter(|i| recs[**i].input.addon == **a).count();
-            !board.without(slots, here).over()
+            !over(&board.without(slots, here))
         })
         .cloned()
         .collect();
+    (ours, off)
+}
+
+/// The refusal of a board past the UI tree's slot limit, naming every addon on it and the ones to
+/// turn off.
+fn too_big(
+    screen: &str,
+    facts: &ScreenFacts,
+    board: walk::Board,
+    recs: &[Rec],
+    members: &[usize],
+    own_slots: &[usize],
+) -> Error {
+    let (ours, off) = turn_off(board, recs, members, own_slots, walk::Board::over);
     conflict::by(
         conflict::Conflict::error(
             &facts.instance.scene,
@@ -806,9 +820,13 @@ pub fn compose_screens(
             host: host_slots,
             records: members.len(),
         };
-        out.lines.extend(walk::board_lines(key, board));
+        out.lines.push(walk::board_line(key, board));
         if board.over() {
             return Err(too_big(key, facts, board, &recs, members, &own_slots));
+        }
+        if key == "standings" && board.editor_over() {
+            let (addons, off) = turn_off(board, &recs, members, &own_slots, walk::Board::editor_over);
+            out.editor = Some(walk::EditorOver { addons, off, board });
         }
     }
     let all_pfx: Vec<String> = recs.iter().map(|r| r.pfx.clone()).collect();

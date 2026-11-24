@@ -104,6 +104,7 @@ impl Pipeline<'_, '_> {
             stock_removals,
             kept_lists,
             waits,
+            hud_editor: built.report.hud_editor.take(),
             ..report
         };
         built.conflicts = planned.conflicts;

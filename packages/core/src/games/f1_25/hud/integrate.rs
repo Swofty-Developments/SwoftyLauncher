@@ -11,7 +11,7 @@ use swofty_formats::erp::{ErpFile, Packer};
 use swofty_formats::pkg::Pkg;
 
 use super::conflict::{self, Conflict, Kind};
-use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials, screen_build, screens};
+use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials, screen_build, screens, walk};
 use crate::erp::ErpBuild;
 use crate::store::Store;
 use crate::{Error, Result};
@@ -35,6 +35,8 @@ pub struct Composed {
     pub ops: Vec<Op>,
     pub lines: Vec<String>,
     pub warnings: Vec<String>,
+    /// The warning that HUD customisation closes the game, also in `warnings`.
+    pub editor: Option<String>,
 }
 
 /// The archives screen records write beyond the dials' (`hud/screens.rs`).
@@ -105,6 +107,30 @@ fn or_list(names: &[String]) -> String {
         [one] => one.clone(),
         [rest @ .., last] => format!("{} or {last}", rest.join(", ")),
     }
+}
+
+/// The warning for a standings board that races fit and HUD customisation's tree does not: every
+/// addon on the board, and the ones whose removal alone brings the tree inside the limit.
+pub fn editor_text(name: &dyn Fn(&str) -> String, e: &walk::EditorOver) -> String {
+    let ours: Vec<String> = e.addons.iter().map(|a| name(a)).collect();
+    let off: Vec<String> = e.off.iter().map(|a| name(a)).collect();
+    let what = match off.is_empty() {
+        true => format!("some of {}", and_list(&ours)),
+        false => or_list(&off),
+    };
+    format!(
+        "{} {} {} too big for HUD customisation (OSD Customization in the pause menu): about {} of the {} slots one screen can hold, and the game closes when it opens. Races show the list as before. Turn {what} off in this profile before you open HUD customisation (it holds the {}-slot host scene {} times)",
+        and_list(&ours),
+        match ours.len() > 1 {
+            true => "together make",
+            false => "makes",
+        },
+        screens::board_of("standings"),
+        e.board.editor(),
+        walk::SLOT_LIMIT,
+        e.board.host,
+        walk::EDITOR_BOARDS * e.board.instances()
+    )
 }
 
 /// One archive change of another addon that the composer builds on.
@@ -322,11 +348,14 @@ pub fn compose_in_build(
         })
         .collect();
     lines.extend(output.lines.iter().cloned());
+    let editor = output.editor.as_ref().map(|e| editor_text(cx.name, e));
+    warnings.extend(editor.clone());
     Ok(Composed {
         output,
         ops,
         lines,
         warnings,
+        editor,
     })
 }
 
@@ -536,6 +565,35 @@ mod tests {
                 .contains("; turn some of SWOFTY 2010, SWOFTY 2011 and TV Timing Tower off in this profile"),
             "{}",
             text(&s, &none, &[])
+        );
+    }
+
+    #[test]
+    fn a_board_too_big_for_hud_customisation_warns_with_every_addon_on_it_and_which_to_turn_off() {
+        let editor = |addons: Vec<&str>, off: Vec<&str>, host, records| walk::EditorOver {
+            addons: addons.into_iter().map(String::from).collect(),
+            off: off.into_iter().map(String::from).collect(),
+            board: walk::Board { host, records },
+        };
+        let three = editor(vec![S10, S11, TOWER], vec![S10, S11, TOWER], 7_299, 3);
+        assert_eq!(
+            editor_text(&name, &three),
+            "SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for HUD customisation (OSD Customization in the pause menu): about 88404 of the 65536 slots one screen can hold, and the game closes when it opens. Races show the list as before. Turn SWOFTY 2010, SWOFTY 2011 or TV Timing Tower off in this profile before you open HUD customisation (it holds the 7299-slot host scene 12 times)"
+        );
+        let one = editor(vec![TOWER], vec![TOWER], 10_915, 1);
+        assert!(
+            editor_text(&name, &one).starts_with(
+                "TV Timing Tower makes the Track Position list too big for HUD customisation (OSD Customization in the pause menu): about 66306 of"
+            ),
+            "{}",
+            editor_text(&name, &one)
+        );
+        let none = editor(vec![S10, TOWER], vec![], 20_000, 2);
+        assert!(
+            editor_text(&name, &none)
+                .contains("Turn some of SWOFTY 2010 and TV Timing Tower off in this profile"),
+            "{}",
+            editor_text(&name, &none)
         );
     }
 

@@ -34,6 +34,9 @@ pub struct Report {
     /// Addons whose database changes waited for rows another addon adds, so they load below it.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub waits: Vec<Wait>,
+    /// The composed HUD's warning that HUD customisation closes the game, for the player.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hud_editor: Option<String>,
 }
 
 /// `addon` changes rows that `on` adds.
@@ -213,6 +216,7 @@ pub(crate) fn summarise(
         stock_removals: BTreeMap::new(),
         kept_lists: BTreeMap::new(),
         waits: Vec::new(),
+        hud_editor: None,
     };
     (report, within)
 }

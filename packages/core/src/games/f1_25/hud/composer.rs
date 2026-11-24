@@ -472,6 +472,7 @@ pub fn compose_with(
     )?;
     spectator_used |= screens_out.spectator_used;
     out.lines.extend(screens_out.lines.iter().cloned());
+    out.editor = screens_out.editor.clone();
     let mut all: Vec<Res> = resources.into_values().collect();
     all.extend(scene_resources);
     if !all.is_empty() {

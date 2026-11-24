@@ -145,6 +145,7 @@ pub(super) fn report(run: Run) -> Report {
         stock_removals: BTreeMap::new(),
         kept_lists: BTreeMap::new(),
         waits: Vec::new(),
+        hud_editor: None,
     }
 }
 
