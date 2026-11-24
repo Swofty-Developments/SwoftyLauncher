@@ -23,7 +23,8 @@
 namespace swofty_core::apply::content {
 
 inline constexpr const char *BOX_ASSETS_FOLDER = "2025_asset_groups/swofty_box_assets/";
-inline constexpr const char *BOX_ASSET_KINDS[] = {"garage", "sponsors", "marshals", "crowd", "principal", "scene", "world", "other"};
+inline constexpr const char *BOX_ASSET_KINDS[] = {"garage",    "sponsors", "marshals", "crowd",
+                                                  "principal", "scene",    "world",    "other"};
 
 inline bool box_assets_enabled(const char *env) { return garage_art_enabled(env); }
 

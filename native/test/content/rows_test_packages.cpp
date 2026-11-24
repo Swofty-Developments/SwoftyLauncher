@@ -552,12 +552,14 @@ void box_assets_tests()
               scene.garages[0].vehicles.empty(),
           "kind scene goes to its named stock scene groups for the package's box, not to the car groups");
 
-    content::Plan world = lower(R"j({"package":"mod.s/f1_1950","kind":"world","archive":"w/silverstone_common_1950.erp",)j"
-                                R"j("groups":["asset_groups/environment_package/tracks/silverstone/wep/silverstone_common.assetgroup"],)j"
-                                R"j("resources":["eaid://environment_package/tracks/silverstone/"]})j");
+    content::Plan world =
+        lower(R"j({"package":"mod.s/f1_1950","kind":"world","archive":"w/silverstone_common_1950.erp",)j"
+              R"j("groups":["asset_groups/environment_package/tracks/silverstone/wep/silverstone_common.assetgroup"],)j"
+              R"j("resources":["eaid://environment_package/tracks/silverstone/"]})j");
     check(world.refused == 0 && world.garages.size() == 1 && world.garages[0].kind == "world" &&
               world.garages[0].box == "f5_1950" && world.garages[0].groups.size() == 1 &&
-              world.garages[0].groups[0] == "asset_groups/environment_package/tracks/silverstone/wep/silverstone_common.assetgroup" &&
+              world.garages[0].groups[0] ==
+                  "asset_groups/environment_package/tracks/silverstone/wep/silverstone_common.assetgroup" &&
               world.garages[0].vehicles.empty(),
           "kind world goes to the track's world group for the package's box, not to the car groups");
 
