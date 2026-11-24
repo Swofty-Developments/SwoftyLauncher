@@ -471,17 +471,27 @@ static void test_input()
     s.chars = {'q'};
     s.wheel = 1;
     s.buttons = SWOFTY_MOUSE_LEFT;
+    s.pressed = SWOFTY_MOUSE_LEFT;
+    s.released = SWOFTY_MOUSE_RIGHT;
     SwoftyInput in{};
     in.size = sizeof in;
     view(s, f, "a", in);
-    CHECK(!in.focused && in.x == 110 && in.buttons == 0 && in.char_count == 0 && in.wheel == 0 && in.size == sizeof in,
-          "without focus an addon sees the cursor and keys only");
+    CHECK(!in.focused && in.x == 110 && in.char_count == 0 && in.wheel == 0 && in.size == sizeof in,
+          "without focus an addon sees no wheel and no text");
+    CHECK(in.buttons == SWOFTY_MOUSE_LEFT && in.pressed == SWOFTY_MOUSE_LEFT && in.released == SWOFTY_MOUSE_RIGHT,
+          "without focus every addon sees the mouse buttons");
+    SwoftyInput other{};
+    other.size = sizeof other;
+    view(s, f, "b", other);
+    CHECK(other.pressed == SWOFTY_MOUSE_LEFT, "and so does a second addon in the same frame");
     f.take("a", true, 0);
     view(s, f, "a", in);
     CHECK(in.focused && in.buttons == SWOFTY_MOUSE_LEFT && in.char_count == 1 && in.chars[0] == 'q' && in.wheel == 1,
           "the focus holder sees buttons, wheel and text");
     view(s, f, "b", in);
-    CHECK(!in.focused && in.x == -1 && in.keys_down[0x77 >> 3] == 0, "other addons see nothing while one holds focus");
+    CHECK(!in.focused && in.x == -1 && in.keys_down[0x77 >> 3] == 0 && in.buttons == 0 && in.pressed == 0 &&
+              in.pad_pressed == 0,
+          "other addons see nothing while one holds focus");
 }
 
 static void test_registry()

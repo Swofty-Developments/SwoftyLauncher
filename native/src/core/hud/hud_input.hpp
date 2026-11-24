@@ -216,8 +216,8 @@ struct Focus {
 };
 
 // The snapshot an addon sees: the focus holder gets everything; while nobody holds focus every addon
-// gets the cursor and key edges (no keys while the game has a text box focused); while another addon holds
-// it, an addon gets nothing.
+// gets the cursor, mouse buttons, key edges (no keys while the game has a text box focused) and pads; while
+// another addon holds it, an addon gets nothing. The wheel and typed text go only to the holder.
 inline void view(const Snapshot &s, const Focus &f, const std::string &who, SwoftyInput &out, bool typing = false)
 {
     uint32_t size = out.size;
@@ -230,6 +230,9 @@ inline void view(const Snapshot &s, const Focus &f, const std::string &who, Swof
         return;
     out.x = s.x;
     out.y = s.y;
+    out.buttons = s.buttons;
+    out.pressed = s.pressed;
+    out.released = s.released;
     if (!typing || mine) {
         memcpy(out.keys_down, s.keys_down, sizeof out.keys_down);
         memcpy(out.keys_pressed, s.keys_pressed, sizeof out.keys_pressed);
@@ -247,9 +250,6 @@ inline void view(const Snapshot &s, const Focus &f, const std::string &who, Swof
     if (!mine)
         return;
     out.wheel = s.wheel;
-    out.buttons = s.buttons;
-    out.pressed = s.pressed;
-    out.released = s.released;
     out.char_count = uint32_t(s.chars.size());
     for (size_t i = 0; i < s.chars.size(); i++)
         out.chars[i] = s.chars[i];

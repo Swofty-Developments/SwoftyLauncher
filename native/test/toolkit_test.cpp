@@ -288,6 +288,21 @@ static void test_unfocused()
     p.frame(off);
     p.frame(off);
     CHECK(!p.on && !p.st.nav_shown && !p.back, "nothing reacts without focus");
+    const float spots[][2] = {{105, 120}, {390, 190}, {110, 260}, {110, 460}, {105, 620}};
+    for (auto &at : spots) {
+        In down = In().at(at[0], at[1]).click();
+        down.s.focused = 0;
+        p.frame(down);
+        In held = In().at(at[0], at[1]);
+        held.s.focused = 0;
+        held.s.buttons = SWOFTY_MOUSE_LEFT;
+        p.frame(held);
+        In up = In().at(at[0], at[1]).release();
+        up.s.focused = 0;
+        p.frame(up);
+    }
+    CHECK(!p.on && p.level == 50 && p.selected == 0 && p.clicks == 0 && p.st.edit == 0 && p.st.active == 0 && p.name.empty(),
+          "mouse clicks the core hands every addon without focus press no widget");
 }
 
 static void test_toasts()
