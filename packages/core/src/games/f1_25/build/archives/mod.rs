@@ -174,6 +174,12 @@ impl Pipeline<'_, '_> {
         let base = |rel: &str| bases.path(rel);
         let resolve = |rel: &str| run.original(rel);
         let name = |origin: &str| run.origin_name(origin);
+        let required = |id: &str| {
+            run.order
+                .iter()
+                .filter_map(|o| run.addons.get(o))
+                .any(|m| m.id != id && m.requires.iter().any(|r| r.id == id))
+        };
         let mfd_rows = match inputs.menus {
             true => crate::ui::mfd_rows(session),
             false => Vec::new(),
@@ -189,6 +195,7 @@ impl Pipeline<'_, '_> {
                 baseline: &resolve,
                 puts: &put_names,
                 name: &name,
+                required: &required,
                 packer: &packer,
             },
             erp_ops,

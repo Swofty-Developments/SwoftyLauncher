@@ -26,6 +26,9 @@ pub struct Context<'a> {
     pub baseline: &'a dyn Fn(&str) -> PathBuf,
     pub puts: &'a [String],
     pub name: &'a dyn Fn(&str) -> String,
+    /// Whether another addon on in the profile requires the addon, so turning it off only trades the
+    /// refusal for a missing requirement.
+    pub required: &'a dyn Fn(&str) -> bool,
     /// The build's packer, which reuses the compressed frames of earlier builds.
     pub packer: &'a Packer,
 }
@@ -181,6 +184,16 @@ fn theirs(cx: &Context, c: &Conflict, changes: &[Change], ours: &[String]) -> Ve
     conflict::addons_of(pick.iter().map(|ch| ch.who.as_str()))
 }
 
+/// The addons of `ids` to suggest turning off: the ones no other addon on requires, or all of them
+/// when every one is required.
+fn turn_off(cx: &Context, ids: &[String]) -> Vec<String> {
+    let free: Vec<String> = ids.iter().filter(|a| !(cx.required)(a)).cloned().collect();
+    match free.is_empty() {
+        true => ids.to_vec(),
+        false => free,
+    }
+}
+
 /// The refusal of a [`Conflict`], naming the addons whose records claim the part and the addons whose
 /// archive changes put the other claim there.
 fn conflict_text(cx: &Context, c: &Conflict, changes: &[Change]) -> String {
@@ -190,7 +203,7 @@ fn conflict_text(cx: &Context, c: &Conflict, changes: &[Change]) -> String {
         false => ours,
     };
     if let Kind::Walk { off, .. } = &c.kind {
-        let off: Vec<String> = off.iter().map(|a| (cx.name)(a)).collect();
+        let off: Vec<String> = turn_off(cx, off).iter().map(|a| (cx.name)(a)).collect();
         let what = match off.is_empty() {
             true => format!("some of {}", and_list(&ours)),
             false => or_list(&off),
@@ -348,7 +361,13 @@ pub fn compose_in_build(
         })
         .collect();
     lines.extend(output.lines.iter().cloned());
-    let editor = output.editor.as_ref().map(|e| editor_text(cx.name, e));
+    let editor = output.editor.as_ref().map(|e| {
+        let e = walk::EditorOver {
+            off: turn_off(cx, &e.off),
+            ..e.clone()
+        };
+        editor_text(cx.name, &e)
+    });
     warnings.extend(editor.clone());
     Ok(Composed {
         output,
@@ -374,6 +393,7 @@ mod tests {
     const TOWER: &str = "pablo.tv-timing-tower";
     const S10: &str = "swofty.swofty-seasons-2010";
     const S11: &str = "swofty.swofty-seasons-2011";
+    const REQUIRED: [&str; 2] = [S10, S11];
     const PARENT: &str = "hud_track_position.osd_visibility_option.track_position";
 
     fn name(id: &str) -> String {
@@ -433,6 +453,7 @@ mod tests {
             baseline: &base,
             puts: &[],
             name: &name,
+            required: &|id| REQUIRED.contains(&id),
         };
         conflict_text(&cx, c, changes)
     }
@@ -557,7 +578,13 @@ mod tests {
         let all = walk(vec![S10.into(), S11.into(), TOWER.into()]);
         assert_eq!(
             text(&s, &all, &[]),
-            "the HUD elements do not compose: SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for the game: about 73904 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn SWOFTY 2010, SWOFTY 2011 or TV Timing Tower off in this profile (the board holds the 14101-slot host scene 4 times)"
+            "the HUD elements do not compose: SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for the game: about 73904 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn TV Timing Tower off in this profile (the board holds the 14101-slot host scene 4 times)"
+        );
+        let needed = walk(vec![S10.into(), S11.into()]);
+        assert!(
+            text(&s, &needed, &[]).contains("; turn SWOFTY 2010 or SWOFTY 2011 off in this profile ("),
+            "{}",
+            text(&s, &needed, &[])
         );
         let none = walk(vec![]);
         assert!(
@@ -566,6 +593,28 @@ mod tests {
             "{}",
             text(&s, &none, &[])
         );
+    }
+
+    #[test]
+    fn a_walk_refusal_leaves_out_the_addons_another_enabled_addon_requires() {
+        let s = store("walk-required");
+        let c = Conflict {
+            resource: screens::CAP.into(),
+            addons: vec![S10.into(), S11.into(), TOWER.into()],
+            kind: Kind::Walk {
+                screen: "standings".into(),
+                host: 14_101,
+                instances: 4,
+                slots: 73_908,
+                off: vec![S10.into(), S11.into(), TOWER.into()],
+            },
+        };
+        let t = text(&s, &c, &[]);
+        assert!(
+            t.contains("SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make"),
+            "{t}"
+        );
+        assert!(t.contains("; turn TV Timing Tower off in this profile ("), "{t}");
     }
 
     #[test]
