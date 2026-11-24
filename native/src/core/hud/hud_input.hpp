@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <atomic>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -40,6 +41,7 @@ struct Snapshot {
     float pad_lx = 0, pad_ly = 0, pad_rx = 0, pad_ry = 0, pad_lt = 0, pad_rt = 0;
     uint32_t pad_prev = 0;
     uint64_t pad_repeat_at = 0;
+    uint32_t joy_connected = 0, joy_buttons = 0, joy_pressed = 0;
 };
 
 constexpr uint32_t PAD_DIRS = SWOFTY_PAD_UP | SWOFTY_PAD_DOWN | SWOFTY_PAD_LEFT | SWOFTY_PAD_RIGHT;
@@ -98,6 +100,95 @@ inline void fold_pads(Snapshot &s, const PadRaw *pads, int n, uint64_t now)
         s.pad_repeat_at = now + PAD_REPEAT_EVERY;
     }
     s.pad_prev = held;
+}
+
+// DirectInput joystick states: DIJOYSTATE (80 bytes, 32 buttons) and DIJOYSTATE2 (272 bytes, 128 buttons) both put
+// the buttons after six axes, two sliders and four POV hats, one byte each with 0x80 set while held.
+constexpr uint32_t DIJOYSTATE_SIZE = 80, DIJOYSTATE2_SIZE = 272, DIJOY_BUTTONS_AT = 48;
+
+// The first 32 buttons of a joystick state as a bitmask; false when size is not a joystick state.
+inline bool joy_mask(const void *state, uint32_t size, uint32_t &mask)
+{
+    if (!state || (size != DIJOYSTATE_SIZE && size != DIJOYSTATE2_SIZE))
+        return false;
+    const uint8_t *b = static_cast<const uint8_t *>(state) + DIJOY_BUTTONS_AT;
+    mask = 0;
+    for (uint32_t i = 0; i < 32; i++)
+        if (b[i] & 0x80)
+            mask |= 1u << i;
+    return true;
+}
+
+// The game controllers seen in the game's own DirectInput reads, written from the thread that reads them and folded
+// on the render thread. A device keeps its slot while it is read; one unread for JOY_STALE_MS gives its slot up.
+constexpr int JOY_SLOTS = 8;
+constexpr uint64_t JOY_CONNECTED_MS = 2000, JOY_STALE_MS = 5000;
+
+struct JoySlot {
+    std::atomic<uintptr_t> dev{0};
+    std::atomic<uint32_t> held{0};
+    std::atomic<uint64_t> seen{0};
+};
+
+struct JoyRead {
+    int slot = -1;
+    bool fresh = false;
+    uint32_t went_down = 0;
+};
+
+struct JoyDevices {
+    JoySlot slots[JOY_SLOTS];
+    std::atomic<uint32_t> downs{0};
+
+    // Records one read of dev. A device's first read sets its held buttons without pressing them, so a button
+    // already held when the core starts watching is not a press.
+    JoyRead read(uintptr_t dev, uint32_t mask, uint64_t now)
+    {
+        JoyRead r;
+        for (int i = 0; i < JOY_SLOTS; i++)
+            if (slots[i].dev.load(std::memory_order_acquire) == dev) {
+                r.slot = i;
+                break;
+            }
+        if (r.slot < 0) {
+            for (int i = 0; i < JOY_SLOTS && r.slot < 0; i++) {
+                uintptr_t cur = slots[i].dev.load(std::memory_order_acquire);
+                bool free = cur == 0 || now - slots[i].seen.load(std::memory_order_relaxed) >= JOY_STALE_MS;
+                if (free && slots[i].dev.compare_exchange_strong(cur, dev, std::memory_order_acq_rel)) {
+                    r.slot = i;
+                    r.fresh = true;
+                }
+            }
+            if (r.slot < 0)
+                return r;
+        }
+        JoySlot &s = slots[r.slot];
+        uint32_t prev = s.held.exchange(mask, std::memory_order_relaxed);
+        s.seen.store(now, std::memory_order_relaxed);
+        if (!r.fresh) {
+            r.went_down = mask & ~prev;
+            if (r.went_down)
+                downs.fetch_or(r.went_down, std::memory_order_relaxed);
+        }
+        return r;
+    }
+};
+
+// Folds the controllers into s: a bit per slot read in the last JOY_CONNECTED_MS, their held buttons ORed, and every
+// button that went down since the last fold, so a press shorter than a frame still shows once.
+inline void fold_joy(Snapshot &s, JoyDevices &d, uint64_t now)
+{
+    uint32_t connected = 0, held = 0;
+    for (int i = 0; i < JOY_SLOTS; i++) {
+        const JoySlot &j = d.slots[i];
+        if (!j.dev.load(std::memory_order_acquire) || now - j.seen.load(std::memory_order_relaxed) >= JOY_CONNECTED_MS)
+            continue;
+        connected |= 1u << i;
+        held |= j.held.load(std::memory_order_relaxed);
+    }
+    s.joy_connected = connected;
+    s.joy_buttons = held;
+    s.joy_pressed = d.downs.exchange(0, std::memory_order_relaxed);
 }
 
 inline void set_bit(uint8_t *bits, uint32_t vk, bool on)
@@ -216,8 +307,8 @@ struct Focus {
 };
 
 // The snapshot an addon sees: the focus holder gets everything; while nobody holds focus every addon
-// gets the cursor, mouse buttons, key edges (no keys while the game has a text box focused) and pads; while
-// another addon holds it, an addon gets nothing. The wheel and typed text go only to the holder.
+// gets the cursor, mouse buttons, key edges (no keys while the game has a text box focused), pads and game
+// controllers; while another addon holds it, an addon gets nothing. The wheel and typed text go only to the holder.
 inline void view(const Snapshot &s, const Focus &f, const std::string &who, SwoftyInput &out, bool typing = false)
 {
     uint32_t size = out.size;
@@ -247,6 +338,9 @@ inline void view(const Snapshot &s, const Focus &f, const std::string &who, Swof
     out.pad_ry = s.pad_ry;
     out.pad_lt = s.pad_lt;
     out.pad_rt = s.pad_rt;
+    out.joy_connected = s.joy_connected;
+    out.joy_buttons = s.joy_buttons;
+    out.joy_pressed = s.joy_pressed;
     if (!mine)
         return;
     out.wheel = s.wheel;

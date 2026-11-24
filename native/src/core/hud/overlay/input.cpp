@@ -1,5 +1,6 @@
 #include "core/hud/overlay/input.hpp"
 
+#include "core/hud/overlay/joy.hpp"
 #include "core/hud/overlay/overlay.hpp"
 #include "core/hud/overlay/settings.hpp"
 #include "core/hud/text_entry.hpp"
@@ -179,6 +180,7 @@ void Input::frame(const std::vector<hud::drawlist::Paintsub> &subs, float fb_w, 
             hud::input::fold_pads(snap, pads, 4, now);
         else
             snap.pad_pressed = 0;
+        hud::input::fold_joy(snap, joy::devices(), now);
         events.clear();
         for (const auto &s : subs)
             focus.painted(s.owner, now);
@@ -221,6 +223,7 @@ void Input::draw_cursor(hud::drawlist::Frame &f)
 void Input::view(const std::string &owner, SwoftyInput &full)
 {
     read_ms.store(GetTickCount64(), std::memory_order_relaxed);
+    joy::want();
     hud::input::view(frame_snap, frame_focus, owner, full, runtime::typing(nullptr));
 }
 

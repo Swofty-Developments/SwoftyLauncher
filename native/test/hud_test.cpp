@@ -473,6 +473,8 @@ static void test_input()
     s.buttons = SWOFTY_MOUSE_LEFT;
     s.pressed = SWOFTY_MOUSE_LEFT;
     s.released = SWOFTY_MOUSE_RIGHT;
+    s.joy_connected = 1;
+    s.joy_buttons = s.joy_pressed = 1u << 3;
     SwoftyInput in{};
     in.size = sizeof in;
     view(s, f, "a", in);
@@ -480,18 +482,70 @@ static void test_input()
           "without focus an addon sees no wheel and no text");
     CHECK(in.buttons == SWOFTY_MOUSE_LEFT && in.pressed == SWOFTY_MOUSE_LEFT && in.released == SWOFTY_MOUSE_RIGHT,
           "without focus every addon sees the mouse buttons");
+    CHECK(in.joy_connected == 1 && in.joy_buttons == 1u << 3 && in.joy_pressed == 1u << 3 && in.pad_connected == 2,
+          "without focus every addon sees the pads and game controllers");
     SwoftyInput other{};
     other.size = sizeof other;
     view(s, f, "b", other);
-    CHECK(other.pressed == SWOFTY_MOUSE_LEFT, "and so does a second addon in the same frame");
+    CHECK(other.pressed == SWOFTY_MOUSE_LEFT && other.joy_pressed == 1u << 3, "and so does a second addon in the same frame");
     f.take("a", true, 0);
     view(s, f, "a", in);
-    CHECK(in.focused && in.buttons == SWOFTY_MOUSE_LEFT && in.char_count == 1 && in.chars[0] == 'q' && in.wheel == 1,
-          "the focus holder sees buttons, wheel and text");
+    CHECK(in.focused && in.buttons == SWOFTY_MOUSE_LEFT && in.char_count == 1 && in.chars[0] == 'q' && in.wheel == 1 &&
+              in.joy_pressed == 1u << 3,
+          "the focus holder sees buttons, wheel, text and game controllers");
     view(s, f, "b", in);
     CHECK(!in.focused && in.x == -1 && in.keys_down[0x77 >> 3] == 0 && in.buttons == 0 && in.pressed == 0 &&
-              in.pad_pressed == 0,
+              in.joy_pressed == 0 && in.joy_connected == 0 && in.pad_pressed == 0,
           "other addons see nothing while one holds focus");
+}
+
+static void test_joy()
+{
+    using namespace hud::input;
+    uint8_t state2[DIJOYSTATE2_SIZE] = {}, state1[DIJOYSTATE_SIZE] = {};
+    state2[0] = 0x80;
+    state2[DIJOY_BUTTONS_AT + 0] = 0x80;
+    state2[DIJOY_BUTTONS_AT + 5] = 0x81;
+    state2[DIJOY_BUTTONS_AT + 6] = 0x7f;
+    state2[DIJOY_BUTTONS_AT + 31] = 0x80;
+    state2[DIJOY_BUTTONS_AT + 32] = 0x80;
+    uint32_t mask = 7;
+    CHECK(joy_mask(state2, sizeof state2, mask) && mask == (1u | 1u << 5 | 1u << 31),
+          "a DIJOYSTATE2 gives its first 32 buttons by the 0x80 bit, not its axes or later buttons");
+    state1[DIJOY_BUTTONS_AT + 2] = 0x80;
+    CHECK(joy_mask(state1, sizeof state1, mask) && mask == 1u << 2, "a DIJOYSTATE gives its 32 buttons");
+    mask = 7;
+    CHECK(!joy_mask(state2, 256, mask) && !joy_mask(state2, 16, mask) && !joy_mask(nullptr, DIJOYSTATE2_SIZE, mask) &&
+              mask == 7,
+          "keyboard and mouse states are not joystick states");
+
+    JoyDevices d;
+    Snapshot s;
+    JoyRead r = d.read(0x1000, 1u << 4, 100);
+    CHECK(r.fresh && r.slot == 0 && r.went_down == 0, "a device's first read is not a press, even with a button held");
+    fold_joy(s, d, 110);
+    CHECK(s.joy_connected == 1 && s.joy_buttons == 1u << 4 && s.joy_pressed == 0, "a read device is connected and holds");
+    r = d.read(0x1000, 1u << 4 | 1u << 1, 120);
+    CHECK(!r.fresh && r.went_down == 1u << 1, "a button that goes down is a press");
+    r = d.read(0x1000, 1u << 4, 130);
+    CHECK(r.went_down == 0, "a release is not a press");
+    fold_joy(s, d, 140);
+    CHECK(s.joy_pressed == 1u << 1 && s.joy_buttons == 1u << 4, "a press released before the frame still shows once");
+    fold_joy(s, d, 150);
+    CHECK(s.joy_pressed == 0, "and only in one frame");
+    r = d.read(0x2000, 0, 160);
+    d.read(0x2000, 1u << 9, 170);
+    fold_joy(s, d, 180);
+    CHECK(r.slot == 1 && s.joy_connected == 3 && s.joy_pressed == 1u << 9 && s.joy_buttons == (1u << 4 | 1u << 9),
+          "two devices take two slots and their buttons are ORed");
+    d.read(0x2000, 0, 3000);
+    fold_joy(s, d, 3000);
+    CHECK(s.joy_connected == 2 && s.joy_buttons == 0, "a device not read for 2 s is no longer connected");
+    r = d.read(0x3000, 1u << 2, 6000);
+    CHECK(r.fresh && r.slot == 0, "a new device takes the slot of one unread for 5 s");
+    for (uintptr_t dev = 0x4000; dev < 0x4000 + JOY_SLOTS * 0x100; dev += 0x100)
+        r = d.read(dev, 0, 6100);
+    CHECK(r.slot == -1, "a device past the last slot is not recorded");
 }
 
 static void test_registry()
@@ -1318,6 +1372,7 @@ int main(int argc, char **argv)
     test_cap();
     test_text_cache();
     test_input();
+    test_joy();
     test_text_entry();
     test_registry();
     test_build_dispatch();

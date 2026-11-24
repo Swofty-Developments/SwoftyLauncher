@@ -161,6 +161,7 @@ core/guards/session/teammate_pairs_guard.cpp: const guards::MidHookSpec spec{ =>
 core/guards/tracks/gp_weekend_track_guard.cpp: runtime::loader::Installed r = runtime::loader::install(into, at, sig.what, fn); => via
 core/guards/tracks/gp_weekend_track_guard.cpp: bool tyres = arm(S_PRESET_TRACK_READ, h_track, track_read); => mid sig S_PRESET_TRACK_READ
 core/guards/tracks/gp_weekend_track_guard.cpp: bool session = arm(S_SESSION_TRACK_READ, h_session, session_track_read); => mid sig S_SESSION_TRACK_READ
+core/hud/overlay/joy.cpp: auto h = safetyhook::InlineHook::create(fns[i], reinterpret_cast<void *>(detours[i]), safetyhook::InlineHook::StartDisabled); => outside dinput8
 core/hooks/car_live.cpp: g_built = std::make_unique<session_points::MidPoint>("car.built", "site_Car_LiveCarBuilt", &m_built, game_ops()); => mid binding site_Car_LiveCarBuilt
 core/hooks/car_live.cpp: g_reset = std::make_unique<GamePoint>("car.reset", "Car_Systems_Reset_Thunk", reinterpret_cast<void *>(&d_reset), game_ops()); => inline binding Car_Systems_Reset_Thunk
 core/hooks/car_live.cpp: g_replay = std::make_unique<GamePoint>("car.upgrades.replayed", "Car_Upgrades_ApplyToVehicle", => inline binding Car_Upgrades_ApplyToVehicle
