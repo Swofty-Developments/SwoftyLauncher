@@ -6,6 +6,7 @@ pub(crate) mod ea_app;
 pub(crate) mod found_data;
 pub(crate) mod game_edited;
 pub(crate) mod profiles;
+pub(crate) mod selection;
 pub(crate) mod send_logs;
 pub(crate) mod setup;
 pub(crate) mod tasks;

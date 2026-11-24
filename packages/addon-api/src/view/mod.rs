@@ -2,6 +2,7 @@ mod blocks;
 mod chart;
 mod event;
 mod form;
+mod selection;
 mod style;
 mod table;
 
@@ -17,6 +18,7 @@ pub use form::{
     Choice, ColourField, Field, Form, NumberField, SelectField, TextField, ToggleField, colour_hex, number,
     parse_colour,
 };
+pub use selection::{SelectionDialog, SelectionOption};
 pub use style::{Art, Fact, Icon, Notice, Style, Tag, Tone};
 pub use table::{
     Align, Cell, CellImage, CellImageData, CellSpec, Column, ColumnSpec, RowSpec, Sort, SortKey, Span, Table,

@@ -15,6 +15,10 @@ use gpui_kit::component::{TitleBar, v_flex};
 use gpui_kit::*;
 
 fn main() {
+    if std::env::args().any(|a| a == "--selection-demo") {
+        app::selection_demo::run();
+        return;
+    }
     if std::env::args().any(|a| a == "--chart-demo") {
         chart_demo::run();
         return;

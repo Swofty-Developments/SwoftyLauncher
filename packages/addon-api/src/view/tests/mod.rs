@@ -1,6 +1,7 @@
 mod blocks;
 mod event;
 mod form;
+mod selection;
 mod table;
 
 use super::*;

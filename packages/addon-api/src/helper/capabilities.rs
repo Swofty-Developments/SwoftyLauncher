@@ -1,6 +1,8 @@
 pub const API_VERSION: u32 = 1;
 /// Optional support for the data-only native Chart view block.
 pub const VIEW_CHART: &str = "view.chart";
+/// Native addon selection dialogs and their Selected event.
+pub const VIEW_SELECTION_DIALOG: &str = "view.selection_dialog";
 /// Optional caller-supplied in-memory PNG pictures in generic table cells.
 pub const VIEW_CELL_IMAGE_DATA: &str = "view.cell.image_data";
 /// Listed from launcher 1.10: the launcher may answer a `build` with an earlier reply that lists its `reads`.
