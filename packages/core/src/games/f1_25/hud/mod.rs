@@ -39,6 +39,7 @@ use crate::{Error, Result};
 
 mod composer;
 mod inputs;
+mod rewrite;
 mod sprites;
 mod stock;
 
