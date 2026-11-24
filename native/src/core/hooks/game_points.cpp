@@ -159,10 +159,13 @@ template <class R = g::TrackDataRecord> std::string fuel_track(void *setup, uint
 // formats the other team's logo. Before the handlers run, a teams::set_logo override for the team picks the label of
 // the team whose slice holds that team.logo record in the site's array. Installed while the point has subscribers or
 // an override exists; not hot (the details panel, the cards and the carousel items are built on focus and on open).
+// A full-key site sees the finished key in rdx instead (the broadcast grid rundown card's team badge, read from the
+// team's registry entry, not formatted): its last '.' segment is the label, and set_key swaps that segment.
 struct LogoSite {
     const char *binding;
     swofty::teams::LogoContext context;
     const char *array;
+    bool full_key = false;
 };
 
 constexpr LogoSite LOGO_SITES[] = {
@@ -170,10 +173,15 @@ constexpr LogoSite LOGO_SITES[] = {
     {"site_Game_TeamSelect_TeamLogoFormat", swofty::teams::LogoContext::team_select, "team_logos.driver_career_2024_team_select"},
     // The Choose Driver grid cards (Game_DriverSelect_AddCard): their team logo is the broadcast badge.
     {"site_Game_DriverSelect_BadgeFormat", swofty::teams::LogoContext::driver_select, "teams.badges_broadcast"},
+    // The broadcast grid rundown cards before the race: rdx holds the team badge key the card's holder takes.
+    {"site_Game_GridRundown_TeamBadgeSet", swofty::teams::LogoContext::broadcast, "teams.badges_broadcast", true},
+    {"site_Game_GridRundown_TeamBadgeSetB", swofty::teams::LogoContext::broadcast, "teams.badges_broadcast", true},
 };
 constexpr size_t LOGO_SITE_COUNT = sizeof(LOGO_SITES) / sizeof(LOGO_SITES[0]);
 constexpr const char *LOGO_POINT = "team.logo.resolve";
 constexpr size_t MAX_LABEL = 128;
+constexpr size_t MAX_KEY = 256;
+constexpr size_t LOGGED_KEYS = 24;
 
 Table *logo_table = nullptr;
 
@@ -216,10 +224,36 @@ struct LogoSlot {
     swofty::teams::events::LogoResolve *payload;
 };
 
+// The first distinct keys a full-key site sees, once each: the log shows the key format of a new site, with the
+// dword at rdi-0x10 (on the grid rundown card the entrant's team stat id: byte 0 table, bits 16..31 index; L1).
+void note_key(const LogoSite &site, const std::string &key, uintptr_t rdi)
+{
+    static auto *m = new std::mutex;
+    static auto *seen = new std::set<std::string>;
+    std::lock_guard<std::mutex> g(*m);
+    if (seen->size() >= LOGGED_KEYS || !seen->insert(key).second)
+        return;
+    uint32_t team_word = 0;
+    bool word = rdi > 0x10 && mem::read(rdi - 0x10, team_word);
+    swofty::log("[hooks] team.logo.resolve: %s key '%s' (rdi-0x10 %s0x%08x)", site.binding, key.c_str(), word ? "" : "unread ",
+                team_word);
+}
+
 void logo_site(const LogoSite &site, safetyhook::Context &c)
 {
-    std::string label;
-    if (!c.r8 || !mem::c_string(uintptr_t(c.r8), label, MAX_LABEL) || label.empty())
+    std::string label, prefix;
+    if (site.full_key) {
+        std::string key;
+        if (!c.rdx || !mem::c_string(uintptr_t(c.rdx), key, MAX_KEY) || key.empty())
+            return;
+        note_key(site, key, uintptr_t(c.rdi));
+        size_t dot = key.rfind('.');
+        if (key.rfind("eaid://", 0) == 0 || dot == std::string::npos || dot + 1 >= key.size() ||
+            key.size() - dot - 1 >= MAX_LABEL)
+            return;
+        prefix = key.substr(0, dot + 1);
+        label = key.substr(dot + 1);
+    } else if (!c.r8 || !mem::c_string(uintptr_t(c.r8), label, MAX_LABEL) || label.empty())
         return;
     std::string team = team_of_label(label);
     std::string from = override_label(team, site.array);
@@ -245,13 +279,19 @@ void logo_site(const LogoSite &site, safetyhook::Context &c)
         int replaced = 0;
         logo_table->fire("", LOGO_POINT, &e, &replaced);
     }
-    if (slot.key != label)
+    if (slot.key == label)
+        return;
+    if (site.full_key)
+        c.rdx = uintptr_t(intern_label(prefix + slot.key));
+    else
         c.r8 = uintptr_t(intern_label(slot.key));
 }
 
 void logo_driver_select(safetyhook::Context &c) { logo_site(LOGO_SITES[0], c); }
 void logo_team_select(safetyhook::Context &c) { logo_site(LOGO_SITES[1], c); }
 void logo_driver_card(safetyhook::Context &c) { logo_site(LOGO_SITES[2], c); }
+void logo_grid_rundown(safetyhook::Context &c) { logo_site(LOGO_SITES[3], c); }
+void logo_grid_rundown_team(safetyhook::Context &c) { logo_site(LOGO_SITES[4], c); }
 
 class LogoLink final : public GameLink {
 public:
@@ -262,7 +302,8 @@ public:
         std::lock_guard<std::recursive_mutex> g(lock_);
         if (live_)
             return true;
-        constexpr safetyhook::MidHookFn FNS[LOGO_SITE_COUNT] = {&logo_driver_select, &logo_team_select, &logo_driver_card};
+        constexpr safetyhook::MidHookFn FNS[LOGO_SITE_COUNT] = {&logo_driver_select, &logo_team_select, &logo_driver_card,
+                                                                 &logo_grid_rundown, &logo_grid_rundown_team};
         int placed = 0;
         for (size_t i = 0; i < LOGO_SITE_COUNT; i++) {
             const char *b = LOGO_SITES[i].binding;
