@@ -59,7 +59,7 @@ SWOFTY_ADDON()
 ```
 
 - **Header:** `swofty/live.hpp`, namespace `swofty::live`; host test fake `swofty/fake_live.hpp`
-- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 6 appends `car_detail`; version 5 appends `tyre_icon_texture`; version 4 appends image access; version 2 adds `driver_name` and version 1 ends at `seq`; version 3 adds `team_badge_texture`); `SWOFTY_API_VERSION` is unchanged
+- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 7 appends `driver_portrait`; version 6 appends `car_detail`; version 5 appends `tyre_icon_texture`; version 4 appends image access; version 2 adds `driver_name` and version 1 ends at `seq`; version 3 adds `team_badge_texture`); `SWOFTY_API_VERSION` is unchanged
 - **Feature:** `telemetry`, experimental, off by default (the live state is the memory source of std telemetry)
 - **Thread:** any thread; car/session calls copy the core's per-frame snapshot. Badge/name getters read the game's memory at the call; `tyre_icon_texture` resolves the snapshot's fitted visual compound through the loaded GameDB.
 
@@ -411,6 +411,75 @@ Differing duplicate archive resources answer unavailable rather than selecting
 an arbitrary copy. In-place edits at unchanged routes need an explicit clear;
 runtime-only GPU texture modifications are not captured for tyre icons.
 
+## Driver portraits
+
+`live::driver_portrait(vehicle)` (Live table version 7) returns the car's grid rundown portrait, the 600 x 800 render of
+the driver the race load makes for the pre-race grid rundown. Arm the capture once at addon init with
+`live::start_portraits()`, before the race loads: the game renders each portrait once, during the load, and the core can
+only read it back while it is armed.
+
+```cpp
+#include <swofty/live.hpp>
+
+namespace live = swofty::live;
+
+SWOFTY_ON_LOAD { live::start_portraits(); }
+
+void draw_row(uint32_t vehicle)
+{
+    auto reference = live::driver_portrait(vehicle); // "eaid://game_rtt_tex_0012"
+    if (!reference)
+        return; // no portrait for this car: no rundown queued, or not asked for yet
+
+    // Full size: 600 x 800 RGBA8 for the rundown, tight rows, alpha kept.
+    if (auto image = live::portrait_image(*reference)) {
+        if (image->revision != shown_revision[vehicle]) {
+            upload_texture(vehicle, image->width, image->height, image->rgba.data());
+            shown_revision[vehicle] = image->revision;
+        }
+    }
+
+    // Or a thumbnail through the same call as badges and tyre icons: at most 64 x 64 (48 x 64 for the rundown).
+    uint8_t rgba[64 * 64 * 4];
+    uint32_t width = 0, height = 0;
+    uint64_t revision = 0;
+    if (live::images()->image(reference->c_str(), rgba, sizeof rgba, &width, &height, &revision) == SWOFTY_ASSET_OK)
+        draw_thumbnail(rgba, width, height);
+}
+```
+
+The game renders the portraits only when it queues the grid rundown: a race session with more than 10 entrants, offline,
+with `Game.SkipGridRundown` off, so not with the core's `loading_skip_grid_rundown` feature on. Qualifying, practice, Time
+Trial and small grids have none, and `driver_portrait` answers empty there.
+
+How a car finds its portrait:
+
+- **The reference.** The core takes the driver of the car's session entrant (the same entrant `team_badge_texture` reads)
+  and reads the view model leaf the game binds for the rundown, `<driver>.textures.GridRundownLeft.Thumbnail`, else
+  `GridRundownRight`, where `<driver>` is `preloaded_drivers`, `custom_drivers` or `network_drivers` at the driver's
+  index. The leaf holds `eaid://game_rtt_tex_NNNN.srv` or `_srgb.srv`; the reference is the render target's name without
+  the view suffix. The answer is kept for a second per car.
+- **The pixels.** Armed, the core follows the D3D12 names of the game's render target pool (`eaid://game_rtt_tex_NNNN`)
+  and copies a target to a readback buffer when the game moves it from being written to being read by shaders, while a
+  session loads or runs or when it is 600 x 800 or 400 x 400. It keeps up to 40 portraits, R8G8B8A8 or B8G8R8A8 at most
+  1024 on a side, until the session unloads; `images()->clear()` leaves them.
+- **The C calls.** `driver_portrait(vehicle, reference, cap)` needs 25 bytes. `images()->start_portraits(0)` arms the
+  capture and `images()->image_full(reference, rgba, cap, &width, &height, &revision)` copies the full image (images
+  table version 2): with a short `cap` or a null `rgba` it writes the size and answers `SWOFTY_ASSET_INVALID`, so
+  4,194,304 bytes (`SWOFTY_LIVE_PORTRAIT_MAX_SIDE` squared, times 4) always suffice.
+
+The reference can come before the pixels: `image` and `image_full` answer `SWOFTY_ASSET_UNAVAILABLE` until the copy is in,
+and every later capture of the same target raises `revision`. The core logs what it sees under `[portraits]`:
+
+```text
+[portraits] capture armed: following render target pool names
+[portraits] session loading: capture window open
+[portraits] named 'eaid://game_rtt_tex_0012' (eaid://game_rtt_tex_0012): 600x800 layers=1 mips=1 format=27 flags=0x1
+[portraits] captured 'eaid://game_rtt_tex_0012': 600x800 format=27 list=0 states=0x4->0xc0 serial=3 cached=1 alpha 0:301233 255:170001 other:8766 mean rgb 61 58 60
+[portraits] car 3: driver preloaded_drivers[17] -> GridRundownLeft.Thumbnail 'eaid://game_rtt_tex_0012' (srgb view), pixels captured
+[portraits] session unload: dropped 20 portrait(s), 0 pending
+```
+
 ## team_badge, team_badge_texture, driver_name and frame
 
 ```cpp
@@ -458,6 +527,8 @@ fake.set_turns({/* SwoftyLiveTurn rows */});
 fake.set_driver_name(1, "Charles Leclerc");
 fake.set_badge(1, "ferrari_2026");                 // team_badge and the catalogue team_badge_texture
 fake.set_badge_texture(0, "eaid://ui_package/art/textures/render_badge_ePreLoaded 7");
+fake.set_driver_portrait(1, "eaid://game_rtt_tex_0012");
+fake.set_image("eaid://game_rtt_tex_0012", 600, 800, std::vector<uint8_t>(600 * 800 * 4, 255));
 fake.car(0).have |= SWOFTY_LIVE_HAVE_LAP_TIMES;
 fake.detail(0).best_lap_ms = 90500;                // car_detail answers detail(0) with car(0).have
 fake.install();
@@ -465,6 +536,7 @@ fake.install();
 assert(swofty::live::gap_ahead_ms(*swofty::live::car(0)) == 950);
 assert(swofty::live::order().ahead(0)->vehicle == 1);
 assert(swofty::live::best_lap_ms(*swofty::live::car_detail(0)) == 90500u);
+assert(swofty::live::driver_portrait_image(1)->height == 800);
 ```
 
 ## When a group reads
