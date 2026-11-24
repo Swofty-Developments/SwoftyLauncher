@@ -159,13 +159,19 @@ template <class R = g::TrackDataRecord> std::string fuel_track(void *setup, uint
 // formats the other team's logo. Before the handlers run, a teams::set_logo override for the team picks the label of
 // the team whose slice holds that team.logo record in the site's array. Installed while the point has subscribers or
 // an override exists; not hot (the details panel, the cards and the carousel items are built on focus and on open).
-// A full-key site sees the finished key in rdx instead (the broadcast grid rundown card's team badge, read from the
-// team's registry entry, not formatted): its last '.' segment is the label, and set_key swaps that segment.
+// A full-key site sees the finished key in rdx instead: the entry of Vm_Resolve_RegistryNode, which resolves every
+// '#overrides.' image path the UI binds, filtered to one array's paths (`match`, without the leading '#'). The broadcast
+// grid rundown card before a race resolves its team logo there ('#overrides.broadcast_ui_generic.grid_team_logos.<label>';
+// no format site builds it). Its last '.' segment is the label, and set_key swaps that segment. The resolver reads the
+// path only during the call, so the swapped path is the core's own interned string. That entry is hot (2166 call
+// sites): a path outside the array costs a null check and one prefix compare, and the hook stays off without
+// subscribers.
 struct LogoSite {
     const char *binding;
     swofty::teams::LogoContext context;
     const char *array;
     bool full_key = false;
+    const char *match = nullptr;
 };
 
 constexpr LogoSite LOGO_SITES[] = {
@@ -173,9 +179,9 @@ constexpr LogoSite LOGO_SITES[] = {
     {"site_Game_TeamSelect_TeamLogoFormat", swofty::teams::LogoContext::team_select, "team_logos.driver_career_2024_team_select"},
     // The Choose Driver grid cards (Game_DriverSelect_AddCard): their team logo is the broadcast badge.
     {"site_Game_DriverSelect_BadgeFormat", swofty::teams::LogoContext::driver_select, "teams.badges_broadcast"},
-    // The broadcast grid rundown cards before the race: rdx holds the team badge key the card's holder takes.
-    {"site_Game_GridRundown_TeamBadgeSet", swofty::teams::LogoContext::broadcast, "teams.badges_broadcast", true},
-    {"site_Game_GridRundown_TeamBadgeSetB", swofty::teams::LogoContext::broadcast, "teams.badges_broadcast", true},
+    // The broadcast grid rundown cards before the race: their 'team' holder resolves the grid team logo path.
+    {"Vm_Resolve_RegistryNode", swofty::teams::LogoContext::broadcast, "broadcast_ui_generic.grid_team_logos", true,
+     "overrides.broadcast_ui_generic.grid_team_logos."},
 };
 constexpr size_t LOGO_SITE_COUNT = sizeof(LOGO_SITES) / sizeof(LOGO_SITES[0]);
 constexpr const char *LOGO_POINT = "team.logo.resolve";
@@ -224,29 +230,42 @@ struct LogoSlot {
     swofty::teams::events::LogoResolve *payload;
 };
 
-// The first distinct keys a full-key site sees, once each: the log shows the key format of a new site, with the
-// dword at rdi-0x10 (on the grid rundown card the entrant's team stat id: byte 0 table, bits 16..31 index; L1).
-void note_key(const LogoSite &site, const std::string &key, uintptr_t rdi)
+// The first distinct keys a full-key site sees, once each, with the caller (the return address at the resolver's
+// entry): the log names the game code that resolves the array's paths.
+void note_key(const LogoSite &site, const std::string &key, uintptr_t rsp)
 {
     static auto *m = new std::mutex;
     static auto *seen = new std::set<std::string>;
     std::lock_guard<std::mutex> g(*m);
     if (seen->size() >= LOGGED_KEYS || !seen->insert(key).second)
         return;
-    uint32_t team_word = 0;
-    bool word = rdi > 0x10 && mem::read(rdi - 0x10, team_word);
-    swofty::log("[hooks] team.logo.resolve: %s key '%s' (rdi-0x10 %s0x%08x)", site.binding, key.c_str(), word ? "" : "unread ",
-                team_word);
+    uintptr_t caller = 0;
+    bool read = rsp && mem::read(rsp, caller);
+    swofty::log("[hooks] team.logo.resolve: %s key '%s' (caller %s0x%llx)", site.binding, key.c_str(), read ? "" : "unread ",
+                static_cast<unsigned long long>(caller));
+}
+
+// A path of the site's array: the resolver's callers pass a NUL-terminated path or null (KB Vm_Resolve_RegistryNode).
+bool in_array(const LogoSite &site, uintptr_t path)
+{
+    if (!path)
+        return false;
+    const char *p = reinterpret_cast<const char *>(path);
+    if (*p == '#')
+        p++;
+    return std::strncmp(p, site.match, std::strlen(site.match)) == 0;
 }
 
 void logo_site(const LogoSite &site, safetyhook::Context &c)
 {
     std::string label, prefix;
     if (site.full_key) {
+        if (site.match && !in_array(site, uintptr_t(c.rdx)))
+            return;
         std::string key;
         if (!c.rdx || !mem::c_string(uintptr_t(c.rdx), key, MAX_KEY) || key.empty())
             return;
-        note_key(site, key, uintptr_t(c.rdi));
+        note_key(site, key, uintptr_t(c.rsp));
         size_t dot = key.rfind('.');
         if (key.rfind("eaid://", 0) == 0 || dot == std::string::npos || dot + 1 >= key.size() ||
             key.size() - dot - 1 >= MAX_LABEL)
@@ -291,7 +310,6 @@ void logo_driver_select(safetyhook::Context &c) { logo_site(LOGO_SITES[0], c); }
 void logo_team_select(safetyhook::Context &c) { logo_site(LOGO_SITES[1], c); }
 void logo_driver_card(safetyhook::Context &c) { logo_site(LOGO_SITES[2], c); }
 void logo_grid_rundown(safetyhook::Context &c) { logo_site(LOGO_SITES[3], c); }
-void logo_grid_rundown_team(safetyhook::Context &c) { logo_site(LOGO_SITES[4], c); }
 
 class LogoLink final : public GameLink {
 public:
@@ -303,7 +321,7 @@ public:
         if (live_)
             return true;
         constexpr safetyhook::MidHookFn FNS[LOGO_SITE_COUNT] = {&logo_driver_select, &logo_team_select, &logo_driver_card,
-                                                                 &logo_grid_rundown, &logo_grid_rundown_team};
+                                                                 &logo_grid_rundown};
         int placed = 0;
         for (size_t i = 0; i < LOGO_SITE_COUNT; i++) {
             const char *b = LOGO_SITES[i].binding;
