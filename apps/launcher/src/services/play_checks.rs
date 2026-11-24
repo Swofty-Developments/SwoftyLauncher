@@ -554,11 +554,11 @@ mod tests {
     use super::*;
     use swofty_core::profile::conflicts::Report;
 
-    fn hud_report(order: &[&str], built_at: f64, hud_editor: Option<&str>) -> Report {
+    fn hud_report(order: Vec<String>, built_at: f64, hud_editor: Option<&str>) -> Report {
         Report {
             profile: "p".into(),
             built_at,
-            order: order.iter().map(|s| (*s).to_owned()).collect(),
+            order,
             hud_editor: hud_editor.map(str::to_owned),
             ..Default::default()
         }
@@ -570,8 +570,10 @@ mod tests {
         for id in ["t.a", "t.b"] {
             p.set_enabled(id, true).unwrap();
         }
+        let order: Vec<String> = p.enabled().map(str::to_owned).collect();
+        let moved: Vec<String> = order.iter().rev().cloned().collect();
         let text = "A and B together make the Track Position list too big for HUD customisation";
-        let last = hud_report(&["t.a", "t.b"], 1.0, Some(text));
+        let last = hud_report(order.clone(), 1.0, Some(text));
         let note = hud_editor_note(Some(&last), &p).expect("a note");
         assert_eq!(
             (note.level, note.title.as_str(), note.body.as_str(), note.sticky),
@@ -582,8 +584,8 @@ mod tests {
                 true
             )
         );
-        assert!(hud_editor_note(Some(&hud_report(&["t.b", "t.a"], 1.0, Some(text))), &p).is_none());
-        assert!(hud_editor_note(Some(&hud_report(&["t.a", "t.b"], 1.0, None)), &p).is_none());
+        assert!(hud_editor_note(Some(&hud_report(moved, 1.0, Some(text))), &p).is_none());
+        assert!(hud_editor_note(Some(&hud_report(order, 1.0, None)), &p).is_none());
         assert!(hud_editor_note(None, &p).is_none());
     }
 
@@ -591,11 +593,11 @@ mod tests {
     fn a_launch_shows_the_hud_customisation_text_of_its_own_build_only() {
         let text = "too big for HUD customisation";
         assert_eq!(
-            fresh_hud_editor(Some(hud_report(&[], 20.0, Some(text))), 10.0).as_deref(),
+            fresh_hud_editor(Some(hud_report(Vec::new(), 20.0, Some(text))), 10.0).as_deref(),
             Some(text)
         );
-        assert!(fresh_hud_editor(Some(hud_report(&[], 5.0, Some(text))), 10.0).is_none());
-        assert!(fresh_hud_editor(Some(hud_report(&[], 20.0, None)), 10.0).is_none());
+        assert!(fresh_hud_editor(Some(hud_report(Vec::new(), 5.0, Some(text))), 10.0).is_none());
+        assert!(fresh_hud_editor(Some(hud_report(Vec::new(), 20.0, None)), 10.0).is_none());
         assert!(fresh_hud_editor(None, 10.0).is_none());
     }
 
