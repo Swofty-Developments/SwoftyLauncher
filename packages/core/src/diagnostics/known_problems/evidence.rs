@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
 
 use crate::addons::other_game::Packed;
@@ -13,6 +13,9 @@ use super::crash_record::report_name;
 
 /// The most of a loader.log or crash report that is read.
 pub(super) const READ_CAP: u64 = 32 << 20;
+
+/// Of a file over [`READ_CAP`], the start that is kept: the boot, build and system lines.
+const HEAD_CAP: u64 = 4 << 20;
 
 /// What a crashed session left behind, as the rules read it.
 #[derive(Debug, Clone, Default)]
@@ -235,11 +238,31 @@ pub(crate) fn read_perf(dir: &Path) -> Option<String> {
 }
 
 pub(super) fn read_capped(path: &Path) -> Option<String> {
-    let mut bytes = Vec::new();
-    std::fs::File::open(path)
-        .ok()?
-        .take(READ_CAP)
-        .read_to_end(&mut bytes)
-        .ok()?;
-    Some(String::from_utf8_lossy(&bytes).into_owned())
+    read_head_and_tail(std::fs::File::open(path).ok()?, READ_CAP, HEAD_CAP)
+}
+
+pub(super) fn read_head_and_tail<R: Read + Seek>(mut file: R, cap: u64, head: u64) -> Option<String> {
+    let len = file.seek(SeekFrom::End(0)).ok()?;
+    file.seek(SeekFrom::Start(0)).ok()?;
+    if len <= cap {
+        let mut bytes = Vec::new();
+        file.read_to_end(&mut bytes).ok()?;
+        return Some(String::from_utf8_lossy(&bytes).into_owned());
+    }
+    let mut start = vec![0; head as usize];
+    file.read_exact(&mut start).ok()?;
+    let keep = start.iter().rposition(|b| *b == b'\n').map_or(0, |i| i + 1);
+    start.truncate(keep);
+    let tail_len = cap - head;
+    file.seek(SeekFrom::Start(len - tail_len)).ok()?;
+    let mut end = Vec::with_capacity(tail_len as usize);
+    file.read_to_end(&mut end).ok()?;
+    let skip = end.iter().position(|b| *b == b'\n').map_or(0, |i| i + 1);
+    let mut text = String::from_utf8_lossy(&start).into_owned();
+    text.push_str(&format!(
+        "[log] {} bytes of the middle of this log were not read\n",
+        len - start.len() as u64 - (end.len() - skip) as u64
+    ));
+    text.push_str(&String::from_utf8_lossy(&end[skip..]));
+    Some(text)
 }
