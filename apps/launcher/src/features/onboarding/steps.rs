@@ -10,12 +10,12 @@ use swofty_i18n::tr;
 use super::{Step, art};
 use crate::shell::Shell;
 use crate::ui::scale::px;
-use crate::ui::theme::Palette;
+use crate::ui::theme::{Palette, ScrollArea};
 
 const ENTER: Duration = Duration::from_millis(420);
 
 pub(super) fn enter(step: Step, body: impl IntoElement) -> impl IntoElement {
-    div().child(body).with_animation(
+    v_flex().w_full().items_center().child(body).with_animation(
         ("onboarding-step", step.order()),
         Animation::new(ENTER).with_easing(ease_out_quint()),
         |el, t| el.opacity(t).relative().top(px((1. - t) * 18.)),
@@ -36,17 +36,44 @@ pub(super) fn dots(step: Step, steps: &[Step], p: Palette) -> impl IntoElement {
         }))
 }
 
+pub(super) const COPY_WIDTH: f32 = 620.;
+
+pub(super) fn copy(text: &'static str, size: f32, colour: Hsla) -> Div {
+    div()
+        .w_full()
+        .max_w(px(COPY_WIDTH))
+        .min_w_0()
+        .text_center()
+        .text_size(px(size))
+        .text_color(colour)
+        .child(text)
+}
+
 pub(super) fn heading(title: &'static str, subtitle: &'static str, p: Palette) -> impl IntoElement {
     v_flex()
+        .w_full()
         .items_center()
         .gap(px(8.))
-        .child(
-            div()
-                .text_size(px(30.))
-                .font_weight(FontWeight::BOLD)
-                .child(title),
-        )
-        .child(div().text_size(px(14.)).text_color(p.text_muted).child(subtitle))
+        .child(copy(title, 30., p.text).font_weight(FontWeight::BOLD))
+        .child(copy(subtitle, 14., p.text_muted))
+}
+
+pub(super) fn stage(body: impl IntoElement) -> impl IntoElement {
+    div().flex_1().min_h_0().w_full().child(
+        div()
+            .size_full()
+            .child(
+                v_flex()
+                    .w_full()
+                    .min_h_full()
+                    .items_center()
+                    .justify_center()
+                    .px(px(24.))
+                    .py(px(16.))
+                    .child(body),
+            )
+            .scroll_y("onboarding-stage"),
+    )
 }
 
 fn checked(p: Palette) -> impl IntoElement {
@@ -119,6 +146,7 @@ impl Shell {
                 .on_click(cx.listener(move |this, _, window, cx| this.set_language(code, window, cx)))
         });
         v_flex()
+            .w_full()
             .items_center()
             .gap(px(28.))
             .max_w(px(780.))
@@ -135,6 +163,7 @@ impl Shell {
         let option = |mode: UiMode, id: &'static str, title: &'static str, note: &'static str| {
             choice(id.into(), selected == mode, p)
                 .w(px(art::WIDTH + 48.))
+                .max_w_full()
                 .p(px(24.))
                 .child(
                     v_flex()
@@ -145,25 +174,14 @@ impl Shell {
                             v_flex()
                                 .items_center()
                                 .gap(px(4.))
-                                .child(
-                                    div()
-                                        .text_size(px(20.))
-                                        .font_weight(FontWeight::SEMIBOLD)
-                                        .child(title),
-                                )
-                                .child(
-                                    div()
-                                        .h(px(40.))
-                                        .text_center()
-                                        .text_size(px(13.))
-                                        .text_color(p.text_muted)
-                                        .child(note),
-                                ),
+                                .child(copy(title, 20., p.text).font_weight(FontWeight::SEMIBOLD))
+                                .child(copy(note, 13., p.text_muted).min_h(px(40.))),
                         ),
                 )
                 .on_click(cx.listener(move |this, _, window, cx| this.onboarding_pick_mode(mode, window, cx)))
         };
         v_flex()
+            .w_full()
             .items_center()
             .gap(px(28.))
             .child(heading(
@@ -173,6 +191,8 @@ impl Shell {
             ))
             .child(
                 h_flex()
+                    .flex_wrap()
+                    .justify_center()
                     .gap(px(24.))
                     .child(option(
                         UiMode::Pc,
@@ -207,6 +227,7 @@ pub(super) fn done(p: Palette) -> Div {
             |el, t| el.opacity(t).size(px(96. * (0.5 + 0.5 * t))),
         );
     v_flex()
+        .w_full()
         .items_center()
         .gap(px(24.))
         .child(div().h(px(96.)).flex().items_center().child(badge))

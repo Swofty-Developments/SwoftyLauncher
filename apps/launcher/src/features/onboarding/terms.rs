@@ -6,7 +6,7 @@ use gpui_kit::*;
 use swofty_ads::Consent;
 use swofty_i18n::tr;
 
-use super::steps::heading;
+use super::steps::{COPY_WIDTH, copy, heading};
 use crate::features::ads::{Ads, Unit};
 use crate::shell::{Shell, offline_terms};
 use crate::ui::scale::{Hit, px};
@@ -14,7 +14,7 @@ use crate::ui::theme::Palette;
 
 const TERMS_URL: &str = "https://ads.swofty.net/terms";
 const PRIVACY_URL: &str = "https://ads.swofty.net/privacy";
-const WIDTH: f32 = 620.;
+const WIDTH: f32 = COPY_WIDTH;
 
 fn card(p: Palette) -> Div {
     div()
@@ -30,7 +30,8 @@ pub(super) fn eula(p: Palette) -> Div {
     v_flex()
         .items_center()
         .gap(px(24.))
-        .w(px(WIDTH))
+        .w_full()
+        .max_w(px(WIDTH))
         .child(heading(
             tr("Swofty Launcher EULA"),
             tr("Read this before you start. You need to accept it to play."),
@@ -57,6 +58,7 @@ fn link(id: &'static str, label: &'static str, url: &'static str) -> Button {
 
 fn point(text: &'static str, p: Palette) -> impl IntoElement {
     h_flex()
+        .w_full()
         .gap(px(10.))
         .items_start()
         .child(
@@ -67,15 +69,31 @@ fn point(text: &'static str, p: Palette) -> impl IntoElement {
                 .rounded_full()
                 .bg(p.accent),
         )
-        .child(div().flex_1().text_size(px(14.)).text_color(p.text).child(text))
+        .child(
+            div()
+                .flex_1()
+                .min_w_0()
+                .text_size(px(14.))
+                .text_color(p.text)
+                .child(text),
+        )
 }
 
 fn note(icon: IconName, colour: Hsla, text: &'static str, p: Palette) -> impl IntoElement {
     h_flex()
+        .w_full()
+        .max_w(px(WIDTH))
         .gap(px(8.))
         .items_center()
-        .child(Icon::new(icon).size(px(16.)).text_color(colour))
-        .child(div().text_size(px(13.)).text_color(p.text_muted).child(text))
+        .child(Icon::new(icon).size(px(16.)).flex_shrink_0().text_color(colour))
+        .child(
+            div()
+                .flex_1()
+                .min_w_0()
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(text),
+        )
 }
 
 impl Shell {
@@ -95,6 +113,7 @@ impl Shell {
             )
         };
         let links = h_flex()
+            .flex_wrap()
             .gap(px(4.))
             .justify_center()
             .child(link("onboarding-ad-terms", tr("Terms of Service"), TERMS_URL))
@@ -115,6 +134,7 @@ impl Shell {
             _ => None,
         };
         let step = v_flex()
+            .w_full()
             .items_center()
             .gap(px(20.))
             .child(heading(title, subtitle, p));
@@ -122,17 +142,14 @@ impl Shell {
             let form = self.ads.consent_form(p.surface, reopen, Unit::Consent.size());
             return step
                 .when(!privacy_only, |d| {
-                    d.child(
-                        div()
-                            .max_w(px(WIDTH))
-                            .text_center()
-                            .text_size(px(13.))
-                            .text_color(p.text_muted)
-                            .child(tr(
-                                "Ads come from RevIQ and its partners, including Google. Where the law asks for it, \
-                                 choose below how they may use your data.",
-                            )),
-                    )
+                    d.child(copy(
+                        tr(
+                            "Ads come from RevIQ and its partners, including Google. Where the law asks for it, \
+                             choose below how they may use your data.",
+                        ),
+                        13.,
+                        p.text_muted,
+                    ))
                 })
                 .children(form.map(|form| {
                     div()
@@ -146,8 +163,9 @@ impl Shell {
                 .child(links);
         }
         step.child(
-            card(p).w(px(WIDTH)).child(
+            card(p).max_w(px(WIDTH)).child(
                 v_flex()
+                    .w_full()
                     .gap(px(12.))
                     .child(point(
                         tr("A few ads show on the Home, Discover, Online and addon pages. They close while you play."),

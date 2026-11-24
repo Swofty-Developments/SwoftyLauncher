@@ -364,14 +364,7 @@ impl Shell {
             Step::Ads => self.ads_step(wizard.privacy_only, wizard.reopen, p),
             Step::Done => steps::done(p),
         };
-        let stage = div()
-            .flex_1()
-            .min_h_0()
-            .w_full()
-            .flex()
-            .items_center()
-            .justify_center()
-            .child(steps::enter(step, body));
+        let stage = steps::stage(steps::enter(step, body));
         let early = step.order() < Step::Ads.order() && self.asks_ad_consent();
         Some(
             crate::ui::takeover("onboarding", p)

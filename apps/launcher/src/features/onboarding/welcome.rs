@@ -205,6 +205,7 @@ pub(super) fn view(p: Palette) -> Div {
         .text_color(p.text)
         .child(PRODUCT);
     let tagline = div()
+        .w_full()
         .max_w(px(460.))
         .text_center()
         .text_size(px(15.))
