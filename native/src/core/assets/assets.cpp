@@ -968,8 +968,8 @@ void apply_box_groups(Manifest &mf, const Probe &pr)
         if (Slot *ns = mf.names.find(eh)) {
             std::string existing = mf.decode(ns->value);
             if (existing != x.erp) {
-                swofty::log("[assets] box groups: erp hash %s of %s already names '%s'; %s keeps its stock list",
-                            hex(eh).c_str(), x.erp.c_str(), existing.c_str(), group.c_str());
+                swofty::log("[assets] box groups: erp hash %s of %s already names '%s'; %s keeps its stock list", hex(eh).c_str(),
+                            x.erp.c_str(), existing.c_str(), group.c_str());
                 continue;
             }
             named = true;

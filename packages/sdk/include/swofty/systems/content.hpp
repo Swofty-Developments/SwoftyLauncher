@@ -119,7 +119,7 @@ SWOFTY_ENUM(BoxAssetKind, garage, sponsors, marshals, crowd, principal, scene, o
 // cars (every car, or one team entry's), so a session of any other box never loads it. The game keeps the first
 // copy of a name it loads, so it only shows where the cars load before the stock archive (docs: box-assets).
 struct BoxAssets {
-    static constexpr Version version{1, 0};
+    static constexpr Version version{1, 1};
     Ref<Package> package;
     BoxAssetKind kind = BoxAssetKind::other;
     std::string entry;                  // the key of one team entry of the package; empty: every car of the box

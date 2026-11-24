@@ -65,7 +65,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "content.box_assets",
-        include_str!("../../../../../sdk/std/registries/content.box_assets/1.0.json"),
+        include_str!("../../../../../sdk/std/registries/content.box_assets/1.1.json"),
     ),
     (
         "content.package",
