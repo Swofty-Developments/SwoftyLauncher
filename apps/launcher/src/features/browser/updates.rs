@@ -128,7 +128,7 @@ impl Shell {
         cx.notify();
     }
 
-    pub(super) fn updating_addons(&self) -> bool {
+    pub(crate) fn updating_addons(&self) -> bool {
         self.browser.batch.as_ref().is_some_and(|b| !b.left.is_empty())
     }
 
