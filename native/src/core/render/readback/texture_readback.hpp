@@ -148,8 +148,7 @@ template <class Rows> bool map(const Job &job, Rows &&rows)
 }
 
 template <class Pending>
-void schedule(Pending &pending, std::mutex &mu, uint64_t &serial, UINT n, ID3D12CommandList *const *lists,
-              d3d12::ExecPlan &plan)
+void schedule(Pending &pending, std::mutex &mu, uint64_t &serial, UINT n, ID3D12CommandList *const *lists, d3d12::ExecPlan &plan)
 {
     for (auto &job : pending) {
         if (job->submitted || job->scheduled)

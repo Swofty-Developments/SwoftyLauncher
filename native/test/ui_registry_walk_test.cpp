@@ -254,8 +254,8 @@ void looks_up_one_path_without_walking()
     uint64_t reg = registry(h, object(h, {{"custom_drivers", list(h, {})}, {"preloaded_drivers", drivers}}));
     auto rd = [&](uint64_t at, void *out, size_t n) { return h.read(at, out, n); };
     auto snap = h.snapshot();
-    Step steps[] = {{djb2("preloaded_drivers")}, {0, true, 1}, {djb2("textures")}, {djb2("GridRundownLeft")},
-                    {djb2("Thumbnail")}};
+    Step steps[] = {
+        {djb2("preloaded_drivers")}, {0, true, 1}, {djb2("textures")}, {djb2("GridRundownLeft")}, {djb2("Thumbnail")}};
     std::string text;
     h.reads = 0;
     CHECK(string_at(rd, reg, LAY, steps, 5, text) == Lookup::ok);
@@ -269,7 +269,8 @@ void looks_up_one_path_without_walking()
     steps[3].key = djb2("GridRundownRight");
     CHECK(string_at(rd, reg, LAY, steps, 5, text) == Lookup::not_found);
     steps[3].key = djb2("has_texture");
-    CHECK(string_at(rd, reg, LAY, steps, 4, text) == Lookup::failed || string_at(rd, reg, LAY, steps, 4, text) == Lookup::not_string);
+    CHECK(string_at(rd, reg, LAY, steps, 4, text) == Lookup::failed ||
+          string_at(rd, reg, LAY, steps, 4, text) == Lookup::not_string);
     Step wrong_kind[] = {{0, true, 0}};
     CHECK(string_at(rd, reg, LAY, wrong_kind, 1, text) == Lookup::not_found);
     Step to_object[] = {{djb2("preloaded_drivers")}, {0, true, 1}};

@@ -193,8 +193,8 @@ void poll()
                 image.used = GetTickCount64();
                 trace("captured '%s': %ux%u format=%u list=%u states=0x%x->0x%x serial=%llu cached=%zu alpha 0:%u 255:%u "
                       "other:%u mean rgb %llu %llu %llu",
-                      job.name.c_str(), w, h, job.format, job.list_type, job.before, job.after,
-                      (unsigned long long)job.serial, images.size(), a.clear, a.opaque, a.partial, a.r / n, a.g / n, a.b / n);
+                      job.name.c_str(), w, h, job.format, job.list_type, job.before, job.after, (unsigned long long)job.serial,
+                      images.size(), a.clear, a.opaque, a.partial, a.r / n, a.g / n, a.b / n);
             }
         }
         it = pending.erase(it);
@@ -226,8 +226,8 @@ void barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRI
             if (!name || seen.size() >= 4 * data::CACHE)
                 continue;
             auto version = versions.find(*name);
-            at = seen.emplace(step.Transition.pResource, Seen{*name, version != versions.end() ? version->second
-                                                                                                 : versions[*name] = ++name_serial})
+            at = seen.emplace(step.Transition.pResource,
+                              Seen{*name, version != versions.end() ? version->second : versions[*name] = ++name_serial})
                      .first;
             if (logged_names++ < LOG_NAMES)
                 trace("found '%s' by its debug name at a barrier (no SetName seen): %llux%u format=%u", name->c_str(),
@@ -252,9 +252,8 @@ void barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRI
             reject(s, "not_mip_zero", desc, step, list);
             continue;
         }
-        if (desc.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || !desc.Width || !desc.Height ||
-            desc.Width > data::MAX_SIDE || desc.Height > data::MAX_SIDE || desc.DepthOrArraySize != 1 ||
-            desc.SampleDesc.Count != 1 || desc.MipLevels < 1) {
+        if (desc.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || !desc.Width || !desc.Height || desc.Width > data::MAX_SIDE ||
+            desc.Height > data::MAX_SIDE || desc.DepthOrArraySize != 1 || desc.SampleDesc.Count != 1 || desc.MipLevels < 1) {
             reject(s, "unsupported_shape", desc, step, list);
             continue;
         }
@@ -341,8 +340,8 @@ int copy(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *width, ui
     *revision = image.revision;
     if (fit == Fit::small) {
         unsigned w = 0, h = 0;
-        auto small = render::readback::fit(image.rgba.data(), image.width, image.height, image.width * 4, false, data::MAX_SIDE,
-                                           64, w, h);
+        auto small =
+            render::readback::fit(image.rgba.data(), image.width, image.height, image.width * 4, false, data::MAX_SIDE, 64, w, h);
         *width = w;
         *height = h;
         if (!rgba || cap < small.size())
@@ -398,8 +397,11 @@ int lookup(uint32_t vehicle, std::string &reference, uint32_t &driver_key)
         leaf.path = data::path(car.driver_domain, car.driver, set);
         if (!leaf.path)
             return SWOFTY_ASSET_UNAVAILABLE;
-        const ur::Step steps[] = {{ur::djb2(leaf.path->list)}, {0, true, leaf.path->index}, {ur::djb2("textures")},
-                                  {ur::djb2(leaf.path->set)}, {ur::djb2("Thumbnail")}};
+        const ur::Step steps[] = {{ur::djb2(leaf.path->list)},
+                                  {0, true, leaf.path->index},
+                                  {ur::djb2("textures")},
+                                  {ur::djb2(leaf.path->set)},
+                                  {ur::djb2("Thumbnail")}};
         std::string value;
         if (ur::string_at(rd, reg, lay, steps, std::size(steps), value) == ur::Lookup::ok)
             leaf.name = data::resource(value, &leaf.srgb);
