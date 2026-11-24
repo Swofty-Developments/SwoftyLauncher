@@ -243,6 +243,45 @@ void empty_and_missing_registry()
 
 }
 
+void looks_up_one_path_without_walking()
+{
+    Heap h;
+    uint64_t thumb = object(h, {{"Thumbnail", string_leaf(h, "eaid://game_rtt_tex_0012_srgb.srv")}});
+    uint64_t textures = object(h, {{"GridRundownLeft", thumb}, {"has_texture", h.alloc(0x40)}});
+    uint64_t d0 = object(h, {{"name", string_leaf(h, "A")}});
+    uint64_t d1 = object(h, {{"textures", textures}});
+    uint64_t drivers = list(h, {d0, d1});
+    uint64_t reg = registry(h, object(h, {{"custom_drivers", list(h, {})}, {"preloaded_drivers", drivers}}));
+    auto rd = [&](uint64_t at, void *out, size_t n) { return h.read(at, out, n); };
+    auto snap = h.snapshot();
+    Step steps[] = {
+        {djb2("preloaded_drivers")}, {0, true, 1}, {djb2("textures")}, {djb2("GridRundownLeft")}, {djb2("Thumbnail")}};
+    std::string text;
+    h.reads = 0;
+    CHECK(string_at(rd, reg, LAY, steps, 5, text) == Lookup::ok);
+    CHECK(text == "eaid://game_rtt_tex_0012_srgb.srv");
+    CHECK(h.reads < 40);
+    steps[1].index = 0;
+    CHECK(string_at(rd, reg, LAY, steps, 5, text) == Lookup::not_found);
+    steps[1].index = 2;
+    CHECK(string_at(rd, reg, LAY, steps, 5, text) == Lookup::not_found);
+    steps[1].index = 1;
+    steps[3].key = djb2("GridRundownRight");
+    CHECK(string_at(rd, reg, LAY, steps, 5, text) == Lookup::not_found);
+    steps[3].key = djb2("has_texture");
+    CHECK(string_at(rd, reg, LAY, steps, 4, text) == Lookup::failed ||
+          string_at(rd, reg, LAY, steps, 4, text) == Lookup::not_string);
+    Step wrong_kind[] = {{0, true, 0}};
+    CHECK(string_at(rd, reg, LAY, wrong_kind, 1, text) == Lookup::not_found);
+    Step to_object[] = {{djb2("preloaded_drivers")}, {0, true, 1}};
+    CHECK(string_at(rd, reg, LAY, to_object, 2, text) == Lookup::not_string);
+    Heap empty;
+    auto rd0 = [&](uint64_t at, void *out, size_t n) { return empty.read(at, out, n); };
+    uint64_t reg0 = registry(empty, 0);
+    CHECK(string_at(rd0, reg0, LAY, steps, 5, text) == Lookup::no_root);
+    CHECK(snap == h.snapshot());
+}
+
 int main()
 {
     finds_the_stock_name_with_its_path();
@@ -252,6 +291,7 @@ int main()
     survives_freed_and_garbage_pointers();
     stops_on_cycles_and_node_limits();
     empty_and_missing_registry();
+    looks_up_one_path_without_walking();
     if (failures)
         return 1;
     std::puts("ui registry walk: ok");

@@ -354,6 +354,7 @@ private:
 struct Weekend {
     uint32_t round = 0, rounds = 0, progress = 0, current = 0, sessions = 0, complete = 0;
     std::string session, track;
+    bool current_complete = false;
 };
 
 inline bool never_ran(const Weekend &w) { return w.sessions && w.progress != WEEKEND_NOT_STARTED && w.complete == 0; }
@@ -379,6 +380,18 @@ inline std::string describe(const Weekend &w)
     else
         s += ", its sessions do not read";
     return s + ", track " + (w.track.empty() ? "unknown" : w.track);
+}
+
+inline std::string describe_loop(const Weekend &w)
+{
+    auto n = [](uint32_t v) { return std::to_string(v); };
+    std::string s = "round " + n(w.round) + "/" + n(w.rounds) + ", Weekend.progress_state " + n(w.progress) + " (" +
+                    progress_name(w.progress) + ")";
+    if (!w.sessions)
+        return s + ", its sessions do not read";
+    return s + ", current_session " + n(w.current) + " of " + n(w.sessions) + " (" + (w.session.empty() ? "unknown" : w.session) +
+           ") completion " + (w.current_complete ? "complete" : "not complete") + ", " + n(w.complete) + " of " + n(w.sessions) +
+           " sessions complete";
 }
 
 // One line per added activity of the logged types, not one per identical repeat (the daily tick adds the contract

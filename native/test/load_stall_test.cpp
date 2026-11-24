@@ -78,6 +78,32 @@ int main()
 {
     {
         ls::Watch w;
+        CHECK(ls::kUnloadMs == 60000 && ls::kUnloadMs < ls::kSessionLoadMs);
+        w.flow(0x3, ls::Entering, "StateUnloadSession", 0);
+        w.flow(0x3, ls::Updating, "StateUnloadSession", 5);
+        CHECK(w.threshold() == ls::kUnloadMs);
+        CHECK(!w.poll(5 + ls::kUnloadMs - 1).report);
+        ls::Due d = w.poll(5 + ls::kUnloadMs);
+        CHECK(d.report && d.index == 1 && d.threshold_ms == ls::kUnloadMs && d.trigger == ls::Threshold);
+        CHECK(!w.poll(5 + ls::kUnloadMs * 3 - 1).report);
+        CHECK(w.poll(5 + ls::kUnloadMs * 3).report);
+        char text[2048];
+        w.describe(text, sizeof text, 5 + ls::kUnloadMs);
+        CHECK(std::strstr(text, "session load flow: \"StateUnloadSession\" in Updating for 60.0 s"));
+    }
+    {
+        ls::Watch w;
+        w.flow(0x1, ls::Updating, "StateLoadSession", 0);
+        CHECK(w.threshold() == ls::kSessionLoadMs);
+        CHECK(!w.poll(ls::kUnloadMs * 2).report);
+        w.flow(0x1, ls::None, "StateLoadSession", ls::kUnloadMs * 2 + 1);
+        w.flow(0x3, ls::Updating, "StateUnloadSession", ls::kUnloadMs * 2 + 2);
+        CHECK(w.threshold() == ls::kUnloadMs);
+        w.flow(0x3, ls::None, "StateUnloadSession", ls::kUnloadMs * 2 + 5);
+        CHECK(w.threshold() == 0);
+    }
+    {
+        ls::Watch w;
         CHECK(!w.poll(0).report);
         CHECK(!w.poll(10'000'000).report);
         CHECK(w.threshold() == 0);

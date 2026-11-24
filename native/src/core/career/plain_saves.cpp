@@ -282,7 +282,7 @@ std::mutex loop_lock;
 LoadLoop load_loop;
 }
 
-void note_already_ran()
+bool note_already_ran()
 {
     std::lock_guard<std::mutex> g(loop_lock);
     if (load_loop.note())
@@ -290,6 +290,7 @@ void note_already_ran()
             "[saves] plain store: the session already ran %d times in this game session, a load loop; no new generation is "
             "written until the game restarts, so the restore points stay",
             LoadLoop::THRESHOLD);
+    return load_loop.first_pass();
 }
 
 void note_moved_on()

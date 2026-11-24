@@ -27,7 +27,7 @@ put() {
 
 fetch_sha() {
   local url=$1 sha
-  for attempt in 1 2 3 4 5; do
+  for attempt in 1 2 3 4 5 6 7 8 9 10; do
     if sha=$(curl -fsSL --retry 3 "$url" | sha256sum | cut -d' ' -f1) && [ -n "$sha" ]; then
       echo "$sha"
       return 0

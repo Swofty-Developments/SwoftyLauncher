@@ -564,8 +564,186 @@ static void probes()
     CHECK(!has(g_out, "Sess_Loader_UnloadSession:"));
 }
 
+struct SpawnWorld {
+    Mem m;
+    uint64_t at = 0, task = 0, sys = 0, slots = 0, info = 0, ids = 0, active = 0, vt = 0x1458628b0ull, other_vt = 0x145000000ull;
+    uint64_t mask = 255;
+    uint32_t inc = 32;
+    std::vector<uint64_t> keyvals = std::vector<uint64_t>(256 + 64);
+    std::vector<uint8_t> infos = std::vector<uint8_t>(256 + 65);
+
+    SpawnWorld(const std::vector<std::pair<uint8_t, int>> &vehicles, const std::vector<uint8_t> &active_ids, bool task_at_1f0)
+    {
+        infos[256 + 64] = 1;
+        at = m.alloc(sl::kRaw);
+        task = m.alloc(0x100);
+        sys = m.alloc(0x100);
+        slots = m.alloc(keyvals.size() * 8);
+        info = m.alloc(infos.size() + 8);
+        ids = m.alloc(vehicles.size() + 8);
+        active = m.alloc(active_ids.size() * sl::kActiveStride + 8);
+        uint64_t mods = m.alloc(0x40), vtable = m.alloc(0x40), vtable2 = m.alloc(0x40), list_c = m.alloc(0x40);
+        uint64_t other = m.alloc(0x20), mod2 = m.alloc(0x20);
+        m.put<uint64_t>(vt_slot(vtable), 0x150a6b2d0ull);
+        m.put<uint64_t>(task + sl::kModuleVtable, vtable);
+        m.put<uint64_t>(other + sl::kModuleVtable, vtable2);
+        m.put<uint64_t>(vtable2 + sl::kModuleUnloadReady, 0x14aaaaaa0ull);
+        m.put<uint64_t>(mods, other);
+        m.put<uint64_t>(mods + 8, task);
+        m.put<uint64_t>(list_c + 8, mod2);
+        m.put<uint64_t>(mod2 + sl::kModuleVtable, vtable2);
+        spawn_vtable = vtable;
+        m.put<uint32_t>(at + sl::kGate1c, 5);
+        m.put<uint32_t>(at + sl::kGate0c, 2);
+        m.put<uint64_t>(at + sl::kListABegin, mods);
+        m.put<uint64_t>(at + sl::kListAEnd, mods + 16);
+        m.put<uint64_t>(at + sl::kListCBegin, list_c);
+        m.put<uint64_t>(at + sl::kListCEnd, list_c + 16);
+        m.put<uint64_t>(at + sl::kVehicleTask, task_at_1f0 ? task : 0);
+        m.put<uint64_t>(task + sl::kTaskSystem, sys);
+        m.put<uint64_t>(task + sl::kTaskIdsBegin, ids);
+        m.put<uint64_t>(task + sl::kTaskIdsEnd, ids + vehicles.size());
+        m.put<uint64_t>(sys + sl::kSysActiveBegin, active);
+        m.put<uint64_t>(sys + sl::kSysActiveEnd, active + active_ids.size() * sl::kActiveStride);
+        for (size_t i = 0; i < active_ids.size(); i++)
+            m.put<uint8_t>(active + i * sl::kActiveStride, active_ids[i]);
+        m.put<uint64_t>(sys + sl::kSpawnMap.mult, 0x9e3779b97f4a7c15ull);
+        m.put<uint64_t>(sys + sl::kSpawnMap.slots, slots);
+        m.put<uint64_t>(sys + sl::kSpawnMap.info, info);
+        m.put<uint64_t>(sys + sl::kSpawnMap.mask, mask);
+        m.put<uint32_t>(sys + sl::kSpawnMap.inc, inc);
+        m.put<uint8_t>(sys + sl::kSpawnMap.shift, 0);
+        for (size_t i = 0; i < vehicles.size(); i++) {
+            m.put<uint8_t>(ids + i, vehicles[i].first);
+            if (vehicles[i].second == -2)
+                continue;
+            uint64_t node = m.alloc(0x10);
+            m.put<uint32_t>(node + sl::kNodeId, vehicles[i].first);
+            if (vehicles[i].second >= 0) {
+                uint64_t req = m.alloc(0x20);
+                m.put<uint8_t>(req, uint8_t(vehicles[i].second));
+                m.put<uint64_t>(node + sl::kNodeRequest, req);
+            }
+            uint64_t h = uint64_t(vehicles[i].first) * 0x9e3779b97f4a7c15ull;
+            h ^= h >> 33;
+            uint64_t idx = (h >> 5) & mask;
+            while (infos[idx])
+                idx++;
+            keyvals[idx] = node;
+            infos[idx] = uint8_t(inc + uint32_t(h & 0x1f));
+            if (infos[idx] < inc)
+                infos[idx] = uint8_t(inc);
+        }
+        for (size_t i = 0; i < keyvals.size(); i++)
+            m.put<uint64_t>(slots + i * 8, keyvals[i]);
+        for (size_t i = 0; i < infos.size(); i++)
+            m.put<uint8_t>(info + i, infos[i]);
+    }
+
+    static uint64_t vt_slot(uint64_t vtable) { return vtable + sl::kModuleUnloadReady; }
+    uint64_t spawn_vtable = 0;
+};
+
+static void unload_gates_spawning()
+{
+    SpawnWorld w({{3, 5}, {4, 4}, {5, 3}, {9, -2}, {11, 7}, {12, -1}}, {4, 5}, true);
+    sl::Snapshot &s = fresh(w.at);
+    s.unload_proven = true;
+    s.spawn_vtable = w.spawn_vtable;
+    sl::capture(w.m.reader(), s);
+    CHECK(s.unload_gates.read && s.unload_gates.gate_1c == 5 && s.unload_gates.gate_0c == 2);
+    CHECK(sl::gate_where(s.unload_gates) == sl::BlockA);
+    CHECK(s.list_a_total == 2 && s.list_a_read == 2 && s.list_c_total == 1 && s.list_c_read == 1);
+    CHECK(!s.list_a[0].spawning && s.list_a[1].spawning && s.list_a[0].unload_ready == 0x14aaaaaa0ull);
+    CHECK(s.spawning.found && s.spawning.task == w.task && s.spawning.system == w.sys);
+    CHECK(s.spawning.vehicles == 6 && s.spawning.active_total == 2 && s.spawning.active_read == 2);
+    const sl::Vehicle *v = s.spawning.vehicle;
+    CHECK(v[0].request == sl::ReqState && v[0].state == 5 && v[0].active == sl::ActNo);
+    CHECK(v[1].request == sl::ReqState && v[1].state == 4 && v[1].active == sl::ActYes);
+    CHECK(v[3].request == sl::ReqNoNode && v[3].active == sl::ActNo);
+    CHECK(v[4].request == sl::ReqState && v[4].state == 7);
+    CHECK(v[5].request == sl::ReqNull);
+    sl::text(s, g_out, sizeof g_out, namer);
+    CHECK(has(g_out, "    +0x1c  block A gate 5 (A runs while 5)\n"));
+    CHECK(has(g_out, "    +0xc   block C gate 2 (must be 0)\n"));
+    CHECK(has(g_out, "    verdict: block A: +0x1c is 5"));
+    CHECK(has(g_out, "    A #1 object 0x"));
+    CHECK(has(g_out, "unload-ready (+0x30) 0x14aaaaaa0 (F1_25.exe+0xaaaaaa0)"));
+    CHECK(has(g_out, "[vehicle spawning]"));
+    CHECK(has(g_out, "vehicle spawning sub-task 0x"));
+    CHECK(has(g_out, "(from +0x1f0)"));
+    CHECK(has(g_out, "    vehicle 4   request 4 Generating, in the active list\n"));
+    CHECK(has(g_out, "    vehicle 3   request 5 Ready, not in the active list\n"));
+    CHECK(has(g_out, "    vehicle 9   request none (not in the request map), not in the active list\n"));
+    CHECK(has(g_out, "    vehicle 11  request 7 Despawned, not in the active list\n"));
+    CHECK(has(g_out, "    vehicle 12  request none (node with a null request), not in the active list\n"));
+    CHECK(has(g_out, "    active list: 2 record(s) ids 4 5\n"));
+    CHECK(has(g_out, "6 id(s): 4 with a live request, 3 of those not Ready, 2 in the active list;"));
+
+    SpawnWorld none({{3, 5}}, {}, false);
+    sl::Snapshot &t = fresh(none.at);
+    t.unload_proven = true;
+    t.spawn_vtable = none.spawn_vtable;
+    sl::capture(none.m.reader(), t);
+    CHECK(t.spawning.found && t.spawning.task == none.task);
+    t.spawn_vtable = 0xdead;
+    sl::capture(none.m.reader(), t);
+    CHECK(!t.spawning.found);
+    sl::text(t, g_out, sizeof g_out, namer);
+    CHECK(has(g_out, "vehicle spawning sub-task: +0x1f0 is 0 and no module in either list has its vtable\n"));
+
+    t.unload_proven = false;
+    std::snprintf(t.unload_proof, sizeof t.unload_proof, "proven on X only");
+    sl::capture(none.m.reader(), t);
+    CHECK(!t.unload_gates.read && !t.spawning.found);
+    sl::text(t, g_out, sizeof g_out, namer);
+    CHECK(has(g_out, "  unload tick gates not decoded: proven on X only\n"));
+}
+
+static void gate_verdicts()
+{
+    sl::Unload u;
+    CHECK(sl::gate_where(u) == sl::GateUnread);
+    u.read = true;
+    CHECK(sl::gate_where(u) == sl::BlockCTasks);
+    u.gate_110 = 1;
+    CHECK(sl::gate_where(u) == sl::BlockCFields);
+    u.gate_24 = 2;
+    CHECK(sl::gate_where(u) == sl::BlockB);
+    u.gate_1c = 5;
+    CHECK(sl::gate_where(u) == sl::BlockA);
+    CHECK(!std::strcmp(sl::request_state_text(6), "Despawning"));
+    CHECK(!std::strcmp(sl::request_state_text(99), "unknown"));
+}
+
+static void unload_unreadable()
+{
+    SpawnWorld w({{3, 5}}, {3}, true);
+    w.m.regions.erase(w.sys);
+    sl::Snapshot &s = fresh(w.at);
+    s.unload_proven = true;
+    s.spawn_vtable = w.spawn_vtable;
+    sl::capture(w.m.reader(), s);
+    CHECK(s.spawning.found && s.spawning.task_read && !s.spawning.system_read);
+    CHECK(s.spawning.vehicle[0].request == sl::ReqUnread);
+    sl::text(s, g_out, sizeof g_out, namer);
+    CHECK(has(g_out, "the spawning system's active list is not readable"));
+    CHECK(has(g_out, "request not readable"));
+}
+
+static void spawn_vtables()
+{
+    namespace bp = runtime::build_proof;
+    CHECK(sl::spawn_vtable_rva(bp::Build::steam_1_0_145) == 0x58628b0);
+    CHECK(sl::spawn_vtable_rva(bp::Build::ea_1_0_145) == 0x5974bd0);
+    CHECK(sl::spawn_vtable_rva(bp::Build::kb) == 0);
+    CHECK(sl::spawn_vtable_rva(bp::Build::ea) == 0);
+    CHECK(sl::spawn_vtable_rva(bp::Build::unknown) == 0);
+}
+
 int main()
 {
+    spawn_vtables();
     lookups(63, 32, 0);
     lookups(255, 16, 1);
     lookups(31, 32, 0);
@@ -580,6 +758,9 @@ int main()
     not_proven();
     unreadable_loader();
     probes();
+    unload_gates_spawning();
+    gate_verdicts();
+    unload_unreadable();
     if (g_fail) {
         std::printf("session_loader: %d failure(s)\n", g_fail);
         return 1;

@@ -1034,6 +1034,7 @@ mod tests {
 
     fn entry() -> StockNodes {
         StockNodes {
+            ui: None,
             wrap: Vec::new(),
             template: "hud_lap_counter.osd_visibility_option".into(),
             scene: None,
@@ -1184,6 +1185,7 @@ mod tests {
             ],
         ));
         let entry = |leaf: &str, hide: &[&str]| StockNodes {
+            ui: None,
             template: "hud_lap_counter.osd_visibility_option".into(),
             scene: Some("eaid://ui_package/art/osd/test/lap.idf".into()),
             hide: hide.iter().map(|h| (*h).to_owned()).collect(),

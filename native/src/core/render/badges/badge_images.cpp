@@ -4,6 +4,7 @@
 #include <future>
 #include <chrono>
 #include "core/render/d3d12_hooks.hpp"
+#include "core/render/readback/texture_readback.hpp"
 #include "core/runtime/runtime.hpp"
 #include <swofty/live_images.h>
 #include <swofty/json.hpp>
@@ -51,14 +52,10 @@ Audit *audit_for(const std::string &reference)
 
 void named(ID3D12Object *object, LPCWSTR name)
 {
-    if (!name || !object)
+    auto ascii = render::readback::set_name_text(name);
+    if (!ascii || !object)
         return;
-    std::string text;
-    for (size_t i = 0; i < 256 && name[i]; ++i) {
-        if (name[i] > 127)
-            return;
-        text += char(name[i]);
-    }
+    const std::string &text = *ascii;
     std::string lower = text;
     std::transform(lower.begin(), lower.end(), lower.begin(),
                    [](unsigned char c) { return char(c >= 'A' && c <= 'Z' ? c + 32 : c); });
@@ -112,16 +109,11 @@ struct Image {
     uint64_t revision{}, used{}, serial{};
     std::vector<uint8_t> rgba;
 };
-struct Readback {
+struct Readback : render::readback::Job {
     std::string reference;
-    ComPtr<ID3D12GraphicsCommandList> list;
-    ComPtr<ID3D12Resource> source, buffer, identity;
-    ComPtr<ID3D12Fence> fence;
-    D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
-    unsigned width{}, height{};
-    bool bgra{}, submitted{}, scheduled{}, signal_failed{};
+    ComPtr<ID3D12Resource> source, identity;
+    bool bgra{};
     uint64_t epoch{};
-    uint64_t serial{};
     uint64_t name_version{};
 };
 constexpr size_t RUNTIME_CACHE = 32; // Bound retained 512x512 GPU resources as well as CPU pixels.
@@ -163,24 +155,20 @@ void poll()
         auto &job = **it;
         // A failed Signal does not prove a queued copy is finished. Keep its
         // resources alive (within the fixed pending bound) rather than free them.
-        if (!job.submitted || job.signal_failed || job.fence->GetCompletedValue() == 0) {
+        const auto state = render::readback::status(job);
+        if (state == render::readback::Status::waiting) {
             ++it;
             continue;
         }
-        if (job.fence->GetCompletedValue() == UINT64_MAX) {
+        if (state == render::readback::Status::lost) {
             it = pending.erase(it); // removed device: its work cannot execute
             continue;
         }
-        uint8_t *mapped = nullptr;
-        const size_t bytes =
-            size_t(job.footprint.Offset) + size_t(job.footprint.Footprint.RowPitch) * (job.height - 1) + size_t(job.width) * 4;
-        D3D12_RANGE all{0, bytes};
-        if (SUCCEEDED(job.buffer->Map(0, &all, reinterpret_cast<void **>(&mapped)))) {
-            unsigned w = 0, h = 0;
-            auto rgba = data::pixels(mapped + job.footprint.Offset, job.width, job.height, job.footprint.Footprint.RowPitch,
-                                     job.bgra, w, h);
-            D3D12_RANGE none{0, 0};
-            job.buffer->Unmap(0, &none);
+        unsigned w = 0, h = 0;
+        std::vector<uint8_t> rgba;
+        if (render::readback::map(job, [&](const uint8_t *rows, unsigned pitch) {
+                rgba = data::pixels(rows, job.width, job.height, pitch, job.bgra, w, h);
+            })) {
             if (!rgba.empty() && job.epoch == epoch && resource_name(job.identity.Get()) == job.reference &&
                 version_for(job.reference) == job.name_version && job.name_version != UINT64_MAX) {
                 auto found = images.find(job.reference);
@@ -212,26 +200,8 @@ void poll()
 
 std::optional<std::string> resource_name(ID3D12Resource *resource)
 {
-    static const GUID name_guid = {0x4cca5fd8, 0x921f, 0x42c8, {0x85, 0x66, 0x70, 0xca, 0xf2, 0xa9, 0xb7, 0x41}};
-    wchar_t name[256]{};
-    UINT size = sizeof name - sizeof(wchar_t);
-    if (FAILED(resource->GetPrivateData(name_guid, &size, name)) || size > sizeof name - sizeof(wchar_t) ||
-        size % sizeof(wchar_t)) {
-        // D3D12 also supports the narrow debug-name GUID directly.
-        static const GUID ansi_guid = {0x429b8c22, 0x9188, 0x4b0c, {0x87, 0x42, 0xac, 0xb0, 0xbf, 0x85, 0xc2, 0x00}};
-        char narrow[256]{};
-        size = sizeof narrow - 1;
-        if (FAILED(resource->GetPrivateData(ansi_guid, &size, narrow)) || size > sizeof narrow - 1)
-            return {};
-        return data::reference(std::string_view(narrow, strnlen(narrow, size)));
-    }
-    std::string ascii;
-    for (unsigned i = 0; i < size / sizeof(wchar_t) && name[i]; ++i) {
-        if (name[i] > 127)
-            return {};
-        ascii += char(name[i]);
-    }
-    return data::reference(ascii);
+    auto name = render::readback::debug_name(resource);
+    return name ? data::reference(*name) : std::nullopt;
 }
 
 void texture_copy(ID3D12GraphicsCommandList *list, const D3D12_TEXTURE_COPY_LOCATION *dst, UINT x, UINT y, UINT z,
@@ -333,17 +303,7 @@ void texture_copy(ID3D12GraphicsCommandList *list, const D3D12_TEXTURE_COPY_LOCA
         reject("upload_unknown_source");
         return;
     }
-    D3D12_HEAP_PROPERTIES heap{};
-    heap.Type = D3D12_HEAP_TYPE_READBACK;
-    D3D12_RESOURCE_DESC buffer{};
-    buffer.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    buffer.Width = bytes;
-    buffer.Height = buffer.DepthOrArraySize = buffer.MipLevels = 1;
-    buffer.SampleDesc.Count = 1;
-    buffer.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    if (FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &buffer, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-                                               IID_PPV_ARGS(&job->buffer))) ||
-        FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&job->fence)))) {
+    if (render::readback::allocate(dst->pResource, bytes, *job)) {
         reject("upload_readback_allocation_failed");
         return;
     }
@@ -449,44 +409,12 @@ void barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRI
         job->name_version = version_for(*reference);
         if (job->name_version == UINT64_MAX)
             continue;
-        job->list = list;
-        job->width = unsigned(desc.Width);
-        job->height = desc.Height;
         job->bgra = bgra;
         job->epoch = epoch;
-        ComPtr<ID3D12Device> device;
-        if (FAILED(resource->GetDevice(IID_PPV_ARGS(&device)))) {
-            reject("device_unavailable");
+        if (const char *why = render::readback::copy_at_transition(list, step, desc, *job)) {
+            reject(why);
             continue;
         }
-        UINT64 bytes = 0;
-        device->GetCopyableFootprints(&desc, 0, 1, 0, &job->footprint, nullptr, nullptr, &bytes);
-        D3D12_HEAP_PROPERTIES heap{};
-        heap.Type = D3D12_HEAP_TYPE_READBACK;
-        D3D12_RESOURCE_DESC buffer{};
-        buffer.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-        buffer.Width = bytes;
-        buffer.Height = buffer.DepthOrArraySize = buffer.MipLevels = 1;
-        buffer.SampleDesc.Count = 1;
-        buffer.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-        if (FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &buffer, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-                                                   IID_PPV_ARGS(&job->buffer))) ||
-            FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&job->fence)))) {
-            reject("readback_allocation_failed");
-            continue;
-        }
-        auto move = step;
-        move.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
-        render::d3d12::barrier_original(list, 1, &move);
-        D3D12_TEXTURE_COPY_LOCATION from{}, to{};
-        from.pResource = resource;
-        from.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-        to.pResource = job->buffer.Get();
-        to.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-        to.PlacedFootprint = job->footprint;
-        list->CopyTextureRegion(&to, 0, 0, 0, &from, nullptr);
-        std::swap(move.Transition.StateBefore, move.Transition.StateAfter);
-        render::d3d12::barrier_original(list, 1, &move);
         pending.push_back(std::move(job));
         if (audit) {
             ++audit->queued;
@@ -498,26 +426,11 @@ void barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRI
 
 void execute(ID3D12CommandQueue *queue, UINT n, ID3D12CommandList *const *lists, render::d3d12::ExecPlan &plan)
 {
-    const auto type = queue->GetDesc().Type;
-    if (type != D3D12_COMMAND_LIST_TYPE_DIRECT && type != D3D12_COMMAND_LIST_TYPE_COPY && type != D3D12_COMMAND_LIST_TYPE_COMPUTE)
+    if (!render::readback::copy_capable(queue))
         return;
     std::lock_guard guard(mu);
     poll();
-    for (auto &job : pending) {
-        if (job->submitted || job->scheduled)
-            continue;
-        for (UINT i = 0; i < n; ++i)
-            if (static_cast<ID3D12CommandList *>(job->list.Get()) == lists[i]) {
-                job->scheduled = true;
-                plan.after(i, [job](ID3D12CommandQueue *q) {
-                    std::lock_guard lock(mu);
-                    job->serial = ++submission_serial;
-                    job->signal_failed = FAILED(q->Signal(job->fence.Get(), 1));
-                    job->submitted = true;
-                });
-                break;
-            }
-    }
+    render::readback::schedule(pending, mu, submission_serial, n, lists, plan);
 }
 
 void reset(ID3D12GraphicsCommandList *list)
@@ -785,6 +698,7 @@ void overlay_routes(const std::map<std::string, std::string> &routes)
 
 const SwoftyLiveImages *badge_images::api()
 {
-    static const SwoftyLiveImages api{1, badge_images::start, badge_images::sources, badge_images::image, badge_images::clear};
+    static const SwoftyLiveImages api{
+        1, badge_images::start, badge_images::sources, badge_images::image, badge_images::clear, nullptr, nullptr};
     return &api;
 }

@@ -236,6 +236,15 @@ static void weekends()
     expect(!hc::never_ran(mid), "a weekend with a session complete ran");
     expect(hc::describe(mid).find("track unknown") != std::string::npos, "a track not read says unknown");
 
+    hc::Weekend ran{2, 32, hc::WEEKEND_IN_PROGRESS, 6, 7, 7, "race", "game/melbourne", true};
+    expect(hc::describe_loop(ran) == "round 2/32, Weekend.progress_state 1 (in progress), current_session 6 of 7 (race) "
+                                     "completion complete, 7 of 7 sessions complete",
+           "the load loop line: " + hc::describe_loop(ran));
+    ran.current_complete = false;
+    ran.sessions = 0;
+    expect(hc::describe_loop(ran) == "round 2/32, Weekend.progress_state 1 (in progress), its sessions do not read",
+           "the load loop line without sessions: " + hc::describe_loop(ran));
+
     hc::Weekend odd{1, 1, 7, 0, 2, 0, "", ""};
     expect(hc::never_ran(odd) && hc::progress_name(7) == "progress state 7",
            "an unknown progress state with nothing complete counts as started and names its value");

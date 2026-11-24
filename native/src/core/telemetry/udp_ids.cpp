@@ -2,6 +2,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+#include "core/runtime/iat_scan.hpp"
 #include "core/runtime/imports.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/telemetry/udp_ids_logic.hpp"
@@ -16,7 +17,9 @@
 
 // UDP telemetry reports the stat ids of added teams and drivers, which overlays that know EA's ids show
 // as unknown. The game sends its finished telemetry packets with sendto through its ws2_32 import slots
-// (both import descriptors, like the other socket hooks). This hook copies a buffer that parses as an F1
+// (both import descriptors, like the other socket hooks). On a protected build the exe's import directory names no ws2_32
+// call, so when that walk finds no slot the hook looks for the slots by value in the image (iat_scan.hpp) and patches those the
+// same way. This hook copies a buffer that parses as an F1
 // packet (udp_ids_logic.hpp), replaces the ids swofty/udp_ids.json maps, and sends the copy; every other
 // call passes through with its arguments. Datagrams to the LAN game port 21414 and to 10.77.0.0/16 are
 // never looked at. SWOFTY_UDP_STOCK_IDS=0 turns it off. With the telemetry feature on, the same hook also hands every
@@ -48,6 +51,7 @@ std::map<int, std::string> tracks;
 std::atomic<bool> has_tracks;
 std::atomic<bool> track_said;
 std::atomic<bool> track_packet{true};
+std::atomic<bool> call_said;
 
 int session(SOCKET s, const char *buf, int len, int flags, const sockaddr *to, int tolen, bool &sent)
 {
@@ -136,9 +140,23 @@ void trial(const ids::Layout *l, const uint8_t *p, bool changed)
     SetLastError(err);
 }
 
+void first_call(int len, const sockaddr *to, int tolen)
+{
+    if (call_said.exchange(true))
+        return;
+    DWORD err = GetLastError();
+    unsigned port = to && tolen >= int(sizeof(sockaddr_in)) && to->sa_family == AF_INET
+                        ? __builtin_bswap16(reinterpret_cast<const sockaddr_in *>(to)->sin_port)
+                        : 0;
+    swofty::log("[udp] first datagram through the sendto hook: %d bytes to port %u", len, port);
+    SetLastError(err);
+}
+
 int WSAAPI h_sendto(SOCKET s, const char *buf, int len, int flags, const sockaddr *to, int tolen)
 {
     auto real = reinterpret_cast<SendToFn>(orig_sendto);
+    if (armed.load(std::memory_order_relaxed))
+        first_call(len, to, tolen);
     if (!armed.load(std::memory_order_relaxed) || !buf || len < int(ids::HEADER) + 1 || len > int(ids::MAX_PACKET) ||
         lan_traffic(to, tolen))
         return real(s, buf, len, flags, to, tolen);
@@ -212,25 +230,36 @@ void setup()
     HMODULE ws = LoadLibraryW(L"ws2_32.dll");
     detour_target = ws ? reinterpret_cast<void *>(GetProcAddress(ws, "sendto")) : nullptr;
     int slots = 0;
+    auto claim = [&](const runtime::ImportSlot &s) {
+        void *cur = reinterpret_cast<void *>(*s.slot);
+        if (orig_sendto && orig_sendto != cur) {
+            swofty::log("[udp] sendto table %d slot exe+0x%llx holds 0x%llx, not 0x%llx; left alone", s.table,
+                        (unsigned long long)s.rva, (unsigned long long)uintptr_t(cur),
+                        (unsigned long long)uintptr_t(orig_sendto));
+            return;
+        }
+        void *was = orig_sendto;
+        orig_sendto = cur;
+        if (!runtime::write_slot(s.slot, reinterpret_cast<void *>(&h_sendto))) {
+            orig_sendto = was;
+            return;
+        }
+        slots++;
+    };
     if (ws)
         runtime::each_import(ws, "ws2_32.dll", [&](const runtime::ImportSlot &s) {
-            if (!s.fn || s.fn != detour_target)
-                return;
-            void *cur = reinterpret_cast<void *>(*s.slot);
-            if (orig_sendto && orig_sendto != cur) {
-                swofty::log("[udp] sendto table %d slot exe+0x%llx holds 0x%llx, not 0x%llx; left alone", s.table,
-                            (unsigned long long)s.rva, (unsigned long long)uintptr_t(cur),
-                            (unsigned long long)uintptr_t(orig_sendto));
-                return;
-            }
-            void *was = orig_sendto;
-            orig_sendto = cur;
-            if (!runtime::write_slot(s.slot, reinterpret_cast<void *>(&h_sendto))) {
-                orig_sendto = was;
-                return;
-            }
-            slots++;
+            if (s.fn && s.fn == detour_target)
+                claim(s);
         });
+    const char *route = "import table";
+    if (!slots && detour_target) {
+        route = "pointer table scan";
+        runtime::each_value_slot(detour_target, claim);
+        if (slots)
+            swofty::log("[udp] no sendto in the exe's import directory (protected build); found %d slot(s) holding ws2_32!sendto "
+                        "in the image by value",
+                        slots);
+    }
     if (!slots) {
         swofty::log("[udp] no game import slot for sendto; telemetry ids stay as the game sends them%s",
                     tel ? " and the telemetry feed gets no car data" : "");
@@ -239,12 +268,12 @@ void setup()
     armed = true;
     rewriting = rewrite;
     if (!rewrite) {
-        swofty::log("[udp] sendto hooked for the telemetry feed, %d slot(s); no id rewrite", slots);
+        swofty::log("[udp] sendto hooked for the telemetry feed, %d slot(s) (%s); no id rewrite", slots, route);
         return;
     }
     std::string head = std::to_string(map.teams.size()) + " team id(s), " + std::to_string(map.drivers.size()) +
                        " driver id(s), " + std::to_string(map.track_ids.size()) + " track(s) by Swofty track id";
-    swofty::log("[udp] stock ids on: %s, %d sendto slot(s)", head.c_str(), slots);
+    swofty::log("[udp] stock ids on: %s, %d sendto slot(s) (%s)", head.c_str(), slots, route);
     std::string line;
     size_t shown = 0;
     for (auto &l : map.lines) {

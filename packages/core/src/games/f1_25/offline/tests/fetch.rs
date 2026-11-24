@@ -349,5 +349,8 @@ fn only_failures_a_new_try_can_get_past_are_tried_again() {
     assert!(Failure::cut_off(String::new(), Some(&reset)).transient);
     assert!(Failure::cut_off(String::new(), None).transient);
     let late = ureq::Error::Timeout(ureq::Timeout::Global).into_io();
-    assert!(!Failure::cut_off(String::new(), Some(&late)).transient);
+    let stalled = Failure::cut_off(String::new(), Some(&late));
+    assert!(!stalled.transient && stalled.blocked);
+    assert!(!Failure::cut_off(String::new(), Some(&reset)).blocked);
+    assert!(!Failure::cut_off(String::new(), None).blocked);
 }

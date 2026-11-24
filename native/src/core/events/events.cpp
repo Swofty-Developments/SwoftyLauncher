@@ -6,6 +6,7 @@
 #include "core/hud/toast.hpp"
 #include "core/services/lap_host.hpp"
 #include "core/render/badges/badge_images.hpp"
+#include "core/render/portraits/driver_portraits.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -405,6 +406,7 @@ void session_emit(const session_life::Emit &e)
     }
     if (e.unload) {
         badge_images::session_unloaded();
+        driver_portraits::session_unloaded();
         swofty::log("[events] session.unload (StateUnloadSession entering)");
         events_fire(SWOFTY_EVENT_SESSION_UNLOAD, 0, 0, nullptr);
         runtime::hud_rebuilt();
@@ -417,6 +419,7 @@ void session_flow(const char *known, int to)
         return;
     if (to == 1 && !std::strcmp(known, "StateLoadSession")) {
         note_kind();
+        driver_portraits::session_loading();
         std::lock_guard<std::mutex> g(lifecycle_lock);
         session_loading.emplace();
     }

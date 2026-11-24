@@ -26,7 +26,13 @@ pub(super) fn relabel(sigs: &[Node], from: &str) -> Result<Vec<Node>> {
     Ok(out)
 }
 
+/// The screen file with the gate; a file that has it already, as the HUD composer leaves it, is
+/// returned as it is.
 pub fn persistent_gate(data: &[u8]) -> Result<Vec<u8>> {
+    let mut p = swofty_formats::pkg::Pkg::parse(data)?;
+    if multichoice(&mut p)?.child("swofty_once_check").is_ok() {
+        return Ok(data.to_vec());
+    }
     let seen = popup_seen();
     edit(data, |p| {
         let m = multichoice(p)?;

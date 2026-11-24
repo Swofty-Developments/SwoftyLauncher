@@ -200,13 +200,14 @@ void load_stall_setup()
     armed.store(true);
     if (test_report_done && WaitForSingleObject(test_report_done, 20000) != WAIT_OBJECT_0)
         swofty::log("[stall] test: the SWOFTY_TEST_LOAD_STALL_REPORT report did not finish in 20 s");
-    swofty::log("[stall] load-stall watchdog armed: a report of every thread's stack when a load sits still %llu s on a "
-                "loading screen or %llu s in a session load or unload, again at %llux, and at once when the game logs "
-                "its deadlock warning or its watchdog kill is held, again %llu s later; at most %d per process%s%s%s",
-                (unsigned long long)(watch.loading_ms / 1000), (unsigned long long)(ls::kSessionLoadMs / 1000),
-                (unsigned long long)ls::kRepeatFactor, (unsigned long long)(ls::kFollowUpMs / 1000), ls::kMaxReports,
-                test_hold_ms ? "; SWOFTY_TEST_LOAD_STALL is set" : "", test_hold_ms && test_hold_at[0] ? " at " : "",
-                test_hold_ms && test_hold_at[0] ? test_hold_at : "");
+    swofty::log(
+        "[stall] load-stall watchdog armed: a report of every thread's stack when a load sits still %llu s on a "
+        "loading screen, %llu s in a session load or %llu s in a session unload, again at %llux, and at once when the game logs "
+        "its deadlock warning or its watchdog kill is held, again %llu s later; at most %d per process%s%s%s",
+        (unsigned long long)(watch.loading_ms / 1000), (unsigned long long)(ls::kSessionLoadMs / 1000),
+        (unsigned long long)(ls::kUnloadMs / 1000), (unsigned long long)ls::kRepeatFactor,
+        (unsigned long long)(ls::kFollowUpMs / 1000), ls::kMaxReports, test_hold_ms ? "; SWOFTY_TEST_LOAD_STALL is set" : "",
+        test_hold_ms && test_hold_at[0] ? " at " : "", test_hold_ms && test_hold_at[0] ? test_hold_at : "");
 }
 
 }

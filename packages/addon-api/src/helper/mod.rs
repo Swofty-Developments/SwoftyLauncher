@@ -8,7 +8,7 @@ use serde_json::Value;
 pub use self::calls::{Built, Call, Hello, Welcome};
 pub use self::capabilities::{
     ADDON_CALLS, API_VERSION, BUILD_READS, MOVE_ADDON, PROFILE_HEADS, RESTART, SAVE_DIR, TASKS,
-    VIEW_CELL_IMAGE_DATA, VIEW_CHART,
+    VIEW_CELL_IMAGE_DATA, VIEW_CHART, VIEW_CHART_OPTIONS,
 };
 pub use self::host_calls::{HostCall, Invalidate};
 pub use crate::run_helper::{claim_word, run_helper};

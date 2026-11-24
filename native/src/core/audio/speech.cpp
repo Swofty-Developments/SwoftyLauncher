@@ -25,7 +25,8 @@
 // priority -100, below the addons' wraps and the characters voice mute, so a line an addon's wrap does not pass on
 // fires nothing. The wrap reads the line after the game has posted it and queues it; the flow tick fires speech.line, speech.line.timed and
 // speech.line.end. On with the feature events, on a build where the speech line layout is proven;
-// SWOFTY_SPEECH_EVENTS=0 turns it off.
+// SWOFTY_SPEECH_EVENTS=0 turns it off. The log names the first 4 posted lines; SWOFTY_SPEECH_LOG=all names every line
+// (speaker, category and stem), to find which stem a talking point or a cutscene plays.
 
 namespace {
 
@@ -70,6 +71,17 @@ bool switched_on()
     return !(n && n < sizeof v && !strcmp(v, "0"));
 }
 
+// SWOFTY_SPEECH_LOG=all: log every posted line, not only the first 4. Read once.
+bool log_all()
+{
+    static const bool on = [] {
+        char v[8] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_SPEECH_LOG", v, sizeof v);
+        return n && n < sizeof v && !_stricmp(v, "all");
+    }();
+    return on;
+}
+
 bool rd_str(uintptr_t at, std::string &out, size_t max) { return mem::c_string(at, out, max); }
 
 void post_entry(void *speech, void *line, uint8_t retrigger)
@@ -81,7 +93,7 @@ void post_entry(void *speech, void *line, uint8_t retrigger)
         if (sl::capture(reinterpret_cast<uintptr_t>(speech), reinterpret_cast<uintptr_t>(line), retrigger, now(), rd, rd_str,
                         p)) {
             uint32_t n = ++posted;
-            if (n <= 4)
+            if (n <= 4 || log_all())
                 swofty::log("[speech] line %u posted: speaker %s, category %u, stem %s", p.id,
                             p.speaker.empty() ? "?" : p.speaker.c_str(), unsigned(p.category),
                             p.stem.empty() ? "(none)" : p.stem.c_str());

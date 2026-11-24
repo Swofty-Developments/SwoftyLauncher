@@ -65,7 +65,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "content.box_assets",
-        include_str!("../../../../../sdk/std/registries/content.box_assets/1.1.json"),
+        include_str!("../../../../../sdk/std/registries/content.box_assets/1.2.json"),
     ),
     (
         "content.package",
@@ -109,7 +109,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "hud.element",
-        include_str!("../../../../../sdk/std/registries/hud.element/1.5.json"),
+        include_str!("../../../../../sdk/std/registries/hud.element/1.6.json"),
     ),
     (
         "hub.tab",
