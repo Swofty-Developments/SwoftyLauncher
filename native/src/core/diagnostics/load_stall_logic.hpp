@@ -20,6 +20,11 @@
 // at the median and up to 169 s across 468 loads). A stall gets its first report at the threshold and a second at
 // kRepeatFactor times it; progress starts a new stall; a process gets at most kMaxReports.
 //
+// StateUnloadSession has its own threshold, kUnloadMs. An unload that finishes does so in seconds (career.unloaded 1.2 s
+// in 13 sessions), and the n43e unload hang (a 24-car Grand Prix whose StateUnloadSession never leaves Updating) is
+// closed by the player at 125 to 179 s, before the 180 s session threshold fires. 60 s is 40 times a normal unload and
+// half the earliest close seen. A load keeps kSessionLoadMs, which real loads reach (up to 169 s). A report only reads.
+//
 // The game's own hang signals report at once, load or not (game). GameDeadlock is the game's WARN "The signal timed
 // out, this is unexpected and may indicate a deadlock" (game_deadlock_line): in 20 real hangs it came 15.1 to 15.4 s
 // after the last flow transition, and the game exited with 0xcfffffff 34 to 72 s after it (0xc0000005 from its
@@ -33,6 +38,7 @@ namespace runtime::load_stall {
 
 constexpr uint64_t kLoadingMs = 45000;
 constexpr uint64_t kSessionLoadMs = 180000;
+constexpr uint64_t kUnloadMs = 60000;
 constexpr uint64_t kRepeatFactor = 3;
 constexpr int kReportsPerStall = 2;
 constexpr int kMaxReports = 4;
@@ -57,6 +63,8 @@ inline bool session_load_flow(const char *name)
 {
     return name && (!std::strcmp(name, "StateLoadSession") || !std::strcmp(name, "StateUnloadSession"));
 }
+
+inline bool unload_flow(const char *name) { return name && !std::strcmp(name, "StateUnloadSession"); }
 
 inline bool game_deadlock_line(const char *line)
 {
@@ -129,6 +137,7 @@ class Watch {
 public:
     uint64_t loading_ms = kLoadingMs;
     uint64_t session_ms = kSessionLoadMs;
+    uint64_t unload_ms = kUnloadMs;
 
     void screen(const char *name, uint64_t now)
     {
@@ -174,8 +183,8 @@ public:
 
     uint64_t threshold() const
     {
-        if (session_flow())
-            return session_ms;
+        if (const Flow *f = session_flow())
+            return unload_flow(f->name) ? unload_ms : session_ms;
         return in_loading_screen() ? loading_ms : 0;
     }
 

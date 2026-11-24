@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/diagnostics/crash/stall_order_logic.hpp"
+#include "core/runtime/build_proof.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -24,7 +25,7 @@
 // steps with bounded loops and a read that fails instead of faulting. The game answers 0 for an id that is not in the
 // map and for one whose row is missing; lookup() tells the two apart.
 //
-// On Steam 1.0.145 the section also decodes the state 5 unload tick (Sess_Module_OnSessionUnloaded, 0x142d4d3b0): block A
+// On Steam 1.0.145 and EA App 1.0.145 the section also decodes the state 5 unload tick (Sess_Module_OnSessionUnloaded, 0x142d4d3b0): block A
 // (+0x1c == 5, every module in [+0x200,+0x208) answers vcall +0x30), block B (+0x24 == 2, the +0x1f0 task) and block C
 // (+0xc, +0x14, +0x1c, +0x10, +0x110 all 0 and every sub-task in [+0x1d8,+0x1e0) answers +0x30). It prints the gate fields,
 // each module's vtable and unload-ready target, and for the vehicle spawning sub-task (+0x1f0, else the first module with
@@ -34,8 +35,29 @@
 // Every offset is read by the same instruction in the same function on the KB build, EA App (KB build), Steam 1.0.145
 // and EA App 1.0.145 (re/tools/sigport.py --witness of 0x2d4b6a0, 0x2d4a320 and 0x2e39bb0; re/research/
 // loading_pipeline.md §1.9). On another build only the raw bytes are dumped.
+//
+// The unload tick decode holds on EA App 1.0.145 too (re/research/ea-1-0-145.md, "Session loader unload gates"): the
+// state 5 tick is equal to the KB's over all 392 instructions with every gate and list offset used at the same
+// instruction, the vehicle spawning sub-task's constructor is equal over 541, and the unload-ready function and its
+// active-record helper differ from Steam's only by protector filler. The sub-task's vtable is at RVA 0x58628b0 on Steam
+// and 0x5974bd0 on EA, both the vtable the constructor stores.
 
 namespace runtime::session_loader {
+
+constexpr uint64_t kSpawnVtableSteam = 0x58628b0;
+constexpr uint64_t kSpawnVtableEa = 0x5974bd0;
+
+constexpr uint64_t spawn_vtable_rva(build_proof::Build b)
+{
+    switch (b) {
+    case build_proof::Build::steam_1_0_145:
+        return kSpawnVtableSteam;
+    case build_proof::Build::ea_1_0_145:
+        return kSpawnVtableEa;
+    default:
+        return 0;
+    }
+}
 
 constexpr uint64_t kState = 0x8;
 constexpr uint64_t kAssets = 0x10;

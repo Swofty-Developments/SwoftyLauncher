@@ -37,10 +37,9 @@ constexpr bp::Proof LAYOUT{"the session loader's fields (+0x8, +0x10, +0x1c, +0x
                                bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate GATE{"the session loader's decoded fields", &LAYOUT};
 
-constexpr uint64_t SPAWN_VTABLE_RVA = 0x58628b0;
 constexpr bp::Proof UNLOAD_LAYOUT{"the session loader's unload tick gates (+0xc, +0x10, +0x14, +0x1c, +0x24, +0x110), "
                                   "sub-task lists (+0x1d8, +0x200, +0x1f0) and the vehicle spawning sub-task",
-                                  bp::bit(bp::Build::steam_1_0_145)};
+                                  bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate UNLOAD_GATE{"the session loader's unload gates", &UNLOAD_LAYOUT};
 
 struct Probe {
@@ -155,7 +154,8 @@ size_t session_loader_report(char *out, size_t cap, void (*name)(char *out, size
     s.unload_proven = unload_decoded.load();
     std::snprintf(s.unload_proof, sizeof s.unload_proof, "%s", unload_proof_line);
     HMODULE image = GetModuleHandleA(nullptr);
-    s.spawn_vtable = s.unload_proven && image ? uint64_t(reinterpret_cast<uintptr_t>(image)) + SPAWN_VTABLE_RVA : 0;
+    uint64_t vtable_rva = sl::spawn_vtable_rva(runtime::running_build());
+    s.spawn_vtable = s.unload_proven && image && vtable_rva ? uint64_t(reinterpret_cast<uintptr_t>(image)) + vtable_rva : 0;
     if (!s.off)
         sl::capture(read_game, s);
     return sl::text(s, out, cap, name);
