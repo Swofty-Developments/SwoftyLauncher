@@ -50,6 +50,8 @@ struct LoadLoop {
 
     bool paused() const { return passes >= THRESHOLD; }
 
+    bool first_pass() const { return passes == 1; }
+
     // Count one pass; true only for the pass that pauses the writes.
     bool note()
     {
