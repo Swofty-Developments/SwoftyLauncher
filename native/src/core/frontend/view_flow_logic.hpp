@@ -26,6 +26,7 @@ constexpr Tracked TRACKED[] = {
     {djb2("InstantReplay"), G_REPLAY},
     {djb2("ViewReplayHighlights"), G_REPLAY},
     {djb2("PostRaceReplay"), G_REPLAY},
+    {djb2("FullRaceReplay"), G_REPLAY},
     {djb2("SnapshotReplay"), G_REPLAY},
     {djb2("LoadSnapshot"), G_REPLAY},
     {djb2("QuitReplayHighlights"), G_REPLAY},
