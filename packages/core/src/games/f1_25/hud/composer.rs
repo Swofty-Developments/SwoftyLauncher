@@ -11,7 +11,7 @@ use super::stock::Stock;
 use super::stock_edit::{self, StockNodes};
 use super::template::StockTags;
 use super::textures::Res;
-use super::{Built, Input, Output, TemplateBase, err};
+use super::{Built, Input, Output, ScreenBase, TemplateBase, err};
 use super::{dials, editor, scene, screen_build, screens, template, textures, units};
 use crate::Result;
 use std::collections::{BTreeMap, BTreeSet};
@@ -66,15 +66,17 @@ impl<'a> GameTemplates<'a> {
 
 /// Composes `inputs` against the stock files into the overlay archives.
 pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
-    compose_with(stock, inputs, None, &Packer::default())
+    compose_with(stock, inputs, None, None, &Packer::default())
 }
 
-/// [`compose`] with `base` applied to the template the composer starts from. The composer is the last
-/// step: its nodes go on top of `base`'s edit and of whatever `stock` reads.
+/// [`compose`] with `base` applied to the template the composer starts from and `screen_base` to the game
+/// screens yield records hide nodes of. The composer is the last step: its nodes go on top of those
+/// edits and of whatever `stock` reads.
 pub fn compose_with(
     stock: &dyn Stock,
     inputs: &[Input],
     base: Option<TemplateBase>,
+    screen_base: Option<ScreenBase>,
     packer: &Packer,
 ) -> Result<Output> {
     let mut out = Output::default();
@@ -315,6 +317,7 @@ pub fn compose_with(
             }
             let pfx = &pfx_of[e.input];
             let entry = StockNodes {
+                ui: None,
                 template: facts.race_parent.to_owned(),
                 scene: None,
                 hide: stock_parts(&e.rec),
@@ -519,6 +522,19 @@ pub fn compose_with(
     }
     out.archives
         .extend(screen_build::archives(stock, &screens_out, packer)?);
+    let unchanged = |_: &str| None;
+    let screen_base: ScreenBase = match screen_base {
+        Some(b) => &|r| b(r),
+        None => &unchanged,
+    };
+    super::screen_nodes::apply(
+        stock,
+        &yields,
+        screen_base,
+        &mut out.archives,
+        &mut out.lines,
+        packer,
+    )?;
     super::yields::apply(stock, &yields, base, &mut out.archives, &mut out.lines, packer)?;
     cover_carriers(stock, &mut out.archives, &mut out.lines)?;
     Ok(out)

@@ -11,7 +11,10 @@ use swofty_formats::erp::{ErpFile, Packer};
 use swofty_formats::pkg::Pkg;
 
 use super::conflict::{self, Conflict, Kind};
-use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials, screen_build, screens, walk};
+use super::{
+    Input, Layered, Output, ScreenBase, Stock, TemplateBase, compose_with, dials, screen_build, screen_nodes,
+    screens, walk,
+};
 use crate::erp::ErpBuild;
 use crate::store::Store;
 use crate::{Error, Result};
@@ -50,11 +53,17 @@ pub const SCREEN_ERPS: [&str; 4] = [
     "2025_asset_groups/ui_package/flow_options.erp",
 ];
 
-/// The resources the composer writes that `op` changes; empty when it changes none of them.
-fn touched(op: &ErpOp, written: &BTreeSet<&str>, source: &dyn Fn() -> Option<PathBuf>) -> Vec<String> {
+/// The resources the composer writes that `op` changes; empty when it changes none of them. `also`
+/// holds the archives of the game screens yield records hide nodes of.
+fn touched(
+    op: &ErpOp,
+    written: &BTreeSet<&str>,
+    also: &BTreeSet<String>,
+    source: &dyn Fn() -> Option<PathBuf>,
+) -> Vec<String> {
     let ours = |erps: &[&str]| {
         erps.iter()
-            .any(|e| dials::SCENE_ERPS.contains(e) || SCREEN_ERPS.contains(e))
+            .any(|e| dials::SCENE_ERPS.contains(e) || SCREEN_ERPS.contains(e) || also.contains(*e))
     };
     let one = |erp: &str, name: &str| match ours(&[erp]) && written.contains(name) {
         true => vec![name.to_owned()],
@@ -234,12 +243,14 @@ fn conflict_text(cx: &Context, c: &Conflict, changes: &[Change]) -> String {
 
 /// Composes `inputs` for a build: the archive changes in `erp_ops` that touch what the composer writes
 /// are applied first to a scratch build, and the composer reads its resources from that. `template`
-/// edits the template the composer starts from.
+/// edits the template the composer starts from, and `screens` the game screens yield records hide
+/// nodes of.
 pub fn compose_in_build(
     cx: &Context,
     erp_ops: &[Op],
     inputs: &[Input],
     template: Option<TemplateBase>,
+    screens: Option<ScreenBase>,
 ) -> Result<Composed> {
     let shared = screen_build::shared_scenes(cx.stock, inputs)?;
     let mut written: BTreeSet<&str> = dials::written().into_iter().collect();
@@ -253,6 +264,10 @@ pub fn compose_in_build(
     );
     written.extend(shared.iter().map(String::as_str));
     written.extend(super::yields::written(inputs));
+    let screen_written = screen_nodes::written(inputs);
+    written.extend(screen_written.iter().map(String::as_str));
+    let names: Vec<&str> = screen_written.iter().map(String::as_str).collect();
+    let screen_erps: BTreeSet<String> = cx.stock.carriers(&names)?.into_values().flatten().collect();
     if inputs.iter().any(|i| i.record.screen.is_some()) {
         written.extend(screen_build::written());
     }
@@ -268,11 +283,11 @@ pub fn compose_in_build(
         v.dedup();
         v
     };
-    for rel in cx
-        .puts
-        .iter()
-        .filter(|r| dials::SCENE_ERPS.contains(&r.as_str()) || SCREEN_ERPS.contains(&r.as_str()))
-    {
+    for rel in cx.puts.iter().filter(|r| {
+        dials::SCENE_ERPS.contains(&r.as_str())
+            || SCREEN_ERPS.contains(&r.as_str())
+            || screen_erps.contains(*r)
+    }) {
         scratch.load(rel)?;
         lines.push(format!(
             "{rel} is replaced whole by an addon; the composed overlay starts from that archive's resources"
@@ -289,7 +304,7 @@ pub fn compose_in_build(
             ErpOp::Overlay { source, .. } => resolve(source).ok(),
             _ => None,
         };
-        let names = touched(e, &written, &path);
+        let names = touched(e, &written, &screen_erps, &path);
         if names.is_empty() {
             continue;
         }
@@ -319,7 +334,7 @@ pub fn compose_in_build(
         inner: cx.stock,
         build: &scratch,
     };
-    let output = compose_with(&layered, inputs, template, cx.packer).map_err(|e| match e {
+    let output = compose_with(&layered, inputs, template, screens, cx.packer).map_err(|e| match e {
         Error::HudConflict(c) => Error::Other(conflict_text(cx, &c, &changes)),
         e => Error::Other(format!("the HUD elements do not compose: {e}")),
     })?;

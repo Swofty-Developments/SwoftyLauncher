@@ -8,15 +8,15 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use swofty_formats::erp::{Erp, Packer, Resource};
+use swofty_formats::erp::Packer;
 use swofty_formats::pkg::{Node, Pkg};
 
 use super::model::Yield;
+use super::rewrite::Rewrite;
 use super::screens;
 use super::stock::Stock;
 use super::stock_edit::{self, Take};
 use super::template::{self, Usage};
-use super::textures::Res;
 use super::{Built, Input, TemplateBase, composer::first, dials, err};
 use crate::Result;
 use crate::ui::node::{self, NodeExt};
@@ -428,107 +428,35 @@ pub fn apply(
     lines: &mut Vec<String>,
     packer: &Packer,
 ) -> Result<()> {
-    if yields.is_empty() {
+    let edits = edits(yields)?;
+    if edits.is_empty() {
         return Ok(());
     }
-    let edits = edits(yields)?;
     let donor = stock_edit::plain_null(&first(
         stock.read(dials::STOCK_ERP, screens::LAPC_SCENE)?,
         screens::LAPC_SCENE,
     )?)?;
-    let mut parsed: Vec<Erp> = archives
-        .iter()
-        .map(|a| Erp::parse(&a.bytes).map_err(|e| err(format!("{}: {e}", a.file))))
-        .collect::<Result<_>>()?;
-    let mut touched = BTreeSet::new();
-    let mut fresh: Vec<(String, &'static str, Vec<u8>)> = Vec::new();
+    let mut rw = Rewrite::new(stock, archives)?;
     let mut nulls = Nulls::new();
     let scenes_first = edits
         .iter()
         .filter(|(r, _)| r.ends_with(".idf"))
         .chain(edits.iter().filter(|(r, _)| !r.ends_with(".idf")));
     for (resource, list) in scenes_first {
-        let mut edit = |bytes: Vec<u8>| match resource.ends_with(".idf") {
-            true => wrap_scene(bytes, list, &donor, &mut nulls),
-            false => hook_template(bytes, list, &nulls),
+        let base = base.filter(|_| *resource == dials::TEMPLATE);
+        let bytes = rw.read(resource, stock_erp(resource), base)?.swap_remove(0);
+        let new = match resource.ends_with(".idf") {
+            true => wrap_scene(bytes, list, &donor, &mut nulls)?,
+            false => hook_template(bytes, list, &nulls)?,
         };
-        let held: Vec<usize> = (0..parsed.len())
-            .filter(|i| parsed[*i].find(resource).is_ok())
-            .collect();
-        if held.is_empty() {
-            let mut bytes = first(stock.read(stock_erp(resource), resource)?, resource)?;
-            if *resource == dials::TEMPLATE
-                && let Some(edit) = base
-            {
-                bytes = edit(&bytes)?;
-            }
-            let kind = if resource.ends_with(".idf") {
-                "UILayout"
-            } else {
-                "UIDF"
-            };
-            fresh.push(((*resource).to_owned(), kind, edit(bytes)?));
-            continue;
-        }
-        let copies: Vec<Vec<u8>> = held
-            .iter()
-            .map(|i| parsed[*i].find(resource)?.fragments[0].data().map_err(Into::into))
-            .collect::<Result<_>>()?;
-        if copies.iter().any(|c| *c != copies[0]) {
-            return Err(err(format!(
-                "{resource}: the composed archives hold different copies, so a yield cannot wrap it"
-            )));
-        }
-        let new = edit(copies[0].clone())?;
-        for i in held {
-            let r = parsed[i].find_mut(resource)?;
-            let mut frags = Vec::with_capacity(r.fragments.len());
-            frags.push(new.clone());
-            for f in &r.fragments[1..] {
-                frags.push(f.data()?);
-            }
-            *r = Resource::like_with(packer, resource, r, &frags)?;
-            touched.insert(i);
-        }
+        rw.write(resource, new)?;
     }
-    for i in touched {
-        archives[i].bytes = parsed[i].to_bytes()?;
-    }
-    let names: Vec<&str> = fresh.iter().map(|(n, _, _)| n.as_str()).collect();
-    let carriers = stock.carriers(&names)?;
-    let mut groups: BTreeMap<Vec<String>, Vec<Res>> = BTreeMap::new();
-    for (name, kind, bytes) in fresh {
-        let erps = carriers.get(&name).cloned().unwrap_or_default();
-        if erps.is_empty() {
-            return Err(err(format!("no game archive carries {name}")));
-        }
-        groups.entry(erps).or_default().push((name, kind, vec![bytes]));
-    }
-    for (n, (erps, resources)) in groups.into_iter().enumerate() {
-        let file = match n {
-            0 => "hud_yield.erp".to_owned(),
-            n => format!("hud_yield_{}.erp", n + 1),
-        };
-        lines.push(format!(
-            "{file}: {} for the yield records, over {}",
-            resources
-                .iter()
-                .map(|(r, _, _)| r.rsplit('/').next().unwrap_or(r).to_owned())
-                .collect::<Vec<_>>()
-                .join(", "),
-            erps.iter()
-                .map(|e| e.rsplit('/').next().unwrap_or(e))
-                .collect::<Vec<_>>()
-                .join(", ")
-        ));
-        archives.push(Built {
-            file,
-            erps,
-            bytes: super::composer::archive(stock, resources, packer)?,
-        });
-    }
+    let added = rw.finish(archives, "hud_yield", "the yield records", lines, packer)?;
+    archives.extend(added);
     for (pfx, input) in yields {
-        if let Some(y) = &input.record.yields {
+        if let Some(y) = &input.record.yields
+            && !y.parts.is_empty()
+        {
             lines.push(format!(
                 "{pfx}: yields {} while {} is on",
                 parts_of(y).iter().map(|p| p.key).collect::<Vec<_>>().join(", "),
