@@ -1,4 +1,6 @@
 #pragma once
+#include "core/render/readback/pixels.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -45,25 +47,10 @@ inline std::optional<std::string> reference(std::string_view name)
     return "eaid://ui_package/art/textures/render_badge_" + std::string(table) + " " + std::to_string(index);
 }
 
-// Tight RGBA rows, preserving alpha and aspect ratio. Nearest-neighbour is
-// intentional: the small HUD badge should not acquire a colour fringe at alpha edges.
+// Tight RGBA rows at most SIDE on a side (render/readback/pixels.hpp).
 inline std::vector<uint8_t> pixels(const uint8_t *source, unsigned width, unsigned height, unsigned pitch, bool bgra,
                                    unsigned &out_w, unsigned &out_h)
 {
-    if (!source || !width || !height || width > 512 || height > 512 || pitch < width * 4)
-        return {};
-    const unsigned longest = std::max(width, height);
-    out_w = longest <= SIDE ? width : std::max(1u, width * SIDE / longest);
-    out_h = longest <= SIDE ? height : std::max(1u, height * SIDE / longest);
-    std::vector<uint8_t> out(size_t(out_w) * out_h * 4);
-    for (unsigned y = 0; y < out_h; y++)
-        for (unsigned x = 0; x < out_w; x++) {
-            const uint8_t *from = source + size_t(y * height / out_h) * pitch + (x * width / out_w) * 4;
-            uint8_t *to = out.data() + (size_t(y) * out_w + x) * 4;
-            std::memcpy(to, from, 4);
-            if (bgra)
-                std::swap(to[0], to[2]);
-        }
-    return out;
+    return render::readback::fit(source, width, height, pitch, bgra, 512, SIDE, out_w, out_h);
 }
 }
