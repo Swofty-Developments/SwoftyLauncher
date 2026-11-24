@@ -38,11 +38,11 @@ inline constexpr bp::Proof TELEMETRY{"the car telemetry fields (mass +0x150, fue
 // The wheel puncture state the race tyre rule reads (apply/content/race_fuel.hpp): VehicleTyreComponent.physics +0x20,
 // CarPhysicsRecord.car +0x58 (0x142e92f70), CarSuspension.wheels +0x70..+0x88 and CarWheel.tyre_flags +0x20, bits 0
 // (burst) and 1 (punctured) (0x142e88840, and 0x144656f80, which reaches the byte as wheel+8 +0x18). Each of the three
-// is the same function on Steam 1.0.145 and uses each offset at the same instruction (re/tools/sigport.py --witness
-// 0x2e88840, 0x2e92f70 and 0x4656f80); a blind static read agreed on both builds. CarLive.suspension +0x580 is CAR_LIVE's.
+// is the same function on Steam 1.0.145 and EA 1.0.145 and uses each offset at the same instruction (re/tools/sigport.py
+// --witness 0x2e88840, 0x2e92f70 and 0x4656f80); a blind static read agreed on both Steam builds. CarLive.suspension +0x580 is CAR_LIVE's.
 inline constexpr bp::Proof PUNCTURES{"the wheel puncture state (VehicleTyreComponent +0x20, CarPhysicsRecord +0x58, "
                                      "CarSuspension +0x70..+0x88, CarWheel.tyre_flags +0x20 bits 0 and 1)",
-                                     bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
+                                     bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145)};
 
 // A value that differs between builds, with the builds it is proven on.
 struct PerBuild {

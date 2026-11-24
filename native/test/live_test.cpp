@@ -1364,7 +1364,7 @@ static void test_steam_26566308_ers_mode()
 static void test_ea_1_0_145()
 {
     const BuildProof *build = proof_for(1794315435u);
-    CHECK(build == &EA_1_0_145_BUILD && build->groups == (ALL_GROUPS & ~STEAM_ONLY_GROUPS));
+    CHECK(build == &EA_1_0_145_BUILD && build->groups == ALL_GROUPS);
     CHECK(build->progress_from_manager == 0x2a0 && build->ers_mode == 0x1a6c);
     CHECK(build->field_proofs == bit(G_DRIVER_NAMES));
     CHECK(!proof_for(1794315434u) && !proof_for(1794315436u));
@@ -1375,7 +1375,7 @@ static void test_ea_1_0_145()
     for (unsigned i = 0; i < G_COUNT; i++)
         CHECK(d.gates[Group(i)] ==
               (ROWS[i].mapped && (ROWS[i].fields || i == G_DRIVER_NAMES) && (build->groups & bit(Group(i))) != 0));
-    CHECK(d.verdict[G_LAP_TIMES].why == Why::build && d.verdict[G_TYRE_WEAR].why == Why::build);
+    CHECK(d.verdict[G_LAP_TIMES].why == Why::on && d.verdict[G_TYRE_WEAR].why == Why::on);
     sites.key_tyres = 0;
     CHECK(!decide(sites, *build, false).gates[G_TYRES]);
 
