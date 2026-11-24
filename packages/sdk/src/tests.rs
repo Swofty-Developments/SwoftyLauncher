@@ -138,7 +138,8 @@ fn layout_matches_header() {
         "#define SWOFTY_EVENT_SESSION_START \"session.start\"",
         "#define SWOFTY_TELEMETRY_VERSION 2",
         "#define SWOFTY_EVENT_TELEMETRY_OVERTAKE \"telemetry.overtake\"",
-        "#define SWOFTY_OVERLAY_VERSION 5",
+        "#define SWOFTY_OVERLAY_VERSION 6",
+        "uint32_t joy_pressed;",
         "void (*polygon_concave)(SwoftyPaint *paint, const float *xy, uint32_t count, uint32_t rgba);",
         "#define SWOFTY_LANG_VERSION 2",
         "SwoftyCoreLangVersion(void);",
@@ -371,6 +372,10 @@ fn stdlib_headers_wrap_every_call() {
         "inline Result load_font_memory(",
         "inline void polygon_concave(",
         "std::string_view font;",
+        "inline bool v6()",
+        "bool joy_hit(uint32_t button) const",
+        "bool joy_held(uint32_t button) const",
+        "bool any_pressed() const",
     ] {
         assert!(OVERLAY_HEADER.contains(name), "{name}");
     }

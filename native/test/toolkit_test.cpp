@@ -1,6 +1,6 @@
 // Windows unit test for the overlay toolkit (packages/sdk/include/swofty/overlay_ui.hpp), run under Wine
 // by native/test/run_toolkit_test.sh. A fake core table feeds each frame's input and records what the
-// widgets draw; a stub swofty_core.dll exports SwoftyCoreOverlayVersion so the SDK sees overlay v3.
+// widgets draw; a stub swofty_core.dll exports SwoftyCoreOverlayVersion so the SDK sees overlay v6.
 
 #include <swofty/overlay_ui.hpp>
 
@@ -305,6 +305,33 @@ static void test_unfocused()
           "mouse clicks the core hands every addon without focus press no widget");
 }
 
+static void test_input_helpers()
+{
+    ov::Input in;
+    CHECK(!in.any_pressed() && !in.joy_hit(0) && !in.joy_held(0), "an empty input has no press");
+    in.joy_buttons = 1u << 7 | 1u << 31;
+    in.joy_pressed = 1u << 7;
+    CHECK(in.joy_held(7) && in.joy_held(31) && in.joy_hit(7) && !in.joy_hit(31) && !in.joy_hit(32) && !in.joy_held(40),
+          "joy_held and joy_hit read game controller buttons 0-31 by number");
+    CHECK(in.any_pressed(), "a game controller press is any_pressed");
+    ov::Input key;
+    key.keys_pressed[VK_SPACE >> 3] |= uint8_t(1u << (VK_SPACE & 7));
+    ov::Input click;
+    click.pressed = ov::mouse::left;
+    ov::Input pad;
+    pad.pad_pressed = ov::pad::start;
+    ov::Input held;
+    held.buttons = ov::mouse::left;
+    held.pad_buttons = ov::pad::a;
+    held.joy_buttons = 1;
+    held.keys_down[VK_SPACE >> 3] |= uint8_t(1u << (VK_SPACE & 7));
+    CHECK(key.any_pressed() && click.any_pressed() && pad.any_pressed(), "a key, mouse or pad press is any_pressed");
+    CHECK(!held.any_pressed(), "held buttons and keys are not");
+    CHECK(sizeof(SwoftyInput) == offsetof(SwoftyInput, joy_pressed) + 4 &&
+              offsetof(SwoftyInput, joy_connected) == offsetof(SwoftyInput, pad_rt) + 4,
+          "the game controller fields are appended after the v3 fields");
+}
+
 static void test_toasts()
 {
     Panel p;
@@ -330,11 +357,12 @@ int main()
     api_table.version = 8;
     api_table.overlay = &table;
     swofty::api = &api_table;
-    CHECK(stub && ov::v3(), "the SDK sees overlay v3 through the stub core");
+    CHECK(stub && ov::v3() && ov::v6(), "the SDK sees overlay v6 through the stub core");
     test_keyboard();
     test_utf8_editing();
     test_pad();
     test_unfocused();
+    test_input_helpers();
     test_toasts();
     if (failures)
         printf("\n%d check(s) FAILED\n", failures);

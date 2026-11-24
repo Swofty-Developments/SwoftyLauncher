@@ -134,8 +134,9 @@ typedef void (*SwoftyPaintFn)(SwoftyPaint *paint, void *user);
    SwoftyCoreOverlayVersion and it returns 2 or more (swofty/overlay.hpp checks); the v3 entries after
    ui_scale() exist when it returns 3 or more. A text style and an input snapshot are read and written
    up to their size field, so later fields can be added. The v4 entry after focus() exists when it returns 4 or
-   more, and the v5 entries after load_image_rgba() and SwoftyTextStyle.font_id when it returns 5 or more. */
-#define SWOFTY_OVERLAY_VERSION 5
+   more, and the v5 entries after load_image_rgba() and SwoftyTextStyle.font_id when it returns 5 or more. From 6 the
+   core fills SwoftyInput's joy_* fields and gives mouse buttons to every addon while nobody holds focus. */
+#define SWOFTY_OVERLAY_VERSION 6
 
 enum {
     SWOFTY_TEXT_LEFT = 0x00,
@@ -198,6 +199,12 @@ typedef struct SwoftyInput {
     uint32_t pad_pressed;
     float pad_lx, pad_ly, pad_rx, pad_ry;
     float pad_lt, pad_rt;
+    /* v6: wheels, joysticks and other game controllers the game reads through DirectInput. joy_connected has a bit
+       per controller read in the last 2 s; joy_buttons the first 32 buttons held on any of them, bit n for button n;
+       joy_pressed the buttons that went down since the last frame. */
+    uint32_t joy_connected;
+    uint32_t joy_buttons;
+    uint32_t joy_pressed;
 } SwoftyInput;
 
 typedef struct SwoftyTextStyle {
