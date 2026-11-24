@@ -333,12 +333,14 @@ impl Failure {
         }
     }
 
-    /// A body that stopped before its end.
+    /// A body that stopped before its end. One still unfinished when the whole
+    /// timeout ran out leads with [`BLOCKED`], as a stalled transfer is mostly a
+    /// scanner or filter holding it.
     pub(super) fn cut_off(detail: String, e: Option<&std::io::Error>) -> Self {
         let inner = e.and_then(|e| e.get_ref()?.downcast_ref::<ureq::Error>());
         Self {
             detail,
-            blocked: false,
+            blocked: inner.is_some_and(|e| matches!(e, ureq::Error::Timeout(ureq::Timeout::Global))),
             transient: e.is_none_or(transfer::broken) && !inner.is_some_and(final_failure),
         }
     }
