@@ -331,7 +331,7 @@ bool current_weekend(hc::Weekend &w)
     swofty_core::apply::moments::CareerWeekend m;
     if (!swofty_core::apply::moments::career_weekend(m))
         return false;
-    w = {m.round, m.rounds, m.progress, m.current, m.sessions, m.complete, m.session, m.track};
+    w = {m.round, m.rounds, m.progress, m.current, m.sessions, m.complete, m.session, m.track, m.current_complete};
     return true;
 }
 
@@ -403,6 +403,15 @@ void hub_calendar_team_hq()
     else
         swofty::log("[career] Team HQ weekend: %s", hc::describe(w).c_str());
     team_hq_calendar();
+}
+
+void hub_calendar_load_loop()
+{
+    hc::Weekend w;
+    std::string weekend = current_weekend(w) ? hc::describe_loop(w) : "the current weekend is not readable";
+    Snapshot s = snapshot();
+    swofty::log("[career] load loop, first pass: %s; %s", weekend.c_str(), calendar(s).c_str());
+    log_items(s);
 }
 
 void hub_calendar_added(void *calendar, const void *activity, uint32_t day)

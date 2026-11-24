@@ -726,14 +726,57 @@ pub fn body_timeout(size: u64) -> Duration {
 /// file, and checks its size and SHA-256. The body streams to disk, and a
 /// download the connection breaks off resumes from the bytes it has.
 pub fn download(v: &Version, to: &Path, progress: &dyn Fn(Stage)) -> Result<()> {
+    let (len, digest) = fetch_version(v, to, None, progress)?;
+    progress(Stage::Verifying);
+    verify(v, len, &digest)
+}
+
+/// [`download`] that keeps a partial file at `to` when it breaks off and
+/// carries on from it the next time, with the transfer's lines in the
+/// registry log under `root`. A file that fails its check is deleted, and one
+/// that was resumed is downloaded again from the start.
+pub(crate) fn download_resumable(
+    v: &Version,
+    to: &Path,
+    root: &Path,
+    progress: &dyn Fn(Stage),
+) -> Result<()> {
+    let resumed = to.exists();
+    let (len, digest) = fetch_version(v, to, Some(root), progress)?;
+    progress(Stage::Verifying);
+    let Err(e) = verify(v, len, &digest) else {
+        return Ok(());
+    };
+    transfer::discard(to);
+    if !resumed {
+        return Err(e);
+    }
+    log(
+        root,
+        &format!("download: the resumed file failed its check ({e}); starting over"),
+    );
+    let (len, digest) = fetch_version(v, to, Some(root), progress)?;
+    progress(Stage::Verifying);
+    verify(v, len, &digest).inspect_err(|_| transfer::discard(to))
+}
+
+fn fetch_version(
+    v: &Version,
+    to: &Path,
+    root: Option<&Path>,
+    progress: &dyn Fn(Stage),
+) -> Result<(u64, String)> {
     within_limit(v)?;
     let url = &v.url;
     let too_long = || format!("larger than the {} bytes the registry lists", v.size);
+    let log_to = root.map(|r| move |line: &str| log(r, line));
     let fetch = transfer::Fetch {
         url,
         size: v.size,
         lister: "the registry",
         too_long: &too_long,
+        resume: root.map(|_| v.sha256.as_str()),
+        log: log_to.as_ref().map(|l| l as &dyn Fn(&str)),
     };
     let mut open = |from: u64| {
         let request = || {
@@ -757,6 +800,9 @@ pub fn download(v: &Version, to: &Path, progress: &dyn Fn(Stage)) -> Result<()> 
         let (result, attempts) = transfer::send(request);
         let response = result.map_err(transfer::Opening::Call)?;
         let status = response.status().as_u16();
+        if status == 416 && from > 0 {
+            return Err(transfer::Opening::Unsatisfiable);
+        }
         if status >= 400 {
             return Err(transfer::Opening::Refused(Error::Other(format!(
                 "{url}: HTTP {status}{}",
@@ -765,9 +811,7 @@ pub fn download(v: &Version, to: &Path, progress: &dyn Fn(Stage)) -> Result<()> 
         }
         Ok(response)
     };
-    let (len, digest) = transfer::fetch(&fetch, to, &mut open, &|n| progress(Stage::Downloading(n)))?;
-    progress(Stage::Verifying);
-    verify(v, len, &digest)
+    transfer::fetch(&fetch, to, &mut open, &|n| progress(Stage::Downloading(n)))
 }
 
 fn downloads_dir(store: &Store) -> Result<PathBuf> {

@@ -44,6 +44,18 @@ inline const VenueSeed *stock_venue(std::string_view code)
     return nullptr;
 }
 
+inline constexpr const char *STOCK_REVERSE[] = {"silverstone_reverse", "austria_reverse", "zandvoort_reverse"};
+
+inline bool is_stock_track(std::string_view code)
+{
+    if (stock_venue(code))
+        return true;
+    for (const char *r : STOCK_REVERSE)
+        if (code == r)
+            return true;
+    return false;
+}
+
 struct StockRow {
     std::string code;
     int64_t stat_id = -1;

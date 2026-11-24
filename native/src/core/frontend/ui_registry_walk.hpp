@@ -92,6 +92,66 @@ template <class Read> bool string_record(Read &read, uint64_t rec, size_t max_te
     return true;
 }
 
+enum class Kids { ok, empty, bad, failed };
+
+// The children of an object node, fn(key, child) for each used slot of its map.
+template <class Read, class Fn> Kids object_kids(Read &read, uint64_t node, const Limits &lim, Fn &&fn)
+{
+    uint64_t entries = 0, info = 0, mask = 0;
+    if (!u64_at(read, node + 0x70, entries) || !u64_at(read, node + 0x78, info) || !u64_at(read, node + 0x88, mask))
+        return Kids::failed;
+    if (entries == info)
+        return Kids::empty;
+    if (!entries || !info || info < entries || (entries & 7) || (info - entries) % 16)
+        return Kids::bad;
+    size_t slots = size_t((info - entries) / 16);
+    if (slots == 0 || slots > lim.max_slots || mask >= slots)
+        return Kids::bad;
+    std::vector<uint8_t> flags(slots), table(slots * 16);
+    if (!get(read, info, flags.data(), slots) || !get(read, entries, table.data(), table.size()))
+        return Kids::failed;
+    for (size_t i = 0; i < slots; i++) {
+        if (!flags[i])
+            continue;
+        uint32_t key;
+        uint64_t child;
+        std::memcpy(&key, table.data() + i * 16, 4);
+        std::memcpy(&child, table.data() + i * 16 + 8, 8);
+        fn(key, child);
+    }
+    return Kids::ok;
+}
+
+// The children of a list node in order, fn(index, key, child); a child whose name hash is unreadable has its index as key.
+template <class Read, class Fn> Kids list_kids(Read &read, uint64_t node, const Limits &lim, Fn &&fn)
+{
+    uint64_t begin = 0, end = 0;
+    if (!u64_at(read, node + 0x40, begin) || !u64_at(read, node + 0x48, end))
+        return Kids::failed;
+    if (!begin || end < begin || (begin & 7) || (end - begin) / 8 > lim.max_list)
+        return begin || end ? Kids::bad : Kids::empty;
+    size_t count = size_t((end - begin) / 8);
+    std::vector<uint64_t> kids(count);
+    if (count && !get(read, begin, kids.data(), count * 8))
+        return Kids::failed;
+    for (size_t i = 0; i < count; i++) {
+        uint32_t key = 0;
+        if (kids[i] && !get(read, kids[i] + 0x20, &key, 4))
+            key = uint32_t(i);
+        fn(i, key, kids[i]);
+    }
+    return Kids::ok;
+}
+
+// The text of a string leaf node; false for another kind of node or an unreadable value.
+template <class Read> bool leaf_text(Read &read, const Layout &lay, uint64_t node, size_t max_text, std::string &text)
+{
+    uint64_t vt = 0, binding = 0, bvt = 0, rec = 0;
+    return u64_at(read, node, vt) && vt == lay.string_leaf_vt && u64_at(read, node + 0x58, binding) &&
+           u64_at(read, binding, bvt) && bvt == lay.string_binding_vt && u64_at(read, binding + 8, rec) &&
+           string_record(read, rec, max_text, text);
+}
+
 template <class Read>
 size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::string &needle, std::vector<Hit> &hits,
                    size_t cap, Stats &st, const Limits &lim = {}, bool every_string = false)
@@ -119,6 +179,12 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
         next.chain[from.depth < CHAIN ? from.depth : CHAIN - 1] = key;
         stack.push_back(next);
     };
+    auto count = [&](Kids k) {
+        if (k == Kids::failed)
+            st.failed_reads++;
+        else if (k == Kids::bad)
+            st.bad_maps++;
+    };
     while (!stack.empty() && st.visited < lim.max_nodes) {
         Item it = stack.back();
         stack.pop_back();
@@ -134,10 +200,8 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
             st.root_vt = vt;
         if (vt == lay.string_leaf_vt) {
             st.string_leaves++;
-            uint64_t binding = 0, bvt = 0, rec = 0;
             std::string text;
-            if (!u64_at(read, it.node + 0x58, binding) || !u64_at(read, binding, bvt) || bvt != lay.string_binding_vt ||
-                !u64_at(read, binding + 8, rec) || !string_record(read, rec, lim.max_text, text))
+            if (!leaf_text(read, lay, it.node, lim.max_text, text))
                 continue;
             st.strings_read++;
             if (!every_string && text != needle)
@@ -154,61 +218,10 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
             }
         } else if (vt == lay.object_vt) {
             st.objects++;
-            uint64_t entries = 0, info = 0, mask = 0;
-            if (!u64_at(read, it.node + 0x70, entries) || !u64_at(read, it.node + 0x78, info) ||
-                !u64_at(read, it.node + 0x88, mask)) {
-                st.failed_reads++;
-                continue;
-            }
-            if (entries == info)
-                continue;
-            if (!entries || !info || info < entries || (entries & 7) || (info - entries) % 16) {
-                st.bad_maps++;
-                continue;
-            }
-            size_t slots = size_t((info - entries) / 16);
-            if (slots == 0 || slots > lim.max_slots || mask >= slots) {
-                st.bad_maps++;
-                continue;
-            }
-            std::vector<uint8_t> flags(slots), table(slots * 16);
-            if (!get(read, info, flags.data(), slots) || !get(read, entries, table.data(), table.size())) {
-                st.failed_reads++;
-                continue;
-            }
-            for (size_t i = 0; i < slots; i++) {
-                if (!flags[i])
-                    continue;
-                uint32_t key;
-                uint64_t child;
-                std::memcpy(&key, table.data() + i * 16, 4);
-                std::memcpy(&child, table.data() + i * 16 + 8, 8);
-                push(it, key, child);
-            }
+            count(object_kids(read, it.node, lim, [&](uint32_t key, uint64_t child) { push(it, key, child); }));
         } else if (vt == lay.list_vt) {
             st.lists++;
-            uint64_t begin = 0, end = 0;
-            if (!u64_at(read, it.node + 0x40, begin) || !u64_at(read, it.node + 0x48, end)) {
-                st.failed_reads++;
-                continue;
-            }
-            if (!begin || end < begin || (begin & 7) || (end - begin) / 8 > lim.max_list) {
-                if (begin || end)
-                    st.bad_maps++;
-                continue;
-            }
-            size_t count = size_t((end - begin) / 8);
-            std::vector<uint64_t> kids(count);
-            if (count && !get(read, begin, kids.data(), count * 8)) {
-                st.failed_reads++;
-                continue;
-            }
-            for (size_t i = 0; i < count; i++) {
-                uint32_t key = 0;
-                if (kids[i] && !get(read, kids[i] + 0x20, &key, 4))
-                    key = uint32_t(i);
-                push(it, key, kids[i]);
-            }
+            count(list_kids(read, it.node, lim, [&](size_t, uint32_t key, uint64_t child) { push(it, key, child); }));
         } else {
             st.skipped_kinds++;
             for (auto &u : st.unknown_vt)
@@ -223,6 +236,48 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
         }
     }
     return hits.size();
+}
+
+// One step of a path from the root: the child of an object node with this name hash, or (list) the element at index of
+// a list node.
+struct Step {
+    uint32_t key = 0;
+    bool list = false;
+    size_t index = 0;
+};
+
+enum class Lookup { ok, no_root, not_found, not_string, failed };
+
+// The string leaf at the end of steps, without walking the rest of the registry: a handful of reads per step.
+template <class Read>
+Lookup string_at(Read &read, uint64_t registry, const Layout &lay, const Step *steps, size_t n, std::string &out,
+                 const Limits &lim = {})
+{
+    uint64_t node = 0;
+    if (!u64_at(read, registry + 8, node) || !node)
+        return Lookup::no_root;
+    for (size_t s = 0; s < n; s++) {
+        uint64_t vt = 0, next = 0;
+        if (!u64_at(read, node, vt))
+            return Lookup::failed;
+        Kids k = Kids::empty;
+        if (steps[s].list && vt == lay.list_vt)
+            k = list_kids(read, node, lim, [&](size_t i, uint32_t, uint64_t child) {
+                if (i == steps[s].index)
+                    next = child;
+            });
+        else if (!steps[s].list && vt == lay.object_vt)
+            k = object_kids(read, node, lim, [&](uint32_t key, uint64_t child) {
+                if (key == steps[s].key && !next)
+                    next = child;
+            });
+        if (k == Kids::failed)
+            return Lookup::failed;
+        if (!next)
+            return Lookup::not_found;
+        node = next;
+    }
+    return leaf_text(read, lay, node, lim.max_text, out) ? Lookup::ok : Lookup::not_string;
 }
 
 using frontend::name_hash::djb2;

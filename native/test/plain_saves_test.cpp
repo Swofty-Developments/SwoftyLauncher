@@ -514,6 +514,15 @@ static void load_loop(const fs::path &dir)
     expect(loop.note() && loop.paused(), "load loop: the third pass pauses the writes and reports it once");
     expect(!loop.note() && loop.paused(), "load loop: later passes stay paused without reporting again");
 
+    ps::LoadLoop firsts;
+    firsts.note();
+    expect(firsts.first_pass(), "the first pass of a loop is flagged");
+    firsts.note();
+    expect(!firsts.first_pass(), "a later pass is not");
+    firsts.reset();
+    firsts.note();
+    expect(firsts.first_pass(), "a loop after a reset has a first pass again");
+
     ps::LoadLoop apart;
     apart.note();
     apart.note();

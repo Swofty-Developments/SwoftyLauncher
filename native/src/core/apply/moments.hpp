@@ -42,6 +42,7 @@ std::pair<std::string, std::string> session_mode_track();
 struct CareerWeekend {
     uint32_t round = 0, rounds = 0, progress = 0, current = 0, sessions = 0, complete = 0;
     std::string session, track;
+    bool current_complete = false;
 };
 bool career_weekend(CareerWeekend &out);
 // The current championship session's own copy of the entrant records, read live: the session (weekend +0x220 +

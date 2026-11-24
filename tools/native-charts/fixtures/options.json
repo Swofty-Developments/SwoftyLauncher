@@ -1,0 +1,401 @@
+[
+  {
+    "id": "options-blocks",
+    "title": "Independent text sizes, backgrounds, borders, grids and rounded blocks",
+    "caption": "Synthetic input. Checker images exercise the same in-memory PNG path as table images.",
+    "height": 270,
+    "x": {
+      "label": "Lap",
+      "domain": [
+        0,
+        20
+      ],
+      "ticks": [
+        {
+          "value": 0,
+          "label": "0"
+        },
+        {
+          "value": 10,
+          "label": "10"
+        },
+        {
+          "value": 20,
+          "label": "20"
+        }
+      ]
+    },
+    "y": {
+      "label": "Driver",
+      "domain": [
+        -0.5,
+        1.5
+      ],
+      "reversed": true,
+      "ticks": [
+        {
+          "value": 0,
+          "label": "Driver A"
+        },
+        {
+          "value": 1,
+          "label": "Driver B"
+        }
+      ]
+    },
+    "options": {
+      "background": "#171A27",
+      "plot_background": "#10121C",
+      "corner_radius": 14,
+      "border": {
+        "color": "#9F7AEA",
+        "width": 2
+      },
+      "text": {
+        "title": 19,
+        "caption": 12,
+        "x_title": 13,
+        "y_title": 15,
+        "x_ticks": 12,
+        "y_ticks": 14,
+        "legend": 13,
+        "labels": 14
+      },
+      "x_grid": {
+        "color": "#35435B",
+        "width": 1,
+        "dash": [
+          4,
+          4
+        ]
+      },
+      "y_grid": {
+        "visible": false
+      }
+    },
+    "series": [
+      {
+        "name": "Compound A",
+        "color": "#B486FA",
+        "type": "ranges",
+        "blocks": {
+          "radius": 7,
+          "fill": "#7354C366",
+          "border": {
+            "color": "#A88BEC",
+            "width": 2
+          }
+        },
+        "cells": [
+          {
+            "x": [
+              0,
+              8
+            ],
+            "y": [
+              -0.32,
+              0.32
+            ],
+            "label": "8 laps"
+          },
+          {
+            "x": [
+              0,
+              12
+            ],
+            "y": [
+              0.68,
+              1.32
+            ],
+            "label": "12 laps"
+          }
+        ]
+      },
+      {
+        "name": "Compound B",
+        "color": "#20D6BB",
+        "type": "ranges",
+        "cells": [
+          {
+            "x": [
+              8,
+              20
+            ],
+            "y": [
+              -0.32,
+              0.32
+            ],
+            "label": "12 laps",
+            "style": {
+              "radius": 10,
+              "fill": "#20D6BB44",
+              "border": {
+                "color": "#20D6BB",
+                "width": 2
+              }
+            }
+          },
+          {
+            "x": [
+              12,
+              20
+            ],
+            "y": [
+              0.68,
+              1.32
+            ],
+            "label": "8 laps",
+            "style": {
+              "radius": 10,
+              "fill": "#20D6BB44",
+              "border": {
+                "color": "#20D6BB",
+                "width": 2
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "images": [
+      {
+        "image_data": {
+          "png": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAJElEQVR4nGNgQAf3DvxHwaTKD0UDhqCTqW7A4HPRaDr4T3cDAOgKTpC++1AhAAAAAElFTkSuQmCC",
+          "width": 20,
+          "height": 20,
+          "fit": "contain",
+          "transparent": true
+        },
+        "at": "cell",
+        "series": 0,
+        "cell": 0
+      },
+      {
+        "image_data": {
+          "png": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAL0lEQVR4nGP4////CWS8xe3Df2RMSJ5hGBhAqgZ0+eFgwMDHwsAbsGXAY2HADQAA6EhXLjlH3usAAAAASUVORK5CYII=",
+          "width": 20,
+          "height": 20,
+          "fit": "contain",
+          "transparent": true
+        },
+        "at": "y_tick",
+        "tick": 0
+      },
+      {
+        "image_data": {
+          "png": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAJElEQVR4nGNgQAf3DvxHwaTKD0UDhqCTqW7A4HPRaDr4T3cDAOgKTpC++1AhAAAAAElFTkSuQmCC",
+          "width": 20,
+          "height": 20,
+          "fit": "contain",
+          "transparent": true
+        },
+        "at": "x_tick",
+        "tick": 1
+      },
+      {
+        "image_data": {
+          "png": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAJElEQVR4nGNgQAf3DvxHwaTKD0UDhqCTqW7A4HPRaDr4T3cDAOgKTpC++1AhAAAAAElFTkSuQmCC",
+          "width": 20,
+          "height": 20,
+          "fit": "contain",
+          "transparent": true
+        },
+        "at": "legend",
+        "series": 0
+      },
+      {
+        "image_data": {
+          "png": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAL0lEQVR4nGP4////CWS8xe3Df2RMSJ5hGBhAqgZ0+eFgwMDHwsAbsGXAY2HADQAA6EhXLjlH3usAAAAASUVORK5CYII=",
+          "width": 20,
+          "height": 20,
+          "fit": "contain",
+          "transparent": true
+        },
+        "at": "plot",
+        "x": 18,
+        "y": 1.45
+      }
+    ]
+  },
+  {
+    "id": "options-lines",
+    "title": "Thicker solid and dashed lines",
+    "height": 260,
+    "x": {
+      "label": "Distance",
+      "domain": [
+        0,
+        10
+      ]
+    },
+    "y": {
+      "label": "Value",
+      "domain": [
+        0,
+        10
+      ]
+    },
+    "options": {
+      "border": {
+        "color": "#20D6BB",
+        "width": 3
+      },
+      "plot_background": "#10141B",
+      "text": {
+        "title": 20,
+        "legend": 14
+      },
+      "x_grid": {
+        "visible": false
+      },
+      "y_grid": {
+        "width": 2,
+        "color": "#384156",
+        "dash": [
+          8,
+          4,
+          2,
+          4
+        ]
+      }
+    },
+    "series": [
+      {
+        "name": "Original width",
+        "type": "line",
+        "color": "#B486FA",
+        "points": [
+          {
+            "x": 0,
+            "y": 2
+          },
+          {
+            "x": 5,
+            "y": 4
+          },
+          {
+            "x": 10,
+            "y": 2
+          }
+        ]
+      },
+      {
+        "name": "Width 4",
+        "type": "line",
+        "color": "#20D6BB",
+        "line_width": 4,
+        "points": [
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 5,
+            "y": 6
+          },
+          null,
+          {
+            "x": 8,
+            "y": 5
+          },
+          {
+            "x": 10,
+            "y": 4
+          }
+        ]
+      },
+      {
+        "name": "Width 6 dashed",
+        "type": "line",
+        "color": "#E6C75A",
+        "line_width": 6,
+        "dashed": true,
+        "points": [
+          {
+            "x": -10,
+            "y": 6
+          },
+          {
+            "x": 5,
+            "y": 8
+          },
+          {
+            "x": 20,
+            "y": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "options-bars",
+    "title": "Rounded bars and box bodies",
+    "height": 240,
+    "x": {
+      "label": "Category",
+      "domain": [
+        -0.5,
+        3.5
+      ]
+    },
+    "y": {
+      "label": "Value",
+      "domain": [
+        -5,
+        10
+      ]
+    },
+    "series": [
+      {
+        "name": "Rounded bars",
+        "color": "#20D6BB",
+        "type": "bars",
+        "width": 0.55,
+        "blocks": {
+          "radius": 10,
+          "fill": "#20D6BB66",
+          "border": {
+            "color": "#20D6BB",
+            "width": 2
+          }
+        },
+        "values": [
+          {
+            "position": 0,
+            "value": 8
+          },
+          {
+            "position": 1,
+            "base": 0,
+            "value": -3
+          }
+        ]
+      },
+      {
+        "name": "Box body and thick whiskers",
+        "type": "boxes",
+        "color": "#B486FA",
+        "line_width": 3,
+        "blocks": {
+          "radius": 5,
+          "fill": "#B486FA77",
+          "border": {
+            "color": "#B486FA",
+            "width": 2
+          }
+        },
+        "width": 0.6,
+        "values": [
+          {
+            "position": 2.5,
+            "min": -1,
+            "q1": 2,
+            "median": 4,
+            "q3": 6,
+            "max": 9
+          }
+        ]
+      }
+    ]
+  }
+]

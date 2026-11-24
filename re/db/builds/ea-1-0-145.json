@@ -11283,6 +11283,9 @@
   "k_Live_VehicleHelperSystemKey": {
    "match": "0x207c22"
   },
+  "k_Live_VehicleLapTimesSystemKey": {
+   "match": "0x5fd57c"
+  },
   "k_Ne_BagCodecVtbl": {
    "match": "0x29c9e49"
   },

@@ -1,0 +1,15 @@
+{
+  "content.box_assets": {
+    "silverstone_common_1950": {
+      "package": "vmknolle.season-1950/f5_1950",
+      "kind": "world",
+      "archive": "box_assets/silverstone_common_1950.erp",
+      "groups": [
+        "asset_groups/environment_package/tracks/silverstone/wep/silverstone_common.assetgroup"
+      ],
+      "resources": [
+        "eaid://environment_package/tracks/silverstone/"
+      ]
+    }
+  }
+}

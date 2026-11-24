@@ -58,15 +58,33 @@ pub(crate) struct Fetch<'a> {
     pub lister: &'a str,
     /// The error for a body longer than `size`.
     pub too_long: &'a dyn Fn() -> String,
+    /// The expected SHA-256, when a partial file left by a broken run may be
+    /// carried on. The partial is only used when the file next to it, named
+    /// `<file>.resume`, holds this hash, `size` and `url`.
+    pub resume: Option<&'a str>,
+    /// Where the transfer's own lines go; stderr when none.
+    pub log: Option<&'a dyn Fn(&str)>,
+}
+
+impl Fetch<'_> {
+    fn note(&self, line: &str) {
+        match self.log {
+            Some(log) => log(line),
+            None => eprintln!("swofty-core: {line}"),
+        }
+    }
 }
 
 /// Why a request got no usable answer.
 pub(crate) enum Opening {
     Call(ureq::Error),
     Refused(Error),
+    /// A 416 to a Range request.
+    Unsatisfiable,
 }
 
 enum Attempt {
+    Restart,
     Broke(String),
     Stalled(u64),
     Failed(Error),
@@ -83,19 +101,25 @@ pub(crate) fn fetch(
     open: &mut dyn FnMut(u64) -> std::result::Result<ureq::http::Response<ureq::Body>, Opening>,
     progress: &dyn Fn(u64),
 ) -> Result<(u64, String)> {
-    let mut file = std::fs::File::create(to).map_err(io_err(to))?;
-    let mut got = Got {
-        hash: Sha256::new(),
-        len: 0,
-        resumable: true,
-    };
+    let (mut file, mut got) = begin(f, to, progress)?;
     let (mut quiet, mut tries, mut stalls) = (0, 0, 0);
     loop {
         tries += 1;
         let before = got.len;
+        let started = Instant::now();
+        let speed = |got: &Got| got.len.saturating_sub(before) / started.elapsed().as_secs().max(1);
         let broke = match attempt(f, &mut file, to, &mut got, open, progress) {
             Ok(()) => break,
             Err(Attempt::Failed(e)) => return Err(e),
+            Err(Attempt::Restart) => {
+                f.note(&format!(
+                    "download: {}: the server refused to resume at byte {}; starting over",
+                    host(f.url),
+                    got.len
+                ));
+                restart(&mut file, &mut got, progress).map_err(io_err(to))?;
+                continue;
+            }
             Err(Attempt::Broke(e)) => e,
             Err(Attempt::Stalled(rate)) => {
                 stalls += 1;
@@ -107,12 +131,14 @@ pub(crate) fn fetch(
                         WINDOW.as_secs()
                     )));
                 }
-                eprintln!(
-                    "[download] stalled at {} KB ({rate} B/s for {} s); reconnecting, attempt {}/{STALLS}",
-                    got.len / 1024,
+                f.note(&format!(
+                    "download: {}: stalled at {} of {} bytes ({rate} B/s for {} s); reconnecting, attempt {}/{STALLS}",
+                    host(f.url),
+                    got.len,
+                    f.size,
                     WINDOW.as_secs(),
                     stalls + 1
-                );
+                ));
                 std::thread::sleep(BACKOFF * 2u32.pow(stalls - 1));
                 continue;
             }
@@ -121,14 +147,19 @@ pub(crate) fn fetch(
         if quiet >= TRIES || tries >= MOST {
             return Err(Error::Other(format!("{ADVICE}\n({}: {broke})", f.url)));
         }
-        eprintln!(
-            "swofty-core: {}: {broke}; trying again from byte {}",
-            f.url,
-            if got.resumable { got.len } else { 0 }
-        );
+        f.note(&format!(
+            "download: {}: {broke}; trying again from byte {} of {} ({} B/s this attempt)",
+            host(f.url),
+            if got.resumable { got.len } else { 0 },
+            f.size,
+            speed(&got)
+        ));
         std::thread::sleep(BACKOFF * 2u32.pow(quiet.saturating_sub(1)));
     }
     file.sync_all().map_err(io_err(to))?;
+    if f.resume.is_some() {
+        std::fs::remove_file(sidecar(to)).ok();
+    }
     let digest = got.hash.finalize().iter().map(|b| format!("{b:02x}")).collect();
     Ok((got.len, digest))
 }
@@ -137,6 +168,76 @@ struct Got {
     hash: Sha256,
     len: u64,
     resumable: bool,
+}
+
+fn sidecar(to: &Path) -> std::path::PathBuf {
+    let mut name = to.as_os_str().to_owned();
+    name.push(".resume");
+    name.into()
+}
+
+fn identity(key: &str, size: u64, url: &str) -> String {
+    format!("{key}\n{size}\n{url}")
+}
+
+/// Removes a partial file and the note that says whose it is.
+pub(crate) fn discard(to: &Path) {
+    std::fs::remove_file(to).ok();
+    std::fs::remove_file(sidecar(to)).ok();
+}
+
+/// Opens `to` for the download: the partial file a broken run left when it
+/// belongs to this download and is shorter than the whole, else an empty file.
+fn begin(f: &Fetch, to: &Path, progress: &dyn Fn(u64)) -> Result<(std::fs::File, Got)> {
+    let mut got = Got {
+        hash: Sha256::new(),
+        len: 0,
+        resumable: true,
+    };
+    let Some(key) = f.resume else {
+        return Ok((std::fs::File::create(to).map_err(io_err(to))?, got));
+    };
+    let id = identity(key, f.size, f.url);
+    let side = sidecar(to);
+    let kept = std::fs::read_to_string(&side).is_ok_and(|s| s == id)
+        && std::fs::metadata(to).is_ok_and(|m| m.len() > 0 && m.len() < f.size);
+    if kept {
+        let mut file = std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(to)
+            .map_err(io_err(to))?;
+        let mut buf = vec![0; CHUNK_SIZE];
+        loop {
+            let n = file.read(&mut buf).map_err(io_err(to))?;
+            if n == 0 {
+                break;
+            }
+            got.hash.update(&buf[..n]);
+            got.len += n as u64;
+        }
+        file.seek(SeekFrom::End(0)).map_err(io_err(to))?;
+        f.note(&format!(
+            "download: {}: resuming a partial file at byte {} of {}",
+            host(f.url),
+            got.len,
+            f.size
+        ));
+        progress(got.len);
+        return Ok((file, got));
+    }
+    let file = std::fs::File::create(to).map_err(io_err(to))?;
+    std::fs::write(&side, id).map_err(io_err(&side))?;
+    Ok((file, got))
+}
+
+fn restart(file: &mut std::fs::File, got: &mut Got, progress: &dyn Fn(u64)) -> std::io::Result<()> {
+    file.set_len(0)?;
+    file.seek(SeekFrom::Start(0))?;
+    got.hash = Sha256::new();
+    got.len = 0;
+    progress(0);
+    Ok(())
 }
 
 fn attempt(
@@ -153,6 +254,13 @@ fn attempt(
         Err(Opening::Call(e)) if transport(&e) => return Err(Attempt::Broke(e.to_string())),
         Err(Opening::Call(e)) => return Err(Attempt::Failed(Error::Other(format!("{}: {e}", f.url)))),
         Err(Opening::Refused(e)) => return Err(Attempt::Failed(e)),
+        Err(Opening::Unsatisfiable) if from > 0 => return Err(Attempt::Restart),
+        Err(Opening::Unsatisfiable) => {
+            return Err(Attempt::Failed(Error::Other(format!(
+                "{}: HTTP 416 to a request for the whole file",
+                f.url
+            ))));
+        }
     };
     let headers = response.headers();
     let header = |name: &str| headers.get(name).and_then(|h| h.to_str().ok());
@@ -164,12 +272,7 @@ fn attempt(
         ))));
     }
     if !partial && got.len > 0 {
-        file.set_len(0)
-            .and_then(|()| file.seek(SeekFrom::Start(0)).map(drop))
-            .map_err(|e| Attempt::Failed(io_err(to)(e)))?;
-        got.hash = Sha256::new();
-        got.len = 0;
-        progress(0);
+        restart(file, got, progress).map_err(|e| Attempt::Failed(io_err(to)(e)))?;
     }
     let encoded = headers.contains_key("content-encoding");
     got.resumable = !encoded;
@@ -536,6 +639,8 @@ mod tests {
             size,
             lister: "the test",
             too_long: &too_long,
+            resume: None,
+            log: None,
         };
         let mut open = |from: u64| {
             let mut request = ureq::get(url).header("Accept-Encoding", "identity");
@@ -592,6 +697,198 @@ mod tests {
         assert_eq!(out.unwrap().0, 300_000);
         assert_eq!(bytes, expected(300_000));
         assert_eq!(*ranges.lock().unwrap(), vec![0]);
+    }
+
+    #[derive(Clone, Copy, PartialEq)]
+    enum Range {
+        Honoured,
+        Ignored,
+        Unsatisfiable,
+    }
+
+    fn serve_ranges(size: usize, range: Range) -> (String, std::sync::Arc<std::sync::Mutex<Vec<u64>>>) {
+        use std::io::BufRead;
+        use std::sync::{Arc, Mutex};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}/file", listener.local_addr().unwrap());
+        let ranges = Arc::new(Mutex::new(Vec::new()));
+        let seen = ranges.clone();
+        std::thread::spawn(move || {
+            for stream in listener.incoming() {
+                let mut stream = stream.unwrap();
+                let mut lines = std::io::BufReader::new(stream.try_clone().unwrap());
+                let mut from = 0u64;
+                loop {
+                    let mut line = String::new();
+                    lines.read_line(&mut line).unwrap();
+                    if line.trim().is_empty() {
+                        break;
+                    }
+                    if let Some(r) = line.to_ascii_lowercase().strip_prefix("range: bytes=") {
+                        from = r.trim().trim_end_matches('-').parse().unwrap();
+                    }
+                }
+                seen.lock().unwrap().push(from);
+                let (from, head) = match (from > 0, range) {
+                    (true, Range::Unsatisfiable) => {
+                        let _ = stream
+                            .write_all(b"HTTP/1.1 416 Range Not Satisfiable\r\nContent-Length: 0\r\n\r\n");
+                        continue;
+                    }
+                    (true, Range::Honoured) => (
+                        from as usize,
+                        format!(
+                            "HTTP/1.1 206 Partial Content\r\nContent-Range: bytes {from}-{}/{size}\r\nContent-Length: {}\r\n\r\n",
+                            size - 1,
+                            size - from as usize
+                        ),
+                    ),
+                    _ => (0, format!("HTTP/1.1 200 OK\r\nContent-Length: {size}\r\n\r\n")),
+                };
+                let data: Vec<u8> = (from..size).map(|i| (i % 251) as u8).collect();
+                let _ = stream.write_all(head.as_bytes());
+                let _ = stream.write_all(&data);
+            }
+        });
+        (url, ranges)
+    }
+
+    fn resume_fetch(
+        url: &str,
+        size: u64,
+        key: &str,
+        name: &str,
+        partial: Option<(&[u8], &str)>,
+    ) -> (Result<(u64, String)>, Vec<u8>, std::path::PathBuf) {
+        let to = std::env::temp_dir().join(format!("swofty-resume-{}-{name}", std::process::id()));
+        discard(&to);
+        let too_long = || "too long".to_string();
+        let lines = std::sync::Mutex::new(Vec::<String>::new());
+        let log = |l: &str| lines.lock().unwrap().push(l.to_string());
+        let f = Fetch {
+            url,
+            size,
+            lister: "the test",
+            too_long: &too_long,
+            resume: Some(key),
+            log: Some(&log),
+        };
+        if let Some((bytes, id_key)) = partial {
+            std::fs::write(&to, bytes).unwrap();
+            std::fs::write(sidecar(&to), identity(id_key, size, url)).unwrap();
+        }
+        let mut open = |from: u64| {
+            let mut request = ureq::get(url).header("Accept-Encoding", "identity");
+            if from > 0 {
+                request = request.header("Range", format!("bytes={from}-"));
+            }
+            let response = request
+                .config()
+                .http_status_as_error(false)
+                .build()
+                .call()
+                .map_err(Opening::Call)?;
+            if response.status().as_u16() == 416 && from > 0 {
+                return Err(Opening::Unsatisfiable);
+            }
+            Ok(response)
+        };
+        let out = fetch(&f, &to, &mut open, &|_| {});
+        let bytes = std::fs::read(&to).unwrap_or_default();
+        let log_text = lines.lock().unwrap().join("\n");
+        assert!(
+            log_text.is_empty() || log_text.contains("download: 127.0.0.1"),
+            "{log_text}"
+        );
+        (out, bytes, to)
+    }
+
+    fn digest_of(bytes: &[u8]) -> String {
+        Sha256::digest(bytes).iter().map(|b| format!("{b:02x}")).collect()
+    }
+
+    #[test]
+    fn a_partial_file_resumes_with_a_206_and_appends() {
+        let all = expected(5000);
+        let key = digest_of(&all);
+        let (url, ranges) = serve_ranges(5000, Range::Honoured);
+        let (out, bytes, to) = resume_fetch(&url, 5000, &key, "a206", Some((&all[..1200], &key)));
+        assert_eq!(out.unwrap(), (5000, key));
+        assert_eq!(bytes, all);
+        assert_eq!(*ranges.lock().unwrap(), vec![1200]);
+        assert!(!sidecar(&to).exists());
+        discard(&to);
+    }
+
+    #[test]
+    fn a_200_to_a_range_restarts_from_the_top() {
+        let all = expected(5000);
+        let key = digest_of(&all);
+        let (url, ranges) = serve_ranges(5000, Range::Ignored);
+        let (out, bytes, to) = resume_fetch(&url, 5000, &key, "a200", Some((&[7u8; 1200], &key)));
+        assert_eq!(out.unwrap(), (5000, key));
+        assert_eq!(bytes, all);
+        assert_eq!(*ranges.lock().unwrap(), vec![1200]);
+        discard(&to);
+    }
+
+    #[test]
+    fn a_416_restarts_from_the_top() {
+        let all = expected(5000);
+        let key = digest_of(&all);
+        let (url, ranges) = serve_ranges(5000, Range::Unsatisfiable);
+        let (out, bytes, to) = resume_fetch(&url, 5000, &key, "a416", Some((&[7u8; 1200], &key)));
+        assert_eq!(out.unwrap(), (5000, key));
+        assert_eq!(bytes, all);
+        assert_eq!(*ranges.lock().unwrap(), vec![1200, 0]);
+        discard(&to);
+    }
+
+    #[test]
+    fn a_partial_of_another_download_is_ignored() {
+        let all = expected(5000);
+        let key = digest_of(&all);
+        let (url, ranges) = serve_ranges(5000, Range::Honoured);
+        let (out, bytes, to) = resume_fetch(&url, 5000, &key, "other", Some((&[7u8; 1200], "another-hash")));
+        assert_eq!(out.unwrap(), (5000, key));
+        assert_eq!(bytes, all);
+        assert_eq!(*ranges.lock().unwrap(), vec![0]);
+        discard(&to);
+    }
+
+    #[test]
+    fn a_partial_with_no_note_is_ignored() {
+        let all = expected(5000);
+        let key = digest_of(&all);
+        let (url, ranges) = serve_ranges(5000, Range::Honoured);
+        let to = std::env::temp_dir().join(format!("swofty-resume-{}-nonote", std::process::id()));
+        discard(&to);
+        std::fs::write(&to, [7u8; 1200]).unwrap();
+        let too_long = || "too long".to_string();
+        let f = Fetch {
+            url: &url,
+            size: 5000,
+            lister: "the test",
+            too_long: &too_long,
+            resume: Some(&key),
+            log: None,
+        };
+        let mut open = |from: u64| {
+            let mut request = ureq::get(&url).header("Accept-Encoding", "identity");
+            if from > 0 {
+                request = request.header("Range", format!("bytes={from}-"));
+            }
+            request
+                .config()
+                .http_status_as_error(false)
+                .build()
+                .call()
+                .map_err(Opening::Call)
+        };
+        let (len, digest) = fetch(&f, &to, &mut open, &|_| {}).unwrap();
+        assert_eq!((len, digest), (5000, key));
+        assert_eq!(*ranges.lock().unwrap(), vec![0]);
+        discard(&to);
     }
 
     #[test]

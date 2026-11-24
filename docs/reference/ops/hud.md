@@ -424,6 +424,64 @@ The nulls go in after every other step of the composer and after every other add
 
 The composer writes a part's scene and template where it already writes them (`hud_scene.erp`, `hud_screen_scene.erp`, `hud_replay.erp` …, every copy alike) and otherwise adds `hud_yield.erp` (and `hud_yield_2.erp` … for other sets of archives) over every stock archive that carries them. The build lists `<prefix>: yields <parts> while <leaf> is on`.
 
+### Other game screens
+
+A yield record's `stock_nodes` entries with `ui` hide elements of a game screen other than the HUD template while a leaf is on (schema 1.6). An entry names the screen file, a node of it (`template`), the scene that node's layout reaches and the elements, as a screen record's [`stock_nodes`](/reference/ops/hud-screens) do for the HUD template. `while` defaults to the yield's leaf, and `parts` may be empty:
+
+```jsonc [hud/stock.json]
+{
+  "hud.element": {
+    "after_race": {
+      "prefix": "fbo_y_after",
+      "yield": { "while": { "view_model": "view_model_data.hud_fbo_after_race" } },
+      "stock_nodes": [
+        {
+          "ui": "screens/broadcast_persistent.ui",              // or the eaid://ui_package/… path
+          "template": "broadcast_persistent",                    // a node path of that screen
+          "scene": "eaid://ui_package/art/osd/scenes/osd.idf",   // required with ui
+          "wrap": ["broadcast_ui_generic", "driver_of_the_day", "broadcast_radio_emote"]
+        },
+        {
+          "ui": "screens/persistent.ui",
+          "template": "persistent.subtitles",
+          "scene": "eaid://ui_package/art/screens/persistent_screen/persistent_screen.idf",
+          "wrap": ["subtitles_generic"],
+          "while": { "view_model": "view_model_data.hud_fbo_subtitles" }   // this entry's own leaf
+        }
+      ]
+    }
+  }
+}
+```
+
+A screen node shows and hides the scene element its layout chain ends at, and the stock nodes above already bind `visible` on those elements, so the entries `wrap` them: each element gets a null `<prefix>_w_<element>` around it in its place in the scene, and the group `<prefix>_sn<i>` under the node gets one node per element (`v_<element>` for `hide`, `v_w_<element>` for `wrap`) with `visible` NOT the leaf, default true:
+
+```text
+osd.idf
+  osd_screens.intros_and_outros.null_override
+    fbo_y_after_w_broadcast_ui_generic       the null, shown while hud_fbo_after_race is off
+      broadcast_ui_generic                   the stock element, its name and node binding kept
+
+screens/broadcast_persistent.ui
+  broadcast_persistent
+    broadcast_ui_generic_small               the stock node, untouched (path, id, signals, visible)
+    fbo_y_after_sn0                          the group
+      v_w_broadcast_ui_generic               layout fbo_y_after_w_broadcast_ui_generic, visible = NOT view_model_data.hud_fbo_after_race
+```
+
+The stock nodes keep their paths, ids, signals and `visible` bindings; only the scene gains the nulls. The node's layout chain names the scene element to wrap: `broadcast_persistent.broadcast_ui_generic_small` binds `broadcast_ui_generic`, `driver_of_the_day_group` binds `driver_of_the_day`, `victory_vo` binds `broadcast_radio_emote`, `persistent.subtitles.subtitle_animations` binds `subtitles_generic` in `persistent_screen.idf` (through `persistent.subtitles`, which binds `persistent_screen > subtitles`).
+
+The composer reads each screen and scene as the other addons leave them and writes them to every stock archive that carries them, in `hud_screen_nodes.erp` (and `_2.erp` … per set of archives): `broadcast_persistent.ui` goes over `flow_race.erp` and `screens/broadcast_persistent.erp`, `osd.idf` over the twelve archives that carry it, `persistent.ui` over `flow_persistent.erp` and `screens/persistent.erp`, `persistent_screen.idf` over the five that carry it. The launcher's own change to `persistent.ui` (the online popup gate) is in the composed copy.
+
+An entry that does not fit the screen as it is, a node path or element that is not there, an element named twice in the scene or hidden by default, a `hide` on an element another node already shows and hides, is left out and the screen stays as it is. The build lists each entry:
+
+```text
+fbo_y_after: broadcast_persistent.ui broadcast_persistent hides 3 elements of osd.idf (3 through a new wrapper null) while view_model_data.hud_fbo_after_race is on
+fbo_y_after: stock_nodes broadcast_persistent.ui broadcast_persistent.no_such_node left out, so the screen stays as it is: <reason>
+```
+
+`ui` refuses the files the composer writes itself (`templates/hud_dynamic_templates.ui`, `screens/hud_spectator_2.ui`, `screens/replays_and_highlights.ui`); their parts are yield parts or a screen record's `stock_nodes`. An entry with `ui` on any other record is refused.
+
 ## An editor entry of your own
 
 A `hud.slot` record in the same files adds an entry to the HUD editor with its own selection box, which the player moves, resizes and switches off. Native code reads the placement with `swofty/hud_slot.hpp` and draws there with the overlay: [HUD slots](/reference/std/hud-slots).

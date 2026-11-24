@@ -790,7 +790,7 @@ void apply_garages(Expansion &x, Report &report, std::string_view reg = "team.ga
                 report.lines.push_back(o.line);
                 continue;
             }
-            if (g.kind == "scene") {
+            if (g.kind == "scene" || g.kind == "world") {
                 std::error_code fec;
                 auto size = std::filesystem::file_size(runtime::under_swofty("addons/" + g.addon + "/" + g.archive), fec);
                 std::size_t kept = 0;

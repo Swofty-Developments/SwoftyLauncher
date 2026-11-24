@@ -54,7 +54,6 @@ enum class CoreSetId : uint8_t {
     red_flag_recompute,
     quali_tyres,
     box_grid,
-    box_videos,
     gp_continue,
     track_list_guard,
     watchdog_grace,
@@ -74,6 +73,7 @@ enum class CoreSetId : uint8_t {
     phys_nonfinite,
     ai_marker_cap,
     collision_pool,
+    box_videos,
     count,
 };
 
@@ -121,7 +121,6 @@ constexpr std::array<std::string_view, CORE_SET_COUNT> CORE_SET_NAMES = {
     "red_flag_recompute",
     "quali_tyres",
     "box_grid",
-    "box_videos",
     "gp_continue",
     "track_list_guard",
     "watchdog_grace",
@@ -141,6 +140,7 @@ constexpr std::array<std::string_view, CORE_SET_COUNT> CORE_SET_NAMES = {
     "phys_nonfinite",
     "ai_marker_cap",
     "collision_pool",
+    "box_videos",
 };
 
 constexpr std::string_view core_set_name(CoreSetId id) { return CORE_SET_NAMES[size_t(id)]; }

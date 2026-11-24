@@ -9,10 +9,12 @@
 //!
 //! Every abort of this walk seen in the field had a tree past 65,536 slots: 66,208 and 66,306 in HUD
 //! customisation with one tower on, 73,903 (an `EGO_UI` block of 0x120af0 bytes) at race start with
-//! three towers on one board. A board instances the host scene once for the stock board and once for
-//! each screen record on it, and every instance holds every screen record's root and editor copy, so
-//! the records' slots add up and the sum is taken `1 + records` times ([`Board`]). Stacks do not add
-//! up: a record's root is walked with only its later siblings waiting, so each record keeps its own.
+//! three towers on one board, when every record's root sat in one shared host scene instanced once
+//! for the stock board and once per record. Each screen record now has a host scene of its own (the
+//! cap with only that record's root and editor copy), so a board holds the bare cap once and each
+//! record's own host once ([`Board`]): its cost grows with the records' sum, not with the records'
+//! count times their sum. Stacks do not add up: a record's root is walked with only its later
+//! siblings waiting, so each record keeps its own.
 
 use swofty_formats::pkg::Node;
 
@@ -21,10 +23,10 @@ pub const SLOT_LIMIT: usize = 0x1_0000;
 /// Entries of the walk's stack.
 pub const STACK_LIMIT: usize = 0x100;
 /// Slots of the race HUD's tree beside the standings board, rounded up: the race-start abort's tree
-/// held 73,903 slots around a board of four 14,101-slot host scenes.
+/// held 73,903 slots around a board of four instances of one 14,101-slot shared host scene.
 pub const RACE_REST: usize = 17_500;
 /// Boards in the HUD customisation tree, and its slots beside them: its abort's tree held 66,306
-/// slots, six 10,915-slot host scenes and 816 more.
+/// slots, three boards of two 10,915-slot host scene instances and 816 more.
 pub const EDITOR_BOARDS: usize = 3;
 pub const EDITOR_REST: usize = 816;
 
@@ -79,11 +81,13 @@ impl Cost {
     }
 }
 
-/// One screen's board: the stock instance of the host scene and one instance for each of the
-/// `records` screen records on the screen, each holding the whole `host` scene.
+/// One screen's board: the stock instance of the bare cap (`cap` slots) and one instance of each of
+/// the `records` screen records' own host scenes, `hosts` slots between them (each host holds the cap
+/// and its record's root and editor copy).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Board {
-    pub host: usize,
+    pub cap: usize,
+    pub hosts: usize,
     pub records: usize,
 }
 
@@ -93,7 +97,7 @@ impl Board {
     }
 
     pub fn slots(&self) -> usize {
-        self.instances() * self.host
+        self.cap + self.hosts
     }
 
     /// The slots of the tree of the screen that shows the board.
@@ -115,11 +119,12 @@ impl Board {
         self.editor() > SLOT_LIMIT
     }
 
-    /// The board without one addon's records: `slots` of the host scene and `here` of the records on
-    /// the screen.
+    /// The board without one addon's records: `slots` of their host scenes and `here` of the records
+    /// on the screen.
     pub fn without(&self, slots: usize, here: usize) -> Board {
         Board {
-            host: self.host.saturating_sub(slots),
+            cap: self.cap,
+            hosts: self.hosts.saturating_sub(slots),
             records: self.records.saturating_sub(here),
         }
     }
@@ -136,7 +141,7 @@ pub fn cost(e: &Node) -> Cost {
 pub fn lines(addon: &str, pfx: &str, live: Cost, preview: Cost) -> Vec<String> {
     let stack = live.stack.max(preview.stack);
     let mut out = vec![format!(
-        "{pfx}: {addon} adds {} nodes to the host scene ({} walk slots, {} in the editor copy; walk stack {stack} of {STACK_LIMIT})",
+        "{pfx}: {addon} adds {} nodes to its own host scene ({} walk slots, {} in the editor copy; walk stack {stack} of {STACK_LIMIT})",
         live.nodes + preview.nodes,
         live.slots + preview.slots,
         preview.slots,
@@ -152,9 +157,11 @@ pub fn lines(addon: &str, pfx: &str, live: Cost, preview: Cost) -> Vec<String> {
 /// The build line for the board of `screen`; the standings line also counts HUD customisation's tree.
 pub fn board_line(screen: &str, b: Board) -> String {
     let mut line = format!(
-        "screen {screen}: the board holds the host scene {} times ({} walk slots each, {} in all); the screen's UI tree about {} of the {SLOT_LIMIT} slots it can index",
-        b.instances(),
-        b.host,
+        "screen {screen}: the board holds the bare cap ({} walk slots) and {} record host scene{} ({} walk slots), {} in all; the screen's UI tree about {} of the {SLOT_LIMIT} slots it can index",
+        b.cap,
+        b.records,
+        if b.records == 1 { "" } else { "s" },
+        b.hosts,
         b.slots(),
         b.tree()
     );
@@ -218,11 +225,32 @@ mod tests {
         assert!(fits(229, node.stack));
     }
 
-    /// TV Timing Tower 0.7.2 as composed: 24 rows of 403 nodes (443 slots), 10,907 slots and the
-    /// cap's 8 a host scene, twice per board. The race HUD holds one board; HUD customisation, whose
-    /// abort's tree held 66,306 slots, holds three.
+    const CAP: usize = 8;
+    const S10: usize = 2291;
+    const S11: usize = 2292;
+    const TVTT: usize = 9510;
+
+    /// The board of records whose roots and editor copies take `own` walk slots each, every one in a
+    /// host scene of its own beside a copy of the cap.
+    fn board(own: &[usize]) -> Board {
+        Board {
+            cap: CAP,
+            hosts: own.iter().map(|o| CAP + o).sum(),
+            records: own.len(),
+        }
+    }
+
+    /// The same board when every record sat in one shared host scene, instanced once for the stock
+    /// board and once per record.
+    fn shared(own: &[usize]) -> usize {
+        (1 + own.len()) * (CAP + own.iter().sum::<usize>())
+    }
+
+    /// TV Timing Tower 0.7.2 as composed: 24 rows of 403 nodes (443 slots), 10,907 slots in its host
+    /// scene beside the cap's 8. Instanced twice per board, the shared host took HUD customisation's
+    /// three boards to 66,306 slots, where its abort's tree was; its own host keeps it inside.
     #[test]
-    fn the_reported_tower_fits_the_race_and_not_hud_customisation() {
+    fn the_reported_tower_fits_the_race_and_hud_customisation() {
         let row = Cost {
             nodes: 403,
             slots: 443,
@@ -246,100 +274,73 @@ mod tests {
         let out = lines("pablo.tv-timing-tower", "tvtt", live, preview);
         assert_eq!(out.len(), 1, "{out:?}");
         assert!(
-            out[0].contains("10907 walk slots, 101 in the editor copy"),
+            out[0].contains("own host scene (10907 walk slots, 101 in the editor copy"),
             "{out:?}"
         );
-        let board = Board {
-            host: 10915,
-            records: 1,
-        };
-        assert_eq!(board.editor(), 66306);
-        assert!(!board.over() && board.editor_over());
-        let line = board_line("standings", board);
+        assert_eq!(EDITOR_BOARDS * shared(&[10907]) + EDITOR_REST, 66306);
+        let b = board(&[10907]);
+        assert_eq!((b.slots(), b.editor()), (10923, 33585));
+        assert!(!b.over() && !b.editor_over());
+        let line = board_line("standings", b);
         assert!(
-            line.contains("2 times (10915 walk slots each, 21830 in all)"),
+            line.contains(
+                "the bare cap (8 walk slots) and 1 record host scene (10915 walk slots), 10923 in all"
+            ),
             "{line}"
         );
         assert!(
-            line.ends_with("; HUD customisation's tree about 66306 (3 boards)"),
+            line.ends_with("; HUD customisation's tree about 33585 (3 boards)"),
             "{line}"
         );
-        assert!(!board_line("replay", board).contains("HUD customisation"));
+        assert!(!board_line("replay", b).contains("HUD customisation"));
     }
-
-    const CAP: usize = 8;
-    const S10: usize = 2291;
-    const S11: usize = 2292;
-    const TVTT: usize = 9510;
 
     /// SWOFTY 2010 1.0.1, SWOFTY 2011 1.0.4 and TV Timing Tower 0.26.1 on the standings, with the
-    /// walk slots their build lines list: each fits on its own, the board alone fits a tree, and the
-    /// race-start abort's tree held 73,903 slots. Turning any one of them off brings it back inside.
+    /// walk slots their build lines list. In one shared host scene they took the race-start tree to
+    /// 73,904 slots (the field's abort held 73,903); each in its own host, the board costs their sum
+    /// and the race and HUD customisation both fit.
     #[test]
-    fn three_towers_on_one_board_take_the_race_tree_past_the_limit() {
-        for own in [S10, S11, TVTT] {
-            let alone = Board {
-                host: CAP + own,
-                records: 1,
-            };
-            assert!(!alone.over(), "{alone:?}");
-        }
-        let board = Board {
-            host: CAP + S10 + S11 + TVTT,
-            records: 3,
-        };
-        assert_eq!((board.instances(), board.slots()), (4, 56404));
-        assert!(board.slots() < SLOT_LIMIT);
-        assert_eq!(board.tree(), 73904);
-        assert!(board.over());
-        for own in [S10, S11, TVTT] {
-            assert!(!board.without(own, 1).over(), "{own}");
-        }
-        assert!(board_line("standings", board).contains("4 times (14101 walk slots each, 56404 in all)"));
+    fn three_towers_on_one_board_fit_with_a_host_scene_each() {
+        let own = [S10, S11, TVTT];
+        assert_eq!(shared(&own) + RACE_REST, 73904);
+        let b = board(&own);
+        assert_eq!(
+            (b.instances(), b.hosts, b.slots(), b.tree(), b.editor()),
+            (4, 14117, 14125, 31625, 43191)
+        );
+        assert!(!b.over() && !b.editor_over());
+        assert!(
+            board_line("standings", b).contains(
+                "the bare cap (8 walk slots) and 3 record host scenes (14117 walk slots), 14125 in all"
+            ),
+            "{}",
+            board_line("standings", b)
+        );
     }
 
     #[test]
-    fn the_boards_that_ran_in_the_field_fit() {
-        let tower = Board {
-            host: CAP + TVTT,
-            records: 1,
-        };
-        assert_eq!((tower.slots(), tower.editor()), (19036, 57924));
-        assert!(!tower.over() && !tower.editor_over());
-        let seasons = Board {
-            host: CAP + S10 + S11,
-            records: 2,
-        };
-        assert_eq!(seasons.slots(), 13773);
+    fn the_season_towers_cost_their_sum() {
+        let seasons = board(&[S10, S11]);
+        assert_eq!(shared(&[S10, S11]), 13773);
+        assert_eq!((seasons.slots(), seasons.tree()), (4607, 22107));
         assert!(!seasons.over() && !seasons.editor_over());
+        let third = board(&[S10, S11, 2708]);
+        assert_eq!(EDITOR_BOARDS * shared(&[S10, S11, 2708]) + EDITOR_REST, 88404);
+        assert_eq!(third.editor(), 22785);
+        assert!(!third.editor_over());
     }
 
+    /// Six towers the size of TV Timing Tower's: their own hosts alone take the race tree past the
+    /// limit, and turning any one of them off brings it back inside.
     #[test]
-    fn a_season_tower_beside_the_tv_tower_fits_the_race_and_warns_for_hud_customisation() {
-        let one = Board {
-            host: CAP + S10 + TVTT,
-            records: 2,
-        };
-        assert_eq!(one.slots(), 35427);
-        assert!(!one.over() && one.editor_over());
-    }
-
-    /// The 1.10.35 report: SWOFTY 2010, SWOFTY 2011 and a third tower of 2,708 walk slots race inside
-    /// the limit, and HUD customisation's tree of twelve host scenes does not. Each one turned off
-    /// brings HUD customisation back inside.
-    #[test]
-    fn two_seasons_and_a_small_tower_race_and_overflow_hud_customisation() {
-        let third = 2708;
-        let board = Board {
-            host: CAP + S10 + S11 + third,
-            records: 3,
-        };
-        assert_eq!((board.host, board.slots(), board.tree()), (7299, 29196, 46696));
-        assert_eq!(board.editor(), 88404);
-        assert!(!board.over() && board.editor_over());
-        for own in [S10, S11, third] {
-            assert!(!board.without(own, 1).editor_over(), "{own}");
-        }
+    fn a_board_whose_own_hosts_are_too_big_is_still_over() {
+        let own = [TVTT; 6];
+        let b = board(&own);
+        assert_eq!((b.slots(), b.tree()), (57116, 74616));
+        assert!(b.over() && b.editor_over());
+        let five = b.without(CAP + TVTT, 1);
+        assert_eq!(five, board(&[TVTT; 5]));
+        assert!(!five.over() && five.editor_over());
     }
 
     /// The three roots of the race-start abort as siblings: their stacks of 62, 62 and 129 do not add
@@ -366,12 +367,6 @@ mod tests {
         let big = wide(100, wide(100, wide(4, LEAF)));
         assert!(big.stack <= STACK_LIMIT);
         assert_eq!(lines("a.b", "ab", big, LEAF).len(), 1);
-        assert!(
-            Board {
-                host: big.slots,
-                records: 1
-            }
-            .over()
-        );
+        assert!(board(&[big.slots]).over());
     }
 }
