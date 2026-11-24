@@ -181,9 +181,22 @@ impl Shell {
                     let key = format!("{prefix}{}", c.id);
                     chart_keys.insert(key.clone());
                     if c.validate().is_ok()
-                        && self.blocks.charts.get(&key).is_none_or(|(g, _)| *g != generation)
+                        && self
+                            .blocks
+                            .charts
+                            .get(&key)
+                            .is_none_or(|cached| cached.generation != generation)
                     {
-                        self.blocks.charts.insert(key, (generation, chart::prepare(c)));
+                        let pictures =
+                            chart::resolve_images(c, &self.blocks.image_data, &self.image_roots(&addon));
+                        self.blocks.charts.insert(
+                            key,
+                            state::PreparedChart {
+                                generation,
+                                scene: chart::prepare(c),
+                                pictures,
+                            },
+                        );
                     }
                 }
                 Block::Form(f) => self.sync_form(&addon, &section, f, generation, window, cx),
@@ -199,7 +212,7 @@ impl Shell {
         // Retain only charts in the current view, never old sessions or tabs.
         self.blocks
             .charts
-            .retain(|k, (g, _)| chart_keys.contains(k) && *g == generation);
+            .retain(|k, cached| chart_keys.contains(k) && cached.generation == generation);
         self.blocks.forms.retain(|k, s| k.starts_with(&prefix) && s.seen);
         self.blocks
             .searches

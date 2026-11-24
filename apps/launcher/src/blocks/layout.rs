@@ -30,8 +30,10 @@ impl Shell {
             Block::Image(i) => self.image(at, i, p),
             Block::Chart(c) => {
                 let key = at.key(&c.id);
-                let prepared = self.blocks.charts.get(&key).map(|(_, scene)| scene.clone());
-                chart::render(key, c, p, prepared)
+                let cached = self.blocks.charts.get(&key);
+                let prepared = cached.map(|cached| cached.scene.clone());
+                let pictures = cached.map(|cached| cached.pictures.clone()).unwrap_or_default();
+                chart::render(key, c, p, prepared, pictures)
             }
             Block::DropZone(d) => self.drop_zone(at, d, p, cx),
             Block::Table(t) if !t.is_plain() => self.table(at, t, p, cx),

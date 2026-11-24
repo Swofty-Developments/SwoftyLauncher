@@ -73,6 +73,8 @@ fn main() {
 
 fn view(alternate: bool) -> View {
     let chart = Chart {
+        options: None,
+        images: Vec::new(),
         id: "native-lap-times".into(),
         title: "Native lap progression".into(),
         caption: "Sample addon data. Change the sample to update this chart without creating an image."
@@ -89,6 +91,8 @@ fn view(alternate: bool) -> View {
             ..Default::default()
         },
         series: vec![ChartSeries {
+            line_width: None,
+            blocks: None,
             name: "Sample driver".into(),
             color: Some("#57B7FF".into()),
             data: ChartData::Line {

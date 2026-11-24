@@ -8,12 +8,13 @@ use gpui_kit::*;
 use swofty_core::view::*;
 use swofty_i18n::tr;
 
-const GROUPS: [&str; 5] = [
+const GROUPS: [&str; 6] = [
     "Lines & bands",
     "Bars & ranges",
     "Distribution",
     "Sector heatmap",
     "Edge cases",
+    "Chart options",
 ];
 
 enum Probe {
@@ -88,6 +89,7 @@ pub(crate) fn run() {
                         alternate: false,
                         probe,
                         tick: 0,
+                        images: chart::DemoImages::default(),
                     }
                 })
             })
@@ -107,9 +109,10 @@ struct Gallery {
     alternate: bool,
     probe: Option<Probe>,
     tick: usize,
+    images: chart::DemoImages,
 }
 impl Render for Gallery {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let p = theme::palette(cx);
         let tabs = h_flex()
             .flex_wrap()
@@ -171,11 +174,15 @@ impl Render for Gallery {
                         "Rendered directly by GPUI. Sample data only. No chart image files are created.",
                     )))
                     .child(tabs)
-                    .children(
-                        charts
-                            .iter()
-                            .map(|c| chart::render(format!("gallery/{}", c.id), c, p, None)),
-                    ),
+                    .children(charts.iter().map(|c| {
+                        chart::render(
+                            format!("gallery/{}", c.id),
+                            c,
+                            p,
+                            None,
+                            self.images.pictures(c, window),
+                        )
+                    })),
             )
     }
 }
@@ -203,6 +210,8 @@ fn categories(names: &[&str]) -> ChartAxis {
 }
 fn series(name: &str, color: &str, data: ChartData) -> ChartSeries {
     ChartSeries {
+        line_width: None,
+        blocks: None,
         name: name.into(),
         color: Some(color.into()),
         data,
@@ -210,6 +219,8 @@ fn series(name: &str, color: &str, data: ChartData) -> ChartSeries {
 }
 fn base(id: &str, title: &str) -> Chart {
     Chart {
+        options: None,
+        images: Vec::new(),
         id: id.into(),
         title: title.into(),
         caption: String::new(),
@@ -229,6 +240,28 @@ fn line(points: Vec<Option<ChartPoint>>, dashed: bool) -> ChartData {
 }
 
 fn examples(group: usize, alternate: bool) -> Vec<Chart> {
+    if group == 5 {
+        let mut charts: Vec<Chart> = serde_json::from_str(include_str!(
+            "../../../../tools/native-charts/fixtures/options.json"
+        ))
+        .expect("valid chart options fixture");
+        if alternate {
+            for chart in &mut charts {
+                if let Some(options) = &mut chart.options {
+                    options.text.title = Some(28.);
+                    options.text.labels = Some(16.);
+                    options.background = Some("#152A30".into());
+                }
+                for series in &mut chart.series {
+                    series.line_width = Some(6.);
+                    if let Some(blocks) = &mut series.blocks {
+                        blocks.radius = 14.;
+                    }
+                }
+            }
+        }
+        return charts;
+    }
     let offset = if alternate { 0.7 } else { 0. };
     match group {
         0 => {
@@ -365,12 +398,14 @@ fn examples(group: usize, alternate: bool) -> Vec<Chart> {
                             let split = 8. + i as f64 * 3. + offset;
                             [
                                 ChartCell {
+                                    style: None,
                                     x: [1., split],
                                     y: [i as f64 - 0.3, i as f64 + 0.3],
                                     color: Some("#E4C957".into()),
                                     label: "C4".into(),
                                 },
                                 ChartCell {
+                                    style: None,
                                     x: [split + 0.15, 30.],
                                     y: [i as f64 - 0.3, i as f64 + 0.3],
                                     color: Some("#B7C5D8".into()),
@@ -507,6 +542,7 @@ fn examples(group: usize, alternate: bool) -> Vec<Chart> {
                                         None
                                     } else {
                                         Some(ChartCell {
+                                            style: None,
                                             x: [lap as f64 - 0.45, lap as f64 + 0.45],
                                             y: [sector as f64 - 0.42, sector as f64 + 0.42],
                                             color: None,
