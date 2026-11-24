@@ -34,6 +34,7 @@ int main()
     expect(group_of(0x963b35bf) == G_CUTSCENE, "Cutscene node 963b35bf is a cutscene state");
     expect(group_of(0xb55facbe) == G_SPECTATE, "Spectate node b55facbe is a spectating state");
     expect(group_of(0x835af69b) == G_REPLAY, "LoadReplaySession 835af69b is a replay state");
+    expect(group_of(0x618f7a80) == G_REPLAY, "FullRaceReplay 618f7a80 is the Theatre playback state");
     for (size_t i = 0; i < TRACKED_N; i++)
         for (size_t j = i + 1; j < TRACKED_N; j++)
             if (TRACKED[i].hash == TRACKED[j].hash)
