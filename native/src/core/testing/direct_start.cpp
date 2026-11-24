@@ -229,7 +229,8 @@ using SetMode_t = void(void *modes, void *mode);
 // A session request without a box or track gets the stock 2025 grid at Albert Park; it never continues a saved Grand
 // Prix, whose weekend may be one the session load can't take.
 constexpr const char *DEFAULT_BOX = "f1_2025", *DEFAULT_TRACK = "melbourne", *HOST_SETUP_MODE = "swofty_f1";
-constexpr uintptr_t ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58, ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0, ENTRANT_SIZE = 0x88;
+constexpr uintptr_t ES_LISTS = 0x560, LIST_NAME = 0x28, ENTITY_TRACKS = 0xf58, ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0,
+                    ENTRANT_SIZE = 0x88;
 
 struct Game {
     uintptr_t manager = 0, set_mode = 0, by_predicate = 0, gp_predicate = 0;
@@ -1166,8 +1167,21 @@ ds::Setup new_grand_prix(std::string &why)
                 track_name = request["track"].str(DEFAULT_TRACK);
     // 1. The entrant list by name: EntrantsSystem +0x560, 16-byte entries, the list at +8.
     uint8_t *es = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(mgr) + runtime::manager_entrants_system());
-    uint8_t id = code<uint8_t(const char *)>(gp.list_stat_id)(list_name.c_str());
     auto *lists = *reinterpret_cast<uint8_t **>(es + ES_LISTS), *lists_end = *reinterpret_cast<uint8_t **>(es + ES_LISTS + 8);
+    std::vector<std::string> held;
+    for (auto *q = lists; q && q + 16 <= lists_end; q += 16) {
+        auto *l = *reinterpret_cast<uint8_t **>(q + 8);
+        void *holder = l && runtime::readable(l, LIST_NAME + 8) ? *reinterpret_cast<void **>(l + LIST_NAME) : nullptr;
+        const char *n = holder && runtime::readable(holder, 0x18)
+                            ? *reinterpret_cast<const char **>(static_cast<uint8_t *>(holder) + 0x10)
+                            : nullptr;
+        held.push_back(n && runtime::readable(n, 1) ? n : "");
+    }
+    if (ds::find_list(held, list_name) == ds::NO_LIST) {
+        why = ds::unknown_list_why(held, list_name);
+        return ds::Setup::failed;
+    }
+    uint8_t id = code<uint8_t(const char *)>(gp.list_stat_id)(list_name.c_str());
     if (!lists || size_t(lists_end - lists) / 16 <= id) {
         why = "no entrant list '" + list_name + "' (stat id " + std::to_string(id) + ")";
         return ds::Setup::failed;

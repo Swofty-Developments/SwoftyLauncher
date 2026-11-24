@@ -107,6 +107,16 @@ int main()
     expect(ds::pick_setup_mode(modes, "f1_99", "swofty_f1") == ds::NO_SETUP_MODE, "a requested mode the game lacks is none");
     expect(ds::pick_setup_mode({{"f1_26", false}}, "", "swofty_f1") == ds::NO_SETUP_MODE, "no host mode and no offer is none");
 
+    std::vector<std::string> held = {"", "f1_2025", "sw_f1_2011", "sw_f1_2011_tt"};
+    expect(ds::find_list(held, "sw_f1_2011") == 2, "a held entrant list is found by its name");
+    expect(ds::find_list(held, "sw_2011") == ds::NO_LIST, "a package id is not an entrant list");
+    expect(ds::find_list(held, "f1_25") == ds::NO_LIST, "a prefix of a list name is not the list");
+    expect(ds::find_list(held, "") == ds::NO_LIST, "an empty name matches the empty slot of no list");
+    expect(ds::unknown_list_why(held, "sw_2011").find("f1_2025 sw_f1_2011 sw_f1_2011_tt)") != std::string::npos,
+           "the failure lists the held names without the empty slots");
+    expect(ds::unknown_list_why(held, "x", 2).find("f1_2025 sw_f1_2011 and 1 more)") != std::string::npos,
+           "a long list of names is cut");
+
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }
