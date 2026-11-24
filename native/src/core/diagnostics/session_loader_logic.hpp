@@ -24,6 +24,13 @@
 // steps with bounded loops and a read that fails instead of faulting. The game answers 0 for an id that is not in the
 // map and for one whose row is missing; lookup() tells the two apart.
 //
+// On Steam 1.0.145 the section also decodes the state 5 unload tick (Sess_Module_OnSessionUnloaded, 0x142d4d3b0): block A
+// (+0x1c == 5, every module in [+0x200,+0x208) answers vcall +0x30), block B (+0x24 == 2, the +0x1f0 task) and block C
+// (+0xc, +0x14, +0x1c, +0x10, +0x110 all 0 and every sub-task in [+0x1d8,+0x1e0) answers +0x30). It prints the gate fields,
+// each module's vtable and unload-ready target, and for the vehicle spawning sub-task (+0x1f0, else the first module with
+// its vtable) the id list at [task+0x88,+0x90), per id the spawn request state in the spawning system's map at [task+0x60]
+// and whether the id is in the system's active list [sys+0x28,+0x30), stride 0x6880.
+//
 // Every offset is read by the same instruction in the same function on the KB build, EA App (KB build), Steam 1.0.145
 // and EA App 1.0.145 (re/tools/sigport.py --witness of 0x2d4b6a0, 0x2d4a320 and 0x2e39bb0; re/research/
 // loading_pipeline.md §1.9). On another build only the raw bytes are dumped.
@@ -57,6 +64,32 @@ constexpr uint64_t kNil = 0x19;
 constexpr uint64_t kRowKey = 0x20;
 constexpr uint64_t kRowState = 0x28;
 
+constexpr uint64_t kGate0c = 0xc;
+constexpr uint64_t kGate10 = 0x10;
+constexpr uint64_t kGate14 = 0x14;
+constexpr uint64_t kGate1c = 0x1c;
+constexpr uint64_t kGate24 = 0x24;
+constexpr uint64_t kGate110 = 0x110;
+constexpr uint64_t kListCBegin = 0x1d8;
+constexpr uint64_t kListCEnd = 0x1e0;
+constexpr uint64_t kVehicleTask = 0x1f0;
+constexpr uint64_t kListABegin = 0x200;
+constexpr uint64_t kListAEnd = 0x208;
+constexpr uint64_t kListCStride = 16;
+constexpr uint64_t kListAStride = 8;
+constexpr uint64_t kModuleVtable = 0x0;
+constexpr uint64_t kModuleUnloadReady = 0x30;
+constexpr uint64_t kTaskSystem = 0x60;
+constexpr uint64_t kTaskIdsBegin = 0x88;
+constexpr uint64_t kTaskIdsEnd = 0x90;
+constexpr uint64_t kSysActiveBegin = 0x28;
+constexpr uint64_t kSysActiveEnd = 0x30;
+constexpr uint64_t kActiveStride = 0x6880;
+constexpr uint64_t kNodeRequest = 0x8;
+constexpr size_t kMaxModules = 32;
+constexpr size_t kMaxVehicles = 64;
+constexpr size_t kMaxActive = 128;
+
 constexpr uint32_t kReady = 2;
 constexpr uint32_t kTaskState = 7;
 constexpr size_t kMaxIds = 4096;
@@ -85,35 +118,39 @@ template <class T, class Read> bool fetch(Read &read, uint64_t at, T &v)
     return at && at + sizeof(T) > at && read(at, &v, sizeof(T));
 }
 
-template <class Read> IdState lookup(Read &&read, uint64_t sys, uint32_t id)
+struct MapLayout {
+    uint64_t mult, slots, info, mask, inc, shift;
+};
+
+constexpr MapLayout kIdMap{kMultiplier, kSlots, kInfo, kMask, kInfoInc, kInfoShift};
+constexpr MapLayout kSpawnMap{0x60, 0x68, 0x70, 0x80, 0x90, 0x94};
+
+template <class Read> Where find_node(Read &&read, const MapLayout &m, uint64_t sys, uint32_t id, uint64_t &node)
 {
-    IdState r;
-    r.id = id;
-    r.where = Unread;
+    node = 0;
     uint64_t mult = 0, slots = 0, info = 0, mask = 0;
     uint32_t inc = 0;
     uint8_t shift = 0;
-    if (!fetch(read, sys + kMultiplier, mult) || !fetch(read, sys + kSlots, slots) || !fetch(read, sys + kInfo, info) ||
-        !fetch(read, sys + kMask, mask) || !fetch(read, sys + kInfoInc, inc) || !fetch(read, sys + kInfoShift, shift))
-        return r;
+    if (!fetch(read, sys + m.mult, mult) || !fetch(read, sys + m.slots, slots) || !fetch(read, sys + m.info, info) ||
+        !fetch(read, sys + m.mask, mask) || !fetch(read, sys + m.inc, inc) || !fetch(read, sys + m.shift, shift))
+        return Unread;
     uint64_t h = uint64_t(id) * mult;
     h ^= h >> 33;
     uint32_t want = inc + uint32_t((h & 0x1f) >> (shift & 0x3f));
     uint64_t idx = (h >> 5) & mask;
     uint8_t b = 0;
     if (!fetch(read, info + idx, b))
-        return r;
-    uint64_t node = 0;
+        return Unread;
     for (int step = 0; step < kProbes && !node; step += 2) {
         for (int k = 0; k < 2 && !node; k++) {
             if (k && !fetch(read, info + idx + 1, b))
-                return r;
+                return Unread;
             if (want + uint32_t(k) * inc != b)
                 continue;
             uint64_t p = 0;
             uint32_t pid = 0;
             if (!fetch(read, slots + (idx + uint64_t(k)) * 8, p) || !fetch(read, p + kNodeId, pid))
-                return r;
+                return Unread;
             if (pid == id)
                 node = p;
         }
@@ -122,14 +159,24 @@ template <class Read> IdState lookup(Read &&read, uint64_t sys, uint32_t id)
         want += 2 * inc;
         idx += 2;
         if (!fetch(read, info + idx, b))
-            return r;
-        if (want > b) {
-            r.where = Missing;
-            return r;
-        }
+            return Unread;
+        if (want > b)
+            return Missing;
     }
-    if (!node)
+    return node ? Found : Unread;
+}
+
+template <class Read> IdState lookup(Read &&read, uint64_t sys, uint32_t id)
+{
+    IdState r;
+    r.id = id;
+    r.where = Unread;
+    uint64_t node = 0;
+    Where w = find_node(read, kIdMap, sys, id, node);
+    if (w != Found) {
+        r.where = w;
         return r;
+    }
     r.node = node;
     r.where = RowUnread;
     uint64_t owner = 0, head = 0, x = 0;
@@ -200,6 +247,53 @@ inline IdsVerdict ids_verdict(const Loader &l)
     return IdsOk;
 }
 
+struct Module {
+    bool read = false;
+    uint64_t object = 0, vtable = 0, unload_ready = 0;
+    bool spawning = false;
+};
+
+enum Request : uint8_t { ReqUnread, ReqNoNode, ReqNull, ReqState };
+enum Activity : uint8_t { ActUnread, ActNo, ActYes };
+
+struct Vehicle {
+    uint8_t id = 0;
+    Request request = ReqUnread;
+    uint8_t state = 0;
+    Activity active = ActUnread;
+    uint64_t request_at = 0;
+};
+
+struct Unload {
+    bool read = false;
+    uint32_t gate_0c = 0, gate_10 = 0, gate_14 = 0, gate_1c = 0, gate_24 = 0, gate_110 = 0;
+    uint64_t list_c_begin = 0, list_c_end = 0, list_a_begin = 0, list_a_end = 0, vehicle_task = 0;
+};
+
+struct Spawning {
+    bool found = false;
+    uint64_t task = 0, vtable = 0, system = 0, ids_begin = 0, ids_end = 0, active_begin = 0, active_end = 0;
+    bool task_read = false, system_read = false, ids_read_ok = false, active_read_ok = false;
+    size_t ids_total = 0, vehicles = 0, active_total = 0, active_read = 0;
+    Vehicle vehicle[kMaxVehicles];
+    uint8_t active[kMaxActive] = {};
+};
+
+enum GateWhere : uint8_t { GateUnread, BlockA, BlockB, BlockCFields, BlockCTasks };
+
+inline GateWhere gate_where(const Unload &u)
+{
+    if (!u.read)
+        return GateUnread;
+    if (u.gate_1c == 5)
+        return BlockA;
+    if (u.gate_24 == 2)
+        return BlockB;
+    if (u.gate_0c || u.gate_10 || u.gate_14 || u.gate_110)
+        return BlockCFields;
+    return BlockCTasks;
+}
+
 struct Seen {
     bool hooked = false;
     uint64_t at = 0, ms = 0, calls = 0;
@@ -223,6 +317,13 @@ struct Snapshot {
     bool raw_row[kRaw / kRow] = {};
     uint8_t batch[kBatchRaw] = {};
     bool batch_row[kBatchRaw / kRow] = {};
+    bool unload_proven = false;
+    char unload_proof[320] = {};
+    uint64_t spawn_vtable = 0;
+    Unload unload_gates;
+    size_t list_a_total = 0, list_c_total = 0, list_a_read = 0, list_c_read = 0;
+    Module list_a[kMaxModules], list_c[kMaxModules];
+    Spawning spawning;
 };
 
 inline uint64_t pick(const Seen &update, const Seen &unload, uint64_t &other)
@@ -230,6 +331,117 @@ inline uint64_t pick(const Seen &update, const Seen &unload, uint64_t &other)
     const Seen *a = update.ms >= unload.ms ? &update : &unload, *b = a == &update ? &unload : &update;
     other = b->at && b->at != a->at ? b->at : 0;
     return a->at;
+}
+
+template <class Read> void read_module(Read &read, uint64_t object, uint64_t spawn_vtable, Module &m)
+{
+    m = Module{};
+    m.object = object;
+    m.read = fetch(read, object + kModuleVtable, m.vtable);
+    if (!m.read)
+        return;
+    if (!fetch(read, m.vtable + kModuleUnloadReady, m.unload_ready))
+        m.unload_ready = 0;
+    m.spawning = spawn_vtable && m.vtable == spawn_vtable;
+}
+
+template <class Read>
+size_t read_list(Read &read, uint64_t begin, uint64_t end, uint64_t stride, uint64_t object_at, uint64_t spawn_vtable,
+                 Module *out, size_t &total)
+{
+    total = 0;
+    if (!begin || end < begin || (end - begin) % stride)
+        return 0;
+    total = size_t(end - begin) / stride;
+    size_t n = total < kMaxModules ? total : kMaxModules, got = 0;
+    for (size_t i = 0; i < n; i++) {
+        uint64_t object = 0;
+        if (!fetch(read, begin + i * stride + object_at, object))
+            break;
+        read_module(read, object, spawn_vtable, out[i]);
+        got = i + 1;
+    }
+    return got;
+}
+
+template <class Read> void read_spawning(Read &read, uint64_t task, Spawning &sp)
+{
+    sp = Spawning{};
+    sp.found = true;
+    sp.task = task;
+    sp.task_read = fetch(read, task + kModuleVtable, sp.vtable) && fetch(read, task + kTaskSystem, sp.system) &&
+                   fetch(read, task + kTaskIdsBegin, sp.ids_begin) && fetch(read, task + kTaskIdsEnd, sp.ids_end);
+    if (!sp.task_read)
+        return;
+    sp.ids_read_ok = sp.ids_end >= sp.ids_begin && sp.ids_end - sp.ids_begin <= (uint64_t(1) << 20);
+    if (sp.ids_read_ok)
+        sp.ids_total = size_t(sp.ids_end - sp.ids_begin);
+    sp.system_read = sp.system != 0 && fetch(read, sp.system + kSysActiveBegin, sp.active_begin) &&
+                     fetch(read, sp.system + kSysActiveEnd, sp.active_end);
+    if (sp.system_read && sp.active_end >= sp.active_begin && (sp.active_end - sp.active_begin) % kActiveStride == 0) {
+        sp.active_read_ok = true;
+        sp.active_total = size_t((sp.active_end - sp.active_begin) / kActiveStride);
+        size_t n = sp.active_total < kMaxActive ? sp.active_total : kMaxActive;
+        for (size_t i = 0; i < n; i++) {
+            if (!fetch(read, sp.active_begin + i * kActiveStride, sp.active[i])) {
+                sp.active_read_ok = false;
+                break;
+            }
+            sp.active_read = i + 1;
+        }
+    }
+    size_t n = sp.ids_total < kMaxVehicles ? sp.ids_total : kMaxVehicles;
+    for (size_t i = 0; i < n; i++) {
+        Vehicle &v = sp.vehicle[i];
+        if (!fetch(read, sp.ids_begin + i, v.id))
+            break;
+        sp.vehicles = i + 1;
+        if (!sp.system_read)
+            continue;
+        uint64_t node = 0;
+        Where w = find_node(read, kSpawnMap, sp.system, v.id, node);
+        if (w == Missing)
+            v.request = ReqNoNode;
+        else if (w == Found && fetch(read, node + kNodeRequest, v.request_at)) {
+            v.request = v.request_at ? ReqState : ReqNull;
+            if (v.request_at && !fetch(read, v.request_at, v.state))
+                v.request = ReqUnread;
+        }
+        for (size_t j = 0; j < sp.active_read; j++)
+            if (sp.active[j] == v.id)
+                v.active = ActYes;
+        if (v.active != ActYes && sp.active_read_ok && sp.active_read == sp.active_total)
+            v.active = ActNo;
+    }
+}
+
+template <class Read> void capture_unload(Read &read, Snapshot &s)
+{
+    Unload &u = s.unload_gates;
+    u = Unload{};
+    s.list_a_total = s.list_c_total = s.list_a_read = s.list_c_read = 0;
+    s.spawning = Spawning{};
+    if (!s.unload_proven)
+        return;
+    u.read = fetch(read, s.at + kGate0c, u.gate_0c) && fetch(read, s.at + kGate10, u.gate_10) &&
+             fetch(read, s.at + kGate14, u.gate_14) && fetch(read, s.at + kGate1c, u.gate_1c) &&
+             fetch(read, s.at + kGate24, u.gate_24) && fetch(read, s.at + kGate110, u.gate_110) &&
+             fetch(read, s.at + kListCBegin, u.list_c_begin) && fetch(read, s.at + kListCEnd, u.list_c_end) &&
+             fetch(read, s.at + kListABegin, u.list_a_begin) && fetch(read, s.at + kListAEnd, u.list_a_end) &&
+             fetch(read, s.at + kVehicleTask, u.vehicle_task);
+    if (!u.read)
+        return;
+    s.list_a_read = read_list(read, u.list_a_begin, u.list_a_end, kListAStride, 0, s.spawn_vtable, s.list_a, s.list_a_total);
+    s.list_c_read = read_list(read, u.list_c_begin, u.list_c_end, kListCStride, 8, s.spawn_vtable, s.list_c, s.list_c_total);
+    uint64_t task = u.vehicle_task;
+    for (size_t i = 0; !task && i < s.list_a_read; i++)
+        if (s.list_a[i].spawning)
+            task = s.list_a[i].object;
+    for (size_t i = 0; !task && i < s.list_c_read; i++)
+        if (s.list_c[i].spawning)
+            task = s.list_c[i].object;
+    if (task)
+        read_spawning(read, task, s.spawning);
 }
 
 template <class Read> void capture(Read &&read, Snapshot &s)
@@ -243,6 +455,7 @@ template <class Read> void capture(Read &&read, Snapshot &s)
         return;
     for (size_t r = 0; r < kRaw / kRow; r++)
         s.raw_row[r] = read(s.at + r * kRow, s.raw + r * kRow, kRow);
+    capture_unload(read, s);
     if (!s.proven)
         return;
     s.loader = read_loader(read, s.at);
@@ -411,6 +624,172 @@ inline void rows_text(stall_order::Out &o, const uint8_t *b, const bool *ok, siz
     }
 }
 
+inline const char *request_state_text(uint8_t st)
+{
+    switch (st) {
+    case 0:
+        return "Invalid";
+    case 1:
+        return "Begin";
+    case 2:
+        return "Spawning";
+    case 3:
+        return "Spawned";
+    case 4:
+        return "Generating";
+    case 5:
+        return "Ready";
+    case 6:
+        return "Despawning";
+    case 7:
+        return "Despawned";
+    default:
+        return "unknown";
+    }
+}
+
+inline const char *gate_text(GateWhere w)
+{
+    switch (w) {
+    case BlockA:
+        return "block A: +0x1c is 5, so the tick waits for every module in the +0x200 list to answer unload-ready";
+    case BlockB:
+        return "block B: +0x24 is 2, so the tick waits for the +0x1f0 task to answer unload-ready";
+    case BlockCFields:
+        return "block C, a gate field is not 0 (+0xc, +0x10, +0x14 or +0x110)";
+    case BlockCTasks:
+        return "block C, every gate field is 0: the wait is on the sub-tasks in the +0x1d8 list";
+    default:
+        return "the gate fields are not readable";
+    }
+}
+
+inline void name_into(char *w, size_t cap, Namer name, uint64_t at)
+{
+    w[0] = 0;
+    if (name && at)
+        name(w, cap, at);
+}
+
+inline void module_text(stall_order::Out &o, const char *list, size_t i, const Module &m, Namer name)
+{
+    char v[256], f[256];
+    if (!m.read) {
+        o.put("    %s #%zu object 0x%llx: not readable\n", list, i, (unsigned long long)m.object);
+        return;
+    }
+    name_into(v, sizeof v, name, m.vtable);
+    name_into(f, sizeof f, name, m.unload_ready);
+    o.put("    %s #%zu object 0x%llx, vtable 0x%llx%s%s%s, unload-ready (+0x30) 0x%llx%s%s%s%s\n", list, i,
+          (unsigned long long)m.object, (unsigned long long)m.vtable, v[0] ? " (" : "", v, v[0] ? ")" : "",
+          (unsigned long long)m.unload_ready, f[0] ? " (" : "", f, f[0] ? ")" : "", m.spawning ? " [vehicle spawning]" : "");
+}
+
+inline void modules_text(stall_order::Out &o, const char *list, const Module *m, size_t read, size_t total, Namer name)
+{
+    for (size_t i = 0; i < read; i++)
+        module_text(o, list, i, m[i], name);
+    if (read < total)
+        o.put("    %s: %zu more not shown\n", list, total - read);
+}
+
+inline void spawning_text(stall_order::Out &o, const Snapshot &s, Namer name)
+{
+    const Spawning &sp = s.spawning;
+    if (!sp.found) {
+        o.put("  vehicle spawning sub-task: +0x1f0 is %s and no module in either list has its vtable\n",
+              s.unload_gates.vehicle_task ? "set" : "0");
+        return;
+    }
+    char w[256];
+    name_into(w, sizeof w, name, sp.vtable);
+    o.put("  vehicle spawning sub-task 0x%llx (%s)\n", (unsigned long long)sp.task,
+          sp.task == s.unload_gates.vehicle_task ? "from +0x1f0" : "found in a module list, +0x1f0 is not it");
+    if (!sp.task_read) {
+        o.put("    its fields are not readable\n");
+        return;
+    }
+    o.put("    vtable 0x%llx%s%s%s, +0x60 spawning system 0x%llx, ids 0x%llx..0x%llx\n", (unsigned long long)sp.vtable,
+          w[0] ? " (" : "", w, w[0] ? ")" : "", (unsigned long long)sp.system, (unsigned long long)sp.ids_begin,
+          (unsigned long long)sp.ids_end);
+    if (!sp.ids_read_ok) {
+        o.put("    the id range is not a readable u8 list\n");
+        return;
+    }
+    if (!sp.system_read)
+        o.put("    the spawning system's active list is not readable\n");
+    else if (!sp.active_read_ok)
+        o.put("    active list 0x%llx..0x%llx is not a whole number of 0x%llx records or not readable\n",
+              (unsigned long long)sp.active_begin, (unsigned long long)sp.active_end, (unsigned long long)kActiveStride);
+    else {
+        o.put("    active list: %zu record(s)", sp.active_total);
+        for (size_t i = 0; i < sp.active_read; i++)
+            o.put("%s%u", i ? " " : " ids ", unsigned(sp.active[i]));
+        if (sp.active_read < sp.active_total)
+            o.put(" (the first %zu read)", sp.active_read);
+        o.put("\n");
+    }
+    size_t live = 0, not_ready = 0, active = 0;
+    for (size_t i = 0; i < sp.vehicles; i++) {
+        const Vehicle &v = sp.vehicle[i];
+        o.put("    vehicle %-3u request ", unsigned(v.id));
+        switch (v.request) {
+        case ReqState:
+            o.put("%u %s", unsigned(v.state), request_state_text(v.state));
+            live++;
+            if (v.state != 5)
+                not_ready++;
+            break;
+        case ReqNull:
+            o.put("none (node with a null request)");
+            break;
+        case ReqNoNode:
+            o.put("none (not in the request map)");
+            break;
+        default:
+            o.put("not readable");
+            break;
+        }
+        o.put(", %s\n", v.active == ActYes  ? "in the active list"
+                        : v.active == ActNo ? "not in the active list"
+                                            : "active list unknown");
+        active += v.active == ActYes;
+    }
+    if (sp.vehicles < sp.ids_total)
+        o.put("    %zu more vehicle id(s) not shown\n", sp.ids_total - sp.vehicles);
+    o.put("    %zu id(s): %zu with a live request, %zu of those not Ready, %zu in the active list; unload-ready is false while "
+          "any id has a live request or an active record\n",
+          sp.ids_total, live, not_ready, active);
+}
+
+inline void unload_text(stall_order::Out &o, const Snapshot &s, Namer name)
+{
+    if (!s.unload_proven) {
+        o.put("  unload tick gates not decoded: %s\n", s.unload_proof);
+        return;
+    }
+    const Unload &u = s.unload_gates;
+    if (!u.read) {
+        o.put("  unload tick gates (Sess_Module_OnSessionUnloaded): not readable\n");
+        return;
+    }
+    o.put("  unload tick gates (Sess_Module_OnSessionUnloaded, state 5):\n");
+    o.put("    +0x1c  block A gate %u (A runs while 5)\n", u.gate_1c);
+    o.put("    +0x24  block B gate %u (B runs while 2)\n", u.gate_24);
+    o.put("    +0xc   block C gate %u (must be 0)\n", u.gate_0c);
+    o.put("    +0x14  block C gate %u (must be 0)\n", u.gate_14);
+    o.put("    +0x10  block C gate %u (must be 0)\n", u.gate_10);
+    o.put("    +0x110 block C gate %u (must be 0)\n", u.gate_110);
+    o.put("    verdict: %s\n", gate_text(gate_where(u)));
+    o.put("  +0x200 modules (block A): 0x%llx..0x%llx, %zu entr%s\n", (unsigned long long)u.list_a_begin,
+          (unsigned long long)u.list_a_end, s.list_a_total, s.list_a_total == 1 ? "y" : "ies");
+    modules_text(o, "A", s.list_a, s.list_a_read, s.list_a_total, name);
+    o.put("  +0x1d8 sub-tasks (block C): 0x%llx..0x%llx, %zu entr%s\n", (unsigned long long)u.list_c_begin,
+          (unsigned long long)u.list_c_end, s.list_c_total, s.list_c_total == 1 ? "y" : "ies");
+    modules_text(o, "C", s.list_c, s.list_c_read, s.list_c_total, name);
+    spawning_text(o, s, name);
+}
+
 inline size_t text(const Snapshot &s, char *out, size_t cap, Namer name)
 {
     stall_order::Out o(out, cap);
@@ -500,6 +879,7 @@ inline size_t text(const Snapshot &s, char *out, size_t cap, Namer name)
             rows_text(o, s.batch, s.batch_row, kBatchRaw);
         }
     }
+    unload_text(o, s, name);
     o.put("  loader bytes +0x000..+0x%zx at 0x%llx:\n", kRaw, (unsigned long long)s.at);
     rows_text(o, s.raw, s.raw_row, kRaw);
     return o.size();

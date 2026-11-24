@@ -37,6 +37,12 @@ constexpr bp::Proof LAYOUT{"the session loader's fields (+0x8, +0x10, +0x1c, +0x
                                bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate GATE{"the session loader's decoded fields", &LAYOUT};
 
+constexpr uint64_t SPAWN_VTABLE_RVA = 0x58628b0;
+constexpr bp::Proof UNLOAD_LAYOUT{"the session loader's unload tick gates (+0xc, +0x10, +0x14, +0x1c, +0x24, +0x110), "
+                                  "sub-task lists (+0x1d8, +0x200, +0x1f0) and the vehicle spawning sub-task",
+                                  bp::bit(bp::Build::steam_1_0_145)};
+constexpr bp::Gate UNLOAD_GATE{"the session loader's unload gates", &UNLOAD_LAYOUT};
+
 struct Probe {
     std::atomic<bool> hooked{false};
     std::atomic<uint64_t> at{0}, ms{0}, calls{0};
@@ -46,6 +52,8 @@ safetyhook::MidHook update_hook, unload_hook;
 constinit Probe update_probe, unload_probe;
 constinit std::atomic<bool> off{false};
 constinit std::atomic<bool> decoded{false};
+constinit std::atomic<bool> unload_decoded{false};
+char unload_proof_line[320];
 char off_why[256];
 char proof_line[320];
 
@@ -125,6 +133,10 @@ void session_loader_setup()
     decoded.store(runtime::holds(GATE));
     if (!decoded.load())
         std::snprintf(proof_line, sizeof proof_line, "%s is proven on %s only", LAYOUT.what, bp::proven_builds(LAYOUT).c_str());
+    unload_decoded.store(runtime::holds(UNLOAD_GATE));
+    if (!unload_decoded.load())
+        std::snprintf(unload_proof_line, sizeof unload_proof_line, "%s is proven on %s only", UNLOAD_LAYOUT.what,
+                      bp::proven_builds(UNLOAD_LAYOUT).c_str());
     swofty::log("[stall] session loader probes hooked (%s%s%s): a load-stall report names the loader they last ran on, "
                 "its state, asset load, completion and ids with each id's state%s%s",
                 a ? UPDATE : "", a && b ? ", " : "", b ? UNLOAD : "", why.empty() ? "" : "; ", why.c_str());
@@ -140,6 +152,10 @@ size_t session_loader_report(char *out, size_t cap, void (*name)(char *out, size
     s.now = GetTickCount64();
     s.proven = decoded.load();
     std::snprintf(s.proof, sizeof s.proof, "%s", proof_line);
+    s.unload_proven = unload_decoded.load();
+    std::snprintf(s.unload_proof, sizeof s.unload_proof, "%s", unload_proof_line);
+    HMODULE image = GetModuleHandleA(nullptr);
+    s.spawn_vtable = s.unload_proven && image ? uint64_t(reinterpret_cast<uintptr_t>(image)) + SPAWN_VTABLE_RVA : 0;
     if (!s.off)
         sl::capture(read_game, s);
     return sl::text(s, out, cap, name);
