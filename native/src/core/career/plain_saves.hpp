@@ -62,6 +62,8 @@ std::optional<std::vector<Part>> fetch_group(uint64_t generation, const std::str
 // Count a StateLoadSession pass that found its session already ran. From the third pass of a game session on, write_async
 // writes nothing (see LoadLoop), and one line in the loader log says so.
 void note_already_ran();
+// A StateLoadSession pass that did not find its session already ran: the count restarts and paused writes resume.
+void note_moved_on();
 bool writes_paused();
 
 // Writes a generation on a worker thread; the caller's bytes are shared, never copied. Never blocks the save.

@@ -286,9 +286,17 @@ void note_already_ran()
 {
     std::lock_guard<std::mutex> g(loop_lock);
     if (load_loop.note())
-        swofty::log("[saves] plain store: the session already ran %d times in this game session, a load loop; no new generation is "
-                    "written until the game restarts, so the restore points stay",
-                    LoadLoop::THRESHOLD);
+        swofty::log(
+            "[saves] plain store: the session already ran %d times in this game session, a load loop; no new generation is "
+            "written until the game restarts, so the restore points stay",
+            LoadLoop::THRESHOLD);
+}
+
+void note_moved_on()
+{
+    std::lock_guard<std::mutex> g(loop_lock);
+    if (load_loop.reset())
+        swofty::log("[saves] plain store: the session load moved on; the plain store writes generations again");
 }
 
 bool writes_paused()

@@ -789,7 +789,8 @@ void session_load(const char *source)
         swofty::log("[apply] session start (%s): %s; the session is left unknown", from.c_str(), ran.c_str());
         if (flow)
             career::plain_saves::note_already_ran();
-    }
+    } else if (flow)
+        career::plain_saves::note_moved_on();
     if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
         note_mode(k, "the session load");
     if (!scheduler().session_enter(f, flow))

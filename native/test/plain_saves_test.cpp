@@ -514,6 +514,19 @@ static void load_loop(const fs::path &dir)
     expect(loop.note() && loop.paused(), "load loop: the third pass pauses the writes and reports it once");
     expect(!loop.note() && loop.paused(), "load loop: later passes stay paused without reporting again");
 
+    ps::LoadLoop apart;
+    apart.note();
+    apart.note();
+    expect(!apart.reset(), "load loop: a normal load with 2 passes counted lifts no pause");
+    apart.note();
+    apart.note();
+    expect(!apart.paused(), "load loop: 2 passes, a normal load, 2 more passes still write");
+    apart.note();
+    expect(apart.paused() && apart.reset() && !apart.paused(), "load loop: paused, then a normal load, writes again");
+    apart.note();
+    apart.note();
+    expect(!apart.paused(), "load loop: after the reset the count starts over");
+
     ps::Root root(dir);
     std::string why;
     ps::LoadLoop gate;

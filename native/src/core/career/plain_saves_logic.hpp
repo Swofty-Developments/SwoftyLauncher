@@ -42,7 +42,7 @@ constexpr const char *INJECT_APPLYING = "inject.applying.json";
 constexpr size_t MAX_SCAN = 4096;
 
 // A career save stuck in the "session already ran" load loop passes StateLoadSession again and again, and every pass makes the
-// save change. `note` counts the passes of one game session; from the THRESHOLD-th on, `paused` holds and no new generation is
+// save change. `note` counts consecutive passes, a normal load `reset`s the count; from the THRESHOLD-th on, `paused` holds and no new generation is
 // written, so the restore points from before the loop survive the launcher's pruning.
 struct LoadLoop {
     static constexpr int THRESHOLD = 3;
@@ -55,6 +55,14 @@ struct LoadLoop {
     {
         passes++;
         return passes == THRESHOLD;
+    }
+
+    // A load that moved on: the count restarts. True when this lifts a pause.
+    bool reset()
+    {
+        bool was = paused();
+        passes = 0;
+        return was;
     }
 };
 
