@@ -42,6 +42,11 @@ constexpr bp::Proof UNLOAD_LAYOUT{"the session loader's unload tick gates (+0xc,
                                   bp::bit(bp::Build::steam_1_0_145) | bp::bit(bp::Build::ea_1_0_145)};
 constexpr bp::Gate UNLOAD_GATE{"the session loader's unload gates", &UNLOAD_LAYOUT};
 
+constexpr bp::Proof WORLD_LAYOUT{"the world task fields (+0x60, +0x88, +0xa0, +0xc8, +0xcc), its module's world lists "
+                                 "(+0xe8, +0xf0, +0xf8) and a world's name, state (+0x200) and stop-pending byte (+0x218)",
+                                 bp::bit(bp::Build::steam_1_0_145)};
+constexpr bp::Gate WORLD_GATE{"the session loader's world tasks", &WORLD_LAYOUT};
+
 struct Probe {
     std::atomic<bool> hooked{false};
     std::atomic<uint64_t> at{0}, ms{0}, calls{0};
@@ -52,6 +57,10 @@ constinit Probe update_probe, unload_probe;
 constinit std::atomic<bool> off{false};
 constinit std::atomic<bool> decoded{false};
 constinit std::atomic<bool> unload_decoded{false};
+constinit std::atomic<bool> world_decoded{false};
+constinit std::atomic<uint64_t> entering_ms{0};
+char world_proof_line[320];
+constinit sl::WorldSet entering_set{};
 char unload_proof_line[320];
 char off_why[256];
 char proof_line[320];
@@ -136,6 +145,10 @@ void session_loader_setup()
     if (!unload_decoded.load())
         std::snprintf(unload_proof_line, sizeof unload_proof_line, "%s is proven on %s only", UNLOAD_LAYOUT.what,
                       bp::proven_builds(UNLOAD_LAYOUT).c_str());
+    world_decoded.store(runtime::holds(WORLD_GATE));
+    if (!world_decoded.load())
+        std::snprintf(world_proof_line, sizeof world_proof_line, "%s is proven on %s only", WORLD_LAYOUT.what,
+                      bp::proven_builds(WORLD_LAYOUT).c_str());
     swofty::log("[stall] session loader probes hooked (%s%s%s): a load-stall report names the loader they last ran on, "
                 "its state, asset load, completion and ids with each id's state%s%s",
                 a ? UPDATE : "", a && b ? ", " : "", b ? UNLOAD : "", why.empty() ? "" : "; ", why.c_str());
@@ -156,9 +169,55 @@ size_t session_loader_report(char *out, size_t cap, void (*name)(char *out, size
     HMODULE image = GetModuleHandleA(nullptr);
     uint64_t vtable_rva = sl::spawn_vtable_rva(runtime::running_build());
     s.spawn_vtable = s.unload_proven && image && vtable_rva ? uint64_t(reinterpret_cast<uintptr_t>(image)) + vtable_rva : 0;
+    s.world_proven = world_decoded.load();
+    std::snprintf(s.world_proof, sizeof s.world_proof, "%s", world_proof_line);
+    s.image_base = image ? uint64_t(reinterpret_cast<uintptr_t>(image)) : 0;
+    s.world_proven = s.world_proven && s.image_base && sl::world_task_vtables(runtime::running_build(), s.world_vtable);
+    if (s.world_proven)
+        for (uint64_t &v : s.world_vtable)
+            v += s.image_base;
     if (!s.off)
         sl::capture(read_game, s);
     return sl::text(s, out, cap, name);
+}
+
+void session_loader_flow(uint32_t to, const char *name)
+{
+    if (to != 1 || !name || std::strcmp(name, "StateUnloadSession") || off.load() || !world_decoded.load())
+        return;
+    uint64_t now = GetTickCount64(), last = entering_ms.load();
+    if (last && now - last < 1000)
+        return;
+    entering_ms.store(now);
+    HMODULE image = GetModuleHandleA(nullptr);
+    uint64_t base = image ? uint64_t(reinterpret_cast<uintptr_t>(image)) : 0;
+    uint64_t vt[2];
+    if (!base || !sl::world_task_vtables(runtime::running_build(), vt)) {
+        swofty::log("[stall] unload entering: world tasks not decoded on this build");
+        return;
+    }
+    vt[0] += base;
+    vt[1] += base;
+    sl::Seen a = seen_of(update_probe), b = seen_of(unload_probe);
+    uint64_t other = 0, loader = sl::pick(a, b, other);
+    if (!loader) {
+        swofty::log("[stall] unload entering: no session loader seen yet");
+        return;
+    }
+    sl::capture_worlds(read_game, loader, base, vt, entering_set);
+    if (!entering_set.read) {
+        swofty::log("[stall] unload entering: loader 0x%llx +0x200 module list not readable", (unsigned long long)loader);
+        return;
+    }
+    swofty::log("[stall] unload entering: loader 0x%llx has %zu module(s) in the +0x200 list", (unsigned long long)loader,
+                entering_set.total);
+    char line[640];
+    for (size_t i = 0; i < entering_set.got; i++) {
+        sl::entering_line(entering_set, i, line, sizeof line);
+        swofty::log("[stall] %s", line);
+    }
+    if (entering_set.got < entering_set.total)
+        swofty::log("[stall] unload entering: %zu more module(s) not shown", entering_set.total - entering_set.got);
 }
 
 }

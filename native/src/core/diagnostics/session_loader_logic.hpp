@@ -42,10 +42,29 @@
 // active-record helper differ from Steam's only by protector filler. The sub-task's vtable is at RVA 0x58628b0 on Steam
 // and 0x5974bd0 on EA, both the vtable the constructor stores.
 
+// On Steam 1.0.145 the section also decodes each module of the +0x200 list that is a world task (Ne_WorldLoadTask,
+// vtables +0x57e8ba0 primary and +0x5a8f650 secondary): busy byte +0x88 (cleared only by the world stop callback,
+// 0x14442f3b0), kind +0xc8, stop flag +0xcc, the world name +0xa0 (a C string, compared case-insensitively), the task's
+// module +0x60 with its primary world +0xe8 and its world lists +0xf0 (active) and +0xf8 (stopping), and per world its
+// name +0xa0, state +0x200 and stop-pending byte +0x218. The world stop (0x153daf400) refuses with 0x25, and never calls
+// back, when the world's state is 0x7d4..0x7d6 or a stop is already pending. entering_line() is the same data as one
+// line per module for the log, written at every StateUnloadSession Entering.
+
 namespace runtime::session_loader {
 
 constexpr uint64_t kSpawnVtableSteam = 0x58628b0;
 constexpr uint64_t kSpawnVtableEa = 0x5974bd0;
+
+constexpr uint64_t kWorldVtableSteam[2] = {0x57e8ba0, 0x5a8f650};
+
+constexpr bool world_task_vtables(build_proof::Build b, uint64_t (&out)[2])
+{
+    if (b != build_proof::Build::steam_1_0_145)
+        return false;
+    out[0] = kWorldVtableSteam[0];
+    out[1] = kWorldVtableSteam[1];
+    return true;
+}
 
 constexpr uint64_t spawn_vtable_rva(build_proof::Build b)
 {
@@ -108,6 +127,24 @@ constexpr uint64_t kSysActiveBegin = 0x28;
 constexpr uint64_t kSysActiveEnd = 0x30;
 constexpr uint64_t kActiveStride = 0x6880;
 constexpr uint64_t kNodeRequest = 0x8;
+constexpr uint64_t kTaskBusy = 0x88;
+constexpr uint64_t kTaskModule = 0x60;
+constexpr uint64_t kTaskWorldName = 0xa0;
+constexpr uint64_t kTaskKind = 0xc8;
+constexpr uint64_t kTaskStopFlag = 0xcc;
+constexpr uint64_t kWorldModulePrimary = 0xe8;
+constexpr uint64_t kWorldModuleActive = 0xf0;
+constexpr uint64_t kWorldModuleStopping = 0xf8;
+constexpr uint64_t kVecBegin = 0x8;
+constexpr uint64_t kVecEnd = 0x10;
+constexpr uint64_t kWorldName = 0xa0;
+constexpr uint64_t kWorldState = 0x200;
+constexpr uint64_t kWorldStopPending = 0x218;
+constexpr uint32_t kWorldStateStopFirst = 0x7d4;
+constexpr uint32_t kWorldStateStopLast = 0x7d6;
+constexpr size_t kMaxWorldTasks = 8;
+constexpr size_t kMaxWorlds = 8;
+constexpr size_t kNameMax = 48;
 constexpr size_t kMaxModules = 32;
 constexpr size_t kMaxVehicles = 64;
 constexpr size_t kMaxActive = 128;
@@ -316,6 +353,198 @@ inline GateWhere gate_where(const Unload &u)
     return BlockCTasks;
 }
 
+struct World {
+    bool read = false;
+    uint64_t object = 0;
+    uint32_t state = 0;
+    uint8_t stop_pending = 0;
+    bool state_read = false;
+    char name[kNameMax] = {};
+
+    bool stop_refused() const
+    {
+        return state_read && ((state >= kWorldStateStopFirst && state <= kWorldStateStopLast) || stop_pending);
+    }
+};
+
+struct WorldList {
+    bool read = false;
+    uint64_t holder = 0, begin = 0, end = 0;
+    size_t total = 0, got = 0;
+    World world[kMaxWorlds];
+};
+
+struct WorldTask {
+    bool read = false;
+    size_t index = 0;
+    uint64_t object = 0, vtable = 0;
+    bool world_task = false;
+    bool fields_read = false;
+    uint8_t busy = 0, stop_flag = 0;
+    uint32_t kind = 0;
+    uint64_t module = 0, name_at = 0;
+    bool name_read = false;
+    char name[kNameMax] = {};
+    bool module_read = false;
+    World primary;
+    WorldList active, stopping;
+    size_t active_match = 0;
+};
+
+struct WorldSet {
+    bool read = false;
+    uint64_t loader = 0, base = 0, list_begin = 0, list_end = 0;
+    size_t total = 0, got = 0;
+    WorldTask task[kMaxWorldTasks];
+};
+
+inline bool name_equal(const char *a, const char *b)
+{
+    for (; *a && *b; a++, b++) {
+        char x = *a, y = *b;
+        if (x >= 'A' && x <= 'Z')
+            x = char(x + 32);
+        if (y >= 'A' && y <= 'Z')
+            y = char(y + 32);
+        if (x != y)
+            return false;
+    }
+    return *a == *b;
+}
+
+template <class Read> bool read_cstr(Read &&read, uint64_t at, char *out, size_t cap)
+{
+    out[0] = 0;
+    if (!at)
+        return false;
+    size_t n = 0;
+    for (; n + 1 < cap; n++) {
+        uint8_t c = 0;
+        if (!fetch(read, at + n, c)) {
+            if (!n)
+                return false;
+            break;
+        }
+        if (!c) {
+            out[n] = 0;
+            return true;
+        }
+        out[n] = c >= 0x20 && c < 0x7f ? char(c) : '?';
+    }
+    out[n] = 0;
+    uint8_t more = 0;
+    if (fetch(read, at + n, more) && more && cap >= 4) {
+        out[cap - 4] = '.';
+        out[cap - 3] = '.';
+        out[cap - 2] = '.';
+        out[cap - 1] = 0;
+    }
+    return true;
+}
+
+template <class Read> void read_world(Read &&read, uint64_t object, World &w)
+{
+    w = World{};
+    w.object = object;
+    uint64_t name_at = 0;
+    w.read = fetch(read, object + kWorldState, w.state);
+    w.state_read = w.read && fetch(read, object + kWorldStopPending, w.stop_pending);
+    if (!w.read)
+        return;
+    if (!fetch(read, object + kWorldName, name_at) || !read_cstr(read, name_at, w.name, sizeof w.name))
+        std::snprintf(w.name, sizeof w.name, "%s", name_at ? "(unreadable)" : "(null)");
+}
+
+template <class Read> void read_world_list(Read &&read, uint64_t module, uint64_t at, WorldList &l)
+{
+    l = WorldList{};
+    if (!fetch(read, module + at, l.holder) || !fetch(read, l.holder + kVecBegin, l.begin) ||
+        !fetch(read, l.holder + kVecEnd, l.end))
+        return;
+    if (l.end < l.begin || (l.end - l.begin) % 8 || (l.end - l.begin) / 8 > (uint64_t(1) << 16))
+        return;
+    l.read = true;
+    l.total = size_t((l.end - l.begin) / 8);
+    size_t n = l.total < kMaxWorlds ? l.total : kMaxWorlds;
+    for (size_t i = 0; i < n; i++) {
+        uint64_t object = 0;
+        if (!fetch(read, l.begin + i * 8, object))
+            break;
+        read_world(read, object, l.world[i]);
+        l.got = i + 1;
+    }
+}
+
+template <class Read> void read_world_task(Read &&read, uint64_t object, const uint64_t (&vtables)[2], WorldTask &t)
+{
+    uint64_t keep_index = t.index;
+    t = WorldTask{};
+    t.index = keep_index;
+    t.object = object;
+    t.read = fetch(read, object + kModuleVtable, t.vtable);
+    if (!t.read)
+        return;
+    t.world_task = t.vtable == vtables[0] || t.vtable == vtables[1];
+    if (!t.world_task)
+        return;
+    t.fields_read = fetch(read, object + kTaskBusy, t.busy) && fetch(read, object + kTaskKind, t.kind) &&
+                    fetch(read, object + kTaskStopFlag, t.stop_flag) && fetch(read, object + kTaskModule, t.module) &&
+                    fetch(read, object + kTaskWorldName, t.name_at);
+    if (!t.fields_read)
+        return;
+    t.name_read = read_cstr(read, t.name_at, t.name, sizeof t.name);
+    if (!t.name_read)
+        std::snprintf(t.name, sizeof t.name, "%s", t.name_at ? "(unreadable)" : "(null)");
+    t.module_read = t.module != 0;
+    if (!t.module_read)
+        return;
+    uint64_t primary = 0;
+    if (fetch(read, t.module + kWorldModulePrimary, primary) && primary)
+        read_world(read, primary, t.primary);
+    read_world_list(read, t.module, kWorldModuleActive, t.active);
+    read_world_list(read, t.module, kWorldModuleStopping, t.stopping);
+    if (t.name_read)
+        for (size_t i = 0; i < t.active.got; i++)
+            if (t.active.world[i].read && name_equal(t.name, t.active.world[i].name))
+                t.active_match++;
+}
+
+template <class Read>
+void capture_worlds(Read &&read, uint64_t loader, uint64_t base, const uint64_t (&vtables)[2], WorldSet &set)
+{
+    set = WorldSet{};
+    set.loader = loader;
+    set.base = base;
+    if (!loader || !fetch(read, loader + kListABegin, set.list_begin) || !fetch(read, loader + kListAEnd, set.list_end))
+        return;
+    if (set.list_end < set.list_begin || (set.list_end - set.list_begin) % kListAStride)
+        return;
+    set.read = true;
+    set.total = size_t((set.list_end - set.list_begin) / kListAStride);
+    size_t n = set.total < kMaxWorldTasks ? set.total : kMaxWorldTasks;
+    for (size_t i = 0; i < n; i++) {
+        uint64_t object = 0;
+        if (!fetch(read, set.list_begin + i * kListAStride, object))
+            break;
+        set.task[i].index = i;
+        read_world_task(read, object, vtables, set.task[i]);
+        set.got = i + 1;
+    }
+}
+
+inline void world_name_into(char *out, size_t cap, const char *name) { std::snprintf(out, cap, "\"%s\"", name); }
+
+inline size_t same_name_tasks(const WorldSet &set, const WorldTask &t)
+{
+    size_t n = 0;
+    if (!t.name_read)
+        return 0;
+    for (size_t i = 0; i < set.got; i++)
+        if (set.task[i].name_read && name_equal(set.task[i].name, t.name))
+            n++;
+    return n;
+}
+
 struct Seen {
     bool hooked = false;
     uint64_t at = 0, ms = 0, calls = 0;
@@ -342,6 +571,11 @@ struct Snapshot {
     bool unload_proven = false;
     char unload_proof[320] = {};
     uint64_t spawn_vtable = 0;
+    bool world_proven = false;
+    char world_proof[320] = {};
+    uint64_t world_vtable[2] = {};
+    uint64_t image_base = 0;
+    WorldSet worlds;
     Unload unload_gates;
     size_t list_a_total = 0, list_c_total = 0, list_a_read = 0, list_c_read = 0;
     Module list_a[kMaxModules], list_c[kMaxModules];
@@ -443,6 +677,9 @@ template <class Read> void capture_unload(Read &read, Snapshot &s)
     u = Unload{};
     s.list_a_total = s.list_c_total = s.list_a_read = s.list_c_read = 0;
     s.spawning = Spawning{};
+    s.worlds = WorldSet{};
+    if (s.world_proven)
+        capture_worlds(read, s.at, s.image_base, s.world_vtable, s.worlds);
     if (!s.unload_proven)
         return;
     u.read = fetch(read, s.at + kGate0c, u.gate_0c) && fetch(read, s.at + kGate10, u.gate_10) &&
@@ -784,6 +1021,95 @@ inline void spawning_text(stall_order::Out &o, const Snapshot &s, Namer name)
           sp.ids_total, live, not_ready, active);
 }
 
+inline const char *kind_text(uint32_t k) { return k == 0 ? "primary world" : k == 1 ? "secondary world" : "unknown kind"; }
+
+inline void rva_into(char *out, size_t cap, uint64_t at, uint64_t base)
+{
+    if (base && at >= base)
+        std::snprintf(out, cap, "F1_25.exe+0x%llx", (unsigned long long)(at - base));
+    else
+        std::snprintf(out, cap, "0x%llx", (unsigned long long)at);
+}
+
+inline void world_text(stall_order::Out &o, const char *label, const World &w)
+{
+    char n[kNameMax + 4];
+    world_name_into(n, sizeof n, w.name);
+    if (!w.read) {
+        o.put("      %s 0x%llx: not readable\n", label, (unsigned long long)w.object);
+        return;
+    }
+    o.put("      %s 0x%llx %s state +0x200 0x%x, stop pending +0x218 %u%s\n", label, (unsigned long long)w.object, n, w.state,
+          w.stop_pending, w.stop_refused() ? ", a stop request would be refused (0x25)" : "");
+}
+
+inline void world_list_text(stall_order::Out &o, const char *label, const WorldList &l)
+{
+    if (!l.read) {
+        o.put("    module %s: not readable\n", label);
+        return;
+    }
+    o.put("    module %s: %zu world(s)\n", label, l.total);
+    for (size_t i = 0; i < l.got; i++) {
+        char b[24];
+        std::snprintf(b, sizeof b, "#%zu", i);
+        world_text(o, b, l.world[i]);
+    }
+    if (l.got < l.total)
+        o.put("      %zu more not shown\n", l.total - l.got);
+}
+
+inline void world_tasks_text(stall_order::Out &o, const Snapshot &s)
+{
+    if (!s.world_proven) {
+        o.put("  world tasks not decoded: %s\n", s.world_proof);
+        return;
+    }
+    const WorldSet &w = s.worlds;
+    if (!w.read) {
+        o.put("  world tasks: the +0x200 list is not readable\n");
+        return;
+    }
+    o.put("  world tasks in the +0x200 list (the busy byte +0x88 is cleared only by the world stop callback):\n");
+    for (size_t i = 0; i < w.got; i++) {
+        const WorldTask &t = w.task[i];
+        char v[48], n[kNameMax + 4];
+        if (!t.read) {
+            o.put("    #%zu object 0x%llx: not readable\n", i, (unsigned long long)t.object);
+            continue;
+        }
+        rva_into(v, sizeof v, t.vtable, w.base);
+        if (!t.world_task) {
+            o.put("    #%zu object 0x%llx vtable %s: not a world task\n", i, (unsigned long long)t.object, v);
+            continue;
+        }
+        if (!t.fields_read) {
+            o.put("    #%zu object 0x%llx vtable %s: fields not readable\n", i, (unsigned long long)t.object, v);
+            continue;
+        }
+        world_name_into(n, sizeof n, t.name);
+        o.put("    #%zu object 0x%llx vtable %s: busy +0x88 %u, kind +0xc8 %u (%s), stop flag +0xcc %u, name +0xa0 %s, "
+              "module +0x60 0x%llx\n",
+              i, (unsigned long long)t.object, v, t.busy, t.kind, kind_text(t.kind), t.stop_flag, n,
+              (unsigned long long)t.module);
+        if (!t.module_read) {
+            o.put("    module not set\n");
+            continue;
+        }
+        if (t.primary.object)
+            world_text(o, "module +0xe8 primary world", t.primary);
+        else
+            o.put("      module +0xe8 primary world: none\n");
+        world_list_text(o, "+0xf0 active worlds", t.active);
+        world_list_text(o, "+0xf8 stopping worlds", t.stopping);
+        if (t.kind == 1 && t.name_read)
+            o.put("    this name is in the +0xf0 list %zu time(s), %zu task(s) in the +0x200 list carry it\n", t.active_match,
+                  same_name_tasks(w, t));
+    }
+    if (w.got < w.total)
+        o.put("  %zu more task(s) not shown\n", w.total - w.got);
+}
+
 inline void unload_text(stall_order::Out &o, const Snapshot &s, Namer name)
 {
     if (!s.unload_proven) {
@@ -810,6 +1136,35 @@ inline void unload_text(stall_order::Out &o, const Snapshot &s, Namer name)
           (unsigned long long)u.list_c_end, s.list_c_total, s.list_c_total == 1 ? "y" : "ies");
     modules_text(o, "C", s.list_c, s.list_c_read, s.list_c_total, name);
     spawning_text(o, s, name);
+    world_tasks_text(o, s);
+}
+
+inline size_t entering_line(const WorldSet &w, size_t i, char *out, size_t cap)
+{
+    const WorldTask &t = w.task[i];
+    char v[48];
+    if (!t.read)
+        return size_t(
+            std::snprintf(out, cap, "unload entering: module #%zu object 0x%llx not readable", i, (unsigned long long)t.object));
+    rva_into(v, sizeof v, t.vtable, w.base);
+    if (!t.world_task)
+        return size_t(std::snprintf(out, cap, "unload entering: module #%zu vtable %s (not a world task)", i, v));
+    if (!t.fields_read)
+        return size_t(std::snprintf(out, cap, "unload entering: module #%zu vtable %s world task fields not readable", i, v));
+    char n[kNameMax + 4];
+    world_name_into(n, sizeof n, t.name);
+    const World *own = t.kind == 0 ? &t.primary : nullptr;
+    for (size_t k = 0; !own && k < t.active.got; k++)
+        if (t.active.world[k].read && name_equal(t.active.world[k].name, t.name))
+            own = &t.active.world[k];
+    char st[96] = "no world found";
+    if (own && own->read)
+        std::snprintf(st, sizeof st, "world 0x%llx state 0x%x stop pending %u", (unsigned long long)own->object, own->state,
+                      own->stop_pending);
+    return size_t(std::snprintf(out, cap,
+                                "unload entering: module #%zu vtable %s kind %u name %s busy %u, stop flag %u, %s, "
+                                "%zu active and %zu stopping world(s)",
+                                i, v, t.kind, n, t.busy, t.stop_flag, st, t.active.total, t.stopping.total));
 }
 
 inline size_t text(const Snapshot &s, char *out, size_t cap, Namer name)

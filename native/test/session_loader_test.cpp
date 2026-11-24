@@ -731,6 +731,194 @@ static void unload_unreadable()
     CHECK(has(g_out, "request not readable"));
 }
 
+struct WorldFixture {
+    Mem m;
+    uint64_t at = 0, list = 0, mod = 0, vt_primary = 0x14757e8ba0ull, vt_secondary = 0x1475a8f650ull;
+    uint64_t vts[2] = {};
+    uint64_t base = 0x140000000ull;
+    uint64_t worlds[3] = {};
+
+    uint64_t cstr(const char *text)
+    {
+        uint64_t a = m.alloc(strlen(text) + 1);
+        std::memcpy(m.at(a, strlen(text) + 1), text, strlen(text) + 1);
+        return a;
+    }
+
+    uint64_t world(const char *name, uint32_t state, uint8_t pending)
+    {
+        uint64_t w = m.alloc(0x300);
+        m.put<uint64_t>(w + sl::kWorldName, cstr(name));
+        m.put<uint32_t>(w + sl::kWorldState, state);
+        m.put<uint8_t>(w + sl::kWorldStopPending, pending);
+        return w;
+    }
+
+    uint64_t vec(const std::vector<uint64_t> &items)
+    {
+        uint64_t holder = m.alloc(0x20), data = m.alloc(items.size() * 8 + 8);
+        for (size_t i = 0; i < items.size(); i++)
+            m.put<uint64_t>(data + i * 8, items[i]);
+        m.put<uint64_t>(holder + sl::kVecBegin, data);
+        m.put<uint64_t>(holder + sl::kVecEnd, data + items.size() * 8);
+        return holder;
+    }
+
+    uint64_t task(uint64_t vtable, uint8_t busy, uint32_t kind, uint8_t stop, const char *name)
+    {
+        uint64_t t = m.alloc(0x100);
+        m.put<uint64_t>(t + sl::kModuleVtable, vtable);
+        m.put<uint8_t>(t + sl::kTaskBusy, busy);
+        m.put<uint32_t>(t + sl::kTaskKind, kind);
+        m.put<uint8_t>(t + sl::kTaskStopFlag, stop);
+        m.put<uint64_t>(t + sl::kTaskModule, mod);
+        m.put<uint64_t>(t + sl::kTaskWorldName, name ? cstr(name) : 0);
+        return t;
+    }
+
+    WorldFixture(uint32_t second_state, uint8_t second_pending, const char *name2)
+    {
+        vts[0] = base + 0x57e8ba0;
+        vts[1] = base + 0x5a8f650;
+        vt_primary = vts[0];
+        vt_secondary = vts[1];
+        at = m.alloc(sl::kRaw);
+        list = m.alloc(0x40);
+        mod = m.alloc(0x100);
+        uint64_t primary = world("primary_track", 0x7d2, 0);
+        worlds[0] = world("secondary_a", 0x7d2, 0);
+        worlds[1] = world("secondary_b", second_state, second_pending);
+        m.put<uint64_t>(mod + sl::kWorldModulePrimary, primary);
+        m.put<uint64_t>(mod + sl::kWorldModuleActive, vec({worlds[0], worlds[1]}));
+        m.put<uint64_t>(mod + sl::kWorldModuleStopping, vec({}));
+        uint64_t t0 = task(vt_primary, 1, 0, 1, nullptr), t1 = task(vt_secondary, 1, 1, 1, "Secondary_A"),
+                 t2 = task(vt_secondary, 1, 1, 1, name2);
+        uint64_t other_vt = m.alloc(0x40), t3 = m.alloc(0x40);
+        m.put<uint64_t>(t3 + sl::kModuleVtable, other_vt);
+        m.put<uint64_t>(list, t0);
+        m.put<uint64_t>(list + 8, t1);
+        m.put<uint64_t>(list + 16, t2);
+        m.put<uint64_t>(list + 24, t3);
+        m.put<uint64_t>(at + sl::kListABegin, list);
+        m.put<uint64_t>(at + sl::kListAEnd, list + 32);
+    }
+};
+
+static void world_tasks()
+{
+    WorldFixture f(0x7d6, 0, "secondary_b");
+    sl::WorldSet set;
+    sl::capture_worlds(f.m.reader(), f.at, f.base, f.vts, set);
+    CHECK(set.read && set.total == 4 && set.got == 4);
+    const sl::WorldTask &t0 = set.task[0], &t1 = set.task[1], &t2 = set.task[2], &t3 = set.task[3];
+    CHECK(t0.world_task && t0.fields_read && t0.busy == 1 && t0.kind == 0 && t0.stop_flag == 1);
+    CHECK(!std::strcmp(t0.name, "(null)") && t0.primary.read && !std::strcmp(t0.primary.name, "primary_track"));
+    CHECK(t1.world_task && t1.kind == 1 && !std::strcmp(t1.name, "Secondary_A") && t1.active.total == 2 && t1.active.got == 2);
+    CHECK(t1.active_match == 1 && sl::same_name_tasks(set, t1) == 1);
+    CHECK(t1.active.world[0].state == 0x7d2 && !t1.active.world[0].stop_refused());
+    CHECK(t1.active.world[1].state == 0x7d6 && t1.active.world[1].stop_refused());
+    CHECK(t2.active_match == 1 && t1.stopping.read && t1.stopping.total == 0);
+    CHECK(t3.read && !t3.world_task);
+
+    sl::Snapshot &s = fresh(f.at);
+    s.world_proven = true;
+    s.image_base = f.base;
+    s.world_vtable[0] = f.vts[0];
+    s.world_vtable[1] = f.vts[1];
+    sl::capture(f.m.reader(), s);
+    CHECK(s.worlds.read && s.worlds.got == 4);
+    sl::text(s, g_out, sizeof g_out, namer);
+    CHECK(has(g_out, "world tasks in the +0x200 list"));
+    CHECK(has(g_out, "#2 object 0x"));
+    CHECK(has(g_out, "vtable F1_25.exe+0x5a8f650: busy +0x88 1, kind +0xc8 1 (secondary world), stop flag +0xcc 1, name +0xa0 "
+                     "\"secondary_b\""));
+    CHECK(has(g_out, "vtable F1_25.exe+0x57e8ba0: busy +0x88 1, kind +0xc8 0 (primary world)"));
+    CHECK(has(g_out, "module +0xf0 active worlds: 2 world(s)"));
+    CHECK(has(g_out, "state +0x200 0x7d6, stop pending +0x218 0, a stop request would be refused (0x25)"));
+    CHECK(has(g_out, "module +0xf8 stopping worlds: 0 world(s)"));
+    CHECK(has(g_out, "this name is in the +0xf0 list 1 time(s), 1 task(s) in the +0x200 list carry it"));
+    CHECK(has(g_out, "vtable F1_25.exe+0x"));
+    CHECK(has(g_out, "not a world task"));
+
+    char line[640];
+    sl::entering_line(set, 2, line, sizeof line);
+    CHECK(has(line, "unload entering: module #2 vtable F1_25.exe+0x5a8f650 kind 1 name \"secondary_b\" busy 1, stop flag 1, "
+                    "world 0x"));
+    CHECK(has(line, "state 0x7d6 stop pending 0, 2 active and 0 stopping world(s)"));
+    sl::entering_line(set, 0, line, sizeof line);
+    CHECK(has(line, "module #0 vtable F1_25.exe+0x57e8ba0 kind 0 name \"(null)\" busy 1"));
+    CHECK(has(line, "world 0x") && has(line, "state 0x7d2"));
+    sl::entering_line(set, 3, line, sizeof line);
+    CHECK(has(line, "module #3 vtable 0x") && has(line, "(not a world task)"));
+
+    WorldFixture dup(0x7d2, 1, "SECONDARY_A");
+    sl::capture_worlds(dup.m.reader(), dup.at, dup.base, dup.vts, set);
+    CHECK(sl::same_name_tasks(set, set.task[1]) == 2 && set.task[1].active.world[1].stop_refused());
+    sl::text(s, g_out, sizeof g_out, namer);
+
+    WorldFixture none(0x7d2, 0, "nowhere");
+    sl::capture_worlds(none.m.reader(), none.at, none.base, none.vts, set);
+    CHECK(set.task[2].active_match == 0);
+}
+
+static void world_unreadable()
+{
+    WorldFixture f(0x7d2, 0, "secondary_b");
+    f.m.regions.erase(f.mod);
+    sl::WorldSet set;
+    sl::capture_worlds(f.m.reader(), f.at, f.base, f.vts, set);
+    CHECK(set.read && set.task[1].fields_read && !set.task[1].active.read && set.task[1].active_match == 0);
+    sl::Snapshot &s = fresh(f.at);
+    s.world_proven = true;
+    s.image_base = f.base;
+    s.world_vtable[0] = f.vts[0];
+    s.world_vtable[1] = f.vts[1];
+    sl::capture(f.m.reader(), s);
+    sl::text(s, g_out, sizeof g_out, namer);
+    CHECK(has(g_out, "module +0xf0 active worlds: not readable"));
+    char line[640];
+    sl::entering_line(set, 1, line, sizeof line);
+    CHECK(has(line, "no world found") && has(line, "0 active and 0 stopping"));
+
+    sl::capture_worlds([](uint64_t, void *, size_t) { return false; }, f.at, f.base, f.vts, set);
+    CHECK(!set.read && set.got == 0);
+
+    WorldFixture g(0x7d2, 0, "secondary_b");
+    g.m.put<uint64_t>(g.at + sl::kListAEnd, g.list + 31);
+    sl::capture_worlds(g.m.reader(), g.at, g.base, g.vts, set);
+    CHECK(!set.read);
+    g.m.put<uint64_t>(g.at + sl::kListAEnd, g.list + 32);
+    uint64_t holder = 0;
+    std::memcpy(&holder, g.m.at(g.mod + sl::kWorldModuleActive, 8), 8);
+    g.m.put<uint64_t>(holder + sl::kVecEnd, 3);
+    sl::capture_worlds(g.m.reader(), g.at, g.base, g.vts, set);
+    CHECK(set.task[1].fields_read && !set.task[1].active.read);
+
+    s.world_proven = false;
+    std::snprintf(s.world_proof, sizeof s.world_proof, "proven on Steam only");
+    sl::capture(f.m.reader(), s);
+    sl::text(s, g_out, sizeof g_out, namer);
+    CHECK(has(g_out, "  world tasks not decoded: proven on Steam only\n"));
+}
+
+static void world_names()
+{
+    Mem m;
+    uint64_t a = m.alloc(0x20);
+    char out[16];
+    std::memcpy(m.at(a, 4), "ab\x01z", 4);
+    CHECK(sl::read_cstr(m.reader(), a, out, sizeof out) && !std::strcmp(out, "ab?z"));
+    uint64_t b = m.alloc(0x40);
+    std::memset(m.at(b, 0x40), 'x', 0x40);
+    CHECK(sl::read_cstr(m.reader(), b, out, sizeof out) && std::strlen(out) == 15 && !std::strcmp(out + 12, "..."));
+    CHECK(!sl::read_cstr(m.reader(), 0, out, sizeof out) && !sl::read_cstr(m.reader(), 0xdead0000, out, sizeof out));
+    CHECK(sl::name_equal("Ab", "aB") && !sl::name_equal("ab", "abc") && !sl::name_equal("", "a"));
+    namespace bp = runtime::build_proof;
+    uint64_t v[2];
+    CHECK(sl::world_task_vtables(bp::Build::steam_1_0_145, v) && v[0] == 0x57e8ba0 && v[1] == 0x5a8f650);
+    CHECK(!sl::world_task_vtables(bp::Build::ea_1_0_145, v) && !sl::world_task_vtables(bp::Build::kb, v));
+}
+
 static void spawn_vtables()
 {
     namespace bp = runtime::build_proof;
@@ -761,6 +949,9 @@ int main()
     unload_gates_spawning();
     gate_verdicts();
     unload_unreadable();
+    world_tasks();
+    world_unreadable();
+    world_names();
     if (g_fail) {
         std::printf("session_loader: %d failure(s)\n", g_fail);
         return 1;
