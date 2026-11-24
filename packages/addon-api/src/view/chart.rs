@@ -2,6 +2,10 @@
 //! Helpers should send these blocks only when `Hello.capabilities` contains
 //! `view.chart`. Older launchers cannot deserialize the new block variant.
 use serde::{Deserialize, Serialize};
+mod options;
+pub use options::*;
+#[cfg(test)]
+mod options_tests;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Chart {
@@ -18,6 +22,10 @@ pub struct Chart {
     pub y: ChartAxis,
     #[serde(default)]
     pub series: Vec<ChartSeries>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub options: Option<Box<ChartOptions>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub images: Vec<ChartImage>,
 }
 
 fn default_height() -> f32 {
@@ -128,6 +136,8 @@ pub struct ChartCell {
     pub color: Option<String>,
     #[serde(default)]
     pub label: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<Box<ChartBlockStyle>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -156,6 +166,10 @@ pub struct ChartSeries {
     pub color: Option<String>,
     #[serde(flatten)]
     pub data: ChartData,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub line_width: Option<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub blocks: Option<Box<ChartBlockStyle>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -212,6 +226,7 @@ impl Chart {
     /// Bounded validation is shared by Rust addons and the native renderer. Bad chart
     /// data becomes an inline error; it must not take down the helper or UI.
     pub fn validate(&self) -> Result<(), String> {
+        self.validate_options()?;
         if self.id.is_empty() || self.id.len() > 256 {
             return Err("Chart needs an id (1–256 bytes).".into());
         }

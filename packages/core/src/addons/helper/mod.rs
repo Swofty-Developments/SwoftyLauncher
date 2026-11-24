@@ -661,6 +661,7 @@ fn hello(cx: &Cx) -> Hello {
         host_calls: host_calls(cx),
         capabilities: vec![
             swofty_addon::helper::VIEW_CHART.into(),
+            swofty_addon::helper::VIEW_CHART_OPTIONS.into(),
             swofty_addon::helper::VIEW_CELL_IMAGE_DATA.into(),
             swofty_addon::helper::BUILD_READS.into(),
         ],

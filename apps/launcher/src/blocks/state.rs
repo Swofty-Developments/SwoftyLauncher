@@ -89,7 +89,7 @@ pub(crate) struct ColumnDrag {
 #[derive(Default)]
 pub(crate) struct Blocks {
     pub(super) image_data: RefCell<super::image_data::Images>,
-    pub(crate) charts: HashMap<String, (u64, std::sync::Arc<super::chart::Scene>)>,
+    pub(crate) charts: HashMap<String, PreparedChart>,
     pub(crate) forms: HashMap<String, FormSlot>,
     pub(crate) searches: HashMap<String, SearchSlot>,
     pub(crate) sorts: HashMap<String, (String, bool)>,
@@ -102,4 +102,10 @@ pub(crate) struct Blocks {
     pub(crate) cell: Option<CellEdit>,
     pub(crate) colour: Option<ColourEdit>,
     pub(crate) pending_cells: HashMap<String, String>,
+}
+
+pub(crate) struct PreparedChart {
+    pub(crate) generation: u64,
+    pub(crate) scene: std::sync::Arc<super::chart::Scene>,
+    pub(crate) pictures: super::chart::Pictures,
 }
