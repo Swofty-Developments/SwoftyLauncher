@@ -731,8 +731,19 @@ static void unload_unreadable()
     CHECK(has(g_out, "request not readable"));
 }
 
+static void spawn_vtables()
+{
+    namespace bp = runtime::build_proof;
+    CHECK(sl::spawn_vtable_rva(bp::Build::steam_1_0_145) == 0x58628b0);
+    CHECK(sl::spawn_vtable_rva(bp::Build::ea_1_0_145) == 0x5974bd0);
+    CHECK(sl::spawn_vtable_rva(bp::Build::kb) == 0);
+    CHECK(sl::spawn_vtable_rva(bp::Build::ea) == 0);
+    CHECK(sl::spawn_vtable_rva(bp::Build::unknown) == 0);
+}
+
 int main()
 {
+    spawn_vtables();
     lookups(63, 32, 0);
     lookups(255, 16, 1);
     lookups(31, 32, 0);
