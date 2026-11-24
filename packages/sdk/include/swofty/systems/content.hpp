@@ -111,15 +111,15 @@ struct PackageUi {
 SWOFTY_RECORD(PackageUi, package, textures, root, srgb, archives)
 SWOFTY_RECORD_REGISTRY(PackageUi, "ui.per_package")
 
-enum class BoxAssetKind { garage, sponsors, marshals, crowd, principal, scene, other };
-SWOFTY_ENUM(BoxAssetKind, garage, sponsors, marshals, crowd, principal, scene, other)
+enum class BoxAssetKind { garage, sponsors, marshals, crowd, principal, scene, world, other };
+SWOFTY_ENUM(BoxAssetKind, garage, sponsors, marshals, crowd, principal, scene, world, other)
 
 // Stock-named resources only one box's sessions load: a folder of .dds and .png files the core packs (the
 // teams::Garage way), or a ready .erp of the addon. The archive is listed first in the asset groups of the box's
 // cars (every car, or one team entry's), so a session of any other box never loads it. The game keeps the first
 // copy of a name it loads, so it only shows where the cars load before the stock archive (docs: box-assets).
 struct BoxAssets {
-    static constexpr Version version{1, 1};
+    static constexpr Version version{1, 2};
     Ref<Package> package;
     BoxAssetKind kind = BoxAssetKind::other;
     std::string entry;                  // the key of one team entry of the package; empty: every car of the box
@@ -128,7 +128,7 @@ struct BoxAssets {
     bool srgb = true;                   // a .png is encoded as sRGB BC7
     Path archive;                       // or a ready .erp archive of the addon
     std::vector<std::string> resources; // the eaid:// name prefixes it may hold (required with archive)
-    std::vector<std::string> groups;    // kind scene: the stock scene asset groups (.assetgroup) that read the archive first
+    std::vector<std::string> groups;    // kind scene / world: the stock asset groups (.assetgroup) that read the archive first
     json::Value extra;
 };
 SWOFTY_RECORD(BoxAssets, package, kind, entry, textures, root, srgb, archive, resources, groups)
