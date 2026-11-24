@@ -78,12 +78,12 @@ What one record composes:
 
 | archive | into | holds |
 |---|---|---|
-| `hud_screen_scene.erp` | flow_race, flow_options, persistent | the grown cap with the live root `<prefix>` and the editor copy `<prefix>_pv`, the standings table with the `<prefix>_host` instance, the table's `.uipre` (stock board hidden in the HUD editor, the cap's graphics and the live root hidden inside the host, the copy shown and its texts filled), the sprites, the restyled scenes |
+| `hud_screen_scene.erp` | flow_race, flow_options, persistent | the record's own host scene `driver_position_bottom_cap_<prefix>.idf` (a copy of the cap with the live root `<prefix>` and the editor copy `<prefix>_pv`; the stock cap stays as the game has it), the standings table with the `<prefix>_host` instance of it, the table's `.uipre` (stock board hidden in the HUD editor, the cap's graphics and the live root hidden inside the host, the copy shown and its texts filled), the sprites, the restyled scenes |
 | `hud_template.erp` | flow_race, flow_options | `hud_dynamic_templates.ui` with `<prefix>_ctl` under `hud_track_position.osd_visibility_option.track_position`, the `stock_nodes` groups and the restyle's static hides |
 | `hud_spectator.erp` | flow_race, screens/hud_spectator_2 | `hud_spectator_2.ui` with `<prefix>_ctl` under `hud_spectator_2.content`, and the spectator table scene with its `<prefix>_host` |
 | `hud_replay.erp` | flow_replay, screens/replays_and_highlights | `replays_and_highlights.ui` with `<prefix>_ctl` under the screen root, and the replay scene with its `<prefix>_host` |
 | `hud_replay_scene.erp` | flow_frontend | the replay scene again (that archive has the scene without the template) |
-| `hud_screen_scene_2.erp` | screens/hud, screens/hud_player_1, screens/hud_player_2 | the cap and its anim string table, the standings table and its `.uipre`, the restyled Race Control scenes, with the sprites and clips of `hud_screen_scene.erp`: the six archives that carry the cap all get the composed copy |
+| `hud_screen_scene_2.erp` | screens/hud, screens/hud_player_1, screens/hud_player_2 | the standings table and its `.uipre`, the cap's anim string table when a record has clips, the restyled Race Control scenes, with the host scenes, sprites and clips of `hud_screen_scene.erp`: the six archives that carry the standings table all get the composed copy |
 
 ## The control group
 
@@ -97,8 +97,6 @@ hud_track_position.osd_visibility_option.track_position
     host_n        <prefix>_host     visible <- show, default false
       v_cap       pill_rotation_anim   visible = false  (the cap's own graphics)
       v_pv        <prefix>_pv          visible = false  (the editor copy)
-      o_<other>   <other>              visible = false  (each other screen record's root)
-      o_<other>_pv  <other>_pv         visible = false  (and its editor copy)
       root_n      <prefix>            visible = true   (replay: <- show_drivers_list; spectator: <- show_left_side)
       h_trial     <prefix>_trial       visible = false  (also.<screen>.hide, this screen only)
       v_r00       <prefix>_r00         visible <- hud_tt_r00_on
@@ -110,8 +108,6 @@ hud_track_position.osd_visibility_option.track_position
     clock_fmt     UITF  #session.time_remaining -> time_remaining_str (or clock.output); formatTime <- trigger
     mv_clock      MVCD on clock.start: state 1 -> clock_fmt.formatTime
     d_tt          MVCD on a decision's path (standings only)
-  bottom_cap
-    <prefix>_sn1  v_<prefix>  visible = false   (the stock cap instance never shows the elements)
 ```
 
 `also.<the record's own screen>` takes only `hide`: those elements stay off the record's own screen
@@ -120,17 +116,16 @@ hud_track_position.osd_visibility_option.track_position
 `isHidden` on a scene element does not hide it in game, so every static hide here is a template node:
 `hidden: true` on an element, `also.<screen>.hide`, the cap's graphics and the editor copy.
 
-All screen records grow the one cap scene, so every `<prefix>_host` instance holds every record's
-root and editor copy. With two or more screen records (from one addon or several), each record's
-`host_n` gets an `o_<other>` and an `o_<other>_pv` node per other record, so one record's elements
-never draw inside another's host; the `.uipre` hides the same two elements inside each host for the
-HUD editor. These are childless template nodes: `2 x (records - 1)` per record and screen, one walk
-slot each, plus one child-list slot on `host_n` for every eight more children. The host scene itself
-does not grow. The build lists the count per record and screen.
+Each screen record has a host scene of its own, `driver_position_bottom_cap_<prefix>.idf`: a copy of
+the cap that holds only that record's root and editor copy, under the cap's anim, mesh and material
+names. Every `<prefix>_host` instance, on every screen the record names, references it (`fileRef`
+and `xref`, with the cap's material binding kept). The stock board's own cap instance draws the cap as
+the game has it, so it holds no record and needs no hides, and no record's elements draw inside
+another record's host.
 
-Every screen record also adds its own host instance to the board, so a board holds the cap scene
-once per record plus the stock one: `(1 + records) x (cap + every record)` walk slots. A family of
-addons that each must work alone (a season per addon, say) can carry one shared record instead of
+A board holds the bare cap once and each record's host once: `(1 + records) x cap + every record`
+walk slots. A family of addons that each must work alone (a season per addon, say) can carry one
+shared record instead of
 one each: when several addons bring a record with the same key, the same explicit `prefix`, equal
 fields and the same bytes in every sprite, the build composes it once, from the first addon in the
 load order, and prints `<prefix>: <addon> brings the same record <key> as <first>; composed once`
@@ -162,38 +157,38 @@ board while its own `show` leaf is true, and the board shows only while every le
 composer writes these scenes only with two or more records on the screen. A screen spelled out
 names each mask's scene in `mask_scenes`; without it, the wrappers go into the instance scene.
 
-The host instances need nothing of this: each record shows its own `<prefix>_host`, and `o_<other>`
-hides the other records' roots inside it.
+The host instances need nothing of this: each record's `<prefix>_host` instances its own host scene.
 
 ### How big a board can grow
 
 The game walks a screen's UI tree as one flat list of 16-byte slots with 16-bit child indices, so one
-tree holds at most 65,536 slots. A board holds the host scene once for the stock cap and once per
-screen record on the screen, and every host instance holds every record's root and editor copy:
+tree holds at most 65,536 slots. A board holds the stock cap once and the host scene of each screen
+record on the screen once, and each host holds the cap and its own record's root and editor copy:
 
 ```text
-board      = (1 + records on the screen) x host scene slots
+board      = (1 + records on the screen) x cap slots + every record's root and editor copy
 race tree  = board + about 17,500 slots of the rest of the race HUD
 HUD editor = 3 x board + 816
 ```
 
-SWOFTY 2010, SWOFTY 2011 and TV Timing Tower on the standings make a 14,101-slot host scene, a
-56,404-slot board and a race tree of about 73,904 slots. The build stops before the game starts,
-naming every addon with a record on the screen and the ones whose removal alone brings the tree
-inside the limit:
+SWOFTY 2010, SWOFTY 2011 and TV Timing Tower on the standings make a 14,125-slot board, a race tree
+of about 31,625 slots and a HUD editor tree of about 43,191. A board past the limit stops the build
+before the game starts, naming every addon with a record on the screen and the ones whose removal
+alone brings the tree inside the limit. Three addons with two 9,510-slot towers each make a
+57,116-slot board and a race tree of about 74,616:
 
 ```text
-the HUD elements do not compose: SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for the game: about 73904 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn SWOFTY 2010, SWOFTY 2011 or TV Timing Tower off in this profile (the board holds the 14101-slot host scene 4 times)
+the HUD elements do not compose: Tower A, Tower B and Tower C together make the Track Position list too big for the game: about 74616 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn Tower A, Tower B or Tower C off in this profile (the board holds 7 host scenes, 57116 walk slots in all)
 ```
 
 A standings board whose HUD editor tree passes the limit while the race tree fits still builds, and
 the race HUD is unchanged. The build gives a warning that names every addon with a record on the
-standings and the ones whose removal alone brings the HUD editor tree inside the limit. SWOFTY 2010,
-SWOFTY 2011 and a 2,708-slot tower make a 7,299-slot host scene, a race tree of about 46,696 slots
-and a HUD editor tree of about 88,404:
+standings and the ones whose removal alone brings the HUD editor tree inside the limit. Three
+9,510-slot towers make a 28,562-slot board, a race tree of about 46,062 slots and a HUD editor tree
+of about 86,502:
 
 ```text
-SWOFTY 2010, SWOFTY 2011 and Tower together make the Track Position list too big for HUD customisation (OSD Customization in the pause menu): about 88404 of the 65536 slots one screen can hold, and the game closes when it opens. Races show the list as before. Turn SWOFTY 2010, SWOFTY 2011 or Tower off in this profile before you open HUD customisation (it holds the 7299-slot host scene 12 times)
+Tower A, Tower B and Tower C together make the Track Position list too big for HUD customisation (OSD Customization in the pause menu): about 86502 of the 65536 slots one screen can hold, and the game closes when it opens. Races show the list as before. Turn Tower A, Tower B or Tower C off in this profile before you open HUD customisation (it holds the board 3 times, 4 host scenes of 28562 walk slots each time)
 ```
 
 The warning is in the build log and in the profile's conflict report (`hud_editor` in
@@ -402,10 +397,9 @@ The HUD customisation menu draws the standings table with no template running, s
 root never shows there. The composer builds a second copy of the elements, `<prefix>_pv`, from
 `editor.preview` (keyed by the substituted leaf names, as for a dial) with a top-level `repeat` cut to
 `editor.rows` copies, and writes the table's `.uipre` with nested setters under the host instance:
-`mask` hidden at the top level; inside `<prefix>_host` the cap's `pill_rotation_anim`, `<prefix>` and
-every other screen record's root and copy hidden, `<prefix>_pv` shown and each copy's text filled. In game `host_n` holds a static `v_pv` node
-and the stock cap instance's `bottom_cap` template node gets static hides of both roots, so the copy
-never draws outside the editor. `unit` elements and `tint` bindings are left out of the copy.
+`mask` hidden at the top level; inside `<prefix>_host` the cap's `pill_rotation_anim` and `<prefix>`
+hidden, `<prefix>_pv` shown and each copy's text filled. In game `host_n` holds a static `v_pv` node,
+so the copy never draws outside the editor; the stock cap instance holds no record. `unit` elements and `tint` bindings are left out of the copy.
 
 The `.uipre` starts from the copy other addons' archive changes leave. A setter that copy already has
 with the same value (`mask` hidden by another addon's own copy) is kept once; one with another value
