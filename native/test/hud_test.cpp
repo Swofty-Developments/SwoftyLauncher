@@ -515,8 +515,7 @@ static void test_joy()
     state1[DIJOY_BUTTONS_AT + 2] = 0x80;
     CHECK(joy_mask(state1, sizeof state1, mask) && mask == 1u << 2, "a DIJOYSTATE gives its 32 buttons");
     mask = 7;
-    CHECK(!joy_mask(state2, 256, mask) && !joy_mask(state2, 16, mask) && !joy_mask(nullptr, DIJOYSTATE2_SIZE, mask) &&
-              mask == 7,
+    CHECK(!joy_mask(state2, 256, mask) && !joy_mask(state2, 16, mask) && !joy_mask(nullptr, DIJOYSTATE2_SIZE, mask) && mask == 7,
           "keyboard and mouse states are not joystick states");
 
     JoyDevices d;

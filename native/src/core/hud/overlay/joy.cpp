@@ -63,8 +63,7 @@ void record(void *dev, DWORD size, void *data)
         swofty::log("[overlay] input: game controller slot %d buttons 0x%08x went down", r.slot, r.went_down);
 }
 
-template <int I>
-HRESULT WINAPI get_state(void *self, DWORD size, void *data)
+template <int I> HRESULT WINAPI get_state(void *self, DWORD size, void *data)
 {
     int outer = depth++;
     HRESULT hr = state().original[I].load(std::memory_order_acquire)(self, size, data);
@@ -131,7 +130,8 @@ void setup()
     for (int i = 0; i < HOOKS; i++) {
         if (!fns[i] || (i > 0 && fns[i] == fns[0]))
             continue;
-        auto h = safetyhook::InlineHook::create(fns[i], reinterpret_cast<void *>(detours[i]), safetyhook::InlineHook::StartDisabled);
+        auto h =
+            safetyhook::InlineHook::create(fns[i], reinterpret_cast<void *>(detours[i]), safetyhook::InlineHook::StartDisabled);
         if (!h) {
             swofty::log("[overlay] input: hooking IDirectInputDevice8%s::GetDeviceState failed: %s", names[i],
                         runtime::hook_error(h.error()).c_str());
