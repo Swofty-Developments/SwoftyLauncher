@@ -880,22 +880,22 @@ The 65,536-slot limit is per tree, and the u16 is in the slot format, the walk s
 removal walk. A hook would have to replace the flatten, the walk and the removal together.
 
 ### 11.3 What a composed screen record costs (Swofty `hud` screens)
-Swofty grows ONE host scene (`driver_position_bottom_cap.idf`) with every record's live root and
-its `_pv` editor copy, then each screen gets one `<prefix>_host` eXRef per record that names it,
-and every eXRef instance holds its own node copy of the whole grown cap (a node has one parent
-+0x1a0 and one slot +0x1a8, so an instance cannot share nodes). The stock standings table already
-instances the cap once (`bottom_cap`, Swofty checks its fileRef is the cap). The replay and
-spectator presets clone a stock eXRef that names another scene and retarget it, so the cloned
-element itself is no stock cap instance; whether those other scenes nest a cap eXRef inside was
-not checked (T300 measures the real count).
+Each screen record gets a host scene of its own (`driver_position_bottom_cap_<prefix>.idf`, a copy
+of the cap with only that record's live root and its `_pv` editor copy); each screen gets one
+`<prefix>_host` eXRef per record that names it, pointing at that record's host, and every eXRef
+instance holds its own node copy of the scene it names (a node has one parent +0x1a0 and one slot
++0x1a8, so an instance cannot share nodes). The stock standings table instances the stock cap once
+(`bottom_cap`), which holds no record. The replay and spectator presets clone a stock eXRef that
+names another scene and retarget it, so the cloned element itself is no stock cap instance; whether
+those other scenes nest a cap eXRef inside was not checked (T300 measures the real count).
 
-    slots(tree) = other(tree) + k * cap,   k = sum over boards b in the tree of (s_b + R_b)
-    cap = cap_stock + sum over ALL records r of (live_r + pv_r)
+    slots(tree) = other(tree) + sum over boards b in the tree of (s_b * cap_stock + sum over r in R_b of (cap_stock + live_r + pv_r))
     s_b = stock cap instances on b (standings 1; replay / spectator 0 unless nested), R_b = records whose screen or also names b
 
-With every record on all three boards and all three in one tree: k = 1 + 3R (the requester's
-3 x (1 + R) is safe by 2). The cost is quadratic in R because cap holds every record.
-`walk.rs` (HOST_INSTANCES = 2, own record only) is right only for one record on one board.
+The cost is linear in the records. Before the per-record hosts, ONE grown cap held every record and
+every instance copied all of it, `k * (cap_stock + sum over ALL records)` with `k = sum of (s_b +
+|R_b|)`: quadratic in the records (SWOFTY 2010, SWOFTY 2011 and TV Timing Tower: 4 x 14,101 slots
+on the standings alone). `walk.rs` models one board: the stock cap once and each record's host once.
 
 ### 11.4 `!pkg` references
 - A chunk ref is `0x80 << 24 | offset`. The loader tests bit 31 (set = unresolved file offset)

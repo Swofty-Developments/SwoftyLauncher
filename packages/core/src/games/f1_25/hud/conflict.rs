@@ -79,11 +79,12 @@ pub enum Kind {
         node: String,
     },
     /// The screen records' board on `screen` takes the screen's UI tree past the slots the game can
-    /// index (`walk.rs`): `instances` copies of a `host`-slot host scene, about `slots` in the tree.
-    /// No other addon's change is involved; `off` are the addons that bring it inside on their own.
+    /// index (`walk.rs`): `instances` host scenes (the bare cap and each record's own host) of
+    /// `board` slots between them, about `slots` in the tree. No other addon's change is involved;
+    /// `off` are the addons that bring it inside on their own.
     Walk {
         screen: String,
-        host: usize,
+        board: usize,
         instances: usize,
         slots: usize,
         off: Vec<String>,
@@ -164,8 +165,8 @@ impl Conflict {
                 format!("{theirs}'s template node {node} already shows and hides {element}")
             }
             Kind::Shown { node, .. } => format!("{theirs}'s template node {node}"),
-            Kind::Walk { host, instances, .. } => {
-                format!("the board holds the {host}-slot host scene {instances} times")
+            Kind::Walk { board, instances, .. } => {
+                format!("the board holds {instances} host scenes, {board} walk slots in all")
             }
             Kind::Clips { last, .. } => format!("{theirs}'s anim string table ends at {last}"),
         }
