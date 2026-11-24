@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cstddef>
+#include <vector>
 
 static int failures;
 #define CHECK(c)                                                                                                                 \
@@ -15,7 +16,7 @@ static int failures;
 namespace live = swofty::live;
 
 static int image_getter_calls;
-static const SwoftyLiveImages test_images = {1, nullptr, nullptr, nullptr, nullptr};
+static const SwoftyLiveImages test_images = {1, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 static const SwoftyLiveImages *image_getter()
 {
     ++image_getter_calls;
@@ -117,8 +118,41 @@ static SwoftyLiveTurn turn(int number, float apex)
     return t;
 }
 
+static void portraits()
+{
+    static_assert(offsetof(SwoftyLive, driver_portrait) == offsetof(SwoftyLive, car_detail) + sizeof(void *));
+    static_assert(offsetof(SwoftyLiveImages, start_portraits) == offsetof(SwoftyLiveImages, clear) + sizeof(void *));
+    static_assert(offsetof(SwoftyLiveImages, image_full) == offsetof(SwoftyLiveImages, start_portraits) + sizeof(void *));
+    CHECK(!live::start_portraits() && !live::driver_portrait(3) && !live::portrait_image("eaid://game_rtt_tex_0012"));
+    swofty::fake::Live fake;
+    fake.add_car(3, 1);
+    fake.add_car(4, 2);
+    fake.set_driver_portrait(3, "eaid://game_rtt_tex_0012");
+    std::vector<uint8_t> pixels(600 * 800 * 4, 7);
+    pixels[5] = 9;
+    fake.set_image("eaid://game_rtt_tex_0012", 600, 800, pixels);
+    fake.install();
+    CHECK(live::start_portraits() && fake.portraits_started());
+    CHECK(live::driver_portrait(3) == std::string("eaid://game_rtt_tex_0012"));
+    CHECK(!live::driver_portrait(4) && !live::driver_portrait(5) && !live::driver_portrait(99));
+    auto image = live::driver_portrait_image(3);
+    CHECK(image && image->width == 600 && image->height == 800 && image->rgba == pixels && image->revision);
+    CHECK(!live::driver_portrait_image(4) && !live::portrait_image("eaid://game_rtt_tex_0013"));
+    uint8_t small[16384];
+    uint32_t w = 0, h = 0;
+    uint64_t r = 0;
+    CHECK(live::images()->image_full("eaid://game_rtt_tex_0012", small, sizeof small, &w, &h, &r) == SWOFTY_ASSET_INVALID &&
+          w == 600 && h == 800);
+    fake.set_table_version(6);
+    CHECK(!live::driver_portrait(3) && live::portrait_image("eaid://game_rtt_tex_0012"));
+    fake.set_table_version(SWOFTY_LIVE_VERSION);
+    fake.set_images_version(1);
+    CHECK(!live::start_portraits() && !live::portrait_image("eaid://game_rtt_tex_0012") && live::driver_portrait(3));
+}
+
 int main()
 {
+    portraits();
     image_table_versions();
     tyre_table_versions();
     car_detail_versions();

@@ -698,6 +698,7 @@ void overlay_routes(const std::map<std::string, std::string> &routes)
 
 const SwoftyLiveImages *badge_images::api()
 {
-    static const SwoftyLiveImages api{1, badge_images::start, badge_images::sources, badge_images::image, badge_images::clear};
+    static const SwoftyLiveImages api{1, badge_images::start, badge_images::sources, badge_images::image, badge_images::clear,
+                                      nullptr, nullptr};
     return &api;
 }

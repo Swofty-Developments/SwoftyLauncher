@@ -111,7 +111,7 @@ int main(int argc, char **argv)
         api = table->images();
     } else
         api = badge_images::api();
-    assert(api && api->version == 1 && api->start() == SWOFTY_ASSET_OK);
+    assert(api && api->version == (real ? 2u : 1u) && api->start() == SWOFTY_ASSET_OK);
     std::vector<char> json(32768);
     uint64_t revision = 0;
     if (!real) {

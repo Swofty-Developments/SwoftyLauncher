@@ -13,7 +13,7 @@
 #include "core/runtime/build.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/telemetry/telemetry_feed.hpp"
-#include "core/render/badges/badge_images.hpp"
+#include "core/render/portraits/driver_portraits.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -442,9 +442,10 @@ const SwoftyLive table = {SWOFTY_LIVE_VERSION,
                           live_seq,
                           live_driver_name,
                           live_team_badge_texture,
-                          badge_images::api,
+                          driver_portraits::live_images,
                           live_tyre_icon_texture,
-                          live_car_detail};
+                          live_car_detail,
+                          driver_portraits::driver_portrait};
 
 }
 
