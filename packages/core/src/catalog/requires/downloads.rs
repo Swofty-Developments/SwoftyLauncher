@@ -3,12 +3,11 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Condvar, Mutex, MutexGuard};
 
 use super::install::Event;
 use crate::Result;
-use crate::catalog::{Addon, Version, download, file_name};
+use crate::catalog::{Addon, Version, download_resumable, file_name};
 
 pub(super) type Zips = RefCell<BTreeMap<(String, semver::Version), PathBuf>>;
 
@@ -26,13 +25,12 @@ pub(super) static SHARED: Mutex<BTreeMap<PathBuf, Shared>> = Mutex::new(BTreeMap
 
 pub(super) static SHARED_CHANGED: Condvar = Condvar::new();
 
-pub(super) static PART: AtomicU64 = AtomicU64::new(0);
-
 pub(super) fn shared() -> MutexGuard<'static, BTreeMap<PathBuf, Shared>> {
     SHARED.lock().unwrap_or_else(|e| e.into_inner())
 }
 
 pub(super) fn fetch(
+    root: &Path,
     dir: &Path,
     zips: &Zips,
     addon: &Addon,
@@ -60,15 +58,15 @@ pub(super) fn fetch(
     }
     drop(all);
     progress(Event::Addon(addon, v));
-    let part = path.with_extension(format!(
-        "zip.part-{}-{}",
-        std::process::id(),
-        PART.fetch_add(1, Ordering::Relaxed)
-    ));
-    let result = download(v, &part, &|s| progress(Event::Stage(s)))
-        .and_then(|()| crate::with_retry(&path, || std::fs::rename(&part, &path)));
-    if result.is_err() {
-        std::fs::remove_file(&part).ok();
+    let part = path.with_extension("zip.part");
+    let held = || std::fs::metadata(&part).is_ok_and(|m| m.len() > 0);
+    let result = download_resumable(v, &part, root, &|s| progress(Event::Stage(s))).and_then(|()| {
+        crate::with_retry(&path, || std::fs::rename(&part, &path)).inspect_err(|_| {
+            crate::updates::transfer::discard(&part);
+        })
+    });
+    if result.is_err() && !held() {
+        crate::updates::transfer::discard(&part);
     }
     let mut all = shared();
     if let Some(slot) = all.get_mut(&path) {

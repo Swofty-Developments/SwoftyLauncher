@@ -86,7 +86,7 @@ pub(super) fn install_with(
             match (saved, &v.requires) {
                 (Some(path), _) => requires_in(&path, a, v),
                 (None, Some(listed)) => Ok(listed.clone()),
-                (None, None) => requires_in(&fetch(dir, zips, a, v, progress)?, a, v),
+                (None, None) => requires_in(&fetch(&store.root, dir, zips, a, v, progress)?, a, v),
             }
         };
         let mut planned = plan(addon, v, catalog, &have, &launcher, &mut read)?;
@@ -94,7 +94,7 @@ pub(super) fn install_with(
         for _ in 0..SETTLE {
             progress(Event::Planned(&planned));
             for s in &planned.steps {
-                fetch(dir, zips, &s.addon, &s.version, progress)?;
+                fetch(&store.root, dir, zips, &s.addon, &s.version, progress)?;
             }
             let again = plan(addon, v, catalog, &have, &launcher, &mut read)?;
             if again == planned {
