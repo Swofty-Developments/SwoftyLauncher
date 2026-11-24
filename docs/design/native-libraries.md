@@ -92,6 +92,7 @@ Status: stub. `native/src/core/events/events.cpp` returns `unavailable` from eve
 | `image(paint, id, ...)` | `ok`, or `invalid` for an unknown id |
 | v2: shapes, styled text, `image_uv` / `image_nine` / `image_size`, clip / transform / opacity stacks, `safe_area`, `ui_scale` | present when the core exports `SwoftyCoreOverlayVersion` returning 2 or more |
 | v5: `load_font` / `load_font_memory` (TrueType and OpenType through stb_truetype, glyphs rasterised to SDF atlas pages on first use), `SwoftyTextStyle.font_id`, `polygon_concave` (ear clipping) | present when `SwoftyCoreOverlayVersion` returns 5 or more |
+| v6: `SwoftyInput.joy_connected` / `joy_buttons` / `joy_pressed` (from an inline hook on `IDirectInputDevice8::GetDeviceState` in `dinput8.dll` that reads the game's own `DIJOYSTATE2` reads), mouse buttons for every addon while nobody holds focus | present when `SwoftyCoreOverlayVersion` returns 6 or more |
 
 Drawing uses immediate mode:
 

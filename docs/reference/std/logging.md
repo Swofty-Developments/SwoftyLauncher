@@ -282,7 +282,7 @@ These environment variables change what swofty_core and the loader log. Set them
   [capture] wrote Z:\mnt\work\.f1-pfx\AA\frames\frame-0001.png (1908x1028, format 28, 39 KB, 24 ms off the render thread)
   ```
 
-- `SWOFTY_OVERLAY_KILL=<list>`: turns overlay parts off: `all`, `paint`, `capture` or `hdr`, comma-separated. `"overlay_kill"` in `swofty/assets.json` does the same.
+- `SWOFTY_OVERLAY_KILL=<list>`: turns overlay parts off: `all`, `paint`, `capture`, `hdr`, `input` (the window subclass for mouse and keys), `pad` (the XInput reads) or `joy` (the DirectInput hook for wheel and joystick buttons), comma-separated. `"overlay_kill"` in `swofty/assets.json` does the same.
 - `SWOFTY_OVERLAY_FG`: draws the overlay into the game's back buffer before frame generation, so generated frames carry it. On by default when frame generation is on in the game's settings at start. `SWOFTY_OVERLAY_FG=0` or `"overlay_fg": false` in `swofty/assets.json` turns it off, and keeps the device hooks off for a swapchain that names no present queue; `=1` or `true` turns it on whatever the game's setting.
 - `SWOFTY_OVERLAY_RIVAL=1`: arms the overlay's `Present` hook while RivaTuner Statistics Server is running. Without it the hook stays off and nothing draws over the game. `"overlay_rival": true` in `swofty/assets.json` does the same.
 - `SWOFTY_ARM_SYNC=1`: makes the core's D3D12 hooks (overlay, post-processing, shaders, srv clamp, ray tracing build guard) and their probe device in the core's ready stage, before the game goes on, as before 1.10.0. Without it they are made on a worker while the game boots, and the game's first `D3D12CreateDevice` and `CreateDXGIFactory` calls wait for it. One line says where they are made:
