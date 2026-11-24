@@ -247,6 +247,13 @@ impl Shell {
     }
 
     fn finish_launch(&mut self, probe: &Probe) {
+        if let Some(text) = self.launching.hud_editor_warning(&self.store) {
+            crate::app::app_log::note(&format!("play: {text}"));
+            let note = Notification::warning(text)
+                .title(crate::services::play_checks::hud_editor_title())
+                .autohide(false);
+            self.addons.toasts.push(note);
+        }
         if let Some(failed) = self.launching.follow(&mut self.game, &self.store, probe) {
             self.rooms.launch_ended(failed);
         }

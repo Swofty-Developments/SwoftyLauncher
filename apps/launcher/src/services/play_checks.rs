@@ -91,6 +91,8 @@ pub(crate) struct Checked {
     pub lines: Vec<String>,
     /// On addons whose files are not what their install wrote.
     pub damaged: Vec<Damaged>,
+    /// The notes hold the last build's HUD customisation warning.
+    pub hud_noted: bool,
 }
 
 pub(crate) fn run(inputs: Inputs) -> Checked {
@@ -110,6 +112,7 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
     let mut notes = Vec::new();
     let mut lines = Vec::new();
     let mut damaged = Vec::new();
+    let mut hud_noted = false;
     let verdict = match (
         timings.time("profile", || store.profile(&profile)),
         timings.time("addons", || store.addons()),
@@ -157,6 +160,13 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
                     notes.extend(note);
                     lines.extend(line);
                 });
+                if !p.is_vanilla() {
+                    let last = timings.time("hud", || swofty_core::profile::conflicts::last(&store, &p.name));
+                    if let Some(note) = hud_editor_note(last.as_ref(), &p) {
+                        hud_noted = true;
+                        notes.push(note);
+                    }
+                }
                 registry(&store, &game, &p, &installed, &all, &mut notes, &mut timings)
             }
         }
@@ -173,7 +183,30 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
         timings,
         lines,
         damaged,
+        hud_noted,
     }
+}
+
+pub(crate) fn hud_editor_title() -> &'static str {
+    tr("HUD customisation closes the game")
+}
+
+/// The HUD customisation warning of the profile's last build, while the profile turns on the same
+/// addons in the same order.
+pub(crate) fn hud_editor_note(
+    last: Option<&swofty_core::profile::conflicts::Report>,
+    profile: &swofty_core::profile::Profile,
+) -> Option<Note> {
+    let text = last.filter(|r| r.is_current(profile))?.hud_editor.clone()?;
+    Some(Note::warning(hud_editor_title(), text))
+}
+
+/// The HUD customisation warning of a build made at or after `since`.
+pub(crate) fn fresh_hud_editor(
+    last: Option<swofty_core::profile::conflicts::Report>,
+    since: f64,
+) -> Option<String> {
+    last.filter(|r| r.built_at >= since)?.hud_editor
 }
 
 /// What stops Play when the build would fail on a damaged addon.
@@ -519,6 +552,52 @@ impl Pending {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use swofty_core::profile::conflicts::Report;
+
+    fn hud_report(order: &[&str], built_at: f64, hud_editor: Option<&str>) -> Report {
+        Report {
+            profile: "p".into(),
+            built_at,
+            order: order.iter().map(|s| (*s).to_owned()).collect(),
+            hud_editor: hud_editor.map(str::to_owned),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn play_warns_with_the_last_builds_hud_customisation_text_while_the_load_order_holds() {
+        let mut p = swofty_core::profile::Profile::new("p");
+        for id in ["t.a", "t.b"] {
+            p.set_enabled(id, true).unwrap();
+        }
+        let text = "A and B together make the Track Position list too big for HUD customisation";
+        let last = hud_report(&["t.a", "t.b"], 1.0, Some(text));
+        let note = hud_editor_note(Some(&last), &p).expect("a note");
+        assert_eq!(
+            (note.level, note.title.as_str(), note.body.as_str(), note.sticky),
+            (
+                NoteLevel::Warning,
+                "HUD customisation closes the game",
+                text,
+                true
+            )
+        );
+        assert!(hud_editor_note(Some(&hud_report(&["t.b", "t.a"], 1.0, Some(text))), &p).is_none());
+        assert!(hud_editor_note(Some(&hud_report(&["t.a", "t.b"], 1.0, None)), &p).is_none());
+        assert!(hud_editor_note(None, &p).is_none());
+    }
+
+    #[test]
+    fn a_launch_shows_the_hud_customisation_text_of_its_own_build_only() {
+        let text = "too big for HUD customisation";
+        assert_eq!(
+            fresh_hud_editor(Some(hud_report(&[], 20.0, Some(text))), 10.0).as_deref(),
+            Some(text)
+        );
+        assert!(fresh_hud_editor(Some(hud_report(&[], 5.0, Some(text))), 10.0).is_none());
+        assert!(fresh_hud_editor(Some(hud_report(&[], 20.0, None)), 10.0).is_none());
+        assert!(fresh_hud_editor(None, 10.0).is_none());
+    }
 
     fn note(body: &str) -> Note {
         Note {

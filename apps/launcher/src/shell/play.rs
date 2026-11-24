@@ -103,6 +103,17 @@ impl Launching {
         Some(failed)
     }
 
+    /// The HUD customisation warning of the build this launch made, once the game shows up, unless the
+    /// Play press already showed it.
+    pub(crate) fn hud_editor_warning(&mut self, store: &Store) -> Option<String> {
+        let launch = self.launch.as_mut().filter(|l| l.saw_game && !l.hud_checked)?;
+        launch.hud_checked = true;
+        play_checks::fresh_hud_editor(
+            swofty_core::profile::conflicts::last(store, &launch.profile),
+            launch.at,
+        )
+    }
+
     /// Clears a pending cancel once the build it waited for is gone. True when it just settled.
     pub(crate) fn cancel_settled(&mut self, was_building: bool, still_busy: bool) -> bool {
         let settled = self.cancelling && !still_busy && was_building;
@@ -426,6 +437,7 @@ impl Launching {
             crate::app::app_log::note(line);
         }
         let (launching, needs) = host.split();
+        let hud_noted = checked.hud_noted;
         let stale = played_profile(room.as_ref(), needs.profile) != checked.profile
             || needs.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
         let step = Step::of(stale, checked.gate, checked.verdict);
@@ -504,7 +516,8 @@ impl Launching {
             room.as_ref().map(|r| r.direct_start.as_str()),
             steam_saves_once,
         ) {
-            Ok(l) => {
+            Ok(mut l) => {
+                l.hud_checked = hud_noted;
                 launching.launch = Some(l);
                 Played::Started
             }

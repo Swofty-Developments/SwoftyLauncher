@@ -25,6 +25,9 @@ pub struct Launch {
     pub log: PathBuf,
     pub saw_game: bool,
     pub stage: Option<String>,
+    pub profile: String,
+    /// The build's HUD customisation warning was shown, or looked for once the game showed up.
+    pub hud_checked: bool,
 }
 
 impl Launch {
@@ -89,6 +92,8 @@ impl Launch {
             log,
             saw_game: false,
             stage: None,
+            profile: profile.to_owned(),
+            hud_checked: false,
         })
     }
 
