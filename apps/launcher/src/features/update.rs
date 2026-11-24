@@ -213,7 +213,7 @@ pub(crate) const NOT_RELEASE_FOLDER: &str = "does not run from a release folder"
 
 impl Shell {
     pub(crate) fn update_gate(&self, state: &PlayState) -> Gate {
-        self.updates.gate(holds_updates(state))
+        self.updates.gate(update_held(state, self.updating_addons()))
     }
 
     fn start_updates(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -530,6 +530,11 @@ fn holds_updates(state: &PlayState) -> bool {
     )
 }
 
+/// The play states and the addon queue an update waits for.
+fn update_held(state: &PlayState, addons_updating: bool) -> bool {
+    addons_updating || holds_updates(state)
+}
+
 pub(crate) struct UpdatesNeeds<'a> {
     pub(crate) store: &'a Store,
     /// The data folder is moving; nothing checks until it is done.
@@ -551,7 +556,7 @@ impl Hosted for Updates {
 impl Host<Updates> for Shell {
     fn split(&mut self) -> (&mut Updates, UpdatesNeeds<'_>) {
         let locked = self.data_move_locked();
-        let busy = holds_updates(&self.play_state());
+        let busy = update_held(&self.play_state(), self.updating_addons());
         (
             &mut self.updates,
             UpdatesNeeds {
@@ -860,6 +865,20 @@ mod tests {
         for free in [PlayState::Ready, PlayState::NotInstalled] {
             assert!(!holds_updates(&free));
         }
+    }
+
+    #[test]
+    fn a_launcher_update_waits_for_the_addon_queue_and_installs_once_it_is_empty() {
+        let mut u = Updates::new();
+        u.launcher.tag = Some("v999.0.0".into());
+        u.launcher.release = Some(Release::default());
+        let held = update_held(&PlayState::Ready, true);
+        assert!(held);
+        assert_eq!(updater::gate(&u.phase, true, held), Gate::Play);
+        assert!(u.follow_up(held).is_none());
+        let held = update_held(&PlayState::Ready, false);
+        assert!(!held);
+        assert_eq!(updater::gate(&u.phase, true, held), Gate::Update);
     }
 
     #[test]

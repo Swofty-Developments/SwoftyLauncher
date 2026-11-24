@@ -5,6 +5,8 @@ description: Data-only native chart controls for launcher addon pages.
 
 # Native charts
 
+For optional add-on-controlled text sizes, chart/plot surfaces, borders, grids, rounded blocks, images and line widths, see [Native Chart options](./chart-options).
+
 **Capability-gated:** send a `chart` block only when `hello.params.capabilities` contains `"view.chart"`. Treat a missing capability list as empty and return a supported fallback view. Do not infer chart support from the launcher version: capability detection also works for backports and development builds. API version remains 1. This is an optional view block, not a new host call.
 
 Charts are painted in the launcher with GPUI paths and text. They create no PNG, SVG, WebP, HTML, or chart cache files and need no browser or chart service. The addon still supplies the numbers and computes statistics. Returning a new view replaces the data in memory. Charts fit the width of their parent and can be nested in cards, grids, tabs and table details.

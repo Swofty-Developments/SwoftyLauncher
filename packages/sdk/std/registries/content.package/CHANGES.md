@@ -12,3 +12,4 @@
 1.6: rules.mandatory_tyre_change turns the two-compound rule off or on for the box's races; the era picker writes swofty_f1's tyre regulation requirement flags when the box is pressed.
 1.7: world names the box's own world ([FILENAME]_<name>, archives an addon ships per track), its shared season and an optional branding row (timing_tower_logo, broadcast_show_f1_logo); the core applies it at boot with SWOFTY_BOX_OWN_WORLDS=1, for any team count, and the box's track list leaves out tracks without the archive.
 1.8: rules.setup_locked names car setup sliders the box's cars cannot change; with SWOFTY_BOX_SETUP=1 the core sets their bits in the game's setup lock mask (the parc ferme one) after every setup apply, in a box press and in that box's career seasons.
+1.9: videos swaps stock video path prefixes (e.g. track_map/26/ -> track_map/) in the box's sessions; the core wraps Ne_VideoPlayer_OpenFile and switches the redirects with the box (box press, career season).

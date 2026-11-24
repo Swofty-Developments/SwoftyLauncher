@@ -40,6 +40,8 @@ fn dashed_work_is_clipped_to_the_visible_plot() {
 }
 fn chart(data: ChartData) -> Chart {
     Chart {
+        options: None,
+        images: Vec::new(),
         id: "test".into(),
         title: String::new(),
         caption: String::new(),
@@ -47,6 +49,8 @@ fn chart(data: ChartData) -> Chart {
         x: ChartAxis::default(),
         y: ChartAxis::default(),
         series: vec![ChartSeries {
+            line_width: None,
+            blocks: None,
             name: "driver".into(),
             color: None,
             data,

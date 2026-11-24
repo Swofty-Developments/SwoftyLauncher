@@ -790,7 +790,7 @@ void apply_garages(Expansion &x, Report &report, std::string_view reg = "team.ga
                 report.lines.push_back(o.line);
                 continue;
             }
-            if (g.kind == "scene") {
+            if (g.kind == "scene" || g.kind == "world") {
                 std::error_code fec;
                 auto size = std::filesystem::file_size(runtime::under_swofty("addons/" + g.addon + "/" + g.archive), fec);
                 std::size_t kept = 0;
@@ -1278,6 +1278,23 @@ size_t seats_for_box(const std::string &entrant_list)
     Packages p;
     collect_packages(p);
     return package_seats(entrant_list, p.list);
+}
+
+VideosPick videos_for_box(const std::string &entrant_list)
+{
+    Packages p;
+    collect_packages(p);
+    return videos_pick(entrant_list, p.list);
+}
+
+bool any_video_redirect()
+{
+    Packages p;
+    collect_packages(p);
+    for (auto &[id, rec] : p.list)
+        if (rec && (*rec)["videos"].is_array() && (*rec)["videos"].size())
+            return true;
+    return false;
 }
 
 bool any_grid_rule()

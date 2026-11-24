@@ -897,3 +897,28 @@ void setup_mode_cap_tests(const std::string &regs)
         check(staged, "the trimmed field is written under content.package, so its applier stages it");
     });
 }
+
+void box_videos_tests()
+{
+    Value p1950 = swofty::json::parse(R"({"entrant_list":"f5_1950","videos":[{"from":"track_map/26/","to":"track_map/"},)"
+                                      R"({"from":"track_map/26/monaco","to":"own/monaco_1950"},{"from":"videos/x/","to":"y/"},)"
+                                      R"({"from":"a/../b","to":""},{"from":"c/"}]})");
+    Value pnone = swofty::json::parse(R"({"entrant_list":"f1_2005"})");
+    std::vector<std::pair<std::string, const Value *>> boxes = {{"vmknolle.season-1950/f5_1950", &p1950},
+                                                                {"mod.a/f1_2005", &pnone}};
+    auto p = content::videos_pick("f5_1950", boxes);
+    check(p.package == "vmknolle.season-1950/f5_1950" && p.redirects.size() == 2, "f5_1950 keeps its two valid redirects");
+    check(p.line.find("3 invalid entries skipped") != std::string::npos, "invalid entries are counted, not used");
+    check(content::videos_pick("f1_2005", boxes).redirects.empty(), "a box without videos plays the stock videos");
+    check(content::videos_pick("f1_none", boxes).line.find("no content.package") != std::string::npos,
+          "a stock box plays the stock videos");
+    auto r = content::video_redirect(p.redirects, "track_map/26/silverstone.bk2");
+    check(r && *r == "track_map/silverstone.bk2", "the 2026 track intro becomes the 2025 one");
+    r = content::video_redirect(p.redirects, "videos/Track_Map/26/silverstone.bk2");
+    check(r && *r == "videos/track_map/silverstone.bk2", "a videos/ prefix stays and case is ignored");
+    r = content::video_redirect(p.redirects, "track_map/26/monaco.bk2");
+    check(r && *r == "own/monaco_1950.bk2", "the longest from wins");
+    check(!content::video_redirect(p.redirects, "track_map/silverstone.bk2"), "a path no redirect names is left alone");
+    check(!content::video_redirect(p.redirects, "f1_swipe_short.bk2"), "other videos are left alone");
+    check(!content::video_redirect({}, "track_map/26/silverstone.bk2"), "no redirects, no change");
+}

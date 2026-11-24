@@ -102,8 +102,9 @@ pub fn recent_crashes(store: &Store, game: Option<&Path>, sessions: &[PathBuf], 
         .collect()
 }
 
-/// One line per crash report found: its name and size, its minidump and where in the bundle it went.
-pub(super) fn dumps_listing(crashes: &[Crash]) -> Option<String> {
+/// One line per crash report found: its name and size, its minidump, where in the bundle it went and
+/// why a file was left out.
+pub(super) fn dumps_listing(crashes: &[Crash], left_out: &[String]) -> Option<String> {
     if crashes.is_empty() {
         return None;
     }
@@ -119,8 +120,13 @@ pub(super) fn dumps_listing(crashes: &[Crash]) -> Option<String> {
         } else {
             "report in crash/earlier/"
         };
+        let note = match left_out.get(i).filter(|n| !n.is_empty()) {
+            Some(n) => format!("; {n}"),
+            None if i > 0 && c.dump.is_some() => "; minidump not sent, only the newest is".into(),
+            None => String::new(),
+        };
         out.push_str(&format!(
-            "  {} {}; {dump}; {sent}\n",
+            "  {} {}; {dump}; {sent}{note}\n",
             file_name(&c.report),
             len(&c.report)
         ));

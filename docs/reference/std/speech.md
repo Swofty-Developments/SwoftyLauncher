@@ -131,6 +131,8 @@ Some lines are one part of a longer message, with `[VALUE_n]` placeholders the n
 [speech] voice line events off on EA App 1.0.145: the speech line layout (...) is proven on the Steam KB build, Steam 1.0.145 (26566308) only
 ```
 
+The core's log names the first 4 posted lines (`[speech] line 1 posted: speaker presenter, category 0, stem pres_p_intro_race1_01`). With `SWOFTY_SPEECH_LOG=all` in the game's environment it names every line, so a log shows which stem a talking point (`SessionIntro`, `TrackIntro`) or a cutscene plays and which speaker says it.
+
 The core wraps `Game_SpeechSystem_PostLine` at priority -100, below the addons' wraps and the [characters](./characters) voice mute. A line that a higher wrap does not pass on to the game fires nothing.
 
 ## Test it on the host

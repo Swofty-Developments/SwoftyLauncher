@@ -20,6 +20,15 @@ impl Scale {
 
 #[derive(Clone)]
 pub(super) enum Mark {
+    StyledPath {
+        points: Vec<[f32; 2]>,
+        color: Hsla,
+        dashed: bool,
+        width: f32,
+    },
+    Block {
+        block: Box<BlockMark>,
+    },
     Path {
         points: Vec<[f32; 2]>,
         color: Hsla,
@@ -37,6 +46,15 @@ pub(super) enum Mark {
         width: f32,
         color: Hsla,
     },
+}
+#[derive(Clone)]
+pub(super) struct BlockMark {
+    pub(super) x: [f32; 2],
+    pub(super) y: [f32; 2],
+    pub(super) color: Hsla,
+    pub(super) style: Option<Box<ChartBlockStyle>>,
+    pub(super) label: String,
+    pub(super) image: Option<usize>,
 }
 pub(crate) struct Scene {
     pub(super) x: Scale,
@@ -132,6 +150,7 @@ impl Scene {
             has_data: false,
         };
         for (i, s) in c.series.iter().enumerate() {
+            let begin = scene.marks.len();
             let col = color(s.color.as_deref(), rgb(COLORS[i % COLORS.len()]).into());
             match &s.data {
                 ChartData::Line {
@@ -217,22 +236,34 @@ impl Scene {
                 } => {
                     for b in values {
                         if *horizontal {
-                            scene.rect(
+                            scene.block(
                                 [b.base, b.value],
                                 [b.position - width / 2., b.position + width / 2.],
                                 col,
+                                s.blocks.as_deref(),
+                                "",
+                                None,
                             );
                         } else {
-                            scene.rect(
+                            scene.block(
                                 [b.position - width / 2., b.position + width / 2.],
                                 [b.base, b.value],
                                 col,
+                                s.blocks.as_deref(),
+                                "",
+                                None,
                             );
                         }
                     }
                 }
                 ChartData::Ranges { cells } | ChartData::Heatmap { cells } => {
-                    for r in cells {
+                    for (cell, r) in cells.iter().enumerate() {
+                        let style = r.style.as_deref().or(s.blocks.as_deref());
+                        let image=c.images.iter().position(|image| matches!(image.location,ChartImageLocation::Cell {series,cell:slot} if series==i && slot==cell));
+                        if style.is_some() || image.is_some() {
+                            scene.block(r.x, r.y, color(r.color.as_deref(), col), style, &r.label, image);
+                            continue;
+                        }
                         scene.rect(r.x, r.y, color(r.color.as_deref(), col));
                         if !r.label.is_empty() {
                             scene.marks.push(Mark::Label {
@@ -253,10 +284,13 @@ impl Scene {
                 }
                 ChartData::Boxes { values, width } => {
                     for b in values {
-                        scene.rect(
+                        scene.block(
                             [b.position - width / 2., b.position + width / 2.],
                             [b.q1, b.q3],
                             col,
+                            s.blocks.as_deref(),
+                            "",
+                            None,
                         );
                         for (a, z) in [
                             ((b.position, b.min), (b.position, b.q1)),
@@ -274,8 +308,55 @@ impl Scene {
                     }
                 }
             }
+            if let Some(width) = s.line_width {
+                for mark in &mut scene.marks[begin..] {
+                    if let Mark::Path {
+                        points,
+                        color,
+                        fill: false,
+                        dashed,
+                    } = mark
+                    {
+                        *mark = Mark::StyledPath {
+                            points: std::mem::take(points),
+                            color: *color,
+                            dashed: *dashed,
+                            width,
+                        };
+                    }
+                }
+            }
         }
+        scene.has_data |= c
+            .images
+            .iter()
+            .any(|i| matches!(i.location, ChartImageLocation::Plot { .. }));
         scene
+    }
+    fn block(
+        &mut self,
+        x: [f64; 2],
+        y: [f64; 2],
+        color: Hsla,
+        style: Option<&ChartBlockStyle>,
+        label: &str,
+        image: Option<usize>,
+    ) {
+        if style.is_none() && image.is_none() {
+            self.rect(x, y, color);
+            return;
+        }
+        self.has_data = true;
+        self.marks.push(Mark::Block {
+            block: Box::new(BlockMark {
+                x: [self.x.map(x[0]), self.x.map(x[1])],
+                y: [1. - self.y.map(y[0]), 1. - self.y.map(y[1])],
+                color,
+                style: style.cloned().map(Box::new),
+                label: label.into(),
+                image,
+            }),
+        });
     }
     fn at(&self, x: f64, y: f64) -> [f32; 2] {
         [self.x.map(x), 1. - self.y.map(y)]

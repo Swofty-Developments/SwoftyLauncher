@@ -1460,6 +1460,75 @@ fn keeps_the_last_five_crash_reports_and_lists_the_dumps() {
 }
 
 #[test]
+fn crash_files_survive_a_bundle_filled_by_other_logs() {
+    let root = tmp("crashfull");
+    let (store, game) = fake_data(&root);
+    let loader = game.join("swofty");
+    put(&loader.join("crash-20261124-234944.txt"), CRASH);
+    put(&loader.join("crash-20261124-234944.dmp"), noise(200_000, 5));
+    put(
+        &loader.join("loader.log"),
+        String::from_utf8(vec![b'a'; 3 << 20]).unwrap(),
+    );
+    let limits = Limits {
+        file: FILE_CAP,
+        total: 1 << 20,
+    };
+    let bundle = Bundle::collect_with(&store, &report(&game), limits, "x");
+    let names: Vec<_> = bundle.entries.iter().map(|e| e.path.clone()).collect();
+    assert!(
+        names.contains(&"crash/crash-20261124-234944.txt".to_string()),
+        "{names:?}"
+    );
+    assert!(
+        names.contains(&"crash/crash-20261124-234944.dmp".to_string()),
+        "{names:?}"
+    );
+    let zip = bundle.zip().unwrap();
+    let listing = entry(&zip, "crash/dumps.txt");
+    assert!(!listing.contains("left out"), "{listing}");
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn crash_reports_ignore_an_exhausted_budget_and_dumps_say_why_a_dump_is_missing() {
+    let root = tmp("crashnone");
+    let (store, game) = fake_data(&root);
+    let loader = game.join("swofty");
+    put(&loader.join("crash-20261124-100000.txt"), CRASH);
+    put(&loader.join("crash-20261124-100000.dmp"), noise(1000, 6));
+    std::thread::sleep(std::time::Duration::from_millis(50));
+    put(&loader.join("crash-20261124-234944.txt"), CRASH);
+    put(&loader.join("crash-20261124-234944.dmp"), noise(200_000, 5));
+    let limits = Limits {
+        file: FILE_CAP,
+        total: 100_000,
+    };
+    let bundle = Bundle::collect_with(&store, &report(&game), limits, "x");
+    let names: Vec<_> = bundle.entries.iter().map(|e| e.path.clone()).collect();
+    assert!(
+        names.contains(&"crash/crash-20261124-234944.txt".to_string()),
+        "{names:?}"
+    );
+    assert!(
+        names.contains(&"crash/earlier/crash-20261124-100000.txt".to_string()),
+        "{names:?}"
+    );
+    assert!(!names.iter().any(|n| n.ends_with(".dmp")), "{names:?}");
+    let zip = bundle.zip().unwrap();
+    let listing = entry(&zip, "crash/dumps.txt");
+    assert!(
+        listing.contains("minidump left out") && listing.contains("too big"),
+        "{listing}"
+    );
+    assert!(
+        listing.contains("minidump not sent, only the newest is"),
+        "{listing}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn skips_a_minidump_too_big_for_the_bundle() {
     let root = tmp("crashbig");
     let (store, game) = fake_data(&root);

@@ -214,12 +214,14 @@ void put_back_box_options()
 }
 
 // Grid rules per box: the pressed box's rules.grid goes to box_grid.cpp; a box without the rule clears it. The box's
-// scene groups (content.box_assets kind scene) switch with it, on a box press and on a career season's load alike.
+// scene groups (content.box_assets kind scene) and its video redirects (content.package videos) switch with it, on a
+// box press and on a career season's load alike.
 void apply_grid(const RuleTarget &t, const char *list)
 {
     auto box = swofty_core::apply::content::grid_for_box(list);
     runtime::box_grid_set(box.rule, list);
     runtime::box_groups_select(list ? std::string(list) : std::string());
+    runtime::box_videos_select(list ? std::string(list) : std::string());
     box_rules.grid_log.say(t.prefix + box.line);
 }
 

@@ -3,6 +3,8 @@ pub const API_VERSION: u32 = 1;
 pub const VIEW_CHART: &str = "view.chart";
 /// Native addon selection dialogs and their Selected event.
 pub const VIEW_SELECTION_DIALOG: &str = "view.selection_dialog";
+/// Seven optional add-on-controlled Native Chart appearance and image extensions.
+pub const VIEW_CHART_OPTIONS: &str = "view.chart.options";
 /// Optional caller-supplied in-memory PNG pictures in generic table cells.
 pub const VIEW_CELL_IMAGE_DATA: &str = "view.cell.image_data";
 /// Listed from launcher 1.10: the launcher may answer a `build` with an earlier reply that lists its `reads`.

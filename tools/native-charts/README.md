@@ -1,6 +1,8 @@
 # Native chart development checks
 
-Chart data and validation live in `packages/addon-api/src/view/chart.rs`; the launcher renderer is `apps/launcher/src/blocks/chart.rs`. The gallery and JSON-lines example use the same API and native renderer.
+The optional seven-feature chart extension is documented in `docs/reference/addons/launcher-api/chart-options.md`. Its gallery fixture is `tools/native-charts/fixtures/options.json`; run `cargo build -p swofty-addon --example native_chart_options`, then `python tools/native-charts/options-smoke.py target/debug/examples/native_chart_options.exe`. Add-ons must check `view.chart.options` as well as `view.chart`. Existing chart/table defaults and launcher settings are unchanged.
+
+Chart data and validation live in `packages/addon-api/src/view/chart.rs`; the launcher renderer is `apps/launcher/src/blocks/chart/`. The gallery and JSON-lines example use the same API and native renderer.
 
 Helpers must check `hello.params.capabilities` for `view.chart`. Treat a missing list as empty. Do not infer chart support from version strings; the PR does not change the release version or API version.
 

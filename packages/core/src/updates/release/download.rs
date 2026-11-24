@@ -107,6 +107,8 @@ pub fn download(asset: &Asset, to: &Path, progress: &dyn Fn(u64)) -> Result<(u64
         size: asset.size,
         lister: "the release",
         too_long: &too_long,
+        resume: None,
+        log: None,
     };
     let mut open = |from: u64| {
         let left = asset.size.saturating_sub(from);

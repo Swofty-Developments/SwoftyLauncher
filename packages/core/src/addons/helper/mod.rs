@@ -662,6 +662,7 @@ fn hello(cx: &Cx) -> Hello {
         capabilities: vec![
             swofty_addon::helper::VIEW_SELECTION_DIALOG.into(),
             swofty_addon::helper::VIEW_CHART.into(),
+            swofty_addon::helper::VIEW_CHART_OPTIONS.into(),
             swofty_addon::helper::VIEW_CELL_IMAGE_DATA.into(),
             swofty_addon::helper::BUILD_READS.into(),
         ],
