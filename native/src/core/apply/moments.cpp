@@ -787,8 +787,8 @@ void session_load(const char *source)
     SessionFacts f = game::at_session_load(&ran);
     if (!ran.empty()) {
         swofty::log("[apply] session start (%s): %s; the session is left unknown", from.c_str(), ran.c_str());
-        if (flow)
-            career::plain_saves::note_already_ran();
+        if (flow && career::plain_saves::note_already_ran())
+            runtime::hub_calendar_load_loop();
     } else if (flow)
         career::plain_saves::note_moved_on();
     if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
@@ -834,6 +834,7 @@ bool career_weekend(CareerWeekend &out)
     out.current = w.current;
     out.sessions = w.sessions;
     out.complete = w.complete;
+    out.current_complete = w.current_complete;
     out.session = facts::session_of(w.session, w.sprint).session;
     out.track = w.track < 0 ? std::string() : facts::track_of(w.track, game::cached_track_label(w.track), game::track_records());
     return true;
