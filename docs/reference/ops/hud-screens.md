@@ -186,9 +186,28 @@ inside the limit:
 the HUD elements do not compose: SWOFTY 2010, SWOFTY 2011 and TV Timing Tower together make the Track Position list too big for the game: about 73904 of the 65536 slots one screen can hold, and the game can close as soon as it shows it; turn SWOFTY 2010, SWOFTY 2011 or TV Timing Tower off in this profile (the board holds the 14101-slot host scene 4 times)
 ```
 
-A board whose HUD editor tree passes the limit builds with a warning line: the game can close when
-HUD customisation opens. The build lists each record's nodes, walk slots and walk stack (256 at
-most), and each screen's board and tree.
+A standings board whose HUD editor tree passes the limit while the race tree fits still builds, and
+the race HUD is unchanged. The build gives a warning that names every addon with a record on the
+standings and the ones whose removal alone brings the HUD editor tree inside the limit. SWOFTY 2010,
+SWOFTY 2011 and a 2,708-slot tower make a 7,299-slot host scene, a race tree of about 46,696 slots
+and a HUD editor tree of about 88,404:
+
+```text
+SWOFTY 2010, SWOFTY 2011 and Tower together make the Track Position list too big for HUD customisation (OSD Customization in the pause menu): about 88404 of the 65536 slots one screen can hold, and the game closes when it opens. Races show the list as before. Turn SWOFTY 2010, SWOFTY 2011 or Tower off in this profile before you open HUD customisation (it holds the 7299-slot host scene 12 times)
+```
+
+The warning is in the build log and in the profile's conflict report (`hud_editor` in
+`conflicts.json`). The launcher shows it as a warning that stays until it is closed: on Play, when
+the profile's last build had it and the profile still turns on the same addons in the same order,
+and otherwise once the game starts after the build that found it.
+
+The HUD editor tree cannot be made smaller on its own: HUD customisation draws
+`driver_position_table_stacked.idf` and its `.uipre`, the race HUD instances the same scene, and the
+game keeps one copy of a resource, from whichever archive it reads first. The `.uipre` only sets
+`Visible` and text, and the flatten counts hidden nodes too.
+
+The build lists each record's nodes, walk slots and walk stack (256 at most), and each screen's
+board and tree; the standings line also gives the HUD editor tree.
 
 ## The three presets
 
