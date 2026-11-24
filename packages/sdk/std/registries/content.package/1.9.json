@@ -108,17 +108,17 @@
         "type": "object",
         "properties": {
           "from": {
-            "description": "A stock path prefix below videos/, with / between folders and without the videos/ folder itself.",
+            "description": "A stock path prefix below videos/, with / between folders and without the videos/ folder itself (a leading videos/ is rejected when the box applies).",
             "type": "string",
             "minLength": 1,
             "maxLength": 200,
-            "pattern": "^(?!videos/)[^/\\:][^\\:]*$"
+            "pattern": "^[^/\\:][^\\:]*$"
           },
           "to": {
             "description": "The prefix that replaces it, the same way; empty: drop the from prefix.",
             "type": "string",
             "maxLength": 200,
-            "pattern": "^((?!videos/)[^/\\:][^\\:]*)?$"
+            "pattern": "^([^/\\:][^\\:]*)?$"
           }
         },
         "required": [
