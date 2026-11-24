@@ -16,11 +16,14 @@
 // Kind scene lists a ready archive first in stock scene groups instead (the grid cutscene, a garage scene): those groups
 // are shared by every session, so the core keeps two ERP lists for each and switches the group to the archive's list
 // while the box is the session's box (box rules: a box press or a career season), and back to the stock list after.
+// Kind world is the same switch for a track's world groups (asset_groups/environment_package/tracks/<code>/...): the
+// box's archive goes first in, say, wep/silverstone_common.assetgroup, so its copy of a world resource (an instance
+// list with parked objects, a material) wins in that box's sessions while every other session loads the stock world.
 
 namespace swofty_core::apply::content {
 
 inline constexpr const char *BOX_ASSETS_FOLDER = "2025_asset_groups/swofty_box_assets/";
-inline constexpr const char *BOX_ASSET_KINDS[] = {"garage", "sponsors", "marshals", "crowd", "principal", "scene", "other"};
+inline constexpr const char *BOX_ASSET_KINDS[] = {"garage", "sponsors", "marshals", "crowd", "principal", "scene", "world", "other"};
 
 inline bool box_assets_enabled(const char *env) { return garage_art_enabled(env); }
 
@@ -42,6 +45,18 @@ inline bool box_asset_kind(const std::string &kind)
         if (kind == k)
             return true;
     return false;
+}
+
+// Kind world: an asset group of one track's folder, asset_groups/environment_package/tracks/<code>/<path>.assetgroup.
+inline constexpr const char *BOX_WORLD_GROUP_ROOT = "asset_groups/environment_package/tracks/";
+
+inline bool box_world_group(const std::string &g)
+{
+    std::size_t n = std::char_traits<char>::length(BOX_WORLD_GROUP_ROOT);
+    if (g.compare(0, n, BOX_WORLD_GROUP_ROOT) != 0)
+        return false;
+    std::size_t slash = g.find('/', n);
+    return slash != std::string::npos && slash > n && slash + 1 < g.size();
 }
 
 // The resource name a textures folder's file paths are appended to when the record names no root: the stock root of
@@ -126,13 +141,14 @@ inline void lower_box(const std::string &id, BoxSpec s, const Lookup &lookup, co
     g.srgb = s.srgb;
     g.prefixes = s.prefixes;
     g.game_path = s.game_path;
-    if (s.kind == "scene") {
+    if (s.kind == "scene" || s.kind == "world") {
         if (!(*pkg)["entrant_list"].is_string() || (*pkg)["entrant_list"].as_string().empty())
-            return refuse("package " + s.package + " has no entrant_list, so no box session can switch its scene groups");
+            return refuse("package " + s.package + " has no entrant_list, so no box session can switch its " + s.kind +
+                          " groups");
         g.box = std::string((*pkg)["entrant_list"].as_string());
         g.groups = s.scene_groups;
-        plan.lines.push_back(s.tag + " " + id + ": scene of " + s.package + " (box " + g.box + ") for " +
-                             std::to_string(g.groups.size()) + " scene group(s), archive " + g.archive);
+        plan.lines.push_back(s.tag + " " + id + ": " + s.kind + " of " + s.package + " (box " + g.box + ") for " +
+                             std::to_string(g.groups.size()) + " " + s.kind + " group(s), archive " + g.archive);
         plan.garages.push_back(std::move(g));
         return;
     }
@@ -191,7 +207,7 @@ inline void lower_box_assets(const std::string &id, const Value &rec, const Look
     if (s.package.empty())
         return refuse("it needs a package");
     if (!box_asset_kind(s.kind))
-        return refuse("kind " + s.kind + " is not one of garage, sponsors, marshals, crowd, principal, scene, other");
+        return refuse("kind " + s.kind + " is not one of garage, sponsors, marshals, crowd, principal, scene, world, other");
     if (s.folder.empty() == s.archive.empty())
         return refuse("it needs one of a textures folder and an archive, not both");
     if (!box_relative_path(s.folder.empty() ? s.archive : s.folder))
@@ -213,10 +229,16 @@ inline void lower_box_assets(const std::string &id, const Value &rec, const Look
             return refuse("every groups entry must be an asset group name ending in .assetgroup");
         s.scene_groups.push_back(gr);
     }
-    if (s.kind == "scene" && (s.archive.empty() || s.scene_groups.empty()))
-        return refuse("kind scene needs a ready archive and the scene groups it goes first in");
-    if (s.kind != "scene" && !s.scene_groups.empty())
-        return refuse("groups are for kind scene only; the other kinds go to the box's car groups");
+    bool switched = s.kind == "scene" || s.kind == "world";
+    if (switched && (s.archive.empty() || s.scene_groups.empty()))
+        return refuse("kind " + s.kind + " needs a ready archive and the " + s.kind + " groups it goes first in");
+    if (!switched && !s.scene_groups.empty())
+        return refuse("groups are for kinds scene and world only; the other kinds go to the box's car groups");
+    if (s.kind == "world")
+        for (auto &gr : s.scene_groups)
+            if (!box_world_group(gr))
+                return refuse("kind world takes a track's own asset groups (" + std::string(BOX_WORLD_GROUP_ROOT) +
+                              "<code>/...), not " + gr);
     s.root = text("root").empty() ? box_assets_root(s.kind) : text("root");
     s.srgb = !rec["srgb"].is_bool() || rec["srgb"].as_bool();
     s.game_path = box_assets_game_path(id);
