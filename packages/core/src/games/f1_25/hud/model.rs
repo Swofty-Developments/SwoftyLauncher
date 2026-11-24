@@ -458,6 +458,10 @@ pub struct Editor {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct StockNodes {
+    /// The game screen file the template node is in (`screens/broadcast_persistent.ui`), on a yield
+    /// record; absent: the HUD template.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ui: Option<String>,
     pub template: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub scene: Option<String>,
@@ -475,6 +479,7 @@ pub struct StockNodes {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Yield {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub parts: Vec<String>,
     #[serde(rename = "while")]
     pub while_: Bind,
@@ -805,6 +810,12 @@ impl HudElement {
         if let Some(y) = &self.yields {
             return self.check_yield(y);
         }
+        if let Some(s) = self.stock_nodes.iter().find(|s| s.ui.is_some()) {
+            return Err(err(format!(
+                "stock_nodes {}: an entry with ui goes on a yield record",
+                s.template
+            )));
+        }
         self.check_scene_target()?;
         check_tree(&self.elements, &self.decisions)?;
         for e in &self.elements {
@@ -850,15 +861,24 @@ impl HudElement {
         let bare = Self {
             prefix: self.prefix.clone(),
             yields: self.yields.clone(),
+            stock_nodes: self.stock_nodes.clone(),
             ..serde_json::from_value(serde_json::json!({ "dial": "f1_26" })).expect("a bare record")
         };
         if *self != bare {
             return Err(err(
-                "a yield record takes yield and prefix only: it hides parts and draws nothing",
+                "a yield record takes yield, prefix and stock_nodes only: it hides parts and draws nothing",
             ));
         }
-        if y.parts.is_empty() {
-            return Err(err("yield: parts names at least one part"));
+        if let Some(s) = self.stock_nodes.iter().find(|s| s.ui.is_none()) {
+            return Err(err(format!(
+                "stock_nodes {}: a yield record's stock_nodes name the game screen they hide nodes of with ui",
+                s.template
+            )));
+        }
+        if y.parts.is_empty() && self.stock_nodes.is_empty() {
+            return Err(err(
+                "yield: parts names at least one part, or stock_nodes a screen node",
+            ));
         }
         for p in &y.parts {
             if super::yields::part(p).is_none() {
@@ -871,6 +891,9 @@ impl HudElement {
         y.while_.check()?;
         if y.while_.view_model.is_none() && y.while_.path.is_none() {
             return Err(err("yield: while is a view_model leaf or a path"));
+        }
+        for s in &self.stock_nodes {
+            super::screen_nodes::check_entry(s)?;
         }
         Ok(())
     }

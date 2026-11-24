@@ -629,6 +629,7 @@ pub fn screen_facts(stock: &dyn Stock, r: &mut Report) {
                 ));
             }
             let s = stock_edit::StockNodes {
+                ui: None,
                 template: screens::LAPC_PARENT.to_owned(),
                 scene: Some(screens::LAPC_SCENE.to_owned()),
                 hide: screens::LAPC_HIDE.iter().map(|s| (*s).to_owned()).collect(),

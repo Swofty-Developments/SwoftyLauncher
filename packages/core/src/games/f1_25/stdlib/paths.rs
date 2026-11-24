@@ -109,7 +109,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "hud.element",
-        include_str!("../../../../../sdk/std/registries/hud.element/1.5.json"),
+        include_str!("../../../../../sdk/std/registries/hud.element/1.6.json"),
     ),
     (
         "hub.tab",

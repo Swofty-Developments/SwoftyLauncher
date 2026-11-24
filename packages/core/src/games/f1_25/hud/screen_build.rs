@@ -853,6 +853,7 @@ pub fn compose_screens(
                     None => read(&scene).or_else(|_| race_read(&scene))?,
                 };
                 let entry = StockNodes {
+                    ui: None,
                     template: facts.parent_ui.clone(),
                     scene: Some(scene.clone()),
                     hide: Vec::new(),
@@ -1026,6 +1027,7 @@ pub fn compose_screens(
         let mut nodes: Vec<StockNodes> = r.stock_nodes.clone();
         if r.targets.iter().any(|t| t.facts.key == "standings") {
             nodes.push(StockNodes {
+                ui: None,
                 template: screens::STANDINGS_CAP_NODE.to_owned(),
                 scene: Some(screens::CAP.to_owned()),
                 hide: vec![r.pfx.clone(), preview_root(&r.pfx)],

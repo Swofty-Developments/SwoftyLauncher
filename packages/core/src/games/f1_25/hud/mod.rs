@@ -19,6 +19,7 @@ pub mod model;
 pub mod motion;
 pub mod scene;
 pub mod screen_build;
+pub mod screen_nodes;
 pub mod screens;
 pub mod slots;
 pub mod stock_edit;
@@ -56,6 +57,10 @@ fn err(msg: impl std::fmt::Display) -> Error {
 /// An edit another part of the launcher makes to the HUD template, applied to the template before the
 /// composer adds its nodes (the ADDONS MFD page).
 pub type TemplateBase<'a> = &'a dyn Fn(&[u8]) -> Result<Vec<u8>>;
+
+/// The edit another part of the launcher makes to a game screen a yield record's `stock_nodes` name,
+/// by the screen's resource name (the popup gate on persistent.ui).
+pub type ScreenBase<'a> = &'a dyn Fn(&str) -> Option<TemplateBase<'a>>;
 
 /// One record to compose.
 #[derive(Debug, Clone)]

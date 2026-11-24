@@ -1623,3 +1623,259 @@ fn a_yield_record_takes_known_parts_and_nothing_to_draw() {
     .unwrap();
     assert_eq!(ok.yields.unwrap().parts.len(), 3);
 }
+
+const OSD: &str = "eaid://ui_package/art/osd/scenes/osd.idf";
+const BROADCAST_UI: &str = "eaid://ui_package/screens/broadcast_persistent.ui";
+const PERSISTENT_UI: &str = "eaid://ui_package/screens/persistent.ui";
+const PERSISTENT_SCREEN: &str = "eaid://ui_package/art/screens/persistent_screen/persistent_screen.idf";
+const SUBS_LEAF: &str = "view_model_data.hud_y_subs";
+
+fn screen_nodes_input(nodes: serde_json::Value) -> Input {
+    Input {
+        addon: "swofty.after".into(),
+        key: "after".into(),
+        dir: std::env::temp_dir(),
+        record: HudElement::parse(&serde_json::json!({
+            "prefix": "sa_after",
+            "yield": { "while": { "view_model": YIELD_LEAF } },
+            "stock_nodes": nodes
+        }))
+        .unwrap(),
+    }
+}
+
+#[test]
+fn screen_stock_nodes_go_on_a_yield_record_and_name_a_screen_and_a_scene() {
+    let entry = |extra: serde_json::Value| {
+        let mut e = serde_json::json!({
+            "ui": "screens/broadcast_persistent.ui",
+            "template": "broadcast_persistent",
+            "scene": OSD,
+            "wrap": ["broadcast_ui_generic"]
+        });
+        for (k, v) in extra.as_object().unwrap() {
+            match v.is_null() {
+                true => e.as_object_mut().unwrap().remove(k),
+                false => e.as_object_mut().unwrap().insert(k.clone(), v.clone()),
+            };
+        }
+        e
+    };
+    let yield_with = |nodes: serde_json::Value| serde_json::json!({ "yield": { "while": { "view_model": YIELD_LEAF } }, "stock_nodes": nodes });
+    let bad = [
+        yield_with(serde_json::json!([entry(serde_json::json!({ "ui": null }))])),
+        yield_with(serde_json::json!([entry(serde_json::json!({ "scene": null }))])),
+        yield_with(serde_json::json!([entry(
+            serde_json::json!({ "ui": "templates/hud_dynamic_templates.ui" })
+        )])),
+        yield_with(serde_json::json!([entry(
+            serde_json::json!({ "ui": "screens/broadcast_persistent.idf" })
+        )])),
+        yield_with(serde_json::json!([entry(serde_json::json!({ "wrap": [] }))])),
+        yield_with(serde_json::json!([entry(
+            serde_json::json!({ "template": "broadcast_persistent..x" })
+        )])),
+        yield_with(serde_json::json!([])),
+        serde_json::json!({ "screen": "standings", "show": { "view_model": YIELD_LEAF }, "elements": [], "stock_nodes": [entry(serde_json::json!({}))] }),
+    ];
+    for v in bad {
+        assert!(HudElement::parse(&v).is_err(), "{v}");
+    }
+    let ok = HudElement::parse(&yield_with(serde_json::json!([entry(serde_json::json!({}))]))).unwrap();
+    assert!(ok.yields.unwrap().parts.is_empty());
+    assert_eq!(
+        screen_nodes::ui_resource("screens/broadcast_persistent.ui"),
+        BROADCAST_UI
+    );
+    assert_eq!(screen_nodes::ui_resource(BROADCAST_UI), BROADCAST_UI);
+}
+
+/// The archives of `out` that hold `name`, each the game archives it goes over.
+fn over(out: &Output, name: &str) -> std::collections::BTreeSet<String> {
+    out.archives
+        .iter()
+        .filter(|a| Erp::parse(&a.bytes).unwrap().find(name).is_ok())
+        .flat_map(|a| a.erps.iter().cloned())
+        .collect()
+}
+
+#[test]
+fn a_yield_record_hides_nodes_of_other_game_screens_and_leaves_out_what_does_not_fit() {
+    let Some(stock) = game() else { return };
+    let input = screen_nodes_input(serde_json::json!([
+        { "ui": "screens/broadcast_persistent.ui", "template": "broadcast_persistent", "scene": OSD,
+          "wrap": ["broadcast_ui_generic", "driver_of_the_day", "broadcast_radio_emote"] },
+        { "ui": "screens/persistent.ui", "template": "persistent.subtitles", "scene": PERSISTENT_SCREEN,
+          "wrap": ["subtitles_generic"], "while": { "view_model": SUBS_LEAF } },
+        { "ui": "screens/broadcast_persistent.ui", "template": "broadcast_persistent.no_such_node", "scene": OSD,
+          "wrap": ["broadcast_logos"] },
+        { "ui": "screens/broadcast_persistent.ui", "template": "broadcast_persistent", "scene": OSD,
+          "wrap": ["no_such_element"] },
+        { "ui": "screens/broadcast_persistent.ui", "template": "broadcast_persistent", "scene": OSD,
+          "hide": ["broadcast_logos"] }
+    ]));
+    let out = compose(&stock, std::slice::from_ref(&input)).unwrap();
+    assert!(check::uncovered(&stock, &out.archives).unwrap().is_empty());
+    let carriers = stock
+        .carriers(&[OSD, BROADCAST_UI, PERSISTENT_UI, PERSISTENT_SCREEN])
+        .unwrap();
+    for (name, erps) in &carriers {
+        assert!(!erps.is_empty(), "{name}");
+        assert_eq!(over(&out, name), erps.iter().cloned().collect(), "{name}");
+    }
+    let osd = element_paths(&one_copy(&out, OSD));
+    for el in [
+        "broadcast_ui_generic",
+        "driver_of_the_day",
+        "broadcast_radio_emote",
+    ] {
+        let want = format!("osd_screens.intros_and_outros.null_override.sa_after_w_{el}.{el}");
+        assert!(osd.contains(&want), "{want}");
+    }
+    assert!(!osd.iter().any(|p| p.contains("sa_after_w_broadcast_logos")));
+    let subs = element_paths(&one_copy(&out, PERSISTENT_SCREEN));
+    assert!(
+        subs.iter()
+            .any(|p| p.ends_with("sa_after_w_subtitles_generic.subtitles_generic")),
+        "{subs:?}"
+    );
+    let node_at = |ui: &str, path: &str| {
+        let t = Pkg::parse(&one_copy(&out, ui)).unwrap();
+        let at = crate::ui::node::find_path(&t.root, path).unwrap_or_else(|_| panic!("{path}"));
+        crate::ui::node::node_at(&t.root, &at).unwrap().clone()
+    };
+    let checks = [
+        (
+            BROADCAST_UI,
+            "broadcast_persistent.sa_after_sn0",
+            "broadcast_ui_generic",
+            YIELD_LEAF,
+        ),
+        (
+            BROADCAST_UI,
+            "broadcast_persistent.sa_after_sn0",
+            "driver_of_the_day",
+            YIELD_LEAF,
+        ),
+        (
+            BROADCAST_UI,
+            "broadcast_persistent.sa_after_sn0",
+            "broadcast_radio_emote",
+            YIELD_LEAF,
+        ),
+        (
+            PERSISTENT_UI,
+            "persistent.subtitles.sa_after_sn1",
+            "subtitles_generic",
+            SUBS_LEAF,
+        ),
+        (BROADCAST_UI, "broadcast_persistent.sa_after_sn4", "", YIELD_LEAF),
+    ];
+    for (ui, group, el, leaf) in checks {
+        let (path, chain) = match el {
+            "" => (format!("{group}.v_broadcast_logos"), "broadcast_logos".to_owned()),
+            el => (format!("{group}.v_w_{el}"), format!("sa_after_w_{el}")),
+        };
+        let n = node_at(ui, &path);
+        assert_eq!(chain_of(&n), vec![chain], "{path}");
+        let vis = n.props().unwrap().get("visible").unwrap().as_obj().unwrap();
+        assert_eq!(vis.str_at("dbentry").unwrap(), format!("#{leaf}"), "{path}");
+        assert_eq!(
+            vis.get("dbentrynegate")
+                .and_then(|v| v.as_val())
+                .and_then(stock_edit::as_bool),
+            Some(true),
+            "{path}"
+        );
+    }
+    let stock_ui = Pkg::parse(&stock.read(dials::STOCK_ERP, BROADCAST_UI).unwrap()[0]).unwrap();
+    let ours = node_at(BROADCAST_UI, "broadcast_persistent.broadcast_ui_generic_small");
+    let at = crate::ui::node::find_path(&stock_ui.root, "broadcast_persistent.broadcast_ui_generic_small")
+        .unwrap();
+    assert_eq!(
+        crate::ui::node::canonical(&ours),
+        crate::ui::node::canonical(crate::ui::node::node_at(&stock_ui.root, &at).unwrap())
+    );
+    for (i, what) in [(2, "no_such_node"), (3, "no_such_element")] {
+        assert!(
+            out.lines
+                .iter()
+                .any(|l| l.starts_with("sa_after: stock_nodes broadcast_persistent.ui")
+                    && l.contains("left out")
+                    && l.contains(what)),
+            "entry {i}: {:#?}",
+            out.lines
+        );
+    }
+    assert!(
+        out.lines
+            .iter()
+            .any(|l| l == "sa_after: broadcast_persistent.ui broadcast_persistent hides 3 elements of osd.idf (3 through a new wrapper null) while view_model_data.hud_y_on is on"),
+        "{:#?}",
+        out.lines
+    );
+}
+
+#[test]
+fn two_yield_records_hide_nodes_of_one_screen_each_on_its_own_leaf() {
+    let Some(stock) = game() else { return };
+    let record = |key: &str, nodes: serde_json::Value| Input {
+        addon: "swofty.after".into(),
+        key: key.into(),
+        dir: std::env::temp_dir(),
+        record: HudElement::parse(&serde_json::json!({
+            "prefix": format!("sa_{key}"),
+            "yield": { "while": { "view_model": format!("view_model_data.hud_sa_{key}") } },
+            "stock_nodes": nodes
+        }))
+        .unwrap(),
+    };
+    let inputs = [
+        record(
+            "after",
+            serde_json::json!([{ "ui": "screens/broadcast_persistent.ui", "template": "broadcast_persistent",
+                                 "scene": OSD, "wrap": ["broadcast_ui_generic", "driver_of_the_day"] }]),
+        ),
+        record(
+            "radio",
+            serde_json::json!([
+                { "ui": "screens/broadcast_persistent.ui", "template": "broadcast_persistent",
+                  "scene": OSD, "wrap": ["broadcast_radio_emote"] },
+                { "ui": "screens/persistent.ui", "template": "persistent.subtitles",
+                  "scene": PERSISTENT_SCREEN, "wrap": ["subtitles_generic"] }
+            ]),
+        ),
+    ];
+    let out = compose(&stock, &inputs).unwrap();
+    assert!(check::uncovered(&stock, &out.archives).unwrap().is_empty());
+    let osd = element_paths(&one_copy(&out, OSD));
+    for (pfx, el) in [
+        ("sa_after", "broadcast_ui_generic"),
+        ("sa_after", "driver_of_the_day"),
+        ("sa_radio", "broadcast_radio_emote"),
+    ] {
+        let want = format!("osd_screens.intros_and_outros.null_override.{pfx}_w_{el}.{el}");
+        assert!(osd.contains(&want), "{want}");
+    }
+    let ui = Pkg::parse(&one_copy(&out, BROADCAST_UI)).unwrap();
+    for (path, leaf) in [
+        (
+            "broadcast_persistent.sa_after_sn0.v_w_driver_of_the_day",
+            "view_model_data.hud_sa_after",
+        ),
+        (
+            "broadcast_persistent.sa_radio_sn0.v_w_broadcast_radio_emote",
+            "view_model_data.hud_sa_radio",
+        ),
+    ] {
+        let at = crate::ui::node::find_path(&ui.root, path).unwrap_or_else(|_| panic!("{path}"));
+        let n = crate::ui::node::node_at(&ui.root, &at).unwrap();
+        let vis = n.props().unwrap().get("visible").unwrap().as_obj().unwrap();
+        assert_eq!(vis.str_at("dbentry").unwrap(), format!("#{leaf}"), "{path}");
+    }
+    assert!(
+        !out.lines.iter().any(|l| l.contains("left out")),
+        "{:#?}",
+        out.lines
+    );
+}
