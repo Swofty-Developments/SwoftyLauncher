@@ -1174,9 +1174,9 @@ typedef struct SwoftyContentOps {
    zero, never another car's value. Calls answer SWOFTY_ASSET_UNAVAILABLE while no session is live, the build is
    not the one the offsets are from, or the group is off because a KB row it needs has no independent verify row
    yet (the core logs "live <group> off: needs <row>" once), and SWOFTY_ASSET_INVALID for a bad argument.
-   Table version 6 appends car_detail; version 5 appends tyre_icon_texture; version 4 appends images (see
+   Table version 7 appends driver_portrait; version 6 appends car_detail; version 5 appends tyre_icon_texture; version 4 appends images (see
    swofty/live_images.h); version 3 appends team_badge_texture. Check version >= 6 before calling car_detail and
-   version >= 5 before reading tyre_icon_texture.
+   version >= 5 before reading tyre_icon_texture, and version >= 7 before calling driver_portrait.
    Version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
    check version >= 3 before calling team_badge_texture and version >= 2 before calling driver_name.
    session: the session header. car: one car by vehicle id. subject: the watched car while the spectator HUD is
@@ -1195,7 +1195,7 @@ typedef struct SwoftyContentOps {
    Steam 26566308 build use the saved assignment for the active mode and loaded career slot; an unavailable
    saved assignment is not replaced by the entrant fallback.
    SWOFTY_ASSET_UNAVAILABLE when the reference cannot be read or the path does not fit cap. */
-#define SWOFTY_LIVE_VERSION 6
+#define SWOFTY_LIVE_VERSION 7
 #define SWOFTY_LIVE_MAX_CARS 32
 #define SWOFTY_LIVE_NO_GAP INT32_MIN
 
@@ -1504,6 +1504,13 @@ typedef struct SwoftyLive {
     int (*tyre_icon_texture)(uint32_t vehicle, char *path, uint32_t cap);
     /* Version 6: one car's SwoftyLiveCarDetail by vehicle id, from the same snapshot as car. */
     int (*car_detail)(uint32_t vehicle, SwoftyLiveCarDetail *out);
+    /* Version 7: the car's grid rundown portrait as a reference for images()->image or images()->image_full
+       ("eaid://game_rtt_tex_NNNN", 25 bytes with its NUL), read from the view model leaf the game binds for the
+       driver of the car's session entrant (<driver>.textures.GridRundownLeft.Thumbnail, else GridRundownRight).
+       UNAVAILABLE while the entrant, its driver or the leaf is not there (no rundown queued, or before the race load
+       asks for it), INVALID for a short buffer or a bad car. The reference can come before its pixels: image answers
+       UNAVAILABLE until the capture armed by images()->start_portraits has read them. */
+    int (*driver_portrait)(uint32_t vehicle, char *reference, uint32_t cap);
 } SwoftyLive;
 
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi

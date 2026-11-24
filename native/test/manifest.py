@@ -193,6 +193,7 @@ UNITS = [
     Unit('tyre_models', 'Tyre model check unit test'),
     Unit('tyre_slots', 'Tyre slot guard unit test'),
     Unit('ui_registry_walk', 'UI registry walk unit test'),
+    Unit('driver_portraits', 'Driver portrait names, view model paths and pixel rows unit test'),
     Unit('watchdog_grace', 'Boot watchdog grace unit test'),
     Unit('weather_chain', 'Weather setup chain order rules unit test'),
     Unit('events_dispatch', 'Events dispatcher unit test', 'zig'),

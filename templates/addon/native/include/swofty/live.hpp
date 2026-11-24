@@ -201,6 +201,56 @@ inline const SwoftyLiveImages *images()
     return t && t->version >= 4 && t->images ? t->images() : nullptr;
 }
 
+// Grid rundown driver portraits (table version 7, images table version 2). Call start_portraits() before the race
+// loads; the game renders each portrait once there, and only when it queues the grid rundown.
+inline bool start_portraits()
+{
+    const auto *i = images();
+    return i && i->version >= 2 && i->start_portraits && i->start_portraits(0) == SWOFTY_ASSET_OK;
+}
+
+// The car's portrait reference ("eaid://game_rtt_tex_NNNN"), for images()->image (64x64 at most) or portrait_image.
+inline std::optional<std::string> driver_portrait(uint32_t vehicle)
+{
+    const auto *t = detail::table();
+    char reference[64] = {};
+    if (!t || t->version < 7 || !t->driver_portrait ||
+        t->driver_portrait(vehicle, reference, sizeof reference) != SWOFTY_ASSET_OK)
+        return std::nullopt;
+    return std::string(reference);
+}
+
+struct Image {
+    uint32_t width = 0, height = 0;
+    uint64_t revision = 0;
+    std::vector<uint8_t> rgba;
+};
+
+// A reference's pixels at full size through images()->image_full: RGBA8 rows, width * 4 bytes each, alpha kept.
+inline std::optional<Image> portrait_image(const std::string &reference)
+{
+    const auto *i = images();
+    if (!i || i->version < 2 || !i->image_full)
+        return std::nullopt;
+    Image out;
+    if (i->image_full(reference.c_str(), nullptr, 0, &out.width, &out.height, &out.revision) != SWOFTY_ASSET_INVALID ||
+        !out.width || !out.height || out.width > SWOFTY_LIVE_PORTRAIT_MAX_SIDE || out.height > SWOFTY_LIVE_PORTRAIT_MAX_SIDE)
+        return std::nullopt;
+    out.rgba.resize(size_t(out.width) * out.height * 4);
+    if (i->image_full(reference.c_str(), out.rgba.data(), uint32_t(out.rgba.size()), &out.width, &out.height,
+                      &out.revision) != SWOFTY_ASSET_OK ||
+        size_t(out.width) * out.height * 4 > out.rgba.size())
+        return std::nullopt;
+    out.rgba.resize(size_t(out.width) * out.height * 4);
+    return out;
+}
+
+inline std::optional<Image> driver_portrait_image(uint32_t vehicle)
+{
+    auto reference = driver_portrait(vehicle);
+    return reference ? portrait_image(*reference) : std::nullopt;
+}
+
 inline std::optional<uint64_t> frame()
 {
     auto t = detail::table();

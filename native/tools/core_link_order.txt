@@ -101,6 +101,7 @@ src/core/render/d3d12/arm_gate.cpp
 src/core/render/grade.cpp
 src/core/render/badges/badge_images.cpp
 src/core/render/badges/trace.cpp
+src/core/render/portraits/driver_portraits.cpp
 src/core/render/postfx.cpp
 src/core/live/live_car.cpp
 src/core/frontend/view_state.cpp

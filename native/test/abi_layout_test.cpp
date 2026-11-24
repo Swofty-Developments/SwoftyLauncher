@@ -194,7 +194,7 @@ int main()
     expect(SWOFTY_LIVE_HAVE_GRID == (1ull << 29) && SWOFTY_LIVE_HAVE_LAP_TIMES == (1ull << 30) &&
                SWOFTY_LIVE_HAVE_TYRE_AGE == (1ull << 31) && SWOFTY_LIVE_HAVE_TYRE_WEAR == (1ull << 17),
            "version 6 adds the grid, lap times and tyre age bits and fills the tyre wear bit");
-    expect(sizeof(SwoftyLiveSession) == 440 && sizeof(SwoftyLiveCarDetail) == 160 && SWOFTY_LIVE_VERSION == 6,
+    expect(sizeof(SwoftyLiveSession) == 440 && sizeof(SwoftyLiveCarDetail) == 160 && SWOFTY_LIVE_VERSION >= 6,
            "the session keeps its size and the car detail is 160 bytes");
     expect(SWOFTY_LIVE_HAVE_GARAGE == (1ull << 27) &&
                !(SWOFTY_LIVE_HAVE_GARAGE & (SWOFTY_LIVE_HAVE_PIT_LANE | SWOFTY_LIVE_HAVE_GAP_AHEAD)),

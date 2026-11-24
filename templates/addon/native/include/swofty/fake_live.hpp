@@ -35,8 +35,10 @@ public:
         std::memset(present_, 0, sizeof present_);
         table_ = {SWOFTY_LIVE_VERSION, &Live::t_available, &Live::t_session, &Live::t_car, &Live::t_subject,
                   &Live::t_turn,       &Live::t_track_turns, &Live::t_badge, &Live::t_seq,
-                  &Live::t_driver_name, &Live::t_badge_texture, nullptr, &Live::t_tyre_icon_texture,
-                  &Live::t_car_detail};
+                  &Live::t_driver_name, &Live::t_badge_texture, &Live::t_images, &Live::t_tyre_icon_texture,
+                  &Live::t_car_detail, &Live::t_driver_portrait};
+        images_ = {2, &Live::t_start, &Live::t_sources, &Live::t_image, &Live::t_clear, &Live::t_start_portraits,
+                   &Live::t_image_full};
     }
 
     ~Live() { uninstall(); }
@@ -119,8 +121,18 @@ public:
     void set_badge(uint32_t vehicle, const std::string &key) { badges_[vehicle] = key; }
     void set_driver_name(uint32_t vehicle, const std::string &name) { names_[vehicle] = name; }
     // Answer as an older core does: version 1 has no driver_name member, version 2 no team_badge_texture member,
-    // version 5 no car_detail member.
+    // version 5 no car_detail member, version 6 no driver_portrait member.
     void set_table_version(uint32_t v) { table_.version = v; }
+    // The images table: version 1 has no start_portraits or image_full member.
+    void set_images_version(uint32_t v) { images_.version = v; }
+    void set_driver_portrait(uint32_t vehicle, const std::string &reference) { portraits_[vehicle] = reference; }
+    // Pixels for a reference, tight RGBA8 rows of width * height * 4 bytes: image_full answers them, and image too when
+    // they are at most 64 on a side.
+    void set_image(const std::string &reference, uint32_t width, uint32_t height, std::vector<uint8_t> rgba)
+    {
+        pixels_[reference] = Pixels{width, height, ++revision_, std::move(rgba)};
+    }
+    bool portraits_started() const { return portraits_started_; }
     void set_badge_texture(uint32_t vehicle, const std::string &path) { textures_[vehicle] = path; }
     void set_tyre_icon_texture(uint32_t vehicle, const std::string &path) { tyre_textures_[vehicle] = path; }
     void advance() { frame_++; }
@@ -261,6 +273,67 @@ private:
         return SWOFTY_ASSET_OK;
     }
 
+    static const SwoftyLiveImages *t_images() { return current() ? &current()->images_ : nullptr; }
+    static int t_start() { return SWOFTY_ASSET_OK; }
+    static int t_sources(char *, uint32_t, uint64_t *) { return SWOFTY_ASSET_UNAVAILABLE; }
+    static void t_clear() {}
+
+    static int t_start_portraits(uint32_t flags)
+    {
+        if (flags)
+            return SWOFTY_ASSET_INVALID;
+        if (current())
+            current()->portraits_started_ = true;
+        return SWOFTY_ASSET_OK;
+    }
+
+    static int t_pixels(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *width, uint32_t *height,
+                        uint64_t *revision, uint32_t max_side)
+    {
+        if (!reference || !width || !height || !revision)
+            return SWOFTY_ASSET_INVALID;
+        if (!current())
+            return SWOFTY_ASSET_UNAVAILABLE;
+        const auto it = current()->pixels_.find(reference);
+        if (it == current()->pixels_.end() || it->second.width > max_side || it->second.height > max_side)
+            return SWOFTY_ASSET_UNAVAILABLE;
+        *width = it->second.width;
+        *height = it->second.height;
+        *revision = it->second.revision;
+        if (!rgba || cap < it->second.rgba.size())
+            return SWOFTY_ASSET_INVALID;
+        std::memcpy(rgba, it->second.rgba.data(), it->second.rgba.size());
+        return SWOFTY_ASSET_OK;
+    }
+
+    static int t_image(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *width, uint32_t *height,
+                       uint64_t *revision)
+    {
+        return t_pixels(reference, rgba, cap, width, height, revision, 64);
+    }
+
+    static int t_image_full(const char *reference, uint8_t *rgba, uint32_t cap, uint32_t *width, uint32_t *height,
+                            uint64_t *revision)
+    {
+        return t_pixels(reference, rgba, cap, width, height, revision, SWOFTY_LIVE_PORTRAIT_MAX_SIDE);
+    }
+
+    static int t_driver_portrait(uint32_t vehicle, char *reference, uint32_t cap)
+    {
+        if (!reference || cap < 2 || vehicle >= SWOFTY_LIVE_MAX_CARS)
+            return SWOFTY_ASSET_INVALID;
+        reference[0] = 0;
+        if (!t_available() || !current()->present_[vehicle])
+            return SWOFTY_ASSET_UNAVAILABLE;
+        const auto it = current()->portraits_.find(vehicle);
+        if (it == current()->portraits_.end() || it->second.empty())
+            return SWOFTY_ASSET_UNAVAILABLE;
+        if (it->second.size() + 1 > cap)
+            return SWOFTY_ASSET_INVALID;
+        std::memcpy(reference, it->second.c_str(), it->second.size() + 1);
+        return SWOFTY_ASSET_OK;
+    }
+
     static int t_car_detail(uint32_t vehicle, SwoftyLiveCarDetail *out)
     {
         if (!t_available())
@@ -284,7 +357,17 @@ private:
     std::map<uint32_t, std::string> badges_, textures_;
     std::map<uint32_t, std::string> tyre_textures_;
     std::map<uint32_t, std::string> names_;
+    std::map<uint32_t, std::string> portraits_;
+    struct Pixels {
+        uint32_t width, height;
+        uint64_t revision;
+        std::vector<uint8_t> rgba;
+    };
+    std::map<std::string, Pixels> pixels_;
+    uint64_t revision_ = 0;
+    bool portraits_started_ = false;
     SwoftyLive table_;
+    SwoftyLiveImages images_;
 };
 
 }
