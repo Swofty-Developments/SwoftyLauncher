@@ -84,8 +84,8 @@ inline std::string raise_line(uint32_t game, uint32_t now, bool from_env)
         std::snprintf(b, sizeof b,
                       "[collision] tile pool: world-1 large-geom pool %u -> %u objects (%s), %.1f MiB instead of %.1f MiB; "
                       "track collision tiles beyond the game's ~1640 no longer go missing",
-                      game, now, from_env ? "SWOFTY_COLLISION_GEOM_POOL" : "default",
-                      double(pool_bytes(now)) / 1048576.0, double(pool_bytes(game)) / 1048576.0);
+                      game, now, from_env ? "SWOFTY_COLLISION_GEOM_POOL" : "default", double(pool_bytes(now)) / 1048576.0,
+                      double(pool_bytes(game)) / 1048576.0);
     return b;
 }
 
