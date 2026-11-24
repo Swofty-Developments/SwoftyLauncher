@@ -150,6 +150,12 @@ fn the_popup_gate_leaves_stock_popups_alone() {
 }
 
 #[test]
+fn the_popup_gate_goes_in_once() {
+    let gated = persistent_gate(&stock_popup()).unwrap();
+    assert_eq!(persistent_gate(&gated).unwrap(), gated);
+}
+
+#[test]
 fn a_signal_to_the_popup_labels_fails_the_check() {
     let stock = stock_popup();
     let gated = edit(&persistent_gate(&stock).unwrap(), |p| {
