@@ -7,6 +7,7 @@ mod graphics;
 mod hang;
 mod hooks;
 mod logos;
+mod long_log;
 mod memory;
 mod saves;
 mod slow_init;
