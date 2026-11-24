@@ -624,7 +624,8 @@ static void continue_tests()
     none.ready = true;
     expect(era::track_missing(none, "game/melbourne").empty() && era::track_missing(none, "game/silverstone").empty(),
            "a stock track loads when the base holds no tracks (no track addon on)");
-    expect(era::track_missing(none, "game/austria_reverse").empty() && era::track_missing(none, "game/silverstone_reverse").empty() &&
+    expect(era::track_missing(none, "game/austria_reverse").empty() &&
+               era::track_missing(none, "game/silverstone_reverse").empty() &&
                era::track_missing(none, "game/zandvoort_reverse").empty(),
            "a stock reverse layout loads when the base holds no tracks (no track addon on)");
     expect(era::track_missing(base, "game/austria_reverse").empty(), "a stock reverse layout missing from a built base loads");
