@@ -6,9 +6,9 @@
  "row": {
   "addr": "0x141844a72",
   "type": "code",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "evidence": "xref:0x141841a70,0x14184236e,0x1418449c3,0x141844a4c,0x141844a72;sig:game.grid_rundown_team_logo_bind",
+  "evidence": "decomp:own disasm 0x141843640-0x1418461a0 (driver info builder) and 0x141841a70 (card fill);xref:0x141841a70,0x14184236e,0x1418449c3,0x141844a4c,0x141844a72",
   "notes": "The broadcast grid rundown card's team logo. Card fill 0x141841a70 declares the 'team' holder at +0x148. In the driver info builder 0x141843640, 0x1418449c3 calls 0x1423eee30 (a thunk into the protected section) with edx = [rdi-0x10], the entrant's team key: set in byte 0, stat id in the high word, 0x3fff = no team. It returns at [rsp+0x178] an entry whose +8 holds a node handle. The entrants UI loader (Steam 0x1424b2a10, 'UI Texture Asset: couldn't find valid handle for path %s') resolves that handle once at boot from '#overrides.broadcast_ui_generic.grid_team_logos.<texture key>' through Vm_Resolve_RegistryNode; scene5 log, caller Steam 0x1424b30c0. At this site (0x141844a72, mov rax,[rcx]), rcx is the address of the handle the holder takes: [rsp+0x178]+8, or r12 when there is no entry. The code then links the handle and binds the holder through Steam 0x140977b70, after the same holder type check (Steam 0x146ca7550) the menu logo binder makes after its own Vm_Resolve_RegistryNode call (Steam 0x141687b03). rcx is not read after the load, and rdi still holds the entrant. Steam 26566308: 0x141846252."
  },
  "signature": {
@@ -27,7 +27,7 @@
   ],
   "verified": [
    {
-    "build": "d873a1c8d2044cef",
+    "build": "46009bd31f49d93a",
     "date": "2026-11-24",
     "by": "vmknolle",
     "how": "static"
@@ -35,7 +35,33 @@
   ],
   "used_by": [
    "native/src/core/hooks/game_points.cpp"
-  ]
+  ],
+  "expect": "48 8B 01 48 85 C0",
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14184622c",
+  "made_on_target": "0x141846252",
+  "twin": "made on steam-26566308; the target 0x141846252 is KB 0x141844a72: Game_SessionResults_PopulateTable (0x1836b70) and Career_Bind_SpecialistUpgradeText (0x185ad60) on either side both sit 0x17e0 above their KB addresses"
  },
- "proofs": []
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vmknolle",
+   "date": "2026-11-24",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14184622c",
+    "target": "0x141846252"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0bfa218733c65e44698b1eef7f1d805c6525baeaf1442cc288fc3a5d303ac086"
+  }
+ ]
 }

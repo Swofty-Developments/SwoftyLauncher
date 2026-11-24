@@ -178,8 +178,7 @@ constexpr LogoSite LOGO_SITES[] = {
     // The Choose Driver grid cards (Game_DriverSelect_AddCard): their team logo is the broadcast badge.
     {"site_Game_DriverSelect_BadgeFormat", swofty::teams::LogoContext::driver_select, "teams.badges_broadcast"},
     // The broadcast grid rundown cards before the race: rcx points at the handle the card's 'team' holder takes.
-    {"site_Game_GridRundown_TeamLogoBind", swofty::teams::LogoContext::broadcast, "broadcast_ui_generic.grid_team_logos",
-     true},
+    {"site_Game_GridRundown_TeamLogoBind", swofty::teams::LogoContext::broadcast, "broadcast_ui_generic.grid_team_logos", true},
 };
 constexpr size_t LOGO_SITE_COUNT = sizeof(LOGO_SITES) / sizeof(LOGO_SITES[0]);
 constexpr const char *LOGO_POINT = "team.logo.resolve";
@@ -292,8 +291,7 @@ void note_card(const std::string &label, uint32_t stat, const std::string &key, 
     std::lock_guard<std::mutex> g(*m);
     if (seen->size() >= LOGGED_CARDS || !seen->insert(label + "/" + key).second)
         return;
-    swofty::log("[hooks] team.logo.resolve: grid rundown card %s (stat %u) -> %s: %s", label.c_str(), stat, key.c_str(),
-                result);
+    swofty::log("[hooks] team.logo.resolve: grid rundown card %s (stat %u) -> %s: %s", label.c_str(), stat, key.c_str(), result);
 }
 
 // At the card's 'team' holder bind: rcx is the address of the handle the holder takes (the team's boot-resolved
@@ -325,6 +323,9 @@ void logo_team_select(safetyhook::Context &c) { logo_site(LOGO_SITES[1], c); }
 void logo_driver_card(safetyhook::Context &c) { logo_site(LOGO_SITES[2], c); }
 void logo_grid_rundown(safetyhook::Context &c) { logo_grid_card(LOGO_SITES[3], c); }
 
+constexpr safetyhook::MidHookFn LOGO_FNS[] = {&logo_driver_select, &logo_team_select, &logo_driver_card, &logo_grid_rundown};
+static_assert(sizeof(LOGO_FNS) / sizeof(LOGO_FNS[0]) == LOGO_SITE_COUNT);
+
 class LogoLink final : public GameLink {
 public:
     explicit LogoLink(GameOps ops) : ops_(std::move(ops)) {}
@@ -334,8 +335,6 @@ public:
         std::lock_guard<std::recursive_mutex> g(lock_);
         if (live_)
             return true;
-        constexpr safetyhook::MidHookFn FNS[LOGO_SITE_COUNT] = {&logo_driver_select, &logo_team_select, &logo_driver_card,
-                                                                 &logo_grid_rundown};
         // The grid card site swaps through the registry resolver; without it that site stays stock.
         vm_resolve = ops_.resolve ? ops_.resolve("Vm_Resolve_RegistryNode") : 0;
         vm_registry = ops_.resolve ? ops_.resolve("g_Vm_Registry") : 0;
@@ -360,7 +359,7 @@ public:
                 log(std::string("[hooks] team.logo.resolve: ") + b + " is occupied by " + there + "; that site stays stock");
                 continue;
             }
-            auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), FNS[i]);
+            auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), LOGO_FNS[i]);
             if (!h) {
                 log(std::string("[hooks] team.logo.resolve: the hook on ") + b + " failed: " + runtime::hook_error(h.error()));
                 continue;
