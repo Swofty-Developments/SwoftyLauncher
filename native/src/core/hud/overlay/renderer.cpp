@@ -412,6 +412,7 @@ Renderer::Outcome Renderer::render(const Target &t, ID3D12CommandQueue *q, const
     l->ResourceBarrier(2, two);
     layer_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     l->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
+    l->RSSetScissorRects(1, &box);
     l->SetGraphicsRootSignature(comp_root);
     l->SetDescriptorHeaps(1, &srv_heap);
     uint32_t k[2] = {mode, 0};
