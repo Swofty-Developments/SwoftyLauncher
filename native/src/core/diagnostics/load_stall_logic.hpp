@@ -336,4 +336,46 @@ private:
     }
 };
 
+constexpr uint32_t kStateFrontendWorld = 0x290b11ae;
+constexpr uint32_t kStateIntro = 0xa4d3a4b2;
+constexpr uint32_t kStateFtue = 0x04fc8ffa;
+constexpr uint32_t kStateOnlineFrontend = 0x5f9ae18b;
+constexpr uint64_t kFrontendMs = 60000;
+
+// The front end entered StateFrontendWorld and the title (StateIntro) never followed: healthy boots reach it 7 to 33 s
+// later, while a boot stuck on seizure_warning keeps drawing and so never trips the load-stall watch. Armed by
+// StateFrontendWorld Entering, disarmed by StateIntro Entering, by any later front-end state or by a session load
+// (a direct start skips the title), and due once after ms.
+struct FrontendStall {
+    bool armed = false;
+    bool fired = false;
+    uint64_t since = 0;
+
+    void flow(uint32_t hash, uint32_t to, const char *name, uint64_t now)
+    {
+        if (hash == kStateFrontendWorld) {
+            if (to == Entering && !armed && !fired) {
+                armed = true;
+                since = now;
+            } else if (to == Exiting || to == None)
+                armed = false;
+            return;
+        }
+        if (to != Entering)
+            return;
+        if (hash == kStateIntro || hash == kStateFtue || hash == kStateOnlineFrontend ||
+            (name && (!std::strcmp(name, "StateLoadSession") || !std::strcmp(name, "StateSession"))))
+            armed = false;
+    }
+
+    bool due(uint64_t now, uint64_t ms)
+    {
+        if (!armed || fired || now < since || now - since < ms)
+            return false;
+        fired = true;
+        armed = false;
+        return true;
+    }
+};
+
 }

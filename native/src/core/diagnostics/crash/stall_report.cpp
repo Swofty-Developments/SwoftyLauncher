@@ -43,6 +43,7 @@ struct Sampled {
     LONG priority;
     bool walked, faulted, self_thread, writer_thread;
     int frames, same_as;
+    uint64_t cpu_ms;
     uint64_t rip[STALL_FRAMES], rsp[STALL_FRAMES];
     uint64_t regs[runtime::stall_order::kRegs];
     runtime::stall_order::Kept kept;
@@ -168,6 +169,11 @@ int stall_sample()
             CloseHandle(h);
             continue;
         }
+        FILETIME created, exited, kernel, user;
+        if (GetThreadTimes(h, &created, &exited, &kernel, &user))
+            s.cpu_ms = (((uint64_t(kernel.dwHighDateTime) << 32) | kernel.dwLowDateTime) +
+                        ((uint64_t(user.dwHighDateTime) << 32) | user.dwLowDateTime)) /
+                       10000;
         alignas(16) CONTEXT ctx{};
         ctx.ContextFlags = CONTEXT_FULL;
         if (GetThreadContext(h, &ctx)) {
@@ -226,8 +232,9 @@ void stall_threads_text(int n)
     for (int i = 0; i < n; i++) {
         const Sampled &s = stall_threads[i];
         const char *wait = s.walked ? wait_kind(s, kind, sizeof kind) : nullptr;
-        t.put("thread %lu%s%s%s, priority %ld%s%s%s%s\n", (unsigned long)s.tid, s.desc[0] ? " \"" : "", s.desc,
-              s.desc[0] ? "\"" : "", s.priority, s.self_thread ? " (the load-stall watchdog, not suspended)" : "",
+        t.put("thread %lu%s%s%s, priority %ld, cpu %llu ms%s%s%s%s\n", (unsigned long)s.tid, s.desc[0] ? " \"" : "", s.desc,
+              s.desc[0] ? "\"" : "", s.priority, (unsigned long long)s.cpu_ms,
+              s.self_thread ? " (the load-stall watchdog, not suspended)" : "",
               s.writer_thread ? " (the crash report writer, not suspended)" : "", wait ? ", waiting in " : "", wait ? wait : "");
         if (s.self_thread || s.writer_thread)
             continue;
@@ -272,8 +279,8 @@ void stall_running_text(int n)
     t.put("%s", block);
     for (int j = 0; j < k; j++) {
         const Sampled &s = stall_threads[pick[j]];
-        t.put("thread %lu%s%s%s, priority %ld, not in a wait%s\n", (unsigned long)s.tid, s.desc[0] ? " \"" : "", s.desc,
-              s.desc[0] ? "\"" : "", s.priority, s.kept.frame >= 0 ? ", in game code" : "");
+        t.put("thread %lu%s%s%s, priority %ld, cpu %llu ms, not in a wait%s\n", (unsigned long)s.tid, s.desc[0] ? " \"" : "",
+              s.desc, s.desc[0] ? "\"" : "", s.priority, (unsigned long long)s.cpu_ms, s.kept.frame >= 0 ? ", in game code" : "");
         t.put("  registers as suspended:\n");
         so::regs_text(s.regs, block, sizeof block);
         t.put("%s", block);

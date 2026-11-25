@@ -24,6 +24,9 @@
 // crash.cpp's log tap on the thread that logs it, and the boot watchdog grace holding the game's kill, on the game's
 // watchdog thread. Those threads only store the time in an atomic and set an event; the report runs here.
 //
+// The same thread writes one report per boot when StateFrontendWorld has been entered for 60 s without StateIntro
+// (FrontendStall in load_stall_logic.hpp; SWOFTY_FRONTEND_STALL_MS shortens it for tests).
+//
 // SWOFTY_LOAD_STALL=0 turns it off; SWOFTY_LOAD_STALL_MS sets the loading-screen threshold (tests). The test-only
 // SWOFTY_TEST_LOAD_STALL=<seconds> holds the first game thread that moves a flow to Exiting on a loading screen other
 // than the boot's splash_transition outside a session load, which is where the 1.9.9 load stopped, for that long;
@@ -37,6 +40,8 @@ namespace ls = runtime::load_stall;
 
 std::mutex lock;
 ls::Watch watch;
+ls::FrontendStall frontend;
+uint64_t frontend_ms = ls::kFrontendMs;
 std::atomic<bool> armed{false};
 uint64_t test_hold_ms = 0;
 char test_hold_at[ls::kName];
@@ -92,8 +97,10 @@ DWORD WINAPI loop(void *)
         else
             Sleep(1000);
         ls::Due d;
+        bool front = false;
         {
             std::lock_guard<std::mutex> g(lock);
+            front = frontend.due(GetTickCount64(), frontend_ms);
             for (uint32_t k = 0; k < ls::kTriggers; k++)
                 if (uint64_t at = signal_at[k].exchange(0))
                     watch.game(k, at, signal_ms[k].load());
@@ -110,6 +117,16 @@ DWORD WINAPI loop(void *)
         }
         if (d.report)
             runtime::stall_report(d.index, ls::kReportsPerStall, why, state);
+        if (front) {
+            swofty::log("[stall] the front end has been in StateFrontendWorld for %.1f s without the title (StateIntro)",
+                        double(frontend_ms) / 1000);
+            std::snprintf(why, sizeof why,
+                          "the front end has been in StateFrontendWorld for %.1f s and StateIntro (the title) has not followed",
+                          double(frontend_ms) / 1000);
+            std::snprintf(state, sizeof state, "frontend: StateFrontendWorld entered, no StateIntro after %llu ms\n",
+                          (unsigned long long)frontend_ms);
+            runtime::stall_report(1, 1, why, state);
+        }
     }
 }
 
@@ -141,6 +158,7 @@ void load_stall_flow(uint32_t hash, uint32_t to, const char *name)
     {
         std::lock_guard<std::mutex> g(lock);
         watch.flow(hash, to, name, GetTickCount64());
+        frontend.flow(hash, to, name, GetTickCount64());
         bool at = test_hold_at[0] ? to == ls::Entering && name && !std::strcmp(name, test_hold_at)
                                   : to == ls::Exiting && watch.in_loading_screen() && !watch.in_boot_loading_screen() &&
                                         !watch.session_flow();
@@ -177,6 +195,7 @@ void load_stall_setup()
     {
         std::lock_guard<std::mutex> g(lock);
         watch.loading_ms = std::max<uint64_t>(1000, env_number("SWOFTY_LOAD_STALL_MS", ls::kLoadingMs));
+        frontend_ms = std::max<uint64_t>(1000, env_number("SWOFTY_FRONTEND_STALL_MS", ls::kFrontendMs));
     }
     test_hold_ms = env_number("SWOFTY_TEST_LOAD_STALL", 0) * 1000;
     DWORD at_n = GetEnvironmentVariableA("SWOFTY_TEST_LOAD_STALL_AT", test_hold_at, sizeof test_hold_at);

@@ -74,8 +74,41 @@ static void stall_start(ls::Watch &w, uint64_t t)
     w.flow(0x455cf081, ls::Exiting, "#455cf081", t + 30);
 }
 
+static void frontend_stall()
+{
+    ls::FrontendStall f;
+    f.flow(ls::kStateFrontendWorld, ls::Entering, "#290b11ae", 1000);
+    CHECK(!f.due(1000 + ls::kFrontendMs - 1, ls::kFrontendMs));
+    CHECK(f.due(1000 + ls::kFrontendMs, ls::kFrontendMs));
+    CHECK(!f.due(1000 + ls::kFrontendMs * 5, ls::kFrontendMs));
+    f.flow(ls::kStateFrontendWorld, ls::Entering, "#290b11ae", 500000);
+    CHECK(!f.due(900000, ls::kFrontendMs));
+
+    ls::FrontendStall h;
+    h.flow(ls::kStateFrontendWorld, ls::Entering, "#290b11ae", 0);
+    h.flow(ls::kStateIntro, ls::Entering, "#a4d3a4b2", 2200);
+    CHECK(!h.due(500000, ls::kFrontendMs));
+
+    ls::FrontendStall ftue;
+    ftue.flow(ls::kStateFrontendWorld, ls::Entering, "#290b11ae", 0);
+    ftue.flow(ls::kStateFtue, ls::Entering, "#04fc8ffa", 3000);
+    CHECK(!ftue.due(500000, ls::kFrontendMs));
+
+    ls::FrontendStall direct;
+    direct.flow(ls::kStateFrontendWorld, ls::Entering, "#290b11ae", 0);
+    direct.flow(0x77, ls::Entering, "StateLoadSession", 3000);
+    CHECK(!direct.due(500000, ls::kFrontendMs));
+
+    ls::FrontendStall other;
+    other.flow(ls::kStateFrontendWorld, ls::Entering, "#290b11ae", 0);
+    other.flow(0xe4ef00ba, ls::Entering, "#e4ef00ba", 5);
+    other.flow(ls::kStateIntro, ls::Updating, "#a4d3a4b2", 6);
+    CHECK(other.due(ls::kFrontendMs, ls::kFrontendMs));
+}
+
 int main()
 {
+    frontend_stall();
     {
         ls::Watch w;
         CHECK(ls::kUnloadMs == 60000 && ls::kUnloadMs < ls::kSessionLoadMs);
