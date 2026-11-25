@@ -378,6 +378,8 @@ fn a_copy_changes_nothing_until_recover_switches_it() {
     assert_eq!(link::target(&default), Some(to.clone()));
     whole(&default);
     whole(&to);
+    assert!(dir.join("Local/Swofty.old").exists());
+    assert_eq!(finish_delete(&default), Some(None));
     assert!(!dir.join("Local/Swofty.old").exists());
     assert!(!journal_left(&default));
     assert!(recover(&default, &OTHER_DRIVE).is_none());
@@ -496,6 +498,7 @@ fn recover_finishes_a_move_that_crashed_after_setting_the_default_aside() {
     assert_eq!(done.to, to);
     assert_eq!(link::target(&default), Some(to.clone()));
     whole(&default);
+    assert_eq!(finish_delete(&default), Some(None));
     assert!(!dir.join("Swofty.old").exists());
 }
 
@@ -585,6 +588,8 @@ fn moves_a_linked_folder_again_by_copy_and_deletes_the_first_place() {
     recover(&default, &OTHER_DRIVE).unwrap().unwrap();
     assert_eq!(link::target(&default), Some(second.clone()));
     whole(&default);
+    assert!(first.exists());
+    assert_eq!(finish_delete(&default), Some(None));
     assert!(!first.exists());
 }
 
@@ -823,6 +828,7 @@ mod windows {
         assert!(same_path(&link::target(&default).unwrap(), &to));
         whole(&default);
         whole(&to);
+        finish_delete(&default);
         assert!(!dir.join("Local/Swofty.old").exists());
         assert!(!journal_left(&default));
     }
@@ -838,6 +844,7 @@ mod windows {
         recover(&default, &OTHER_DRIVE).unwrap().unwrap();
         assert!(same_path(&link::target(&default).unwrap(), &second));
         whole(&default);
+        finish_delete(&default);
         assert!(!first.exists());
     }
 }
@@ -856,4 +863,85 @@ fn the_real_folder_is_where_the_default_path_links() {
     let plain = dir.join("Plain");
     seed(&plain);
     assert_eq!(link::real_folder(&plain), plain);
+}
+
+fn copied_move(name: &str) -> (PathBuf, PathBuf, PathBuf) {
+    let dir = temp(name);
+    let (default, to) = (dir.join("Local/Swofty"), dir.join("D/SwoftyData"));
+    seed(&default);
+    let p = plan(&loc(&default), &to, &OTHER_DRIVE).unwrap();
+    move_data(&p, &OTHER_DRIVE, &Quiet, &no_cancel()).unwrap();
+    let old = dir.join("Local/Swofty.old");
+    (default, to, old)
+}
+
+#[test]
+fn recover_links_and_clears_the_journal_but_leaves_the_old_folder_for_later() {
+    let (default, to, old) = copied_move("deferred");
+    let done = recover(&default, &OTHER_DRIVE).unwrap().unwrap();
+    assert_eq!((done.to.clone(), done.leftover), (to.clone(), None));
+    assert!(!journal_left(&default));
+    assert_eq!(link::target(&default), Some(to.clone()));
+    whole(&to);
+    assert!(old.exists());
+    assert!(delete_pending(&default));
+    assert!(recover(&default, &OTHER_DRIVE).is_none());
+}
+
+#[test]
+fn the_deferred_delete_removes_only_the_old_folder() {
+    let (default, to, old) = copied_move("deferred-delete");
+    recover(&default, &OTHER_DRIVE).unwrap().unwrap();
+    assert_eq!(finish_delete(&default), Some(None));
+    assert!(!old.exists());
+    assert!(!delete_pending(&default));
+    whole(&to);
+    whole(&default);
+    assert_eq!(finish_delete(&default), None);
+}
+
+#[test]
+fn a_start_after_an_interrupted_delete_finishes_it() {
+    let (default, to, old) = copied_move("interrupted-delete");
+    recover(&default, &OTHER_DRIVE).unwrap().unwrap();
+    std::fs::remove_dir_all(old.join("saves")).unwrap();
+    assert!(old.exists() && delete_pending(&default));
+    assert!(recover(&default, &OTHER_DRIVE).is_none());
+    assert_eq!(finish_delete(&default), Some(None));
+    assert!(!old.exists());
+    assert!(!delete_pending(&default));
+    whole(&to);
+}
+
+#[test]
+fn the_deferred_delete_never_touches_the_new_folder() {
+    let (default, to, old) = copied_move("never-delete-new");
+    recover(&default, &OTHER_DRIVE).unwrap().unwrap();
+    for bad in [to.clone(), default.clone(), to.parent().unwrap().to_path_buf()] {
+        let pending = Pending {
+            old: bad,
+            to: to.clone(),
+            default: default.clone(),
+        };
+        pending.save().unwrap();
+        assert_eq!(finish_delete(&default), Some(None));
+        whole(&to);
+        whole(&default);
+    }
+    assert!(old.exists());
+}
+
+#[test]
+fn recovery_is_logged_next_to_the_journal() {
+    let (default, _, _) = copied_move("logged");
+    recover(&default, &OTHER_DRIVE).unwrap().unwrap();
+    let log = read(&default.with_file_name("swofty-data-move.log"));
+    for step in [
+        "finishing a move pending",
+        "checking the copy done",
+        "linking the default",
+        "switched to",
+    ] {
+        assert!(log.contains(step), "{step} missing from {log}");
+    }
 }
