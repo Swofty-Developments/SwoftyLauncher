@@ -70,14 +70,18 @@ fn keep_packs(e: &Evidence) -> Option<&'static str> {
 pub(super) const KEEP_SWOFTY_PACKS: &str = "Keep the SWOFTY season packs on (Progressive Career needs them for the next seasons); turn \
      off imported tracks that aren't in your calendar and other content addons you don't need.";
 
-const HEAP_ENV_STEP: &str = "To give the game more of this memory, open config.json in the launcher's data folder and add \
-     \"SWOFTY_GAME_HEAP_MB\": \"1024\" under \"env\" in \"launch\", then restart the launcher and press Play.";
+const HEAP_ENV_STEP: &str = "To give the game more of this memory, open config.json in the launcher's data folder \
+     (%LOCALAPPDATA%\\Swofty on Windows) and add \"SWOFTY_GAME_HEAP_MB\": \"1024\" under \"env\" in \"launch\", then restart the launcher and press Play.";
+
+/// The GAME_DEFAULT size the core picks on a PC under 12 GiB of RAM (`heap_sizes_logic.hpp` `small_mb`).
+const SMALL_RAM_HEAP_MIB: &str = "640 MiB";
 
 fn small_ram_heap(e: &Evidence) -> bool {
     e.loader.lines().any(|l| {
         l.contains("[heap] ")
             && l.contains("GAME_DEFAULT")
-            && l.contains("default for a machine under 12 GiB")
+            && (l.contains("default for a machine under 12 GiB")
+                || l.contains(&format!("GAME_DEFAULT heap armed: {SMALL_RAM_HEAP_MIB} ")))
     })
 }
 
@@ -170,9 +174,16 @@ pub(super) fn game_heap(e: &Evidence) -> Diagnosis {
             true => (first.clone(), first.clone()),
             false => (list(&tracks), "one of them".to_owned()),
         };
-        steps.push(format!(
-            "Turn off {which} in your profile, or make a lighter profile without it for the sessions it crashes in."
-        ));
+        steps.push(if all_years {
+            format!(
+                "For Grand Prix and Time Trial, turn off {which} or make a lighter profile without it. Keep it on \
+                 for a career whose calendar races there."
+            )
+        } else {
+            format!(
+                "Turn off {which} in your profile, or make a lighter profile without it for the sessions it crashes in."
+            )
+        });
         if !all_years {
             steps[0].push_str(&format!(
                 " In a My Team career whose next round is at {at}, change that round with the Career Mode Editor \
