@@ -67,39 +67,39 @@ can work. Everything is undone when the game exits.
 We may collect anonymised usage data from your use of the launcher.";
 
 /// The extension release this manager pins.
-pub const EXTENSION_VERSION: &str = "0.4.1";
+pub const EXTENSION_VERSION: &str = "0.4.2";
 /// Where the artifacts are hosted (binaries; source lives in the repository).
 pub const DEFAULT_BASE_URL: &str = "https://swofty-developments.github.io/F1-OfflinePlay";
 pub const SOURCE_URL: &str = "https://github.com/Swofty-Developments/F1-OfflinePlay";
 
-/// Pinned digests for release v0.4.1. Every artifact is checked against its
+/// Pinned digests for release v0.4.2. Every artifact is checked against its
 /// pin at install time and again at use time. The notice files are text that
 /// ships beside the binaries; they are verified like the rest but are never run
 /// or staged into the game folder.
 pub const PINS: &[(&str, &str)] = &[
     (
         "f1op_hook.dll",
-        "00440b83592df0b399e8d2b4b49e75e80c20f20cd3def1bbb7b5a21cbd02aefc",
+        "cac668452496d7a2cad29ea88aa61b79b33e7c7d098ecd3c6cd00dc29c536123",
     ),
     (
         "f1op_stub.exe",
-        "d383b475447dae816076187c4e92b5be2f57e314b9d071eb5f845d857ff0edae",
+        "0eff95197c1b694ef5ffcf43fac4d8f44293de59101760757c0dca9ee25c6e66",
     ),
     (
         "f1op-prelaunch.exe",
-        "25f6fa23a299eecaf2dc31b114aba3ee58bce7f1999d6bdf7694e0ef44e01efd",
+        "ae675620b38771df72435baa7ca2d5eed4b8a2015ebb954c99d5bef5b8c6dd1f",
     ),
     (
         "f1op-probe.exe",
-        "a39dec4161d4d9b1fa3f20e617a65bb84b0629d4b67712bcabb5e6a74340999e",
+        "85e9ebf2504ed662fc1c04c5849262bbe338ebc2edf921b7db7bf946b3558536",
     ),
     (
         "f1op-prelaunch-linux-x86_64",
-        "cada66597208fbee0f06ebf3a18f3e4086580b3051bbe203ce2ffa963ab197f2",
+        "c5cb7f47d673880c60c94ef37008f2f1ea00bebecee9fb26b8ce99073536a736",
     ),
     (
         "f1op-probe-linux-x86_64",
-        "f9bbef5f6fbeef303b35efa6ae69fe0ed987be7e9f45bebd195303c460e0350b",
+        "e25b4d354c2ca757a915f5317358a8d2135c8fde12c43c9199852550e0e13dc6",
     ),
     (
         "LICENSE.txt",
