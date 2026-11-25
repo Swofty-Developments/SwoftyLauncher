@@ -118,11 +118,11 @@ DWORD WINAPI loop(void *)
         if (d.report)
             runtime::stall_report(d.index, ls::kReportsPerStall, why, state);
         if (front) {
-            swofty::log("[stall] the front end has been in StateFrontendWorld for %llu s without the title (StateIntro)",
-                        (unsigned long long)(frontend_ms / 1000));
+            swofty::log("[stall] the front end has been in StateFrontendWorld for %.1f s without the title (StateIntro)",
+                        double(frontend_ms) / 1000);
             std::snprintf(why, sizeof why,
-                          "the front end has been in StateFrontendWorld for %llu s and StateIntro (the title) has not followed",
-                          (unsigned long long)(frontend_ms / 1000));
+                          "the front end has been in StateFrontendWorld for %.1f s and StateIntro (the title) has not followed",
+                          double(frontend_ms) / 1000);
             std::snprintf(state, sizeof state, "frontend: StateFrontendWorld entered, no StateIntro after %llu ms\n",
                           (unsigned long long)frontend_ms);
             runtime::stall_report(1, 1, why, state);
