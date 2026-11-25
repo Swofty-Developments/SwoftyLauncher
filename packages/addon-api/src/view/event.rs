@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+use crate::view::selection::SelectionDialog;
 use crate::view::style::{Icon, Style};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -62,6 +63,8 @@ pub enum ButtonSize {
 pub enum ButtonKind {
     #[default]
     Event,
+    /// A native choice dialog; confirmation sends Selected, cancellation sends nothing.
+    Selection(SelectionDialog),
     Confirm {
         title: String,
         text: String,
@@ -77,6 +80,10 @@ pub enum ButtonKind {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Event {
+    Selected {
+        id: String,
+        values: Vec<String>,
+    },
     Click {
         id: String,
     },

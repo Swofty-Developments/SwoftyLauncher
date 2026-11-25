@@ -660,6 +660,7 @@ fn hello(cx: &Cx) -> Hello {
         launcher: Some(env!("CARGO_PKG_VERSION").into()),
         host_calls: host_calls(cx),
         capabilities: vec![
+            swofty_addon::helper::VIEW_SELECTION_DIALOG.into(),
             swofty_addon::helper::VIEW_CHART.into(),
             swofty_addon::helper::VIEW_CHART_OPTIONS.into(),
             swofty_addon::helper::VIEW_CELL_IMAGE_DATA.into(),

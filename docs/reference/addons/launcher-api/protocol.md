@@ -88,6 +88,8 @@ Every session starts with `hello`. Reply `{"api":1}`: a plugin that answers with
 
 - `capabilities` is an optional list of supported view/protocol features. Treat an absent list as empty and ignore unknown entries. `"view.chart"` permits [native chart blocks](./charts); `"view.cell.image_data"` permits [table pictures supplied in memory](./tables#pictures-supplied-in-memory). Helpers must return a supported fallback when a capability is absent. This is separate from the callable methods in `host_calls`. From 1.10 `"build.reads"` means the launcher may answer a `build` with the reply of an earlier one ([reads](./build-reply#reads)).
 
+The optional `"view.selection_dialog"` capability permits [selection dialog buttons](./views#selection-dialogs) and their [`selected` event](./events). When absent, keep selections on the page instead of sending the new button kind. It does not add a host call or change the protocol API version.
+
 ### profile
 
 When the active profile has changed since the last call, the launcher sends a `profile` notification before the next request:

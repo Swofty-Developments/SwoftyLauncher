@@ -244,7 +244,8 @@ The smaller helper is in [Your first addon](./first-addon).
 - **[Views](./launcher-api/views)**: the page a section shows. {#views}
   - **Bodies**: `list`, `empty`, `blocks`.
   - **[Rows](./launcher-api/views#rows)**: art, tags, a trailing control, `detail` and a right-click `menu`.
-  - **[Buttons](./launcher-api/views#buttons)**: styles, sizes and kinds (`confirm`, `pick`).
+  - **[Buttons](./launcher-api/views#buttons)**: styles, sizes and kinds (`confirm`, `pick`, `selection`).
+  - **[Selection dialogs](./launcher-api/views#selection-dialogs)**: checkbox or radio choices inside a popup, gated by `view.selection_dialog`.
   - **[Tones](./launcher-api/views#tones)** and **[icons](./launcher-api/views#icons)**.
 - **[Events and effects](./launcher-api/events)**: what a control sends, and what the plugin answers. {#events-and-effects}
 - **[Blocks](./launcher-api/blocks)**: the content of a `blocks` body or a row's detail. {#dashboard-blocks}

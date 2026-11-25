@@ -48,6 +48,7 @@ plugin    {"id":5,"result":{"notice":"Imported okayama.exmod"}}
 
 ```json
 { "click": { "id": "remove" } }
+{ "selected": { "id": "drivers", "values": ["car-17", "car-21"] } }
 { "toggle": { "id": "okayama.exmod", "on": true } }
 { "choose": { "id": "livery", "index": 2 } }
 { "move": { "row": "okayama.exmod", "to": 0 } }
@@ -61,6 +62,7 @@ plugin    {"id":5,"result":{"notice":"Imported okayama.exmod"}}
 ```
 
 - **`click`**: a [button](./views#buttons), a ghost row, or a row [menu](./views#rows) item.
+- **`selected`**: confirmation of a [selection dialog](./views#selection-dialogs), when `hello.capabilities` lists `view.selection_dialog`. `id` is the originating button; `values` is the selection in option order, including an unchanged default. Cancel sends nothing. Validate the chosen IDs against current data before acting.
 - **`toggle`**: a switch.
 - **`choose`**: a choice control.
 - **`move`**: **Move up** or **Move down** in a `reorder` list.

@@ -122,6 +122,49 @@ kind omitted (default)                               fires { "click": { "id" } }
             "folders", "multiple" } }
 ```
 
+### Selection dialogs
+
+When `hello.capabilities` contains `"view.selection_dialog"`, a button may open a native selection dialog. Use it to choose recordings to delete, drivers to show, or what to export, without keeping those controls on the page. `packages/addon-api/examples/selection_dialogs.rs` demonstrates all three without deleting files.
+
+```json
+{
+  "id": "drivers",
+  "label": "Drivers…",
+  "kind": { "selection": {
+    "title": "Drivers",
+    "text": "Choose the drivers to show in the charts.",
+    "multiple": true,
+    "allow_empty": true,
+    "selected": ["car-17"],
+    "apply": "Apply",
+    "options": [
+      { "value": "car-17", "label": "Driver A", "group": "Team A" },
+      { "value": "car-21", "label": "Driver B", "group": "Team A" },
+      { "value": "car-3", "label": "Driver C", "group": "Team B", "help": "Car 3" }
+    ]
+  } }
+}
+```
+
+- `title` and `options` are required. `text` is an optional description or warning.
+- An option has a unique, non-empty `value` and a visible `label`. Optional `group` puts a heading above each consecutive group; keep teammates together in the option order. Optional `help` appears below the label.
+- `selected` is the initial list of option values, default empty. Unknown or repeated values are invalid.
+- `multiple: true` draws checkboxes with **Select all** and **Clear**. The default `false` draws single-choice radio buttons, such as Raw CSV data, Visuals and Both for an export.
+- `allow_empty` defaults to `false`: the primary action is disabled until there is a selection. Set it to `true` when no drivers is a valid filter. A single-choice dialog starts with at most one selected value.
+- A dialog has at most 256 options. `title`, `apply` and each option's `value`, `label`, `group` and `help` are at most 256 characters, and `text` at most 2,000. A dialog over these limits doesn't open; the launcher shows the error instead.
+- `apply` labels the primary button, default **Apply**. For deletion, use `"style": "danger"` on the outer button, `"apply": "Delete selected"`, explanatory warning text and `"allow_empty": false`.
+- The option list scrolls within the dialog. Tab moves between controls, Space activates a focused choice or button, and Escape cancels. The dialog uses the launcher's native focus trap and appearance.
+- Changes stay in the dialog. **Cancel** or Escape sends no event and discards the draft; a page refresh does not reset the choices. Opening it again uses the latest view's `selected` values.
+- Confirming closes the dialog and sends one [`selected` event](./events), even when the initial selection was unchanged. `values` contains the chosen values in option order. There is no preceding `click` event and no event per checkbox change.
+
+```json
+{ "selected": { "id": "drivers", "values": ["car-17", "car-21"] } }
+```
+
+The addon handles the event through the existing effects, such as `reload`, `notice` or `open`. An event error uses the normal notification path; it does not reopen the dialog. Revalidate the selected IDs against current data before acting, especially before deletion. The launcher rejects confirmation after the source profile or addon instance has changed, or its section has been removed.
+
+Check the capability before returning this button kind: an older launcher cannot deserialize it. Keep existing page controls as the fallback. Protocol API remains 1; this feature does not change existing forms, confirmation buttons or task lists.
+
 ## Tones {#tones}
 
 `tone` colours tags, notices, text, pills, tiles, meters and cells: `neutral` (default), `muted`, `accent`, `good`, `warn`, `bad`.

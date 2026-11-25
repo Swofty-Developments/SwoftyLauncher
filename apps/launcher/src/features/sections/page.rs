@@ -600,6 +600,40 @@ impl Shell {
         let (addon, section, id) = (addon.to_owned(), section.to_owned(), b.id.clone());
         let click = Event::Click { id: id.clone() };
         match &b.kind {
+            ButtonKind::Selection(spec) => {
+                let Some(entry) = self.library.registry.get(&addon) else {
+                    return;
+                };
+                let origin = entry.addon.clone();
+                let profile = self.library.profile.name.clone();
+                let shell = cx.entity().downgrade();
+                let spec = spec.clone();
+                let result = crate::dialogs::selection::open(
+                    spec,
+                    b.style == Style::Danger,
+                    std::rc::Rc::new(move |values, window, cx| {
+                        shell.update(cx, |this, cx| {
+                            let same_addon = this.library.registry.get(&addon)
+                                .is_some_and(|entry| std::sync::Arc::ptr_eq(&entry.addon, &origin));
+                            let same_section = this.library.sections.iter().any(|s| s.addon == addon && s.spec.id == section);
+                            if this.library.profile.name != profile || !same_addon || !same_section {
+                                window.notify(crate::shell::notices::Notification::error(tr("The profile or addon changed. Close this dialog and open it again.")), cx);
+                                return false;
+                            }
+                            if this.addon_views.busy.contains(&control) {
+                                return false;
+                            }
+                            this.send(&addon, &section, control.clone(), Event::Selected { id: id.clone(), values }, window, cx);
+                            true
+                        }).unwrap_or(false)
+                    }),
+                    window,
+                    cx,
+                );
+                if let Err(error) = result {
+                    window.notify(crate::shell::notices::Notification::error(error), cx);
+                }
+            }
             ButtonKind::Event => self.send(&addon, &section, control, click, window, cx),
             ButtonKind::Confirm { title, text } => {
                 let shell = cx.entity().downgrade();
