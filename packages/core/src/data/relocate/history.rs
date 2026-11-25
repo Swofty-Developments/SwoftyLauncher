@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-const FILE: &str = "swofty-data-history.json";
+pub(super) const FILE: &str = "swofty-data-history.json";
 const KEEP: usize = 24;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

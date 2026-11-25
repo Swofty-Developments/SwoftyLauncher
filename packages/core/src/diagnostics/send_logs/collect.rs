@@ -230,6 +230,9 @@ impl Collector {
     }
 }
 
+pub(super) const DATA_MOVE_DIR: &str = "data-move";
+const DATA_MOVE_CAP: u64 = 256 << 10;
+
 pub(super) const STALLS_SENT: usize = 2;
 
 /// The newest load-stall reports (`stall-<time>.txt`, a sortable local stamp) the core left in `dir`, newest first.
@@ -297,6 +300,22 @@ impl Bundle {
     }
 
     pub fn collect_with(store: &Store, report: &Report, limits: Limits, stamp: &str) -> Self {
+        Self::collect_in(
+            store,
+            report,
+            limits,
+            stamp,
+            &crate::data::paths::platform_data_dir(),
+        )
+    }
+
+    pub(super) fn collect_in(
+        store: &Store,
+        report: &Report,
+        limits: Limits,
+        stamp: &str,
+        default: &Path,
+    ) -> Self {
         let mut c = Collector {
             limits,
             used: 0,
@@ -486,6 +505,16 @@ impl Bundle {
             );
         }
         c.ea_diagnostics();
+        for file in crate::data::relocate::sibling_files(default) {
+            if file.is_file() {
+                c.file_capped(
+                    format!("{DATA_MOVE_DIR}/{}", file_name(&file)),
+                    &file,
+                    None,
+                    DATA_MOVE_CAP,
+                );
+            }
+        }
         let not_stock = store.root.join("state/not-stock.json");
         if not_stock.is_file() {
             c.file("state/not-stock.json".into(), &not_stock, None);

@@ -221,6 +221,55 @@ fn includes_the_db_editor_packages_the_active_profile_runs() {
 }
 
 #[test]
+fn includes_the_data_folder_move_files_beside_the_default_folder() {
+    let root = tmp("datamove");
+    let (store, game) = fake_data(&root);
+    let default = root.join("beside").join("Swofty");
+    let side = crate::data::relocate::sibling_files(&default);
+    put(&side[0], "2026-11-25 10:00:00 [1] copying");
+    put(&side[1], "{\"from\":\"a\"}");
+    put(&side[3], "[]");
+    let bundle = Bundle::collect_in(&store, &report(&game), Limits::default(), "x", &default);
+    let zip = bundle.zip().unwrap();
+    let got: Vec<String> = names(&zip)
+        .into_iter()
+        .filter(|n| n.starts_with("data-move/"))
+        .collect();
+    assert_eq!(
+        got,
+        [
+            "data-move/swofty-data-history.json",
+            "data-move/swofty-data-move.json",
+            "data-move/swofty-data-move.log"
+        ]
+    );
+    assert!(entry(&zip, "data-move/swofty-data-move.log").contains("copying"));
+    let summary = entry(&zip, "summary.txt");
+    assert!(
+        summary.contains("journal present, pending delete none"),
+        "{summary}"
+    );
+    put(&side[0], noise(2 << 20, 7));
+    let big = Bundle::collect_in(&store, &report(&game), Limits::default(), "x", &default);
+    let log = big
+        .entries
+        .iter()
+        .find(|e| e.path == "data-move/swofty-data-move.log")
+        .unwrap();
+    assert!(log.data.len() < 300 << 10);
+    let none = Bundle::collect_in(
+        &store,
+        &report(&game),
+        Limits::default(),
+        "x",
+        &root.join("empty").join("Swofty"),
+    );
+    assert!(none.entries.iter().all(|e| !e.path.starts_with("data-move/")));
+    assert!(entry(&none.zip().unwrap(), "summary.txt").contains("journal none, pending delete none"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn redacts_secrets_from_config_and_environment() {
     let root = tmp("redact");
     let (store, game) = fake_data(&root);
