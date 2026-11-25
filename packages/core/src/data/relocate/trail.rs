@@ -3,7 +3,7 @@ use std::path::Path;
 use std::sync::Mutex;
 use std::time::Instant;
 
-const FILE: &str = "swofty-data-move.log";
+pub(super) const FILE: &str = "swofty-data-move.log";
 const CAP: u64 = 64 << 10;
 const KEEP: usize = 200;
 

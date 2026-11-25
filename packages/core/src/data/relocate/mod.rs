@@ -41,8 +41,12 @@ pub use copy::{Listing, listing, totals};
 
 pub const ENV: &str = paths::ENV;
 const FOLDER: &str = if cfg!(windows) { "Swofty" } else { "swofty" };
-const JOURNAL: &str = "swofty-data-move.json";
-const PENDING: &str = "swofty-data-delete.json";
+pub const JOURNAL: &str = "swofty-data-move.json";
+pub const PENDING: &str = "swofty-data-delete.json";
+pub fn sibling_files(default: &Path) -> [PathBuf; 4] {
+    [trail::FILE, JOURNAL, PENDING, history::FILE].map(|name| default.with_file_name(name))
+}
+
 const MIN_MARGIN: u64 = 1 << 30;
 const STARTUP_TRIES: u32 = 40;
 const RETRY_AFTER: Duration = Duration::from_millis(250);
