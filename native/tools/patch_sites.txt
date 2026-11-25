@@ -86,6 +86,7 @@ core/diagnostics/perf/frames.cpp: if (!runtime::write_slot(reinterpret_cast<ULON
 core/diagnostics/perf/vq.cpp: p.write = runtime::import_write; => import *!VirtualQuery *!_beginthreadex
 core/diagnostics/perf/vq.cpp: void install() => none
 core/diagnostics/perf/vq.hpp: void install(); => none
+core/diagnostics/part_pool.cpp: auto made = safetyhook::MidHook::create(reinterpret_cast<void *>(at), on_alloc); => mid sig SITE
 core/diagnostics/session_job_probe.cpp: if (auto r = runtime::loader::install(hook, at, FUNC, on_entry); !r) { => mid binding FUNC
 core/diagnostics/session_loader.cpp: if (auto r = runtime::loader::install(hook, at, name, fn); !r) { => mid binding UPDATE UNLOAD
 core/events/events.cpp: auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn); => via
