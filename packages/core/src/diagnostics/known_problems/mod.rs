@@ -207,13 +207,13 @@ const RULES: &[Rule] = &[
     |c| weekends_track_crash(&c.fatal).then(weekends_track_record_bad_index),
     |c| imported_calendar_crash(c.evidence, &c.fatal).then(|| imported_calendar_empty_season(c.evidence)),
     |c| third_car_line_crash(c.evidence, &c.fatal).then(|| third_car_line(c.evidence)),
-    |c| null_vehicle_crash(&c.fatal).then(|| career_over_grid(c.evidence)),
+    |c| null_vehicle_crash(&c.fatal).then(|| career_over_grid(c.evidence, &c.fatal)),
     graphics::device_removed,
     graphics::out_of_graphics_memory,
     graphics::graphics_mod_crash,
     graphics::driver_crash,
     graphics::frame_generation_crash,
-    |c| over_grid_crash(c.evidence, &c.fatal).then(|| career_over_grid(c.evidence)),
+    |c| over_grid_crash(c.evidence, &c.fatal).then(|| career_over_grid(c.evidence, &c.fatal)),
 ];
 
 fn matched(e: &Evidence) -> Option<Diagnosis> {
