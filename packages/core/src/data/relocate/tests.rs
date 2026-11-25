@@ -828,6 +828,7 @@ mod windows {
         assert!(same_path(&link::target(&default).unwrap(), &to));
         whole(&default);
         whole(&to);
+        finish_delete(&default);
         assert!(!dir.join("Local/Swofty.old").exists());
         assert!(!journal_left(&default));
     }
@@ -843,6 +844,7 @@ mod windows {
         recover(&default, &OTHER_DRIVE).unwrap().unwrap();
         assert!(same_path(&link::target(&default).unwrap(), &second));
         whole(&default);
+        finish_delete(&default);
         assert!(!first.exists());
     }
 }
