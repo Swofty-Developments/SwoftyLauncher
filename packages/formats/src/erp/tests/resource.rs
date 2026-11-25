@@ -83,3 +83,47 @@ fn like_takes_the_type_argument_and_fragment_layout_of_a_template() {
     assert!(kind("SixteenBytesLong").is_err());
     assert!(kind("").is_err());
 }
+
+#[test]
+fn a_fragment_under_any_plain_zstd_code_is_compressed_and_keeps_its_code() {
+    for code in [0x03, 0x10, 0x11, 0x1f, 0x30, 0x3f] {
+        let mut erp = sample();
+        let res = erp.find_mut("eaid://ui_package/screens/sample.ui").unwrap();
+        res.fragments[0].compression = code;
+        res.set_fragment(0, &b"!pkg a payload that compresses".repeat(40))
+            .unwrap();
+        let f = &res.fragments[0];
+        assert_eq!(f.compression, code);
+        assert!(
+            f.stored().unwrap().1.starts_with(&crate::erp::ZSTD_MAGIC),
+            "code {code:#x}"
+        );
+        let back = Erp::parse(&erp.to_bytes().unwrap()).unwrap();
+        assert_eq!(
+            back.resources[0].fragments[0].data().unwrap(),
+            b"!pkg a payload that compresses".repeat(40)
+        );
+    }
+}
+
+#[test]
+fn a_fragment_under_a_dictionary_zstd_code_is_written_as_plain_zstd() {
+    let mut erp = sample();
+    let res = erp.find_mut("eaid://ui_package/screens/sample.ui").unwrap();
+    res.fragments[0].compression = 0x23;
+    res.set_fragment(0, b"changed").unwrap();
+    let f = &res.fragments[0];
+    assert_eq!(f.compression, crate::erp::ZSTD);
+    assert!(f.stored().unwrap().1.starts_with(&crate::erp::ZSTD_MAGIC));
+}
+
+#[test]
+fn a_stored_or_plain_fragment_stays_raw() {
+    for code in [0x00, 0x01, 0x02, 0x91] {
+        let mut erp = sample();
+        let res = erp.find_mut("eaid://ui_package/screens/sample.ui").unwrap();
+        res.fragments[0].compression = code;
+        res.set_fragment(0, b"changed").unwrap();
+        assert_eq!(res.fragments[0].stored().unwrap().1, b"changed", "code {code:#x}");
+    }
+}

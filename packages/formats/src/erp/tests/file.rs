@@ -212,3 +212,91 @@ fn only_windows_refusals_count_as_held_for_now() {
         std::io::ErrorKind::PermissionDenied
     )));
 }
+
+fn owned_with(fragment: Fragment) -> (ErpFile, Resource, std::path::PathBuf) {
+    let dir = std::env::temp_dir().join(format!(
+        "swofty-erp-guard-{}-{}",
+        std::process::id(),
+        fragment.name()
+    ));
+    std::fs::remove_dir_all(&dir).ok();
+    std::fs::create_dir_all(&dir).unwrap();
+    let src = dir.join("src.erp");
+    std::fs::write(&src, sample().to_bytes().unwrap()).unwrap();
+    let file = ErpFile::open(&src).unwrap();
+    let mut res = file.load(&file.erp.resources[0]).unwrap();
+    res.fragments[0] = fragment;
+    (file, res, dir)
+}
+
+#[test]
+fn an_archive_whose_owned_zstd_fragment_decodes_whole_is_written() {
+    let data = b"!pkg a payload that compresses".repeat(40);
+    let packed = compress(&data).unwrap();
+    let (file, res, dir) = owned_with(Fragment::new(*b"good", data.len() as u64, 0, ZSTD, packed));
+    let dst = dir.join("out.erp");
+    file.write(vec![Entry::Owned(res)], &dst).unwrap();
+    assert!(dst.is_file());
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn an_owned_fragment_cut_short_inside_its_frame_is_refused_with_the_archive_name_and_no_file() {
+    let data = b"!pkg a payload that compresses".repeat(40);
+    let mut packed = compress(&data).unwrap();
+    packed.truncate(packed.len() - 6);
+    let (file, res, dir) = owned_with(Fragment::new(*b"cut!", data.len() as u64, 0, ZSTD, packed));
+    let dst = dir.join("common_front_end.erp");
+    let err = file.write(vec![Entry::Owned(res)], &dst).unwrap_err();
+    assert!(
+        matches!(&err, Error::Frame { path: Some(p), fragment, .. } if p == &dst && fragment == "cut!"),
+        "{err:?}"
+    );
+    assert!(err.to_string().contains("common_front_end.erp"), "{err}");
+    assert!(!dst.exists() && !dst.with_extension("erp.tmp").exists());
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn an_owned_fragment_of_raw_bytes_under_a_zstd_code_is_refused_with_the_archive_name() {
+    for code in [ZSTD, 0x10] {
+        let (file, res, dir) = owned_with(Fragment::new(
+            *b"raw!",
+            21,
+            0,
+            code,
+            b"!pkg not a zstd frame".to_vec(),
+        ));
+        let dst = dir.join("flow_frontend.erp");
+        let err = file.write(vec![Entry::Owned(res)], &dst).unwrap_err();
+        assert!(err.to_string().contains("flow_frontend.erp"), "{err}");
+        assert!(err.to_string().contains("Unknown frame descriptor"), "{err}");
+        assert!(!dst.exists());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+}
+
+#[test]
+fn an_owned_frame_that_decodes_to_another_size_than_declared_is_refused() {
+    let data = b"!pkg a payload that compresses".repeat(40);
+    let packed = compress(&data).unwrap();
+    let (file, res, dir) = owned_with(Fragment::new(*b"size", data.len() as u64 + 1, 0, ZSTD, packed));
+    let err = file
+        .write(vec![Entry::Owned(res)], &dir.join("out.erp"))
+        .unwrap_err();
+    assert!(err.to_string().contains("not the"), "{err}");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn raw_bytes_under_the_stored_code_are_left_alone() {
+    let (file, res, dir) = owned_with(Fragment::new(
+        *b"flat",
+        21,
+        0,
+        STORED,
+        b"!pkg not a zstd frame".to_vec(),
+    ));
+    file.write(vec![Entry::Owned(res)], &dir.join("out.erp")).unwrap();
+    std::fs::remove_dir_all(&dir).ok();
+}

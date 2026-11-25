@@ -105,6 +105,15 @@ impl ErpFile {
             }
         }
         Packer::default().settle(resources.iter_mut().flat_map(|r| r.fragments.iter_mut()))?;
+        for (r, f) in resources
+            .iter()
+            .flat_map(|r| r.fragments.iter().map(move |f| (r, f)))
+            .zip(&spans)
+        {
+            if f.is_none() {
+                r.1.check_frame(dst, &r.0.name)?;
+            }
+        }
         let mut erp = Erp {
             header: self.erp.header,
             version: self.erp.version,

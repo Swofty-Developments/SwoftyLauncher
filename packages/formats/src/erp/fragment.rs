@@ -98,6 +98,39 @@ impl Fragment {
         }
     }
 
+    /// Whether the game's decompressor takes the fragment for zstd by its compression code: 3 to 0x3f, of which
+    /// 0x20 to 0x2f name a dictionary this crate does not hold.
+    pub fn zstd_coded(&self) -> bool {
+        matches!(self.compression, 3..=0x1f | 0x30..=0x3f)
+    }
+
+    /// Decodes the stored bytes of a zstd-coded fragment through to the end of their frame, keeping no
+    /// output, and fails unless they make exactly the declared size: the bytes the game's decompressor would
+    /// otherwise spin on. `archive` and `resource` name where the fragment is written.
+    pub(crate) fn check_frame(&self, archive: &std::path::Path, resource: &str) -> Result<()> {
+        let Payload::Stored { raw, .. } = &self.payload else {
+            return Ok(());
+        };
+        if !self.zstd_coded() {
+            return Ok(());
+        }
+        let wrong = |reason: String| Error::Frame {
+            path: Some(archive.to_path_buf()),
+            resource: Some(resource.to_owned()),
+            fragment: self.name(),
+            packed: raw.len(),
+            reason,
+        };
+        let made = frame_len(raw).map_err(|e| wrong(e.to_string()))?;
+        match made == self.size {
+            true => Ok(()),
+            false => Err(wrong(format!(
+                "it decodes to {made} byte(s), not the {} the index declares",
+                self.size
+            ))),
+        }
+    }
+
     pub fn name(&self) -> String {
         String::from_utf8_lossy(&self.name)
             .trim_end_matches('\0')
@@ -121,6 +154,20 @@ impl Fragment {
                     reason: e.to_string(),
                 }),
             Payload::Stored { raw, .. } => Ok(std::borrow::Cow::Borrowed(raw)),
+        }
+    }
+}
+
+/// How many bytes `raw` decodes to, read through the end of its frame, without keeping them.
+pub(super) fn frame_len(raw: &[u8]) -> std::io::Result<u64> {
+    use std::io::Read;
+    let mut decoder = zstd::stream::read::Decoder::new(raw)?;
+    let mut buf = vec![0u8; 1 << 16];
+    let mut total = 0u64;
+    loop {
+        match decoder.read(&mut buf)? {
+            0 => return Ok(total),
+            n => total += n as u64,
         }
     }
 }

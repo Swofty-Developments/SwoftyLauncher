@@ -109,7 +109,10 @@ impl Resource {
 }
 
 fn fill(packer: &Packer, f: &mut Fragment, data: &[u8]) -> Result<()> {
-    let zstd = f.compression == ZSTD;
+    if (0x20..=0x2f).contains(&f.compression) {
+        f.compression = ZSTD;
+    }
+    let zstd = f.zstd_coded();
     packer.put(f, data, zstd, ZSTD_LEVEL)
 }
 
