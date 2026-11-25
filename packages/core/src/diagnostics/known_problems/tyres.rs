@@ -80,8 +80,7 @@ pub fn unplaced_tyres(e: &Evidence) -> Option<Diagnosis> {
             title: "Cars drove without any tyres".to_owned(),
             what: format!(
                 "F1 25 did not put the tyres of {who} on the wheels after loading a mid-session save, so they \
-                 were invisible. The car is not damaged and drives normally. Sessions that were started fresh \
-                 placed their tyres."
+                 were invisible. Those cars are not damaged and drive normally."
             ),
             steps: vec![
                 "Restart the session, or start it again from the menu, instead of loading the mid-session save."
