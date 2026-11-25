@@ -272,7 +272,8 @@ fn the_next_fetch_asks_only_for_the_files_still_missing() {
         Ok(body_of(&release, url))
     };
     fetch_from(&d, &release, &mut second, &|_| {}).unwrap();
-    assert_eq!(asked, [url_of(REQUIRED[6]), url_of(REQUIRED[7])]);
+    let still_missing: Vec<String> = REQUIRED[6..].iter().map(|n| url_of(n)).collect();
+    assert_eq!(asked, still_missing);
     for (name, body) in &release {
         assert_eq!(
             std::fs::read_to_string(extension_dir(&d).join(name)).unwrap(),
@@ -304,10 +305,9 @@ fn a_kept_file_that_no_longer_matches_its_pin_is_fetched_again() {
         Ok(body_of(&release, url))
     };
     fetch_from(&d, &release, &mut second, &|_| {}).unwrap();
-    assert_eq!(
-        asked,
-        [url_of(REQUIRED[2]), url_of(REQUIRED[6]), url_of(REQUIRED[7])]
-    );
+    let mut want = vec![url_of(REQUIRED[2])];
+    want.extend(REQUIRED[6..].iter().map(|n| url_of(n)));
+    assert_eq!(asked, want);
     assert_eq!(
         std::fs::read_to_string(extension_dir(&d).join(REQUIRED[2])).unwrap(),
         release[2].1

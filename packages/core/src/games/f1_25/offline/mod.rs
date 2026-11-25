@@ -67,51 +67,59 @@ can work. Everything is undone when the game exits.
 We may collect anonymised usage data from your use of the launcher.";
 
 /// The extension release this manager pins.
-pub const EXTENSION_VERSION: &str = "0.4.0";
+pub const EXTENSION_VERSION: &str = "0.4.1";
 /// Where the artifacts are hosted (binaries; source lives in the repository).
 pub const DEFAULT_BASE_URL: &str = "https://swofty-developments.github.io/F1-OfflinePlay";
 pub const SOURCE_URL: &str = "https://github.com/Swofty-Developments/F1-OfflinePlay";
 
-/// Pinned digests for release v0.4.0. Every artifact is checked against its
+/// Pinned digests for release v0.4.1. Every artifact is checked against its
 /// pin at install time and again at use time. The notice files are text that
 /// ships beside the binaries; they are verified like the rest but are never run
 /// or staged into the game folder.
 pub const PINS: &[(&str, &str)] = &[
     (
         "f1op_hook.dll",
-        "4d347140704dca05cc78b88794f8e8fe67aa6bd1f8be5004f974842e7c3d7133",
+        "00440b83592df0b399e8d2b4b49e75e80c20f20cd3def1bbb7b5a21cbd02aefc",
     ),
     (
         "f1op_stub.exe",
-        "e428b80f183c5c95533ecb8a1d7fcf0b8ad8a9152e9b029d388c592508dcf727",
+        "d383b475447dae816076187c4e92b5be2f57e314b9d071eb5f845d857ff0edae",
     ),
     (
         "f1op-prelaunch.exe",
-        "907fc221c7be99e561e5dfae0a17095aaae718d4caef81d67e623adc12187efc",
+        "25f6fa23a299eecaf2dc31b114aba3ee58bce7f1999d6bdf7694e0ef44e01efd",
     ),
     (
         "f1op-probe.exe",
-        "f268b062e17921c1a75d0e75d464bba78b649313852b628777928486a595a75f",
+        "a39dec4161d4d9b1fa3f20e617a65bb84b0629d4b67712bcabb5e6a74340999e",
     ),
     (
         "f1op-prelaunch-linux-x86_64",
-        "098f9142b81671a4861b173787deddd39cc472931b5ad481e283f650af743966",
+        "cada66597208fbee0f06ebf3a18f3e4086580b3051bbe203ce2ffa963ab197f2",
     ),
     (
         "f1op-probe-linux-x86_64",
-        "8c5a3353f38ddcb511f3502d7b6ee1032ede344c3a8db74165e46dce2b3cb9b8",
+        "f9bbef5f6fbeef303b35efa6ae69fe0ed987be7e9f45bebd195303c460e0350b",
     ),
     (
         "LICENSE.txt",
         "5560fee8e4299e8046d5b043b86c7d6e8c27f756ca9492a46c15cb013cea10d7",
     ),
     (
+        "AGENTS.md",
+        "ca5b12421e298d5f268fee56d5931e567b7ace5a6cba4bb9cc0fee835c4034ab",
+    ),
+    (
+        "CLAUDE.md",
+        "5af4092cca6c0d23e49f16633f014fd43458c563659f243686175357fb6eb730",
+    ),
+    (
         "notices/README.md",
-        "074bb16d4908739956d8f2d37fe042bd76ebe57022c972b18d39afdf3e859133",
+        "a2e7c4be5f84bd90605218c17ef15e120c5bcc92a9dc0f61e47525aefacb10b9",
     ),
     (
         "notices/AGENTS.md",
-        "33a324752952df10d1ce36e07886da535a008721be7976340304419f726dc54a",
+        "ca5b12421e298d5f268fee56d5931e567b7ace5a6cba4bb9cc0fee835c4034ab",
     ),
     (
         "notices/CLAUDE.md",
@@ -131,6 +139,8 @@ pub const REQUIRED: &[&str] = &[
     "notices/README.md",
     "notices/AGENTS.md",
     "notices/CLAUDE.md",
+    "AGENTS.md",
+    "CLAUDE.md",
 ];
 #[cfg(not(windows))]
 pub const REQUIRED: &[&str] = &[
@@ -142,6 +152,8 @@ pub const REQUIRED: &[&str] = &[
     "notices/README.md",
     "notices/AGENTS.md",
     "notices/CLAUDE.md",
+    "AGENTS.md",
+    "CLAUDE.md",
 ];
 
 fn pin(name: &str) -> Option<&'static str> {
