@@ -200,6 +200,7 @@ fn a_data_folder_inside_the_install_folder_moves_to_another_drive_without_the_la
     assert_eq!(done.leftover, None);
     whole(&to);
     assert!(same_path(&link::target(&default).unwrap(), &to));
+    assert_eq!(finish_delete(&default), Some(None));
     assert!(!data.exists());
     release_whole(&install);
     assert!(!to.join("bin").exists() && !to.join("loader").exists());
