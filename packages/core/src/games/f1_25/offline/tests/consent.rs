@@ -61,3 +61,13 @@ fn install_from_a_folder_leaves_no_staging_behind() {
     assert!(!staging_dir(&d).exists());
     std::fs::remove_dir_all(&d).ok();
 }
+
+#[test]
+fn accept_survives_a_stale_tmp_file() {
+    let d = temp("stale-tmp");
+    let state = d.join("state");
+    std::fs::create_dir_all(state.join("offline_consent.json.tmp")).unwrap();
+    record_accept(&d).unwrap();
+    assert!(is_accepted(&d));
+    std::fs::remove_dir_all(&d).ok();
+}
