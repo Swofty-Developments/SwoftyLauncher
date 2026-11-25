@@ -1299,8 +1299,20 @@ int main()
                    "a budget built for the pre-swap list leaves room that the swapped list's 12 cars then overflow");
         }
         era::TtList empty_refs{"ex_empty", false, true, {0x3fff0000u, 0x3fff0000u}};
-        expect(era::time_trial_budget({custom, empty_refs}).dropped.empty() && era::distinct_cars(empty_refs.refs) == 0,
-               "entrants without a vehicle ref (0x3fff) take no slot");
+        expect(era::time_trial_budget({custom, empty_refs}).dropped.empty() && era::distinct_cars(empty_refs.refs) == 2,
+               "entrants without a vehicle ref (0x3fff) each take a slot: the fill makes one vehicle for each");
+        {
+            era::TtList f2{"f2_2024", true, false, std::vector<uint32_t>(20, 0x3fff0000u)};
+            f2.refs.push_back(465u << 16);
+            f2.refs.push_back(466u << 16);
+            auto f2_budget = era::time_trial_budget({f2});
+            expect(f2_budget.cars == 22 && f2_budget.cars + era::TT_OWN_ENTRIES == 26,
+                   "a stock F2 list of 22 cars (20 without a vehicle ref) makes 26 vehicles, as the fill did (not 6)");
+            era::TtList f2_extra{"mb_motorbikes_2025", false, true, refs(59, 11)};
+            auto f2_two = era::time_trial_budget({f2, f2_extra});
+            expect(f2_two.dropped == std::vector<size_t>{1} && f2_two.cars == 22,
+                   "a second list of the F2 leaderboard that would pass the 26 vehicles is left out");
+        }
         std::string bl = era::time_trial_budget_line({custom, f1_2025, bdx}, with_2012, 0);
         expect(bl == "the Time Trial session's list f1_custom_team (leaderboard 0, f1) draws 11 cars from 2 list(s) of its "
                      "leaderboard; "
