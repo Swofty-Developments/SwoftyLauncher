@@ -78,6 +78,8 @@ bool gate(const cs::Route &r)
     perf::mark("career", std::string("starting ") + mode_name(r.mode) + (blocked ? " blocked" : ""));
     swofty::log("[career] career.starting: %s (%s, route '%s')%s%s", mode_name(r.mode), kind_name(r.kind), r.name,
                 blocked ? "; blocked by " : "", blocked ? by.c_str() : "");
+    if (!blocked)
+        runtime::watchdog_load("career.starting");
     runtime::events_fire(SWOFTY_EVENT_CAREER_STARTING, r.mode, r.kind, &s);
     if (!blocked)
         return false;

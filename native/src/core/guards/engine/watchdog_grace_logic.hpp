@@ -11,7 +11,9 @@
 //
 // Flows tracks the flows now in Entering or Updating. judge: the kill is held while a flow entered Entering no more
 // than kEnteringMaxMs ago, or entered Updating no more than kUpdatingMaxMs ago (a session or front-end load keeps
-// its heavy work in Updating after the flow leaves Entering), and the frame tick has been silent for at most kCapMs;
+// its heavy work in Updating after the flow leaves Entering), or a career load was started (career.starting, a
+// resume row's PressSlot taking the career) no more than kLoadMaxMs ago (a career load started from the menu enters
+// no new flow), and the frame tick has been silent for at most kCapMs;
 // past the cap the game's own kill runs. Every refusal has a Verdict so the log can name it. bucket: which
 // kBucketMs-wide slice of the stall the silence is in, so the log speaks once per slice.
 
@@ -20,6 +22,7 @@ namespace runtime::watchdog_grace {
 constexpr uint32_t kCapMs = 180000;
 constexpr uint64_t kEnteringMaxMs = 600000;
 constexpr uint64_t kUpdatingMaxMs = 300000;
+constexpr uint64_t kLoadMaxMs = 300000;
 constexpr uint32_t kBucketMs = 30000;
 constexpr size_t kSlots = 16;
 constexpr size_t kName = 48;
@@ -56,6 +59,7 @@ struct Entering {
 struct Latest {
     uint64_t entering = 0;
     uint64_t updating = 0;
+    uint64_t load = 0;
 };
 
 struct Judgement {
@@ -74,9 +78,9 @@ inline Judgement judge(uint32_t elapsed_ms, uint64_t now, const Latest &l)
     bool seen = false;
     uint64_t best_age = 0;
     uint32_t best_state = 0;
-    const uint64_t since[2] = {l.entering, l.updating};
-    const uint64_t max[2] = {kEnteringMaxMs, kUpdatingMaxMs};
-    for (int i = 0; i < 2; i++) {
+    const uint64_t since[3] = {l.entering, l.updating, l.load};
+    const uint64_t max[3] = {kEnteringMaxMs, kUpdatingMaxMs, kLoadMaxMs};
+    for (int i = 0; i < 3; i++) {
         if (!since[i])
             continue;
         uint64_t age = now >= since[i] ? now - since[i] : 0;
@@ -135,9 +139,12 @@ public:
         put->name[kName - 1] = 0;
     }
 
+    void load(uint64_t now) { load_ = now; }
+
     Latest latest() const
     {
         Latest l;
+        l.load = load_;
         for (auto &e : slots_) {
             if (!e.used)
                 continue;
@@ -178,7 +185,10 @@ public:
 
 private:
     Entering slots_[kSlots];
+    uint64_t load_ = 0;
 };
+
+inline uint64_t state_max(uint32_t s) { return s == 1 ? kEnteringMaxMs : s == 2 ? kUpdatingMaxMs : kLoadMaxMs; }
 
 inline uint32_t bucket(uint32_t elapsed_ms) { return elapsed_ms / kBucketMs; }
 
