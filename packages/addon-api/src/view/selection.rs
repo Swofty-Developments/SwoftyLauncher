@@ -34,7 +34,38 @@ pub struct SelectionOption {
 }
 
 impl SelectionDialog {
+    pub const MAX_OPTIONS: usize = 256;
+    pub const MAX_FIELD_CHARS: usize = 256;
+    pub const MAX_TEXT_CHARS: usize = 2000;
+
     pub fn validate(&self) -> Result<(), String> {
+        if self.options.len() > Self::MAX_OPTIONS {
+            return Err(format!(
+                "a selection dialog supports at most {} options",
+                Self::MAX_OPTIONS
+            ));
+        }
+        let long = |s: &str| s.chars().count() > Self::MAX_FIELD_CHARS;
+        if long(&self.title)
+            || self.apply.as_deref().is_some_and(long)
+            || self.options.iter().any(|o| {
+                long(&o.value)
+                    || long(&o.label)
+                    || o.group.as_deref().is_some_and(long)
+                    || o.help.as_deref().is_some_and(long)
+            })
+        {
+            return Err(format!(
+                "selection titles, labels, values, groups and help are at most {} characters",
+                Self::MAX_FIELD_CHARS
+            ));
+        }
+        if self.text.chars().count() > Self::MAX_TEXT_CHARS {
+            return Err(format!(
+                "selection text is at most {} characters",
+                Self::MAX_TEXT_CHARS
+            ));
+        }
         let mut options = HashSet::new();
         for option in &self.options {
             if option.value.is_empty() || !options.insert(option.value.as_str()) {
@@ -56,10 +87,13 @@ impl SelectionDialog {
     /// Validates a confirmed selection, including an unchanged default. The
     /// empty initial selection is allowed even when confirmation needs a choice.
     pub fn accepts(&self, values: &[String]) -> bool {
-        (self.allow_empty || !values.is_empty())
-            && (self.multiple || values.len() <= 1)
-            && values.iter().enumerate().all(|(i, value)| {
-                !values[..i].contains(value) && self.options.iter().any(|o| &o.value == value)
-            })
+        if (!self.allow_empty && values.is_empty()) || (!self.multiple && values.len() > 1) {
+            return false;
+        }
+        let options: HashSet<&str> = self.options.iter().map(|o| o.value.as_str()).collect();
+        let mut seen = HashSet::with_capacity(values.len());
+        values
+            .iter()
+            .all(|value| options.contains(value.as_str()) && seen.insert(value.as_str()))
     }
 }

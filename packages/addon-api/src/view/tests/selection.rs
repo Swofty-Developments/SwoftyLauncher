@@ -65,3 +65,32 @@ fn unknown_or_duplicate_defaults_are_rejected_but_an_unpicked_dialog_can_open() 
     spec.options[0].value.clear();
     assert!(spec.validate().is_err());
 }
+
+#[test]
+fn selections_cap_options_and_text() {
+    let mut spec = dialog();
+    spec.options = (0..SelectionDialog::MAX_OPTIONS)
+        .map(|i| SelectionOption {
+            value: i.to_string(),
+            label: format!("Driver {i}"),
+            group: None,
+            help: None,
+        })
+        .collect();
+    spec.selected.clear();
+    assert!(spec.validate().is_ok());
+    spec.options.push(SelectionOption {
+        value: "extra".into(),
+        label: "Extra".into(),
+        group: None,
+        help: None,
+    });
+    assert!(spec.validate().is_err());
+    spec.options.pop();
+    spec.options[0].label = "x".repeat(SelectionDialog::MAX_FIELD_CHARS + 1);
+    assert!(spec.validate().is_err());
+    spec.options[0].label = "x".repeat(SelectionDialog::MAX_FIELD_CHARS);
+    assert!(spec.validate().is_ok());
+    spec.text = "x".repeat(SelectionDialog::MAX_TEXT_CHARS + 1);
+    assert!(spec.validate().is_err());
+}

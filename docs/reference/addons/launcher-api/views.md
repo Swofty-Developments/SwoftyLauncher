@@ -151,6 +151,7 @@ When `hello.capabilities` contains `"view.selection_dialog"`, a button may open 
 - `selected` is the initial list of option values, default empty. Unknown or repeated values are invalid.
 - `multiple: true` draws checkboxes with **Select all** and **Clear**. The default `false` draws single-choice radio buttons, such as Raw CSV data, Visuals and Both for an export.
 - `allow_empty` defaults to `false`: the primary action is disabled until there is a selection. Set it to `true` when no drivers is a valid filter. A single-choice dialog starts with at most one selected value.
+- A dialog has at most 256 options. `title`, `apply` and each option's `value`, `label`, `group` and `help` are at most 256 characters, and `text` at most 2,000. A dialog over these limits doesn't open; the launcher shows the error instead.
 - `apply` labels the primary button, default **Apply**. For deletion, use `"style": "danger"` on the outer button, `"apply": "Delete selected"`, explanatory warning text and `"allow_empty": false`.
 - The option list scrolls within the dialog. Tab moves between controls, Space activates a focused choice or button, and Escape cancels. The dialog uses the launcher's native focus trap and appearance.
 - Changes stay in the dialog. **Cancel** or Escape sends no event and discards the draft; a page refresh does not reset the choices. Opening it again uses the latest view's `selected` values.
