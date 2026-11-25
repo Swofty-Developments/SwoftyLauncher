@@ -88,6 +88,43 @@ inline Result remove_srv_callback(uint32_t token)
     return detail::result(f(token));
 }
 
+struct ListSubmission {
+    uint32_t size, count;
+    void *queue;        // ID3D12CommandQueue *
+    const void *lists;  // ID3D12CommandList *const *
+};
+
+struct ListObserver {
+    uint32_t size, reserved;
+    void (*reset)(void *user, void *list);
+    void (*barriers)(void *user, void *list, uint32_t count, const void *barriers); // const D3D12_RESOURCE_BARRIER *
+    void (*texture_copy)(void *user, void *list, const void *dst, uint32_t x, uint32_t y, uint32_t z,
+                         const void *src, const void *box); // D3D12_TEXTURE_COPY_LOCATION and D3D12_BOX
+    void (*submit)(void *user, const ListSubmission *submission);
+    void (*submitted)(void *user, void *queue);
+};
+static_assert(sizeof(ListSubmission) == 24 && sizeof(ListObserver) == 48);
+
+// Register one process-lifetime observer in an early SwoftyAddonInit. Set size and leave reserved zero.
+// Arguments are borrowed for the callback. See the SDK reference for callback order and threading.
+inline Result observe_lists(const ListObserver &observer, void *user = nullptr)
+{
+    using RegisterFn = int (*)(const ListObserver *, void *);
+    const auto reg = detail::core_fn<RegisterFn>("SwoftyCoreD3d12ObserveListsV1");
+    return reg ? detail::result(reg(&observer, user)) : Result::unavailable;
+}
+
+using RecordComputeFn = void (*)(void *user, void *list);
+
+// Inside a barrier or texture-copy callback, records compute on its active direct list and restores tracked bindings.
+// Returns false and skips fn when there is no usable binding snapshot.
+inline bool record_compute(void *list, RecordComputeFn fn, void *user = nullptr)
+{
+    using RecordFn = int (*)(void *, RecordComputeFn, void *);
+    const auto record = detail::core_fn<RecordFn>("SwoftyCoreD3d12RecordComputeV1");
+    return record && record(list, fn, user) == 1;
+}
+
 inline const char *name(Result r)
 {
     return r == Result::ok            ? "ok"

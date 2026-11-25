@@ -274,6 +274,19 @@ SWOFTY_ON_CHANGE(show_panel, bool on)
 
 In C, call `api->setting(id, type, &out)` and `api->watch_setting(id, fn, user)`. [Addon settings](./settings) shows a whole addon's settings, and [Settings](/reference/std/settings) has the full C++ and C reference.
 
+## D3D12 command lists
+
+An early plugin can include `<swofty/d3d12.hpp>` and register one process-lifetime `ListObserver` with `observe_lists`. Set `size` to `sizeof(ListObserver)` and leave `reserved` zero. An older core returns `unavailable`. Registration after the ready step returns `not_live`. A successful registration reserves the slot. Individual hooks can fail to arm, so verify the callbacks you need before recording work.
+
+- `reset` runs after a successful command-list reset.
+- `barriers` sees the incoming legacy barrier batch before the original call or a replacing subscriber consumes it.
+- `texture_copy` runs after the original copy is recorded. For `CopyResource`, the locations describe subresource zero, the offsets are zero and the box is null.
+- `submit` sees the queue and original ordered list array. `submitted` requires `submit` and runs after a nonempty submission on the same CPU thread. Signal a fence to track GPU completion.
+
+Borrowed callback arguments are usable during the call. Callbacks can overlap on game threads. Keep the observer and its context alive for the process, retain resources used by recorded work through fence retirement, and return normally from callbacks.
+
+Inside a barrier or copy callback, `record_compute` accepts the callback's active DIRECT list only when the core has a tracked binding snapshot. It restores the tracked descriptor heaps, root bindings and pipeline state when the function returns. Keep graphics bindings intact and restore resource states in your function. The function records commands only. The observer ignores notifications caused by its own recording. Other core subscribers still see commands that pass through their hooks.
+
 ## Rules
 
 - Find addresses by signature, not fixed addresses. Stop when a signature has zero or multiple matches.
