@@ -254,19 +254,17 @@ pub fn sync(
     let total = todo.len();
     for (n, (k, src, sha, now)) in todo.into_iter().enumerate() {
         let at = cache.join(k);
+        let sha256 = sha.filter(|_| stamp(src) == Some(now)).map(str::to_owned);
         let made = at
             .parent()
             .map_or(Ok(()), std::fs::create_dir_all)
-            .and_then(|()| crate::install::copy_replacing(src, &at));
+            .and_then(|()| copy_checked(src, &at, sha256.as_deref()));
         let copy = stamp(&at);
         let Some(copy) = copy.filter(|_| made.is_ok()) else {
             save(game, &index).ok();
             let why = made.err().map_or("it is missing".to_owned(), |e| e.to_string());
             return Err(format!("cannot copy {}: {why}", src.display()));
         };
-        // The digest is the source's as the caller hashed it, so it only names a copy made from the source
-        // as it was then.
-        let sha256 = sha.filter(|_| stamp(src) == Some(now)).map(str::to_owned);
         index.insert(
             k.to_owned(),
             Kept {
@@ -282,6 +280,33 @@ pub fn sync(
     }
     save(game, &index).map_err(|e| format!("cannot write the cache index: {e}"))?;
     Ok(out)
+}
+
+/// Copies `src` to `at`, and copies it once more when the copy is not the source's size or, for an archive whose
+/// SHA-256 `sha` names, not its bytes; a copy that is still not the source fails. The game takes an archive
+/// that differs from the one built for it into a decompression loop it never leaves.
+fn copy_checked(src: &Path, at: &Path, sha: Option<&str>) -> std::io::Result<()> {
+    let intact = || {
+        let size =
+            std::fs::metadata(src).ok().map(|m| m.len()) == std::fs::metadata(at).ok().map(|m| m.len());
+        let bytes = match sha {
+            Some(want) if at.extension().is_some_and(|x| x == "erp") => {
+                crate::game_folder::baseline::sha256_file(at).is_ok_and(|got| got == want)
+            }
+            _ => true,
+        };
+        size && bytes
+    };
+    for _ in 0..2 {
+        crate::install::copy_replacing(src, at)?;
+        if intact() {
+            return Ok(());
+        }
+    }
+    std::fs::remove_file(at).ok();
+    Err(std::io::Error::other(
+        "the copy on the game drive differs from the file it was copied from, twice",
+    ))
 }
 
 pub fn size(game: &Path) -> u64 {
@@ -342,6 +367,27 @@ mod tests {
             .map(|(rel, src)| (rel, src, None))
             .collect();
         sync(game, &refs, roomy, &mut |_, _| {})
+    }
+
+    #[test]
+    fn a_copied_archive_that_is_not_the_bytes_its_digest_names_is_refused_and_removed() {
+        use sha2::{Digest, Sha256};
+        let root = tmp("checked");
+        put(&root.join("a/screens.erp"), "archive bytes");
+        let want: String = Sha256::digest(b"archive bytes")
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        let at = root.join("b/screens.erp");
+        std::fs::create_dir_all(at.parent().unwrap()).unwrap();
+        copy_checked(&root.join("a/screens.erp"), &at, Some(&want)).unwrap();
+        assert_eq!(std::fs::read(&at).unwrap(), b"archive bytes");
+        let err = copy_checked(&root.join("a/screens.erp"), &at, Some("00")).unwrap_err();
+        assert!(err.to_string().contains("differs"), "{err}");
+        assert!(!at.exists());
+        put(&root.join("a/other.bin"), "x");
+        copy_checked(&root.join("a/other.bin"), &root.join("b/other.bin"), Some("00")).unwrap();
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]

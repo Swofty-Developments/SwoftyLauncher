@@ -36,16 +36,34 @@ fn encoder(level: i32) -> Result<Encoder> {
     Ok(ctx)
 }
 
+/// Compresses `data`, and compresses it once more with a new encoder when the frame does not decode back to
+/// all of it; a frame that still does not fails.
 pub(super) fn encode(data: &[u8], level: i32) -> Result<Vec<u8>> {
+    let sound = |out: &[u8]| crate::erp::fragment::frame_len(out).is_ok_and(|n| n == data.len() as u64);
+    let out = encode_once(data, level, true)?;
+    if sound(&out) {
+        return Ok(out);
+    }
+    let again = encode_once(data, level, false)?;
+    match sound(&again) {
+        true => Ok(again),
+        false => Err(Error::Format(
+            "zstd: a compressed frame does not decode back to its data, twice".into(),
+        )),
+    }
+}
+
+fn encode_once(data: &[u8], level: i32, pooled: bool) -> Result<Vec<u8>> {
     use zstd::zstd_safe::{InBuffer, OutBuffer, ResetDirective, zstd_sys::ZSTD_EndDirective};
     worked();
-    let pooled = {
+    let reused = {
         let mut pool = ENCODERS.lock().unwrap_or_else(|e| e.into_inner());
         pool.iter()
             .position(|(l, _)| *l == level)
             .map(|i| pool.swap_remove(i).1)
+            .filter(|_| pooled)
     };
-    let mut ctx = match pooled {
+    let mut ctx = match reused {
         Some(ctx) => ctx,
         None => encoder(level)?,
     };
