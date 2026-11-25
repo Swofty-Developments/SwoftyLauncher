@@ -30,6 +30,12 @@
 // An item whose state no longer reads 1 or whose memory is not writable is left as it is. SWOFTY_HUB_BREAK_FIX=0 turns
 // it off; the line then says the break is left.
 //
+// The second write, the finished weekend fix (hub_calendar_logic.hpp): at the first pass of the "session already ran"
+// load loop, a started race weekend that decides the hub, whose weekend is complete in every session, with a race weekend
+// not started that begins inside its days, gets CalendarActivity.state 2 (Completed), one "[career] finished race weekend
+// over the next one" line, and the calendar is logged again. An item whose state no longer reads 1 or whose memory is not
+// writable is left as it is. SWOFTY_HUB_OVERLAP_FIX=0 turns it off; the line then says the weekend is left.
+//
 // At every Team HQ entry the core logs today's calendar items and whether they keep Team HQ's Advance off. When the
 // only items keeping it off are ignored season breaks (hc::ended_breaks: the weekend the break ran over is done), each
 // one's CalendarActivity.day moves back so the break ends the day before, one "[career] ignored season break over Team
@@ -208,13 +214,22 @@ std::string calendar(const Snapshot &s)
     return summary(s) + "; the calendar check reads: " + decision(s);
 }
 
+bool env_zero(const char *name)
+{
+    char v[8] = {};
+    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
+    return n > 0 && n < sizeof v && !std::strcmp(v, "0");
+}
+
 bool break_fix_off()
 {
-    static const bool off = [] {
-        char v[8] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_HUB_BREAK_FIX", v, sizeof v);
-        return n > 0 && n < sizeof v && !std::strcmp(v, "0");
-    }();
+    static const bool off = env_zero("SWOFTY_HUB_BREAK_FIX");
+    return off;
+}
+
+bool overlap_fix_off()
+{
+    static const bool off = env_zero("SWOFTY_HUB_OVERLAP_FIX");
     return off;
 }
 
@@ -346,6 +361,40 @@ void ended(uint64_t ms, uint64_t hub_ms, const char *how)
     log_items(s);
 }
 
+bool complete_weekend(const Snapshot &s, const hc::Item &it, const char *&how)
+{
+    uintptr_t at = uintptr_t(it.at + s.state_offset);
+    uint8_t state = 0;
+    if (overlap_fix_off())
+        how = "left as it is (SWOFTY_HUB_OVERLAP_FIX=0)";
+    else if (!s.state_offset || !mem::read(at, state) || state != hc::STARTED)
+        how = "left as it is (its state no longer reads 1)";
+    else if (!writable(at, sizeof state))
+        how = "left as it is (not writable)";
+    else {
+        state = hc::COMPLETED;
+        std::memcpy(reinterpret_cast<void *>(at), &state, sizeof state);
+        how = "set to completed (state 2), so the hub moves on";
+        return true;
+    }
+    return false;
+}
+
+bool complete_overlap(const Snapshot &s, const hc::Weekend &w)
+{
+    hc::OverlapFix f = hc::finished_overlap(s.today, s.season_over, w);
+    if (f.finished < 0)
+        return false;
+    const hc::Item &done = s.today[size_t(f.finished)], &next = s.today[size_t(f.next)];
+    const char *how = "";
+    bool set = complete_weekend(s, done, how);
+    swofty::log(
+        "[career] finished race weekend over the next one: %s is complete (round %u, %u of %u sessions) but still started "
+        "while %s starts inside it; %s",
+        hc::describe(done).c_str(), w.round, w.complete, w.sessions, hc::describe(next).c_str(), how);
+    return set;
+}
+
 template <class C = g::DriverCalendar> bool calendar_driver(uintptr_t calendar, uint32_t &driver)
 {
     if constexpr (requires(C *c) { c->driver; }) {
@@ -408,10 +457,16 @@ void hub_calendar_team_hq()
 void hub_calendar_load_loop()
 {
     hc::Weekend w;
-    std::string weekend = current_weekend(w) ? hc::describe_loop(w) : "the current weekend is not readable";
+    bool known = current_weekend(w);
+    std::string weekend = known ? hc::describe_loop(w) : "the current weekend is not readable";
     Snapshot s = snapshot();
     swofty::log("[career] load loop, first pass: %s; %s", weekend.c_str(), calendar(s).c_str());
     log_items(s);
+    if (!known || !complete_overlap(s, w))
+        return;
+    Snapshot after = snapshot();
+    swofty::log("[career] hub calendar after the finished weekend fix: %s", calendar(after).c_str());
+    log_items(after);
 }
 
 void hub_calendar_added(void *calendar, const void *activity, uint32_t day)

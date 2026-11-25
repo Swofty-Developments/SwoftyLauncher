@@ -248,7 +248,16 @@ The ignored break still keeps Team HQ's Advance off on the days after that weeke
 
 A race weekend, dynamic break, end of season or a break in another state running that day leaves the break as it is, and so does `SWOFTY_HUB_BREAK_FIX=0`.
 
-All of these come from the flow-state site and the Team HQ entry. Apart from the two season break writes, they read the game without writing to it. The calendar reads use `ScheduleComponent` (`seasons_begin`, `seasons_end`, `current_season`, `season_over`), `ScheduleSeason`, `DriverCalendar`, `CalendarActivity` (`day`, `state`, `activity`), `ActivityDef` (`id`, `type`, `duration`) and `CareerTimeComponent.current_minutes` from the generated game headers; the core does not compile without one of them. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
+An add-on calendar can also start a second race weekend inside the first (F2 Revamp's 32 rounds). The first weekend finishes, but its calendar item stays started, the check keeps answering that the hub stays, and the session load finds the race already ran on every pass. At the first pass of that load loop, when the weekend that decides is complete in every session and a race weekend that has not started begins inside its days, the core sets the finished item to completed (state 2), the state the game's own finish writes, and logs the calendar again:
+
+```text
+[career] finished race weekend over the next one: RaceWeekend (0x0a) days 28-31 state 1 id 12 at 0x16ef13c0 vt 0x1456d31f0 is complete (round 2, 7 of 7 sessions) but still started while RaceWeekend (0x0a) days 29-32 state 0 id 14 at 0x16ef13e0 vt 0x1456d31f0 starts inside it; set to completed (state 2), so the hub moves on
+[career] hub calendar after the finished weekend fix: day 29, season 0, 2 of 39 calendar items running today (driver 0x00090000, calendar 0x345517370); the calendar check reads: go to Team HQ (no running activity decides)
+```
+
+A stock calendar, a weekend that is not complete and an overlapping item that is not a race weekend are left as they are, and so is every item when `SWOFTY_HUB_OVERLAP_FIX=0`.
+
+All of these come from the flow-state site and the Team HQ entry. Apart from the three calendar writes, they read the game without writing to it. The calendar reads use `ScheduleComponent` (`seasons_begin`, `seasons_end`, `current_season`, `season_over`), `ScheduleSeason`, `DriverCalendar`, `CalendarActivity` (`day`, `state`, `activity`), `ActivityDef` (`id`, `type`, `duration`) and `CareerTimeComponent.current_minutes` from the generated game headers; the core does not compile without one of them. The weekend reads need `vt_Career_Championship`, `vt_Career_Season` and `vt_Career_Weekend`; the calendar reads need the career components. A build without them logs `the current weekend is not readable` or `the calendar is not readable (<reason>)` in the same lines.
 
 ## Components
 

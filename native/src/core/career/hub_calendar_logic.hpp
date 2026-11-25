@@ -30,6 +30,14 @@
 // breaks in state 0, so nothing moves the clock out of a break in state 4. ended_breaks names the ignored season
 // breaks that alone keep Advance off on a Team HQ day; the core moves each one's day back so it ends the day before.
 //
+// The overlapping weekend fix: an add-on calendar (F2 Revamp) can start a second race weekend inside the first. The
+// first weekend's own object finishes (Weekend.progress_state complete, every session complete) but its calendar item
+// stays started, because the item's finish (Career_ScheduleEntry_Finish 0x1412ce6c0, state 2 completed) never ran. The
+// check keeps answering "stay in the hub" for it, StateLoadSession finds the race already ran, and the game loads the
+// same session again on every pass. finished_overlap names the started race weekend that decides, its weekend complete,
+// with another race weekend not started (state 0) starting inside its days; the core sets it to 2, Completed, the state
+// the game's finish writes, so the check no longer weighs it.
+//
 // A career session enters SessionStateCareerHub right after StateSession enters and leaves it in the same
 // millisecond, healthy or not. The tell of the stuck-weekend crash is StateSession itself ending within FAST_END_MS of
 // its start after the hub opened; SessionWatch reports that. A weekend whose progress state is past not started with
@@ -70,6 +78,7 @@ constexpr uint8_t TYPE_COUNT = 0x23;
 constexpr uint64_t DECIDING_TYPES = 0x7ffffbebbull;
 constexpr uint16_t NO_ID = 0xffff;
 constexpr uint8_t STARTED = 1;
+constexpr uint8_t COMPLETED = 2;
 constexpr uint8_t IGNORED = 4;
 
 inline constexpr const char *TYPE_NAMES[TYPE_COUNT] = {"ContractDriverRenewal",
@@ -358,6 +367,34 @@ struct Weekend {
 };
 
 inline bool never_ran(const Weekend &w) { return w.sessions && w.progress != WEEKEND_NOT_STARTED && w.complete == 0; }
+
+inline bool sessions_done(const Weekend &w) { return w.sessions && w.progress == WEEKEND_COMPLETE && w.complete >= w.sessions; }
+
+// The started race weekend that decides the hub (finished) and the not started race weekend starting inside its days
+// (next); -1 for both when the weekend is not done, the season is over, another item decides or no weekend overlaps.
+struct OverlapFix {
+    int finished = -1;
+    int next = -1;
+};
+
+inline OverlapFix finished_overlap(const std::vector<Item> &today, bool season_over, const Weekend &w)
+{
+    OverlapFix f;
+    if (!sessions_done(w))
+        return f;
+    Decision d = decide(today, season_over);
+    if (d.by < 0 || today[size_t(d.by)].type != RACE_WEEKEND)
+        return f;
+    const Item &done = today[size_t(d.by)];
+    for (size_t i = 0; i < today.size(); ++i) {
+        const Item &it = today[i];
+        if (int(i) == d.by || it.type != RACE_WEEKEND || it.state != 0 || !it.def || it.id == NO_ID)
+            continue;
+        if (it.first >= done.first && it.first <= done.last)
+            return {d.by, int(i)};
+    }
+    return f;
+}
 
 inline std::string progress_name(uint32_t p)
 {
