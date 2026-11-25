@@ -278,3 +278,18 @@ pub(super) fn game_function(frame: &str) -> Option<&str> {
     let name = words.next()?.split("+0x").next()?;
     (!name.is_empty() && name != "fn").then_some(name)
 }
+
+/// The offset in `F1_25.exe+0x39182a4` in a stack frame as written, from the frame's first such word.
+pub(super) fn frame_rva(frame: &str) -> Option<u64> {
+    let word = frame
+        .split_whitespace()
+        .find(|w| w.to_ascii_lowercase().starts_with("f1_25.exe+0x"))?;
+    u64::from_str_radix(&word[word.find("+0x")? + 3..], 16).ok()
+}
+
+/// Whether the crash's stack frames, after `skip` frames, are `rvas` of `F1_25.exe`, nearest first.
+pub(super) fn frames_start_with(f: &Fatal, skip: usize, rvas: &[u64]) -> bool {
+    rvas.iter()
+        .enumerate()
+        .all(|(i, rva)| f.frames.get(skip + i).and_then(|l| frame_rva(l)) == Some(*rva))
+}

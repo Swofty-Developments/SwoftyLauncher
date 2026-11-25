@@ -17,7 +17,9 @@ mod hooks;
 mod logos;
 mod memory;
 mod package_ids;
+mod render_slots;
 mod saves;
+mod session_exit;
 mod slow_init;
 mod stall;
 mod startup;
@@ -227,6 +229,8 @@ const RULES: &[Rule] = &[
     |c| imported_calendar_crash(c.evidence, &c.fatal).then(|| imported_calendar_empty_season(c.evidence)),
     |c| third_car_line_crash(c.evidence, &c.fatal).then(|| third_car_line(c.evidence)),
     |c| null_vehicle_crash(&c.fatal).then(|| career_over_grid(c.evidence, &c.fatal)),
+    render_slots::render_slots,
+    session_exit::session_exit,
     graphics::device_removed,
     graphics::out_of_graphics_memory,
     graphics::graphics_mod_crash,
