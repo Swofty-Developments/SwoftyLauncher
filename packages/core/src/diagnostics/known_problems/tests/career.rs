@@ -523,3 +523,52 @@ fn the_profiles_track_and_season_addons_that_are_off_are_read() {
     std::fs::remove_dir_all(&root).ok();
     assert_eq!(e.off, ["t.track-off", "t.season-off"]);
 }
+
+const NULL_VEHICLE: &str = "\
+2026-11-25 02:15:52.101 [3516] [era] session trace Sess_Setup_VehicleComponents (driver_career_26): entrants 24, list ? (- cars) of setup mode swofty_f1; participants: game manager 24, game module - (next -); session vehicles 23
+2026-11-25 02:16:42.603 [3516] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 3516, 203 s after load, at F1_25.exe+0x2d0237a .xtls fn base+0x2d01210+0x116a
+2026-11-25 02:16:42.603 [3516] [crash]   reading 0x590
+2026-11-25 02:16:42.603 [3516] [crash]   stack:
+2026-11-25 02:16:42.603 [3516] [crash]   #0  F1_25.exe+0x2d0237a .xtls fn base+0x2d01210+0x116a
+2026-11-25 02:16:42.603 [3516] [crash]   #1  F1_25.exe+0x2d07bb1 .xtls fn base+0x2d06e70+0xd41
+2026-11-25 02:16:42.604 [3516] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x2d0237a .xtls fn base+0x2d01210+0x116a reached the top-level filter; passing it to the game's filter
+";
+
+#[test]
+fn a_crash_building_the_udp_tables_of_a_car_with_no_vehicle_names_the_grid() {
+    let d = diagnose(&ev(NULL_VEHICLE, &[])).unwrap();
+    assert_eq!(d.id, "career_over_grid");
+    assert!(
+        d.what.contains("has 24 cars where the game expects 22"),
+        "{}",
+        d.what
+    );
+    assert!(
+        d.steps[0].starts_with("Start a new career with the stock line-ups"),
+        "{}",
+        d.steps[0]
+    );
+
+    let no_marker: String = NULL_VEHICLE.lines().skip(1).map(|l| format!("{l}\n")).collect();
+    let d = diagnose(&ev(&no_marker, &[])).unwrap();
+    assert_eq!(d.id, "career_over_grid");
+    assert!(d.what.contains("more than 22 cars"), "{}", d.what);
+
+    let older = NULL_VEHICLE.replace("0x2d01210+0x116a", "0x2cfec80+0x116a");
+    assert_eq!(diagnose(&ev(&older, &[])).map(|d| d.id), Some("career_over_grid"));
+
+    let other: String = no_marker.replace("0x2d01210+0x116a", "0x2d01210+0x116b");
+    assert_ne!(diagnose(&ev(&other, &[])).map(|d| d.id), Some("career_over_grid"));
+}
+
+#[test]
+fn a_crash_with_a_grid_of_24_cars_names_the_grid_and_a_stock_grid_does_not() {
+    let other = NULL_VEHICLE.replace("0x2d01210+0x116a", "0x1111110+0x11");
+    let d = diagnose(&ev(&other, &[])).unwrap();
+    assert_eq!(d.id, "career_over_grid");
+
+    let stock = other
+        .replace("game manager 24", "game manager 23")
+        .replace("session vehicles 23", "session vehicles 22");
+    assert_ne!(diagnose(&ev(&stock, &[])).map(|d| d.id), Some("career_over_grid"));
+}
