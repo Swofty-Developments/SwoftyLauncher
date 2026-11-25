@@ -442,6 +442,67 @@ static void season_break_over_team_hq()
         expect(!hc::blocks_advance(t), std::string(hc::type_name(t)) + " does not");
 }
 
+static void finished_weekend_over_next()
+{
+    std::vector<Def> defs{{12, hc::RACE_WEEKEND, 4}, {14, hc::RACE_WEEKEND, 4}, {36, hc::SEASON_BREAK, 15}, {20, 0x06, 1}};
+    hc::Weekend done{2, 32, hc::WEEKEND_COMPLETE, 6, 7, 7, "race", "game/melbourne", true};
+    std::vector<hc::Item> today;
+
+    Memory m;
+    calendar(m, {{28, 1}, {29, 0}}, defs, {0, 1});
+    expect(hc::collect(CAL, 29, L, read, &m, today) && today.size() == 2, "the F2 Revamp round 2, day 29: two weekends run");
+    hc::Decision d = hc::decide(today, false);
+    expect(hc::describe(d, today, false) == "stay in the hub (item 1, RaceWeekend, decides)",
+           "the finished weekend decides the hub: " + hc::describe(d, today, false));
+    hc::OverlapFix f = hc::finished_overlap(today, false, done);
+    expect(f.finished == 0 && f.next == 1, "the finished weekend and the overlapping one are named");
+    m.put<uint8_t>(today[0].at + L.item_state, hc::COMPLETED);
+    hc::collect(CAL, 29, L, read, &m, today);
+    d = hc::decide(today, false);
+    expect(d.verdict == hc::Verdict::team_hq && d.by < 0, "with the first weekend completed the hub moves on");
+    expect(hc::finished_overlap(today, false, done).finished == -1, "the next pass finds nothing to do");
+
+    expect(hc::finished_overlap(today, true, done).finished == -1, "nothing to do when the season is over");
+
+    Memory a;
+    calendar(a, {{28, 1}, {29, 0}}, defs, {0, 1});
+    hc::collect(CAL, 29, L, read, &a, today);
+    hc::Weekend running{2, 32, hc::WEEKEND_IN_PROGRESS, 3, 7, 3, "practice_3", "game/melbourne", false};
+    expect(hc::finished_overlap(today, false, running).finished == -1, "a weekend not complete is left");
+    hc::Weekend partial{2, 32, hc::WEEKEND_COMPLETE, 6, 7, 5, "race", "game/melbourne", true};
+    expect(hc::finished_overlap(today, false, partial).finished == -1, "a weekend with sessions not complete is left");
+    hc::Weekend unread{2, 32, hc::WEEKEND_COMPLETE, 0, 0, 0, "", "", false};
+    expect(hc::finished_overlap(today, false, unread).finished == -1, "a weekend whose sessions do not read is left");
+
+    Memory b;
+    calendar(b, {{28, 1}, {32, 0}}, defs, {0, 1});
+    hc::collect(CAL, 29, L, read, &b, today);
+    expect(today.size() == 1 && hc::finished_overlap(today, false, done).finished == -1,
+           "a stock calendar with no second weekend is left");
+    hc::collect(CAL, 31, L, read, &b, today);
+    expect(hc::finished_overlap(today, false, done).finished == -1, "a weekend that starts after the first ends is left");
+
+    Memory c;
+    calendar(c, {{28, 1}, {29, 1}}, defs, {0, 1});
+    hc::collect(CAL, 29, L, read, &c, today);
+    expect(hc::finished_overlap(today, false, done).finished == -1, "an overlapping weekend that already started is left");
+
+    Memory e;
+    calendar(e, {{28, 1}, {29, 0}}, defs, {2, 3});
+    hc::collect(CAL, 29, L, read, &e, today);
+    expect(hc::finished_overlap(today, false, done).finished == -1, "an overlap that is not a race weekend is left");
+
+    Memory g;
+    calendar(g, {{28, 1}, {29, 0}}, defs, {3, 1});
+    hc::collect(CAL, 29, L, read, &g, today);
+    expect(hc::finished_overlap(today, false, done).finished == -1, "a deciding item that is not a race weekend is left");
+
+    Memory h;
+    calendar(h, {{28, 1}, {29, 0}}, {{12, hc::SEASON_BREAK, 4}, {14, hc::RACE_WEEKEND, 4}}, {0, 1});
+    hc::collect(CAL, 29, L, read, &h, today);
+    expect(hc::finished_overlap(today, false, done).finished == -1, "a season break that decides is left to its own fix");
+}
+
 int main()
 {
     secret_meeting_on_p1();
@@ -455,6 +516,7 @@ int main()
     season_break_over_weekend();
     season_break_left_alone();
     season_break_over_team_hq();
+    finished_weekend_over_next();
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }
