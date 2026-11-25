@@ -358,3 +358,42 @@ fn a_stale_databases_erp_with_no_clean_copy_on_record_says_to_repair_the_game() 
         "{text}"
     );
 }
+
+const FLOW_FRONTEND_ERP: &str = "2025_asset_groups/ui_package/flow_frontend.erp";
+
+fn flow_frontend_archive(entry: &str) -> Vec<u8> {
+    use swofty_formats::pkg::{Arr, Node, Val};
+    let props = obj(vec![
+        ("name", Node::Val(Val::str("migrate_to_f1_world"))),
+        ("migrate_entry", obj(vec![("value", Node::Val(Val::str(entry)))])),
+    ]);
+    let mut items = vec![props];
+    items.extend((0..7).map(|_| Node::Arr(Arr::new(Vec::new()))));
+    let root = obj(vec![(
+        "Screens",
+        Node::Arr(Arr::new(vec![Node::Arr(Arr::new(items))])),
+    )]);
+    uidb_archive("eaid://ui_package/screens/frontend_transition.ui", root)
+}
+
+#[test]
+fn a_game_flow_frontend_erp_already_handing_over_to_the_launcher_gets_its_original_back() {
+    let s = Seasons::new("menus-frontend", &["stock"]);
+    let path = s.game.dir.join(FLOW_FRONTEND_ERP);
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    let clean = flow_frontend_archive("enter_f1_world_container");
+    std::fs::write(&path, flow_frontend_archive(crate::ui::patch::RETURN_ENTRY)).unwrap();
+    s.back_up_for_build_1_as(FLOW_FRONTEND_ERP, &clean);
+    let original = |rel: &str| original(&s.store.root, &s.game, rel);
+    let Err(Error::StaleInput { rel, detail }) = check_menu_originals(&original) else {
+        panic!("the launcher's hand-over in the game's flow_frontend.erp is a stale input");
+    };
+    assert_eq!(rel, FLOW_FRONTEND_ERP);
+    assert_eq!(
+        detail,
+        "menus: the game's flow_frontend.erp already holds the hand-over swofty_enter_return"
+    );
+    heal_stale(&s.store.root, &s.game, &rel).unwrap().unwrap();
+    assert_eq!(std::fs::read(&path).unwrap(), clean);
+    check_menu_originals(&original).unwrap();
+}

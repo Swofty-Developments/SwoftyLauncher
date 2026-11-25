@@ -13,6 +13,7 @@ pub use f1_world::{
     BACK_HOME_FROM_CONTAINER, CUSTOMISATION_GROUP, CUSTOMISATION_ROUTE, GRAND_PRIX_ENTRY, GRAND_PRIX_ROUTE,
     GRAND_PRIX_SAVES_ROUTE, HOME_BACK_ROUTE, RETURN_ENTRY, SHOWROOM_ROUTE, TIME_TRIAL_ENTRY,
     TIME_TRIAL_ROUTE, customisation_routes, f1_world_entries, f1_world_routes, frontend_transition,
+    hands_over_to_return,
 };
 pub use home::{OFFLINE_TEXT, OFFLINE_TEXT_PATH, Popup, fe_home, hide_panel, offline_panel, popup_seen};
 pub use leaderboard::{FRIENDS_TAB_LABEL, FRIENDS_TAB_TEXT, leaderboard_glyphs};
