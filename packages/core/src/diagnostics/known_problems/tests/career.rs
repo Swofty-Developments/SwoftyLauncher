@@ -572,3 +572,50 @@ fn a_crash_with_a_grid_of_24_cars_names_the_grid_and_a_stock_grid_does_not() {
         .replace("session vehicles 23", "session vehicles 22");
     assert_ne!(diagnose(&ev(&stock, &[])).map(|d| d.id), Some("career_over_grid"));
 }
+
+fn grid_session(grid: u32) -> String {
+    format!(
+        "2026-11-25 02:10:00.000 [3516] [career] flow \"StateLoadSession\" None -> Entering\n\
+         2026-11-25 02:10:01.000 [3516] [era] session trace Sess_Setup_VehicleComponents (driver_career_26): entrants {grid}, list ? (- cars) of setup mode swofty_f1; participants: game manager {grid}, game module - (next -); session vehicles 22\n"
+    )
+}
+
+fn crash_tail() -> String {
+    NULL_VEHICLE
+        .lines()
+        .skip(1)
+        .map(|l| format!("{}\n", l.replace("0x2d01210+0x116a", "0x1111110+0x11")))
+        .collect()
+}
+
+#[test]
+fn a_stock_session_that_crashes_after_an_oversized_one_is_not_blamed_on_the_grid() {
+    let log = format!("{}{}{}", grid_session(24), grid_session(23), crash_tail());
+    assert_ne!(diagnose(&ev(&log, &[])).map(|d| d.id), Some("career_over_grid"));
+
+    let no_setup = format!(
+        "{}2026-11-25 02:12:00.000 [3516] [career] flow \"StateLoadSession\" None -> Entering\n{}",
+        grid_session(24),
+        crash_tail()
+    );
+    assert_ne!(
+        diagnose(&ev(&no_setup, &[])).map(|d| d.id),
+        Some("career_over_grid")
+    );
+}
+
+#[test]
+fn an_oversized_session_that_crashes_after_a_stock_one_names_its_own_grid() {
+    let log = format!("{}{}{}", grid_session(23), grid_session(25), crash_tail());
+    let d = diagnose(&ev(&log, &[])).unwrap();
+    assert_eq!(d.id, "career_over_grid");
+    assert!(d.what.contains("has 25 cars"), "{}", d.what);
+}
+
+#[test]
+fn a_later_session_after_the_crash_does_not_change_the_grid() {
+    let log = format!("{}{}{}", grid_session(25), crash_tail(), grid_session(23));
+    let d = diagnose(&ev(&log, &[])).unwrap();
+    assert_eq!(d.id, "career_over_grid");
+    assert!(d.what.contains("has 25 cars"), "{}", d.what);
+}

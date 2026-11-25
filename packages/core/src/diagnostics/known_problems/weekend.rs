@@ -11,7 +11,7 @@ pub const NEVER_RAN: &str = "[career] weekend already started, session never ran
 /// The core's Team HQ line for every other weekend.
 const TEAM_HQ: &str = "[career] Team HQ weekend: ";
 /// A session load: the first flow state of a weekend session.
-const SESSION_LOAD: &str = "[career] flow \"StateLoadSession\" ";
+pub(super) const SESSION_LOAD: &str = "[career] flow \"StateLoadSession\" ";
 
 /// The weekend of a `never ran` line.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

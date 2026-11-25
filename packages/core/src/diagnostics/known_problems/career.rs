@@ -1,7 +1,9 @@
 use std::collections::BTreeMap;
 
 use super::Diagnosis;
-use super::crash_record::{Fatal, NEAR_FRAMES, crash_lines, crash_time, game_function, stamp};
+use super::crash_record::{
+    Fatal, NEAR_FRAMES, crash_lines, crash_time, crashed_session, game_function, stamp,
+};
 use super::evidence::Evidence;
 use super::weekend::Weekend;
 use super::wording::{list, name};
@@ -557,9 +559,12 @@ pub fn stuck_weekend(e: &Evidence) -> Option<Diagnosis> {
     })
 }
 
-/// The cars of the grid the last session set-up counted: `N` in `participants: game manager N`.
-pub(super) fn grid_cars(loader: &str) -> Option<usize> {
-    let line = loader.lines().rev().find(|l| l.contains(VEHICLE_SETUP))?;
+/// The cars of the grid the crashed session's set-up counted: `N` in `participants: game manager N`.
+pub(super) fn grid_cars(e: &Evidence, f: &Fatal) -> Option<usize> {
+    let line = crashed_session(e, f)
+        .lines()
+        .rev()
+        .find(|l| l.contains(VEHICLE_SETUP))?;
     let count = line.split_once(GAME_MANAGER)?.1;
     count.split(|c: char| !c.is_ascii_digit()).next()?.parse().ok()
 }
@@ -576,11 +581,11 @@ pub(super) fn null_vehicle_crash(f: &Fatal) -> bool {
 
 /// Whether an F1 25 crash came with a grid of [`OVER_GRID_MANAGER`] or more cars at the session set-up.
 pub(super) fn over_grid_crash(e: &Evidence, f: &Fatal) -> bool {
-    f.module.as_deref() == Some("f1_25.exe") && grid_cars(&e.loader).is_some_and(|n| n >= OVER_GRID_MANAGER)
+    f.module.as_deref() == Some("f1_25.exe") && grid_cars(e, f).is_some_and(|n| n >= OVER_GRID_MANAGER)
 }
 
-pub(super) fn career_over_grid(e: &Evidence) -> Diagnosis {
-    let cars = grid_cars(&e.loader).map_or("more than 22 cars".to_owned(), |n| format!("{n} cars"));
+pub(super) fn career_over_grid(e: &Evidence, f: &Fatal) -> Diagnosis {
+    let cars = grid_cars(e, f).map_or("more than 22 cars".to_owned(), |n| format!("{n} cars"));
     Diagnosis {
         id: "career_over_grid",
         title: "Your career's grid has more cars than F1 25 expects".to_owned(),
