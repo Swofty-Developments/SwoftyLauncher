@@ -248,6 +248,11 @@ pub(super) fn aggressive_ai_crash(e: &Evidence, f: &Fatal) -> bool {
             .any(|l| l.contains("F1_25.exe+0x") && AGGRESSIVE_AI_CRASH.iter().any(|at| l.contains(at)))
 }
 
+/// Whether the game is the Steam build of F1 25 1.0.145.
+pub(super) fn steam_1_0_145(e: &Evidence) -> bool {
+    e.game_build == Some(crate::build_support::BUILD_1_0_145)
+}
+
 /// Whether F1 25 1.0.145 crashed with a Skip Cutscenes version up to
 /// [`SKIP_CUTSCENES_LAST_BROKEN`] on in the profile, in its own module or after
 /// it logged that it could not find its vtable.
@@ -256,7 +261,7 @@ pub(super) fn skip_cutscenes_crash(e: &Evidence, f: &Fatal) -> bool {
         .versions
         .get(SKIP_CUTSCENES)
         .is_some_and(|v| semver::Version::parse(v.trim()).is_ok_and(|v| v <= semver::Version::new(1, 9, 4)));
-    e.game_build == Some(crate::build_support::BUILD_1_0_145)
+    steam_1_0_145(e)
         && e.enabled.iter().any(|id| id == SKIP_CUTSCENES)
         && broken
         && (f.module.as_deref() == Some(SKIP_CUTSCENES_MODULE)
