@@ -14,8 +14,7 @@ inline HRESULT create_filled_texture(ID3D12Device *dev, const D3D12_RESOURCE_DES
 {
     D3D12_HEAP_PROPERTIES heap{};
     heap.Type = D3D12_HEAP_TYPE_DEFAULT;
-    bool one = desc.MipLevels == 1 &&
-               (desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D || desc.DepthOrArraySize == 1);
+    bool one = desc.MipLevels == 1 && (desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D || desc.DepthOrArraySize == 1);
     if (one && SUCCEEDED(dev->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_CREATE_NOT_ZEROED, &desc, state, nullptr,
                                                       IID_PPV_ARGS(out))))
         return S_OK;
