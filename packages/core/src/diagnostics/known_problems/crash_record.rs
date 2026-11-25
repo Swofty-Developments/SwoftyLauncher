@@ -38,6 +38,9 @@ pub(super) fn module_at(text: &str) -> Option<String> {
     (!name.is_empty() && !name.starts_with("0x")).then(|| name.to_ascii_lowercase())
 }
 
+/// The start of the loader line of the game's fatal exception.
+pub(super) const FATAL_LINE: &str = "[crash] unhandled ";
+
 /// The loader's crash lines, without their time and thread.
 pub(super) fn crash_lines(loader: &str) -> Vec<&str> {
     loader
@@ -235,7 +238,7 @@ pub(super) fn crash_line<'a>(e: &'a Evidence, f: &Fatal) -> Option<&'a str> {
         .or_else(|| {
             e.loader
                 .lines()
-                .find(|l| l.contains("[crash] unhandled ") && l.contains("reached the top-level filter"))
+                .find(|l| l.contains(FATAL_LINE) && l.contains("reached the top-level filter"))
         })
 }
 

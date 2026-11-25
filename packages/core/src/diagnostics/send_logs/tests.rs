@@ -2592,6 +2592,120 @@ fn a_cut_loader_log_keeps_its_window_stage() {
     }
 }
 
+const TYRE_LINE: &str = "2026-11-22 23:00:00.000 [22268] [tyres] car 24 (team 7, AI): fitted tyres were never \
+                         placed on the wheels\n";
+
+fn kept_for_known_problems(text: &str) -> Vec<&str> {
+    let got: Vec<&str> = text.split_inclusive('\n').collect();
+    let mut kept = Vec::new();
+    for (i, l) in got.iter().enumerate() {
+        if l.starts_with("[swofty: ") && l.contains("kept for known problems]") {
+            let n: usize = l["[swofty: ".len()..].split(' ').next().unwrap().parse().unwrap();
+            assert_eq!(got[i + 1..].iter().take(n).copied().collect::<Vec<_>>().len(), n);
+            kept.extend(&got[i + 1..i + 1 + n]);
+        }
+    }
+    kept
+}
+
+#[test]
+fn a_cut_loader_log_keeps_the_known_problem_lines_of_the_part_it_leaves_out() {
+    let dir = tmp("loader-evidence");
+    let path = dir.join("loader.log");
+    let mut lines: Vec<String> = (0..2000)
+        .map(|i| format!("line {i:04} of the loader log\n"))
+        .collect();
+    lines[900] = TYRE_LINE.to_owned();
+    lines[901] = TYRE_LINE.replace("car 24", "car 25");
+    let log = lines.concat();
+    put(&path, &log);
+    let cap = 6000;
+    let (data, cut) = read_cut(&path, cap, kept_head(&path, cap)).unwrap();
+    assert!(data.len() as u64 <= cap, "{} over {cap}", data.len());
+    assert!(matches!(cut, Cut::Middle { .. }));
+    let text = String::from_utf8(data).unwrap();
+    assert_eq!(
+        kept_for_known_problems(&text),
+        [lines[900].as_str(), lines[901].as_str()]
+    );
+    let gap = text.find("[swofty: left out ").unwrap();
+    let block = text
+        .find("[swofty: 2 line(s) from the part left out, kept for known problems]\n")
+        .unwrap();
+    assert!(gap < block && block < text.find(&lines[900]).unwrap());
+    assert!(text.ends_with(lines.last().unwrap()));
+}
+
+#[test]
+fn a_cut_loader_log_keeps_the_known_problem_lines_of_both_parts_around_its_window_stage() {
+    let dir = tmp("loader-evidence-window");
+    let path = dir.join("loader.log");
+    let mut lines = staged_log(400, 12, 400);
+    let stage = lines.iter().position(|l| l == STAGE_LINE).unwrap();
+    lines[100] = TYRE_LINE.replace("car 24", "car 10");
+    let late = stage + 300;
+    lines[late] = TYRE_LINE.replace("car 24", "car 11");
+    let (first, second) = (lines[100].clone(), lines[late].clone());
+    put(&path, lines.concat());
+    let cap = 9000;
+    let (data, cut) = read_cut(&path, cap, kept_head(&path, cap)).unwrap();
+    assert!(data.len() as u64 <= cap, "{} over {cap}", data.len());
+    assert!(matches!(cut, Cut::Window { .. }));
+    let text = String::from_utf8(data).unwrap();
+    assert_eq!(kept_for_known_problems(&text), [first.as_str(), second.as_str()]);
+    assert_eq!(text.matches("kept for known problems]").count(), 2);
+    assert!(text.find(&first).unwrap() < text.find(STAGE_LINE).unwrap());
+    assert!(text.find(STAGE_LINE).unwrap() < text.find(&second).unwrap());
+}
+
+#[test]
+fn a_cut_loader_log_with_no_known_problem_lines_is_cut_as_before() {
+    let dir = tmp("loader-evidence-none");
+    let path = dir.join("loader.log");
+    let lines: Vec<String> = (0..2000)
+        .map(|i| format!("line {i:04} of the loader log\n"))
+        .collect();
+    let log = lines.concat();
+    put(&path, &log);
+    let cap = 6000;
+    let (data, _) = read_cut(&path, cap, kept_head(&path, cap)).unwrap();
+    let text = String::from_utf8(data).unwrap();
+    assert!(!text.contains("known problems"));
+    assert_eq!(text.matches("[swofty: left out ").count(), 1);
+    let got: Vec<&str> = text.split_inclusive('\n').collect();
+    let gap = got
+        .iter()
+        .position(|l| l.starts_with("[swofty: left out "))
+        .unwrap();
+    assert_eq!(&got[..gap], &lines[..gap]);
+    assert_eq!(&got[gap + 1..], &lines[lines.len() - (got.len() - gap - 1)..]);
+    assert!(got.concat().len() as u64 > cap - 300);
+}
+
+#[test]
+fn the_known_problem_lines_a_cut_loader_log_keeps_stay_within_their_limit() {
+    let dir = tmp("loader-evidence-cap");
+    let path = dir.join("loader.log");
+    let mut lines: Vec<String> = (0..3000)
+        .map(|i| format!("line {i:04} of the loader log\n"))
+        .collect();
+    for (i, line) in lines.iter_mut().enumerate().take(2900).skip(100) {
+        *line = TYRE_LINE.replace("car 24", &format!("car {i}"));
+    }
+    put(&path, lines.concat());
+    for cap in [6000, 40_000, 200_000] {
+        let (data, _) = read_cut(&path, cap, kept_head(&path, cap)).unwrap();
+        assert!(data.len() as u64 <= cap, "{} over {cap}", data.len());
+        let text = String::from_utf8(data).unwrap();
+        let kept = kept_for_known_problems(&text);
+        let bytes: usize = kept.iter().map(|l| l.len()).sum();
+        let room = EVIDENCE_KEEP.min((cap - cap / 2 - GAP_NOTE) / 4) as usize;
+        assert!(!kept.is_empty() && bytes <= room, "{cap}: {bytes} over {room}");
+        assert!(text.contains("more such lines were left out"), "{cap}");
+        assert!(text.ends_with(lines.last().unwrap()));
+    }
+}
+
 #[test]
 fn a_window_stage_inside_the_kept_ends_changes_nothing() {
     let dir = tmp("loader-window-ends");

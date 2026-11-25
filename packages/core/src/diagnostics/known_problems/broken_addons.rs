@@ -173,7 +173,7 @@ pub(super) fn pitlane_crash(e: &Evidence, f: &Fatal) -> bool {
     let at = e
         .loader
         .lines()
-        .any(|l| l.contains("[crash] unhandled ") && l.contains(PITLANE_CRASH));
+        .any(|l| l.contains(super::crash_record::FATAL_LINE) && l.contains(PITLANE_CRASH));
     garbage || (kept && at)
 }
 

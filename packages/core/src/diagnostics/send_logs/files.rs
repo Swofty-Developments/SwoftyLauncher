@@ -1,10 +1,12 @@
 //! Reading the files a bundle sends: the tail of a log, both ends of one too long to send whole, and whether
 //! two files are the same.
 
-use std::io::{Read, Seek, SeekFrom};
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 
-use super::{GAP_NOTE, LOADER_KEEP, WINDOW_KEEP, size};
+use crate::diagnostics::known_problems;
+
+use super::{EVIDENCE_KEEP, GAP_NOTE, LOADER_KEEP, WINDOW_KEEP, size};
 
 /// The loader's line for the start of the window stage (native/src/loader/version.c stage_window).
 const WINDOW_STAGE: &[u8] = b"] stage: window (";
@@ -62,12 +64,30 @@ pub(super) fn read_cut(path: &Path, cap: u64, head: u64) -> std::io::Result<(Vec
     }
     let head = data.len() as u64;
     let rest = cap.saturating_sub(head + GAP_NOTE);
+    let room = EVIDENCE_KEEP.min(rest / 4);
     if let Some((at, window)) = window_stage(path, head, len, rest)? {
-        let (tail, _) = read_tail(path, rest.saturating_sub(window.len() as u64 + GAP_NOTE))?;
         let end = at + window.len() as u64;
+        let tail_cap = rest.saturating_sub(window.len() as u64 + GAP_NOTE);
+        let (mut tail, _) = read_tail(path, tail_cap)?;
+        let mut first = Evidence::default();
+        let mut second = Evidence::default();
+        first.scan(path, head, at, room)?;
+        second.scan(path, end, len - tail.len() as u64, room - first.data.len() as u64)?;
+        if !first.is_empty() || !second.is_empty() {
+            let scanned = len - tail.len() as u64;
+            tail = read_tail(path, tail_cap.saturating_sub(room + 4 * GAP_NOTE))?.0;
+            second.scan(
+                path,
+                scanned,
+                len - tail.len() as u64,
+                room - first.data.len() as u64 - second.data.len() as u64,
+            )?;
+        }
         data.extend_from_slice(gap_note(at - head, len).as_bytes());
+        first.append_to(&mut data);
         data.extend_from_slice(&window);
         data.extend_from_slice(gap_note(len.saturating_sub(end + tail.len() as u64), len).as_bytes());
+        second.append_to(&mut data);
         data.extend_from_slice(&tail);
         return Ok((
             data,
@@ -78,9 +98,22 @@ pub(super) fn read_cut(path: &Path, cap: u64, head: u64) -> std::io::Result<(Vec
             },
         ));
     }
-    let (tail, _) = read_tail(path, rest)?;
+    let (mut tail, _) = read_tail(path, rest)?;
+    let mut kept = Evidence::default();
+    kept.scan(path, head, len - tail.len() as u64, room)?;
+    if !kept.is_empty() {
+        let scanned = len - tail.len() as u64;
+        tail = read_tail(path, rest.saturating_sub(room + 2 * GAP_NOTE))?.0;
+        kept.scan(
+            path,
+            scanned,
+            len - tail.len() as u64,
+            room - kept.data.len() as u64,
+        )?;
+    }
     let left = len.saturating_sub(head + tail.len() as u64);
     data.extend_from_slice(gap_note(left, len).as_bytes());
+    kept.append_to(&mut data);
     data.extend_from_slice(&tail);
     Ok((
         data,
@@ -89,6 +122,79 @@ pub(super) fn read_cut(path: &Path, cap: u64, head: u64) -> std::io::Result<(Vec
             tail: tail.len() as u64,
         },
     ))
+}
+
+/// The lines of a part of a loader log that Send Logs leaves out which the known-problem checks match on.
+#[derive(Default)]
+struct Evidence {
+    data: Vec<u8>,
+    lines: usize,
+    capped: bool,
+}
+
+impl Evidence {
+    fn is_empty(&self) -> bool {
+        self.lines == 0 && !self.capped
+    }
+
+    /// Adds the matching lines of `from..to`, a part of the file that starts and ends at a line start, while
+    /// they fit in `room` bytes more; reads the part line by line, never whole.
+    fn scan(&mut self, path: &Path, from: u64, to: u64, room: u64) -> std::io::Result<()> {
+        if from >= to || self.capped {
+            return Ok(());
+        }
+        let needles: Vec<&[u8]> = known_problems::log_needles()
+            .iter()
+            .map(|n| n.as_bytes())
+            .collect();
+        let mut f = std::fs::File::open(path)?;
+        f.seek(SeekFrom::Start(from))?;
+        let mut reader = BufReader::with_capacity(SEARCH_CHUNK as usize, f.take(to - from));
+        let mut line = Vec::new();
+        let mut used = 0_u64;
+        loop {
+            line.clear();
+            if reader.read_until(b'\n', &mut line)? == 0 {
+                return Ok(());
+            }
+            if !needles.iter().any(|n| line.windows(n.len()).any(|w| w == *n)) {
+                continue;
+            }
+            if line.last() != Some(&b'\n') {
+                line.push(b'\n');
+            }
+            if used + line.len() as u64 > room {
+                self.capped = true;
+                return Ok(());
+            }
+            used += line.len() as u64;
+            self.data.extend_from_slice(&line);
+            self.lines += 1;
+        }
+    }
+
+    fn append_to(&self, out: &mut Vec<u8>) {
+        if self.is_empty() {
+            return;
+        }
+        out.extend_from_slice(
+            format!(
+                "[swofty: {} line(s) from the part left out, kept for known problems]\n",
+                self.lines
+            )
+            .as_bytes(),
+        );
+        out.extend_from_slice(&self.data);
+        if self.capped {
+            out.extend_from_slice(
+                format!(
+                    "[swofty: more such lines were left out: the {} limit for them was reached]\n",
+                    size(EVIDENCE_KEEP)
+                )
+                .as_bytes(),
+            );
+        }
+    }
 }
 
 fn gap_note(left: u64, len: u64) -> String {

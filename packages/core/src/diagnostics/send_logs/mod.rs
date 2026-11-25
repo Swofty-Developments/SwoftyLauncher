@@ -56,6 +56,9 @@ const LOADER_KEEP: u64 = 2560 << 10;
 /// A cut loader.log whose window stage falls in the part the cut leaves out keeps this much from the
 /// stage's first line: the core's window-stage hooks and every addon's hook installs.
 const WINDOW_KEEP: u64 = 512 << 10;
+/// The most a cut loader.log keeps, in all its left-out parts together, of the lines the known-problem checks match
+/// on ([`crate::diagnostics::known_problems::log_needles`]), so a notice's evidence line is in the bundle.
+const EVIDENCE_KEEP: u64 = 64 << 10;
 const GAP_NOTE: u64 = 128;
 const PERF_READ: u64 = 1 << 20;
 const DUMP_CAP: u64 = 24 << 20;
