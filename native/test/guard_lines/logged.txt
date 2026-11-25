@@ -203,6 +203,7 @@
 [core] boot watchdog grace declined: the frame tick was silent %u ms and no flow is in Entering (limit %llu ms) or Updating (limit %llu ms)
 [core] boot watchdog grace: the flow table stayed busy for %d ms, reading the lock-free snapshot
 [core] boot watchdog grace: the frame tick has been silent %u ms with flow "%s" in %s; the game's watchdog kill is held (up to %u ms)
+[core] boot watchdog grace: %s; the game's watchdog kill is held for %llu ms from now
 
 [log frontend/fe_tile_guard.cpp]
 [fe] tiles: entrant list %s is not in the game data; its tile is left without a list%s

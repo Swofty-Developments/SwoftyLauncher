@@ -117,6 +117,21 @@ int main()
         CHECK(wg::judge(40000, 901000, wg::Latest{}).verdict == wg::Verdict::NoFlow);
         CHECK(!std::strcmp(wg::verdict_name(wg::Verdict::LockBusy), "flow table busy"));
     }
+    {
+        const uint64_t menu = 60000, nineMin = menu + 540000;
+        wg::Flows f;
+        f.flow(1, 2, menu, "StateFrontend");
+        CHECK(f.judge(31000, nineMin).verdict == wg::Verdict::TooOld);
+        f.load(nineMin);
+        wg::Judgement j = f.judge(31000, nineMin + 31000);
+        CHECK(j.verdict == wg::Verdict::Hold && j.state == 3 && j.age == 31000);
+        CHECK(f.judge(wg::kCapMs, nineMin + wg::kCapMs).verdict == wg::Verdict::Hold);
+        CHECK(f.judge(wg::kCapMs + 1, nineMin + wg::kCapMs + 1).verdict == wg::Verdict::CapReached);
+        j = f.judge(40000, nineMin + wg::kLoadMaxMs + 1);
+        CHECK(j.verdict == wg::Verdict::TooOld && j.state == 3);
+        CHECK(f.latest().load == nineMin);
+        CHECK(wg::judge(40000, nineMin + 1000, wg::Latest{0, 0, nineMin}).verdict == wg::Verdict::Hold);
+    }
     CHECK(wg::bucket(0) == 0 && wg::bucket(29999) == 0 && wg::bucket(30000) == 1 && wg::bucket(179999) == 5);
     if (g_fail) {
         std::printf("watchdog grace test: %d failure(s)\n", g_fail);

@@ -23,7 +23,8 @@
 //
 // At site_Ne_WatchdogKillPath, reached only when the time since the last tick (r14d, ms) exceeds the max delay,
 // the hook continues at site_Ne_WatchdogKillSkip, the branch the game takes while the delay has not run out, when
-// a flow is in Entering, or entered Updating within the last 5 minutes (career.cpp reports every flow transition),
+// a flow is in Entering, entered Updating within the last 5 minutes (career.cpp reports every flow transition), or a career load
+// started within the last 5 minutes (career.starting, a resume row's PressSlot),
 // and the silence is under 180 s. A stall with no such flow, or one past 180 s, reaches the game's kill unchanged and
 // the reason is logged once. A kill with the shutdown flag set (dil, the object's +0x120) is never held. The flow
 // table is read under its lock for up to 50 ms, then from a lock-free mirror of the newest Entering and Updating times.
@@ -44,13 +45,15 @@ constexpr const char *KILL_SKIP = "site_Ne_WatchdogKillSkip";
 uintptr_t kill_skip = 0;
 std::mutex lock;
 wg::Flows flows;
-std::atomic<uint64_t> mirror_entering{0}, mirror_updating{0};
+std::atomic<uint64_t> mirror_entering{0}, mirror_updating{0}, mirror_load{0};
 std::atomic<uint32_t> last_bucket{~0u};
 std::atomic<uint32_t> last_elapsed{0};
 std::atomic<uint32_t> declined{0};
 std::atomic<uint64_t> held{0};
 
 constexpr int LOCK_TRIES = 50;
+
+const char *state_name(uint32_t s) { return s == 1 ? "Entering" : s == 2 ? "Updating" : "a career load"; }
 
 void decline(wg::Verdict v, uint32_t elapsed, const wg::Judgement &j, uint8_t rdi)
 {
@@ -71,8 +74,8 @@ void decline(wg::Verdict v, uint32_t elapsed, const wg::Judgement &j, uint8_t rd
     case wg::Verdict::TooOld:
         swofty::log("[core] boot watchdog grace declined: the frame tick was silent %u ms and the newest flow in %s has "
                     "been there %llu ms (limit %llu ms)",
-                    elapsed, j.state == 1 ? "Entering" : "Updating", static_cast<unsigned long long>(j.age),
-                    static_cast<unsigned long long>(j.state == 1 ? wg::kEnteringMaxMs : wg::kUpdatingMaxMs));
+                    elapsed, state_name(j.state), static_cast<unsigned long long>(j.age),
+                    static_cast<unsigned long long>(wg::state_max(j.state)));
         break;
     default:
         swofty::log("[core] boot watchdog grace declined: the frame tick was silent %u ms and no flow is in Entering "
@@ -110,6 +113,7 @@ void kill_path(SwoftyContext *c)
         wg::Latest l;
         l.entering = mirror_entering.load();
         l.updating = mirror_updating.load();
+        l.load = mirror_load.load();
         j = wg::judge(elapsed, now, l);
         std::snprintf(where.name, sizeof where.name, "(snapshot)");
     }
@@ -124,7 +128,7 @@ void kill_path(SwoftyContext *c)
     if (last_bucket.exchange(b) != b)
         swofty::log("[core] boot watchdog grace: the frame tick has been silent %u ms with flow \"%s\" in %s; the "
                     "game's watchdog kill is held (up to %u ms)",
-                    elapsed, where.name, j.state == 1 ? "Entering" : "Updating", wg::kCapMs);
+                    elapsed, where.name, state_name(j.state), wg::kCapMs);
 }
 
 namespace guards = swofty_core::guards;
@@ -154,6 +158,18 @@ void watchdog_flow(uint32_t hash, uint32_t to, const char *name)
     wg::Latest l = flows.latest();
     mirror_entering.store(l.entering);
     mirror_updating.store(l.updating);
+}
+
+void watchdog_load(const char *why)
+{
+    if (!kill_skip)
+        return;
+    uint64_t now = GetTickCount64();
+    std::lock_guard<std::mutex> g(lock);
+    flows.load(now);
+    mirror_load.store(now);
+    swofty::log("[core] boot watchdog grace: %s; the game's watchdog kill is held for %llu ms from now", why,
+                static_cast<unsigned long long>(wg::kLoadMaxMs));
 }
 
 }

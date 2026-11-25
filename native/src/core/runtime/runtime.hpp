@@ -230,6 +230,7 @@ void myteam_vehicle_heal_entrants(const myteam_heal::Load &load);
 bool myteam_keep_forced(const std::string &label);
 bool myteam_keep_substitute(SwoftyContext *c, uint32_t stat, const std::string &label);
 void watchdog_flow(uint32_t hash, uint32_t to, const char *name);
+void watchdog_load(const char *why);
 void hub_calendar_flow(uint32_t hash, uint32_t to);
 void hub_calendar_team_hq();
 void hub_calendar_load_loop();
