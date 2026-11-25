@@ -34,3 +34,26 @@ fn a_healthy_tyre_check_is_not_a_problem() {
     assert!(unplaced_tyres(&ev(log, &[])).is_none());
     assert!(unplaced_tyres(&ev("", &[])).is_none());
 }
+
+const SESSION_START: &str = "2026-11-03 09:59:22.218 [1] [career] flow \"StateSession\" None -> Entering\n";
+const RESTORE: &str =
+    "2026-11-03 09:59:25.100 [1] [saves] profile load 2: read from Steam native; savegame@midsessions0\n";
+
+#[test]
+fn unplaced_tyres_after_a_mid_session_load_say_restart() {
+    let log = format!("{SESSION_START}{RESTORE}{TYRES_LOG}");
+    let d = unplaced_tyres(&ev(&log, &[])).unwrap();
+    assert!(d.what.contains("after loading a mid-session save"), "{}", d.what);
+    assert!(!d.what.contains("addon"), "{}", d.what);
+    assert!(d.steps[0].contains("Restart the session"), "{:?}", d.steps);
+    assert!(d.steps.iter().all(|s| !s.contains("turn it off")));
+}
+
+#[test]
+fn unplaced_tyres_in_a_fresh_session_keep_the_addon_advice() {
+    let boot_load = "2026-11-03 09:58:00.000 [1] [saves] profile load 1: read from Steam native\n";
+    let log = format!("{boot_load}{SESSION_START}{TYRES_LOG}");
+    let d = unplaced_tyres(&ev(&log, &[])).unwrap();
+    assert!(d.what.contains("addon's car or handling data"), "{}", d.what);
+    assert!(d.steps[0].contains("turn it off"), "{:?}", d.steps);
+}

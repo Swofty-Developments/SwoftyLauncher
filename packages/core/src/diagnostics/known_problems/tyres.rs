@@ -2,6 +2,27 @@ use std::collections::BTreeSet;
 
 use super::Diagnosis;
 use super::evidence::Evidence;
+use super::stall::PROFILE_LOAD;
+
+const SESSION_ENTERING: &str = "\"StateSession\" None -> Entering";
+
+/// Whether the profile was loaded again after the session started and before the
+/// tyre check found cars unplaced: the game's mid-session save restore.
+pub(super) fn resumed_mid_session(loader: &str) -> bool {
+    let mut entered = false;
+    let mut resumed = false;
+    for line in loader.lines() {
+        if line.contains(SESSION_ENTERING) {
+            entered = true;
+            resumed = false;
+        } else if entered && line.contains(PROFILE_LOAD) {
+            resumed = true;
+        } else if line.contains(TYRES_UNPLACED) {
+            return resumed;
+        }
+    }
+    false
+}
 
 /// The log line the core writes for a car whose fitted tyre models were never
 /// placed on its wheels.
@@ -53,6 +74,23 @@ pub fn unplaced_tyres(e: &Evidence) -> Option<Diagnosis> {
         ),
         _ => format!("{} car(s) (cars {})", ai.len(), car_numbers(&ai)),
     };
+    if resumed_mid_session(&e.loader) {
+        return Some(Diagnosis {
+            id: "tyres_not_placed",
+            title: "Cars drove without any tyres".to_owned(),
+            what: format!(
+                "F1 25 did not put the tyres of {who} on the wheels after loading a mid-session save, so they \
+                 were invisible. Those cars are not damaged and drive normally."
+            ),
+            steps: vec![
+                "Restart the session, or start it again from the menu, instead of loading the mid-session save."
+                    .to_owned(),
+                "If it keeps happening in a session you started fresh, press Send Logs so the tyre lines in this \
+                 session's log reach support."
+                    .to_owned(),
+            ],
+        });
+    }
     Some(Diagnosis {
         id: "tyres_not_placed",
         title: "Cars drove without any tyres".to_owned(),
