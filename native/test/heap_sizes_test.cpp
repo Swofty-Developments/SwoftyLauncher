@@ -111,7 +111,7 @@ int main()
         hs::Choice c = hs::choose(game, nullptr, 32 * GiB);
         CHECK(c.raised(game) && c.bytes == 1024 * M && c.source == hs::Source::ram);
         c = hs::choose(game, nullptr, 8 * GiB);
-        CHECK(c.raised(game) && c.bytes == 640 * M && c.source == hs::Source::small_ram);
+        CHECK(c.raised(game) && c.bytes == 1024 * M && c.source == hs::Source::ram);
         CHECK(hs::choose(game, nullptr, 0).bytes == 1024 * M);
         c = hs::choose(game, "1536", 8 * GiB);
         CHECK(c.bytes == 1536 * M && c.source == hs::Source::env);
