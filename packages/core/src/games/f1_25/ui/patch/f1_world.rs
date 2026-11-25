@@ -1,7 +1,7 @@
 //! The routes and flow entries that take the main menu to F1 World's pickers and Customisation, and back home
 //! without the F1 World hub.
 
-use swofty_formats::pkg::Node;
+use swofty_formats::pkg::{Node, Pkg};
 
 use super::routes::{group_route, home_route, id_of, route_cmd};
 use super::setup::cmd_type;
@@ -366,4 +366,14 @@ pub fn frontend_transition(data: &[u8]) -> Result<Vec<u8>> {
         }
         set_str(entry, "value", RETURN_ENTRY)
     })
+}
+
+pub fn hands_over_to_return(data: &[u8]) -> Result<bool> {
+    let mut p = Pkg::parse(data)?;
+    let screen = first_screen(&mut p)?;
+    let Some(n) = named_mut(screen, TRANSITION_ENTRY_NODE) else {
+        return Ok(false);
+    };
+    let entry = n.props_mut()?.at_mut("migrate_entry")?.o_mut()?;
+    Ok(entry.str_at("value")? == RETURN_ENTRY)
 }

@@ -7,12 +7,19 @@ use swofty_formats::erp::ErpFile;
 use swofty_formats::pkg::{Node, Pkg};
 
 use super::pages::ADJUST_TOOLTIP;
-use super::patch::{MOD_MENU, MOD_MENU_OFFLINE};
-use super::{HUD_MESSAGES, MESSAGES, OVERRIDES, TOOLTIPS, UI_DATA, career_row, icons, rows};
+use super::patch::{MOD_MENU, MOD_MENU_OFFLINE, hands_over_to_return};
+use super::{
+    FRONTEND_TRANSITION, HUD_MESSAGES, MESSAGES, OVERRIDES, TOOLTIPS, UI_DATA, career_row, icons, rows,
+};
 use crate::Result;
 
 /// The menu archives whose game copy a build checks for the launcher's own entries.
-pub const MARKED: &[&str] = &["databases.erp", "persistent.erp", "flow_persistent.erp"];
+pub const MARKED: &[&str] = &[
+    "databases.erp",
+    "persistent.erp",
+    "flow_persistent.erp",
+    "flow_frontend.erp",
+];
 
 const PREFIX: &str = "swofty_";
 
@@ -97,6 +104,13 @@ pub fn launcher_entries(archive: &str, path: &Path) -> Result<Vec<String>> {
                 for id in message_ids(&file, resource)? {
                     found.push(format!("the message {id}"));
                 }
+            }
+        }
+        "flow_frontend.erp" => {
+            if let Some(bytes) = data(&file, FRONTEND_TRANSITION)?
+                && hands_over_to_return(&bytes)?
+            {
+                found.push(format!("the hand-over {}", super::patch::RETURN_ENTRY));
             }
         }
         _ => {}
