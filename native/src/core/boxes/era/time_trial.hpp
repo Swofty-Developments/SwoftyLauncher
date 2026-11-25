@@ -199,6 +199,8 @@ struct TtBudget {
     size_t cars = 0;
 };
 
+// An entrant without a vehicle ref (0x3fff, as the stock F2 lists hold) has nothing to dedupe on, so the fill makes
+// one vehicle for each.
 // The selected list always stays; the other lists of its leaderboard join in the order stock lists, then addon
 // lists, each whole while the distinct vehicle refs of everything kept stay within room.
 inline TtBudget time_trial_budget(const std::vector<TtList> &lists, size_t room = TT_ROOM)
@@ -209,33 +211,41 @@ inline TtBudget time_trial_budget(const std::vector<TtList> &lists, size_t room 
     auto rank = [&](size_t i) { return lists[i].selected || lists[i].fixed ? 0 : lists[i].addon ? 2 : 1; };
     std::stable_sort(order.begin(), order.end(), [&](size_t a, size_t b) { return rank(a) < rank(b); });
     std::vector<uint32_t> have;
+    size_t unset = 0;
     TtBudget out;
     for (size_t i : order) {
         std::vector<uint32_t> next = have;
-        for (uint32_t r : lists[i].refs)
-            if (vehicle_ref_set(r) && std::find(next.begin(), next.end(), ref_key(r)) == next.end())
+        size_t next_unset = unset;
+        for (uint32_t r : lists[i].refs) {
+            if (!vehicle_ref_set(r))
+                next_unset++;
+            else if (std::find(next.begin(), next.end(), ref_key(r)) == next.end())
                 next.push_back(ref_key(r));
-        if (lists[i].selected || lists[i].fixed || next.size() <= room)
+        }
+        if (lists[i].selected || lists[i].fixed || next.size() + next_unset <= room) {
             have = std::move(next);
-        else
+            unset = next_unset;
+        } else
             out.dropped.push_back(i);
     }
     std::sort(out.dropped.begin(), out.dropped.end());
-    out.cars = have.size();
+    out.cars = have.size() + unset;
     return out;
 }
 
 inline size_t distinct_cars(const std::vector<uint32_t> &refs)
 {
     std::vector<uint32_t> d;
-    for (uint32_t r : refs)
-        if (vehicle_ref_set(r) && std::find(d.begin(), d.end(), ref_key(r)) == d.end())
+    size_t unset = 0;
+    for (uint32_t r : refs) {
+        if (!vehicle_ref_set(r))
+            unset++;
+        else if (std::find(d.begin(), d.end(), ref_key(r)) == d.end())
             d.push_back(ref_key(r));
-    return d.size();
+    }
+    return d.size() + unset;
 }
 
-// Leaderboard descriptor stat ids of the stock leaderboards.leaderboard_descriptor rows, for the log only; an id past
-// the stock rows is a descriptor an addon's package or database operations added.
 inline std::string leaderboard_text(unsigned id)
 {
     static constexpr const char *STOCK[] = {"f1", "classic", "f1_26", "f2", nullptr, "f2_26"};

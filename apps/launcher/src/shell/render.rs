@@ -22,7 +22,9 @@ impl Render for Shell {
         let p = palette(cx);
         if let Some(wizard) = self.onboarding_view(p, cx) {
             self.ads.begin(false);
-            return wizard.children(self.ads.sweep());
+            return wizard
+                .children(self.popup_layer(p, cx))
+                .children(self.ads.sweep());
         }
         let state = self.play_state();
         if self

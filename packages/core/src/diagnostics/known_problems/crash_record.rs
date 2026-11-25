@@ -38,6 +38,9 @@ pub(super) fn module_at(text: &str) -> Option<String> {
     (!name.is_empty() && !name.starts_with("0x")).then(|| name.to_ascii_lowercase())
 }
 
+/// The start of the loader line of the game's fatal exception.
+pub(super) const FATAL_LINE: &str = "[crash] unhandled ";
+
 /// The loader's crash lines, without their time and thread.
 pub(super) fn crash_lines(loader: &str) -> Vec<&str> {
     loader
@@ -235,8 +238,27 @@ pub(super) fn crash_line<'a>(e: &'a Evidence, f: &Fatal) -> Option<&'a str> {
         .or_else(|| {
             e.loader
                 .lines()
-                .find(|l| l.contains("[crash] unhandled ") && l.contains("reached the top-level filter"))
+                .find(|l| l.contains(FATAL_LINE) && l.contains("reached the top-level filter"))
         })
+}
+
+/// The loader lines of the session the game crashed in: from its last session load start before the crash to the
+/// crash line. A log with no session load keeps everything before the crash; one with no crash line keeps all of it.
+pub(super) fn crashed_session<'a>(e: &'a Evidence, f: &Fatal) -> &'a str {
+    let loader = e.loader.as_str();
+    let end = crash_line(e, f).map_or(loader.len(), |l| l.as_ptr() as usize - loader.as_ptr() as usize);
+    let before = &loader[..end];
+    let start = before
+        .match_indices(super::weekend::SESSION_LOAD)
+        .filter(|(at, _)| {
+            before[*at..]
+                .lines()
+                .next()
+                .is_some_and(|l| l.trim_end().ends_with("-> Entering"))
+        })
+        .last()
+        .map_or(0, |(at, _)| at);
+    &before[start..]
 }
 
 /// The thread that wrote a loader line, from the `[  384]` after its time.

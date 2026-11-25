@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{Result, read_json, write_json};
+use crate::{Result, read_json, write_json, write_json_shared};
 
 use super::{DISCLOSURE, EXTENSION_VERSION};
 
@@ -44,7 +44,7 @@ pub fn record_accept(data: &Path) -> Result<Consent> {
         accepted_utc: secs.to_string(),
         extension_version: EXTENSION_VERSION.into(),
     };
-    write_json(&consent_path(data), &c)?;
+    write_json_shared(&consent_path(data), &c)?;
     Ok(c)
 }
 

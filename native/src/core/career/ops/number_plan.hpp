@@ -7,7 +7,8 @@
 // career::set_car_number's rules, moved from Career Mode Editor's drivers.number.set (its
 // native/src/race_numbers.cpp plan()): pure logic over the career's entrant rows, so native/test builds it on
 // the host. A number is 1..99 and free when no other row of the championship holds it; with swap the row
-// holding it takes the driver's old number instead, which needs the driver to have one.
+// holding it takes the driver's old number instead, which needs the driver to have one. A driver with several
+// rows owns his seated row.
 
 namespace career::ops::numbers {
 
@@ -29,6 +30,23 @@ struct Plan {
     bool unchanged = false;
 };
 
+inline int own_row(const std::vector<Row> &rows, uint32_t driver)
+{
+    int seated = -1, first = -1;
+    for (size_t i = 0; i < rows.size(); ++i) {
+        if (rows[i].driver != driver)
+            continue;
+        if (first < 0)
+            first = static_cast<int>(i);
+        if (!rows[i].team)
+            continue;
+        if (seated >= 0)
+            return -1;
+        seated = static_cast<int>(i);
+    }
+    return seated >= 0 ? seated : first;
+}
+
 inline Plan plan(const std::vector<Row> &rows, uint32_t driver, double number, bool swap)
 {
     Plan p;
@@ -38,9 +56,7 @@ inline Plan plan(const std::vector<Row> &rows, uint32_t driver, double number, b
         return p;
     }
     auto want = static_cast<uint8_t>(number);
-    for (size_t i = 0; i < rows.size(); ++i)
-        if (rows[i].driver == driver)
-            p.row = static_cast<int>(i);
+    p.row = own_row(rows, driver);
     if (p.row < 0) {
         p.error = Error::no_entrant;
         p.why = "the driver has no entrant row in this championship, so he has no racing number";
@@ -51,7 +67,7 @@ inline Plan plan(const std::vector<Row> &rows, uint32_t driver, double number, b
         return p;
     }
     for (size_t i = 0; i < rows.size(); ++i) {
-        if (static_cast<int>(i) == p.row || rows[i].number != want)
+        if (rows[i].driver == driver || rows[i].number != want)
             continue;
         if (!swap) {
             p.error = Error::taken;

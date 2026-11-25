@@ -43,11 +43,11 @@ use broken_addons::{
 };
 pub use career::stuck_weekend;
 use career::{
-    calendar_event_missing, career_content_off, career_driver_missing, career_track_crash,
+    calendar_event_missing, career_content_off, career_driver_missing, career_over_grid, career_track_crash,
     entrant_list_crash, imported_calendar_crash, imported_calendar_empty_season, missing_entrant_list,
-    missing_track_stat, morph_driver_crash, race_driver_missing, retirement_driver_crash, sent_to_team_hq,
-    sent_to_team_hq_crash, sequencer_record_crash, third_car_line, third_car_line_crash,
-    weekends_track_crash, weekends_track_record_bad_index,
+    missing_track_stat, morph_driver_crash, null_vehicle_crash, over_grid_crash, race_driver_missing,
+    retirement_driver_crash, sent_to_team_hq, sent_to_team_hq_crash, sequencer_record_crash, third_car_line,
+    third_car_line_crash, weekends_track_crash, weekends_track_record_bad_index,
 };
 use crash_record::{Fatal, fatal, loaded_modules, wine};
 pub use evidence::Evidence;
@@ -69,6 +69,25 @@ use system::{
 };
 pub use tyres::unplaced_tyres;
 use withdrawn::{noted, withdrawn_crash};
+
+/// The markers in a loader log that the notices computed after a run match on, for the lines Send Logs keeps from
+/// a part of a long log it leaves out: the tyre check, the team logo cache, the profile save writes and load, the
+/// stuck weekend line, the game's fatal exception line and the hang watchdog's register. Left out, because they are
+/// matched by their order or their count in the whole log, not by one line: the weekend and session-load flow lines
+/// (a session load clears a stuck weekend), the module, hardware and overlay lines (read from the start, which is
+/// always kept), the pitlane, addon init timing and thread-stamp checks, and the indented lines of a crash record.
+pub fn log_needles() -> &'static [&'static str] {
+    &[
+        tyres::TYRES_UNPLACED,
+        logos::LOGOS_UNWRITABLE,
+        saves::KEPT_WRITE_FAILED,
+        saves::HIGHLIGHTS_PUT_BACK,
+        stall::PROFILE_LOAD,
+        weekend::NEVER_RAN,
+        crash_record::FATAL_LINE,
+        hang::WATCHDOG_MS,
+    ]
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Diagnosis {
@@ -207,11 +226,13 @@ const RULES: &[Rule] = &[
     |c| weekends_track_crash(&c.fatal).then(weekends_track_record_bad_index),
     |c| imported_calendar_crash(c.evidence, &c.fatal).then(|| imported_calendar_empty_season(c.evidence)),
     |c| third_car_line_crash(c.evidence, &c.fatal).then(|| third_car_line(c.evidence)),
+    |c| null_vehicle_crash(&c.fatal).then(|| career_over_grid(c.evidence, &c.fatal)),
     graphics::device_removed,
     graphics::out_of_graphics_memory,
     graphics::graphics_mod_crash,
     graphics::driver_crash,
     graphics::frame_generation_crash,
+    |c| over_grid_crash(c.evidence, &c.fatal).then(|| career_over_grid(c.evidence, &c.fatal)),
 ];
 
 fn matched(e: &Evidence) -> Option<Diagnosis> {

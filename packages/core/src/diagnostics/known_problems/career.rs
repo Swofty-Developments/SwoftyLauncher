@@ -1,7 +1,9 @@
 use std::collections::BTreeMap;
 
 use super::Diagnosis;
-use super::crash_record::{Fatal, NEAR_FRAMES, crash_lines, crash_time, game_function, stamp};
+use super::crash_record::{
+    Fatal, NEAR_FRAMES, crash_lines, crash_time, crashed_session, game_function, stamp,
+};
 use super::evidence::Evidence;
 use super::weekend::Weekend;
 use super::wording::{list, name};
@@ -46,6 +48,20 @@ pub(super) const CALENDAR_IMPORT: &str = "[Progressive season] Imported ";
 pub(super) const F2_REVAMP: &str = "miguelvf3.f2-revamp";
 /// The game function that reads a car's racing line, which a car with no line of its own faults in.
 pub(super) const LINE_CACHE: &str = "Ai_LineCache_UpdateIfChanged+";
+
+/// Where F1 25's UDP telemetry set-up faults on a vehicle that is null, `mov r15, [r15+0x590]` after the car's vehicle
+/// component (`[entry+0x28]`) read as 0, on the Steam 1.0.145 build and the older one.
+pub(super) const NULL_VEHICLE_AT: [&str; 2] = [" fn base+0x2d01210+0x116a", " fn base+0x2cfec80+0x116a"];
+pub(super) const NULL_VEHICLE_READ: &str = "reading 0x590";
+
+/// The core's session trace at the vehicle set-up, whose `participants: game manager N` counts the cars of the grid.
+pub(super) const VEHICLE_SETUP: &str = "session trace Sess_Setup_VehicleComponents ";
+pub(super) const GAME_MANAGER: &str = "participants: game manager ";
+
+/// The grid size the game builds its per-car tables for, and the game manager count from which a grid is over it
+/// (a stock career logs 23 for its 22 cars).
+pub(super) const GRID_CARS: usize = 22;
+pub(super) const OVER_GRID_MANAGER: usize = 24;
 
 /// What the core logs for a car that is the third of its team.
 pub(super) const THIRD_CAR: &str = "is the third car of its garage";
@@ -541,4 +557,50 @@ pub fn stuck_weekend(e: &Evidence) -> Option<Diagnosis> {
             "If F1 25 crashes or ends up here again on the way into this weekend, press Send Logs.".to_owned(),
         ],
     })
+}
+
+/// The cars of the grid the crashed session's set-up counted: `N` in `participants: game manager N`.
+pub(super) fn grid_cars(e: &Evidence, f: &Fatal) -> Option<usize> {
+    let line = crashed_session(e, f)
+        .lines()
+        .rev()
+        .find(|l| l.contains(VEHICLE_SETUP))?;
+    let count = line.split_once(GAME_MANAGER)?.1;
+    count.split(|c: char| !c.is_ascii_digit()).next()?.parse().ok()
+}
+
+/// Whether F1 25 faulted building the UDP telemetry's per-car tables for a car with no vehicle: the nearest frame is in
+/// [`NULL_VEHICLE_AT`] and the fault read [`NULL_VEHICLE_READ`].
+pub(super) fn null_vehicle_crash(f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe")
+        && f.frames
+            .first()
+            .is_some_and(|l| NULL_VEHICLE_AT.iter().any(|at| l.trim_end().ends_with(at)))
+        && f.record.iter().any(|l| l.trim_end().ends_with(NULL_VEHICLE_READ))
+}
+
+/// Whether an F1 25 crash came with a grid of [`OVER_GRID_MANAGER`] or more cars at the session set-up.
+pub(super) fn over_grid_crash(e: &Evidence, f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe") && grid_cars(e, f).is_some_and(|n| n >= OVER_GRID_MANAGER)
+}
+
+pub(super) fn career_over_grid(e: &Evidence, f: &Fatal) -> Diagnosis {
+    let cars = grid_cars(e, f).map_or("more than 22 cars".to_owned(), |n| format!("{n} cars"));
+    Diagnosis {
+        id: "career_over_grid",
+        title: "Your career's grid has more cars than F1 25 expects".to_owned(),
+        what: format!(
+            "F1 25 crashed as your career's session started. The grid of this career has {cars} where the game \
+             expects {GRID_CARS}. This happens after line-up edits that move a driver into another team's seat and \
+             leave that driver's old seat in the grid, so two cars have no vehicle for the game to read."
+        ),
+        steps: vec![
+            "Start a new career with the stock line-ups, with no drivers moved.".to_owned(),
+            "If you move drivers, keep exactly 2 drivers in every team and move them one at a time, testing the \
+             race load after each move."
+                .to_owned(),
+            "Turn off the addon or editor that moves drivers in your profile before you start the new career."
+                .to_owned(),
+        ],
+    }
 }

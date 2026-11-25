@@ -151,6 +151,9 @@ pub struct FieldSpec {
     /// Rows without this key show an empty cell instead of failing the module.
     #[serde(default)]
     pub optional: bool,
+    /// A `ref` field whose empty value means something: its choices start with a blank one.
+    #[serde(default)]
+    pub blank: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -394,6 +397,8 @@ fn fill(text: &str, mut sub: impl FnMut(&str) -> Option<String>) -> std::result:
     out.push_str(rest);
     Ok(out)
 }
+
+pub const BLANK_NAME: &str = "None";
 
 fn ref_names(cat: &Catalog, spec: &RefSpec, scope: Option<&str>) -> Vec<(String, String)> {
     let Ok(rows) = table_rows(cat, None, &spec.rows, &spec.filter, scope) else {
@@ -758,7 +763,11 @@ impl Module {
                         }
                     }
                 }
-                distinct(names)
+                let mut names = distinct(names);
+                if f.blank && f.kind == Some(Kind::Ref) {
+                    names.insert(0, (String::new(), BLANK_NAME.to_owned()));
+                }
+                names
             }
             None => f
                 .options
@@ -955,6 +964,78 @@ mod tests {
             calendar
                 .choices_with(&cat, event, None, &added, &[], &[])
                 .is_empty()
+        );
+    }
+
+    #[test]
+    fn optional_refs_offer_a_blank_choice_that_writes_the_empty_value() {
+        use swofty_formats::gvdb::{Gvdb, Record};
+        let rec = |path: &str, value: &str| Record::new(path, 2, value);
+        let records = vec![
+            Record::new("entrants.teams._team_instancecount_", 0, "2"),
+            rec("entrants.teams.team_0._metadata_", "williams"),
+            rec("entrants.teams.team_1._metadata_", "ferrari"),
+            Record::new("entrants.vehicles._vehicle_instancecount_", 0, "1"),
+            rec("entrants.vehicles.vehicle_0._metadata_", "williams_2024_story"),
+            Record::new("entrants.entrant_lists.entrants._entrant_instancecount_", 0, "1"),
+            rec(
+                "entrants.entrant_lists.entrants.entrant_0._metadata_",
+                "daniel_ricciardo",
+            ),
+            rec("entrants.entrant_lists.entrants.entrant_0.team", "williams"),
+            rec(
+                "entrants.entrant_lists.entrants.entrant_0.vehicle",
+                "williams_2024_story",
+            ),
+        ];
+        let bytes = Gvdb::new(records).to_bytes();
+        let cat = Catalog::load(&bytes).unwrap();
+        let entrants = module("entrants").unwrap();
+        let at = |id: &str| entrants.fields.iter().position(|f| f.id == id).unwrap();
+        for id in ["team", "vehicle"] {
+            let choices = entrants.choices_in(&cat, at(id), None);
+            assert_eq!(choices[0], (String::new(), BLANK_NAME.to_owned()), "{id}");
+            assert_eq!(choices.len(), if id == "team" { 3 } else { 2 }, "{id}");
+        }
+        let lineups = module("lineups").unwrap();
+        for (i, f) in lineups.fields.iter().enumerate() {
+            if f.kind == Some(Kind::Ref) && !f.blank {
+                let choices = lineups.choices_in(&cat, i, Some("f1_2026"));
+                assert!(choices.iter().all(|(v, _)| !v.is_empty()), "{}", f.id);
+            }
+        }
+        let driver = entrants.fields.iter().position(|f| f.id == "driver").unwrap();
+        assert!(!entrants.fields[driver].blank);
+        assert!(
+            entrants
+                .choices_in(&cat, driver, None)
+                .iter()
+                .all(|(v, _)| !v.is_empty())
+        );
+
+        let view = entrants.view(&cat, &Edits::default(), None).unwrap();
+        let team = view.rows[0].cells[at("team")].clone();
+        assert_eq!(team.value, "williams");
+        let mut edits = Edits::default();
+        edits.set(&cat, team.key.unwrap(), "").unwrap();
+        let view = entrants.view(&cat, &edits, None).unwrap();
+        let cell = &view.rows[0].cells[at("team")];
+        assert_eq!((cell.value.as_str(), cell.edited), ("", true));
+        assert_eq!(edits.get(team.key.unwrap()).unwrap().value.as_deref(), Some(""));
+
+        let saved = serde_json::to_string(&edits).unwrap();
+        assert_eq!(serde_json::from_str::<Edits>(&saved).unwrap(), edits);
+        let mut db = Gvdb::parse(&bytes).unwrap();
+        crate::ops::apply_db_ops(&mut db, &edits.to_ops(), &std::collections::BTreeMap::new()).unwrap();
+        assert_eq!(
+            db.get_text("entrants.entrant_lists.entrants.entrant_0.team")
+                .as_deref(),
+            Some("")
+        );
+        assert_eq!(
+            db.get_text("entrants.entrant_lists.entrants.entrant_0.vehicle")
+                .as_deref(),
+            Some("williams_2024_story")
         );
     }
 

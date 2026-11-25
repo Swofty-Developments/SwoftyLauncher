@@ -341,6 +341,38 @@ impl Shell {
         Some(overlay.render("data-move-lock", p))
     }
 
+    pub(crate) fn finish_data_move_delete(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if !data_move::delete_pending(&swofty_core::data::paths::platform_data_dir()) {
+            return;
+        }
+        cx.spawn_in(window, async move |this, cx| {
+            let to = data_move::link::target(&swofty_core::data::paths::platform_data_dir())
+                .unwrap_or_else(swofty_core::data::paths::platform_data_dir);
+            let left = cx
+                .background_executor()
+                .spawn(async { data_move::finish_delete_at_start() })
+                .await;
+            for line in data_move::take_log() {
+                crate::app::app_log::note(&line);
+            }
+            let Some(Some(old)) = left else {
+                return;
+            };
+            this.update_in(cx, |_, window, cx| {
+                window.notify(
+                    Notification::warning(trf!(
+                        "Your addons and saves moved to {to}, but the old copy in {old} could not be deleted. You can delete it yourself.",
+                        to = to.display(),
+                        old = old.display()
+                    )),
+                    cx,
+                );
+            })
+            .ok();
+        })
+        .detach();
+    }
+
     pub(crate) fn show_data_move_result(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let Some(Some(result)) = data_move::startup().get() else {
             return;

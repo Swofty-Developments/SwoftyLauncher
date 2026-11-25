@@ -3,7 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::collect::{Sources, files_under};
+use super::collect::{DATA_MOVE_DIR, Sources, files_under};
 use super::crashes::{CrashFound, crash_excerpt};
 use super::files::{file_name, modified, read_ends, read_head};
 use super::system::{hardware, smoothness_lines, system_lines};
@@ -265,6 +265,27 @@ impl Bundle {
             line("Game folder", &dir.display().to_string());
         }
         line("Data folder", &store.root.display().to_string());
+        let moving = |name: &str| {
+            self.entries
+                .iter()
+                .any(|e| e.path == format!("{DATA_MOVE_DIR}/{name}"))
+        };
+        line(
+            "Data folder move",
+            &format!(
+                "journal {}, pending delete {} (data-move/)",
+                if moving(crate::data::relocate::JOURNAL) {
+                    "present"
+                } else {
+                    "none"
+                },
+                if moving(crate::data::relocate::PENDING) {
+                    "present"
+                } else {
+                    "none"
+                },
+            ),
+        );
         if !has_session(store) {
             line(
                 "Game sessions",

@@ -9,15 +9,21 @@
 //! next to the default folder, then either renames the folder (same volume) or
 //! copies it and checks the copy; the old folder is not touched by a copy.
 //! [`recover`] does the switch: it brings the copy up to date, links the
-//! default path to it and deletes the old folder. It runs first thing at
-//! startup, when nothing has the old folder open, and it also finishes or
-//! undoes a move that a crash cut short.
+//! default path to it and records the old folder for deletion. It runs first
+//! thing at startup, when nothing has the old folder open, and it also
+//! finishes or undoes a move that a crash cut short. [`finish_delete`] then
+//! deletes the old folder once the window is up, and a later start finishes it
+//! if the launcher closed first. What recovery does is logged to a file next
+//! to the journal and kept for [`take_log`].
 
 mod adopt;
 mod copy;
 pub mod find;
 pub mod history;
 pub mod link;
+mod trail;
+
+pub use trail::take as take_log;
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
@@ -35,7 +41,12 @@ pub use copy::{Listing, listing, totals};
 
 pub const ENV: &str = paths::ENV;
 const FOLDER: &str = if cfg!(windows) { "Swofty" } else { "swofty" };
-const JOURNAL: &str = "swofty-data-move.json";
+pub const JOURNAL: &str = "swofty-data-move.json";
+pub const PENDING: &str = "swofty-data-delete.json";
+pub fn sibling_files(default: &Path) -> [PathBuf; 4] {
+    [trail::FILE, JOURNAL, PENDING, history::FILE].map(|name| default.with_file_name(name))
+}
+
 const MIN_MARGIN: u64 = 1 << 30;
 const STARTUP_TRIES: u32 = 40;
 const RETRY_AFTER: Duration = Duration::from_millis(250);
@@ -555,38 +566,51 @@ fn switch(j: &Journal, ops: &Ops) -> Result<Recovered, Error> {
     match &source {
         Some(source) => {
             let never = AtomicBool::new(false);
-            copy::sync(source, &j.to, &never, &mut |_, _| {}).map_err(|e| match e {
-                copy::Stop::Cancelled => Error::Io("The move was cancelled.".into()),
-                copy::Stop::Io(e) => Error::Io(format!(
-                    "Could not copy {} to {}: {e}",
-                    source.display(),
-                    j.to.display()
-                )),
+            trail::timed(&j.default, "bringing the copy up to date", || {
+                copy::sync(source, &j.to, &never, &mut |_, _| {}).map_err(|e| match e {
+                    copy::Stop::Cancelled => Error::Io("The move was cancelled.".into()),
+                    copy::Stop::Io(e) => Error::Io(format!(
+                        "Could not copy {} to {}: {e}",
+                        source.display(),
+                        j.to.display()
+                    )),
+                })
             })?;
-            copy::verify(source, &j.to).map_err(|reason| Error::Mismatch {
-                from: source.clone(),
-                reason,
+            trail::timed(&j.default, "checking the copy", || {
+                copy::verify(source, &j.to).map_err(|reason| Error::Mismatch {
+                    from: source.clone(),
+                    reason,
+                })
             })?;
         }
         None if exists(&j.to) => {}
         None => return Err(Error::Io("The folder to move is missing.".into())),
     }
     match state {
-        Spot::Folder => std::fs::rename(&j.default, &j.aside)
-            .map_err(|e| Error::io(format!("Could not set {} aside", j.default.display()), e))?,
-        Spot::Link(_) => link::remove(&j.default)
-            .map_err(|e| Error::io(format!("Could not replace {}", j.default.display()), e))?,
+        Spot::Folder => trail::timed(&j.default, "setting the old folder aside", || {
+            std::fs::rename(&j.default, &j.aside)
+                .map_err(|e| Error::io(format!("Could not set {} aside", j.default.display()), e))
+        })?,
+        Spot::Link(_) => trail::timed(&j.default, "removing the old link", || {
+            link::remove(&j.default)
+                .map_err(|e| Error::io(format!("Could not replace {}", j.default.display()), e))
+        })?,
         Spot::Missing => {}
     }
     if let Some(parent) = j.default.parent() {
         std::fs::create_dir_all(parent).ok();
     }
-    if let Err(e) = (ops.link)(&j.to, &j.default) {
+    let linked = trail::timed(&j.default, "linking the default folder to the new one", || {
+        (ops.link)(&j.to, &j.default).map_err(|e| {
+            Error::io(
+                format!("Could not point {} to {}", j.default.display(), j.to.display()),
+                e,
+            )
+        })
+    });
+    if let Err(e) = linked {
         undo_switch(j, ops, source.is_some());
-        return Err(Error::io(
-            format!("Could not point {} to {}", j.default.display(), j.to.display()),
-            e,
-        ));
+        return Err(e);
     }
     Ok(cleanup(j))
 }
@@ -606,15 +630,112 @@ fn undo_switch(j: &Journal, ops: &Ops, kept_old: bool) {
 
 fn cleanup(j: &Journal) -> Recovered {
     let old = if j.linked { &j.from } else { &j.aside };
-    let leftover = (exists(old) && !same_path(old, &j.to))
-        .then(|| copy::remove(old).err().map(|_| old.clone()))
-        .flatten();
+    let leftover = if exists(old) && !same_path(old, &j.to) {
+        let pending = Pending {
+            old: old.clone(),
+            to: j.to.clone(),
+            default: j.default.clone(),
+        };
+        match pending.save() {
+            Ok(()) => {
+                trail::note(
+                    &j.default,
+                    &format!(
+                        "data move: old folder {} will be deleted after startup",
+                        old.display()
+                    ),
+                );
+                None
+            }
+            Err(e) => {
+                trail::note(
+                    &j.default,
+                    &format!("data move: {e}; the old folder {} stays", old.display()),
+                );
+                Some(old.clone())
+            }
+        }
+    } else {
+        None
+    };
     j.clear();
     Recovered {
         to: j.to.clone(),
         leftover,
         adopted: false,
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+struct Pending {
+    old: PathBuf,
+    to: PathBuf,
+    default: PathBuf,
+}
+
+impl Pending {
+    fn path(default: &Path) -> PathBuf {
+        default.with_file_name(PENDING)
+    }
+
+    fn save(&self) -> Result<(), Error> {
+        crate::write_json(&Self::path(&self.default), self)
+            .map_err(|e| Error::io("Could not record the old folder to delete", e))
+    }
+
+    fn safe(&self) -> bool {
+        matches!(spot(&self.default), Spot::Link(t) if same_path(&t, &self.to))
+            && !same_path(&self.old, &self.to)
+            && !same_path(&self.old, &self.default)
+            && !within(&self.to, &self.old)
+            && !within(&self.default, &self.old)
+    }
+}
+
+/// Whether an old data folder is waiting to be deleted after a move.
+pub fn delete_pending(default: &Path) -> bool {
+    Pending::path(default).exists()
+}
+
+/// Deletes the old data folder a finished move left behind. `None` when nothing
+/// is waiting, `Some(None)` when it is gone, `Some(Some(old))` when it could not
+/// be deleted. The record stays until the folder is gone, so a launcher that
+/// closes part way finishes it at the next start. Never deletes the new folder.
+pub fn finish_delete(default: &Path) -> Option<Option<PathBuf>> {
+    let path = Pending::path(default);
+    let text = std::fs::read_to_string(&path).ok()?;
+    let Ok(pending) = serde_json::from_str::<Pending>(&text) else {
+        std::fs::remove_file(&path).ok();
+        return Some(None);
+    };
+    if !pending.safe() {
+        trail::note(
+            default,
+            &format!(
+                "data move: not deleting {}, it is not safe to",
+                pending.old.display()
+            ),
+        );
+        std::fs::remove_file(&path).ok();
+        return Some(None);
+    }
+    if !exists(&pending.old) {
+        std::fs::remove_file(&path).ok();
+        return Some(None);
+    }
+    let what = format!("deleting the old folder {}", pending.old.display());
+    match trail::timed(default, &what, || copy::remove(&pending.old)) {
+        Ok(()) => {
+            std::fs::remove_file(&path).ok();
+            Some(None)
+        }
+        Err(_) => Some(Some(pending.old)),
+    }
+}
+
+/// [`finish_delete`] for the platform's default data folder.
+pub fn finish_delete_at_start() -> Option<Option<PathBuf>> {
+    finish_delete(&paths::platform_data_dir())
 }
 
 /// Puts everything back as it was before the move and removes the partial copy.
@@ -671,12 +792,36 @@ fn recover_trying(default: &Path, ops: &Ops, tries: u32) -> Option<Result<Recove
         Ok(j) => j,
         Err(e) => {
             std::fs::remove_file(&path).ok();
+            trail::note(default, &format!("data move: ignored an unreadable journal: {e}"));
             return Some(Err(Error::io("Ignored an unreadable data folder move", e)));
         }
     };
+    trail::note(
+        default,
+        &format!(
+            "data move: finishing a move pending from {} to {}",
+            journal.from.display(),
+            journal.to.display()
+        ),
+    );
+    let began = std::time::Instant::now();
     Some(match finish(&journal, ops, tries) {
-        Ok(done) => Ok(done),
+        Ok(done) => {
+            trail::note(
+                default,
+                &format!(
+                    "data move: switched to {} in {:.1} s",
+                    done.to.display(),
+                    began.elapsed().as_secs_f32()
+                ),
+            );
+            Ok(done)
+        }
         Err(e) => {
+            trail::note(
+                default,
+                &format!("data move: could not finish, putting everything back: {e}"),
+            );
             abort(&journal, ops);
             Err(e)
         }

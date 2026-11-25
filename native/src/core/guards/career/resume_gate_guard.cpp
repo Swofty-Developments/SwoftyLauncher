@@ -466,6 +466,8 @@ void press_selected(void *vm, bool my_team, const rl::Target &t)
                 "when the screen finishes its transition out)",
                 t.row, pending);
     rl::press_noted(press_summary(vm, wizard_of(vm)));
+    if (pending == 2)
+        runtime::watchdog_load("resume row took the career");
     if (pending != 2)
         swofty::log("[career] resume screen: row %zu: the screen did not take the career (pending %u); it stays open", t.row,
                     pending);

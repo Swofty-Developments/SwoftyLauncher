@@ -730,7 +730,8 @@
        "lng": true
       }
      },
-     "help": "Empty: the line-up seat sets the team."
+     "help": "Empty: the line-up seat sets the team.",
+     "blank": true
     },
     {
      "id": "vehicle",
@@ -744,7 +745,8 @@
        "lng": true
       }
      },
-     "help": "Empty: the line-up seat sets the car."
+     "help": "Empty: the line-up seat sets the car.",
+     "blank": true
     },
     {
      "id": "label",
@@ -2023,7 +2025,8 @@
       }
      },
      "section": "Seat",
-     "help": "Empty: the entrant's driver races."
+     "help": "Empty: the entrant's driver races.",
+     "blank": true
     },
     {
      "id": "car_number",
@@ -2206,7 +2209,8 @@
       }
      },
      "section": "Performance",
-     "help": "Car used instead in equal-performance mode. Empty: none."
+     "help": "Car used instead in equal-performance mode. Empty: none.",
+     "blank": true
     },
     {
      "id": "hud_dial",
