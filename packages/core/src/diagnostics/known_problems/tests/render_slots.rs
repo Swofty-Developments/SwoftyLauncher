@@ -54,7 +54,8 @@ fn the_model_part_pool_running_out_is_recognised() {
     );
     assert!(d.what.contains("Driver Display and Project Halo"), "{}", d.what);
     assert_eq!(d.steps[0], "Press Play again.");
-    assert!(d.steps[1].contains("Send Logs"), "{}", d.steps[1]);
+    assert!(d.steps[1].contains("Driver Display"), "{}", d.steps[1]);
+    assert!(d.steps[2].contains("Send Logs"), "{}", d.steps[2]);
 }
 
 #[test]

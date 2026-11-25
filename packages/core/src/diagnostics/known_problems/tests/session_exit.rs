@@ -61,9 +61,9 @@ fn a_write_fault_as_a_session_ends_is_recognised() {
 }
 
 #[test]
-fn the_sibling_fault_with_the_same_tail_is_recognised() {
+fn the_sibling_fault_with_the_same_tail_is_left_to_other_rules() {
     let log = exit_crash(&SIBLING_FRAMES, "writing 0x2e9fff1b0", "16:53:08.800");
-    assert_eq!(
+    assert_ne!(
         diagnose(&on_steam(&log)).map(|d| d.id),
         Some("session_exit_fault")
     );

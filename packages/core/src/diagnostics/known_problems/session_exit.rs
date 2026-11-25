@@ -4,7 +4,7 @@ use super::evidence::Evidence;
 use super::wording::SEND_LOGS;
 use super::{Crash, Diagnosis};
 
-const FAULTS: [u64; 2] = [0x133db6e2, 0x43700c6];
+const FAULT: u64 = 0x133db6e2;
 const TAIL: [u64; 4] = [0x42fb742, 0x4169697, 0x44a5726, 0x3ac3203];
 const EXITING: &str = "\"StateSession\" Updating -> Exiting";
 const EXIT_SECS: f64 = 5.0;
@@ -26,7 +26,7 @@ fn after_exit(e: &Evidence, f: &Fatal) -> bool {
 
 pub(super) fn session_exit_crash(e: &Evidence, f: &Fatal) -> bool {
     steam_1_0_145(e)
-        && FAULTS.iter().any(|rva| frames_start_with(f, 0, &[*rva]))
+        && frames_start_with(f, 0, &[FAULT])
         && tail_at(f)
         && f.record.iter().any(|l| l.trim_start().starts_with("writing 0x"))
         && after_exit(e, f)
@@ -39,9 +39,6 @@ pub(super) fn session_exit(c: &Crash) -> Option<Diagnosis> {
         what: "F1 25 crashed on its own as a session ended and the next one was loading, for example after \
                qualifying. This is a fault inside the game, it is known, and there is no fix for it yet."
             .to_owned(),
-        steps: vec![
-            "Press Play again.".to_owned(),
-            format!("If it crashes again, {SEND_LOGS}"),
-        ],
+        steps: vec!["Press Play again.".to_owned(), SEND_LOGS.to_owned()],
     })
 }

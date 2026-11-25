@@ -16,11 +16,12 @@ pub(super) fn render_slots(c: &Crash) -> Option<Diagnosis> {
         title: "F1 25 ran out of room for 3D model parts".to_owned(),
         what: "The game ran out of a fixed internal pool for 3D model parts while loading the session. This has \
                been seen on full grids, often with Driver Display and Project Halo both on, and turning one of \
-               them off has helped."
+               them off may help."
             .to_owned(),
         steps: vec![
             "Press Play again.".to_owned(),
-            format!("If it crashes again, {SEND_LOGS} Press it straight after the crash."),
+            "If it crashes again, turn off Driver Display or Project Halo if you have both on.".to_owned(),
+            SEND_LOGS.to_owned(),
         ],
     })
 }
