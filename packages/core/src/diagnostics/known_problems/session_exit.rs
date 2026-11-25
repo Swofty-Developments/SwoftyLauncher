@@ -1,3 +1,4 @@
+use super::broken_addons::steam_1_0_145;
 use super::crash_record::{Fatal, crash_time, frames_start_with, stamp};
 use super::evidence::Evidence;
 use super::wording::SEND_LOGS;
@@ -24,7 +25,7 @@ fn after_exit(e: &Evidence, f: &Fatal) -> bool {
 }
 
 pub(super) fn session_exit_crash(e: &Evidence, f: &Fatal) -> bool {
-    e.game_build == Some(crate::build_support::BUILD_1_0_145)
+    steam_1_0_145(e)
         && FAULTS.iter().any(|rva| frames_start_with(f, 0, &[*rva]))
         && tail_at(f)
         && f.record.iter().any(|l| l.trim_start().starts_with("writing 0x"))

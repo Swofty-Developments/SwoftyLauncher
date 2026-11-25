@@ -1,3 +1,4 @@
+use super::broken_addons::steam_1_0_145;
 use super::crash_record::{Fatal, frames_start_with};
 use super::evidence::Evidence;
 use super::wording::SEND_LOGS;
@@ -6,7 +7,7 @@ use super::{Crash, Diagnosis};
 const FRAMES: [u64; 3] = [0x391a834, 0x311b55, 0x3d3d84a];
 
 pub(super) fn render_slots_crash(e: &Evidence, f: &Fatal) -> bool {
-    e.game_build == Some(crate::build_support::BUILD_1_0_145) && frames_start_with(f, 0, &FRAMES)
+    steam_1_0_145(e) && frames_start_with(f, 0, &FRAMES)
 }
 
 pub(super) fn render_slots(c: &Crash) -> Option<Diagnosis> {
