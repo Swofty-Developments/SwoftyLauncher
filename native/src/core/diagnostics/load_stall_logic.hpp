@@ -336,7 +336,6 @@ private:
     }
 };
 
-
 constexpr uint32_t kStateFrontendWorld = 0x290b11ae;
 constexpr uint32_t kStateIntro = 0xa4d3a4b2;
 constexpr uint32_t kStateFtue = 0x04fc8ffa;
