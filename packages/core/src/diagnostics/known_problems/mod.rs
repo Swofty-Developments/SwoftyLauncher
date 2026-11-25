@@ -43,11 +43,11 @@ use broken_addons::{
 };
 pub use career::stuck_weekend;
 use career::{
-    calendar_event_missing, career_content_off, career_driver_missing, career_track_crash,
+    calendar_event_missing, career_content_off, career_driver_missing, career_over_grid, career_track_crash,
     entrant_list_crash, imported_calendar_crash, imported_calendar_empty_season, missing_entrant_list,
-    missing_track_stat, morph_driver_crash, race_driver_missing, retirement_driver_crash, sent_to_team_hq,
-    sent_to_team_hq_crash, sequencer_record_crash, third_car_line, third_car_line_crash,
-    weekends_track_crash, weekends_track_record_bad_index,
+    missing_track_stat, morph_driver_crash, null_vehicle_crash, over_grid_crash, race_driver_missing,
+    retirement_driver_crash, sent_to_team_hq, sent_to_team_hq_crash, sequencer_record_crash, third_car_line,
+    third_car_line_crash, weekends_track_crash, weekends_track_record_bad_index,
 };
 use crash_record::{Fatal, fatal, loaded_modules, wine};
 pub use evidence::Evidence;
@@ -207,11 +207,13 @@ const RULES: &[Rule] = &[
     |c| weekends_track_crash(&c.fatal).then(weekends_track_record_bad_index),
     |c| imported_calendar_crash(c.evidence, &c.fatal).then(|| imported_calendar_empty_season(c.evidence)),
     |c| third_car_line_crash(c.evidence, &c.fatal).then(|| third_car_line(c.evidence)),
+    |c| null_vehicle_crash(&c.fatal).then(|| career_over_grid(c.evidence)),
     graphics::device_removed,
     graphics::out_of_graphics_memory,
     graphics::graphics_mod_crash,
     graphics::driver_crash,
     graphics::frame_generation_crash,
+    |c| over_grid_crash(c.evidence, &c.fatal).then(|| career_over_grid(c.evidence)),
 ];
 
 fn matched(e: &Evidence) -> Option<Diagnosis> {
