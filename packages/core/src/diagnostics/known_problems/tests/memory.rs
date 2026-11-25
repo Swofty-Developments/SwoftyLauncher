@@ -105,7 +105,11 @@ fn a_full_game_heap_in_progressive_keeps_every_year_and_never_moves_a_round() {
         "{all}"
     );
     assert!(all.contains("Keep every Classic Seasons year on"), "{all}");
-    assert!(d.steps[0].starts_with("Turn off Sepang in your profile"), "{all}");
+    assert!(
+        d.steps[0].starts_with("For Grand Prix and Time Trial, turn off Sepang"),
+        "{all}"
+    );
+    assert!(d.steps[0].contains("Keep it on for a career"), "{all}");
 }
 
 const SMALL_RAM: &str = "\
@@ -128,6 +132,35 @@ fn a_full_game_heap_in_swofty_progressive_keeps_the_season_packs() {
     assert!(all.contains("Keep the SWOFTY season packs on"), "{all}");
     assert!(!all.contains("fewer imported tracks and season addons"), "{all}");
     assert!(!all.contains("Career Mode Editor"), "{all}");
+    assert!(
+        d.steps[0].starts_with("For Grand Prix and Time Trial, turn off Sepang"),
+        "{all}"
+    );
+}
+
+const SMALL_RAM_ARMED: &str = "\
+2026-11-25 16:43:15.077 [19700] [heap] GAME_DEFAULT heap armed: 640 MiB instead of the game's 390 MiB when system/memory_map.xml is read
+";
+
+#[test]
+fn a_full_game_heap_after_the_small_pc_armed_line_offers_the_heap_setting() {
+    let loader = format!("{SMALL_RAM_ARMED}{GAME_HEAP}");
+    let d = diagnose(&ev(&loader, &[])).unwrap();
+    assert!(d.what.contains("under 12 GB of RAM"), "{}", d.what);
+    assert!(
+        d.steps.last().unwrap().contains("%LOCALAPPDATA%\\Swofty"),
+        "{:?}",
+        d.steps
+    );
+}
+
+#[test]
+fn a_full_game_heap_after_a_1024_mib_armed_line_keeps_its_text() {
+    let loader = format!(
+        "2026-11-25 16:43:15.077 [19700] [heap] GAME_DEFAULT heap armed: 1024 MiB instead of the game's 390 MiB when system/memory_map.xml is read\n{GAME_HEAP}"
+    );
+    let d = diagnose(&ev(&loader, &[])).unwrap();
+    assert!(d.what.contains("doesn't change that"), "{}", d.what);
 }
 
 #[test]
