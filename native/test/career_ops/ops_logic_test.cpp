@@ -88,6 +88,17 @@ static void test_numbers()
     p = numbers::plan(with_player, rows::key_of_id(16388), 33, false);
     CHECK(p.error == Error::none && p.row == 4 && !p.unchanged);
     CHECK(numbers::plan(with_player, rows::key_of_id(16388), 44, true).swap_with == 0);
+
+    std::vector<numbers::Row> two_rows = {
+        {key(5), 44, true}, {key(6), 63, true}, {key(5), numbers::kNone, false}, {key(31), 14, true}};
+    p = numbers::plan(two_rows, key(5), 63, true);
+    CHECK(p.error == Error::none && p.row == 0 && p.swap_with == 1);
+    p = numbers::plan(two_rows, key(5), 9, false);
+    CHECK(p.error == Error::none && p.row == 0);
+    CHECK(numbers::plan(two_rows, key(5), 44, false).unchanged);
+    CHECK(numbers::plan(two_rows, key(5), 63, false).error == Error::taken);
+    two_rows.push_back({key(5), 20, true});
+    CHECK(numbers::plan(two_rows, key(5), 9, false).error == Error::no_entrant);
 }
 
 static void test_driver_ids()
