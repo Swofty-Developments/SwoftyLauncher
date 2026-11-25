@@ -1,5 +1,6 @@
 #include "core/hud/hardware_settings.hpp"
 #include "core/render/com.hpp"
+#include "core/render/d3d12/filled_texture.hpp"
 #include "core/render/d3d12_hooks.hpp"
 #include "core/render/grade_math.hpp"
 #include "core/runtime/runtime.hpp"
@@ -86,8 +87,6 @@ bool Grader::hdr_on()
 ID3D12Resource *upload(ID3D12Device *dev, D3D12_RESOURCE_DESC desc, const std::vector<uint8_t> &texels)
 {
     desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-    D3D12_HEAP_PROPERTIES heap{};
-    heap.Type = D3D12_HEAP_TYPE_DEFAULT;
     ID3D12Resource *tex = nullptr, *up = nullptr;
     ID3D12CommandQueue *q = nullptr;
     ID3D12CommandAllocator *alloc = nullptr;
@@ -95,8 +94,7 @@ ID3D12Resource *upload(ID3D12Device *dev, D3D12_RESOURCE_DESC desc, const std::v
     ID3D12Fence *fence = nullptr;
     bool ok = false;
     do {
-        if (FAILED(dev->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-                                                IID_PPV_ARGS(&tex))))
+        if (FAILED(render::d3d12::create_filled_texture(dev, desc, D3D12_RESOURCE_STATE_COPY_DEST, &tex)))
             break;
         D3D12_PLACED_SUBRESOURCE_FOOTPRINT fp{};
         UINT n = 0;

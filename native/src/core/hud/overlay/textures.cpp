@@ -3,6 +3,7 @@
 #include "core/diagnostics/steps.hpp"
 #include "core/hud/hud_font_atlas.hpp"
 #include "core/hud/overlay/overlay.hpp"
+#include "core/render/d3d12/filled_texture.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -25,8 +26,6 @@ void decode_font(hud::img::Pixels &px)
 bool Textures::upload(Renderer &r, ID3D12GraphicsCommandList *l, UINT index, DXGI_FORMAT fmt, UINT w, UINT h, UINT bpp,
                       const uint8_t *pixels)
 {
-    D3D12_HEAP_PROPERTIES hp{};
-    hp.Type = D3D12_HEAP_TYPE_DEFAULT;
     D3D12_RESOURCE_DESC rd{};
     rd.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     rd.Width = w;
@@ -36,8 +35,7 @@ bool Textures::upload(Renderer &r, ID3D12GraphicsCommandList *l, UINT index, DXG
     rd.Format = fmt;
     rd.SampleDesc.Count = 1;
     ID3D12Resource *tex = nullptr;
-    if (FAILED(r.dev->CreateCommittedResource(&hp, D3D12_HEAP_FLAG_NONE, &rd, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-                                              IID_PPV_ARGS(&tex))))
+    if (FAILED(render::d3d12::create_filled_texture(r.dev, rd, D3D12_RESOURCE_STATE_COPY_DEST, &tex)))
         return false;
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT fp{};
     UINT64 total = 0;
