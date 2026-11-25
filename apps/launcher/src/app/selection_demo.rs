@@ -5,6 +5,7 @@ use gpui_kit::component::button::Button;
 use gpui_kit::component::{TitleBar, v_flex};
 use gpui_kit::*;
 use swofty_core::view::{SelectionDialog, SelectionOption};
+use swofty_i18n::{tr, trf};
 
 use crate::dialogs::selection;
 use crate::ui::scale::px;
@@ -26,14 +27,14 @@ pub(crate) fn run() {
                 window_min_size: Some(size(px(600.), px(500.))),
                 app_id: Some("net.swofty.SelectionDialogsDemo".into()),
                 titlebar: Some(TitlebarOptions {
-                    title: Some("Swofty — Selection dialogs".into()),
+                    title: Some(tr("Swofty — Selection dialogs").into()),
                     ..TitleBar::title_bar_options()
                 }),
                 ..TitleBar::window_options()
             };
             let (main, _) = gpui_kit::open_window(options, cx, |_, cx| {
                 cx.new(|_| Demo {
-                    result: "No selection submitted".into(),
+                    result: tr("No selection submitted").into(),
                 })
             })
             .expect("open selection preview");
@@ -51,12 +52,12 @@ struct Demo {
     result: String,
 }
 
-fn options(values: &[(&str, &str)]) -> Vec<SelectionOption> {
+fn options(values: &[(&str, &'static str)]) -> Vec<SelectionOption> {
     values
         .iter()
         .map(|(value, label)| SelectionOption {
             value: (*value).into(),
-            label: (*label).into(),
+            label: tr(label).into(),
             group: None,
             help: None,
         })
@@ -66,28 +67,28 @@ fn options(values: &[(&str, &str)]) -> Vec<SelectionOption> {
 fn spec(kind: usize) -> SelectionDialog {
     match kind {
         0 => SelectionDialog {
-            title: "Delete recordings?".into(),
-            text: "Choose the qualifying recordings to delete. In an addon, this action permanently deletes their recorded data. This preview only displays your selection.".into(),
+            title: tr("Delete recordings?").into(),
+            text: tr("Choose the qualifying recordings to delete. In an addon, this action permanently deletes their recorded data. This preview only displays your selection.").into(),
             options: options(&[("q1", "Qualifying 1"), ("q2", "Qualifying 2"), ("q3", "Qualifying 3")]),
             multiple: true,
-            apply: Some("Delete selected".into()),
+            apply: Some(tr("Delete selected").into()),
             ..Default::default()
         },
         1 => SelectionDialog {
-            title: "Drivers".into(),
-            text: "Choose the drivers to show in the charts.".into(),
-            options: (0..24).map(|i| SelectionOption { value: i.to_string(), label: format!("Driver {}", i + 1), group: Some(format!("Team {}", i / 2 + 1)), help: None }).collect(),
+            title: tr("Drivers").into(),
+            text: tr("Choose the drivers to show in the charts.").into(),
+            options: (0..24).map(|i| SelectionOption { value: i.to_string(), label: trf!("Driver {number}", number = i + 1), group: Some(trf!("Team {number}", number = i / 2 + 1)), help: None }).collect(),
             selected: vec!["0".into(), "1".into()],
             multiple: true,
             allow_empty: true,
             ..Default::default()
         },
         _ => SelectionDialog {
-            title: "Export recording".into(),
-            text: "Choose what to export.".into(),
+            title: tr("Export recording").into(),
+            text: tr("Choose what to export.").into(),
             options: options(&[("raw", "Raw CSV data"), ("visuals", "Visuals"), ("both", "Data and visuals")]),
             selected: vec!["raw".into()],
-            apply: Some("Export".into()),
+            apply: Some(tr("Export").into()),
             ..Default::default()
         },
     }
@@ -105,10 +106,12 @@ impl Render for Demo {
                 v_flex()
                     .p(px(32.))
                     .gap(px(18.))
-                    .child(div().text_size(px(24.)).child("Addon selection dialogs"))
-                    .child("This isolated preview opens no game, profile or application store.")
+                    .child(div().text_size(px(24.)).child(tr("Addon selection dialogs")))
+                    .child(tr(
+                        "This isolated preview opens no game, profile or application store.",
+                    ))
                     .children(
-                        ["Delete recordings…", "Drivers…", "Export…"]
+                        [tr("Delete recordings…"), tr("Drivers…"), tr("Export…")]
                             .into_iter()
                             .enumerate()
                             .map(|(kind, label)| {
@@ -121,10 +124,14 @@ impl Render for Demo {
                                             kind == 0,
                                             Rc::new(move |values, _, cx| {
                                                 demo.update(cx, |this, cx| {
-                                                    this.result = format!(
-                                                        "{}: {}",
-                                                        ["Delete selected", "Drivers", "Export"][kind],
-                                                        values.join(", ")
+                                                    this.result = trf!(
+                                                        "{action}: {selection}",
+                                                        action = [
+                                                            tr("Delete selected"),
+                                                            tr("Drivers"),
+                                                            tr("Export")
+                                                        ][kind],
+                                                        selection = values.join(", ")
                                                     );
                                                     cx.notify();
                                                 })
