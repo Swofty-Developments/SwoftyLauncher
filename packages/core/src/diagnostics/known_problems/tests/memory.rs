@@ -108,6 +108,60 @@ fn a_full_game_heap_in_progressive_keeps_every_year_and_never_moves_a_round() {
     assert!(d.steps[0].starts_with("Turn off Sepang in your profile"), "{all}");
 }
 
+const SMALL_RAM: &str = "\
+2026-11-25 10:00:00.000 [4000] [heap] heap 'GAME_DEFAULT' (virtual 1, pagesize 1): size 408944640 -> 671088640 bytes (640 MiB, default for a machine under 12 GiB)
+";
+
+#[test]
+fn a_full_game_heap_in_swofty_progressive_keeps_the_season_packs() {
+    let mut e = with_names(
+        ev(GAME_HEAP, &[]),
+        &[
+            ("mod.bahrain24", "Sepang"),
+            ("swofty.swofty-seasons-progressive", "Progressive Career"),
+            ("swofty.swofty-seasons-2010", "SWOFTY 2010"),
+        ],
+    );
+    e.tracks = vec!["mod.bahrain24".into()];
+    let d = diagnose(&e).unwrap();
+    let all = d.steps.join(" ");
+    assert!(all.contains("Keep the SWOFTY season packs on"), "{all}");
+    assert!(!all.contains("fewer imported tracks and season addons"), "{all}");
+    assert!(!all.contains("Career Mode Editor"), "{all}");
+}
+
+#[test]
+fn a_full_game_heap_on_a_small_pc_says_so_and_offers_the_heap_setting() {
+    let loader = format!("{SMALL_RAM}{GAME_HEAP}");
+    let d = diagnose(&ev(&loader, &[])).unwrap();
+    assert_eq!(d.id, "game_heap");
+    assert!(d.what.contains("under 12 GB of RAM"), "{}", d.what);
+    assert!(!d.what.contains("doesn't change that"), "{}", d.what);
+    assert!(
+        d.steps
+            .last()
+            .unwrap()
+            .contains("\"SWOFTY_GAME_HEAP_MB\": \"1024\""),
+        "{:?}",
+        d.steps
+    );
+}
+
+#[test]
+fn a_full_game_heap_on_a_normal_pc_keeps_its_text() {
+    let d = diagnose(&ev(GAME_HEAP, &[])).unwrap();
+    assert!(
+        d.what.contains("More memory in your PC doesn't change that."),
+        "{}",
+        d.what
+    );
+    assert!(
+        !d.steps.join(" ").contains("SWOFTY_GAME_HEAP_MB"),
+        "{:?}",
+        d.steps
+    );
+}
+
 const COMMIT: &str = "\
 2026-10-27 13:35:41.000 [15812] [crash] Ne heap error 0x58 (fatal) on thread 15812: FATAL ERROR : allocateAligned / useAddressSpace(block = 0xcdfe3a80, allocSize = 2088976) failed.Out of physical memory or Virtual memory problem; heap 0000000064243050 'RENDERER_INTERNAL'
 2026-10-27 13:35:41.100 [15812] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4 reached the top-level filter; passing it to the game's filter
