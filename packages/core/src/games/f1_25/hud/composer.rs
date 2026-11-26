@@ -14,6 +14,7 @@ use super::textures::Res;
 use super::{Built, Input, Output, ScreenBase, TemplateBase, err};
 use super::{dials, editor, scene, screen_build, screens, template, textures, units};
 use crate::Result;
+use crate::ui::node::{NodeExt, ObjExt};
 use std::collections::{BTreeMap, BTreeSet};
 use swofty_formats::animclip;
 use swofty_formats::erp::{Erp, Packer, Resource};
@@ -83,6 +84,13 @@ pub fn compose_with(
     if inputs.is_empty() {
         return Ok(out);
     }
+    let templated: Vec<&Input> = inputs.iter().filter(|i| i.record.is_template_only()).collect();
+    let plain: Vec<Input> = inputs
+        .iter()
+        .filter(|i| !i.record.is_template_only())
+        .cloned()
+        .collect();
+    let inputs = &plain[..];
     let mut prefixes = BTreeMap::new();
     for (i, input) in inputs.iter().enumerate() {
         let p = prefix_for(&input.addon, &input.key, input.record.prefix.as_deref())?;
@@ -502,6 +510,24 @@ pub fn compose_with(
             bytes: archive(stock, target_scenes, packer)?,
         });
     }
+    for input in &templated {
+        let added = graft_templates(&mut template, input)?;
+        out.lines.push(format!(
+            "{}/{}: {} added to the HUD templates from {}, bound to {}",
+            input.addon,
+            input.key,
+            match added {
+                1 => "1 template".to_owned(),
+                n => format!("{n} templates"),
+            },
+            input.record.template.as_ref().map_or("", |t| t.file.as_str()),
+            input
+                .record
+                .template
+                .as_ref()
+                .map_or("", |t| t.view_model.as_str()),
+        ));
+    }
     out.archives.push(Built {
         file: "hud_template.erp".into(),
         erps: dials::TEMPLATE_ERPS.iter().map(|s| (*s).to_owned()).collect(),
@@ -538,6 +564,38 @@ pub fn compose_with(
     super::yields::apply(stock, &yields, base, &mut out.archives, &mut out.lines, packer)?;
     cover_carriers(stock, &mut out.archives, &mut out.lines)?;
     Ok(out)
+}
+
+/// Adds the templates of a template-only record's `.ui` file to the HUD templates, each under its own
+/// name; a name the HUD templates already have is refused. Returns how many were added.
+fn graft_templates(template: &mut Pkg, input: &Input) -> Result<usize> {
+    let who = format!("{}/{}", input.addon, input.key);
+    let spec = input.record.template.as_ref().expect("a template-only record");
+    let path = input.dir.join(&spec.file);
+    let bytes = std::fs::read(&path).map_err(|e| err(format!("{who}: template {}: {e}", spec.file)))?;
+    let mut added = Pkg::parse(&bytes).map_err(|e| err(format!("{who}: {}: {e}", spec.file)))?;
+    let new: Vec<_> = crate::ui::node::root_obj(&mut added)
+        .and_then(|o| o.at_mut("Templates"))
+        .and_then(|t| t.a_mut().map(|l| l.clone()))
+        .map_err(|e| err(format!("{who}: {} has no Templates list ({e})", spec.file)))?;
+    let list = crate::ui::node::root_obj(template)?
+        .at_mut("Templates")?
+        .a_mut()?;
+    let mut count = 0;
+    for t in new.into_iter().filter(|t| t.is_node()) {
+        if list.iter().any(|o| o.is_node() && o.name() == t.name()) {
+            return Err(err(format!(
+                "{who}: the HUD templates already have a template named {}",
+                t.name()
+            )));
+        }
+        list.push(t);
+        count += 1;
+    }
+    if count == 0 {
+        return Err(err(format!("{who}: {} holds no templates", spec.file)));
+    }
+    Ok(count)
 }
 
 /// Overlays every stock resource of `archives` on every stock archive that carries it, not only on
