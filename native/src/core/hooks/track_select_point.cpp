@@ -9,6 +9,7 @@
 #include <string>
 
 #include "core/hooks/hooks.hpp"
+#include "core/hooks/track_rows.hpp"
 #include "core/hooks/track_select_point.hpp"
 #include "core/hooks/ui_points.hpp"
 
@@ -47,26 +48,27 @@ struct Hooks {
 Hooks *g_hooks = nullptr;
 std::atomic<int> g_told{0};
 
-void announce(void *vm, const char *screen)
+void announce(void *vm, const char *screen, track_rows::Screen kind)
 {
     if (g_told.fetch_add(1) < LOGGED)
-        swofty::log("[hooks] ui.track_select.build: fired after the %s track list refresh (vm %p)", screen, vm);
-    SwoftyTrackList none{sizeof(SwoftyTrackList), SWOFTY_TRACK_LIST_VERSION, nullptr, nullptr, nullptr, nullptr, nullptr};
-    ui_points::fire_tracks(core(), vm, &none);
+        swofty::log("[hooks] ui.track_select.build: fired after the %s track list refresh (vm %p, %d rows)", screen, vm,
+                    track_rows::rows_of(vm, kind));
+    track_rows::Table rows(vm, kind);
+    ui_points::fire_tracks(core(), vm, rows.table());
 }
 
 void d_gp(void *vm)
 {
     g_hooks->gp.call<void>(vm);
     if (g_hooks->live)
-        announce(vm, "Grand Prix");
+        announce(vm, "Grand Prix", track_rows::Screen::grand_prix);
 }
 
 void d_settings(void *vm)
 {
     g_hooks->settings.call<void>(vm);
     if (g_hooks->live)
-        announce(vm, "championship settings");
+        announce(vm, "championship settings", track_rows::Screen::settings);
 }
 
 class TrackSelectLink final : public GameLink {
