@@ -24,8 +24,7 @@ struct Result {
 };
 
 template <class Build, class Post, class Settle>
-Result post_all(Build &&build, Post &&post, Settle &&settle, size_t capacity = kMessageCapacity,
-                size_t max_passes = kMaxPasses)
+Result post_all(Build &&build, Post &&post, Settle &&settle, size_t capacity = kMessageCapacity, size_t max_passes = kMaxPasses)
 {
     Result r;
     for (size_t pass = 0; pass < max_passes; ++pass) {
