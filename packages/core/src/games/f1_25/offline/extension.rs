@@ -374,12 +374,17 @@ impl std::fmt::Display for Failure {
 
 impl Failure {
     /// A request that got no answer. A connection, DNS or TLS failure leads with
-    /// [`BLOCKED`]; one that broke or timed out on the way is tried again.
+    /// [`BLOCKED`]; one that broke or timed out on the way is tried again, and one
+    /// that went quiet before its headers arrived ends with [`CUT_OFF`].
     pub(super) fn call(url: &str, e: &ureq::Error) -> Self {
+        let quiet = matches!(
+            e,
+            ureq::Error::Timeout(ureq::Timeout::PerRead | ureq::Timeout::RecvResponse)
+        );
         Self {
             detail: format!("could not download {url}: {e}"),
-            blocked: transfer::transport(e),
-            cut_off: false,
+            blocked: transfer::transport(e) && !quiet,
+            cut_off: quiet,
             transient: transfer::retryable_error(e) && !final_failure(e),
         }
     }

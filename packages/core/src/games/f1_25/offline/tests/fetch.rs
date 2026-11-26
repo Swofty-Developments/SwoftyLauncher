@@ -559,3 +559,34 @@ fn a_transfer_that_keeps_moving_is_not_given_up_on() {
     installed(&d, &release);
     std::fs::remove_dir_all(&d).ok();
 }
+
+#[test]
+fn a_server_that_never_sends_headers_is_retried_then_reads_as_cut_off() {
+    let d = temp("resume-no-headers");
+    let marker = previous_install(&d);
+    let release = fake_release();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let base = format!("http://{}", listener.local_addr().unwrap());
+    let accepted = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let seen = accepted.clone();
+    std::thread::spawn(move || {
+        let mut held = Vec::new();
+        for stream in listener.incoming().flatten() {
+            seen.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            held.push(stream);
+        }
+    });
+    let err = fetch_fake(&d, &base, &release).unwrap_err().to_string();
+    let (reason, detail) = err.split_once('\n').unwrap();
+    assert_eq!(
+        reason,
+        format!(
+            "offline play 9.9.9: {} (after 4 attempts): {CUT_OFF}",
+            REQUIRED[0]
+        )
+    );
+    assert!(detail.contains("could not download"), "{err}");
+    assert_eq!(accepted.load(std::sync::atomic::Ordering::SeqCst), 4);
+    assert_untouched(&d, &marker);
+    std::fs::remove_dir_all(&d).ok();
+}
