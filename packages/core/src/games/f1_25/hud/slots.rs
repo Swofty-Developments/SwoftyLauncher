@@ -451,4 +451,78 @@ mod tests {
         let v = serde_json::json!({ "name": "x", "rect": [0.1, 0.1, 0.2, 0.1], "anchor": "top_left" });
         assert_eq!(Slot::parse(&v).unwrap().anchor, Anchor::TopLeft);
     }
+
+    fn layouts_pkg(extra: &[&str]) -> Pkg {
+        use crate::ui::node::{arr, obj, s};
+        let comp = |name: &str| {
+            obj(vec![
+                ("target", s("anchor_centre")),
+                ("eDynamicLayout.dynamicTemplate", s(name)),
+                ("eDynamicLayout.dynamicKey", s(name)),
+                ("nameId", s(name)),
+                ("xref", ui64(1)),
+                ("position", vec3(0.0, 0.0)),
+            ])
+        };
+        let mut names = vec![DONOR_COMPONENT, "lap_times"];
+        names.extend_from_slice(extra);
+        Pkg {
+            name: [0; 4],
+            root: obj(vec![
+                ("id", s("layouts")),
+                (
+                    "layouts",
+                    arr(vec![
+                        obj(vec![
+                            ("id", s("race")),
+                            ("components", arr(vec![comp("race_objective")])),
+                        ]),
+                        obj(vec![
+                            ("id", s(LAYOUT)),
+                            ("components", arr(names.into_iter().map(comp).collect())),
+                        ]),
+                    ]),
+                ),
+            ]),
+            vca: Vec::new(),
+            layout: None,
+        }
+    }
+
+    fn default_names(p: &Pkg) -> Vec<String> {
+        let layouts = p.root.as_obj().unwrap().get("layouts").unwrap().as_arr().unwrap();
+        let default = layouts
+            .items
+            .iter()
+            .find(|l| l.as_obj().and_then(|o| str_of(o, "id")) == Some(LAYOUT))
+            .unwrap();
+        default
+            .as_obj()
+            .unwrap()
+            .get("components")
+            .unwrap()
+            .as_arr()
+            .unwrap()
+            .items
+            .iter()
+            .map(|c| str_of(c.as_obj().unwrap(), "nameId").unwrap().to_owned())
+            .collect()
+    }
+
+    #[test]
+    fn a_later_addons_whole_layouts_keep_the_slot_components() {
+        let base = layouts_pkg(&[]);
+        let slots = [SlotInput {
+            addon: "acme.radio".into(),
+            id: "card".into(),
+            slot: slot([0.1, 0.1, 0.2, 0.1], Anchor::Top),
+        }];
+        let ours = Pkg::parse(&layouts(&base.to_bytes().unwrap(), &slots).unwrap()).unwrap();
+        let theirs = layouts_pkg(&["spool_gauge"]);
+        let merged = crate::ui::merge::merge(crate::ui::merge::Kind::Layouts, &base, &ours, &theirs).unwrap();
+        assert!(merged.conflicts.is_empty(), "{:?}", merged.conflicts);
+        let names = default_names(&merged.pkg);
+        assert!(names.contains(&"swofty_acme_radio_card".to_owned()), "{names:?}");
+        assert!(names.contains(&"spool_gauge".to_owned()), "{names:?}");
+    }
 }

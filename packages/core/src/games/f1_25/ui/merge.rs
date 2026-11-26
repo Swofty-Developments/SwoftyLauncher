@@ -10,6 +10,7 @@ use crate::Result;
 pub enum Kind {
     Template,
     Scene,
+    Layouts,
 }
 
 impl Kind {
@@ -19,6 +20,8 @@ impl Kind {
             Some(Self::Template)
         } else if resource.ends_with(".idf") {
             Some(Self::Scene)
+        } else if resource.ends_with(".uidl") {
+            Some(Self::Layouts)
         } else {
             None
         }
@@ -134,14 +137,25 @@ fn val_key(v: &Val) -> String {
 }
 
 fn key_of(n: &Node) -> Option<String> {
+    key_for(Kind::Template, n)
+}
+
+fn key_for(kind: Kind, n: &Node) -> Option<String> {
     if n.is_node() {
         return Some(n.name().to_owned());
     }
-    n.as_obj()?.get("name")?.as_val().map(val_key)
+    let o = n.as_obj()?;
+    if let Some(v) = o.get("name") {
+        return v.as_val().map(val_key);
+    }
+    match kind {
+        Kind::Layouts => o.get("nameId").or_else(|| o.get("id"))?.as_val().map(val_key),
+        _ => None,
+    }
 }
 
-fn keyed(items: &[Node]) -> Option<Vec<String>> {
-    let keys: Vec<String> = items.iter().map(key_of).collect::<Option<_>>()?;
+fn keyed(kind: Kind, items: &[Node]) -> Option<Vec<String>> {
+    let keys: Vec<String> = items.iter().map(|n| key_for(kind, n)).collect::<Option<_>>()?;
     let mut seen = std::collections::BTreeSet::new();
     keys.iter().all(|k| seen.insert(k.as_str())).then_some(keys)
 }
@@ -304,7 +318,11 @@ fn fresh_key(k: &Val) -> Val {
 }
 
 fn merge_list(cx: &mut Cx, base: &Arr, a: &Arr, b: &Arr, whole: &Node) -> Node {
-    let (Some(kbase), Some(ka), Some(kb)) = (keyed(&base.items), keyed(&a.items), keyed(&b.items)) else {
+    let (Some(kbase), Some(ka), Some(kb)) = (
+        keyed(cx.kind, &base.items),
+        keyed(cx.kind, &a.items),
+        keyed(cx.kind, &b.items),
+    ) else {
         return atomic(cx, whole);
     };
     let pick =
