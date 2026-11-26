@@ -14,7 +14,16 @@ use swofty_addon::manifest::Kind;
 pub use detect::{Detect, Found, Probe};
 
 /// Builds a profile for the game. Methods arrive when the build pipeline is split by game.
-pub trait Build: Sync {}
+pub trait Build: Sync {
+    /// Turns the game's registry sugar in an addon folder into manifest operations, right after the manifest loads.
+    fn lower_manifest(
+        &self,
+        _dir: &std::path::Path,
+        _m: &mut crate::manifest::AddonManifest,
+    ) -> swofty_addon::Result<()> {
+        Ok(())
+    }
+}
 
 /// Places the game's mod loader. Methods arrive when the loader placing is split by game.
 pub trait Loader: Sync {}

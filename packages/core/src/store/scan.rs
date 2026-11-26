@@ -167,8 +167,9 @@ impl Store {
                 continue;
             }
             let loaded = AddonManifest::load(&dir).and_then(|mut m| {
-                crate::stdlib::screens::lower(&dir, &mut m)?;
-                crate::stdlib::routes::lower(&dir, &mut m)?;
+                if let Some(build) = crate::games::by_id(&m.compat.game).and_then(|g| g.build) {
+                    build.lower_manifest(&dir, &mut m)?;
+                }
                 Ok(m)
             });
             let m = match loaded {

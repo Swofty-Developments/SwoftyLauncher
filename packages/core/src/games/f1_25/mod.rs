@@ -89,7 +89,16 @@ fn store_of(info: &GameInfo, source: Source) -> Option<StoreId> {
 }
 
 pub struct Pipeline;
-impl Build for Pipeline {}
+impl Build for Pipeline {
+    fn lower_manifest(
+        &self,
+        dir: &std::path::Path,
+        m: &mut crate::manifest::AddonManifest,
+    ) -> swofty_addon::Result<()> {
+        stdlib::screens::lower(dir, m)?;
+        stdlib::routes::lower(dir, m)
+    }
+}
 
 pub struct VersionProxy;
 impl Loader for VersionProxy {}
