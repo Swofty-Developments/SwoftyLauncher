@@ -3,10 +3,12 @@
 // order, the RouteOpen cancel, the site link (installed with the first subscriber, removed with the last), the catalogue
 // rows, the chosen tiles the content tile handlers edit, and the hide-only MFD page rules of hud.mfd.pages
 // (frontend/mfd_pages_logic.hpp). native/test/run_tests.sh ui_points builds and runs it.
+#include "core/boxes/era/box_table.hpp"
 #include "core/frontend/chosen_tiles.hpp"
 #include "core/frontend/mfd_pages_logic.hpp"
 #include "core/hooks/catalogue.hpp"
 #include "core/hooks/dispatch.hpp"
+#include "core/hooks/track_rows.hpp"
 #include "core/hooks/ui_points.hpp"
 
 #include <cstdio>
@@ -310,17 +312,76 @@ static void test_tile_event()
     expect(!v1.tiles() && v1.remove(0) == swofty::Result::unavailable,
            "tile event: a version 1 payload of 16 bytes has no table, even with a stale pointer");
 
-    int range_slot[2];
-    uint8_t buf[0x50];
-    const uint8_t *range[2] = {buf, buf + 0x30};
-    (void)range_slot;
-    up::EraRangeTable era(range);
-    swofty::ui::TileList era_list(era.table());
-    expect(era_list.count() == 3 && !era_list.get(0) && era_list.remove(0) == swofty::Result::unavailable &&
-               era_list.insert(0, {.id = "x", .title = "X"}) == swofty::Result::unavailable,
-           "era table: counts the entries and offers nothing else");
-    range[0] = nullptr;
-    expect(era_list.count() == 0, "era table: an empty range counts 0");
+    std::vector<runtime::era::Box> boxes(4);
+    const char *names[] = {"a", "b", "c", "d"};
+    for (size_t i = 0; i < boxes.size(); i++) {
+        boxes[i].entrant_list = names[i];
+        boxes[i].title = std::string("lng_") + names[i];
+        boxes[i].order = int(i);
+    }
+    boxes[1].only = runtime::era::ONLY_TIME_TRIAL;
+    boxes[2].time_trial = "c_tt";
+    auto era_ids = [&] {
+        std::string r;
+        for (auto &b : boxes)
+            r += b.entrant_list + ",";
+        return r;
+    };
+    {
+        runtime::era::BoxTable gp(boxes, false);
+        swofty::ui::TileList l(gp.table());
+        auto b0 = l.get(1);
+        expect(l.count() == 3 && b0 && b0->id == "c" && b0->title == "lng_c" && b0->route == "c" && b0->place == "era" &&
+                   !b0->literal && b0->image == "#overrides.home_screen.tiles_solo_6x6[c]",
+               "era table: Grand Prix lists the boxes it shows with id, title, route and image");
+        expect(l.get(3) == std::nullopt && l.remove(3) == swofty::Result::invalid && l.move(0, 3) == swofty::Result::invalid &&
+                   l.insert(0, {.id = "x", .title = "X"}) == swofty::Result::unavailable,
+               "era table: out of range is invalid and insert is not offered");
+        expect(l.move(0, 2) == swofty::Result::ok && era_ids() == "c,b,d,a,",
+               "era table: move reorders the shown boxes and the hidden box keeps its slot: " + era_ids());
+        expect(l.remove(1) == swofty::Result::ok && era_ids() == "c,b,a," && l.count() == 2,
+               "era table: remove drops the box from the core's list: " + era_ids());
+    }
+    {
+        runtime::era::BoxTable tt(boxes, true);
+        swofty::ui::TileList l(tt.table());
+        auto b = l.get(0);
+        expect(l.count() == 3 && b && b->route == "c_tt" && b->id == "c",
+               "era table: Time Trial shows the Time Trial boxes and routes a box to its Time Trial list");
+    }
+
+    uint8_t gp_vm[0x940] = {};
+    uint8_t *gp_rows = new uint8_t[0x128 * 5];
+    uintptr_t b0p = uintptr_t(gp_rows), e0p = b0p + 0x128 * 5;
+    std::memcpy(gp_vm + 0x750, &b0p, 8);
+    std::memcpy(gp_vm + 0x758, &e0p, 8);
+    namespace trk = swofty_core::hooks::track_rows;
+    trk::Table gp_table(gp_vm, trk::Screen::grand_prix);
+    ev::TrackSelectBuild gp_ev{};
+    gp_ev.size = sizeof gp_ev;
+    gp_ev.payload_version = 2;
+    gp_ev.tracks_table = gp_table.table();
+    expect(gp_ev.tracks().count() == 5 && !gp_ev.tracks().get(0),
+           "track table: Grand Prix counts the 0x128-byte rows and offers no get");
+    e0p = b0p;
+    std::memcpy(gp_vm + 0x758, &e0p, 8);
+    expect(gp_ev.tracks().count() == 0, "track table: a cleared row vector counts 0");
+    delete[] gp_rows;
+
+    uint8_t st_vm[0xb30] = {}, st_obj[0xa0] = {};
+    uint8_t *st_rows = new uint8_t[0x168 * 3];
+    uintptr_t sb = uintptr_t(st_rows), se = sb + 0x168 * 3, owner = uintptr_t(st_obj);
+    std::memcpy(st_vm + 0xb28, &owner, 8);
+    std::memcpy(st_obj + 0x90, &sb, 8);
+    std::memcpy(st_obj + 0x98, &se, 8);
+    trk::Table st_table(st_vm, trk::Screen::settings);
+    swofty::ui::TrackList st_list(st_table.table());
+    expect(st_list.count() == 3 && !st_list.get(0), "track table: settings counts the 0x168-byte rows of its owner object");
+    uint8_t blank[0xb30] = {};
+    trk::Table none_table(blank, trk::Screen::settings);
+    expect(swofty::ui::TrackList(none_table.table()).count() == 0 && trk::rows_of(nullptr, trk::Screen::grand_prix) == 0,
+           "track table: no owner or no vm counts 0");
+    delete[] st_rows;
 
     SwoftyTrackList none{sizeof(SwoftyTrackList), SWOFTY_TRACK_LIST_VERSION, nullptr, nullptr, nullptr, nullptr, nullptr};
     ev::TrackSelectBuild e{};

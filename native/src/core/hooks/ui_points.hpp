@@ -81,32 +81,6 @@ inline void fire_tracks(Table &t, void *vm, const SwoftyTrackList *tracks = null
     t.fire("", ev::TrackSelectBuild::point, &e, &replaced);
 }
 
-// The era picker's tiles are the view model's begin/end range of 16-byte entries; their per-entry layout is not
-// proven, so the table counts them and offers nothing else.
-class EraRangeTable {
-public:
-    explicit EraRangeTable(const void *range) : range_(static_cast<const uint8_t *const *>(range))
-    {
-        table_ = {sizeof(SwoftyTileList), SWOFTY_TILE_LIST_VERSION, this, &count, nullptr, nullptr, nullptr, nullptr};
-    }
-
-    const SwoftyTileList *table() const { return &table_; }
-
-    static constexpr size_t ENTRY = 0x10;
-
-private:
-    static int count(void *self)
-    {
-        auto *r = static_cast<EraRangeTable *>(self)->range_;
-        if (!r || !r[0] || r[1] < r[0])
-            return 0;
-        return int(size_t(r[1] - r[0]) / ENTRY);
-    }
-
-    const uint8_t *const *range_;
-    SwoftyTileList table_{};
-};
-
 inline void fire_screen(Table &t, const char *screen, void *view)
 {
     ev::ScreenBuilt e{};
@@ -130,7 +104,7 @@ inline bool fire_route(Table &t, const char *route, const char *screen)
     return replaced == 0;
 }
 
-void era_tiles(void *list);
+void era_tiles(void *list, const SwoftyTileList *tiles);
 void home_tiles(void *list, void *chosen);
 void career_content_tiles(void *chosen);
 void car_category_tiles(void *chosen);
