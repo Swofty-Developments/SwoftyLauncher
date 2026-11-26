@@ -45,13 +45,11 @@ bool wants(const char *point)
     return t.has_handlers(*t.direct_point(point));
 }
 
-void era_tiles(void *list)
+void era_tiles(void *list, const SwoftyTileList *tiles)
 {
     Links *l = g_links.load(std::memory_order_acquire);
-    if (l && active(l->era)) {
-        EraRangeTable range(list);
-        fire_list<ev::EraTiles>(core(), list, range.table());
-    }
+    if (l && active(l->era))
+        fire_list<ev::EraTiles>(core(), list, tiles);
 }
 
 namespace {
