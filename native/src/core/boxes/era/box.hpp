@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "core/apply/facts.hpp"
+#include "core/boxes/node_handle.hpp"
 
 namespace runtime::era {
 
@@ -21,9 +22,6 @@ constexpr size_t MAX_BOXES = 255;
 constexpr uint32_t ONLY_ANY = 0, ONLY_GRAND_PRIX = 1, ONLY_TIME_TRIAL = 2;
 constexpr size_t LIST_NAME_MAX = 63;
 constexpr size_t TEXT_MAX = 255;
-constexpr size_t NODE_REFS = 0x24;
-constexpr size_t NODE_HOLDERS = 0x28;
-constexpr size_t HOLDER_PREV = 0x10;
 
 constexpr uint32_t djb2(const char *s)
 {
@@ -114,43 +112,6 @@ inline std::vector<Box> ordered(std::vector<Box> boxes)
     std::stable_sort(boxes.begin(), boxes.end(),
                      [](const Box &a, const Box &b) { return a.order != b.order ? a.order < b.order : a.seq < b.seq; });
     return boxes;
-}
-
-struct Handle {
-    uint8_t *node;
-    void *next, *prev;
-};
-static_assert(offsetof(Handle, prev) == HOLDER_PREV);
-
-inline void link(Handle &h, uint8_t *node)
-{
-    h = {node, *reinterpret_cast<void **>(node + NODE_HOLDERS), nullptr};
-    if (h.next)
-        *reinterpret_cast<void **>(static_cast<uint8_t *>(h.next) + HOLDER_PREV) = &h;
-    *reinterpret_cast<void **>(node + NODE_HOLDERS) = &h;
-    __atomic_fetch_add(reinterpret_cast<int16_t *>(node + NODE_REFS), int16_t(1), __ATOMIC_SEQ_CST);
-}
-
-// Unlinks a handle from its node's holder list and drops its reference, as the game's tile set clear does
-// (prev.next = next, next.prev = prev, the node's head moves on when it was this handle). release is
-// Vm_Release_Node. A handle the game already cleared (node null) is left alone.
-template <class Release> bool unlink(Handle &h, Release release)
-{
-    uint8_t *node = h.node;
-    if (!node)
-        return false;
-    auto *next = static_cast<uint8_t *>(h.next), *prev = static_cast<uint8_t *>(h.prev);
-    if (prev)
-        *reinterpret_cast<void **>(prev + 8) = next;
-    if (next)
-        *reinterpret_cast<void **>(next + HOLDER_PREV) = prev;
-    h.next = h.prev = nullptr;
-    auto **head = reinterpret_cast<void **>(node + NODE_HOLDERS);
-    if (*head == &h)
-        *head = next;
-    release(node);
-    h.node = nullptr;
-    return true;
 }
 
 // clear (FeTile_Clear_EraTileSet_Thunk in game) unlinks and releases both handles from the nodes they still

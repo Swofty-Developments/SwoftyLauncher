@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "core/boxes/era/box.hpp"
+#include "core/boxes/node_handle.hpp"
 
 namespace frontend::node_ref {
 
