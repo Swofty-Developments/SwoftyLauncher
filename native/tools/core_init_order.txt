@@ -402,6 +402,7 @@ mixins
   src/core/assets/items.cpp  SWOFTY_ON_LOAD
   src/core/frontend/ui.cpp  SWOFTY_ON_LOAD
   src/core/frontend/home_tiles.cpp  SWOFTY_SITE(site_FeHome_AfterCareerCall)
+  src/core/frontend/home_tiles.cpp  SWOFTY_SITE(site_FeTile_F1WorldListEnd)
   src/core/frontend/home_tiles.cpp  SWOFTY_WRAP(FeHome_Handle_Command)
   src/core/frontend/home_tiles.cpp  SWOFTY_ON_LOAD
 on-load
@@ -453,5 +454,6 @@ explicit
   items  src/core/assets/items.cpp  SWOFTY_ON_LOAD
   ui  src/core/frontend/ui.cpp  SWOFTY_ON_LOAD
   home_tiles  src/core/frontend/home_tiles.cpp  SWOFTY_SITE(site_FeHome_AfterCareerCall)
+  home_tiles  src/core/frontend/home_tiles.cpp  SWOFTY_SITE(site_FeTile_F1WorldListEnd)
   home_tiles  src/core/frontend/home_tiles.cpp  SWOFTY_WRAP(FeHome_Handle_Command)
   home_tiles  src/core/frontend/home_tiles.cpp  SWOFTY_ON_LOAD
