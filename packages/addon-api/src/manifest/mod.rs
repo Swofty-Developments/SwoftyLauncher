@@ -25,7 +25,7 @@ pub use launcher::{
     CAREER_SETUP_BACK, CAREER_SETUP_NEXT, CAREER_SETUP_ROUTE_LEN, CareerSetup, HUB_TAB_OPTIONS, HubTab,
     Launcher, Saves,
 };
-pub use operations::{FileEntry, NativePlugin, Operations, ScreenOp};
+pub use operations::{FileEntry, NativePlugin, Operations, RouteOp, ScreenOp};
 pub use options::{AddonOption, Binds, Choice, OptionType};
 pub use postfx::{
     POSTFX_FORMATS, POSTFX_INPUTS, POSTFX_KEYS, POSTFX_OPTIONS, POSTFX_RESERVED, POSTFX_SKIPS, POSTFX_VIEWS,

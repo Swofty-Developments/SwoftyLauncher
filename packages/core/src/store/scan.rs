@@ -168,6 +168,7 @@ impl Store {
             }
             let loaded = AddonManifest::load(&dir).and_then(|mut m| {
                 crate::stdlib::screens::lower(&dir, &mut m)?;
+                crate::stdlib::routes::lower(&dir, &mut m)?;
                 Ok(m)
             });
             let m = match loaded {

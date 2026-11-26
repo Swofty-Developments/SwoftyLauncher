@@ -15,8 +15,8 @@ use crate::profile::Profile;
 pub use render::{render_ops, render_text, when_holds};
 pub use requests::{Merge, Requests, merge};
 pub use session::{
-    SessionAddon, SessionMap, SessionMfd, SessionMod, SessionOption, SessionPlainSaves, SessionSaves,
-    SessionScreen, SessionSettings, SessionState, SessionUi, screen_file, screens,
+    SessionAddon, SessionMap, SessionMfd, SessionMod, SessionOption, SessionPlainSaves, SessionRoute,
+    SessionSaves, SessionScreen, SessionSettings, SessionState, SessionUi, routes, screen_file, screens,
 };
 pub use swofty_addon::option::{MAX_CHOICES, MAX_ID_LEN, MAX_SLIDER_STEPS, State, valid_option_id};
 

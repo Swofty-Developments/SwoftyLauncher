@@ -1995,3 +1995,295 @@ fn a_missing_era_picker_resource_stays_an_error() {
     assert_eq!(warnings.len(), 1, "{warnings:?}");
     std::fs::remove_dir_all(&root).ok();
 }
+
+fn routes_settings(screens: &[(&str, &str)], routes: &[(&str, &str, &str, &str)]) -> SessionSettings {
+    let mut s = addon_screens_settings(&[]);
+    let screens: Vec<serde_json::Value> = screens
+        .iter()
+        .map(|(name, flow)| {
+            serde_json::json!({ "name": name, "file": format!("ui/{name}.ui"), "flow": flow,
+                                "anchor": "settings_container", "view_model": true })
+        })
+        .collect();
+    let routes: Vec<serde_json::Value> = routes
+        .iter()
+        .map(|(addon, id, clone_of, opens)| {
+            serde_json::json!({ "id": id, "addon": addon, "file": "routes_frontend_general.uir",
+                                "clone_of": clone_of, "opens": opens })
+        })
+        .collect();
+    s.ui = serde_json::from_value(serde_json::json!({
+        "register": true, "strict": false, "recover": true, "screens": screens, "routes": routes
+    }))
+    .unwrap();
+    s
+}
+
+#[test]
+fn a_ui_route_is_refused_when_it_opens_nothing_the_build_lists() {
+    let listed = ["page".to_owned()];
+    let clones = |settings: &SessionSettings| addon_screens::route_clones(settings, &listed);
+    let ok = routes_settings(
+        &[("page", "flow_options")],
+        &[("t.a", "open_page", "mail_container", "page")],
+    );
+    assert_eq!(clones(&ok).unwrap()[0].opens, "page");
+    let e = clones(&routes_settings(
+        &[("page", "flow_options")],
+        &[("t.a", "open_x", "mail_container", "ghost")],
+    ))
+    .err()
+    .unwrap()
+    .to_string();
+    assert!(
+        e.contains("ghost") && e.contains("not a ui.screen of an enabled addon"),
+        "{e}"
+    );
+    let e = clones(&routes_settings(
+        &[("page", "flow_frontend")],
+        &[("t.a", "open_x", "mail_container", "page")],
+    ))
+    .err()
+    .unwrap()
+    .to_string();
+    assert!(e.contains("no flow entry") && e.contains("flow_frontend"), "{e}");
+    let e = clones(&routes_settings(
+        &[("page", "flow_options")],
+        &[
+            ("t.a", "open_x", "mail_container", "page"),
+            ("t.b", "open_x", "credits", "page"),
+        ],
+    ))
+    .err()
+    .unwrap()
+    .to_string();
+    assert!(
+        e.contains("t.a") && e.contains("t.b") && e.contains("open_x"),
+        "{e}"
+    );
+}
+
+fn id_of(n: &Node) -> Option<&str> {
+    n.as_obj()?.get("Id")?.as_val()?.as_str()
+}
+
+fn stock_uir_groups(input: &dyn Fn(&str) -> PathBuf) -> Vec<(String, String, Node)> {
+    let data = PathBuf::from(std::env::var_os("SWOFTY_STOCK_DATA").expect("set"));
+    let baseline = std::fs::read_dir(data.join("baseline"))
+        .unwrap()
+        .flatten()
+        .map(|e| e.path().join("baseline.json"))
+        .find(|p| p.is_file())
+        .unwrap();
+    let b: crate::game_folder::baseline::Baseline =
+        serde_json::from_slice(&std::fs::read(baseline).unwrap()).unwrap();
+    let mut out = Vec::new();
+    for rel in b
+        .files
+        .keys()
+        .filter(|k| k.ends_with(".erp") && k.contains("ui_package"))
+    {
+        let path = input(rel);
+        let file = ErpFile::open(&path).unwrap();
+        let names: Vec<String> = file
+            .erp
+            .resources
+            .iter()
+            .filter(|r| r.name.ends_with(".uir"))
+            .map(|r| r.name.clone())
+            .collect();
+        for name in names {
+            let p = Pkg::parse(&read_frag(&path, &name, 0).unwrap()).unwrap();
+            for g in p.root.o().unwrap().at("RouteGroupings").unwrap().a().unwrap() {
+                out.push((rel.clone(), name.clone(), g.clone()));
+            }
+        }
+    }
+    out
+}
+
+fn positions_of(n: &Node, text: &str, at: &str, out: &mut BTreeSet<String>) {
+    match n {
+        Node::Val(v) if v.as_str() == Some(text) => {
+            out.insert(at.to_owned());
+        }
+        Node::Obj(o) => {
+            let attr = (
+                o.get("Id").and_then(|i| i.as_val()).and_then(|v| v.as_str()),
+                o.get("Value"),
+            );
+            if let (Some(name), Some(Node::Val(v))) = attr
+                && v.as_str() == Some(text)
+            {
+                out.insert(format!("attr {name}"));
+            }
+            for (k, v) in &o.items {
+                let key = k.as_str().unwrap_or_default();
+                if matches!(v, Node::Val(_)) && key == "Value" && attr.0.is_some() {
+                    continue;
+                }
+                positions_of(v, text, key, out);
+            }
+        }
+        Node::Arr(a) => a.items.iter().for_each(|v| positions_of(v, text, at, out)),
+        _ => {}
+    }
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn the_stock_route_groups_retarget_by_the_screen_name_they_carry() {
+    let input = stock_input();
+    let groups = stock_uir_groups(&input);
+    assert!(groups.len() > 150, "{}", groups.len());
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    let mut safe: Vec<String> = Vec::new();
+    let mut files: BTreeSet<String> = BTreeSet::new();
+    for (_, file, g) in &groups {
+        files.insert(file.clone());
+        let id = id_of(g).unwrap().to_owned();
+        let source = g
+            .o()
+            .unwrap()
+            .at("Attributes")
+            .unwrap()
+            .a()
+            .unwrap()
+            .iter()
+            .find(|a| id_of(a) == Some("Source"))
+            .map(|a| a.o().unwrap().str_at("Value").unwrap().to_owned());
+        assert_eq!(
+            source.as_deref(),
+            Some(id.as_str()),
+            "{file}: group {id} is not its own Source"
+        );
+        let mut at = BTreeSet::new();
+        positions_of(g, &id, "", &mut at);
+        seen.extend(at.iter().cloned());
+        let routes = g.o().unwrap().at("Routes").unwrap().a().unwrap();
+        let only_screen_routes = routes
+            .iter()
+            .all(|r| matches!(id_of(r), Some("open" | "open_no_input" | "close")));
+        let mut targets = BTreeSet::new();
+        for r in routes {
+            for c in r.o().unwrap().at("Commands").unwrap().a().unwrap() {
+                for a in c.o().unwrap().at("Attributes").unwrap().a().unwrap() {
+                    if id_of(a) == Some("Target") {
+                        targets.insert(a.o().unwrap().str_at("Value").unwrap().to_owned());
+                    }
+                }
+            }
+        }
+        if only_screen_routes && targets == BTreeSet::from([id.clone()]) {
+            safe.push(id);
+        }
+    }
+    eprintln!("route files: {files:?}");
+    eprintln!("positions of a group's own name: {seen:?}");
+    eprintln!(
+        "{} groups, {} screen-only groups: {safe:?}",
+        groups.len(),
+        safe.len()
+    );
+    let allowed: BTreeSet<String> = [
+        "Id",
+        "attr Source",
+        "attr Target",
+        "attr From",
+        "attr To",
+        "attr OverrideTarget",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect();
+    assert_eq!(
+        seen, allowed,
+        "a group's own name sits only in these places, never in a Destination"
+    );
+    for name in [
+        "mail_container",
+        "social_hub_container",
+        "player_profile_container",
+        "credits",
+    ] {
+        assert!(safe.iter().any(|s| s == name) || name == "credits", "{name}");
+    }
+    assert!(safe.len() > 30, "{}", safe.len());
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn a_ui_route_clones_a_stock_group_onto_an_addon_screen() {
+    let input = stock_input();
+    let settings = routes_settings(
+        &[("l2b_page", "flow_options")],
+        &[
+            ("t.a", "open_l2b_page", "mail_container", "l2b_page"),
+            ("t.a", "open_l2b_credits", "credits", "l2b_page"),
+        ],
+    );
+    let out = std::env::temp_dir().join(format!("swofty-ui-route-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    build(
+        &settings,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    let persistent = ui_file("persistent.erp");
+    let after = groupings(&out.join(&persistent), ROUTES);
+    let stock = groupings(&input(&persistent), ROUTES);
+    for (clone, base) in [
+        ("open_l2b_page", "mail_container"),
+        ("open_l2b_credits", "credits"),
+    ] {
+        let g = &after[clone];
+        assert_eq!(
+            g.keys().collect::<Vec<_>>(),
+            stock[base].keys().collect::<Vec<_>>()
+        );
+        for (rid, text) in g {
+            assert!(
+                !text.contains(&format!("\"{base}\"")),
+                "{clone}.{rid} still names {base}"
+            );
+        }
+        assert!(
+            g["open"].contains("\"l2b_page\""),
+            "{clone}.open does not open the screen"
+        );
+        assert!(g["close"].contains("\"l2b_page\""));
+    }
+    for (gid, routes) in &stock {
+        for (rid, r) in routes {
+            assert_eq!(after[gid].get(rid), Some(r), "{gid}.{rid} changed");
+        }
+    }
+    let report = check::archive_files(&[(
+        persistent.as_str(),
+        input(&persistent).as_path(),
+        out.join(&persistent).as_path(),
+    )])
+    .unwrap();
+    let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    assert!(hard.is_empty(), "{hard:?}");
+    let missing = routes_settings(
+        &[("l2b_page", "flow_options")],
+        &[("t.a", "open_x", "no_such_group", "l2b_page")],
+    );
+    let e = build(
+        &missing,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap_err()
+    .to_string();
+    assert!(e.contains("no_such_group") && e.contains("mail_container"), "{e}");
+    std::fs::remove_dir_all(&out).ok();
+}

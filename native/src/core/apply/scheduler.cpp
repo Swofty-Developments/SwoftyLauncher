@@ -525,6 +525,7 @@ void Scheduler::log_unapplied()
                                                "team.identity",
                                                "team.logo",
                                                "team.pit_times",
+                                               "ui.route",
                                                "ui.screen",
                                                "vehicle",
                                                "vehicle.package",

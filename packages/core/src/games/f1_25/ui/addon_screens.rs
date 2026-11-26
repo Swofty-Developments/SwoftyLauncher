@@ -9,7 +9,7 @@ use super::career_row;
 use super::node::{boolv, err, s, uidb_var};
 use super::pages::{self, Entry, HomePage, Screens, Sources};
 use super::{
-    ANCHOR, FLOW, MfdRow, SETUP_BACK_ERP, SETUP_FLOW_ERP, catalog, check, patch, screen_flow, ui_file,
+    ANCHOR, FLOW, MfdRow, ROUTES, SETUP_BACK_ERP, SETUP_FLOW_ERP, catalog, check, patch, screen_flow, ui_file,
 };
 use crate::addons::settings::SessionSettings;
 use crate::manifest::CAREER_SETUP_BACK;
@@ -146,6 +146,8 @@ pub(super) struct Routing {
     pub(super) addon_groups: Vec<(String, String)>,
     /// The route groups of the career setups.
     pub(super) setup_groups: Vec<Node>,
+    /// The route groups the addons' `ui.route` records clone.
+    pub(super) clones: Vec<patch::RouteClone>,
 }
 
 impl Routing {
@@ -156,7 +158,7 @@ impl Routing {
         built: &Screens,
         generated: &[(String, String, String)],
         setups: &[patch::SetupRoutes],
-    ) -> Self {
+    ) -> Result<Self> {
         let names: Vec<String> = built.order.iter().map(|(n, _)| n.clone()).collect();
         let addon_routes: Vec<(String, String)> = settings
             .ui
@@ -180,13 +182,58 @@ impl Routing {
         addon_groups.extend(generated.iter().map(|(_, a, s)| (s.clone(), a.clone())));
         let setup_groups: Vec<Node> = setups.iter().flat_map(patch::setup_route_groups).collect();
         let listed: Vec<String> = names.iter().chain(&addon_screens).cloned().collect();
-        Self {
+        let clones = route_clones(settings, &listed)?;
+        Ok(Self {
             listed,
             opened,
             addon_groups,
             setup_groups,
-        }
+            clones,
+        })
     }
+}
+
+pub(super) fn route_clones(settings: &SessionSettings, listed: &[String]) -> Result<Vec<patch::RouteClone>> {
+    let routes: Vec<_> = settings.ui.iter().flat_map(|u| &u.routes).collect();
+    let mut out: Vec<patch::RouteClone> = Vec::new();
+    for (i, r) in routes.iter().enumerate() {
+        let bad = |why: String| err(format!("{}: ui.route {}: {why}", r.addon, r.id));
+        if let Some(first) = routes[..i].iter().find(|o| o.id == r.id) {
+            return Err(bad(format!(
+                "the route is declared by {} and {}",
+                first.addon, r.addon
+            )));
+        }
+        if !ROUTES.ends_with(&format!("/{}", r.file)) {
+            return Err(bad(format!(
+                "file {} is not a route file the build clones groups in; only routes_frontend_general.uir",
+                r.file
+            )));
+        }
+        let screen = settings
+            .ui
+            .iter()
+            .flat_map(|u| &u.screens)
+            .find(|s| s.page.is_none() && s.name == r.opens)
+            .ok_or_else(|| {
+                bad(format!(
+                    "opens {}, which is not a ui.screen of an enabled addon",
+                    r.opens
+                ))
+            })?;
+        if screen.flow != FLOW || !listed.contains(&screen.name) {
+            return Err(bad(format!(
+                "opens {}, a ui.screen in {} with no flow entry: the build writes flow entries only for {FLOW}",
+                r.opens, screen.flow
+            )));
+        }
+        out.push(patch::RouteClone {
+            id: r.id.clone(),
+            clone_of: r.clone_of.clone(),
+            opens: r.opens.clone(),
+        });
+    }
+    Ok(out)
 }
 
 /// What the checks find wrong in each built screen.

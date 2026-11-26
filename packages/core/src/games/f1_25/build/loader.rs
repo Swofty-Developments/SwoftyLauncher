@@ -154,6 +154,7 @@ pub fn build_menus(
         strict: false,
         recover: true,
         screens: Vec::new(),
+        routes: Vec::new(),
     });
     if let Some(s) = ui
         .screens
