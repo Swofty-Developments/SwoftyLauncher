@@ -14,7 +14,7 @@
       "minLength": 1
     },
     "restriction_tags": {
-      "description": "Where it shows: \"gamesetup_f1\", ...",
+      "description": "Where it shows: the option's tags, one list over the kinds of options_system.context (gamesetup_f1, PreSession, Unranked, ...). The stock record game/<option> holds the game's own list; a layer's additions and removals are written into the option's tag rows at boot.",
       "type": "array",
       "uniqueItems": true,
       "items": {

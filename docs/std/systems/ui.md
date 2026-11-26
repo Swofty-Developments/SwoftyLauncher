@@ -247,12 +247,22 @@ ui::tiles.add("settings_tile", {
 ## Options and HUD widgets
 
 ```cpp
+// show the option in an F1 1990 weekend, and drop it from the multiplayer lobby
 ui::options.layer(ui::options["game/parc_ferme_rules"], [](ui::Option &o) {
     o.restriction_tags.push_back("gamesetup_f1_1990");
+    std::erase(o.restriction_tags, "Unranked");
 });
 
 ui::hud_widgets.add("tyre_letters", { .view_model = "hud.f1990.tyre_letter", .tmpl = file("ui/tyre_letter.ui") });
 ```
+
+Every option of the game's `options_system` (212 of them, in the `game`, `career`, `ea_trax` and `multiplayer` sections) has a stock record, `game/<option name>`, whose `id` is the option and whose `restriction_tags` are the option's tags as the game holds them. An option shows where the running context's tag of the same kind is in its list. A tag belongs to one kind, the folder of `options_system.context` it is listed in: `game_setup_mode` (`gamesetup_f1`, `gamesetup_f2`, `gamesetup_f2_21`, `gamesetup_f1_esports`, `gamesetup_f1w`, `gamesetup_classic`, `gamesetup_multiclass`), `game_state` (`FrontEnd`, `MainMenu`, `PreSession`, `InSession`, `InLobby` and their `_Locked` forms), `multiplayer_context` (`Unranked`, `UnrankedTemplate`, `UnrankedLAN`, `Ranked`, `Event`, `OnlineC`, `None`), `game_mode` and the general state folders (`splitscreen_visible`, `hide_for_product_pro`, ...). At boot the core compares each layered stock record with the game's list and writes the difference into the option's tag rows in the game database: the tags a layer added are appended to the row of their kind, and the tags it removed are taken out. Layers apply in load order, so a later layer sees what an earlier one did. The boot line is `[registry] applied at boot: ui.option 1 (1 tag added)`.
+
+- An addon record of its own (`mine/parc`, with `id` set to a stock option) only adds its tags.
+- `id` is the option name, `parc_ferme_rules`, or `<section>/<name>`, `game/parc_ferme_rules`. The names are unique across the sections.
+- A tag has to be a value of a context folder. A new setup mode tag, `gamesetup_f1_1990` in the example, comes from the addon's own database rows (a `game_setup_mode_tag` row of the `game_setup_mode` context folder), as the F1 1990 addon does. An unknown tag refuses the record and names the setup mode tags it could have used.
+- The option needs a tag row of the tag's kind. A tag of a kind the option has no row for is refused with the kinds it has: the core adds no option rows.
+- An unknown option is refused with the closest names. A record cannot declare a new option: an option is a database row the game's options store reads by name, and the core adds no logic for one.
 
 ## HUD elements
 
