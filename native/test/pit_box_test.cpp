@@ -32,6 +32,29 @@ int main()
     expect(pb::registry_full(26), "the 27th body is skipped");
     expect(pb::registry_full(30), "a count past the slots stays skipped");
 
+    {
+        uint64_t sc = 0x1111, box13 = 0x2222;
+        pb::Redirect r;
+        expect(r.engage(&sc, &box13), "a PitBox13 placement redirects box 12");
+        expect(sc == 0x2222, "the safety car's slot holds PitBox13's placement during the call");
+        r.release();
+        expect(sc == 0x1111 && box13 == 0x2222, "the safety car's placement is back after the call");
+        r.release();
+        expect(sc == 0x1111, "a second release changes nothing");
+    }
+    {
+        uint64_t sc = 0x1111, none = 0;
+        pb::Redirect r;
+        expect(!r.engage(&sc, &none), "no PitBox13 leaves box 12 on the safety car's spot");
+        expect(sc == 0x1111, "the slot is untouched without PitBox13");
+        uint64_t same = 0x1111;
+        expect(!r.engage(&sc, &same), "the same placement in both slots needs no redirect");
+        expect(!r.engage(nullptr, &same) && !r.engage(&sc, nullptr), "a missing slot pointer needs no redirect");
+        r.release();
+        expect(sc == 0x1111, "releasing an unengaged redirect changes nothing");
+    }
+    expect(pb::SAFETY_CAR_SLOT == 0x738 && pb::BOX_13_SLOT == 0x898, "the slots are type 7 slot 0 and type 8 slot 12");
+
     pb::Seen seen{"repairs"};
     auto first = seen.note(uint32_t(-1));
     expect(first && !std::strcmp(first.tail, ""), "the first bad box is logged");
