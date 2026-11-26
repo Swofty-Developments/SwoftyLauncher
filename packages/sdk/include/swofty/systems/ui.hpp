@@ -418,6 +418,9 @@ struct TrackSelectBuild {
     TrackList tracks() const { return TrackList(payload_version >= 2 && size >= sizeof(*this) ? tracks_table : nullptr); }
 };
 
+// Fires for every screen that builds without error. `screen` is the id of the addon's ui.screen record
+// (`<addon>/<key>`) for an addon screen, and the name of the screen's root node for any other screen (stock screens,
+// screens declared in swofty.json only, launcher-generated pages).
 struct ScreenBuilt {
     static constexpr const char *point = "ui.screen.built";
     static constexpr uint32_t version = 1;
@@ -428,6 +431,9 @@ struct ScreenBuilt {
     std::string_view screen() const { return swofty::detail::payload_str(screen_str); }
 };
 
+// Fires when the game runs a route. `route` is the route name the game runs: the key of a ui.route record, whose
+// cloned group has that name, or a stock route name. `screen` is the id of the ui.screen record the route opens, and
+// empty for a route no ui.route record declares. A handler that takes the route cancels it.
 struct RouteOpen {
     static constexpr const char *point = "ui.route.open";
     static constexpr uint32_t version = 1;

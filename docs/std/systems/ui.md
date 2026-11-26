@@ -272,6 +272,15 @@ ui::tiles.add("settings_tile", {
 });
 ```
 
+### Route names
+
+One name is used everywhere: the key of the `ui.route` record. The build clones the route group `clone_of` under the record's key (`open_settings` in the example, not `mod.settings/open_settings`), and that is the route name the game runs. A route key is global across addons, so two addons cannot both declare `open_settings`; the build refuses the second.
+
+- **A tile's `route`** names a route record by its id (`mod.settings/open_settings`) or by its bare key (`open_settings`), or is a stock route name (`mod_menu`, `career_hub`). The core turns a record id into the key before it gives the route to the game; a bare key and a stock name pass through unchanged. An id that no enabled record has is logged (`ui.tile <id>: route <id> names no enabled ui.route record; the game gets it as written`) and passed as written, which opens nothing. The same rule covers a route a handler inserts into `ui.home.tiles`, `ui.career_content.tiles` or `ui.car_category.tiles`.
+- **A route's `opens`** names a `ui.screen` record by its id or by its bare key; the screen's registered name is the key.
+- **`ui.route.open`** fires with the route name the game runs (the key) as `route()`. `screen()` is the id of the `ui.screen` record the route opens (`mod.settings/settings`), or empty for a route no record declares (a stock route).
+- **`ui.screen.built`** fires for every screen that builds without error. `screen()` is the id of the addon's `ui.screen` record for an addon screen (`mod.settings/settings`), and the name of the screen's root node for every other screen: stock screens, screens an addon declares in `swofty.json` only, and the options pages the launcher generates.
+
 ## Options and HUD widgets
 
 ```cpp
