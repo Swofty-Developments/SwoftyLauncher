@@ -1,1 +1,1 @@
-1.0: first version (launcher 1.10.54), experimental: the records are declared and stored; the core applies nothing from them yet.
+1.0: first version (launcher 1.10.54), experimental: the core grows the eight texture arrays it knows with each slice at boot, as overlay archives; two addons that name one slice are contested and the later one wins.

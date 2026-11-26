@@ -6,7 +6,7 @@
       "image": "art/era/f1_2017.png"
     },
     "logo_toro_rosso": {
-      "array": "overrides.teams.driver_select_team_logo",
+      "array": "overrides.teams.driver_select_team_logos",
       "name": "cs17_toro_rosso",
       "image": "art/logos/toro_rosso.png"
     }

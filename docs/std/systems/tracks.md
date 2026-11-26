@@ -35,7 +35,7 @@ Not in 1.6.5; their sections describe the design:
 
 - `track.layer`, `track.slots` and `track.ai_line`. `PackageTrack::world` is stored and not applied.
 - The `track.data.get` point, `tracks::set_data` and `tracks::track_list`. The core uses its own track list and data writer.
-- The `ui.track_select.build` point, a career racing each season's real calendar, and Time Trial on added tracks.
+- A career racing each season's real calendar, and Time Trial on added tracks.
 
 ## The header
 
@@ -462,7 +462,7 @@ box swofty.classic-seasons-2016/f1_2016 (grand prix): calendar 20, more tracks 9
   left out game/monaco: its swofty_f1 world has 20 grid slots; the box runs 22 cars
 ```
 
-The track select screen's list builder needs reverse engineering (`ui.track_select.build`, `ui::events::TrackSelectBuild`). Until it's understood, the screen shows every track in the base in the game's own order. A guard on the screen stops a track that doesn't fit before the session loads:
+The `ui.track_select.build` point (`ui::events::TrackSelectBuild`) fires after the Grand Prix and the championship settings track lists rebuild, and it reports the number of rows only: `tracks().count()`. A handler cannot read, remove or add a track, because a row holds node references and not the track id. Time Trial's track carousel is not covered: its list builder is not found. The point installs only when an addon subscribes, and it needs the two `Trk_*RefreshTrackList` bindings to export; where they do not resolve the log says `[hooks] ui.track_select.build unavailable`. See [UI and strings](/std/systems/ui#editing-the-tile-lists-payload-version-2). The screen shows every track in the base in the game's own order. A guard on the screen stops a track that doesn't fit before the session loads:
 
 ```text
 Monaco can't run in F1 2016
@@ -793,7 +793,7 @@ tracks::set_data(tracks::tracks["game/monaco"], [](tracks::TrackData &d) { d.lap
 [tracks] box mod.season-1950/f1_1950: race laps written (full race length; the race length option scales them): 3 write(s) in 4 set(s) (silverstone 52 -> 70); put back when the box is left
 [tracks] box race laps: 3 of 3 write(s) put back (the box was left)
 ```
-- **The box's track list: logged, not shown.** The core works out each box's list and writes it to the log and `catalog.json`. The track select screen still shows its own list, built from view-model nodes (`track_data.track_list`, `track_info.gm_track_list`). The list builder behind `ui.track_select.build` isn't found yet.
+- **The box's track list: logged, not shown.** The core works out each box's list and writes it to the log and `catalog.json`. The track select screen still shows its own list, built from view-model nodes (`track_data.track_list`, `track_info.gm_track_list`). `ui.track_select.build` sees the Grand Prix and championship settings lists after they are built, as a row count only; Time Trial's carousel builder isn't found, and a handler can't change a list.
 - **The guard:** the Grand Prix confirm (`advance_pressed`) and the Time Trial confirm (`select_pressed`) are L2. Refusing the press before the game's handler runs leaves no state behind.
 - **Time Trial:** record tracks have `time_trial` false unless their record sets it. Tracks made for 1.5 run Time Trial unless their facts say `time_trial: false` (`time_trial_why`: none of their files holds a world the track layers load).
 - **Stat ids:** the game stores each track record at its stat id and tolerates holes, so a record track's id from 254 down is safe there. Weekends and track data records hold stat ids as one byte, with 0xff for none.

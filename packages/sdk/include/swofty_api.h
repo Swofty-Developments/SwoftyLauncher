@@ -571,8 +571,10 @@ typedef struct SwoftyHud {
    node path (a leading '#' is dropped); the last dot splits the leaf from its parent node, and the parent resolves from
    the view-model registry root. A write is queued and applied on the game's flow thread; a later write to the same
    path replaces a queued one. Each call returns SWOFTY_ASSET_OK once queued, SWOFTY_ASSET_INVALID for a malformed path
-   or a type clash with an earlier write, and SWOFTY_ASSET_UNAVAILABLE where the game's registry did not resolve.
-   set_ref is unavailable until a core proves what a node reference targets. */
+   or a type clash with an earlier write, and SWOFTY_ASSET_UNAVAILABLE on a core without this table. A parent or
+   target that does not resolve when the write is applied is logged, not returned. set_ref binds the leaf to the node
+   at `target` (a path from the registry root, or a '#' path) and is refused in the log when the leaf exists and is
+   not a reference. */
 #define SWOFTY_UI_VERSION 1
 typedef struct SwoftyUi {
     uint32_t size;
