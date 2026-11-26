@@ -525,6 +525,7 @@ void Scheduler::log_unapplied()
                                                "team.identity",
                                                "team.logo",
                                                "team.pit_times",
+                                               "ui.screen",
                                                "vehicle",
                                                "vehicle.package",
                                                "wearable.season_set"};

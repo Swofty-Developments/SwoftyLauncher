@@ -20,7 +20,9 @@ pub use leaderboard::{FRIENDS_TAB_LABEL, FRIENDS_TAB_TEXT, leaderboard_glyphs};
 pub use messages::{CONFIRM_ID, MESSAGE_ID, TOAST_PREFIX, TOAST_SECONDS, hud_messages, messages};
 pub use persistent::persistent_gate;
 pub use resume::{ENTRY_GROUPS, RESUME_CONTINUE_SCREEN, ResumeRoutes, resume_route_group, resume_routes};
-pub use routes::{anchor_routes, has_route, route_groups, routes, screen_route_groups};
+pub use routes::{
+    RouteClone, anchor_routes, clone_route_groups, has_route, route_groups, routes, screen_route_groups,
+};
 pub use screens::{flow_entries, regions, ui_data};
 pub use setup::{DRIVER_CAREER, Placed, SETUP_ENTRY_SOURCE, SetupRoutes, setup_route_groups, setup_routes};
 pub use tooltips::{PROMPT_LABEL, tooltips};
