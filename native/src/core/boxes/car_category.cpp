@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -133,6 +134,7 @@ Forced forced;
 constinit swofty_core::guards::LogFirst<LOG_FIRST> build_lines, value_lines, refused_lines, setup_lines, scenario_lines;
 constinit swofty_core::guards::LogFirst<16> unknown_lines;
 constinit swofty_core::guards::LogFirst<LOG_FIRST> record_lines, image_lines, route_lines;
+std::set<std::string> told_slices;
 thread_local bool applying;
 
 template <class T> T at(const void *base, size_t off)
@@ -250,6 +252,8 @@ void add_record_tiles(uint8_t *v, Vm_List_AppendChild_t *append, Game_CreateSess
             break;
         }
         auto image = tr::resolve_image(t, tr::store_slices());
+        if (std::string warn = tr::missing_slice_warning(t, image, tr::store_provided(), told_slices); !warn.empty())
+            swofty::log("[ui.tile] car_category: %s", warn.c_str());
         std::string path = STOCK_IMAGE;
         if (image.kind == tr::Image::Kind::slice)
             path = logic::slice_path(image.array, image.name), images++;

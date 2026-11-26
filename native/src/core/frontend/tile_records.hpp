@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -178,6 +179,7 @@ inline TitleText title_text(const Tile &t) { return {t.title.c_str(), !t.literal
 struct Image {
     enum class Kind { none, slice, unresolved } kind = Kind::none;
     std::string array, name, why;
+    bool literal = false;
 };
 
 // `slice_of` maps a ui.texture_slice record id to its {array, name}. An image is a slice record id or a `#array[name]` string.
@@ -200,7 +202,23 @@ inline Image resolve_image(const Tile &t, const SliceOf &slice_of)
     img.kind = Image::Kind::slice;
     img.array = ref->array;
     img.name = ref->name;
+    img.literal = t.image.front() == '#';
     return img;
+}
+
+// The warning for a `#array[name]` image that no enabled ui.texture_slice record provides (`provided` holds
+// "<array>|<name>"), once per slice (`told` remembers them); empty for any other image, a slice record, or a repeat. A
+// slice of a stock array the game ships still shows, so it is only a warning.
+inline std::string missing_slice_warning(const Tile &t, const Image &img, const std::set<std::string> &provided,
+                                         std::set<std::string> &told)
+{
+    if (img.kind != Image::Kind::slice || !img.literal)
+        return {};
+    std::string key = img.array + "|" + img.name;
+    if (provided.count(key) || !told.insert(key).second)
+        return {};
+    return t.id + ": image slice " + img.name + " of " + img.array +
+           " is not provided by any enabled ui.texture_slice record (a slice the game ships in that array still shows)";
 }
 
 }

@@ -164,6 +164,22 @@ int main(int argc, char **argv)
     t.image.clear();
     expect(tr::resolve_image(t, lookup).kind == tr::Image::Kind::none, "no image is none");
 
+    std::set<std::string> have{"home_screen.tiles_solo_6x6|cs_a"}, told;
+    t.id = "mod.a/home";
+    t.image = "#overrides.home_screen.tiles_solo_6x6[cs_a]";
+    expect(tr::missing_slice_warning(t, tr::resolve_image(t, lookup), have, told).empty(),
+           "a #array[name] image that a ui.texture_slice record provides does not warn");
+    t.image = "#overrides.home_screen.tiles_solo_6x6[cs_typo]";
+    std::string warn = tr::missing_slice_warning(t, tr::resolve_image(t, lookup), have, told);
+    expect(warn.find("mod.a/home: image slice cs_typo of home_screen.tiles_solo_6x6 is not provided") == 0,
+           "a #array[name] image no record provides warns with the slice and array");
+    expect(tr::missing_slice_warning(t, tr::resolve_image(t, lookup), have, told).empty(), "the same slice warns once");
+    t.image = "mod.a/tile";
+    expect(tr::missing_slice_warning(t, tr::resolve_image(t, lookup), have, told).empty(),
+           "an image naming a slice record is provided by definition");
+    t.image = "art/tile.png";
+    expect(tr::missing_slice_warning(t, tr::resolve_image(t, lookup), have, told).empty(), "a plain string is not checked");
+
     if (argc > 1) {
         std::ifstream f(argv[1], std::ios::binary);
         std::stringstream ss;

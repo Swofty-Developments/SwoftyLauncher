@@ -9,6 +9,8 @@
 #include "core/frontend/tile_records.hpp"
 #include "core/frontend/ui_vm.hpp"
 #include "core/hooks/hooks.hpp"
+#include "core/hooks/mfd_pages_point.hpp"
+#include "core/hooks/track_select_point.hpp"
 #include "core/hooks/ui_points.hpp"
 #include "core/registry/older.hpp"
 #include "core/registry/store.hpp"
@@ -111,10 +113,8 @@ void declare_ui_points(Table &t)
     t.declare_game(ui_points::SCREEN_POINT, SWOFTY_POINT_NOTIFY, swofty::ui::events::ScreenBuilt::version, &l->screen);
     t.declare_game(ui_points::ROUTE_POINT, SWOFTY_POINT_CANCEL, swofty::ui::events::RouteOpen::version, &l->route);
     g_links.store(l, std::memory_order_release);
-    swofty::log(
-        "[hooks] %s: not hooked yet (the track select builders are not proven: Trk_GrandPrixTrackSelectVm_RefreshTrackList "
-        "0x141c05600 refreshes the list but no row-add site is settled); handlers attach but never run",
-        ui_points::TRACK_SELECT_POINT);
+    declare_track_select_point(t);
+    declare_mfd_pages_point(t);
 }
 
 }

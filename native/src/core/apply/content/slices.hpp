@@ -205,13 +205,13 @@ inline std::optional<Ref> parse_ref(std::string_view image)
 
 // Whether the slice an image string names is one an enabled ui.texture_slice record adds (`provided` holds
 // "<array>|<name>", Lowering::provided). The empty string when it is, or when the string names no slice, or when it is
-// the entrant list's own name (a stock slice the game ships); else the warning to log. Only a warning: a slice of a
+// the entrant list's own name or one of `stock_names` (the entrant lists of the base packages: a stock slice the game ships); else the warning to log. Only a warning: a slice of a
 // stock array the game ships is not known here.
 inline std::string missing_slice(std::string_view image, const std::set<std::string> &provided,
-                                 std::string_view entrant_list = {})
+                                 std::string_view entrant_list = {}, const std::set<std::string> &stock_names = {})
 {
     auto ref = parse_ref(image);
-    if (!ref || provided.count(ref->array + "|" + ref->name) || ref->name == entrant_list)
+    if (!ref || provided.count(ref->array + "|" + ref->name) || ref->name == entrant_list || stock_names.count(ref->name))
         return {};
     return "image slice " + ref->name + " of " + ref->array +
            " is not provided by any enabled ui.texture_slice record (a slice "

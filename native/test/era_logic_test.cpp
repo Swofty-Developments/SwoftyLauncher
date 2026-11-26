@@ -1,9 +1,11 @@
 // Host unit test for the era picker logic (era_logic.hpp): the box check, the default title and image,
 // the box order, the Time Trial list and car limit, the press guard, the addon row's handle links, the DRS
 // group swap and the restore stack of list cuts. native/test/run_tests.sh era_logic builds and runs it.
+#include "core/apply/content/slices.hpp"
 #include "core/boxes/era_logic.hpp"
 
 #include <cstdio>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -1004,6 +1006,26 @@ int main()
     era::Box image = box("cs_f1_2018", "lng_cs_f1_2018", "#overrides.home_screen.tiles_solo_6x6[f1]");
     expect(era::check(image, have).empty() && era::image_of(image) == "#overrides.home_screen.tiles_solo_6x6[f1]",
            "a given image is kept");
+
+    {
+        namespace sl = swofty_core::apply::content::slices;
+        std::set<std::string> have_slices{"home_screen.tiles_solo_6x6|cs_f1_2018"};
+        era::Box provided = box("cs_f1_2018", "lng_cs_f1_2018", "#overrides.home_screen.tiles_solo_6x6[cs_f1_2018]");
+        expect(sl::missing_slice(era::image_of(provided), have_slices, provided.entrant_list).empty(),
+               "a box image a ui.texture_slice record provides does not warn");
+        era::Box missing = box("cs_f1_2019", "lng_cs_f1_2019", "#overrides.home_screen.tiles_solo_6x6[cs_typo]");
+        std::string why = sl::missing_slice(era::image_of(missing), have_slices, missing.entrant_list);
+        expect(why.find("image slice cs_typo of home_screen.tiles_solo_6x6 is not provided") == 0,
+               "a box image no record provides warns with the slice and array");
+        era::Box plain = box("cs_f1_2020");
+        expect(sl::missing_slice(era::image_of(plain), have_slices, plain.entrant_list).empty(),
+               "a box with no image falls back to its entrant list's stock slice and does not warn");
+        era::Box literal = box("cs_f1_2021", "lng_cs_f1_2021", "art/tile.png");
+        expect(sl::missing_slice(era::image_of(literal), have_slices, literal.entrant_list).empty(),
+               "a plain non-# image is not checked");
+        expect(sl::missing_slice(era::image_of(missing), have_slices, "x", {"cs_typo"}).empty(),
+               "a base package's entrant list name is a stock slice");
+    }
 
     era::Box nul = box("cs_f1_2019");
     nul.title = std::string("lng_a\0b", 7);

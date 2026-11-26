@@ -425,7 +425,7 @@ SCRIPTS = [
     Script('game_points', 'Game hook points host test', ['{out}/game_points_test'], cwd='test', programs=[hook_test('game_points')]),
     Script('ui_hot', 'Hot UI points (lang.lookup, ui.vm.resolve) and view-model path host test', ['{out}/ui_hot_test'], cwd='test',
            programs=[hook_test('ui_hot')]),
-    Script('ui_points', 'UI game points (era, home, screen built, route open) host test', ['{out}/ui_points_test'], cwd='test',
+    Script('ui_points', 'UI game points (era, home, screen built, route open, track select) and MFD page rules host test', ['{out}/ui_points_test'], cwd='test',
            programs=[hook_test('ui_points')]),
     Script('session_points', 'Session control, AI controller and spectator points host test', ['{out}/session_points_test'],
            cwd='test', programs=[hook_test('session_points')]),
