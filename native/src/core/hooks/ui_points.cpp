@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "core/frontend/chosen_tiles.hpp"
 #include "core/frontend/tile_records.hpp"
 #include "core/frontend/ui_vm.hpp"
 #include "core/hooks/hooks.hpp"
@@ -47,29 +48,46 @@ bool wants(const char *point)
 void era_tiles(void *list)
 {
     Links *l = g_links.load(std::memory_order_acquire);
-    if (l && active(l->era))
-        fire_list<ev::EraTiles>(core(), list);
+    if (l && active(l->era)) {
+        EraRangeTable range(list);
+        fire_list<ev::EraTiles>(core(), list, range.table());
+    }
 }
 
-void home_tiles(void *list)
+namespace {
+
+template <class E> void fire_chosen(Table &t, void *list, void *chosen)
+{
+    auto *c = static_cast<frontend::chosen_tiles::Chosen *>(chosen);
+    if (!c) {
+        fire_list<E>(t, list);
+        return;
+    }
+    frontend::chosen_tiles::ChosenTable table(*c);
+    fire_list<E>(t, list, table.table());
+}
+
+}
+
+void home_tiles(void *list, void *chosen)
 {
     Links *l = g_links.load(std::memory_order_acquire);
     if (l && active(l->home))
-        fire_list<ev::HomeTiles>(core(), list);
+        fire_chosen<ev::HomeTiles>(core(), list, chosen);
 }
 
 void career_content_tiles(void *chosen)
 {
     Links *l = g_links.load(std::memory_order_acquire);
     if (l && active(l->career_content))
-        fire_list<ev::CareerContentTiles>(core(), chosen);
+        fire_chosen<ev::CareerContentTiles>(core(), chosen, chosen);
 }
 
 void car_category_tiles(void *chosen)
 {
     Links *l = g_links.load(std::memory_order_acquire);
     if (l && active(l->car_category))
-        fire_list<ev::CarCategoryTiles>(core(), chosen);
+        fire_chosen<ev::CarCategoryTiles>(core(), chosen, chosen);
 }
 
 void screen_built(const char *screen)
