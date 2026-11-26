@@ -221,7 +221,7 @@ The UI points, all in `swofty/systems/ui.hpp` and all `Fired::game` (the core in
 | `ui.track_select.build` | `ui::events::TrackSelectBuild` | 2 | modify | no |
 | `ui.screen.built` | `ui::events::ScreenBuilt` | 1 | notify | no |
 | `ui.route.open` | `ui::events::RouteOpen` | 1 | cancel | no |
-| `ui.vm.resolve` | `ui::events::VmResolve` | 1 | modify | yes |
+| `ui.vm.resolve` | `ui::events::VmResolve` | 2 | modify | yes |
 | `lang.lookup` | `ui::events::LangLookup` | 1 | modify | yes |
 | `hud.mfd.pages` | `ui::events::MfdPages` | 1 | modify | no |
 

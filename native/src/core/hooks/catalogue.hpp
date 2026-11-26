@@ -131,7 +131,7 @@ inline constexpr Event EVENTS[] = {
     {"ui.track_select.build", M, "swofty::ui::events::TrackSelectBuild", 2, false, Fired::game, nullptr},
     {"ui.screen.built", N, "swofty::ui::events::ScreenBuilt", 1, false, Fired::game, nullptr},
     {"ui.route.open", C, "swofty::ui::events::RouteOpen", 1, false, Fired::game, nullptr},
-    {"ui.vm.resolve", M, "swofty::ui::events::VmResolve", 1, true, Fired::game, nullptr},
+    {"ui.vm.resolve", M, "swofty::ui::events::VmResolve", 2, true, Fired::game, nullptr},
     {"lang.lookup", M, "swofty::ui::events::LangLookup", 1, true, Fired::game, nullptr},
     {"hud.mfd.pages", M, "swofty::ui::events::MfdPages", 1, false, Fired::game, nullptr},
 

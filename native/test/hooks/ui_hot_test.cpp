@@ -80,6 +80,16 @@ static std::string joined()
     return s;
 }
 
+static int redirect_handler(void *user, SwoftyHookCall *c)
+{
+    auto *tag = static_cast<Tag *>(user);
+    auto *e = static_cast<ev::VmResolve *>(c->payload);
+    trail.push_back(tag->name);
+    if (e->path().substr(0, tag->prefix.size()) == tag->prefix)
+        trail.push_back(std::to_string(int(e->use_node_of(tag->text))));
+    return 0;
+}
+
 static void test_lang()
 {
     Table t;
@@ -140,6 +150,34 @@ static void test_vm()
     t.detach(tok1);
     t.detach(tok2);
     expect(link.uninstalls == 1 && !link.on, "ui.vm.resolve: the last subscriber leaving removes the link");
+
+    Table r;
+    Link rlink;
+    r.declare_game(ui_hot::VM_POINT, SWOFTY_POINT_MODIFY, ev::VmResolve::version, &rlink, true);
+    r.arm();
+    int node_title = 3;
+    std::vector<std::string> asked;
+    auto node_of = [&](const char *p) -> void * {
+        asked.push_back(p);
+        return std::strcmp(p, "career.hub.title") == 0 ? &node_title : nullptr;
+    };
+    Tag to_title{"redir", "hud_progressive_title", "career.hub.title"}, to_gone{"gone", "hud_progressive_gone", "no.such.path"};
+    uint32_t tr1 = 0, tr2 = 0;
+    r.attach("a", ui_hot::VM_POINT, SWOFTY_PHASE_BEFORE, 0, "", redirect_handler, &to_title, &tr1);
+    r.attach("b", ui_hot::VM_POINT, SWOFTY_PHASE_BEFORE, -1, "", redirect_handler, &to_gone, &tr2);
+    trail.clear();
+    expect(ui_hot::fire_vm(r, "hud_progressive_title", ok, node_of) == &node_title,
+           "ui.vm.resolve: use_node_of takes the game's node for another path as the node");
+    expect(joined() == "redir 0 gone" && asked == std::vector<std::string>{"career.hub.title"},
+           "ui.vm.resolve: use_node_of reports ok and asks the core only for the path the handler names");
+    asked.clear();
+    expect(!ui_hot::fire_vm(r, "hud_progressive_gone", ok, node_of),
+           "ui.vm.resolve: a path that resolves to no node supplies none");
+    expect(joined() == "redir gone 2", "ui.vm.resolve: use_node_of returns unavailable for a path with no node");
+    expect(!ui_hot::fire_vm(r, "hud_progressive_title", ok), "ui.vm.resolve: with no resolver use_node_of supplies none");
+    joined();
+    r.detach(tr1);
+    r.detach(tr2);
 }
 
 static void test_table()

@@ -58,7 +58,11 @@ void *d_resolve(void *registry, const char *path, const void *base, void *create
     void *supplied = hot_table().resolve(
         key, epoch(),
         [&]() -> std::pair<void *, bool> {
-            void *node = ui_hot::fire_vm(*g_table, path, handle_ok);
+            void *node = ui_hot::fire_vm(*g_table, path, handle_ok, [registry](const char *other) -> void * {
+                static const uintptr_t no_base = 0;
+                void **handle = g_point->original<void **>(registry, other, &no_base, nullptr);
+                return handle && handle_ok(handle) ? handle : nullptr;
+            });
             if (node && g_told.fetch_add(1) < LOGGED)
                 swofty::log("[hooks] ui.vm.resolve (hot): %s -> node %p supplied by a handler", path, node);
             return {node, node != nullptr};

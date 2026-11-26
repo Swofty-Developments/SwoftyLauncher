@@ -334,12 +334,25 @@ struct EraTiles {
 
 struct VmResolve {
     static constexpr const char *point = "ui.vm.resolve";
-    static constexpr uint32_t version = 1;
+    static constexpr uint32_t version = 2;
     uint32_t size, payload_version;
     const char *path_str;
     void *node;
+    int32_t (*node_of_fn)(void *user, const char *path, void **node);
+    void *user;
 
     std::string_view path() const { return swofty::detail::payload_str(path_str); }
+    Result use_node_of(std::string_view other)
+    {
+        if (payload_version < 2 || size < sizeof(*this) || !node_of_fn)
+            return Result::unavailable;
+        std::string p(other);
+        void *found = nullptr;
+        int32_t r = node_of_fn(user, p.c_str(), &found);
+        if (r == SWOFTY_ASSET_OK)
+            node = found;
+        return swofty::detail::result(r);
+    }
 };
 
 struct LangLookup {

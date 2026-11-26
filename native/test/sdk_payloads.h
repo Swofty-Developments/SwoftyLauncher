@@ -307,6 +307,8 @@ typedef struct SwoftyEvVmResolve {
     uint32_t size, payload_version;
     const char *path_str;
     void *node;
+    int32_t (*node_of_fn)(void *user, const char *path, void **node);
+    void *user;
 } SwoftyEvVmResolve;
 
 typedef struct SwoftyEvLangLookup {
@@ -425,7 +427,7 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvUiList, ui, CareerContentTiles, 24)                                                                                \
     X(SwoftyEvUiList, ui, CarCategoryTiles, 24)                                                                                  \
     X(SwoftyEvTrackSelect, ui, TrackSelectBuild, 24)                                                                             \
-    X(SwoftyEvVmResolve, ui, VmResolve, 24)                                                                                      \
+    X(SwoftyEvVmResolve, ui, VmResolve, 40)                                                                                      \
     X(SwoftyEvLangLookup, ui, LangLookup, 48)                                                                                    \
     X(SwoftyEvScreenBuilt, ui, ScreenBuilt, 24)                                                                                  \
     X(SwoftyEvRouteOpen, ui, RouteOpen, 24)                                                                                      \
@@ -591,6 +593,8 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvTrackSelect, ui, TrackSelectBuild, tracks_table, 16)                                                               \
     X(SwoftyEvVmResolve, ui, VmResolve, path_str, 8)                                                                             \
     X(SwoftyEvVmResolve, ui, VmResolve, node, 16)                                                                                \
+    X(SwoftyEvVmResolve, ui, VmResolve, node_of_fn, 24)                                                                          \
+    X(SwoftyEvVmResolve, ui, VmResolve, user, 32)                                                                                \
     X(SwoftyEvLangLookup, ui, LangLookup, key_str, 8)                                                                            \
     X(SwoftyEvLangLookup, ui, LangLookup, language_str, 16)                                                                      \
     X(SwoftyEvLangLookup, ui, LangLookup, text_str, 24)                                                                          \

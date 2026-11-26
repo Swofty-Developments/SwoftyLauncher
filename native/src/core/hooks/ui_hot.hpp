@@ -2,6 +2,7 @@
 #include <cstring>
 #include <optional>
 #include <string>
+#include <type_traits>
 
 #include <swofty/systems/ui.hpp>
 
@@ -46,17 +47,37 @@ inline std::optional<std::string> fire_lang(Table &t, const char *key, const cha
     return slot.text;
 }
 
-template <class Valid> void *fire_vm(Table &t, const char *path, Valid &&valid)
+// `node_of` gives the game's own node handle for another path, or null: what the payload's use_node_of calls. A handler
+// that sets `node` itself or through use_node_of supplies it to the game once it validates.
+template <class Valid, class NodeOf> void *fire_vm(Table &t, const char *path, Valid &&valid, NodeOf &&node_of)
 {
     namespace ev = swofty::ui::events;
+    struct Slot {
+        std::remove_reference_t<NodeOf> *node_of;
+    } slot{&node_of};
     ev::VmResolve e{};
     e.size = sizeof e;
     e.payload_version = ev::VmResolve::version;
     e.path_str = path;
     e.node = nullptr;
+    e.node_of_fn = [](void *user, const char *other, void **out) -> int32_t {
+        if (!other || !*other || !out)
+            return SWOFTY_ASSET_INVALID;
+        void *found = (*static_cast<Slot *>(user)->node_of)(other);
+        if (!found)
+            return SWOFTY_ASSET_UNAVAILABLE;
+        *out = found;
+        return SWOFTY_ASSET_OK;
+    };
+    e.user = &slot;
     int replaced = 0;
     t.fire("", VM_POINT, &e, &replaced);
     return e.node && valid(e.node) ? e.node : nullptr;
+}
+
+template <class Valid> void *fire_vm(Table &t, const char *path, Valid &&valid)
+{
+    return fire_vm(t, path, valid, [](const char *) -> void * { return nullptr; });
 }
 
 }
