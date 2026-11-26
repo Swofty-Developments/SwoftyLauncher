@@ -98,13 +98,75 @@ fn a_write_fault_as_a_session_ends_is_recognised() {
     assert!(d.steps[1].contains("Send Logs"), "{}", d.steps[1]);
 }
 
+const FULL: &str = "2026-11-25 16:52:20.100 [4288] [perf] last 60 s: memory: RAM 15200/16384 MiB used, commit 37100/40000 MiB used; game working set 6500 MiB, private 7200 MiB; VRAM gpu 0 5100/11000 MiB local used/budget, 120/7000 MiB shared\n";
+const ROOMY: &str = "2026-11-25 16:52:20.100 [4288] [perf] last 60 s: memory: RAM 9000/32768 MiB used, commit 22000/40000 MiB used; game working set 6500 MiB, private 7200 MiB; VRAM gpu 0 5100/11000 MiB local used/budget, 120/7000 MiB shared\n";
+
+fn sibling(extra: &str) -> Evidence {
+    let log = exit_crash(&SIBLING_FRAMES, "writing 0x2e9fff1b0", "16:53:08.800");
+    on_steam(&format!("{extra}{log}"))
+}
+
 #[test]
-fn the_sibling_fault_with_the_same_tail_is_left_to_other_rules() {
+fn the_sibling_fault_names_a_nearly_full_memory() {
+    let d = diagnose(&sibling(FULL)).unwrap();
+    assert_eq!(d.id, "session_exit_memory");
+    assert_eq!(d.title, "F1 25 crashed as a session ended");
+    assert!(d.what.contains("fault inside the game"), "{}", d.what);
+    assert!(d.what.contains("commit was 92% full"), "{}", d.what);
+    assert!(d.what.contains("memory was nearly full"), "{}", d.what);
+    let steps = d.text();
+    assert!(steps.contains("Turn off add-ons you don't need"), "{steps}");
+    assert!(steps.contains("Close other apps"), "{steps}");
+    assert!(steps.contains(super::super::memory::PAGE_FILE_STEP), "{steps}");
+    assert!(!steps.contains("Classic Seasons"), "{steps}");
+    assert!(!steps.contains("32000"), "{steps}");
+    assert!(steps.contains("Send Logs"), "{steps}");
+}
+
+#[test]
+fn the_sibling_fault_without_a_full_commit_does_not_blame_memory() {
+    for extra in ["", ROOMY] {
+        let d = diagnose(&sibling(extra)).unwrap();
+        assert_eq!(d.id, "session_exit_memory");
+        assert!(!d.what.contains("commit was"), "{}", d.what);
+        assert!(!d.what.contains("nearly full."), "{}", d.what);
+    }
+}
+
+#[test]
+fn the_sibling_fault_is_only_matched_on_its_own_conditions() {
+    let log = exit_crash(&SIBLING_FRAMES, "reading 0x2e9fff1b0", "16:53:08.800");
+    assert_eq!(diagnose(&on_steam(&format!("{FULL}{log}"))), None);
+    let log = exit_crash(&SIBLING_FRAMES, "writing 0x2e9fff1b0", "16:52:40.000");
+    assert_eq!(diagnose(&on_steam(&format!("{FULL}{log}"))), None);
+    let log = exit_crash(&SIBLING_FRAMES, "writing 0x2e9fff1b0", "16:53:08.800");
+    assert_eq!(diagnose(&on_ea(&format!("{FULL}{log}"))), None);
+    let mut frames = SIBLING_FRAMES;
+    frames[0] = "F1_25.exe+0x43700c7 .xtls fn base+0x436ffc0+0x107";
+    let log = exit_crash(&frames, "writing 0x2e9fff1b0", "16:53:08.800");
+    assert_eq!(diagnose(&on_steam(&format!("{FULL}{log}"))), None);
+}
+
+#[test]
+fn the_exit_fault_rule_still_does_not_take_the_sibling() {
     let log = exit_crash(&SIBLING_FRAMES, "writing 0x2e9fff1b0", "16:53:08.800");
     assert_ne!(
         diagnose(&on_steam(&log)).map(|d| d.id),
         Some("session_exit_fault")
     );
+}
+
+#[test]
+fn the_commit_percentage_comes_from_the_newest_minute_line() {
+    let newer = ROOMY.replace("16:52:20", "16:52:50");
+    let e = sibling(&format!("{FULL}{newer}"));
+    assert_eq!(super::super::memory::commit_percent(&e), Some(55));
+    let e = sibling(FULL);
+    assert_eq!(super::super::memory::commit_percent(&e), Some(92));
+    assert_eq!(super::super::memory::commit_percent(&sibling("")), None);
+    let none =
+        "2026-11-25 16:52:20.100 [4288] [perf] last 60 s: memory: system RAM unavailable; VRAM unavailable\n";
+    assert_eq!(super::super::memory::commit_percent(&sibling(none)), None);
 }
 
 #[test]
