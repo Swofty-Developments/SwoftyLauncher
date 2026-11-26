@@ -213,14 +213,14 @@ inline
   src/core/hooks/core_events.cpp  swofty::tracks::data
   src/core/hooks/core_events.cpp  swofty::tracks::per_package
   src/core/hooks/core_events.cpp  swofty::tracks::sponsors
-  src/core/hooks/core_events.cpp  swofty::ui::strings
-  src/core/hooks/core_events.cpp  swofty::ui::addon_options
-  src/core/hooks/core_events.cpp  swofty::ui::texture_slices
-  src/core/hooks/core_events.cpp  swofty::ui::screens
-  src/core/hooks/core_events.cpp  swofty::ui::routes
-  src/core/hooks/core_events.cpp  swofty::ui::tiles
-  src/core/hooks/core_events.cpp  swofty::ui::options
-  src/core/hooks/core_events.cpp  swofty::ui::hud_widgets
+  src/core/frontend/home_tiles.cpp  swofty::ui::strings
+  src/core/frontend/home_tiles.cpp  swofty::ui::addon_options
+  src/core/frontend/home_tiles.cpp  swofty::ui::texture_slices
+  src/core/frontend/home_tiles.cpp  swofty::ui::screens
+  src/core/frontend/home_tiles.cpp  swofty::ui::routes
+  src/core/frontend/home_tiles.cpp  swofty::ui::tiles
+  src/core/frontend/home_tiles.cpp  swofty::ui::options
+  src/core/frontend/home_tiles.cpp  swofty::ui::hud_widgets
 exit
   src/core/runtime/loader/mixin_manager.cpp
   src/core/runtime/loader/patch_set.cpp
