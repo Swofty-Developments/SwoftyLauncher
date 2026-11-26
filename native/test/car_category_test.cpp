@@ -33,6 +33,14 @@ int main()
            "stock buttons and back are not added boxes");
     expect(cc::added_box_of(cc::button_hash(3), 0) == -1, "no added boxes, no match");
 
+    expect(cc::records_room(0) == cc::MAX_ADDED && cc::records_room(1) == cc::MAX_ADDED - 1,
+           "record tiles get the slots the era boxes leave");
+    expect(cc::records_room(cc::MAX_ADDED) == 0 && cc::records_room(cc::MAX_ADDED + 3) == 0, "a full screen leaves no room");
+    expect(cc::slice_path("home_screen.tiles_multiplayer_6x12", "x") == "#overrides.home_screen.tiles_multiplayer_6x12[x]",
+           "a slice becomes the image path FillTile resolves");
+    expect(cc::added_box_of(cc::button_hash(3 + 2), 4) == 2 && cc::added_box_of(cc::button_hash(3 + 4), 8) == -1,
+           "record tiles take button_N after the era boxes, never past the slots");
+
     const uint8_t key[4] = {0x17, 0x2d, 0x57, 0x5a};
     std::string plain = "cs_f1_2016";
     std::vector<uint8_t> enc(plain.size() + 1);

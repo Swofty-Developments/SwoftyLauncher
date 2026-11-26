@@ -14,6 +14,7 @@ namespace career::content {
 
 constexpr size_t MAX_CONTENTS = 8;
 constexpr size_t ID_MAX = 48;
+
 constexpr size_t SUFFIX_MAX = 8;
 constexpr size_t TEXT_MAX = 96;
 constexpr uint32_t MODEL_2026 = 0;
@@ -40,6 +41,10 @@ constexpr size_t LIST_ITEMS_END = 0x80;
 constexpr size_t VM_ROOT = 0x10;
 constexpr size_t VM_TILE_LIST = 0x2c8;
 constexpr size_t STACK_SCAN = 0x1000;
+
+// ui.tile records of place career share the Addons row with the contents: the row holds MAX_CONTENTS tiles, the contents
+// first, and the records take what is left.
+inline size_t record_room(size_t content_tiles) { return content_tiles >= MAX_CONTENTS ? 0 : MAX_CONTENTS - content_tiles; }
 
 constexpr uint32_t djb2(const char *s)
 {

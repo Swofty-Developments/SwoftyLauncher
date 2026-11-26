@@ -127,6 +127,10 @@ static content::Desc desc1990()
 
 int main()
 {
+    expect(content::record_room(0) == content::MAX_CONTENTS && content::record_room(3) == content::MAX_CONTENTS - 3,
+           "record tiles take the row slots the contents leave");
+    expect(content::record_room(content::MAX_CONTENTS) == 0 && content::record_room(content::MAX_CONTENTS + 2) == 0,
+           "a row full of contents leaves no room for record tiles");
     auto none = [](const char *, const std::string &) { return false; };
     {
         content::Desc d = desc1990();

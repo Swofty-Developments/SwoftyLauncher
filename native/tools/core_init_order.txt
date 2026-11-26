@@ -114,6 +114,7 @@ init
   src/core/frontend/popup.cpp
   src/core/career/resume_list.cpp
   src/core/career/career_start.cpp
+  src/core/career/content_tiles.cpp
   src/core/career/career_content.cpp
   src/core/career/career.cpp
   src/core/runtime/storage.cpp
@@ -274,6 +275,7 @@ exit
   src/core/runtime/storage.cpp
   src/core/career/career.cpp
   src/core/career/career_content.cpp
+  src/core/career/content_tiles.cpp
   src/core/career/career_start.cpp
   src/core/career/resume_list.cpp
   src/core/frontend/popup.cpp
