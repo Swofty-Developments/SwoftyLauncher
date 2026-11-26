@@ -75,7 +75,7 @@ inline Registry<EraBox> era_boxes{"era.box", { .applies = Applies::read }};   //
 
 Classic Seasons 2017 registers its season as records, and the core applies them at boot.
 
-- **The era box** is what the player picks. It points at a package.
+- **The era box** is what the player picks. It points at a package, and a package has one box: an `era.box` on a package that has a box already is refused (see [Era box limits](/std/systems/ui#era-box-limits)).
 - **The package** is the season build: the entrant list, the teams, their cars and drivers.
 - **The vehicle** is one car, with its sound and livery ([Cars](/std/systems/cars)).
 - **The engine sound** is a bundle, plus where its mixing settings and tuning come from ([Sounds](/std/systems/sounds)).

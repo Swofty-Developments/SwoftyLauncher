@@ -48,7 +48,7 @@ inline Registry<TextureSlice> texture_slices{"ui.texture_slice", {.applies = App
 
 struct Screen {
     Path file;                                 // the .ui file, in the addon's folder
-    std::string flow;                          // "flow_frontend", "flow_options", "flow_race", "flow_career_hub", "flow_f1_world"
+    std::string flow;                          // "flow_options": the flow the build lists the screen in (see Screens and routes)
     std::string anchor;                        // the route group it opens from; empty: "settings_container"
     std::string view_model;                    // non-empty: the screen gets the addon view model
 };
@@ -130,11 +130,12 @@ struct TrackSelectBuild {                      // ui.track_select.build, v2
     TrackList tracks() const;
 };
 
-struct VmResolve {                             // ui.vm.resolve, v1, hot
+struct VmResolve {                             // ui.vm.resolve, v2, hot
     uint32_t size, payload_version;
     const char *path_str;
     void *node;                                // a handler may set a node handle for the path
     std::string_view path() const;
+    Result use_node_of(std::string_view other);  // v2: set node to the game's own node for another path
 };
 
 struct LangLookup {                            // lang.lookup, v1, hot
@@ -263,29 +264,35 @@ SWOFTY_ADDON()
 </Split>
 
 ```text
-[registry] register: swofty.classic-seasons-2017 (cs2017_ui.dll) 2 ui.texture_slice, 1 era.box, 1 lang.string
-           (early stage, 0.3 ms)
-[registry] applied at boot: ui.texture_slice 2 (2 arrays grown in 6 archives, as overlay archives); era.box 1 and lang.string 1 on read
+[registry] ui.texture_slice home_screen.tiles_solo_6x6: 2 slices from 2 addons (swofty.core, swofty.classic-seasons-2017), 0 contested
 [registry] ui.texture_slice teams.driver_select_team_logos: 34 slices from 3 addons (swofty.classic-seasons-2017,
            fanfreluche.cars, bydanix.f1-2012), 0 contested
-[events] ui.era.tiles: 1 after handler (swofty.classic-seasons-2017)
+[apply] ui.texture_slice boot: 2 applied, 0 put back, 0 refused
+[registry] applied at boot: ..., ui.texture_slice 2 (2 arrays grown in 35 archives)
+[era] box cs_f1_2017 from swofty.classic-seasons-2017 registered (title lng_cs_era_2017, image #overrides.home_screen.tiles_solo_6x6[cs_f1_2017], order 2017): queued for the next mixin commit
 [cs-2017] era picker built
 ```
 
 The core builds the slices into overlay archives that it adds to the game's asset manifest at boot. The data version is the same records. Only the after handler needs code.
+
+A slice that does not apply is listed under the boot line, as `[apply] ui.texture_slice boot:   ui.texture_slice <id>: not applied: <why>` (for example an `image` that is not a file of the addon's folder).
 
 ### Texture slice limits
 
 - The core grows eight arrays: `teams.driver_select_team_logos`, `team_logos.driver_career_2024_team_select`, `teams.mp_team_select_logos`, `osd.timing_tower.team_badges_hud`, `osd.timing_tower.team_badges_broadcast`, `teams.badges_broadcast`, `broadcast_ui_generic.grid_team_logos` and `home_screen.tiles_solo_6x6`. The `overrides.` prefix is optional, and the old singular `driver_select_team_logo` is read as the plural. Any other array refuses the record and the log names these.
 - `image` is a `.png` or `.svg` file in the addon's folder. `name` has no space, `#` or bracket.
 - Two addons that name the same slice of one array are contested: the later one in load order wins, and the log says so.
-- An `era.box` or `ui.tile` image `#<array>[<name>]` that no enabled record provides logs a warning and still shows if the game ships that slice.
+- An `era.box` or `ui.tile` image `#<array>[<name>]` that no enabled record provides logs a warning (`image slice <name> of <array> is not provided by any enabled ui.texture_slice record`) and still shows if the game ships that slice; otherwise the tile is blank. The record is kept.
+
+### Era box limits
+
+- **One box per entrant list.** An `era.box` whose package has a box already is refused, and neither box is replaced: `[era] box <entrant list> from swofty.core refused: a box for this entrant list is already registered by <owner>`, then `[apply] era.box read:   era.box <record id>: <entrant list> not registered (a box for it exists or the picker is off)`. Every package a season addon ships registers its own box, so an `era.box` record on one of those packages never shows. To add a box for a season that has one, give it a package of its own that starts from the original (a `content.package` with `extends` and its own `entrant_list`, as in [Seasons and GP/TT content](/std/content)) and point the `era.box` at that; its box sits next to the original.
 
 ## Tiles, screens and routes
 
 ```cpp
 auto settings = ui::screens.add("settings", {
-    .file = file("ui/settings.ui"), .flow = "flow_frontend", .anchor = "addon_settings", .view_model = "mod.settings",
+    .file = file("ui/settings.ui"), .flow = "flow_options", .anchor = "settings_container", .view_model = "mod.settings",
 });
 auto open = ui::routes.add("open_settings", { .file = "routes_frontend_general.uir", .clone_of = "mail_container", .opens = settings });
 
@@ -303,7 +310,7 @@ The same records in a data file:
 ```json [registry/ui.json]
 {
   "ui.screen": {
-    "settings": { "file": "ui/settings.ui", "flow": "flow_frontend", "anchor": "addon_settings", "view_model": "mod.settings" }
+    "settings": { "file": "ui/settings.ui", "flow": "flow_options", "anchor": "settings_container", "view_model": "mod.settings" }
   },
   "ui.route": {
     "open_settings": { "file": "routes_frontend_general.uir", "clone_of": "mail_container", "opens": "mod.settings/settings" }
@@ -319,9 +326,21 @@ The same records in a data file:
 
 The launcher's build lowers every enabled `ui.screen` and `ui.route` record into the same pipeline as `operations.screens` in `swofty.json`, so a screen can come from either; the same name in both is refused.
 
-- **Screens:** `file` is a `.ui` file in the addon's folder (a stock or archive path is refused). `flow` is one of `flow_frontend`, `flow_options`, `flow_race`, `flow_career_hub`, `flow_f1_world`. `anchor` defaults to `settings_container`. `view_model` is read as set or not: any non-empty path gives the screen the addon view model, and the path itself is not used. `extends` is refused on a screen.
+- **Screens:** `file` is a `.ui` file in the addon's folder (a stock or archive path is refused). `flow` is one of `flow_frontend`, `flow_options`, `flow_race`, `flow_career_hub`, `flow_f1_world`, and only `flow_options` is built into the game's flows: the build writes the flow entry (`enter_<screen>`), the region entry and the anchor route for those screens alone. A `ui.route` can open a `flow_options` screen only; a route to a screen in another flow is refused with `the build writes flow entries only for flow_options`. A screen in another flow is registered with the game's screen loader and nothing opens it. `anchor` defaults to `settings_container`. `view_model` is read as set or not: any non-empty path gives the screen the addon view model, and the path itself is not used. `extends` is refused on a screen.
 - **Routes:** `file` must be `routes_frontend_general.uir`. `clone_of` is required and must name a route group in that file; the build copies it, renames the group to the record key, and swaps every string equal to `clone_of` for the screen. `opens` must be a `ui.screen` of an enabled addon. A group of that name that exists already, or an unknown `clone_of` (the error lists the groups the file has), is an error. `extends` is refused on a route.
 - A screen is reachable only through a route and a flow entry. A rejected node blanks the screen (see Readiness and limits).
+
+#### Making an addon screen
+
+The game opens a screen by the name of its root node, and a screen name is global: two screens of one name cannot both register (the game's build result is `0x55`, `a same-name screen is already registered`, and the screen never builds). The build handles the name for you.
+
+1. Start from any `.ui` file with exactly one root screen, such as a copy of one of the launcher's ADDON SETTINGS pages, and put it in the addon's folder (`ui/stdui.ui`).
+2. Declare it as a `ui.screen` record. The record key is the screen's name, so pick one no other screen has: not a stock screen, not another addon's key, and not `swofty_settings`, `swofty_resume_list` or `swofty_addon_<n>`, which the build generates (a reserved name stops the build).
+3. You do not edit the file's root name. When the root node is named something else, the build writes a copy of the file with the root, and every reference inside it that starts with the old name, renamed to the record key, and places that copy in the game. The copy in your addon is not changed. A file with more than one root screen is used as written, so its root must already carry the key.
+4. Add a `ui.route` with `clone_of` set to a group of `routes_frontend_general.uir` (`mail_container` works) and `opens` set to the screen, and a `ui.tile` whose `route` is the route record's id or key.
+5. A screen with a `view_model` needs a view model the core can attach by screen name; one it cannot attach logs `needs a view model and its view model is not attached yet; not registered, so routes to it are cancelled` when it registers, and a press on its route leaves the front end where it is.
+
+A build log line `ui screen <key> joins flow_options at settings_container` confirms the record, and `[ui] screen <key> (flow_options): root '<key>' built with result 0x0 (ok, ...)` confirms the game built it.
 
 ### Tiles
 
@@ -338,7 +357,7 @@ A `ui.tile` record adds a tile to one of four screens, after the stock tiles:
 - Records apply in load order, one per id: a repeated id keeps the first position and the later record's content. Records over the room are not shown and the log counts them.
 - `gate` is a selector over mode, career and content, the same as `lang.string` `within`. It is read at build time; a gated tile does not show where the facts are not known yet.
 - `route` names a `ui.route` record or a stock route; see Route names below for how it reaches the game.
-- Images: `image` is a `ui.texture_slice` record id or a `#array[name]` string. Home and career tiles take it through an image template that the launcher's UI build adds only when an enabled record names an image; without it the log says so and the tile shows no image. The car category tab sets it through the tab's own tile fill, and a tile without a usable image shows the F1 2026 tile's image. F1 World tiles have no image.
+- Images: `image` is a `ui.texture_slice` record id or a `#array[name]` string. A `#array[name]` that no enabled record provides logs `[ui.tile] <place>: <tile id>: image slice <name> of <array> is not provided by any enabled ui.texture_slice record (a slice the game ships in that array still shows)` once, and the tile is kept; a record id that no enabled `ui.texture_slice` provides logs `[ui.tile] <place>: <tile id>: image slice <id> is not provided by any enabled ui.texture_slice record; the tile shows without an image`, and the tile is kept without an image. Neither drops the tile. Home and career tiles take it through an image template that the launcher's UI build adds only when an enabled record names an image; without it the log says so and the tile shows no image. The car category tab sets it through the tab's own tile fill, and a tile without a usable image shows the F1 2026 tile's image. F1 World tiles have no image.
 - Home, career and car category tiles fire their list event before they are added; F1 World tiles have no event.
 - The stock tiles the game builds itself (Career, Grand Prix, the settings row, F1 2025 and F1 2026 on the car category tab, the content tiles) are not records and cannot be changed through `ui.tile`.
 
@@ -376,7 +395,7 @@ Limits of the lists:
 
 One name is used everywhere: the key of the `ui.route` record. The build clones the route group `clone_of` under the record's key (`open_settings` in the example, not `mod.settings/open_settings`), and that is the route name the game runs. A route key is global across addons, so two addons cannot both declare `open_settings`; the build refuses the second.
 
-- **A tile's `route`** names a route record by its id (`mod.settings/open_settings`) or by its bare key (`open_settings`), or is a stock route name (`mod_menu`, `career_hub`). The core turns a record id into the key before it gives the route to the game; a bare key and a stock name pass through unchanged. An id that no enabled record has is logged (`ui.tile <id>: route <id> names no enabled ui.route record; the game gets it as written`) and passed as written, which opens nothing. The same rule covers a route a handler inserts into `ui.home.tiles`, `ui.career_content.tiles` or `ui.car_category.tiles`.
+- **A tile's `route`** names a route record by its id (`mod.settings/open_settings`) or by its bare key (`open_settings`), or is a stock route name (`mod_menu`, `career_hub`). The core turns a record id into the key before it gives the route to the game; a bare key and a stock name pass through unchanged. A name with a `/` is a record id, and one that no enabled record has is logged (`[ui.tile] ui.tile <tile id>: route <route> names no enabled ui.route record; the game gets it as written`) and passed as written, which opens nothing. A name with no `/` is not checked, since it may be a stock route; one that matches nothing the game has opens nothing and is not logged. The same rule covers a route a handler inserts into `ui.home.tiles`, `ui.career_content.tiles` or `ui.car_category.tiles`; the line is logged once per tile, and the log shows the first few of a screen's lines.
 - **A route's `opens`** names a `ui.screen` record by its id or by its bare key; the screen's registered name is the key.
 - **`ui.route.open`** fires with the route name the game runs (the key) as `route()`. `screen()` is the id of the `ui.screen` record the route opens (`mod.settings/settings`), or empty for a route no record declares (a stock route).
 - **`ui.screen.built`** fires for every screen that builds without error. `screen()` is the id of the addon's `ui.screen` record for an addon screen (`mod.settings/settings`), and the name of the screen's root node for every other screen: stock screens, screens an addon declares in `swofty.json` only, and the options pages the launcher generates.
@@ -449,16 +468,16 @@ ui::strings.add("lng_team_alpine", {
 });
 ```
 
-The game looks text up every frame. The core keeps a table of every `lang.string` record, and each lookup checks the record's `within` against the current content, mode and career. The last record in load order that applies wins; when none applies, the game's own text shows. `lang.lookup` runs after that table: a `before` handler sees the key, the language and the text that would show, and the payload's `set_text` supplies another (4096 bytes or more is refused with `Result::invalid`). The core runs the handlers once per key, the first time the game asks for it, and keeps the answer until the content, the language or the view models change; a key no handler takes keeps its table text or the game's own. With no subscriber the lookup is the same code as without the hook. `ui.vm.resolve` works the same way for view-model paths that the game looks up: a handler sets `node` to a node handle it has for the path, and the core hands it to the game in place of the game's own node. A lookup that creates a node is not offered to handlers, and a handle that does not point at a readable node is ignored. The table is reset when the content or the view models change, and the log says `[hooks] ui.vm.resolve (hot): table reset`. A handler on either point runs once per entry when the table is built, so it should only read a table of its own.
+The game looks text up every frame. The core keeps a table of every `lang.string` record, and each lookup checks the record's `within` against the current content, mode and career. The last record in load order that applies wins; when none applies, the game's own text shows. `lang.lookup` runs after that table: a `before` handler sees the key, the language and the text that would show, and the payload's `set_text` supplies another (4096 bytes or more is refused with `Result::invalid`). The core runs the handlers once per key, the first time the game asks for it, and keeps the answer until the content, the language or the view models change; a key no handler takes keeps its table text or the game's own. With no subscriber the lookup is the same code as without the hook. `ui.vm.resolve` works the same way for view-model paths that the game looks up: a handler sets `node` to a node handle, and the core hands it to the game in place of the game's own node. The way to get a handle is `use_node_of(path)` (payload version 2): the core resolves `path` with the game's own lookup, handlers not run for it, and sets `node` to the handle it got. It returns `Result::unavailable` when `path` has no node, or on a core that is older than payload version 2, and leaves `node` as it was. A handler can also set `node` to a handle of its own: a pointer to the node pointer the game's lookup returns. A lookup that creates a node is not offered to handlers, and a handle that does not point at a readable node is ignored. The table is reset when the content or the view models change, and the log says `[hooks] ui.vm.resolve (hot): table reset`. A handler on either point runs once per entry when the table is built, so it should only read a table of its own.
 
 ## Events and operations
 
 ```cpp
-// Progressive's view-model hook: its own team names on the hub
+// Progressive's view-model hook: its team title leaf reads the hub's title node
 events::on<ui::events::VmResolve>().in(events::content("swofty.progressive/f1_career_progressive"))
     .before([](ui::events::VmResolve &r, const events::Context &) {
-        if (r.path().starts_with("hud_progressive_"))
-            r.node = progressive::vm_node(r.path());
+        if (r.path() == "hud_progressive_title")
+            r.use_node_of("career.hub.title");
     });
 
 ui::set_text("career.hub.title", "Season 1990");
