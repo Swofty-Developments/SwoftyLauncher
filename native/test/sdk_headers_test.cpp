@@ -651,6 +651,41 @@ static void schemas()
         CHECK(ui::set_ref("a.b", "c.d") == Result::unavailable);
         ui::detail::table_override() = nullptr;
     }
+    {
+        static std::vector<std::string> fake_ids{"a", "b"};
+        static SwoftyTileList fake_tiles{sizeof(SwoftyTileList),
+                                         SWOFTY_TILE_LIST_VERSION,
+                                         nullptr,
+                                         [](void *) -> int { return int(fake_ids.size()); },
+                                         [](void *, int i, SwoftyTileView *out) -> int {
+                                             if (i < 0 || size_t(i) >= fake_ids.size())
+                                                 return SWOFTY_ASSET_INVALID;
+                                             *out = {fake_ids[size_t(i)].c_str(), "T", "R", "", "home", 0};
+                                             return SWOFTY_ASSET_OK;
+                                         },
+                                         [](void *, int i) -> int {
+                                             if (i < 0 || size_t(i) >= fake_ids.size())
+                                                 return SWOFTY_ASSET_INVALID;
+                                             fake_ids.erase(fake_ids.begin() + i);
+                                             return SWOFTY_ASSET_OK;
+                                         },
+                                         nullptr,
+                                         [](void *, int at, const SwoftyTileSpec *spec) -> int {
+                                             fake_ids.insert(fake_ids.begin() + at, spec->id);
+                                             return SWOFTY_ASSET_OK;
+                                         }};
+        ui::events::HomeTiles home{sizeof(ui::events::HomeTiles), 2, nullptr, &fake_tiles};
+        CHECK(home.tiles().count() == 2 && home.tiles().get(1)->id == "b" && home.tiles().get(1)->place == "home");
+        CHECK(home.remove(0) == Result::ok && home.insert(1, {.id = "z", .title = "Z", .route = "r"}) == Result::ok &&
+              home.tiles().count() == 2 && home.tiles().get(1)->id == "z");
+        CHECK(home.tiles().move(0, 1) == Result::unavailable && home.remove(9) == Result::invalid);
+        std::string seen;
+        for (auto t : home.tiles())
+            seen += std::string(t.id) + ";";
+        CHECK(seen == "b;z;");
+        ui::events::HomeTiles v1{16, 1, nullptr, &fake_tiles};
+        CHECK(!v1.tiles() && v1.remove(0) == Result::unavailable);
+    }
     ui::events::LangLookup lookup{sizeof lookup, 1, "lng_x", "en", "X", nullptr, nullptr};
     CHECK(lookup.key() == "lng_x" && lookup.language() == "en" && lookup.text() == "X" &&
           lookup.set_text("Y") == Result::unavailable);

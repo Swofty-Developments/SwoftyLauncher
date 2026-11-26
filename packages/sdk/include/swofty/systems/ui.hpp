@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -188,15 +190,148 @@ inline Result set_ref(std::string_view path, std::string_view target)
     return detail::ui_result(t->set_ref(std::string(path).c_str(), std::string(target).c_str()));
 }
 
+struct TileItem {
+    std::string_view id, title, route, image, place;
+    bool literal = false;
+};
+
+struct TileSpec {
+    std::string_view id, title, route, image;
+    bool literal = false;
+};
+
+// The list of a ui tile event (payload version 2): the tiles of the screen's place the core is about to add, which a
+// handler reads, drops, reorders and extends before they are added. A function the core does not implement returns
+// Result::unavailable (count 0, get nullopt). The views a get or an iteration returns point into the core and are
+// valid only during the handler call and until the next edit of the list: copy what you keep.
+class TileList {
+public:
+    TileList() = default;
+    explicit TileList(const SwoftyTileList *t)
+        : t_(t && t->version >= 1 && t->size >= sizeof(SwoftyTileList) ? t : nullptr)
+    {
+    }
+
+    explicit operator bool() const { return t_ != nullptr; }
+
+    size_t count() const
+    {
+        if (!t_ || !t_->count)
+            return 0;
+        int n = t_->count(t_->self);
+        return n > 0 ? size_t(n) : 0;
+    }
+
+    std::optional<TileItem> get(size_t index) const
+    {
+        if (!t_ || !t_->get || index > size_t(INT32_MAX))
+            return std::nullopt;
+        SwoftyTileView v{};
+        if (t_->get(t_->self, int(index), &v) != SWOFTY_ASSET_OK)
+            return std::nullopt;
+        return TileItem{swofty::detail::payload_str(v.id), swofty::detail::payload_str(v.title),
+                        swofty::detail::payload_str(v.route), swofty::detail::payload_str(v.image),
+                        swofty::detail::payload_str(v.place), v.literal != 0};
+    }
+
+    Result remove(size_t index)
+    {
+        if (!t_ || !t_->remove)
+            return Result::unavailable;
+        return index > size_t(INT32_MAX) ? Result::invalid : detail::ui_result(t_->remove(t_->self, int(index)));
+    }
+
+    Result move(size_t from, size_t to)
+    {
+        if (!t_ || !t_->move)
+            return Result::unavailable;
+        if (from > size_t(INT32_MAX) || to > size_t(INT32_MAX))
+            return Result::invalid;
+        return detail::ui_result(t_->move(t_->self, int(from), int(to)));
+    }
+
+    Result insert(size_t at, const TileSpec &spec)
+    {
+        if (!t_ || !t_->insert)
+            return Result::unavailable;
+        if (at > size_t(INT32_MAX))
+            return Result::invalid;
+        std::string id(spec.id), title(spec.title), route(spec.route), image(spec.image);
+        SwoftyTileSpec s{id.c_str(), title.c_str(), route.c_str(), image.c_str(), spec.literal ? 1 : 0};
+        return detail::ui_result(t_->insert(t_->self, int(at), &s));
+    }
+
+    Result append(const TileSpec &spec) { return insert(count(), spec); }
+
+    class iterator {
+    public:
+        iterator(const TileList *l, size_t i) : l_(l), i_(i) {}
+        TileItem operator*() const { return l_->get(i_).value_or(TileItem{}); }
+        iterator &operator++()
+        {
+            ++i_;
+            return *this;
+        }
+        bool operator!=(const iterator &o) const { return i_ != o.i_; }
+
+    private:
+        const TileList *l_;
+        size_t i_;
+    };
+
+    iterator begin() const { return {this, 0}; }
+    iterator end() const { return {this, count()}; }
+
+private:
+    const SwoftyTileList *t_ = nullptr;
+};
+
+// The track list of ui.track_select.build (payload version 2), read-only: a core that cannot read the screen's list
+// leaves every function null, and then count is 0 and get is nullopt.
+class TrackList {
+public:
+    TrackList() = default;
+    explicit TrackList(const SwoftyTrackList *t)
+        : t_(t && t->version >= 1 && t->size >= sizeof(SwoftyTrackList) ? t : nullptr)
+    {
+    }
+
+    explicit operator bool() const { return t_ != nullptr; }
+
+    size_t count() const
+    {
+        if (!t_ || !t_->count)
+            return 0;
+        int n = t_->count(t_->self);
+        return n > 0 ? size_t(n) : 0;
+    }
+
+    std::optional<std::string_view> get(size_t index) const
+    {
+        const char *id = nullptr;
+        if (!t_ || !t_->get || index > size_t(INT32_MAX) || t_->get(t_->self, int(index), &id) != SWOFTY_ASSET_OK)
+            return std::nullopt;
+        return swofty::detail::payload_str(id);
+    }
+
+private:
+    const SwoftyTrackList *t_ = nullptr;
+};
+
 }
 
 namespace swofty::ui::events {
 
 struct EraTiles {
     static constexpr const char *point = "ui.era.tiles";
-    static constexpr uint32_t version = 1;
+    static constexpr uint32_t version = 2;
     uint32_t size, payload_version;
     void *list;
+    const SwoftyTileList *tiles_table;
+
+    TileList tiles() const { return TileList(payload_version >= 2 && size >= sizeof(*this) ? tiles_table : nullptr); }
+    Result remove(size_t index) { return tiles().remove(index); }
+    Result insert(size_t at, const TileSpec &spec) { return tiles().insert(at, spec); }
 };
 
 struct VmResolve {
@@ -233,34 +368,54 @@ struct LangLookup {
 
 struct HomeTiles {
     static constexpr const char *point = "ui.home.tiles";
-    static constexpr uint32_t version = 1;
+    static constexpr uint32_t version = 2;
     uint32_t size, payload_version;
     void *list;
+    const SwoftyTileList *tiles_table;
+
+    TileList tiles() const { return TileList(payload_version >= 2 && size >= sizeof(*this) ? tiles_table : nullptr); }
+    Result remove(size_t index) { return tiles().remove(index); }
+    Result insert(size_t at, const TileSpec &spec) { return tiles().insert(at, spec); }
 };
 
 struct CareerContentTiles {
     static constexpr const char *point = "ui.career_content.tiles";
-    static constexpr uint32_t version = 1;
+    static constexpr uint32_t version = 2;
     uint32_t size, payload_version;
     void *list;
+    const SwoftyTileList *tiles_table;
+
+    TileList tiles() const { return TileList(payload_version >= 2 && size >= sizeof(*this) ? tiles_table : nullptr); }
+    Result remove(size_t index) { return tiles().remove(index); }
+    Result insert(size_t at, const TileSpec &spec) { return tiles().insert(at, spec); }
 };
 
 struct CarCategoryTiles {
     static constexpr const char *point = "ui.car_category.tiles";
-    static constexpr uint32_t version = 1;
+    static constexpr uint32_t version = 2;
     uint32_t size, payload_version;
     void *list;
+    const SwoftyTileList *tiles_table;
+
+    TileList tiles() const { return TileList(payload_version >= 2 && size >= sizeof(*this) ? tiles_table : nullptr); }
+    Result remove(size_t index) { return tiles().remove(index); }
+    Result insert(size_t at, const TileSpec &spec) { return tiles().insert(at, spec); }
 };
 
 // Fires after the Grand Prix / championship track select (Trk_GrandPrixTrackSelectVm_RefreshTrackList) and the
 // championship settings track tab (Trk_SettingsSelectTrackTabVm_RefreshTrackList) rebuild their track list, once per
-// rebuild. `list` is that screen's view model, opaque to handlers; the point is observe-only until an append function
-// arrives in a later payload version. Time Trial's carousel is not covered: its list builder is not found.
+// rebuild. `list` is that screen's view model, opaque to handlers. Payload version 2 adds `tracks`, a read-only
+// SwoftyTrackList: the point fires after the game has filled the screen's list, whose element layout this core has not
+// proven, so its functions are null (count 0) and remove and insert are not offered at all. Time Trial's carousel is
+// not covered: its list builder is not found.
 struct TrackSelectBuild {
     static constexpr const char *point = "ui.track_select.build";
-    static constexpr uint32_t version = 1;
+    static constexpr uint32_t version = 2;
     uint32_t size, payload_version;
     void *list;
+    const SwoftyTrackList *tracks_table;
+
+    TrackList tracks() const { return TrackList(payload_version >= 2 && size >= sizeof(*this) ? tracks_table : nullptr); }
 };
 
 struct ScreenBuilt {

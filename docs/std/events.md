@@ -418,6 +418,7 @@ SWOFTY_ON_LOAD
 ```
 
 - **Versions** follow the same rules as hook payloads: append fields and raise `version`, never remove (see [Versioning](/std/versioning)).
+- **Payload v2 of the five list events** (`ui.era.tiles`, `ui.home.tiles`, `ui.career_content.tiles`, `ui.car_category.tiles`, `ui.track_select.build`) appends a pointer to a C table (`SwoftyTileList`, `SwoftyTrackList`) after the v1 `list`; read it only when `payload_version >= 2`. See [UI](/std/systems/ui).
 - **When a second addon needs the same moment,** the core adopts it into its own catalogue under a core name, and your name keeps working as an alias.
 - **Subscribers by name** don't need your header: `on("swofty.progressive.seat_change").after(...)` gets the payload as bytes plus the full context.
 

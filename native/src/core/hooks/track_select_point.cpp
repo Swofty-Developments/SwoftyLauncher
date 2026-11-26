@@ -51,7 +51,8 @@ void announce(void *vm, const char *screen)
 {
     if (g_told.fetch_add(1) < LOGGED)
         swofty::log("[hooks] ui.track_select.build: fired after the %s track list refresh (vm %p)", screen, vm);
-    ui_points::fire_list<ev::TrackSelectBuild>(core(), vm);
+    SwoftyTrackList none{sizeof(SwoftyTrackList), SWOFTY_TRACK_LIST_VERSION, nullptr, nullptr, nullptr, nullptr, nullptr};
+    ui_points::fire_tracks(core(), vm, &none);
 }
 
 void d_gp(void *vm)

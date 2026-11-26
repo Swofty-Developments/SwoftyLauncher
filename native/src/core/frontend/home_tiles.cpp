@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "core/frontend/chosen_tiles.hpp"
 #include "core/frontend/f1_world_logic.hpp"
 #include "core/frontend/hidden_tiles.hpp"
 #include "core/frontend/main_menu.hpp"
@@ -184,6 +185,13 @@ void add_record_tiles(swofty::Context &c, TileList *list, void **career_vt, unsi
     for (auto &line : found.lines)
         if (auto n = record_lines.note())
             swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+    {
+        frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap, frontend::tile_records::Place::home};
+        swofty_core::hooks::ui_points::home_tiles(list, &chosen);
+        if (size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap))
+            swofty::log("[ui.tile] home: %zu tile(s) a ui.home.tiles handler left over the %zu slot(s) or repeated are dropped",
+                        dropped, opt.cap);
+    }
     size_t added = 0;
     tile_image::Counts counts;
     auto provided = frontend::tile_records::store_provided();
@@ -283,7 +291,6 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
                 call, (unsigned)index, before, after, item, old_id, item->id, ROUTE, (unsigned long long)c.r12,
                 (unsigned long long)c.r15);
     add_record_tiles(c, list, career_vt, call);
-    swofty_core::hooks::ui_points::home_tiles(list);
 }
 
 SWOFTY_SITE(site_FeTile_F1WorldListEnd, swofty::Context &c)

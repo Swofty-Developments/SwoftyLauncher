@@ -235,7 +235,7 @@ void add_record_tiles(uint8_t *v, Vm_List_AppendChild_t *append, Game_CreateSess
         if (auto n = record_lines.note())
             swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
     {
-        frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap};
+        frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap, tr::Place::car_category};
         swofty_core::hooks::ui_points::car_category_tiles(&chosen);
         if (size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap))
             swofty::log(

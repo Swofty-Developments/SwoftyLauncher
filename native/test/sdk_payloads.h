@@ -294,7 +294,14 @@ typedef struct SwoftyEvHeadResolve {
 typedef struct SwoftyEvUiList {
     uint32_t size, payload_version;
     void *list;
+    const SwoftyTileList *tiles_table;
 } SwoftyEvUiList;
+
+typedef struct SwoftyEvTrackSelect {
+    uint32_t size, payload_version;
+    void *list;
+    const SwoftyTrackList *tracks_table;
+} SwoftyEvTrackSelect;
 
 typedef struct SwoftyEvVmResolve {
     uint32_t size, payload_version;
@@ -413,11 +420,11 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvRatingsRead, drivers, RatingsRead, 24)                                                                             \
     X(SwoftyEvNumberAssign, drivers, NumberAssign, 24)                                                                           \
     X(SwoftyEvHeadResolve, drivers, HeadResolve, 40)                                                                             \
-    X(SwoftyEvUiList, ui, EraTiles, 16)                                                                                          \
-    X(SwoftyEvUiList, ui, HomeTiles, 16)                                                                                         \
-    X(SwoftyEvUiList, ui, CareerContentTiles, 16)                                                                                \
-    X(SwoftyEvUiList, ui, CarCategoryTiles, 16)                                                                                  \
-    X(SwoftyEvUiList, ui, TrackSelectBuild, 16)                                                                                  \
+    X(SwoftyEvUiList, ui, EraTiles, 24)                                                                                          \
+    X(SwoftyEvUiList, ui, HomeTiles, 24)                                                                                         \
+    X(SwoftyEvUiList, ui, CareerContentTiles, 24)                                                                                \
+    X(SwoftyEvUiList, ui, CarCategoryTiles, 24)                                                                                  \
+    X(SwoftyEvTrackSelect, ui, TrackSelectBuild, 24)                                                                             \
     X(SwoftyEvVmResolve, ui, VmResolve, 24)                                                                                      \
     X(SwoftyEvLangLookup, ui, LangLookup, 48)                                                                                    \
     X(SwoftyEvScreenBuilt, ui, ScreenBuilt, 24)                                                                                  \
@@ -573,10 +580,15 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvHeadResolve, drivers, HeadResolve, set_head_fn, 24)                                                                \
     X(SwoftyEvHeadResolve, drivers, HeadResolve, user, 32)                                                                       \
     X(SwoftyEvUiList, ui, EraTiles, list, 8)                                                                                     \
+    X(SwoftyEvUiList, ui, EraTiles, tiles_table, 16)                                                                             \
     X(SwoftyEvUiList, ui, HomeTiles, list, 8)                                                                                    \
+    X(SwoftyEvUiList, ui, HomeTiles, tiles_table, 16)                                                                            \
     X(SwoftyEvUiList, ui, CareerContentTiles, list, 8)                                                                           \
+    X(SwoftyEvUiList, ui, CareerContentTiles, tiles_table, 16)                                                                   \
     X(SwoftyEvUiList, ui, CarCategoryTiles, list, 8)                                                                             \
-    X(SwoftyEvUiList, ui, TrackSelectBuild, list, 8)                                                                             \
+    X(SwoftyEvUiList, ui, CarCategoryTiles, tiles_table, 16)                                                                     \
+    X(SwoftyEvTrackSelect, ui, TrackSelectBuild, list, 8)                                                                        \
+    X(SwoftyEvTrackSelect, ui, TrackSelectBuild, tracks_table, 16)                                                               \
     X(SwoftyEvVmResolve, ui, VmResolve, path_str, 8)                                                                             \
     X(SwoftyEvVmResolve, ui, VmResolve, node, 16)                                                                                \
     X(SwoftyEvLangLookup, ui, LangLookup, key_str, 8)                                                                            \

@@ -166,7 +166,7 @@ static void test_track_select()
     t.declare_game(up::TRACK_SELECT_POINT, SWOFTY_POINT_MODIFY, ev::TrackSelectBuild::version, &link);
     t.arm();
     int vm = 0;
-    up::fire_list<ev::TrackSelectBuild>(t, &vm);
+    up::fire_tracks(t, &vm);
     expect(!link.on, "track select: no subscriber, no detour");
     uint32_t tok = 0;
     t.attach("a", up::TRACK_SELECT_POINT, SWOFTY_PHASE_BEFORE, 0, "", track_handler, nullptr, &tok);
@@ -176,11 +176,158 @@ static void test_track_select()
            "track select: the first subscriber arms the link");
     trail.clear();
     seen_list = nullptr;
-    up::fire_list<ev::TrackSelectBuild>(t, &vm);
+    up::fire_tracks(t, &vm);
     expect(seen_list == &vm && joined() == "track:before track:after", "track select: handlers get the screen's view model");
     t.detach(tok);
     t.detach(tok2);
     expect(!link.on, "track select: the last subscriber disarms the link");
+}
+
+static std::string idlist(const std::vector<frontend::tile_records::Tile> &v)
+{
+    std::string s;
+    for (auto &t : v)
+        s += (s.empty() ? "" : ",") + t.id;
+    return s;
+}
+
+static frontend::tile_records::Tile tile_of(const char *id)
+{
+    frontend::tile_records::Tile t;
+    t.id = id;
+    t.title = std::string("title_") + id;
+    t.route = std::string("route_") + id;
+    return t;
+}
+
+static int edit_handler(void *, SwoftyHookCall *c)
+{
+    auto *e = static_cast<ev::HomeTiles *>(c->payload);
+    auto tiles = e->tiles();
+    trail.push_back("n=" + std::to_string(tiles.count()));
+    std::string seen;
+    for (auto item : tiles)
+        seen += std::string(item.id) + "/" + std::string(item.place) + " ";
+    trail.push_back(seen);
+    e->remove(0);
+    e->insert(1, {.id = "added", .title = "Added", .route = "added_route"});
+    tiles.move(0, 1);
+    return 0;
+}
+
+static void test_tile_tables()
+{
+    namespace ct = frontend::chosen_tiles;
+    namespace tr = frontend::tile_records;
+    std::vector<tr::Tile> tiles{tile_of("a"), tile_of("b"), tile_of("c")};
+    ct::Chosen chosen{tiles, 4, tr::Place::car_category};
+    ct::ChosenTable table(chosen);
+    const SwoftyTileList *l = table.table();
+    expect(l->size == sizeof(SwoftyTileList) && l->version == SWOFTY_TILE_LIST_VERSION && l->self && l->count(l->self) == 3,
+           "tile table: count is the chosen tiles");
+    SwoftyTileView v{};
+    expect(l->get(l->self, 1, &v) == SWOFTY_ASSET_OK && !std::strcmp(v.id, "b") && !std::strcmp(v.title, "title_b") &&
+               !std::strcmp(v.route, "route_b") && !std::strcmp(v.place, "home") && !v.literal,
+           "tile table: get fills id, title, route, image and place");
+    expect(l->get(l->self, 3, &v) == SWOFTY_ASSET_INVALID && l->get(l->self, -1, &v) == SWOFTY_ASSET_INVALID &&
+               l->get(l->self, 0, nullptr) == SWOFTY_ASSET_INVALID,
+           "tile table: get past the end, below zero or with no out is invalid");
+    expect(l->remove(l->self, 3) == SWOFTY_ASSET_INVALID && l->remove(l->self, -1) == SWOFTY_ASSET_INVALID &&
+               idlist(tiles) == "a,b,c",
+           "tile table: remove out of range changes nothing");
+    expect(l->remove(l->self, 0) == SWOFTY_ASSET_OK && idlist(tiles) == "b,c", "tile table: remove drops the tile");
+    expect(l->move(l->self, 0, 1) == SWOFTY_ASSET_OK && idlist(tiles) == "c,b", "tile table: move reorders");
+    expect(l->move(l->self, 0, 2) == SWOFTY_ASSET_INVALID && l->move(l->self, 5, 0) == SWOFTY_ASSET_INVALID &&
+               idlist(tiles) == "c,b",
+           "tile table: move out of range changes nothing");
+    SwoftyTileSpec spec{"d", "D", "route_d", "#arr[x]", 1};
+    expect(l->insert(l->self, 1, &spec) == SWOFTY_ASSET_OK && idlist(tiles) == "c,d,b" && tiles[1].literal &&
+               tiles[1].image == "#arr[x]" && tiles[1].place == tr::Place::car_category,
+           "tile table: insert adds a tile of the list's place");
+    expect(l->insert(l->self, 1, &spec) == SWOFTY_ASSET_INVALID, "tile table: a repeated id is refused");
+    SwoftyTileSpec e1{"e", "E", "route_e", "", 0};
+    expect(l->insert(l->self, 9, &e1) == SWOFTY_ASSET_INVALID && l->insert(l->self, -1, &e1) == SWOFTY_ASSET_INVALID &&
+               l->insert(l->self, 0, nullptr) == SWOFTY_ASSET_INVALID,
+           "tile table: insert out of range or with no spec is invalid");
+    SwoftyTileSpec no_id{"", "E", "route_e", "", 0}, no_title{"e", "", "route_e", "", 0}, no_route{"e", "E", "", "", 0};
+    expect(l->insert(l->self, 0, &no_id) == SWOFTY_ASSET_INVALID && l->insert(l->self, 0, &no_title) == SWOFTY_ASSET_INVALID &&
+               l->insert(l->self, 0, &no_route) == SWOFTY_ASSET_INVALID,
+           "tile table: a spec needs an id, a title and, here, a route");
+    expect(l->insert(l->self, 3, &e1) == SWOFTY_ASSET_OK && tiles.size() == 4, "tile table: insert up to the cap");
+    SwoftyTileSpec f1{"f", "F", "route_f", "", 0};
+    expect(l->insert(l->self, 0, &f1) == SWOFTY_ASSET_INVALID && idlist(tiles) == "c,d,b,e",
+           "tile table: insert past the cap is refused");
+    chosen.need_route = false;
+    chosen.cap = 5;
+    expect(l->insert(l->self, 0, &no_route) == SWOFTY_ASSET_INVALID, "tile table: a repeated id stays refused without a route");
+    SwoftyTileSpec g1{"g", "G", "", "", 0};
+    expect(l->insert(l->self, 0, &g1) == SWOFTY_ASSET_OK, "tile table: a place that needs no route takes a spec without one");
+
+    std::vector<tr::Tile> over{tile_of("a"), tile_of("b")};
+    ct::Chosen small{over, 2};
+    ct::ChosenTable small_table(small);
+    SwoftyTileSpec h1{"h", "H", "route_h", "", 0};
+    small_table.table()->insert(small_table.table()->self, 0, &h1);
+    expect(idlist(over) == "a,b", "tile table: a full list takes no insert, so settle has nothing to drop");
+    over.push_back(tile_of("a"));
+    expect(ct::settle(over, 2) == 1 && idlist(over) == "a,b", "tile table: settle still drops what a handler left over");
+
+    SwoftyTileList none{sizeof(SwoftyTileList), SWOFTY_TILE_LIST_VERSION, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+    swofty::ui::TileList empty(&none);
+    expect(empty.count() == 0 && !empty.get(0) && empty.remove(0) == swofty::Result::unavailable &&
+               empty.insert(0, {.id = "x", .title = "X"}) == swofty::Result::unavailable,
+           "tile list helper: a table with no functions is unavailable, not a crash");
+}
+
+static void test_tile_event()
+{
+    namespace ct = frontend::chosen_tiles;
+    namespace tr = frontend::tile_records;
+    Table t;
+    up::SiteLink home(up::HOME_POINT, "site_FeHome_AfterCareerCall", {}, Fixture::log);
+    t.declare_core();
+    t.declare_game(up::HOME_POINT, SWOFTY_POINT_MODIFY, ev::HomeTiles::version, &home);
+    t.arm();
+    uint32_t tok = 0;
+    t.attach("a", up::HOME_POINT, SWOFTY_PHASE_AFTER, 0, "", edit_handler, nullptr, &tok);
+    std::vector<tr::Tile> tiles{tile_of("s1"), tile_of("s2"), tile_of("s3")};
+    ct::Chosen chosen{tiles, 3, tr::Place::home};
+    ct::ChosenTable table(chosen);
+    trail.clear();
+    seen_list = nullptr;
+    up::fire_list<ev::HomeTiles>(t, &chosen, table.table());
+    expect(ev::HomeTiles::version == 2 && sizeof(ev::HomeTiles) == 24, "tile event: payload version 2, 24 bytes");
+    expect(trail.size() == 2 && trail[0] == "n=3" && trail[1] == "s1/home s2/home s3/home ",
+           "tile event: a handler counts and iterates the chosen tiles");
+    expect(idlist(tiles) == "added,s2,s3" || idlist(tiles) == "s2,added,s3",
+           "tile event: the handler's remove, insert and move reach the chosen list: " + idlist(tiles));
+    expect(ct::settle(tiles, chosen.cap) == 0 && tiles.size() == 3, "tile event: settle keeps an edited list inside the cap");
+
+    ev::HomeTiles v1{};
+    v1.size = 16;
+    v1.payload_version = 1;
+    v1.tiles_table = table.table();
+    expect(!v1.tiles() && v1.remove(0) == swofty::Result::unavailable,
+           "tile event: a version 1 payload of 16 bytes has no table, even with a stale pointer");
+
+    int range_slot[2];
+    uint8_t buf[0x50];
+    const uint8_t *range[2] = {buf, buf + 0x30};
+    (void)range_slot;
+    up::EraRangeTable era(range);
+    swofty::ui::TileList era_list(era.table());
+    expect(era_list.count() == 3 && !era_list.get(0) && era_list.remove(0) == swofty::Result::unavailable &&
+               era_list.insert(0, {.id = "x", .title = "X"}) == swofty::Result::unavailable,
+           "era table: counts the entries and offers nothing else");
+    range[0] = nullptr;
+    expect(era_list.count() == 0, "era table: an empty range counts 0");
+
+    SwoftyTrackList none{sizeof(SwoftyTrackList), SWOFTY_TRACK_LIST_VERSION, nullptr, nullptr, nullptr, nullptr, nullptr};
+    ev::TrackSelectBuild e{};
+    e.size = sizeof e;
+    e.payload_version = 2;
+    e.tracks_table = &none;
+    expect(e.tracks().count() == 0 && !e.tracks().get(0) && sizeof e == 24, "track table: read-only, no functions on this core");
 }
 
 static void test_mfd_pages()
@@ -304,6 +451,8 @@ static void test_chosen()
 int main()
 {
     test_chosen();
+    test_tile_tables();
+    test_tile_event();
     test_lists();
     test_screen();
     test_route();
