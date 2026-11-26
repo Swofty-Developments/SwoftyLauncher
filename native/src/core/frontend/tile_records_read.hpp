@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -56,6 +57,24 @@ inline SliceOf store_slices()
             return std::nullopt;
         return swofty_core::apply::content::slices::Ref{array, name};
     };
+}
+
+// "<array>|<name>" of every enabled ui.texture_slice record in the store: the slices an image string may name.
+inline std::set<std::string> store_provided()
+{
+    namespace slices = swofty_core::apply::content::slices;
+    std::set<std::string> out;
+    auto &st = runtime::older_store();
+    for (auto &id : swofty_core::registry::older::in_load_order(st, slices::REGISTRY)) {
+        auto rec = st.get(slices::REGISTRY, id);
+        if (rec.status != swofty_core::registry::Status::ok)
+            continue;
+        auto array = slices::canonical_array(text_of(rec.value["array"]));
+        std::string name = text_of(rec.value["name"]);
+        if (!array.empty() && !name.empty())
+            out.insert(array + "|" + name);
+    }
+    return out;
 }
 
 }

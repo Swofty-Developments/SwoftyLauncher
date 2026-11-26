@@ -1319,8 +1319,12 @@ public:
         const SwoftyEra *era = runtime::era_table();
         const SwoftyLang *lang = runtime::lang_table();
         slices::Lowering provided = lower_slices(st);
+        std::set<std::string> stock;
+        for (auto &id : in_load_order(st, "content.package"))
+            if (const Value *rec = lookup("content.package", id); rec && (*rec)["entrant_list"].is_string())
+                stock.insert(std::string((*rec)["entrant_list"].as_string()));
         for (auto &b : plan.boxes) {
-            if (std::string why = slices::missing_slice(b.image, provided.provided, b.entrant_list); !why.empty())
+            if (std::string why = slices::missing_slice(b.image, provided.provided, b.entrant_list, stock); !why.empty())
                 swofty::log("[era] box %s: %s", b.entrant_list.c_str(), why.c_str());
             if (!b.literal.empty() && lang)
                 lang->override_set("*", b.title.c_str(), b.literal.c_str());
