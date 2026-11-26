@@ -13,6 +13,7 @@
 
 #include "core/career/career_start.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/hooks/ui_points.hpp"
 
 // Career start gate (Vm_Run_Route, sig vm.run_route). Every native route fire (Vm_Fire_Route,
 // which the front-end tile handlers call) runs its steps through Vm_Run_Route(ui_system, node,
@@ -108,6 +109,8 @@ void run_route_hook(void *ui, void *node, void *name, void *group, int32_t flags
         if (route_name(name, text)) {
             if (runtime::wizard_route_running(text, name))
                 route_name(name, text);
+            if (swofty_core::hooks::ui_points::route_open(text.c_str()))
+                return;
             career::resume_list::route_ran(text);
             r = cs::classify(text);
             runtime::testagent_route_ran(text);

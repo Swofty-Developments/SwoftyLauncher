@@ -150,6 +150,7 @@ Table &the_table()
         declare_game_points(*t);
         declare_session_points(*t);
         declare_ui_hot_points(*t);
+        declare_ui_points(*t);
         declare_car_points(*t);
         return t;
     }();
