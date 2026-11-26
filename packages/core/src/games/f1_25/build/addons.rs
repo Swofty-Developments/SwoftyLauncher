@@ -282,13 +282,15 @@ impl Gather<'_, '_, '_> {
             let path = dir.join(&s.file);
             let data = std::fs::read(&path).map_err(io_err(&path))?;
             if swofty_formats::pkg::is_pkg(&data) {
+                let named = crate::ui::named_root(&data, &s.name)?;
+                let checked = named.as_deref().unwrap_or(&data);
                 let (cat, engine) = (crate::ui::catalog::stock(), crate::ui::catalog::engine());
                 let none = crate::ui::catalog::Scenes::default();
                 let resource = format!("{id}/{}", s.file);
                 let input = crate::ui::check::UiInput {
                     resource: &resource,
                     frag: "temp",
-                    data: &data,
+                    data: checked,
                     stock: None,
                 };
                 let report = crate::ui::check::ui_edit(&input, &none, cat, engine)?;

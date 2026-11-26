@@ -37,6 +37,7 @@ mod menu_rows;
 mod picker_rows;
 mod toggles;
 
+pub use addon_screens::named_root;
 use addon_screens::{
     Routing, Targets, career_setups, options_pages, resume_screen, screen_problems, ui_state,
 };

@@ -690,7 +690,7 @@ fn places_screens_under_the_loader_ui_dir() {
                { "name": "generated", "page": "options", "flow": "flow_options", "anchor": "settings_container" }] } }"#,
     )
     .unwrap();
-    let files = screen_files(&[&m], Path::new("/addons")).unwrap();
+    let files = screen_files(&[&m], Path::new("/addons"), Path::new("/overlay")).unwrap();
     assert_eq!(
         files,
         BTreeMap::from([(
@@ -698,7 +698,35 @@ fn places_screens_under_the_loader_ui_dir() {
             PathBuf::from("/addons/a.pages/ui/page0.ui")
         )])
     );
-    assert!(screen_files(&[&m, &m], Path::new("/addons")).is_err());
+    assert!(screen_files(&[&m, &m], Path::new("/addons"), Path::new("/overlay")).is_err());
+}
+
+#[test]
+fn a_screen_copied_from_a_stock_page_is_placed_under_its_record_key() {
+    use crate::ui::node::{NodeExt, arr, first_screen_of, obj, s, ui_bytes};
+    let root = std::env::temp_dir().join(format!("swofty-screenfiles-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let (addons, overlay) = (root.join("addons"), root.join("overlay"));
+    std::fs::create_dir_all(addons.join("a.copy/ui")).unwrap();
+    let mut items = vec![obj(vec![("name", s("swofty_addon_1"))])];
+    items.extend((0..7).map(|_| arr(vec![])));
+    std::fs::write(
+        addons.join("a.copy/ui/page.ui"),
+        ui_bytes(vec![arr(items)]).unwrap(),
+    )
+    .unwrap();
+    let m = AddonManifest::parse(
+        r#"{ "schema_version": 1, "id": "a.copy", "name": "S", "version": "1.0.0", "author": "a",
+             "compat": { "game": "f1_25" },
+             "operations": { "screens": [{ "name": "my_screen", "file": "ui/page.ui", "flow": "flow_options" }] } }"#,
+    )
+    .unwrap();
+    let files = screen_files(&[&m], &addons, &overlay).unwrap();
+    let placed = &files["swofty/ui/my_screen.ui"];
+    assert!(placed.starts_with(&overlay), "{placed:?}");
+    let root_node = first_screen_of(&std::fs::read(placed).unwrap()).unwrap();
+    assert_eq!(root_node.name(), "my_screen");
+    std::fs::remove_dir_all(&root).ok();
 }
 
 #[test]
