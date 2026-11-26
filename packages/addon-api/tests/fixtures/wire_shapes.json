@@ -57,6 +57,9 @@
   "packages/sdk/std/registries/hud.element/examples/must-fail/no-dial.json": {
     "hud_file": "cc8a1c81b1c843c3:85"
   },
+  "packages/sdk/std/registries/hud.element/examples/must-fail/template-and-dial@1.7.json": {
+    "hud_file": "e10d8377bbf8112b:117"
+  },
   "packages/sdk/std/registries/hud.element/examples/must-fail/unknown-kind.json": {
     "hud_file": "e55825338324e229:81"
   },
@@ -65,6 +68,9 @@
   },
   "packages/sdk/std/registries/hud.element/examples/scoped_dial.json": {
     "hud_file": "1e86c0c1e972396b:467"
+  },
+  "packages/sdk/std/registries/hud.element/examples/template_only@1.7.json": {
+    "hud_file": "9457bd64c81fd156:111"
   },
   "packages/sdk/std/registries/hud.element/examples/yield_parts@1.5.json": {
     "hud_file": "a1c68075f393cc82:349"
