@@ -1,0 +1,123 @@
+{
+  "status": "passed",
+  "session": "20261126-164110",
+  "addon_version": "0.3.58",
+  "launcher_version": "1.10.53",
+  "steam_build": 26566308,
+  "paired_preset_calls": 10,
+  "paired_fitting_calls": 2,
+  "paired_deactivations": 8,
+  "paired_destructions": 7,
+  "destructor_flags_observed": [
+    0
+  ],
+  "manual_outcome": "User: Done, everything worked.",
+  "observations": {
+    "Ui_Unk_140c1c360": [
+      {
+        "token": "trace:T340/20261126-164110:89",
+        "source_line": 41692,
+        "text": "2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=11 self=000000034B0CDF30 key=713fcacb name=0000000027D1E8A0 data=0000000027D1E8A8 thread=29984"
+      },
+      {
+        "token": "trace:T340/20261126-164110:90",
+        "source_line": 41693,
+        "text": "2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_original_enter tag=11 self=000000034B0CDF30 key=713fcacb name=0000000027D1E8A0 data=0000000027D1E8A8 original=000000015844EFD4 thread=29984"
+      },
+      {
+        "token": "trace:T340/20261126-164110:91",
+        "source_line": 41697,
+        "text": "2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_original_return tag=11 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=29984"
+      }
+    ],
+    "Game_VehicleManagementVM_HandleCommand": [
+      {
+        "token": "trace:T340/20261126-164110:123",
+        "source_line": 43535,
+        "text": "2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=22 self=000000034B0CDF30 key=461d9dde name=0000000027D1F2A0 data=0000000027D1F2A8 thread=29984"
+      },
+      {
+        "token": "trace:T340/20261126-164110:125",
+        "source_line": 43537,
+        "text": "2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=22 self=000000034B12BF50 setup=000000034B0CDF30 key=461d9dde name=0000000027D1F2A0 data=0000000027D1F2A8 target=0000000141F59730 thread=29984"
+      },
+      {
+        "token": "trace:T340/20261126-164110:126",
+        "source_line": 43542,
+        "text": "2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] vehicle_command_return tag=22 self=000000034B12BF50 key=461d9dde returned=1 faulted=0 thread=29984"
+      },
+      {
+        "token": "trace:T340/20261126-164110:127",
+        "source_line": 43543,
+        "text": "2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] setup_command_return tag=22 route=vehicle key=461d9dde thread=29984"
+      }
+    ],
+    "Game_CarSetupVm_OnDeactivate_Thunk": [
+      {
+        "token": "trace:T340/20261126-164110:136",
+        "source_line": 47518,
+        "text": "2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=25 self=000000034B0CDF30 thread=29984 original=000000015844EFA4"
+      },
+      {
+        "token": "trace:T340/20261126-164110:137",
+        "source_line": 47519,
+        "text": "2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_retire tag=25 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0"
+      },
+      {
+        "token": "trace:T340/20261126-164110:138",
+        "source_line": 47520,
+        "text": "2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_return tag=25 self=000000034B0CDF30 forwarded=1 thread=29984"
+      }
+    ],
+    "Game_CarSetupVm_Destroy": [
+      {
+        "token": "trace:T340/20261126-164110:194",
+        "source_line": 64464,
+        "text": "2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=37 self=000000034B0CDF30 flags=0 thread=29984 original=000000015844EFBC"
+      },
+      {
+        "token": "trace:T340/20261126-164110:195",
+        "source_line": 64465,
+        "text": "2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_retire tag=37 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0"
+      },
+      {
+        "token": "trace:T340/20261126-164110:196",
+        "source_line": 64466,
+        "text": "2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_return tag=37 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=29984"
+      }
+    ]
+  },
+  "resolution_tokens": {
+    "site_Sess_PuPanel_Constructed": "trace:T340/20261126-164110:16",
+    "vt_Sess_PuPanel": "trace:T340/20261126-164110:21",
+    "Sess_PuPanel_BuildComponents": "trace:T340/20261126-164110:15",
+    "Game_CarSetupVm_Initialise": "trace:T340/20261126-164110:18",
+    "vt_Game_CarSetupVm": "trace:T340/20261126-164110:22",
+    "Ui_Unk_140c1c360": "trace:T340/20261126-164110:24",
+    "Game_VehicleManagementVM_HandleCommand": "trace:T340/20261126-164110:23",
+    "vt_Career_HubLaptopTab": "trace:T340/20261126-164110:25",
+    "vt_Vm_SharedTabModel": "trace:T340/20261126-164110:26",
+    "Sess_PuPanel_Destroy": "trace:T340/20261126-164110:17",
+    "Game_CarSetupVm_OnDeactivate_Thunk": "trace:T340/20261126-164110:19",
+    "Game_CarSetupVm_Destroy": "trace:T340/20261126-164110:20"
+  },
+  "selected_tags": {
+    "Ui_Unk_140c1c360": 11,
+    "Game_VehicleManagementVM_HandleCommand": 22,
+    "Game_CarSetupVm_OnDeactivate_Thunk": 25,
+    "Game_CarSetupVm_Destroy": 37
+  },
+  "snapshot_sha256": "70542f83483f9a7f24ff70b6d66852e93d6ad6a8811af6a33075f9ab851c5ce5",
+  "snapshot_bytes": 10199275,
+  "trace_lines": 217,
+  "trace_sha256": "02dc1861495f6168a73f2955c794fd8767e0f14414295748631bc649d2da04a7",
+  "trace_path": "re/traces/T340/20261126-164110/trace.log",
+  "limits": [
+    "Only flags=0 destructor calls were observed; nonzero deletion/free branch remains static/fixture coverage.",
+    "Destructor owners were already untracked after deactivation; active-owner retirement is directly observed in the deactivation pairs.",
+    "Log snapshot may precede session archival/end. Exact captured bytes are retained; later appended output is not claimed.",
+    "Runtime version is logged; retained package/DLL hashes are artifact provenance, not an independent runtime hash attestation."
+  ],
+  "expected_addon_archive_sha256": "c6980714636dd5bca9d10bdf9b3e573e0e74329f82710dee8c127d636ba9af30",
+  "expected_dll_sha256": "0da7672e39bfb0855ed4aba1c29d07b9291e85f12653f6a6347cbce7ac823b7b"
+}

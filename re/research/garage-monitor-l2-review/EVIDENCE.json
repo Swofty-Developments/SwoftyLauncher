@@ -1,0 +1,223 @@
+{
+  "setup_command": {
+    "start": "0x140c1ce20",
+    "end": "0x140c1d4a3",
+    "instructions": 403,
+    "sha256": "9f0c4b8c953ba869bcdf4d8861e7789d27477c0b4031b9c1782f2798ad4bfd15",
+    "strings": [
+      {
+        "instruction": "0x140c1d309",
+        "address": "0x14566110f",
+        "value": "enable"
+      },
+      {
+        "instruction": "0x140c1d40e",
+        "address": "0x14568ff47",
+        "value": "disable"
+      },
+      {
+        "instruction": "0x140c1d442",
+        "address": "0x14568efda",
+        "value": "close_goto_track"
+      }
+    ],
+    "command_hash_matches": {
+      "exit_requested": "0xcb30db90",
+      "go_to_track_selected": "0xfe6cc979",
+      "preset_selected_entered": "0x6ffbb046",
+      "refresh_data": "0x220648d",
+      "reopen_screen": "0xcae30fad",
+      "screen_enabled": "0x7e69bdef",
+      "set_selected_preset": "0x713fcacb"
+    }
+  },
+  "vehicle_command": {
+    "start": "0x141f59730",
+    "end": "0x141f5a392",
+    "instructions": 745,
+    "sha256": "65771020c30c28410ab37f96b567c7fd97a0cfe90bfb2dfa7a1ef2d4a742637e",
+    "strings": [
+      {
+        "instruction": "0x141f59a0d",
+        "address": "0x14568efda",
+        "value": "close_goto_track"
+      },
+      {
+        "instruction": "0x141f59da3",
+        "address": "0x145761346",
+        "value": "vehicle_part_perc_ferme_change_penalty_hub"
+      },
+      {
+        "instruction": "0x141f59daa",
+        "address": "0x14576131f",
+        "value": "vehicle_part_perc_ferme_change_penalty"
+      },
+      {
+        "instruction": "0x141f59ddc",
+        "address": "0x145761414",
+        "value": "enable_components"
+      },
+      {
+        "instruction": "0x141f59e63",
+        "address": "0x1457613d5",
+        "value": "vehicle_part_change_part_no_penalty_hub"
+      },
+      {
+        "instruction": "0x141f59e6a",
+        "address": "0x1457613b1",
+        "value": "vehicle_part_change_part_no_penalty"
+      },
+      {
+        "instruction": "0x141f59e7f",
+        "address": "0x14576138f",
+        "value": "vehicle_part_new_part_penalty_hub"
+      },
+      {
+        "instruction": "0x141f59e86",
+        "address": "0x145761371",
+        "value": "vehicle_part_new_part_penalty"
+      },
+      {
+        "instruction": "0x141f5a03b",
+        "address": "0x1457613fd",
+        "value": "temp_static_dictionary"
+      }
+    ],
+    "command_hash_matches": {
+      "fit_part": "0x461d9dde",
+      "goto_track_pressed": "0x1dce7a87",
+      "update_average_wear": "0xec04e0b0"
+    }
+  },
+  "setup_deactivation": {
+    "start": "0x1497d8ef0",
+    "end": "0x1497d8fcb",
+    "instructions": 53,
+    "sha256": "98115dfda9a2f19324f9b0814058dd6612c0453a3d4fc802bc4cf1757c347aaf",
+    "strings": [
+      {
+        "instruction": "0x1497d8f2e",
+        "address": "0x145682859",
+        "value": "gar_car_setup"
+      }
+    ]
+  },
+  "setup_vtable": {
+    "address": "0x145682740",
+    "slots": [
+      {
+        "index": 0,
+        "address": "0x140cd5570",
+        "section": ".tls$"
+      },
+      {
+        "index": 1,
+        "address": "0x140cd5580",
+        "section": ".tls$"
+      },
+      {
+        "index": 2,
+        "address": "0x140cd5800",
+        "section": ".tls$"
+      },
+      {
+        "index": 3,
+        "address": "0x14431f690",
+        "section": ".tls$"
+      },
+      {
+        "index": 4,
+        "address": "0x144324040",
+        "section": ".tls$"
+      },
+      {
+        "index": 5,
+        "address": "0x140cd5590",
+        "section": ".tls$"
+      },
+      {
+        "index": 6,
+        "address": "0x140c1bc60",
+        "section": ".tls$"
+      },
+      {
+        "index": 7,
+        "address": "0x140c1cd40",
+        "section": ".tls$"
+      },
+      {
+        "index": 8,
+        "address": "0x140cd55c0",
+        "section": ".tls$"
+      },
+      {
+        "index": 9,
+        "address": "0x140cd55d0",
+        "section": ".tls$"
+      },
+      {
+        "index": 10,
+        "address": "0x140c1ce20",
+        "section": ".tls$"
+      },
+      {
+        "index": 11,
+        "address": "0x14431f620",
+        "section": ".tls$"
+      },
+      {
+        "index": 12,
+        "address": "0x140cd55f0",
+        "section": ".tls$"
+      },
+      {
+        "index": 13,
+        "address": "0x140c18640",
+        "section": ".tls$"
+      },
+      {
+        "index": 14,
+        "address": "0x140cd5610",
+        "section": ".tls$"
+      },
+      {
+        "index": 15,
+        "address": "0x140cd5620",
+        "section": ".tls$"
+      },
+      {
+        "index": 16,
+        "address": "0x140c1d8d0",
+        "section": ".tls$"
+      },
+      {
+        "index": 17,
+        "address": "0x0",
+        "section": null
+      },
+      {
+        "index": 18,
+        "address": "0x140cd5c70",
+        "section": ".tls$"
+      },
+      {
+        "index": 19,
+        "address": "0x140c180d0",
+        "section": ".tls$"
+      }
+    ],
+    "observed_primary_code_slots": 17
+  },
+  "vehicle_command_cell": {
+    "address": "0x145761040",
+    "target": "0x141f59730"
+  },
+  "runtime": {
+    "source_session": "20261126-131101",
+    "source_sha256": "38570373171070550d3fbb521715fb926702805b61f75e89a1f40811f28134c3",
+    "confirmed": "my_team; model captured; native rows=6; fitting relay invoked; teardown observed",
+    "user_report": "Working properly",
+    "formal_L3_trace_test_registered": false,
+    "independent_agree": false
+  }
+}

@@ -4940,6 +4940,7 @@ pub type Sess_PreRace_ResolveComponents_t = unsafe extern "C" fn(
 ) -> c_int;
 pub type Sess_PreRace_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32, dt: f64) -> *mut u32;
+pub type Sess_PuPanel_BuildComponents_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Sess_PuPanel_FillComponent_t =
     unsafe extern "C" fn(vm: *mut c_void, a2: u64, slot: u32, a4: u8, a5: u8, entry: *mut c_void);
 pub type Sess_RaceStrategy_RedFlagRecompute_t =
@@ -9015,6 +9016,11 @@ pub mod bindings {
         id: "Game_CarDecals_BuildList",
         kind: "func",
         status: Status::Experimental,
+    };
+    pub const Game_CarSetupVm_Initialise: Binding = Binding {
+        id: "Game_CarSetupVm_Initialise",
+        kind: "func",
+        status: Status::Stable,
     };
     pub const Game_CareerActivities_AddActivity: Binding = Binding {
         id: "Game_CareerActivities_AddActivity",
@@ -13625,6 +13631,11 @@ pub mod bindings {
         id: "Game_VehicleLapProgress_CommitNetLapDelta",
         kind: "func",
         status: Status::Experimental,
+    };
+    pub const Game_VehicleManagementVM_HandleCommand: Binding = Binding {
+        id: "Game_VehicleManagementVM_HandleCommand",
+        kind: "func",
+        status: Status::Stable,
     };
     pub const Game_VehiclePitlaneManager_ApplyVehicleRemotePitStatusInternal: Binding = Binding {
         id: "Game_VehiclePitlaneManager_ApplyVehicleRemotePitStatusInternal",
@@ -19046,6 +19057,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_PuPanel_BuildComponents: Binding = Binding {
+        id: "Sess_PuPanel_BuildComponents",
+        kind: "func",
+        status: Status::Stable,
+    };
     pub const Sess_PuPanel_FillComponent: Binding = Binding {
         id: "Sess_PuPanel_FillComponent",
         kind: "func",
@@ -20900,6 +20916,11 @@ pub mod bindings {
         id: "Ui_TeamHq_BuildPerkIconBindings",
         kind: "func",
         status: Status::Experimental,
+    };
+    pub const Ui_Unk_140c1c360: Binding = Binding {
+        id: "Ui_Unk_140c1c360",
+        kind: "func",
+        status: Status::Stable,
     };
     pub const Ui_Update_ContractHubDepartmentRow: Binding = Binding {
         id: "Ui_Update_ContractHubDepartmentRow",

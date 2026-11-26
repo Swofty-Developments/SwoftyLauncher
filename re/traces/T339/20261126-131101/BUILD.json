@@ -1,0 +1,23 @@
+{
+  "launcher": {
+    "version": "1.10.53",
+    "package_sha256": "789f256210e49dc0090bfe6f0cd77e5b525d5176693e5282031043e5d122b3bf",
+    "loader_md5": "f89a73c449f055e33d52110d9d61f9cc",
+    "core_md5": "f1bed8ebf40ce20cdd31b844b838a24d"
+  },
+  "addon": {
+    "id": "unorthodoxstonendmodding.garage-monitor-retro",
+    "version": "0.3.57",
+    "package_sha256": "55902302813663f0d06aa62932d9ea876d4373a8baeda7fe316ccf6201d1c2e7",
+    "expected_dll_sha256": "7e150901624e3f8071171a0610ca947935c76432b8fe2fdd2361d40a0084bb71",
+    "runtime_version_observed": true,
+    "runtime_dll_hash_attested": false
+  },
+  "game": {
+    "steam_build": 26566308,
+    "version": "1.0.145.2472",
+    "expected_exe_sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "observed_pe_timestamp": 1794312636,
+    "observed_build_prefix": "46009bd31f49d93a"
+  }
+}

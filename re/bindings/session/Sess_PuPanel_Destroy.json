@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_PuPanel_Destroy",
+ "table": "functions",
+ "author": "UnorthodoxStoneND",
+ "row": {
+  "addr": "0x142171370",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_PuPanel_Destroy(void *self)",
+  "evidence": "decomp:own disasm 0x142172f70-0x1421732ba;xref:0x142172f7c,0x142172f83;doc:re/research/garage-monitor-l2-review/L3_EVIDENCE.md",
+  "notes": "Non-deleting power-unit VM destruction path; RCX is the owner. Reinstalls the same primary vtable as the constructor, releases panel-owned node references and then base VM references. Entry observation is for invalidating borrowed owners; calling this destroys the native object. Runtime confirmed on Steam 26566308 only: The named destruction-entry wrapper matched and removed the exact previously captured owner before forwarding native teardown. Other-build L3 is not claimed. Runtime evidence retained for maintainer promotion. Submitted at L2 under the new-record process; actual runtime observations are retained in the evidence report and trace files. The base-branch PR validator does not load new test definitions from this PR."
+ },
+ "signature": {
+  "id": "session.pu_panel_destroy",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 81 60 02 00 00 48 8D 05 ?? ?? ?? ?? 48 89 81 68 02 00 00 48 8B B9 28 13 00 00",
+  "match": "0x142171370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142171370",
+  "kind": "func_start",
+  "names": [
+   "Sess_PuPanel_Destroy"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-26",
+    "by": "UnorthodoxStoneND",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142172f70",
+  "made_on_target": "0x142172f70",
+  "twin": "made on steam-26566308; the target 0x142172f70 is KB 0x142171370: site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) and Vm_Register_CustomisationAndMenuViewModelTypes (0x2180f80) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "UnorthodoxStoneND",
+   "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142172f70",
+    "target": "0x142172f70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0e5cf87c2904e7ac042293446de730c5ba56c03e959082810ed324ed811e9091"
+  }
+ ]
+}
