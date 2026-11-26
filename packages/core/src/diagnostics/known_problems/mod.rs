@@ -231,6 +231,7 @@ const RULES: &[Rule] = &[
     |c| null_vehicle_crash(&c.fatal).then(|| career_over_grid(c.evidence, &c.fatal)),
     render_slots::render_slots,
     session_exit::session_exit,
+    session_exit::session_exit_memory,
     graphics::device_removed,
     graphics::out_of_graphics_memory,
     graphics::graphics_mod_crash,

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CarSetupVm_OnDeactivate_Thunk",
+ "table": "functions",
+ "author": "UnorthodoxStoneND",
+ "row": {
+  "addr": "0x140c1c280",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/research/garage-monitor-l2-review/setup_deactivation.asm;xref:0x145682778,0x140c1cd40;doc:re/research/garage-monitor-l2-review/README.md#game_carsetupvm_ondeactivate_thunk;doc:re/research/garage-monitor-l2-review/L3_EVIDENCE.md",
+  "notes": "Car Setup primary vtable slot 7 ordinary-code entry thunk on Steam 26566308. E9 reaches 0x1497d8ef0; the fully read body releases control bindings and saved setup states and resets +0x7e38. Entry observation retires the borrowed Setup owner before native deactivation. Current signature includes build-specific trailing filler; no other-build pattern portability is claimed.  Runtime confirmed on Steam 26566308 only: The native deactivation entry executes, matches the typed Setup owner, retires its tracked state from 1 to 0 before forwarding, and returns normally on the same thread. Eight observed deactivation sequences for the current build; other-build thunk portability remains unclaimed. Runtime evidence retained for maintainer promotion. Submitted at L2 under the new-record process; actual runtime observations are retained in the evidence report and trace files. The base-branch PR validator does not load new test definitions from this PR."
+ },
+ "signature": {
+  "id": "game.car_setup_vm_on_deactivate_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? BC 2D EB AC E9 A9 02 E5 FE E9",
+  "match": "0x140c1c280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c1c280",
+  "kind": "func_start",
+  "names": [
+   "Game_CarSetupVm_OnDeactivate_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-26",
+    "by": "UnorthodoxStoneND",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c1cd40",
+  "made_on_target": "0x140c1cd40",
+  "twin": "made on steam-26566308; target 0x140c1cd40 is KB 0x140c1c280: Game_CarSetupVm_ShowParcFerme (0xc1c9c0) and Game_CarSetupVm_UpdateFuelRange (0xc1d9f0) on either side both sit 0xac0 above their KB addresses; match 0x140c1cd40 is KB 0x140c1c280: Game_CarSetupVm_ShowParcFerme (0xc1c9c0) and Game_CarSetupVm_UpdateFuelRange (0xc1d9f0) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "UnorthodoxStoneND",
+   "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c1cd40",
+    "target": "0x140c1cd40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d58139f6b5939e0b46230545b9387ddd3cb3cff46abebad335d0f8bba26bf7b9"
+  }
+ ]
+}

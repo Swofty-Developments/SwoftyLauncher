@@ -1,0 +1,151 @@
+{
+  "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+  },
+  "steam_build": 26566308,
+  "version": "1.0.145.2472",
+  "name": "vt_Vm_SharedTabModel",
+  "current_match": "0x140c72e2b",
+  "current_target": "0x14568f580",
+  "signature": {
+    "id": "vm.shared_tab_model",
+    "section": ".tls$",
+    "pattern": "4D 89 EE 45 31 C9 E8 ?? ?? ?? ?? 48 8D 05",
+    "match": "0x140c72e2b",
+    "anchor": "0xe",
+    "resolve": {
+      "kind": "riprel",
+      "insn": "0xb",
+      "len": 7
+    },
+    "target": "0x14568f580",
+    "kind": "data",
+    "names": [
+      "vt_Vm_SharedTabModel"
+    ],
+    "verified": [
+      {
+        "build": "46009bd31f49d93a",
+        "date": "2026-11-26",
+        "by": "UnorthodoxStoneND",
+        "how": "static"
+      }
+    ],
+    "used_by": []
+  },
+  "resolver": {
+    "method": "scan",
+    "matches": 1,
+    "match": 13053483,
+    "site": 13053483,
+    "verified": true,
+    "target": 90764672,
+    "reason": "",
+    "near": 13053483,
+    "result": "resolved",
+    "id": "vt_Vm_SharedTabModel"
+  },
+  "sigcheck_errors": [],
+  "sigcheck_info": {
+    "hits": 1,
+    "match": 5381762603,
+    "target": 5459473792
+  },
+  "ordinary_code_references": [
+    {
+      "address": "0x140c72e36"
+    },
+    {
+      "address": "0x140c79c1d"
+    },
+    {
+      "address": "0x140ce5af9"
+    },
+    {
+      "address": "0x1414c0223"
+    },
+    {
+      "address": "0x1416464f8"
+    },
+    {
+      "address": "0x141646c6d"
+    },
+    {
+      "address": "0x14164cbc8"
+    },
+    {
+      "address": "0x14164d67a"
+    },
+    {
+      "address": "0x14164f4ae"
+    },
+    {
+      "address": "0x14164fb1e"
+    },
+    {
+      "address": "0x141650cf8"
+    },
+    {
+      "address": "0x141650fce"
+    },
+    {
+      "address": "0x141663ecc"
+    },
+    {
+      "address": "0x14166585f"
+    },
+    {
+      "address": "0x141a76ebf"
+    },
+    {
+      "address": "0x141ab964c"
+    },
+    {
+      "address": "0x141bbb4e9"
+    },
+    {
+      "address": "0x141d98ac5"
+    }
+  ],
+  "first_18_virtual_slots": [
+    "0x140ce5dd0",
+    "0x140cd5580",
+    "0x140ce5de0",
+    "0x14431fba0",
+    "0x144324040",
+    "0x14431f920",
+    "0x140cd55a0",
+    "0x140cd55b0",
+    "0x140cd55c0",
+    "0x140cd55d0",
+    "0x140cd55e0",
+    "0x14431fb30",
+    "0x140cd55f0",
+    "0x140ce5e90",
+    "0x140ce5ea0",
+    "0x14431fbe0",
+    "0x140ce5eb0",
+    "0x140ce5ec0"
+  ],
+  "claimed_table_extent": null,
+  "role": "Shared nested tab model; installed at hub/laptop owner+0x630. Used as an identity guard, not a garage-only model.",
+  "limitations": [
+    "Author finding; independent review and launcher export pending.",
+    "Static current-executable validation only; no new in-game test.",
+    "Catalogue is a review candidate, not registered or installed by this contribution."
+  ],
+  "old_build_address_claimed": false,
+  "evidence_level": "L3",
+  "runtime_build_scope": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+  "runtime_observation": [
+    {
+      "token": "trace:T339/20261126-131101:49",
+      "source_line": 115001,
+      "text": "2026-11-26 14:24:37.321 [31212] [gmr-retro] Vehicle tab hidden through native visibility; component model retained"
+    }
+  ],
+  "upstream_registration_pending": true,
+  "evidence_retention": "Full author disassembly is retained locally outside the contribution; this summary keeps reference addresses, resolution results and proof metadata."
+}

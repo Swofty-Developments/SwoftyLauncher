@@ -951,7 +951,7 @@ struct Tee {
     void *stream = nullptr;
     void **original = nullptr;
     void *write = nullptr, *write_length = nullptr;
-    std::vector<uint8_t> bytes;
+    sp::TeeBuffer buffer{TEE_MAX};
 };
 Tee tee;
 void *tee_vtable[TEE_SLOTS];
@@ -959,12 +959,8 @@ void *tee_vtable[TEE_SLOTS];
 int tee_write(void *stream, const void *data, uint64_t size)
 {
     int r = reinterpret_cast<Write_t>(tee.write)(stream, data, size);
-    if (!r && !tee.in_length) {
-        if (tee.bytes.size() + size > TEE_MAX)
-            tee.overflow = true;
-        else
-            tee.bytes.insert(tee.bytes.end(), static_cast<const uint8_t *>(data), static_cast<const uint8_t *>(data) + size);
-    }
+    if (!r && !tee.in_length)
+        tee.buffer.append(static_cast<const uint8_t *>(data), size);
     return r;
 }
 
@@ -974,7 +970,7 @@ int tee_write_length(void *stream, uint32_t length)
     int r = reinterpret_cast<WriteLength_t>(tee.write_length)(stream, length);
     tee.in_length = false;
     if (!r)
-        tee.bytes.push_back(uint8_t(length));
+        tee.buffer.push(uint8_t(length));
     return r;
 }
 
@@ -991,8 +987,8 @@ void tee_stop()
 void tee_start(void *stream)
 {
     tee_stop();
-    tee.bytes.clear();
-    tee.overflow = false, tee.in_length = false;
+    tee.buffer.clear();
+    tee.in_length = false;
     saved_caps.clear();
     saved_caps_ok = false;
     uintptr_t vt = 0;
@@ -1028,12 +1024,14 @@ void tee_finish()
     }
     std::vector<bs::Entry> parts;
     std::string why;
-    if (tee.overflow)
+    if (tee.buffer.no_memory())
+        why = "the process is out of memory";
+    else if (tee.buffer.overflow())
         why = "the registered containers are over " + std::to_string(TEE_MAX >> 20) + " MB";
     else if (!known)
         why = "the root's children were not readable";
-    else if (!bs::split_entries(tee.bytes.data(), tee.bytes.size(), names.size(), parts))
-        why = "the bytes written for the root's children (" + std::to_string(tee.bytes.size()) + ") do not split into " +
+    else if (!bs::split_entries(tee.buffer.bytes().data(), tee.buffer.bytes().size(), names.size(), parts))
+        why = "the bytes written for the root's children (" + std::to_string(tee.buffer.bytes().size()) + ") do not split into " +
               std::to_string(names.size()) + " whole containers";
     std::vector<Captured> got;
     if (why.empty()) {
@@ -1043,14 +1041,13 @@ void tee_finish()
                 why = "the container " + e.name + " was not among the registered children";
                 break;
             }
-            got.push_back({e.name, std::make_shared<const std::vector<uint8_t>>(tee.bytes.begin() + long(e.begin),
-                                                                                tee.bytes.begin() + long(e.end))});
+            got.push_back({e.name, std::make_shared<const std::vector<uint8_t>>(tee.buffer.bytes().begin() + long(e.begin),
+                                                                                tee.buffer.bytes().begin() + long(e.end))});
         }
         if (why.empty() && !want.empty())
             why = "a registered child was not written";
     }
-    tee.bytes.clear();
-    tee.bytes.shrink_to_fit();
+    tee.buffer.release();
     if (!why.empty()) {
         swofty::log("[saves] plain store: could not capture the registered containers at save: %s; this generation holds "
                     "their load-time bytes (as_of load)",

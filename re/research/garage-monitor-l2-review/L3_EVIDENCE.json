@@ -1,0 +1,365 @@
+{
+  "schema": 1,
+  "scope": "Twelve proposed Garage Monitor dependencies, Steam 26566308 only",
+  "test_ids": {
+    "initialise": "T339",
+    "fitting": "T340",
+    "visibility": "T341",
+    "vehicle_teardown": "T342",
+    "setup_deactivation": "T343",
+    "setup_destruction": "T344"
+  },
+  "records_promoted_to_L3": [
+    "Sess_PuPanel_BuildComponents",
+    "Game_CarSetupVm_Initialise",
+    "Ui_Unk_140c1c360",
+    "Game_VehicleManagementVM_HandleCommand"
+  ],
+  "independent_review_added": false,
+  "build": {
+    "steam_build": 26566308,
+    "version": "1.0.145.2472",
+    "expected_exe_sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "observed_pe_timestamp": 1794312636,
+    "observed_build_prefix": "46009bd31f49d93a"
+  },
+  "shared_trace": "re/traces/T339/20261126-131101/trace.log",
+  "items": [
+    {
+      "name": "site_Sess_PuPanel_Constructed",
+      "recorded_level": "L2",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:47",
+          "source_line": 114498,
+          "text": "2026-11-26 14:24:01.431 [37016] [gmr-retro] Vehicle VM captured: 000000034B0F7260, garage identity/vtable/initializer verified"
+        }
+      ],
+      "resolution_token": "trace:T339/20261126-131101:16",
+      "supported_claim": "The constructor-site callback supplied a readable garage owner in RSI that passed both primary-vtable and native name-hash guards.",
+      "limits": "Callback hit and guarded owner capture are observed; a raw full register dump is not present.",
+      "gap": null,
+      "formal_L3_promotion": false,
+      "runtime_support_level": "L3",
+      "submission_reason": "New record submitted at L2; base-branch CI cannot see newly added trace-test definitions. Runtime evidence is preserved for maintainer promotion."
+    },
+    {
+      "name": "vt_Sess_PuPanel",
+      "recorded_level": "L2",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:47",
+          "source_line": 114498,
+          "text": "2026-11-26 14:24:01.431 [37016] [gmr-retro] Vehicle VM captured: 000000034B0F7260, garage identity/vtable/initializer verified"
+        },
+        {
+          "token": "trace:T339/20261126-131101:52",
+          "source_line": 115322,
+          "text": "2026-11-26 14:24:54.338 [48204] [gmr-retro] Car Setup Vehicle initializer returned: owner=000000034B0F7260 data=00000000283D2400 native rows=6 thread=48204"
+        }
+      ],
+      "resolution_token": "trace:T339/20261126-131101:21",
+      "supported_claim": "The live owner matched the resolved primary Vehicle table; the runtime slot-19 builder identity gate passed.",
+      "limits": "Runtime identity/use is covered; this log does not enumerate every virtual slot or all shared laptop owners.",
+      "gap": null,
+      "formal_L3_promotion": false,
+      "runtime_support_level": "L3",
+      "submission_reason": "New record submitted at L2; base-branch CI cannot see newly added trace-test definitions. Runtime evidence is preserved for maintainer promotion."
+    },
+    {
+      "name": "Sess_PuPanel_BuildComponents",
+      "recorded_level": "L3",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:52",
+          "source_line": 115322,
+          "text": "2026-11-26 14:24:54.338 [48204] [gmr-retro] Car Setup Vehicle initializer returned: owner=000000034B0F7260 data=00000000283D2400 native rows=6 thread=48204"
+        }
+      ],
+      "resolution_token": "trace:T339/20261126-131101:15",
+      "supported_claim": "The named builder was invoked on the verified owner and returned with non-null data and six native rows.",
+      "limits": "One My Team practice owner; all seven possible component categories are not claimed to be present.",
+      "gap": null,
+      "formal_L3_promotion": true
+    },
+    {
+      "name": "Game_CarSetupVm_Initialise",
+      "recorded_level": "L3",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:50",
+          "source_line": 115320,
+          "text": "2026-11-26 14:24:54.306 [48204] [gmr-retro] Car Setup native activation: 000000034B0BD570, vtable verified, thread 48204; Vehicle initialization queued"
+        },
+        {
+          "token": "trace:T339/20261126-131101:52",
+          "source_line": 115322,
+          "text": "2026-11-26 14:24:54.338 [48204] [gmr-retro] Car Setup Vehicle initializer returned: owner=000000034B0F7260 data=00000000283D2400 native rows=6 thread=48204"
+        }
+      ],
+      "resolution_token": "trace:T339/20261126-131101:18",
+      "supported_claim": "The Setup initialize entry was reached with matching self type, and same-thread deferred Vehicle initialization completed.",
+      "limits": "One observed Setup activation; original return/arguments are not separately dumped.",
+      "gap": null,
+      "formal_L3_promotion": true
+    },
+    {
+      "name": "vt_Game_CarSetupVm",
+      "recorded_level": "L2",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:50",
+          "source_line": 115320,
+          "text": "2026-11-26 14:24:54.306 [48204] [gmr-retro] Car Setup native activation: 000000034B0BD570, vtable verified, thread 48204; Vehicle initialization queued"
+        },
+        {
+          "token": "trace:T339/20261126-131101:52",
+          "source_line": 115322,
+          "text": "2026-11-26 14:24:54.338 [48204] [gmr-retro] Car Setup Vehicle initializer returned: owner=000000034B0F7260 data=00000000283D2400 native rows=6 thread=48204"
+        }
+      ],
+      "resolution_token": "trace:T339/20261126-131101:22",
+      "supported_claim": "The live Setup owner matched the resolved primary table; the runtime slot-6 initialize identity check passed.",
+      "limits": "No complete live slot enumeration; current table extent remains backed by the separate static L2 evidence.",
+      "gap": null,
+      "formal_L3_promotion": false,
+      "runtime_support_level": "L3",
+      "submission_reason": "New record submitted at L2; base-branch CI cannot see newly added trace-test definitions. Runtime evidence is preserved for maintainer promotion."
+    },
+    {
+      "name": "Ui_Unk_140c1c360",
+      "recorded_level": "L3",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:53",
+          "source_line": 115323,
+          "text": "2026-11-26 14:24:59.054 [35180] [gmr-retro] Native component fitting requested from Car Setup"
+        },
+        {
+          "token": "trace:T339/20261126-131101:54",
+          "source_line": 115325,
+          "text": "2026-11-26 14:25:00.204 [48204] [gmr-retro] Native component fitting requested from Car Setup"
+        },
+        {
+          "token": "trace:T340/20261126-164110:89",
+          "source_line": 41692,
+          "text": "2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=11 self=000000034B0CDF30 key=713fcacb name=0000000027D1E8A0 data=0000000027D1E8A8 thread=29984"
+        },
+        {
+          "token": "trace:T340/20261126-164110:90",
+          "source_line": 41693,
+          "text": "2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_original_enter tag=11 self=000000034B0CDF30 key=713fcacb name=0000000027D1E8A0 data=0000000027D1E8A8 original=000000015844EFD4 thread=29984"
+        },
+        {
+          "token": "trace:T340/20261126-164110:91",
+          "source_line": 41697,
+          "text": "2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_original_return tag=11 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=29984"
+        }
+      ],
+      "resolution_token": "trace:T340/20261126-164110:24",
+      "supported_claim": "The native Setup command entry forwards ordinary preset commands through its original continuation with unchanged self/name/data pointers and same thread, and returns normally.",
+      "limits": "Observed ordinary preset paths and fitting interception, not every incoming command or a complete typed return/payload ABI.",
+      "gap": null,
+      "formal_L3_promotion": true
+    },
+    {
+      "name": "Game_VehicleManagementVM_HandleCommand",
+      "recorded_level": "L3",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:53",
+          "source_line": 115323,
+          "text": "2026-11-26 14:24:59.054 [35180] [gmr-retro] Native component fitting requested from Car Setup"
+        },
+        {
+          "token": "trace:T339/20261126-131101:54",
+          "source_line": 115325,
+          "text": "2026-11-26 14:25:00.204 [48204] [gmr-retro] Native component fitting requested from Car Setup"
+        },
+        {
+          "token": "trace:T340/20261126-164110:123",
+          "source_line": 43535,
+          "text": "2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=22 self=000000034B0CDF30 key=461d9dde name=0000000027D1F2A0 data=0000000027D1F2A8 thread=29984"
+        },
+        {
+          "token": "trace:T340/20261126-164110:125",
+          "source_line": 43537,
+          "text": "2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=22 self=000000034B12BF50 setup=000000034B0CDF30 key=461d9dde name=0000000027D1F2A0 data=0000000027D1F2A8 target=0000000141F59730 thread=29984"
+        },
+        {
+          "token": "trace:T340/20261126-164110:126",
+          "source_line": 43542,
+          "text": "2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] vehicle_command_return tag=22 self=000000034B12BF50 key=461d9dde returned=1 faulted=0 thread=29984"
+        },
+        {
+          "token": "trace:T340/20261126-164110:127",
+          "source_line": 43543,
+          "text": "2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] setup_command_return tag=22 route=vehicle key=461d9dde thread=29984"
+        }
+      ],
+      "resolution_token": "trace:T340/20261126-164110:23",
+      "supported_claim": "Two fit_part calls reach the resolved native Vehicle handler with the same opaque name/data arguments and thread, and return normally with faulted=0; user confirms the fitting result and timer.",
+      "limits": "Native fitting-handler calls and the user-confirmed visible result are covered, not every eligibility/penalty branch or direct fitted-state memory tracing.",
+      "gap": null,
+      "formal_L3_promotion": true
+    },
+    {
+      "name": "vt_Career_HubLaptopTab",
+      "recorded_level": "L2",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:49",
+          "source_line": 115001,
+          "text": "2026-11-26 14:24:37.321 [31212] [gmr-retro] Vehicle tab hidden through native visibility; component model retained"
+        }
+      ],
+      "resolution_token": "trace:T339/20261126-131101:25",
+      "supported_claim": "The live nearest typed ancestor matched the resolved shared host table before native visibility succeeded.",
+      "limits": "Shared host identity in the garage is demonstrated; other laptop/screen owners are outside this session.",
+      "gap": null,
+      "formal_L3_promotion": false,
+      "runtime_support_level": "L3",
+      "submission_reason": "New record submitted at L2; base-branch CI cannot see newly added trace-test definitions. Runtime evidence is preserved for maintainer promotion."
+    },
+    {
+      "name": "site_Vm_SharedTabModelVtable",
+      "recorded_level": "L2",
+      "runtime_evidence": "legacy model identity observed; new site consumer not run in game",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:49",
+          "source_line": 115001,
+          "text": "2026-11-26 14:24:37.321 [31212] [gmr-retro] Vehicle tab hidden through native visibility; component model retained"
+        }
+      ],
+      "resolution_token": "trace:T339/20261126-131101:26",
+      "supported_claim": "The existing CLI uniquely resolves the LEA instruction. Its signed RIP operand recovers the same model table observed under the former vtable candidate.",
+      "limits": "Site record is L2. Prior logs prove the legacy table lookup, not a new in-game run of the site consumer.",
+      "gap": "Only if L3 promotion is requested: capture the registered site consumer in a real session.",
+      "formal_L3_promotion": false,
+      "registered_record": "re/bindings/vm/site_Vm_SharedTabModelVtable.json"
+    },
+    {
+      "name": "Sess_PuPanel_Destroy",
+      "recorded_level": "L2",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T339/20261126-131101:55",
+          "source_line": 115683,
+          "text": "2026-11-26 14:26:49.385 [48204] [gmr-retro] Vehicle VM released before native teardown: 000000034B0F7260"
+        }
+      ],
+      "resolution_token": "trace:T339/20261126-131101:17",
+      "supported_claim": "The named destruction-entry wrapper matched and removed the exact previously captured owner before forwarding native teardown.",
+      "limits": "Entry/borrowed-owner retirement is observed. Native destruction return and all allocation/free paths are not logged.",
+      "gap": null,
+      "formal_L3_promotion": false,
+      "runtime_support_level": "L3",
+      "submission_reason": "New record submitted at L2; base-branch CI cannot see newly added trace-test definitions. Runtime evidence is preserved for maintainer promotion."
+    },
+    {
+      "name": "Game_CarSetupVm_OnDeactivate_Thunk",
+      "recorded_level": "L2",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T340/20261126-164110:136",
+          "source_line": 47518,
+          "text": "2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=25 self=000000034B0CDF30 thread=29984 original=000000015844EFA4"
+        },
+        {
+          "token": "trace:T340/20261126-164110:137",
+          "source_line": 47519,
+          "text": "2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_retire tag=25 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0"
+        },
+        {
+          "token": "trace:T340/20261126-164110:138",
+          "source_line": 47520,
+          "text": "2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_return tag=25 self=000000034B0CDF30 forwarded=1 thread=29984"
+        }
+      ],
+      "resolution_token": "trace:T340/20261126-164110:19",
+      "supported_claim": "The native deactivation entry executes, matches the typed Setup owner, retires its tracked state from 1 to 0 before forwarding, and returns normally on the same thread.",
+      "limits": "Eight observed deactivation sequences for the current build; other-build thunk portability remains unclaimed.",
+      "gap": null,
+      "formal_L3_promotion": false,
+      "runtime_support_level": "L3",
+      "submission_reason": "New record submitted at L2; base-branch CI cannot see newly added trace-test definitions. Runtime evidence is preserved for maintainer promotion."
+    },
+    {
+      "name": "Game_CarSetupVm_Destroy",
+      "recorded_level": "L2",
+      "runtime_evidence": "supported",
+      "observations": [
+        {
+          "token": "trace:T340/20261126-164110:194",
+          "source_line": 64464,
+          "text": "2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=37 self=000000034B0CDF30 flags=0 thread=29984 original=000000015844EFBC"
+        },
+        {
+          "token": "trace:T340/20261126-164110:195",
+          "source_line": 64465,
+          "text": "2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_retire tag=37 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0"
+        },
+        {
+          "token": "trace:T340/20261126-164110:196",
+          "source_line": 64466,
+          "text": "2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_return tag=37 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=29984"
+        }
+      ],
+      "resolution_token": "trace:T340/20261126-164110:20",
+      "supported_claim": "The native Setup destructor entry executes with observed unsigned flags=0, forwards to its original continuation and returns the original self pointer; the owner is already untracked after deactivation.",
+      "limits": "Only flags=0 and already-untracked owners were observed. Nonzero deletion/free and active-owner retirement at destructor entry retain static/fixture coverage rather than runtime confirmation.",
+      "gap": null,
+      "formal_L3_promotion": false,
+      "runtime_support_level": "L3",
+      "submission_reason": "New record submitted at L2; base-branch CI cannot see newly added trace-test definitions. Runtime evidence is preserved for maintainer promotion."
+    }
+  ],
+  "test_verdicts": {
+    "T339": "pass",
+    "T340": "pass",
+    "T341": "pass",
+    "T342": "pass",
+    "T343": "pass",
+    "T344": "pass"
+  },
+  "source_sha256": "38570373171070550d3fbb521715fb926702805b61f75e89a1f40811f28134c3",
+  "promotion_scope": "Local draft; Steam 26566308 only. Maintainer acceptance and upstream model registration remain pending.",
+  "additional_runs": [
+    {
+      "session": "20261126-164110",
+      "trace_path": "re/traces/T340/20261126-164110/trace.log",
+      "snapshot_sha256": "70542f83483f9a7f24ff70b6d66852e93d6ad6a8811af6a33075f9ab851c5ce5",
+      "addon_version": "0.3.58",
+      "limits": [
+        "Only flags=0 destructor calls were observed; nonzero deletion/free branch remains static/fixture coverage.",
+        "Destructor owners were already untracked after deactivation; active-owner retirement is directly observed in the deactivation pairs.",
+        "Log snapshot may precede session archival/end. Exact captured bytes are retained; later appended output is not claimed.",
+        "Runtime version is logged; retained package/DLL hashes are artifact provenance, not an independent runtime hash attestation."
+      ]
+    }
+  ],
+  "runtime_supported_L3_claims": [
+    "site_Sess_PuPanel_Constructed",
+    "vt_Sess_PuPanel",
+    "Sess_PuPanel_BuildComponents",
+    "Game_CarSetupVm_Initialise",
+    "vt_Game_CarSetupVm",
+    "vt_Career_HubLaptopTab",
+    "Sess_PuPanel_Destroy",
+    "Ui_Unk_140c1c360",
+    "Game_VehicleManagementVM_HandleCommand",
+    "Game_CarSetupVm_OnDeactivate_Thunk",
+    "Game_CarSetupVm_Destroy"
+  ]
+}

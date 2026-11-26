@@ -327,6 +327,7 @@ inline constexpr address<"Game_CarCustomisation_ApplyLiveryPreview"> Game_CarCus
 inline constexpr address<"Game_CarCustomisation_MarkCarDirtyOff"> Game_CarCustomisation_MarkCarDirtyOff{}; // L2 experimental
 inline constexpr address<"Game_CarCustomisation_SetupWritableCamera"> Game_CarCustomisation_SetupWritableCamera{}; // L2 experimental
 inline constexpr address<"Game_CarDecals_BuildList"> Game_CarDecals_BuildList{}; // L2 experimental
+inline constexpr address<"Game_CarSetupVm_Initialise"> Game_CarSetupVm_Initialise{}; // L3 stable
 using Game_CareerActivities_AddActivity_t = void(void *calendar, const void *activity, uint32_t day);
 inline constexpr fn<"Game_CareerActivities_AddActivity", Game_CareerActivities_AddActivity_t> Game_CareerActivities_AddActivity{}; // L2 experimental
 using Game_CareerActivities_RemoveActivity_t = void(void *calendar, const void *activity, uint16_t day);
@@ -1397,6 +1398,7 @@ inline constexpr address<"Game_VehicleAntiStallSystem_IsStartPromptActive"> Game
 inline constexpr address<"Game_VehicleAntiStallSystem_Update"> Game_VehicleAntiStallSystem_Update{}; // L2 experimental
 inline constexpr address<"Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer"> Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer{}; // L2 experimental
 inline constexpr address<"Game_VehicleLapProgress_CommitNetLapDelta"> Game_VehicleLapProgress_CommitNetLapDelta{}; // L2 experimental
+inline constexpr address<"Game_VehicleManagementVM_HandleCommand"> Game_VehicleManagementVM_HandleCommand{}; // L3 stable
 inline constexpr address<"Game_VehiclePitlaneManager_ApplyVehicleRemotePitStatusInternal"> Game_VehiclePitlaneManager_ApplyVehicleRemotePitStatusInternal{}; // L2 experimental, VehiclePitlaneManager::applyVehicleRemotePitStatusInternal
 using Game_VehiclePlacementSystem_Connect_t = uint32_t(void *self, void *owner, void *registry);
 inline constexpr fn<"Game_VehiclePlacementSystem_Connect", Game_VehiclePlacementSystem_Connect_t> Game_VehiclePlacementSystem_Connect{}; // L2 experimental

@@ -28,6 +28,25 @@ pub(super) fn heap_error(e: &Evidence) -> Option<(u32, String)> {
         })
 }
 
+/// How full Windows' memory commit was in the newest `[perf]` minute line that reports it, as a percentage of the
+/// commit limit.
+pub(super) fn commit_percent(e: &Evidence) -> Option<u32> {
+    let line = e
+        .loader
+        .lines()
+        .rev()
+        .find(|l| l.contains("[perf] ") && l.contains(" memory: ") && l.contains(" MiB used, commit "))?;
+    let rest = line.split(" MiB used, commit ").nth(1)?;
+    let (used, rest) = rest.split_once('/')?;
+    let limit: String = rest.chars().take_while(char::is_ascii_digit).collect();
+    let (used, limit) = (used.trim().parse::<u64>().ok()?, limit.parse::<u64>().ok()?);
+    (limit > 0).then(|| (used * 100 / limit).min(100) as u32)
+}
+
+pub(super) const PAGE_FILE_STEP: &str = "Let Windows manage the page file: search Windows for View advanced system settings, open Performance \
+     Settings, Advanced, Virtual memory, Change, and tick Automatically manage paging file size for all \
+     drives. Keep 20 GB or more free on drive C.";
+
 pub(super) fn windows_out_of_memory(code: u32, message: &str) -> bool {
     matches!(code, 0x5 | 0x58)
         || message.contains("useAddressSpace")
@@ -228,10 +247,7 @@ pub(super) fn windows_memory(e: &Evidence) -> Diagnosis {
                page file), not the graphics card's."
             .to_owned(),
         steps: vec![
-            "Let Windows manage the page file: search Windows for View advanced system settings, open Performance \
-             Settings, Advanced, Virtual memory, Change, and tick Automatically manage paging file size for all \
-             drives. Keep 20 GB or more free on drive C."
-                .to_owned(),
+            PAGE_FILE_STEP.to_owned(),
             "Close other programs, especially web browsers, while you play.".to_owned(),
             fewer,
         ],

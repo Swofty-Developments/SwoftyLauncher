@@ -1,0 +1,32 @@
+# Current-build L2 review of remaining Garage Monitor entries
+
+Scope: Steam 26566308 / F1 25 1.0.145.2472 only. The four entries below were left at L1 in the first draft. Two inherited L1 notes from existing KB rows; two deferred independent review and portability work. Independent agreement controls export separately from an author's static evidence level. Neither pending agreement nor untested other-build portability is, by itself, grounds to keep a current-build static-proven claim at L1.
+
+The complete function instruction ranges below have now been decoded and read, including each dispatch branch through its shared cleanup/tail exit. `EVIDENCE.json` records code hashes, exact ranges, UI-literal/command-hash matches, data references and current vtable cells. No historical executable or cross-build runtime claim is added.
+
+## Game_CarSetupVm_OnDeactivate_Thunk
+
+Current primary table slot 7 (cell 0x145682778) points to 0x140c1cd40. Its five-byte E9 resolves to 0x1497d8ef0. The complete body through 0x1497d8fca was read; its full disassembly is retained locally outside the contribution. RCX is saved as self in RSI. If self+0x7e68 differs from +0x7e69 and the target at +0x7e60 is active, the body raises gar_car_setup. It iterates self+0x360..+0x76e0 in 0x2c0 steps, releases bindings through 0x1442323b0, clears the saved state properties at +0x7e18/+0x7e28/+0x7e90 and resets +0x7e38 to 0x2a. This supports the deactivation role. Only the ordinary-code entry thunk is wrapped; the protected body is examined as evidence, not patched. The signature's trailing filler is current-build-specific; portability is explicitly unclaimed.
+
+## vt_Game_CarSetupVm
+
+The constructor reference 0x140c07c7a and destructor reference 0x140cd580e both resolve to primary table 0x145682740 and store it at self+0. The current image has seventeen contiguous executable pointer cells (indices 0..16), followed by a null at index 17 and a different table beginning at index 18. Relevant cells are destructor index 2, initialise index 6, deactivation index 7, command index 10, binding event index 11 and populate index 13. `EVIDENCE.json` lists every cell with its code section. This is a primary table identity/extent claim, not a complete typed object-layout claim. Current object matching and slot identity checks execute in the test add-on. Existing historical anchor metadata remains unchanged; no historical table-extent or portability test is implied.
+
+## Game_VehicleManagementVM_HandleCommand
+
+Current table cell 0x145761040 (primary index 10) points to 0x141f59730. The complete 0x141f59730..0x141f5a392 body was read; its full disassembly is retained locally outside the contribution. The entry checks self+0x650, saves the engine-owned name-reference argument from RDX in RDI, optionally forwards it through self+0x620 vcall +0x80, then dispatches on the hash at [[name_ref]]. UI literals independently hash to goto_track_pressed (0x1dce7a87), update_average_wear (0xec04e0b0) and fit_part (0x461d9dde). The refresh branch calls 0x141f56f00 then tail-calls 0x141f57c90. The fitting branch finds the selected component in self+0x650's +0x228..+0x230 vector (stride 0x2c8), finds the selected part in its 0x1c8-stride list, checks native management/eligibility, selects the penalty/no-penalty/new-part popup strings (with hub variants), computes min/max timing values and builds the native popup dictionary. It does not bypass native eligibility. The contribution claims command-handler identity and these observed paths, not the exact signatures of all helpers. Remove the old generic variadic prototype instead of publishing it as a proved callable ABI.
+
+## Ui_Unk_140c1c360
+
+Keep the existing identifier to avoid introducing a duplicate binding. Its old notes incorrectly called the cell slot 0. Current cell 0x145682790 is primary index 10 of Car Setup and contains 0x140c1ce20. The entire 0x140c1ce20..0x140c1d4a3 body was read; its full disassembly is retained locally outside the contribution. RCX is self, RDX references the engine name object; dispatch uses [[RDX]]. Native UI literals match exit_requested, go_to_track_selected, preset_selected_entered, refresh_data, reopen_screen, screen_enabled and set_selected_preset. The enable/disable/close_goto_track strings are outgoing commands, not incoming dispatch keys. Branches toggle the setup controls, select/update presets, raise native popup/go-to-track behavior, and converge on cleanup or a native tail-call. fit_part and update_average_wear are absent from this dispatcher, explaining why the combined panel requires the narrow relay to Vehicle's command handler. Replace the old unnamed ulonglong prototype with no typed prototype claim; do not silently assert an unproved return/payload contract. The tested add-on supplies its narrow native-command bridge separately and preserves the engine-owned name/payload.
+
+## Runtime corroboration and limits
+
+The actual 0.3.57 / Swofty 1.10.53 My Team run in session 20261126-131101 logs all proposed addresses resolving, constructor/lifecycle hooks installing, the garage owner capture, native initialization producing six rows at 14:24:54.338, two component-fitting requests and owner release before teardown at 14:26:49.385. The user confirmed the feature works. Full local extracts are retained outside the PR under Research/TestPair1-MyTeam; EVIDENCE.json identifies the source log hash. These are runtime corroboration for the reviewed paths, not a claim that every branch or field was traced individually.
+
+This change sets the four author claims to L2, not L3. No independent agree row, export exception, force export, L3 trace-test registration or verifier identity is fabricated. Independent review and normal upstream export remain pending. Existing verify history is unchanged; a later reviewer must agree at L2 rather than relying on any earlier lower-level judgment.
+
+
+## Subsequent runtime evidence
+
+This document records the static review. Current levels and runtime limits are in L3_EVIDENCE.md: eleven registered dependencies now have scoped L3 evidence; the new model-site record is L2 and its consumer has offline fixture coverage only. Saved logs retain the original observed binding names. No independent agreement or unobserved in-game result is claimed. Structured evidence above retains code ranges and hashes; no complete function disassembly is included in the contribution.

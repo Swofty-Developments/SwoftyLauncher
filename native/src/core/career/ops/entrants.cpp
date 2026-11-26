@@ -1,4 +1,5 @@
 #include "core/career/ops/entrants.hpp"
+#include "core/career/ops/finalise_chunks.hpp"
 
 #include "core/runtime/runtime.hpp"
 
@@ -330,28 +331,69 @@ uintptr_t car_numbers(uintptr_t e, uintptr_t manager)
     return c && mem::object_like(c) && rdv<uintptr_t>(c + offsetof(g::CarNumberComponent, entity)) == e ? c : 0;
 }
 
+void Baseline::settle(const std::vector<Row> &now, uint32_t driver)
+{
+    const Row *current = nullptr;
+    for (auto &r : now)
+        if (same_key(driver_of(r.rec), driver)) {
+            current = &r;
+            break;
+        }
+    if (!current)
+        return;
+    for (auto &b : rows_)
+        if (same_key(driver_of(b), driver)) {
+            b = current->rec;
+            return;
+        }
+    rows_.push_back(current->rec);
+    rebind();
+}
+
 bool finalise(uintptr_t e, const Baseline &baseline, uint64_t &changes)
 {
     changes = 0;
     auto build = reinterpret_cast<g::Career_Build_LineupChanges_t *>(bind("Career_Build_LineupChanges"));
     if (!build)
         return false;
-    uintptr_t current = e + offsetof(g::CareerEntity, entrants_begin) - sizeof(void *);
-    g::DriverMovesFinalisedMessage m{};
-    build(&m.changes, reinterpret_cast<void *>(current), baseline.vector());
-    if (m.count > 40)
+    std::vector<Row> now;
+    if (!entrant_rows(e, now))
         return false;
-    changes = m.count;
+    uintptr_t current = e + offsetof(g::CareerEntity, entrants_begin) - sizeof(void *);
     uintptr_t vts[] = {bind("vt_Career_MessageDriverMovesFinalisedUpgrades"),
                        bind("vt_Career_MessageDriverMovesFinalisedRecognition"), bind("vt_Career_MessageDriverMovesFinalised")};
-    for (uintptr_t v : vts) {
-        g::DriverMovesFinalisedMessage copy = m;
-        copy.vtable = reinterpret_cast<void **>(v);
-        copy.reserved = 0;
-        if (!v || post(&copy) != SWOFTY_ASSET_OK)
+    for (uintptr_t v : vts)
+        if (!v)
             return false;
-    }
-    return true;
+    constexpr size_t kCapacity = sizeof(g::DriverMovesFinalisedMessage::changes) / sizeof(g::LineupChange);
+    static_assert(kCapacity == chunks::kMessageCapacity);
+    Baseline settled(baseline.rows());
+    auto result = chunks::post_all(
+        [&] {
+            g::DriverMovesFinalisedMessage m{};
+            build(&m.changes, reinterpret_cast<void *>(current), settled.vector());
+            size_t n = static_cast<size_t>(std::min<uint64_t>(m.count, kCapacity));
+            return std::vector<g::LineupChange>(m.changes, m.changes + n);
+        },
+        [&](const std::vector<g::LineupChange> &chunk) {
+            g::DriverMovesFinalisedMessage m{};
+            std::copy(chunk.begin(), chunk.end(), m.changes);
+            m.count = chunk.size();
+            for (uintptr_t v : vts) {
+                g::DriverMovesFinalisedMessage copy = m;
+                copy.vtable = reinterpret_cast<void **>(v);
+                copy.reserved = 0;
+                if (post(&copy) != SWOFTY_ASSET_OK)
+                    return false;
+            }
+            return true;
+        },
+        [&](const std::vector<g::LineupChange> &chunk) {
+            for (auto &c : chunk)
+                settled.settle(now, c.driver);
+        });
+    changes = result.changes;
+    return result.ok;
 }
 
 }

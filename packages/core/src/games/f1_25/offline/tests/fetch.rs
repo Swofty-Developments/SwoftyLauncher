@@ -141,7 +141,7 @@ fn a_reply_that_is_not_tls_reads_as_a_blocked_download() {
             .ok();
         stream.read_to_end(&mut Vec::new()).ok();
     });
-    let failure = download(&url).unwrap_err();
+    let failure = download(&url, &mut Vec::new()).unwrap_err();
     assert!(failure.blocked);
     let err = failure.to_string();
     let (reason, detail) = err.split_once('\n').unwrap();
@@ -333,7 +333,6 @@ fn only_failures_a_new_try_can_get_past_are_tried_again() {
     assert!(Failure::call(&url, &ureq::Error::Io(dns)).transient);
     assert!(Failure::call(&url, &ureq::Error::Timeout(ureq::Timeout::Connect)).transient);
     assert!(Failure::call(&url, &ureq::Error::ConnectionFailed).transient);
-    assert!(!Failure::call(&url, &ureq::Error::Timeout(ureq::Timeout::Global)).transient);
     let refused = Failure::call(&url, &ureq::Error::Io(ErrorKind::ConnectionRefused.into()));
     assert!(refused.blocked && !refused.transient);
     let untrusted = rustls::Error::InvalidCertificate(rustls::CertificateError::UnknownIssuer);
@@ -348,9 +347,246 @@ fn only_failures_a_new_try_can_get_past_are_tried_again() {
     let reset = std::io::Error::from(ErrorKind::ConnectionReset);
     assert!(Failure::cut_off(String::new(), Some(&reset)).transient);
     assert!(Failure::cut_off(String::new(), None).transient);
-    let late = ureq::Error::Timeout(ureq::Timeout::Global).into_io();
-    let stalled = Failure::cut_off(String::new(), Some(&late));
-    assert!(!stalled.transient && stalled.blocked);
+    let quiet = ureq::Error::Timeout(ureq::Timeout::PerRead).into_io();
+    let stalled = Failure::cut_off(String::new(), Some(&quiet));
+    assert!(stalled.transient && stalled.cut_off && !stalled.blocked);
     assert!(!Failure::cut_off(String::new(), Some(&reset)).blocked);
     assert!(!Failure::cut_off(String::new(), None).blocked);
+}
+
+fn flaky(
+    release: &[(&'static str, String)],
+    name: &str,
+    cut: usize,
+    times: usize,
+    range: bool,
+    hang: bool,
+) -> Reply {
+    let body = release
+        .iter()
+        .find(|(n, _)| *n == name)
+        .unwrap()
+        .1
+        .clone()
+        .into_bytes();
+    Reply::Flaky {
+        body,
+        cut,
+        times,
+        range,
+        hang,
+    }
+}
+
+fn installed(d: &Path, release: &[(&'static str, String)]) {
+    for (name, body) in release {
+        assert_eq!(
+            std::fs::read_to_string(extension_dir(d).join(name)).unwrap(),
+            *body
+        );
+    }
+}
+
+#[test]
+fn a_cut_off_body_is_resumed_with_a_range_request() {
+    let d = temp("resume-range");
+    let release = fake_release();
+    let name = REQUIRED[2];
+    let (base, log) = serve_logged(routes(&release, |n| {
+        (n == name).then(|| flaky(&release, n, 10, 2, true, false))
+    }));
+    fetch_fake(&d, &base, &release).unwrap();
+    installed(&d, &release);
+    let path = format!("/v9.9.9/{name}");
+    let asked: Vec<Option<String>> = log
+        .lock()
+        .unwrap()
+        .iter()
+        .filter(|(p, _)| *p == path)
+        .map(|(_, r)| r.clone())
+        .collect();
+    assert_eq!(
+        asked,
+        vec![None, Some("bytes=10-".to_owned()), Some("bytes=20-".to_owned())]
+    );
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_server_that_ignores_range_is_started_over() {
+    let d = temp("resume-no-range");
+    let release = fake_release();
+    let name = REQUIRED[4];
+    let (base, log) = serve_logged(routes(&release, |n| {
+        (n == name).then(|| flaky(&release, n, 10, 1, false, false))
+    }));
+    fetch_fake(&d, &base, &release).unwrap();
+    installed(&d, &release);
+    let path = format!("/v9.9.9/{name}");
+    let asked: Vec<Option<String>> = log
+        .lock()
+        .unwrap()
+        .iter()
+        .filter(|(p, _)| *p == path)
+        .map(|(_, r)| r.clone())
+        .collect();
+    assert_eq!(asked, vec![None, Some("bytes=10-".to_owned())]);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_connection_that_goes_quiet_fails_fast_and_is_resumed() {
+    let d = temp("resume-stall");
+    let release = fake_release();
+    let name = REQUIRED[1];
+    let base = serve(routes(&release, |n| {
+        (n == name).then(|| flaky(&release, n, 10, 1, true, true))
+    }));
+    let started = std::time::Instant::now();
+    fetch_fake(&d, &base, &release).unwrap();
+    assert!(
+        started.elapsed() < std::time::Duration::from_secs(3),
+        "{:?}",
+        started.elapsed()
+    );
+    installed(&d, &release);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_download_that_keeps_being_cut_off_says_so_in_plain_words() {
+    let d = temp("resume-giveup");
+    let marker = previous_install(&d);
+    let release = fake_release();
+    let name = REQUIRED[3];
+    let base = serve(routes(&release, |n| {
+        (n == name).then(|| flaky(&release, n, 0, 1000, true, false))
+    }));
+    let err = fetch_fake(&d, &base, &release).unwrap_err().to_string();
+    let (reason, detail) = err.split_once('\n').unwrap();
+    assert_eq!(
+        reason,
+        format!("offline play 9.9.9: {name} (after 4 attempts): {CUT_OFF}")
+    );
+    assert!(CUT_OFF.contains("kept being cut off"));
+    assert!(CUT_OFF.contains("VPN or proxy") && CUT_OFF.contains("antivirus") && CUT_OFF.contains("DNS"));
+    assert!(!err.contains("blocked on this PC"), "{err}");
+    assert!(detail.contains("cut off"), "{err}");
+    assert_untouched(&d, &marker);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_resumed_body_that_fails_its_pin_is_never_installed() {
+    let d = temp("resume-digest");
+    let marker = previous_install(&d);
+    let release = fake_release();
+    let name = REQUIRED[2];
+    let mut wrong = release.clone();
+    wrong.iter_mut().find(|(n, _)| *n == name).unwrap().1 = format!("fake {name} but tampered");
+    let base = serve(routes(&wrong, |n| {
+        (n == name).then(|| flaky(&wrong, n, 10, 1, true, false))
+    }));
+    let err = fetch_fake(&d, &base, &release).unwrap_err().to_string();
+    assert!(err.contains("digest mismatch"), "{err}");
+    assert_untouched(&d, &marker);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_bad_splice_is_fetched_again_from_the_start() {
+    let d = temp("resume-splice");
+    let release = fake_release();
+    let name = REQUIRED[2];
+    let url = url_of(name);
+    let whole = body_of(&release, &url);
+    let mut calls = 0;
+    let mut starts = Vec::new();
+    let pins = digests(&release);
+    let pins: Vec<(&str, &str)> = pins.iter().map(|(n, h)| (*n, h.as_str())).collect();
+    let mut get = |u: &str, body: &mut Vec<u8>| {
+        if u != url {
+            *body = body_of(&release, u);
+            return Ok(());
+        }
+        starts.push(body.len());
+        calls += 1;
+        match calls {
+            1 => {
+                body.extend_from_slice(&whole[..8]);
+                Err(reset(u))
+            }
+            2 => {
+                body.extend_from_slice(&vec![b'x'; whole.len() - 8]);
+                Ok(())
+            }
+            _ => {
+                *body = whole.clone();
+                Ok(())
+            }
+        }
+    };
+    fetch_release(&d, FAKE_HOST, "9.9.9", &pins, &mut get, &|_| {}).unwrap();
+    installed(&d, &release);
+    assert_eq!(starts, vec![0, 8, 0]);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_transfer_that_keeps_moving_is_not_given_up_on() {
+    let d = temp("resume-progress");
+    let release = fake_release();
+    let name = REQUIRED[2];
+    let url = url_of(name);
+    let whole = body_of(&release, &url);
+    let pins = digests(&release);
+    let pins: Vec<(&str, &str)> = pins.iter().map(|(n, h)| (*n, h.as_str())).collect();
+    let mut get = |u: &str, body: &mut Vec<u8>| {
+        if u != url {
+            *body = body_of(&release, u);
+            return Ok(());
+        }
+        let next = (body.len() + 3).min(whole.len());
+        let from = body.len();
+        body.extend_from_slice(&whole[from..next]);
+        if body.len() < whole.len() {
+            Err(reset(u))
+        } else {
+            Ok(())
+        }
+    };
+    fetch_release(&d, FAKE_HOST, "9.9.9", &pins, &mut get, &|_| {}).unwrap();
+    installed(&d, &release);
+    std::fs::remove_dir_all(&d).ok();
+}
+
+#[test]
+fn a_server_that_never_sends_headers_is_retried_then_reads_as_cut_off() {
+    let d = temp("resume-no-headers");
+    let marker = previous_install(&d);
+    let release = fake_release();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let base = format!("http://{}", listener.local_addr().unwrap());
+    let accepted = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let seen = accepted.clone();
+    std::thread::spawn(move || {
+        let mut held = Vec::new();
+        for stream in listener.incoming().flatten() {
+            seen.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            held.push(stream);
+        }
+    });
+    let err = fetch_fake(&d, &base, &release).unwrap_err().to_string();
+    let (reason, detail) = err.split_once('\n').unwrap();
+    assert_eq!(
+        reason,
+        format!(
+            "offline play 9.9.9: {} (after 4 attempts): {CUT_OFF}",
+            REQUIRED[0]
+        )
+    );
+    assert!(detail.contains("could not download"), "{err}");
+    assert_eq!(accepted.load(std::sync::atomic::Ordering::SeqCst), 4);
+    assert_untouched(&d, &marker);
+    std::fs::remove_dir_all(&d).ok();
 }

@@ -1,0 +1,217 @@
+2026-11-26 16:41:14.161 [56304] [core] bindings: 4 set(s) present, selected bindings.steam-26566308.json by PE timestamp 1794312636
+2026-11-26 16:41:14.172 [56304] [core] bindings.steam-26566308.json: 3802 binding(s) for build 46009bd31f49d93a, this exe (rva checked); 12 string-anchored (4 build-agnostic), pattern first
+2026-11-26 16:41:14.192 [56304] [core] bind Sess_PuPanel_BuildComponents -> 0x141f52510 (base+0x1f52510), func dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind site_Sess_PuPanel_Constructed -> 0x141f50657 (base+0x1f50657), site dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind Sess_PuPanel_Destroy -> 0x142172f70 (base+0x2172f70), func dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind Game_CarSetupVm_Initialise -> 0x140c1bc60 (base+0xc1bc60), func dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind Game_CarSetupVm_OnDeactivate_Thunk -> 0x140c1cd40 (base+0xc1cd40), func dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind Game_CarSetupVm_Destroy -> 0x140cd5800 (base+0xcd5800), func dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind vt_Sess_PuPanel -> 0x145760ff0 (base+0x5760ff0), vtable dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind vt_Game_CarSetupVm -> 0x145682740 (base+0x5682740), vtable dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind Game_VehicleManagementVM_HandleCommand -> 0x141f59730 (base+0x1f59730), func dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind Ui_Unk_140c1c360 -> 0x140c1ce20 (base+0xc1ce20), func dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind vt_Career_HubLaptopTab -> 0x1456f9260 (base+0x56f9260), vtable dev via pattern
+2026-11-26 16:41:14.192 [56304] [core] bind vt_Vm_SharedTabModel -> 0x14568f580 (base+0x568f580), vtable dev via pattern
+2026-11-26 16:41:14.194 [56304] [bind] id=Sess_PuPanel_BuildComponents build=steam pass=init result=resolved method=scan matches=1 rva=0x1f52510 match=0x1f52510 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=site_Sess_PuPanel_Constructed build=steam pass=init result=resolved method=scan matches=1 rva=0x1f50657 match=0x1f50647 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=Sess_PuPanel_Destroy build=steam pass=init result=resolved method=scan matches=1 rva=0x2172f70 match=0x2172f70 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=Game_CarSetupVm_Initialise build=steam pass=init result=resolved method=scan matches=1 rva=0xc1bc60 match=0xc1bc60 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=Game_CarSetupVm_OnDeactivate_Thunk build=steam pass=init result=resolved method=scan matches=1 rva=0xc1cd40 match=0xc1cd40 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=Game_CarSetupVm_Destroy build=steam pass=init result=resolved method=scan matches=1 rva=0xcd5800 match=0xcd5800 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=vt_Sess_PuPanel build=steam pass=init result=resolved method=scan matches=1 rva=0x5760ff0 match=0x1f5046f verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=vt_Game_CarSetupVm build=steam pass=init result=resolved method=scan matches=1 rva=0x5682740 match=0xcd580e verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=Game_VehicleManagementVM_HandleCommand build=steam pass=init result=resolved method=scan matches=1 rva=0x1f59730 match=0x1f59730 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=Ui_Unk_140c1c360 build=steam pass=init result=resolved method=scan matches=1 rva=0xc1ce20 match=0xc1ce20 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=vt_Career_HubLaptopTab build=steam pass=init result=resolved method=scan matches=1 rva=0x56f9260 match=0x1e15b80 verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.194 [56304] [bind] id=vt_Vm_SharedTabModel build=steam pass=init result=resolved method=scan matches=1 rva=0x568f580 match=0xc72e2b verified=yes reason="" site_bytes=""
+2026-11-26 16:41:14.526 [56304] addon garage-monitor-diagnostic.dll: loads at the window stage
+2026-11-26 16:41:17.996 [56304] addon garage-monitor-diagnostic.dll: loading e:\program files\steam\steamapps\common\F1 25\swofty\addons\unorthodoxstonendmodding.garage-monitor-retro\native\garage-monitor-diagnostic.dll
+2026-11-26 16:41:17.999 [56304] addon garage-monitor-diagnostic.dll: loaded at 00007ff9f0bc0000, calling SwoftyAddonInit (API v9)
+2026-11-26 16:41:17.999 [56304] [gmr-retro] Car # enabled: Swofty experimental session entrant bindings
+2026-11-26 16:41:17.999 [56304] [gmr-retro] Session clock: bindings resolved (Swofty native getter, no UDP)
+2026-11-26 16:41:17.999 [56304] [core] addon garage-monitor-diagnostic.dll: registered 6 mixin(s)
+2026-11-26 16:41:17.999 [56304] [gmr-retro] Vehicle native model: Swofty mixins registered
+2026-11-26 16:41:17.999 [56304] [gmr-retro] Vehicle command relay: Setup wrapper registered for native fit/refresh only
+2026-11-26 16:41:17.999 [56304] [gmr-retro] Vehicle tab visibility: native visibility bindings ready
+2026-11-26 16:41:17.999 [56304] addon garage-monitor-diagnostic.dll: SwoftyAddonInit returned 1 (ok)
+2026-11-26 16:41:18.009 [56304] [core] wrap Sess_PuPanel_Destroy at 0x142172f70 (base+0x2172f70) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 16:41:18.009 [56304] [core] wrap Game_CarSetupVm_Initialise at 0x140c1bc60 (base+0xc1bc60) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 16:41:18.009 [56304] [core] wrap Game_CarSetupVm_OnDeactivate_Thunk at 0x140c1cd40 (base+0xc1cd40) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 16:41:18.009 [56304] [core] wrap Game_CarSetupVm_Destroy at 0x140cd5800 (base+0xcd5800) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 16:41:18.009 [56304] [core] wrap Ui_Unk_140c1c360 at 0x140c1ce20 (base+0xc1ce20) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 16:41:18.009 [56304] [core] site site_Sess_PuPanel_Constructed at 0x141f50657 (base+0x1f50657) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 16:41:21.277 [50516] [gmr-retro] 0.3.58 ready: native live text, 30 visible rows / 13 columns, Live State v7 / HUD v2
+2026-11-26 16:41:21.277 [50516] [gmr-retro] track code '' -> 'TRACK UNAVAILABLE'
+2026-11-26 16:42:42.580 [50516] [gridstart] session.start: mode "my_team", session {"type":"practice","session":"practice_1","group":0,"track":"game/monza","weather":0,"laps":0,"setup_mode":""} -> offline mode, the lights check the session type and the cars
+2026-11-26 16:42:42.644 [50516] [gmr-retro] Vehicle VM captured: 000000034B12BF50, garage identity/vtable/initializer verified
+2026-11-26 16:42:42.660 [31180] [gmr-retro] track code 'monza' -> 'AUTODROMO NAZIONALE DI MONZA, ITALY'
+2026-11-26 16:42:43.245 [29984] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=1 self=000000034B0CDF30 flags=0 thread=29984 original=000000015844EFBC
+2026-11-26 16:42:43.245 [29984] [gmr-retro-l3] setup_destroy_retire tag=1 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0
+2026-11-26 16:42:43.245 [29984] [gmr-retro-l3] setup_destroy_return tag=1 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:42:43.245 [29984] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=2 self=000000034B0CDF30 flags=0 thread=29984 original=000000015844EFBC
+2026-11-26 16:42:43.245 [29984] [gmr-retro-l3] setup_destroy_retire tag=2 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0
+2026-11-26 16:42:43.245 [29984] [gmr-retro-l3] setup_destroy_return tag=2 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:42:43.723 [29984] [gmr-retro] Vehicle tab hidden through native visibility; component model retained
+2026-11-26 16:42:50.979 [ 2384] [gmr-retro] Car Setup native activation: 000000034B0CDF30, vtable verified, thread 2384; Vehicle initialization queued
+2026-11-26 16:42:50.994 [ 2384] [gmr-retro] Car Setup Vehicle initializer returned: owner=000000034B12BF50 data=0000000028C9E100 native rows=6 thread=2384
+2026-11-26 16:42:50.994 [48512] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=3 self=000000034B0CDF30 key=7e69bdef name=0000000027D1D220 data=0000000027D1D228 thread=48512
+2026-11-26 16:42:50.994 [48512] [gmr-retro-l3] setup_original_enter tag=3 self=000000034B0CDF30 key=7e69bdef name=0000000027D1D220 data=0000000027D1D228 original=000000015844EFD4 thread=48512
+2026-11-26 16:42:50.994 [48512] [gmr-retro-l3] setup_original_return tag=3 self=000000034B0CDF30 key=7e69bdef forwarded=1 thread=48512
+2026-11-26 16:42:51.010 [43468] [gmr-retro] Vehicle initialization deferred: Setup thread=2384, flow-frame thread=43468; no cross-thread call
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=4 self=000000034B0CDF30 key=ec04e0b0 name=0000000027D1D9E0 data=0000000027D1D9E8 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=4 self=000000034B12BF50 setup=000000034B0CDF30 key=ec04e0b0 name=0000000027D1D9E0 data=0000000027D1D9E8 target=0000000141F59730 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_return tag=4 self=000000034B12BF50 key=ec04e0b0 returned=1 faulted=0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_return tag=4 route=vehicle key=ec04e0b0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=5 self=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DA20 data=0000000027D1DA28 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=5 self=000000034B12BF50 setup=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DA20 data=0000000027D1DA28 target=0000000141F59730 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_return tag=5 self=000000034B12BF50 key=ec04e0b0 returned=1 faulted=0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_return tag=5 route=vehicle key=ec04e0b0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=6 self=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DBA0 data=0000000027D1DBA8 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=6 self=000000034B12BF50 setup=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DBA0 data=0000000027D1DBA8 target=0000000141F59730 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_return tag=6 self=000000034B12BF50 key=ec04e0b0 returned=1 faulted=0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_return tag=6 route=vehicle key=ec04e0b0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=7 self=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DBE0 data=0000000027D1DBE8 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=7 self=000000034B12BF50 setup=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DBE0 data=0000000027D1DBE8 target=0000000141F59730 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_return tag=7 self=000000034B12BF50 key=ec04e0b0 returned=1 faulted=0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_return tag=7 route=vehicle key=ec04e0b0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=8 self=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DE20 data=0000000027D1DE28 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=8 self=000000034B12BF50 setup=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DE20 data=0000000027D1DE28 target=0000000141F59730 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_return tag=8 self=000000034B12BF50 key=ec04e0b0 returned=1 faulted=0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_return tag=8 route=vehicle key=ec04e0b0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=9 self=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DE60 data=0000000027D1DE68 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=9 self=000000034B12BF50 setup=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DE60 data=0000000027D1DE68 target=0000000141F59730 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_return tag=9 self=000000034B12BF50 key=ec04e0b0 returned=1 faulted=0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_return tag=9 route=vehicle key=ec04e0b0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=10 self=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DEA0 data=0000000027D1DEA8 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=10 self=000000034B12BF50 setup=000000034B0CDF30 key=ec04e0b0 name=0000000027D1DEA0 data=0000000027D1DEA8 target=0000000141F59730 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] vehicle_command_return tag=10 self=000000034B12BF50 key=ec04e0b0 returned=1 faulted=0 thread=29984
+2026-11-26 16:42:51.010 [29984] [gmr-retro-l3] setup_command_return tag=10 route=vehicle key=ec04e0b0 thread=29984
+2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=11 self=000000034B0CDF30 key=713fcacb name=0000000027D1E8A0 data=0000000027D1E8A8 thread=29984
+2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_original_enter tag=11 self=000000034B0CDF30 key=713fcacb name=0000000027D1E8A0 data=0000000027D1E8A8 original=000000015844EFD4 thread=29984
+2026-11-26 16:42:52.101 [29984] [gmr-retro-l3] setup_original_return tag=11 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=29984
+2026-11-26 16:42:52.545 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=12 self=000000034B0CDF30 key=713fcacb name=0000000027D1E8A0 data=0000000027D1E8A8 thread=29984
+2026-11-26 16:42:52.545 [29984] [gmr-retro-l3] setup_original_enter tag=12 self=000000034B0CDF30 key=713fcacb name=0000000027D1E8A0 data=0000000027D1E8A8 original=000000015844EFD4 thread=29984
+2026-11-26 16:42:52.545 [29984] [gmr-retro-l3] setup_original_return tag=12 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=29984
+2026-11-26 16:42:52.927 [48512] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=13 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 thread=48512
+2026-11-26 16:42:52.927 [48512] [gmr-retro-l3] setup_original_enter tag=13 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 original=000000015844EFD4 thread=48512
+2026-11-26 16:42:52.927 [48512] [gmr-retro-l3] setup_original_return tag=13 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=48512
+2026-11-26 16:42:53.193 [48512] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=14 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 thread=48512
+2026-11-26 16:42:53.193 [48512] [gmr-retro-l3] setup_original_enter tag=14 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 original=000000015844EFD4 thread=48512
+2026-11-26 16:42:53.193 [48512] [gmr-retro-l3] setup_original_return tag=14 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=48512
+2026-11-26 16:42:53.510 [48512] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=15 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 thread=48512
+2026-11-26 16:42:53.510 [48512] [gmr-retro-l3] setup_original_enter tag=15 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 original=000000015844EFD4 thread=48512
+2026-11-26 16:42:53.510 [48512] [gmr-retro-l3] setup_original_return tag=15 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=48512
+2026-11-26 16:42:53.845 [ 2384] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=16 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 thread=2384
+2026-11-26 16:42:53.845 [ 2384] [gmr-retro-l3] setup_original_enter tag=16 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 original=000000015844EFD4 thread=2384
+2026-11-26 16:42:53.845 [ 2384] [gmr-retro-l3] setup_original_return tag=16 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=2384
+2026-11-26 16:42:54.160 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=17 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 thread=29984
+2026-11-26 16:42:54.160 [29984] [gmr-retro-l3] setup_original_enter tag=17 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 original=000000015844EFD4 thread=29984
+2026-11-26 16:42:54.160 [29984] [gmr-retro-l3] setup_original_return tag=17 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=29984
+2026-11-26 16:42:54.444 [39308] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=18 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 thread=39308
+2026-11-26 16:42:54.444 [39308] [gmr-retro-l3] setup_original_enter tag=18 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 original=000000015844EFD4 thread=39308
+2026-11-26 16:42:54.444 [39308] [gmr-retro-l3] setup_original_return tag=18 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=39308
+2026-11-26 16:42:54.693 [43468] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=19 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 thread=43468
+2026-11-26 16:42:54.693 [43468] [gmr-retro-l3] setup_original_enter tag=19 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 original=000000015844EFD4 thread=43468
+2026-11-26 16:42:54.694 [43468] [gmr-retro-l3] setup_original_return tag=19 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=43468
+2026-11-26 16:42:54.993 [ 2384] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=20 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 thread=2384
+2026-11-26 16:42:54.993 [ 2384] [gmr-retro-l3] setup_original_enter tag=20 self=000000034B0CDF30 key=713fcacb name=0000000027D1F2E0 data=0000000027D1F2E8 original=000000015844EFD4 thread=2384
+2026-11-26 16:42:54.993 [ 2384] [gmr-retro-l3] setup_original_return tag=20 self=000000034B0CDF30 key=713fcacb forwarded=1 thread=2384
+2026-11-26 16:42:55.543 [ 2384] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=21 self=000000034B0CDF30 key=ec04e0b0 name=0000000027D1F2E0 data=0000000027D1F2E8 thread=2384
+2026-11-26 16:42:55.543 [ 2384] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=21 self=000000034B12BF50 setup=000000034B0CDF30 key=ec04e0b0 name=0000000027D1F2E0 data=0000000027D1F2E8 target=0000000141F59730 thread=2384
+2026-11-26 16:42:55.543 [ 2384] [gmr-retro-l3] vehicle_command_return tag=21 self=000000034B12BF50 key=ec04e0b0 returned=1 faulted=0 thread=2384
+2026-11-26 16:42:55.543 [ 2384] [gmr-retro-l3] setup_command_return tag=21 route=vehicle key=ec04e0b0 thread=2384
+2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=22 self=000000034B0CDF30 key=461d9dde name=0000000027D1F2A0 data=0000000027D1F2A8 thread=29984
+2026-11-26 16:43:03.746 [29984] [gmr-retro] Native component fitting requested from Car Setup
+2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=22 self=000000034B12BF50 setup=000000034B0CDF30 key=461d9dde name=0000000027D1F2A0 data=0000000027D1F2A8 target=0000000141F59730 thread=29984
+2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] vehicle_command_return tag=22 self=000000034B12BF50 key=461d9dde returned=1 faulted=0 thread=29984
+2026-11-26 16:43:03.746 [29984] [gmr-retro-l3] setup_command_return tag=22 route=vehicle key=461d9dde thread=29984
+2026-11-26 16:43:06.044 [50516] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=23 self=000000034B0CDF30 key=461d9dde name=0000000027D1F2E0 data=0000000027D1F2E8 thread=50516
+2026-11-26 16:43:06.044 [50516] [gmr-retro] Native component fitting requested from Car Setup
+2026-11-26 16:43:06.044 [50516] [gmr-retro-l3] vehicle_command_enter id=Game_VehicleManagementVM_HandleCommand tag=23 self=000000034B12BF50 setup=000000034B0CDF30 key=461d9dde name=0000000027D1F2E0 data=0000000027D1F2E8 target=0000000141F59730 thread=50516
+2026-11-26 16:43:06.044 [50516] [gmr-retro-l3] vehicle_command_return tag=23 self=000000034B12BF50 key=461d9dde returned=1 faulted=0 thread=50516
+2026-11-26 16:43:06.044 [50516] [gmr-retro-l3] setup_command_return tag=23 route=vehicle key=461d9dde thread=50516
+2026-11-26 16:43:25.094 [ 2384] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=24 self=000000034B0CDF30 key=7e69bdef name=0000000027D1F960 data=0000000027D1F968 thread=2384
+2026-11-26 16:43:25.094 [ 2384] [gmr-retro-l3] setup_original_enter tag=24 self=000000034B0CDF30 key=7e69bdef name=0000000027D1F960 data=0000000027D1F968 original=000000015844EFD4 thread=2384
+2026-11-26 16:43:25.094 [ 2384] [gmr-retro-l3] setup_original_return tag=24 self=000000034B0CDF30 key=7e69bdef forwarded=1 thread=2384
+2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=25 self=000000034B0CDF30 thread=29984 original=000000015844EFA4
+2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_retire tag=25 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0
+2026-11-26 16:43:25.778 [29984] [gmr-retro-l3] setup_deactivate_return tag=25 self=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:43:26.414 [29984] [gmr-retro] Car Setup native activation: 000000034B0CDF30, vtable verified, thread 29984; Vehicle initialization queued
+2026-11-26 16:43:26.428 [48512] [gmr-retro] Vehicle initialization deferred: Setup thread=29984, flow-frame thread=48512; no cross-thread call
+2026-11-26 16:43:26.878 [29984] [gmr-retro] Car Setup Vehicle VM already initialized: 000000034B12BF50, native rows=6
+2026-11-26 16:43:28.245 [29984] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=26 self=000000034B0CDF30 thread=29984 original=000000015844EFA4
+2026-11-26 16:43:28.245 [29984] [gmr-retro-l3] setup_deactivate_retire tag=26 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0
+2026-11-26 16:43:28.245 [29984] [gmr-retro-l3] setup_deactivate_return tag=26 self=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:43:28.994 [29984] [gmr-retro] Car Setup native activation: 000000034B0CDF30, vtable verified, thread 29984; Vehicle initialization queued
+2026-11-26 16:43:29.012 [46824] [gmr-retro] Vehicle initialization deferred: Setup thread=29984, flow-frame thread=46824; no cross-thread call
+2026-11-26 16:43:29.012 [29984] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=27 self=000000034B0CDF30 key=7e69bdef name=0000000027D1DB20 data=0000000027D1DB28 thread=29984
+2026-11-26 16:43:29.012 [29984] [gmr-retro-l3] setup_original_enter tag=27 self=000000034B0CDF30 key=7e69bdef name=0000000027D1DB20 data=0000000027D1DB28 original=000000015844EFD4 thread=29984
+2026-11-26 16:43:29.012 [29984] [gmr-retro-l3] setup_original_return tag=27 self=000000034B0CDF30 key=7e69bdef forwarded=1 thread=29984
+2026-11-26 16:43:29.428 [29984] [gmr-retro] Car Setup Vehicle VM already initialized: 000000034B12BF50, native rows=6
+2026-11-26 16:43:29.878 [ 2384] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=28 self=000000034B0CDF30 thread=2384 original=000000015844EFA4
+2026-11-26 16:43:29.878 [ 2384] [gmr-retro-l3] setup_deactivate_retire tag=28 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0
+2026-11-26 16:43:29.878 [ 2384] [gmr-retro-l3] setup_deactivate_return tag=28 self=000000034B0CDF30 forwarded=1 thread=2384
+2026-11-26 16:43:30.328 [48512] [gmr-retro] Car Setup native activation: 000000034B0CDF30, vtable verified, thread 48512; Vehicle initialization queued
+2026-11-26 16:43:30.344 [46824] [gmr-retro] Vehicle initialization deferred: Setup thread=48512, flow-frame thread=46824; no cross-thread call
+2026-11-26 16:43:30.411 [48512] [gmr-retro] Car Setup Vehicle VM already initialized: 000000034B12BF50, native rows=6
+2026-11-26 16:43:31.695 [ 2384] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=29 self=000000034B0CDF30 thread=2384 original=000000015844EFA4
+2026-11-26 16:43:31.695 [ 2384] [gmr-retro-l3] setup_deactivate_retire tag=29 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0
+2026-11-26 16:43:31.695 [ 2384] [gmr-retro-l3] setup_deactivate_return tag=29 self=000000034B0CDF30 forwarded=1 thread=2384
+2026-11-26 16:43:32.662 [ 2384] [gmr-retro] Car Setup native activation: 000000034B0CDF30, vtable verified, thread 2384; Vehicle initialization queued
+2026-11-26 16:43:32.678 [39308] [gmr-retro] Vehicle initialization deferred: Setup thread=2384, flow-frame thread=39308; no cross-thread call
+2026-11-26 16:43:32.678 [ 2384] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=30 self=000000034B0CDF30 key=7e69bdef name=0000000027D1C720 data=0000000027D1C728 thread=2384
+2026-11-26 16:43:32.678 [ 2384] [gmr-retro-l3] setup_original_enter tag=30 self=000000034B0CDF30 key=7e69bdef name=0000000027D1C720 data=0000000027D1C728 original=000000015844EFD4 thread=2384
+2026-11-26 16:43:32.678 [ 2384] [gmr-retro-l3] setup_original_return tag=30 self=000000034B0CDF30 key=7e69bdef forwarded=1 thread=2384
+2026-11-26 16:43:32.745 [ 2384] [gmr-retro] Car Setup Vehicle VM already initialized: 000000034B12BF50, native rows=6
+2026-11-26 16:43:33.478 [29984] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=31 self=000000034B0CDF30 thread=29984 original=000000015844EFA4
+2026-11-26 16:43:33.478 [29984] [gmr-retro-l3] setup_deactivate_retire tag=31 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0
+2026-11-26 16:43:33.478 [29984] [gmr-retro-l3] setup_deactivate_return tag=31 self=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:43:35.612 [29984] [gmr-retro] Car Setup native activation: 000000034B0CDF30, vtable verified, thread 29984; Vehicle initialization queued
+2026-11-26 16:43:35.628 [48512] [gmr-retro] Vehicle initialization deferred: Setup thread=29984, flow-frame thread=48512; no cross-thread call
+2026-11-26 16:43:35.695 [29984] [gmr-retro] Car Setup Vehicle VM already initialized: 000000034B12BF50, native rows=6
+2026-11-26 16:43:36.445 [29984] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=32 self=000000034B0CDF30 thread=29984 original=000000015844EFA4
+2026-11-26 16:43:36.445 [29984] [gmr-retro-l3] setup_deactivate_retire tag=32 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0
+2026-11-26 16:43:36.445 [29984] [gmr-retro-l3] setup_deactivate_return tag=32 self=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:43:37.045 [29984] [gmr-retro] Car Setup native activation: 000000034B0CDF30, vtable verified, thread 29984; Vehicle initialization queued
+2026-11-26 16:43:37.062 [29984] [gmr-retro] Car Setup Vehicle VM already initialized: 000000034B12BF50, native rows=6
+2026-11-26 16:43:37.063 [46824] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=33 self=000000034B0CDF30 key=7e69bdef name=0000000021FB32A0 data=0000000021FB32A8 thread=46824
+2026-11-26 16:43:37.063 [46824] [gmr-retro-l3] setup_original_enter tag=33 self=000000034B0CDF30 key=7e69bdef name=0000000021FB32A0 data=0000000021FB32A8 original=000000015844EFD4 thread=46824
+2026-11-26 16:43:37.063 [46824] [gmr-retro-l3] setup_original_return tag=33 self=000000034B0CDF30 key=7e69bdef forwarded=1 thread=46824
+2026-11-26 16:43:37.078 [48512] [gmr-retro] Vehicle initialization deferred: Setup thread=29984, flow-frame thread=48512; no cross-thread call
+2026-11-26 16:43:42.329 [ 2384] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=34 self=000000034B0CDF30 thread=2384 original=000000015844EFA4
+2026-11-26 16:43:42.329 [ 2384] [gmr-retro-l3] setup_deactivate_retire tag=34 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0
+2026-11-26 16:43:42.329 [ 2384] [gmr-retro-l3] setup_deactivate_return tag=34 self=000000034B0CDF30 forwarded=1 thread=2384
+2026-11-26 16:43:45.365 [29984] [gmr-retro] Car Setup native activation: 000000034B0CDF30, vtable verified, thread 29984; Vehicle initialization queued
+2026-11-26 16:43:45.378 [31180] [gmr-retro] Vehicle initialization deferred: Setup thread=29984, flow-frame thread=31180; no cross-thread call
+2026-11-26 16:43:45.378 [ 2384] [gmr-retro-l3] setup_command_enter id=Ui_Unk_140c1c360 tag=35 self=000000034B0CDF30 key=7e69bdef name=0000000027DC0D60 data=0000000027DC0D68 thread=2384
+2026-11-26 16:43:45.378 [ 2384] [gmr-retro-l3] setup_original_enter tag=35 self=000000034B0CDF30 key=7e69bdef name=0000000027DC0D60 data=0000000027DC0D68 original=000000015844EFD4 thread=2384
+2026-11-26 16:43:45.378 [ 2384] [gmr-retro-l3] setup_original_return tag=35 self=000000034B0CDF30 key=7e69bdef forwarded=1 thread=2384
+2026-11-26 16:43:45.846 [ 2384] [gmr-retro-l3] setup_deactivate_enter id=Game_CarSetupVm_OnDeactivate_Thunk tag=36 self=000000034B0CDF30 thread=2384 original=000000015844EFA4
+2026-11-26 16:43:45.846 [ 2384] [gmr-retro-l3] setup_deactivate_retire tag=36 self=000000034B0CDF30 type_match=1 tracked_before=1 tracked_after=0
+2026-11-26 16:43:45.846 [ 2384] [gmr-retro-l3] setup_deactivate_return tag=36 self=000000034B0CDF30 forwarded=1 thread=2384
+2026-11-26 16:43:53.479 [29984] [gmr-retro] Vehicle VM released before native teardown: 000000034B12BF50
+2026-11-26 16:49:24.523 [43468] [gmr-retro] Vehicle VM captured: 000000034B153650, garage identity/vtable/initializer verified
+2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=37 self=000000034B0CDF30 flags=0 thread=29984 original=000000015844EFBC
+2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_retire tag=37 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0
+2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_return tag=37 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=38 self=000000034B0CDF30 flags=0 thread=29984 original=000000015844EFBC
+2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_retire tag=38 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0
+2026-11-26 16:49:24.568 [29984] [gmr-retro-l3] setup_destroy_return tag=38 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:49:24.824 [44220] [gmr-retro] Vehicle tab hidden through native visibility; component model retained
+2026-11-26 16:50:13.423 [29984] [gmr-retro] Vehicle VM released before native teardown: 000000034B153650
+2026-11-26 16:58:49.007 [48512] [gmr-retro] Vehicle VM captured: 000000034B1585F0, garage identity/vtable/initializer verified
+2026-11-26 16:58:49.049 [29984] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=39 self=000000034B0CDF30 flags=0 thread=29984 original=000000015844EFBC
+2026-11-26 16:58:49.049 [29984] [gmr-retro-l3] setup_destroy_retire tag=39 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0
+2026-11-26 16:58:49.049 [29984] [gmr-retro-l3] setup_destroy_return tag=39 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:58:49.049 [29984] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=40 self=000000034B0CDF30 flags=0 thread=29984 original=000000015844EFBC
+2026-11-26 16:58:49.049 [29984] [gmr-retro-l3] setup_destroy_retire tag=40 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0
+2026-11-26 16:58:49.049 [29984] [gmr-retro-l3] setup_destroy_return tag=40 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=29984
+2026-11-26 16:58:49.158 [17556] [gmr-retro] Vehicle tab hidden through native visibility; component model retained
+2026-11-26 16:58:52.553 [29984] [gmr-retro] Vehicle VM released before native teardown: 000000034B1585F0
+2026-11-26 17:03:12.684 [48512] [gmr-retro] track code '' -> 'TRACK UNAVAILABLE'
+2026-11-26 17:03:12.803 [50516] [gmr-retro-l3] setup_destroy_enter id=Game_CarSetupVm_Destroy tag=41 self=000000034B0CDF30 flags=0 thread=50516 original=000000015844EFBC
+2026-11-26 17:03:12.803 [50516] [gmr-retro-l3] setup_destroy_retire tag=41 self=000000034B0CDF30 type_match=1 tracked_before=0 tracked_after=0
+2026-11-26 17:03:12.803 [50516] [gmr-retro-l3] setup_destroy_return tag=41 self=000000034B0CDF30 flags=0 result=000000034B0CDF30 forwarded=1 thread=50516
+2026-11-26 17:03:13.688 [48512] [gridstart] session.start: mode "my_team", session {"type":"practice","session":"practice_2","group":0,"track":"game/monza","weather":0,"laps":0,"setup_mode":""} -> offline mode, the lights check the session type and the cars
+2026-11-26 17:03:13.757 [48512] [gmr-retro] Vehicle VM captured: 000000034B144480, garage identity/vtable/initializer verified
+2026-11-26 17:03:13.778 [15052] [gmr-retro] track code 'monza' -> 'AUTODROMO NAZIONALE DI MONZA, ITALY'

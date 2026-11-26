@@ -96,7 +96,6 @@ struct Surface {
     height: u32,
     mips: u32,
     slices: u32,
-    extra: u32,
 }
 
 fn u32_at(d: &[u8], at: usize) -> Result<u32> {
@@ -116,7 +115,6 @@ fn surface(head: &[u8]) -> Result<Surface> {
         height: u32_at(head, 16)?,
         mips: u32_at(head, 24)?,
         slices: u32_at(head, 28)?,
-        extra: u32_at(head, 36)?,
     })
 }
 
@@ -412,6 +410,10 @@ pub fn stamp(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf) -> Result<Strin
     Ok(crate::game_folder::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
+fn entry_complete(out: &Path, done: &Path, targets: &[String]) -> bool {
+    done.is_file() && targets.iter().all(|rel| out.join(rel).is_file())
+}
+
 pub type Lists = BTreeMap<String, BTreeSet<String>>;
 
 pub type Kept = BTreeMap<(String, String), BTreeSet<String>>;
@@ -451,6 +453,25 @@ fn kept(maps: &[MapUi], lists: &Lists, array_erps: &BTreeMap<String, Vec<&str>>)
     kept
 }
 
+fn misfit(s: &Surface, t: &Surface, list: &str) -> Option<String> {
+    if s.format != t.format {
+        return Some(format!(
+            "has format {:#x}, {list} wants {:#x}",
+            s.format, t.format
+        ));
+    }
+    if (s.width, s.height) != (t.width, t.height) {
+        return Some(format!(
+            "is {}x{}, {list} wants {}x{}",
+            s.width, s.height, t.width, t.height
+        ));
+    }
+    if s.mips != t.mips {
+        return Some(format!("has {} mips, {list} wants {}", s.mips, t.mips));
+    }
+    None
+}
+
 pub fn plan_lists(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf) -> Result<(Lists, Vec<String>)> {
     let mut lists = BTreeMap::new();
     let mut notes = Vec::new();
@@ -483,21 +504,11 @@ pub fn plan_lists(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf) -> Result<
                 notes.push(format!("{}: the game has no {list} texture array", m.code()));
                 continue;
             };
-            let fits = (s.format, s.width, s.height, s.mips, s.extra)
-                == (t.format, t.width, t.height, t.mips, t.extra);
-            if fits {
-                set.insert((*list).to_owned());
-            } else {
-                notes.push(format!(
-                    "{}: {key} is {}x{} format {:#x}, {list} wants {}x{} format {:#x}; left out",
-                    m.code(),
-                    s.width,
-                    s.height,
-                    s.format,
-                    t.width,
-                    t.height,
-                    t.format
-                ));
+            match misfit(&s, t, list) {
+                None => {
+                    set.insert((*list).to_owned());
+                }
+                Some(why) => notes.push(format!("{}: {key} {why}; left out", m.code())),
             }
         }
         lists.insert(m.code().to_owned(), set);
@@ -546,7 +557,7 @@ pub fn build_ui(
     targets.sort();
     targets.dedup();
     let done = out.join(".done");
-    if !done.is_file() {
+    if !entry_complete(&out, &done, &targets) {
         let loaded: Vec<Map> = maps.iter().map(Map::load).collect::<Result<_>>()?;
         let mut edits: BTreeMap<String, HashMap<String, Resource>> = BTreeMap::new();
 
@@ -754,6 +765,23 @@ pub fn build_ui(
 mod tests {
     use super::*;
 
+    #[test]
+    fn a_menus_entry_missing_a_target_is_not_complete() {
+        let out = std::env::temp_dir().join(format!("swofty-menus-entry-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&out);
+        let done = out.join(".done");
+        let targets = vec![ui_file("databases.erp"), ui_file("flow_car_monitor.erp")];
+        std::fs::create_dir_all(out.join(ui_file("databases.erp")).parent().unwrap()).unwrap();
+        std::fs::write(out.join(ui_file("databases.erp")), b"x").unwrap();
+        std::fs::write(&done, b"").unwrap();
+        assert!(!entry_complete(&out, &done, &targets));
+        std::fs::write(out.join(ui_file("flow_car_monitor.erp")), b"x").unwrap();
+        assert!(entry_complete(&out, &done, &targets));
+        std::fs::remove_file(&done).unwrap();
+        assert!(!entry_complete(&out, &done, &targets));
+        let _ = std::fs::remove_dir_all(&out);
+    }
+
     fn array(slices: u8, size: usize) -> Vec<u8> {
         (0..slices).flat_map(|i| vec![i; size]).collect()
     }
@@ -807,5 +835,91 @@ mod tests {
         let mut slices = 4;
         put_slice(&mut data, &mut slices, 6, &[9; 2], Some(10));
         assert_eq!(&data[8..], [0, 0, 0, 0, 9, 9]);
+    }
+
+    fn head(format: u32, width: u32, height: u32, mips: u32, extra: u32) -> Vec<u8> {
+        let mut h = vec![0u8; 40];
+        for (at, v) in [
+            (8, format),
+            (12, width),
+            (16, height),
+            (24, mips),
+            (28, 1),
+            (36, extra),
+        ] {
+            put_u32(&mut h, at, v);
+        }
+        h
+    }
+
+    fn fit(add: &[u8], stock: &[u8], list: &str) -> Option<String> {
+        misfit(&surface(add).unwrap(), &surface(stock).unwrap(), list)
+    }
+
+    #[test]
+    fn a_flag_fits_a_stock_array_whose_header_carries_an_extra_word() {
+        let stock = head(0x46, 100, 64, 1, 8);
+        let addon = head(0x46, 100, 64, 1, 0);
+        assert_eq!(fit(&addon, &stock, "tracks.flags_rectangle"), None);
+    }
+
+    #[test]
+    fn a_misfit_names_the_field_and_the_wanted_value() {
+        let list = "tracks.flags_rectangle";
+        let stock = head(0x46, 100, 64, 1, 8);
+        assert_eq!(
+            fit(&head(0x46, 100, 64, 7, 0), &stock, list).unwrap(),
+            "has 7 mips, tracks.flags_rectangle wants 1"
+        );
+        assert_eq!(
+            fit(&head(0x46, 50, 64, 1, 0), &stock, list).unwrap(),
+            "is 50x64, tracks.flags_rectangle wants 100x64"
+        );
+        assert_eq!(
+            fit(&head(0x45, 100, 64, 1, 0), &stock, list).unwrap(),
+            "has format 0x45, tracks.flags_rectangle wants 0x46"
+        );
+    }
+
+    #[test]
+    #[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+    fn a_standard_flag_fits_every_stock_flag_array() {
+        let data = PathBuf::from(std::env::var_os("SWOFTY_STOCK_DATA").expect("set"));
+        let baseline = std::fs::read_dir(data.join("baseline"))
+            .unwrap()
+            .flatten()
+            .map(|e| e.path().join("baseline.json"))
+            .find(|p| p.is_file())
+            .unwrap();
+        let b: crate::game_folder::baseline::Baseline =
+            serde_json::from_slice(&std::fs::read(baseline).unwrap()).unwrap();
+        let objects = crate::game_folder::baseline::Objects {
+            root: data.join("baseline/objects"),
+        };
+        let mut seen = 0;
+        for (list, size) in [
+            ("tracks.flags_circle", (28, 28)),
+            ("tracks.flags_rectangle", (100, 64)),
+            ("tracks.flags_rectangle_small", (40, 28)),
+        ] {
+            let name = format!("{}.image", texarray(list));
+            for rel in UI_ERPS {
+                let Some(f) = b.files.get(&ui_file(rel)) else {
+                    continue;
+                };
+                let Some(r) = Erp::read_matching(&objects.path(&f.sha256), |n| n == name)
+                    .unwrap()
+                    .pop()
+                else {
+                    continue;
+                };
+                let stock = r.fragments[0].data().unwrap();
+                let add = head(0x46, size.0, size.1, 1, 0);
+                assert_eq!(fit(&add, &stock, list), None, "{list}");
+                seen += 1;
+                break;
+            }
+        }
+        assert_eq!(seen, 3);
     }
 }

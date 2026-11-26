@@ -7,6 +7,7 @@
 #include "core/career/save_splice_logic.hpp"
 
 #include <cstdio>
+#include <new>
 #include <map>
 #include <memory>
 #include <string>
@@ -216,8 +217,60 @@ static bool read_block(const std::vector<uint8_t> &bytes, Bag &out)
     return read_bag(in, out) && in.at == bytes.size();
 }
 
+namespace {
+struct Budget {
+    int left;
+};
+
+template <class T> struct FailingAlloc {
+    using value_type = T;
+    Budget *budget;
+    explicit FailingAlloc(Budget *b) : budget(b) {}
+    template <class U> FailingAlloc(const FailingAlloc<U> &o) : budget(o.budget) {}
+    T *allocate(size_t n)
+    {
+        if (budget->left-- <= 0)
+            throw std::bad_alloc();
+        return std::allocator<T>().allocate(n);
+    }
+    void deallocate(T *p, size_t n) { std::allocator<T>().deallocate(p, n); }
+    template <class U> bool operator==(const FailingAlloc<U> &o) const { return budget == o.budget; }
+    template <class U> bool operator!=(const FailingAlloc<U> &o) const { return budget != o.budget; }
+};
+}
+
+static void tee_buffer()
+{
+    const uint8_t chunk[64] = {1, 2, 3};
+    sp::TeeBuffer plain(100);
+    plain.append(chunk, 64);
+    plain.push(9);
+    expect(plain.bytes().size() == 65 && !plain.overflow() && !plain.no_memory(), "the capture buffer holds what is written");
+    plain.append(chunk, 64);
+    expect(plain.overflow() && !plain.no_memory(), "a write past the cap marks an overflow");
+    plain.clear();
+    expect(!plain.overflow() && plain.bytes().empty(), "clear starts a new capture");
+
+    Budget budget{1};
+    sp::BasicTeeBuffer<FailingAlloc<uint8_t>> failing(1u << 20, FailingAlloc<uint8_t>(&budget));
+    bool threw = false;
+    try {
+        for (int i = 0; i < 64; i++)
+            failing.append(chunk, 64);
+        for (int i = 0; i < 64; i++)
+            failing.push(1);
+    } catch (...) {
+        threw = true;
+    }
+    expect(!threw, "an append that cannot allocate does not throw into the game's write slot");
+    expect(failing.no_memory() && failing.bytes().empty(), "it gives up the capture and releases the buffer");
+    failing.append(chunk, 1);
+    expect(failing.bytes().empty(), "a given-up capture takes no more bytes");
+}
+
 int main()
 {
+    tee_buffer();
     auto stock26 = career_bag("s", 3);
     auto stock24 = career_bag("t", 1);
     auto progressive = career_bag("p", 2);

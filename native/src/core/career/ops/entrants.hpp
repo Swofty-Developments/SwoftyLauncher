@@ -7,6 +7,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <swofty/game.hpp>
@@ -97,15 +98,22 @@ public:
     {
         for (auto &r : rows)
             rows_.push_back(r.rec);
+        rebind();
+    }
+    explicit Baseline(std::vector<EntrantRecord> rows) : rows_(std::move(rows)) { rebind(); }
+    Baseline(const Baseline &) = delete;
+    Baseline &operator=(const Baseline &) = delete;
+    const void *vector() const { return &vec_; }
+    const std::vector<EntrantRecord> &rows() const { return rows_; }
+    void settle(const std::vector<Row> &now, uint32_t driver);
+
+private:
+    void rebind()
+    {
         vec_.begin = rows_.data();
         vec_.end = rows_.data() + rows_.size();
         vec_.capacity = vec_.end;
     }
-    Baseline(const Baseline &) = delete;
-    Baseline &operator=(const Baseline &) = delete;
-    const void *vector() const { return &vec_; }
-
-private:
     struct Vec {
         void *allocator = nullptr;
         const EntrantRecord *begin = nullptr;

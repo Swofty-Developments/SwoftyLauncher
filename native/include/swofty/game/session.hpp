@@ -627,6 +627,8 @@ using Sess_PreRace_Update_t = uint32_t *(void *state, uint32_t *route, double dt
 inline constexpr fn<"Sess_PreRace_Update", Sess_PreRace_Update_t> Sess_PreRace_Update{}; // L2 experimental
 inline constexpr address<"Sess_Progress_ComputeTimeGap"> Sess_Progress_ComputeTimeGap{}; // L2 experimental
 inline constexpr address<"Sess_Progress_SyncResultRecord"> Sess_Progress_SyncResultRecord{}; // L2 experimental
+using Sess_PuPanel_BuildComponents_t = void(void *vm);
+inline constexpr fn<"Sess_PuPanel_BuildComponents", Sess_PuPanel_BuildComponents_t> Sess_PuPanel_BuildComponents{}; // L3 stable
 using Sess_PuPanel_FillComponent_t = void(void *vm, uint64_t a2, uint32_t slot, uint8_t a4, uint8_t a5, void *entry);
 inline constexpr fn<"Sess_PuPanel_FillComponent", Sess_PuPanel_FillComponent_t> Sess_PuPanel_FillComponent{}; // L2 experimental
 inline constexpr address<"Sess_PursuitRuleset_FinaliseResults"> Sess_PursuitRuleset_FinaliseResults{}; // L2 experimental

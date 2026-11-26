@@ -9,7 +9,7 @@ use super::exec::{command_for, elf_interpreter};
 #[cfg(target_os = "linux")]
 use super::extension::set_executable;
 use super::extension::{
-    BLOCKED, Failure, RUNNERS, download, download_dir, fetch_release, install_files, staging_dir,
+    BLOCKED, CUT_OFF, Failure, RUNNERS, download, download_dir, fetch_release, install_files, staging_dir,
 };
 use super::heal::heal_launcher;
 use super::*;
@@ -31,41 +31,122 @@ fn temp(name: &str) -> PathBuf {
     d
 }
 
+#[derive(Clone)]
 enum Reply {
     Body(Vec<u8>),
     Status(u16),
-    CutOff { claimed: usize, sent: Vec<u8> },
+    CutOff {
+        claimed: usize,
+        sent: Vec<u8>,
+    },
+    Flaky {
+        body: Vec<u8>,
+        cut: usize,
+        times: usize,
+        range: bool,
+        hang: bool,
+    },
 }
 
+type Requests = std::sync::Arc<std::sync::Mutex<Vec<(String, Option<String>)>>>;
+
 fn serve(routes: Vec<(String, Reply)>) -> String {
+    serve_logged(routes).0
+}
+
+fn serve_logged(routes: Vec<(String, Reply)>) -> (String, Requests) {
     use std::io::{BufRead, BufReader, Write};
+    use std::sync::{Arc, Mutex};
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let base = format!("http://{}", listener.local_addr().unwrap());
+    let log: Requests = Arc::default();
+    let seen = log.clone();
+    let routes = Arc::new(routes);
+    let served: Arc<Mutex<std::collections::HashMap<String, usize>>> = Arc::default();
     std::thread::spawn(move || {
         for mut stream in listener.incoming().flatten() {
-            let mut reader = BufReader::new(stream.try_clone().unwrap());
-            let mut request = String::new();
-            reader.read_line(&mut request).ok();
-            let path = request.split_whitespace().nth(1).unwrap_or_default().to_owned();
-            loop {
-                let mut header = String::new();
-                if reader.read_line(&mut header).unwrap_or(0) <= 2 {
-                    break;
+            let (routes, log, served) = (routes.clone(), seen.clone(), served.clone());
+            std::thread::spawn(move || {
+                let mut reader = BufReader::new(stream.try_clone().unwrap());
+                let mut request = String::new();
+                reader.read_line(&mut request).ok();
+                let path = request.split_whitespace().nth(1).unwrap_or_default().to_owned();
+                let mut asked = None;
+                loop {
+                    let mut header = String::new();
+                    if reader.read_line(&mut header).unwrap_or(0) <= 2 {
+                        break;
+                    }
+                    if let Some((name, value)) = header.split_once(':')
+                        && name.eq_ignore_ascii_case("range")
+                    {
+                        asked = Some(value.trim().to_owned());
+                    }
                 }
-            }
-            let (status, length, body) = match routes.iter().find(|(p, _)| *p == path) {
-                Some((_, Reply::Body(b))) => (200, b.len(), b.clone()),
-                Some((_, Reply::Status(code))) => (*code, 0, Vec::new()),
-                Some((_, Reply::CutOff { claimed, sent })) => (200, *claimed, sent.clone()),
-                None => (404, 0, Vec::new()),
-            };
-            let head =
-                format!("HTTP/1.1 {status} X\r\nContent-Length: {length}\r\nConnection: close\r\n\r\n");
-            stream.write_all(head.as_bytes()).ok();
-            stream.write_all(&body).ok();
+                log.lock().unwrap().push((path.clone(), asked.clone()));
+                let mut hang = false;
+                let mut head_extra = String::new();
+                let (status, length, body) = match routes.iter().find(|(p, _)| *p == path) {
+                    Some((_, Reply::Body(b))) => (200, b.len(), b.clone()),
+                    Some((_, Reply::Status(code))) => (*code, 0, Vec::new()),
+                    Some((_, Reply::CutOff { claimed, sent })) => (200, *claimed, sent.clone()),
+                    Some((
+                        _,
+                        Reply::Flaky {
+                            body,
+                            cut,
+                            times,
+                            range,
+                            hang: h,
+                        },
+                    )) => {
+                        let n = {
+                            let mut served = served.lock().unwrap();
+                            let n = served.entry(path.clone()).or_default();
+                            *n += 1;
+                            *n
+                        };
+                        let from = asked
+                            .as_deref()
+                            .filter(|_| *range)
+                            .and_then(|r| {
+                                r.strip_prefix("bytes=")?
+                                    .trim_end_matches('-')
+                                    .parse::<usize>()
+                                    .ok()
+                            })
+                            .unwrap_or(0);
+                        let status = if from > 0 { 206 } else { 200 };
+                        if from > 0 {
+                            head_extra = format!(
+                                "Content-Range: bytes {from}-{}/{}\r\n",
+                                body.len() - 1,
+                                body.len()
+                            );
+                        }
+                        let due = body[from..].to_vec();
+                        if n <= *times {
+                            hang = *h;
+                            (status, due.len(), due[..(*cut).min(due.len())].to_vec())
+                        } else {
+                            (status, due.len(), due)
+                        }
+                    }
+                    None => (404, 0, Vec::new()),
+                };
+                let head = format!(
+                    "HTTP/1.1 {status} X\r\nContent-Length: {length}\r\n{head_extra}Connection: close\r\n\r\n"
+                );
+                stream.write_all(head.as_bytes()).ok();
+                stream.write_all(&body).ok();
+                stream.flush().ok();
+                if hang {
+                    std::thread::sleep(std::time::Duration::from_secs(3));
+                }
+            });
         }
     });
-    base
+    (base, log)
 }
 
 fn fake_release() -> Vec<(&'static str, String)> {
@@ -95,7 +176,11 @@ fn fetch_from(
 ) -> Result<()> {
     let pins = digests(release);
     let pins: Vec<(&str, &str)> = pins.iter().map(|(n, h)| (*n, h.as_str())).collect();
-    fetch_release(d, FAKE_HOST, "9.9.9", &pins, get, sleep)
+    let mut whole = |url: &str, body: &mut Vec<u8>| {
+        *body = get(url)?;
+        Ok(())
+    };
+    fetch_release(d, FAKE_HOST, "9.9.9", &pins, &mut whole, sleep)
 }
 
 fn url_of(name: &str) -> String {
