@@ -11,12 +11,13 @@ use std::time::SystemTime;
 pub const ALLOW_ENV: &str = "SWOFTY_ALLOW_UNSUPPORTED_BUILD";
 
 pub const BUILD_1_0_145: (u64, u32) = (391_613_312, 1_794_312_636);
+pub const BUILD_1_0_145_EA: (u64, u32) = (355_003_776, 1_794_315_435);
 
 const SUPPORTED: &[(u64, u32)] = &[
     (408_063_872, 1_789_118_616),
     (342_936_448, 1_789_128_892),
     BUILD_1_0_145,
-    (355_003_776, 1_794_315_435),
+    BUILD_1_0_145_EA,
 ];
 
 pub fn identity(exe: &Path) -> Option<(u64, u32)> {

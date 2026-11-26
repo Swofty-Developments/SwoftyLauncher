@@ -11,6 +11,18 @@ const EXIT_FRAMES: [&str; 8] = [
     "F1_25.exe+0x3ac75a1 .xtls fn base+0x3ac7500+0xa1",
 ];
 
+const EA_FRAMES: [&str; 9] = [
+    "F1_25.exe+0x11b3d2eb .xtls fn base+0x11b3d1f0+0xfb",
+    "F1_25.exe+0x430e0f1 .xtls fn base+0x430e0a0+0x51",
+    "F1_25.exe+0x42ef6a2 .xtls fn base+0x42ef660+0x42",
+    "F1_25.exe+0x42ef6a2 .xtls fn base+0x42ef660+0x42",
+    "F1_25.exe+0x415d887 .xtls fn base+0x415d800+0x87",
+    "F1_25.exe+0x449a0d6 .xtls fn base+0x449a0a0+0x36",
+    "F1_25.exe+0x3ab0223 .xtls fn base+0x3ab0100+0x123",
+    "F1_25.exe+0x3ab45c1 .xtls fn base+0x3ab4500+0xc1",
+    "F1_25.exe+0x390d78a .xtls fn base+0x390d700+0x8a",
+];
+
 const SIBLING_FRAMES: [&str; 8] = [
     "F1_25.exe+0x43700c6 .xtls fn base+0x436ffc0+0x106",
     "F1_25.exe+0x436c210 .xtls fn base+0x436c200+0x10",
@@ -47,6 +59,32 @@ fn on_steam(loader: &str) -> Evidence {
     let mut e = ev(loader, &[]);
     e.game_build = Some(crate::build_support::BUILD_1_0_145);
     e
+}
+
+fn on_ea(loader: &str) -> Evidence {
+    let mut e = ev(loader, &[]);
+    e.game_build = Some(crate::build_support::BUILD_1_0_145_EA);
+    e
+}
+
+#[test]
+fn the_ea_build_fault_as_a_session_ends_is_recognised() {
+    let log = exit_crash(&EA_FRAMES, "writing 0x2ea427985", "16:53:08.800");
+    let d = diagnose(&on_ea(&log)).unwrap();
+    assert_eq!(d.id, "session_exit_fault");
+    assert!(d.what.contains("as a session ended"), "{}", d.what);
+}
+
+#[test]
+fn the_ea_build_with_another_fault_is_not_the_session_exit_fault() {
+    let mut frames = EA_FRAMES;
+    frames[0] = "F1_25.exe+0x11b3d2ec .xtls fn base+0x11b3d1f0+0xfc";
+    let log = exit_crash(&frames, "writing 0x2ea427985", "16:53:08.800");
+    assert_eq!(diagnose(&on_ea(&log)), None);
+    let log = exit_crash(&EXIT_FRAMES, "writing 0x2ea427985", "16:53:08.800");
+    assert_eq!(diagnose(&on_ea(&log)), None);
+    let log = exit_crash(&EA_FRAMES, "writing 0x2ea427985", "16:53:08.800");
+    assert_eq!(diagnose(&on_steam(&log)), None);
 }
 
 #[test]

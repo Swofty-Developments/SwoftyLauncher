@@ -2,6 +2,7 @@ use super::Diagnosis;
 use super::crash_record::{Fatal, NEAR_FRAMES, crash_lines, crash_time, stamp};
 use super::evidence::Evidence;
 use super::wording::{SEND_LOGS, list, name};
+use crate::build_support::{BUILD_1_0_145, BUILD_1_0_145_EA};
 
 /// Manual Pit Lane, and where F1 25 crashes when it takes the car as the
 /// game returns it to the garage.
@@ -250,7 +251,12 @@ pub(super) fn aggressive_ai_crash(e: &Evidence, f: &Fatal) -> bool {
 
 /// Whether the game is the Steam build of F1 25 1.0.145.
 pub(super) fn steam_1_0_145(e: &Evidence) -> bool {
-    e.game_build == Some(crate::build_support::BUILD_1_0_145)
+    e.game_build == Some(BUILD_1_0_145)
+}
+
+/// Whether the game is the EA app build of F1 25 1.0.145.
+pub(super) fn ea_1_0_145(e: &Evidence) -> bool {
+    e.game_build == Some(BUILD_1_0_145_EA)
 }
 
 /// Whether F1 25 1.0.145 crashed with a Skip Cutscenes version up to
