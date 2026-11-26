@@ -122,6 +122,18 @@ mod tests {
     }
 
     #[test]
+    fn the_cloned_group_is_named_by_the_record_key_alone() {
+        let (dir, mut m) = addon(
+            "key",
+            r#"{ "ui.route": { "open_settings": { "file": "routes_frontend_general.uir", "clone_of": "mail_container", "opens": "t.routes/settings" } } }"#,
+        );
+        lower(&dir, &mut m).unwrap();
+        let r = &m.operations.routes[0];
+        assert_eq!((r.id.as_str(), r.opens.as_str()), ("open_settings", "settings"));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
     fn a_record_without_opens_or_clone_of_or_a_known_file_is_refused() {
         for (tag, body, want) in [
             (
