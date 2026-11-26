@@ -1434,6 +1434,10 @@
   "site_Game_SwapTyres_TeamRecord": {
    "pattern": "81 E1 00 00 FF FF 81 F9 00 00 FF 3F 74 3E 89 C1 C1 E9 10 48 8B 15 ?? ?? ?? ?? 48 8B 92 60 02 00 00 0F B6 C0 48 C1 E0 04 48 8B 84 02 C8 02 00 00 48 8B 40 08 48 C1 E1 04 48 8B 44 08 08 48 8B 50 18 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 F1 48 89 FA 41 B0 01 E8 ?? ?? ?? ?? 48 8D 05",
    "note": "The base pattern loads the entrants system from g_Game_Manager as mov rdx,[rdx+0x290]; EA's game manager keeps it at +0x260, its tail 0x30 lower (native/src/core/runtime/game_manager_layout.hpp). The pattern is the base pattern with that read at +0x260. It matches once in the EA dump, where the code from the 0x3fff0000 test to the no-team join disassembles as Steam's does, and it matches no Steam build."
+  },
+  "Vm_Run_Route": {
+   "pattern": "E9 ?? ?? ?? ?? 90 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 4C 89 CB 4C 89 C7 48 89 CE",
+   "note": "The first 6 bytes of the KB prologue (push r15, r14, r13) are a jmp E9 rel32 + nop in the 1.0.145 EA dump, at the function start 0x417eb30 (called from the Vm_Fire_Route body at 0x151a33890); the Steam pattern does not match there. The rest of the prologue and the 7-argument frame are identical to the KB build. The jmp may be the core hook (the dump was taken with the core loaded) rather than a game difference: this override then matches only a hooked image, and a launch on a clean image falls back to the string anchor or the hint."
   }
  },
  "hints": {
@@ -12587,6 +12591,9 @@
   },
   "vt_Sess_Video": {
    "match": "0x2dad17b"
+  },
+  "Vm_Run_Route": {
+   "match": "0x417eb30"
   }
  },
  "unresolvable": {

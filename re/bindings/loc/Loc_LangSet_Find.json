@@ -37,6 +37,37 @@
    "native/src/core/assets/lang_override.cpp"
   ]
  },
- "verify": [],
- "proofs": []
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "std-ui-v3",
+   "kind": "func",
+   "item": "Loc_LangSet_Find",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143acf800-0x143acf8a0 (pdata function);xref:0x1458a8898",
+   "notes": "gh:std-ui-v3 Own re-derivation by capstone disasm, no Ghidra. Pdata start 0x143acf800..0x143acf8a0. Only caller is the vtable: abs64 scan finds a single reference at 0x1458a8898 = vt_Loc_LangSet 0x1458a8890 slot +0x08 (slots: +0 0x143ad2b80, +8 0x143acf800, +0x10 0x143acfe30, +0x18 0x143acfb40, +0x20 0x143acf8a0, +0x28 0x143ad03b0); no rel32 callers. Slots +0x18 (0x143acfb40) and +0x20 (0x143acf8a0) call [vt+8], i.e. this function. Registers: rcx=set (rbx), rdx=key (r14), r8d=mode (edi), return rax=r15. Takes the lock at set+0x68 through 0x1449e2134/0x1449e213c (enter/leave wrappers), checks set+0xb4 != 0x7fffffff, walks the list from [set+0x38] until sentinel set+0x30 via node+8, calls [[node+0x10]->vt+8](table, key, mode) and returns the first non-null result, else null. Prototype const char *f(void *set, const char *key, int32_t mode) matches the register use."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "std-ui-v3",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143acf800",
+    "target": "0x143acf800"
+   },
+   "sigcheck": "passed",
+   "digest": "c91556fc39166cc38d9e1b6af02f827e7cecc4c5e68b2f46841961fb01b70be2"
+  }
+ ]
 }

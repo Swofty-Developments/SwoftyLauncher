@@ -34,6 +34,37 @@
   ],
   "used_by": []
  },
- "verify": [],
- "proofs": []
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "std-ui-v3",
+   "kind": "func",
+   "item": "Vm_Run_Route",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x144188370-0x144189360 (pdata function);xref:0x14416fee7,0x144188237,0x14418c057,0x14418c437,0x14425117d,0x14425358e,0x153ab9459",
+   "notes": "gh:std-ui-v3 Own re-derivation by capstone disasm, no Ghidra. Pdata start 0x144188370..0x144189360. rel32 callers: 0x14416fee7 (in 0x14416f0a0), 0x144188237 (0x144187620), 0x14418c057 (0x14418be30), 0x14418c437 (0x14418c210), 0x14425117d (0x144250c00), 0x14425358e (0x144253360) and 0x153ab9459 in the .data1 body 0x153ab9290 that the Vm_Fire_Route address 0x1442c0e20 jmp-thunks to (E9 to 0x153ab9290). That call passes rcx=[[router+0x48]] vt+0xe0 result (ui system), rdx=node r14, r8=route name, r9=group r15, [rsp+0x20]=0 (flags), [rsp+0x28]=Fire_Route 4th arg, [rsp+0x30]=0, i.e. 7 arguments. Callee reads [rsp+0x110]=a5 (flags: cmp 0 at 0x14418839c, cmp 1 at 0x14418880f), [rsp+0x118]=a6, [rsp+0x120]=a7, returns nothing (rax unused). Role: hashes the route name (r8 deref) into the robin-hood map of the node, walks parents via vt+0x80 until element id 0x4c464955 (UIFL), runs the route step callbacks, uses 'back' (0x145735c14) and the NeUIFlow::addCallback flow-full error with UI_FLOW (0x144188fd5/0x1441892bb). Not re-derived: the missing-screen error wording in the notes (the only error strings seen are the addCallback-full ones). Note the Vm_Fire_Route address is a thunk on the KB build and the body is in .data1."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "std-ui-v3",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144188370",
+    "target": "0x144188370"
+   },
+   "sigcheck": "passed",
+   "digest": "b3ad6e91184f8d4681d7a2193b1006221c1e2dd6d5dd947b3111fdfbe8e3f0f0"
+  }
+ ]
 }
