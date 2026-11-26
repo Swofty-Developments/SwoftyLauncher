@@ -2287,3 +2287,222 @@ fn a_ui_route_clones_a_stock_group_onto_an_addon_screen() {
     assert!(e.contains("no_such_group") && e.contains("mail_container"), "{e}");
     std::fs::remove_dir_all(&out).ok();
 }
+
+fn tile_image_stock() -> impl Fn(&str) -> PathBuf {
+    let stock = PathBuf::from(std::env::var_os("SWOFTY_STOCK_GAME").expect("set"));
+    move |rel: &str| stock.join(rel)
+}
+
+fn write_stock_frontend(
+    tag: &str,
+    places: &[&str],
+    writer: &Writer,
+) -> (PathBuf, PathBuf, archive_writes::Frontend) {
+    let input = tile_image_stock();
+    let out = std::env::temp_dir().join(format!("swofty-tile-images-{}-{tag}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    let src = input(&ui_file("flow_frontend.erp"));
+    let dst = out.join(ui_file("flow_frontend.erp"));
+    let places: Vec<String> = places.iter().map(|p| (*p).to_owned()).collect();
+    let frontend = write_frontend(
+        &(src.clone(), dst.clone()),
+        &input,
+        writer,
+        true,
+        &places,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    (src, dst, frontend)
+}
+
+fn template_names(path: &Path) -> Vec<String> {
+    let doc = swofty_formats::pkg::Pkg::parse(
+        &read_frag(path, career_select::TEMPLATES, career_select::TEMPLATES_FRAGMENT).unwrap(),
+    )
+    .unwrap();
+    doc.root
+        .o()
+        .unwrap()
+        .at("Templates")
+        .unwrap()
+        .a()
+        .unwrap()
+        .iter()
+        .filter(|t| t.is_node())
+        .map(|t| t.name().to_owned())
+        .collect()
+}
+
+fn resource_names(path: &Path) -> Vec<String> {
+    ErpFile::open(path)
+        .unwrap()
+        .erp
+        .resources
+        .iter()
+        .map(|r| r.name.clone())
+        .collect()
+}
+
+#[test]
+fn the_tile_images_flag_is_written_only_when_the_templates_are() {
+    let dir = std::env::temp_dir().join(format!("swofty-tile-flag-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    let flag = format!("{UI_DIR}/{}", tile_image::FLAG);
+    let mut off = MenuBuild::default();
+    write_flags(&dir.join("off"), &mut off, Default::default(), false, false).unwrap();
+    assert!(!off.screens.contains_key(&flag));
+    assert!(!dir.join("off").join(&flag).exists());
+    let mut on = MenuBuild::default();
+    write_flags(&dir.join("on"), &mut on, Default::default(), false, true).unwrap();
+    assert!(on.screens.contains_key(&flag));
+    assert_eq!(std::fs::read(dir.join("on").join(&flag)).unwrap(), b"1");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn only_home_and_career_images_call_for_the_templates() {
+    let places = |p: &[&str]| p.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
+    assert!(!tile_image::wanted(&[]));
+    assert!(!tile_image::wanted(&places(&["f1_world", "car_category"])));
+    assert!(tile_image::wanted(&places(&["home"])));
+    assert!(tile_image::wanted(&places(&["career"])));
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_GAME, a folder with the stock 2025_asset_groups/ui_package archives"]
+fn a_tile_with_an_image_gets_the_era_tile_templates_and_their_component() {
+    let (src, dst, frontend) = write_stock_frontend("on", &["home", "career"], &|_, _| None);
+    assert!(frontend.tile_images_built, "{:?}", frontend.warnings);
+    assert!(frontend.warnings.is_empty(), "{:?}", frontend.warnings);
+    let names = template_names(&dst);
+    for t in [tile_image::HOME_TEMPLATE, tile_image::ROW_TEMPLATE] {
+        assert!(names.contains(&t.to_owned()), "{t} in {names:?}");
+    }
+    assert!(names.contains(&career_select::ADDON_TEMPLATE.to_owned()));
+    let doc = swofty_formats::pkg::Pkg::parse(
+        &read_frag(&dst, career_select::TEMPLATES, career_select::TEMPLATES_FRAGMENT).unwrap(),
+    )
+    .unwrap();
+    let list = doc.root.o().unwrap().at("Templates").unwrap().a().unwrap();
+    for (t, slot) in [
+        (tile_image::HOME_TEMPLATE, "spawner_stacker_items"),
+        (tile_image::ROW_TEMPLATE, career_select::ADDON_SLOT),
+    ] {
+        let tpl = list.iter().find(|n| n.is_node() && n.name() == t).unwrap();
+        let image = tpl.child("image").unwrap();
+        let bound = image
+            .props()
+            .unwrap()
+            .get("textureOverride")
+            .and_then(|n| n.o().ok())
+            .and_then(|o| o.str_at("dbentry").ok());
+        assert_eq!(bound, Some("image"));
+        for kid in ["title", "enabled"] {
+            tpl.child(kid).unwrap();
+        }
+        let title = tpl.child("title").unwrap().props().unwrap();
+        let localised = title
+            .get("localise")
+            .and_then(|n| n.o().ok())
+            .and_then(|o| o.str_at("dbentry").ok());
+        assert_eq!(localised, Some("title_localised"));
+        let layout = tpl.slot(node::LAYOUT).unwrap()[0].a().unwrap();
+        assert_eq!(layout.len(), 1);
+        assert_eq!(layout[0].o().unwrap().str_at("debugName").unwrap(), slot);
+        let component = tpl.slot(node::COMPONENT).unwrap();
+        assert_eq!(
+            component[0].o().unwrap().str_at("debugName").unwrap(),
+            tile_image::COMPONENT.trim_end_matches(".idf")
+        );
+        let (_, _, bad) = check::integrity(&doc.to_bytes().unwrap()).unwrap();
+        assert!(bad.is_empty(), "{bad:?}");
+    }
+    let before = resource_names(&src);
+    let after = resource_names(&dst);
+    let added: Vec<&String> = after.iter().filter(|n| !before.contains(n)).collect();
+    assert!(
+        added.iter().any(|n| n.as_str() == tile_image::COMPONENT),
+        "{added:?}"
+    );
+    assert!(
+        added
+            .iter()
+            .all(|n| n.starts_with("eaid://ui_package/art/") && !n.contains("/fe_buttons/")),
+        "{added:?}"
+    );
+    let unique: std::collections::BTreeSet<&String> = after.iter().collect();
+    assert_eq!(unique.len(), after.len(), "a resource name is written twice");
+    let from = ErpFile::open(&tile_image_stock()(&ui_file(tile_image::SOURCE_ARCHIVE))).unwrap();
+    let written = ErpFile::open(&dst).unwrap();
+    for name in added {
+        let a = from.load(from.erp.find(name).unwrap()).unwrap();
+        let b = written.load(written.erp.find(name).unwrap()).unwrap();
+        assert_eq!(a.fragments.len(), b.fragments.len(), "{name}");
+        for (x, y) in a.fragments.iter().zip(&b.fragments) {
+            assert_eq!(x.data().unwrap(), y.data().unwrap(), "{name}");
+        }
+    }
+    std::fs::remove_dir_all(dst.parent().unwrap().ancestors().nth(2).unwrap()).ok();
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_GAME, a folder with the stock 2025_asset_groups/ui_package archives"]
+fn no_image_leaves_the_frontend_archive_as_it_was() {
+    let (src, none, a) = write_stock_frontend("none", &[], &|_, _| None);
+    let (_, other, b) = write_stock_frontend("other", &["f1_world", "car_category"], &|_, _| None);
+    for f in [&a, &b] {
+        assert!(!f.tile_images_built && f.warnings.is_empty(), "{:?}", f.warnings);
+    }
+    assert_eq!(std::fs::read(&none).unwrap(), std::fs::read(&other).unwrap());
+    let names = template_names(&none);
+    assert!(
+        !names.iter().any(|n| n.starts_with("addon_tile_image")),
+        "{names:?}"
+    );
+    let before = resource_names(&src);
+    assert!(resource_names(&none).iter().all(|n| before.contains(n)));
+    assert!(
+        !resource_names(&none)
+            .iter()
+            .any(|n| n.contains("4x12_era_select"))
+    );
+    let stock_templates = swofty_formats::pkg::Pkg::parse(
+        &read_frag(&src, career_select::TEMPLATES, career_select::TEMPLATES_FRAGMENT).unwrap(),
+    )
+    .unwrap();
+    assert!(
+        !stock_templates
+            .root
+            .o()
+            .unwrap()
+            .at("Templates")
+            .unwrap()
+            .a()
+            .unwrap()
+            .iter()
+            .any(|n| n.is_node() && n.name().starts_with("addon_tile_image"))
+    );
+    std::fs::remove_dir_all(none.parent().unwrap().ancestors().nth(2).unwrap()).ok();
+    std::fs::remove_dir_all(other.parent().unwrap().ancestors().nth(2).unwrap()).ok();
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_GAME, a folder with the stock 2025_asset_groups/ui_package archives"]
+fn an_addons_own_home_templates_keep_the_image_templates_off() {
+    let (_, dst, f) = write_stock_frontend("own", &["home"], &|_, res| {
+        (res == tile_image::TEMPLATES).then(|| "other.addon".to_owned())
+    });
+    assert!(!f.tile_images_built);
+    assert!(
+        f.warnings.iter().any(|w| w.contains("other.addon")),
+        "{:?}",
+        f.warnings
+    );
+    assert!(
+        !template_names(&dst)
+            .iter()
+            .any(|n| n.starts_with("addon_tile_image"))
+    );
+    std::fs::remove_dir_all(dst.parent().unwrap().ancestors().nth(2).unwrap()).ok();
+}

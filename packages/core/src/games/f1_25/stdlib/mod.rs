@@ -17,3 +17,4 @@ pub mod room;
 pub mod routes;
 pub mod screens;
 pub mod state;
+pub mod tiles;
