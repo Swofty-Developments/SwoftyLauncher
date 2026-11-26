@@ -97,9 +97,13 @@ namespace events {
 
 struct EraTiles {                              // site_FeTile_EraTilesBuilt
     static constexpr const char *point = "ui.era.tiles";
-    static constexpr uint32_t version = 1;
+    static constexpr uint32_t version = 2;     // v1 had only `list`; v1 readers still work
     uint32_t size, payload_version;
-    void *list;                                // the era tile list, built; after handlers may append
+    void *list;                                // opaque, as in v1
+    const SwoftyTileList *tiles_table;         // v2: the C table; tiles() wraps it, null on a v1 payload
+    TileList tiles() const;                    // count(), get(i), remove(i), move(from, to), insert(at, spec), append(spec), iterable
+    Result remove(size_t index);
+    Result insert(size_t at, const TileSpec &spec);   // {id, title, route, image, literal}
 };
 
 struct VmResolve {                             // Vm_Resolve_RegistryNode
@@ -119,8 +123,8 @@ struct LangLookup {                            // Loc_LangSet_Find
 };
 
 // also: HomeTiles (ui.home.tiles), CareerContentTiles (ui.career_content.tiles), CarCategoryTiles
-// (ui.car_category.tiles), TrackSelectBuild (ui.track_select.build), ScreenBuilt (ui.screen.built),
-// RouteOpen (ui.route.open), MfdPages (hud.mfd.pages)
+// (ui.car_category.tiles): the same v2 payload as EraTiles; TrackSelectBuild (ui.track_select.build): v2 with a
+// read-only `tracks()`; ScreenBuilt (ui.screen.built), RouteOpen (ui.route.open), MfdPages (hud.mfd.pages)
 
 } // namespace events
 
@@ -223,6 +227,30 @@ SWOFTY_ADDON()
            fanfreluche.cars, bydanix.f1-2012), 0 contested
 [events] ui.era.tiles: 1 after handler (swofty.classic-seasons-2017)
 [cs-2017] era picker built
+```
+
+### Editing the tile lists (payload version 2)
+
+The five list events carried only an opaque `list` pointer into the core. Payload version 2 adds a versioned C table next to it (`SwoftyTileList` in `swofty_api.h`: `size`, `version`, `self`, `count`, `get`, `remove`, `move`, `insert`) with C++ helpers in `ui.hpp` (`ev.tiles()`, `ev.remove(i)`, `ev.insert(at, spec)`). `list` stays where it was, so a v1 reader still works. Read the table only when `payload_version >= 2` and `size` covers it; the helpers do that check and return `Result::unavailable` otherwise, and for any function a core leaves null.
+
+| Event | The table's list | `get` | `remove`, `move`, `insert` |
+|---|---|---|---|
+| `ui.home.tiles` | the `ui.tile` records of place `home` about to be added (cap: 255 minus the tiles already on the screen) | yes | yes |
+| `ui.career_content.tiles` | the records of place `career` (cap: the slots the content tiles leave) | yes | yes |
+| `ui.car_category.tiles` | the records of place `car_category` (cap: the tab's free slots) | yes | yes |
+| `ui.era.tiles` | the era picker's tile range | no: count only | no |
+| `ui.track_select.build` | `SwoftyTrackList` | not on this core: every function is null | no |
+
+An edit reaches the step that adds the tiles: home, career content and the car category tab fire the event after reading the records and before adding any, so a removed record tile is not added and an inserted one is. The core then settles the list as before, one tile per id and no more than the cap, and logs what it dropped. Each function returns `Result::invalid` for an index out of range, a spec with no id or title (or no route on these three places), an id the list already holds, or an insert into a full list. Strings from `get` are valid only during the handler call and until the next edit; copy what you keep. An inserted tile has no gate and its title is a lang key unless `literal` is set.
+
+The home list holds record tiles only. The stock tiles the game builds (Career, Grand Prix, the settings row) are game objects with button indices and view-model nodes behind them, so they are neither listed nor removable. The era picker's entries are game handles whose layout is not proven, so that table counts and nothing more. `ui.track_select.build` fires after the game has filled the screen's list, whose element layout is not proven either, so `tracks()` is empty on this core and remove and insert are not part of the table; a core that proves the layout fills `count` and `get` (track ids as the track registry names them) in the same table version.
+
+```cpp
+events::on<ui::events::HomeTiles>().before([](ui::events::HomeTiles &e, const events::Context &) {
+    if (e.tiles().count() > 0)
+        e.remove(0);
+    e.insert(0, {.id = "my.tile", .title = "my_tile_title", .route = "my.route"});
+});
 ```
 
 The core builds the slices into overlay archives that it adds to the game's asset manifest at boot. The data version is the same records. Only the after handler needs code.
