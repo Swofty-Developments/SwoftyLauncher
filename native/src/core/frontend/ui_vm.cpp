@@ -10,6 +10,7 @@
 
 #include "core/frontend/addon_page.hpp"
 #include "core/frontend/name_hash.hpp"
+#include "core/frontend/node_ref_logic.hpp"
 #include "core/frontend/ui_vm.hpp"
 #include "core/frontend/vm_path.hpp"
 #include "core/frontend/vm_string.hpp"
@@ -89,6 +90,7 @@ public:
     void add_factory(const char *screen_prefix, swofty::ui::Factory factory) { factories.push_back({screen_prefix, factory}); }
     bool set(const ViewModel &model, const char *prop, int type, const void *value) const;
     bool set_path(const std::string &path, int type, const void *value) const;
+    int set_ref(const std::string &path, const std::string &target) const;
     uintptr_t node_token(const std::string &path) const;
     void *message_system() const;
     void **ui_system_global() const { return ui_system; }
@@ -311,6 +313,33 @@ bool VmHost::set_path(const std::string &path, int type, const void *value) cons
     return write(reg, static_cast<uint8_t *>(*node) + 8, at.leaf.c_str(), type, value);
 }
 
+int VmHost::set_ref(const std::string &path, const std::string &target) const
+{
+    if (!g_Vm_Registry.address() || !a_path || !Vm_Set_NodeRef.address() || !Vm_Resolve_RegistryNode.address() ||
+        !Vm_Release_Node.address() || !k_Vm_EmptyNodeHandle.address())
+        return frontend::node_ref::NO_PARENT;
+    void *reg = *g_Vm_Registry;
+    if (!reg)
+        return frontend::node_ref::NO_PARENT;
+    auto *root = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(reg) + 8);
+    if (!root)
+        return frontend::node_ref::NO_PARENT;
+    frontend::vm_path::Split at;
+    if (!frontend::vm_path::split(path, at))
+        return frontend::node_ref::NO_PARENT;
+    void **parent = resolve(reg, root, at.parent.c_str());
+    if (!parent || !*parent)
+        return frontend::node_ref::NO_PARENT;
+    void **empty = reinterpret_cast<void **>(k_Vm_EmptyNodeHandle.address());
+    static const uintptr_t no_base = 0;
+    void **node = target[0] == '#' ? static_cast<void **>(Vm_Resolve_RegistryNode(reg, target.c_str(), &no_base, nullptr))
+                                   : resolve(reg, root, target.c_str());
+    void *parent_slot = static_cast<uint8_t *>(*parent) + 8;
+    return frontend::node_ref::bind(
+        node, empty, [&](void *handle) { return Vm_Set_NodeRef(reg, parent_slot, at.leaf.c_str(), handle, 1); },
+        [&](void *released) { Vm_Release_Node(reg, released); });
+}
+
 uintptr_t VmHost::node_token(const std::string &path) const
 {
     if (!g_Vm_Registry.address() || !a_path)
@@ -451,6 +480,8 @@ bool ui_vm_ready() { return host.ready(); }
 bool ui_vm_attach(const std::string &screen) { return host.attach(screen); }
 
 bool ui_vm_set_path(const std::string &path, int type, const void *value) { return host.set_path(path, type, value); }
+
+int ui_vm_set_ref(const std::string &path, const std::string &target) { return host.set_ref(path, target); }
 
 uintptr_t ui_vm_node_token(const std::string &path) { return host.node_token(path); }
 
