@@ -230,9 +230,8 @@ static void test_catalogue()
                 return &e;
         return nullptr;
     };
-    for (const char *id :
-         {up::ERA_POINT, up::HOME_POINT, up::CAREER_CONTENT_POINT, up::CAR_CATEGORY_POINT, up::SCREEN_POINT, up::ROUTE_POINT,
-          up::TRACK_SELECT_POINT, "hud.mfd.pages"}) {
+    for (const char *id : {up::ERA_POINT, up::HOME_POINT, up::CAREER_CONTENT_POINT, up::CAR_CATEGORY_POINT, up::SCREEN_POINT,
+                           up::ROUTE_POINT, up::TRACK_SELECT_POINT, "hud.mfd.pages"}) {
         auto *e = row(id);
         expect(e && e->fired == cat::Fired::game, std::string(id) + ": catalogue row is Fired::game");
     }
