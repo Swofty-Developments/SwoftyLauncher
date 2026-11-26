@@ -232,6 +232,7 @@ exit
   src/core/diagnostics/crash/report_writer.cpp
   src/core/diagnostics/crash/dred.cpp
   src/core/runtime/settings.cpp
+  src/core/frontend/home_tiles.cpp
   src/core/frontend/ui.cpp
   src/core/frontend/ui_vm.cpp
   src/core/frontend/addon_page.cpp
