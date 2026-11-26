@@ -5005,6 +5005,7 @@ pub type Trk_CareerWizardTrackSelectVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut c_int;
 pub type Trk_GrandPrixTrackSelectVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut *mut c_void;
+pub type Trk_GrandPrixTrackSelectVm_RefreshTrackList_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Trk_SettingsSelectTrackTabVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut c_char;
 pub type Trk_TimeTrialTrackSelectVm_OnCommandRaised_t =
@@ -20261,8 +20262,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Trk_GrandPrixTrackSelectVm_RefreshTrackList: Binding = Binding {
+        id: "Trk_GrandPrixTrackSelectVm_RefreshTrackList",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Trk_SettingsSelectTrackTabVm_OnCommandRaised: Binding = Binding {
         id: "Trk_SettingsSelectTrackTabVm_OnCommandRaised",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Trk_SettingsSelectTrackTabVm_RefreshTrackList: Binding = Binding {
+        id: "Trk_SettingsSelectTrackTabVm_RefreshTrackList",
         kind: "func",
         status: Status::Experimental,
     };

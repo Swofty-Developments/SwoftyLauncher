@@ -37,10 +37,40 @@
    "native/src/core/hooks/track_select_point.cpp"
   ]
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "std-ui-m6v",
+   "kind": "func",
+   "item": "Trk_GrandPrixTrackSelectVm_RefreshTrackList",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:capstone disasm of pdata 0x141c05600-0x141c06646 (no Ghidra on this host);xref:0x141c05488,0x141c07379;str:0x14570a81b,0x1456f8a0d,0x14573bb30",
+   "notes": "gh:std-ui-m6v re-derived from capstone: pdata start and 8-push prologue, callers re-listed by rel32 scan of every exec section (E8 at 0x141c05488 and 0x141de61e3, E9 at 0x141c07379 and 0x141de9da4; the recorded 0x141c05489/0x141c0737a are the rel32 operand bytes), role matches"
+  }
+ ],
  "proofs": [
   {
    "by": "Swofty",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c05600",
+    "target": "0x141c05600"
+   },
+   "sigcheck": "passed",
+   "digest": "40c69fe89fcbe1f11f32231c7a6fd29805525323403a5514b5d5137e5980d058"
+  },
+  {
+   "by": "std-ui-m6v",
    "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {
