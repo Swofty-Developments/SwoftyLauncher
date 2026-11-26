@@ -83,7 +83,7 @@ struct Route {
     static constexpr Version version{1, 0};
     std::string file;
     std::string clone_of;
-    Ref<Screen> opens;
+    LooseRef<Screen> opens;
     json::Value extra;
 };
 SWOFTY_RECORD(Route, file, clone_of, opens)
@@ -97,8 +97,8 @@ struct Tile {
     static constexpr Version version{1, 0};
     Place place = Place::home;
     Text title;
-    Ref<TextureSlice> image;
-    Ref<Route> route;
+    LooseRef<TextureSlice> image;
+    LooseRef<Route> route;
     json::Value gate;
     json::Value extra;
 };

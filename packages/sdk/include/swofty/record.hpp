@@ -286,6 +286,22 @@ private:
     std::string id_;
 };
 
+// A name for a record of T that the schema does not resolve: the field takes a record id, a bare key or a name the
+// game has (a stock route), and whatever names nothing is reported where it is used. A Ref<T> converts to it.
+template <class T> class LooseRef {
+public:
+    LooseRef() = default;
+    LooseRef(const Ref<T> &r) : id_(r.id()) {}
+    explicit LooseRef(std::string_view id) : id_(id) {}
+    std::string_view id() const { return id_; }
+    bool empty() const { return id_.empty(); }
+    friend bool operator==(const LooseRef &a, const LooseRef &b) { return a.id_ == b.id_; }
+    friend bool operator<(const LooseRef &a, const LooseRef &b) { return a.id_ < b.id_; }
+
+private:
+    std::string id_;
+};
+
 template <class T, auto... Keys> class Keyed {
     static_assert(sizeof...(Keys) > 0, "Keyed needs at least one key field");
 
@@ -803,6 +819,27 @@ template <class T> struct Json<Ref<T>> {
     }
 };
 
+template <class T> struct Json<LooseRef<T>> {
+    static void write(Writer &w, const LooseRef<T> &v)
+    {
+        if (v.empty())
+            w.raw("null");
+        else
+            w.str(v.id());
+    }
+    static bool read(const Node &n, LooseRef<T> &v)
+    {
+        if (n.kind == Node::null) {
+            v = LooseRef<T>();
+            return true;
+        }
+        if (n.kind != Node::string)
+            return false;
+        v = LooseRef<T>(n.s);
+        return true;
+    }
+};
+
 template <> struct Json<Text> {
     static void write(Writer &w, const Text &v)
     {
@@ -1211,6 +1248,9 @@ template <class U> struct SchemaOf : Schema<U> {};
 
 template <class T> struct SchemaOf<Ref<T>> {
     static void write(Writer &w) { schema_ref<T>(w); }
+};
+template <class T> struct SchemaOf<LooseRef<T>> {
+    static void write(Writer &w) { w.raw("{\"type\":[\"string\",\"null\"]}"); }
 };
 template <class T> struct SchemaOf<std::optional<T>> {
     static void write(Writer &w)

@@ -57,7 +57,7 @@ inline Registry<Screen> screens{"ui.screen", {.applies = Applies::boot}};
 struct Route {
     std::string file;                          // "routes_frontend_general.uir"
     std::string clone_of;                      // the route group it copies
-    Ref<Screen> opens;
+    LooseRef<Screen> opens;                    // a ui.screen record id or its bare key
 };
 inline Registry<Route> routes{"ui.route", {.applies = Applies::boot}};
 
@@ -66,8 +66,8 @@ enum class Place { home, career, f1_world, car_category };
 struct Tile {
     Place place = Place::home;
     Text title;                                // a lang key, or { "literal" } in data files
-    Ref<TextureSlice> image;                   // a ui.texture_slice record, or "#array[name]"
-    Ref<Route> route;                          // what a press runs
+    LooseRef<TextureSlice> image;              // a ui.texture_slice record id, or "#array[name]"
+    LooseRef<Route> route;                     // what a press runs: a ui.route id or key, or a stock route name
     json::Value gate;                          // a selector object or a list of them; empty: always
 };
 inline Registry<Tile> tiles{"ui.tile", {.applies = Applies::read}};
@@ -356,7 +356,7 @@ A `ui.tile` record adds a tile to one of four screens, after the stock tiles:
 - Every place needs a `route`; a record with no route, no title, or an unknown `place` is refused and logged. `title` is a lang key, or `{ "literal": "text" }` in a data file.
 - Records apply in load order, one per id: a repeated id keeps the first position and the later record's content. Records over the room are not shown and the log counts them.
 - `gate` is a selector over mode, career and content, the same as `lang.string` `within`. It is read at build time; a gated tile does not show where the facts are not known yet.
-- `route` names a `ui.route` record or a stock route; see Route names below for how it reaches the game.
+- `route` names a `ui.route` record or a stock route; see Route names below for how it reaches the game. In code `route`, `image` and a route's `opens` take a `Ref` (`open`, `ui::texture_slices["..."]`) or a plain name through `LooseRef<T>("mod_menu")`; neither field is resolved when the record is checked, so a name that nothing provides is a log line, not a refused record.
 - Images: `image` is a `ui.texture_slice` record id or a `#array[name]` string. A `#array[name]` that no enabled record provides logs `[ui.tile] <place>: <tile id>: image slice <name> of <array> is not provided by any enabled ui.texture_slice record (a slice the game ships in that array still shows)` once, and the tile is kept; a record id that no enabled `ui.texture_slice` provides logs `[ui.tile] <place>: <tile id>: image slice <id> is not provided by any enabled ui.texture_slice record; the tile shows without an image`, and the tile is kept without an image. Neither drops the tile. Home and career tiles take it through an image template that the launcher's UI build adds only when an enabled record names an image; without it the log says so and the tile shows no image. The car category tab sets it through the tab's own tile fill, and a tile without a usable image shows the F1 2026 tile's image. F1 World tiles have no image.
 - Home, career and car category tiles fire their list event before they are added; F1 World tiles have no event.
 - The stock tiles the game builds itself (Career, Grand Prix, the settings row, F1 2025 and F1 2026 on the car category tab, the content tiles) are not records and cannot be changed through `ui.tile`.

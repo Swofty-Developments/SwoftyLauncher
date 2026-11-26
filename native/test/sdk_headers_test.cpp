@@ -609,10 +609,10 @@ static void schemas()
           std::string(ui::options.name()) == "ui.option" && std::string(ui::hud_widgets.name()) == "hud.widget");
     std::string ui_tile = ui::tiles.schema();
     CHECK(ui_tile.find("\"x-applies\":\"read\"") != std::string::npos &&
-          ui_tile.find("\"x-ref\":\"ui.texture_slice\"") != std::string::npos &&
-          ui_tile.find("\"x-ref\":\"ui.route\"") != std::string::npos && ui_tile.find("\"car_category\"") != std::string::npos &&
+          ui_tile.find("\"x-ref\":\"ui.texture_slice\"") == std::string::npos &&
+          ui_tile.find("\"x-ref\":\"ui.route\"") == std::string::npos && ui_tile.find("\"car_category\"") != std::string::npos &&
           ui::tiles.at_major() == "ui.tile@1");
-    CHECK(ui::routes.schema().find("\"x-ref\":\"ui.screen\"") != std::string::npos &&
+    CHECK(ui::routes.schema().find("\"x-ref\":\"ui.screen\"") == std::string::npos &&
           ui::texture_slices.schema().find("\"x-applies\":\"boot\"") != std::string::npos &&
           ui::hud_widgets.schema().find("\"x-applies\":\"session\"") != std::string::npos);
     ui::Tile ui_tile_rec;
