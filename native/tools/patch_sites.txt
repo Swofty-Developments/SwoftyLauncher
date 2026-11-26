@@ -60,6 +60,10 @@ core/assets/lang_override.cpp: size_t s = install(gather(nullptr), nullptr); => 
 core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(g_find_at), reinterpret_cast<void *>(&find_hook)); => inline sig S_SET_FIND
 core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&init_hook)); => inline sig S_MODULE_INIT
 core/assets/lang_override.cpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/mfd_pages_point.cpp: g_point = std::make_unique<GamePoint>(mfd_point::POINT, "Hud_MfdVm_RefreshPanelAvailability", => inline binding Hud_MfdVm_RefreshPanelAvailability
+core/hooks/track_select_point.cpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/track_select_point.cpp: if (auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&d_gp))) => inline sig S_GP
+core/hooks/track_select_point.cpp: if (auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&d_settings))) => inline sig S_SETTINGS
 core/hooks/ui_hot_points.cpp: g_point = std::make_unique<GamePoint>(ui_hot::VM_POINT, "Vm_Resolve_RegistryNode", reinterpret_cast<void *>(&d_resolve), => inline binding Vm_Resolve_RegistryNode
 core/assets/overlay.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fn)); => via
 core/assets/overlay.cpp: return hook(h_resolve, at, &resolve_hook, "overlay: Fs_Resolve_Mount"); => inline sig S_RESOLVE

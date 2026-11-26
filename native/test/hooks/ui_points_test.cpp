@@ -1,7 +1,9 @@
-// Host test for the UI game points ui.era.tiles, ui.home.tiles, ui.screen.built and ui.route.open
-// (hooks/ui_points.hpp): the payload fields, the before/after order, the RouteOpen cancel, the site link
-// (installed with the first subscriber, removed with the last), the catalogue rows and ui.track_select.build
-// and the two content tile points staying unfired. native/test/run_tests.sh ui_points builds and runs it.
+// Host test for the UI game points ui.era.tiles, ui.home.tiles, ui.screen.built, ui.route.open and
+// ui.track_select.build (hooks/ui_points.hpp): the payload fields, the before/after order, the RouteOpen cancel, the
+// site link (installed with the first subscriber, removed with the last), the catalogue rows, the two content tile
+// points staying unfired, and the hide-only MFD page rules of hud.mfd.pages (frontend/mfd_pages_logic.hpp).
+// native/test/run_tests.sh ui_points builds and runs it.
+#include "core/frontend/mfd_pages_logic.hpp"
 #include "core/hooks/catalogue.hpp"
 #include "core/hooks/dispatch.hpp"
 #include "core/hooks/ui_points.hpp"
@@ -142,6 +144,82 @@ static void test_route()
     expect(up::fire_route(f.t, "open_settings", ""), "route: a replace handler that declines lets the route run");
 }
 
+static int track_handler(void *, SwoftyHookCall *c)
+{
+    auto *e = static_cast<ev::TrackSelectBuild *>(c->payload);
+    seen_list = e->list;
+    trail.push_back(c->phase == SWOFTY_PHASE_BEFORE ? "track:before" : "track:after");
+    return 0;
+}
+
+static void test_track_select()
+{
+    struct Link final : GameLink {
+        bool on = false;
+        bool install(bool, const std::string &) override { return on = true; }
+        void uninstall() override { on = false; }
+        bool installed() const override { return on; }
+    } link;
+    Table t;
+    t.declare_core();
+    t.declare_game(up::TRACK_SELECT_POINT, SWOFTY_POINT_MODIFY, ev::TrackSelectBuild::version, &link);
+    t.arm();
+    int vm = 0;
+    up::fire_list<ev::TrackSelectBuild>(t, &vm);
+    expect(!link.on, "track select: no subscriber, no detour");
+    uint32_t tok = 0;
+    t.attach("a", up::TRACK_SELECT_POINT, SWOFTY_PHASE_BEFORE, 0, "", track_handler, nullptr, &tok);
+    uint32_t tok2 = 0;
+    t.attach("b", up::TRACK_SELECT_POINT, SWOFTY_PHASE_AFTER, 0, "", track_handler, nullptr, &tok2);
+    expect(link.on && t.live(up::TRACK_SELECT_POINT, nullptr) == SWOFTY_ASSET_OK,
+           "track select: the first subscriber arms the link");
+    trail.clear();
+    seen_list = nullptr;
+    up::fire_list<ev::TrackSelectBuild>(t, &vm);
+    expect(seen_list == &vm && joined() == "track:before track:after", "track select: handlers get the screen's view model");
+    t.detach(tok);
+    t.detach(tok2);
+    expect(!link.on, "track select: the last subscriber disarms the link");
+}
+
+static void test_mfd_pages()
+{
+    namespace mfd = frontend::mfd_pages;
+    using Page = swofty::ui::events::MfdPage;
+    Page pages[mfd::CAPACITY];
+    mfd::fill(pages);
+    expect(mfd::CAPACITY == 8 && mfd::STOCK_COUNT == 6 && !std::strcmp(pages[0].name, "car_settings") &&
+               !std::strcmp(pages[5].name, "mods") && !pages[6].name,
+           "mfd: the payload lists the six stock pages in capacity 8");
+    mfd::Outcome o = mfd::read(pages, mfd::STOCK_COUNT);
+    expect(o.mask == 0 && !o.reordered && !o.resized && o.unknown == 0, "mfd: a handler that does nothing hides nothing");
+    pages[2].hide = 1;
+    pages[4].hide = 7;
+    o = mfd::read(pages, mfd::STOCK_COUNT);
+    expect(o.mask == ((1u << 2) | (1u << 4)) && !o.reordered, "mfd: hide flags become a mask by page index");
+    std::swap(pages[0], pages[2]);
+    o = mfd::read(pages, mfd::STOCK_COUNT);
+    expect(o.reordered && o.mask == ((1u << 2) | (1u << 4)),
+           "mfd: a reorder is flagged and the hide flags still go by page name");
+    mfd::fill(pages);
+    pages[5].hide = 1;
+    o = mfd::read(pages, 9);
+    expect(o.resized && o.mask == (1u << 5), "mfd: a count past the stock six is refused and entries stay the stock six");
+    o = mfd::read(pages, 3);
+    expect(o.resized && o.mask == 0, "mfd: a shortened count does not hide the pages cut off");
+    mfd::fill(pages);
+    pages[1].name = "swofty_addons_panel";
+    pages[1].hide = 1;
+    o = mfd::read(pages, mfd::STOCK_COUNT);
+    expect(o.unknown == 1 && o.mask == 0, "mfd: an unknown page name is ignored");
+    expect(mfd::enabled_path("car_damage") == "view_model_data.hud.content.mfd_complete.mfd.car_damage_enabled",
+           "mfd: the _enabled leaf path");
+    ev::MfdPages e{};
+    e.pages = pages;
+    e.count = 6;
+    expect(e.page(0) == pages && e.page(5) == pages + 5 && !e.page(6) && !e.page(-1), "mfd: page() stays inside count");
+}
+
 static void test_catalogue()
 {
     namespace cat = swofty_core::hooks::catalogue;
@@ -151,17 +229,19 @@ static void test_catalogue()
                 return &e;
         return nullptr;
     };
-    for (const char *id : {up::ERA_POINT, up::HOME_POINT, up::SCREEN_POINT, up::ROUTE_POINT}) {
+    for (const char *id :
+         {up::ERA_POINT, up::HOME_POINT, up::SCREEN_POINT, up::ROUTE_POINT, up::TRACK_SELECT_POINT, "hud.mfd.pages"}) {
         auto *e = row(id);
         expect(e && e->fired == cat::Fired::game, std::string(id) + ": catalogue row is Fired::game");
     }
-    for (const char *id : {up::TRACK_SELECT_POINT, "ui.career_content.tiles", "ui.car_category.tiles"}) {
+    for (const char *id : {"ui.career_content.tiles", "ui.car_category.tiles"}) {
         auto *e = row(id);
         expect(e && e->fired == cat::Fired::no, std::string(id) + ": catalogue row stays Fired::no");
     }
     Table t;
     t.declare_core();
-    expect(t.live(up::TRACK_SELECT_POINT, nullptr) == SWOFTY_ASSET_UNAVAILABLE, "track select: reports unavailable");
+    expect(t.live(up::TRACK_SELECT_POINT, nullptr) == SWOFTY_ASSET_UNAVAILABLE,
+           "track select: unavailable before its game link is declared");
     expect(t.live(up::ROUTE_POINT, nullptr) == SWOFTY_ASSET_UNAVAILABLE, "route: unavailable before its game link is declared");
     expect(row(up::ROUTE_POINT)->kind == SWOFTY_POINT_CANCEL && row(up::SCREEN_POINT)->kind == SWOFTY_POINT_NOTIFY,
            "kinds: ui.route.open cancels, ui.screen.built notifies");
@@ -172,6 +252,8 @@ int main()
     test_lists();
     test_screen();
     test_route();
+    test_track_select();
+    test_mfd_pages();
     test_catalogue();
     printf("%s\n", fails ? "FAILED" : "all ok");
     return fails ? 1 : 0;

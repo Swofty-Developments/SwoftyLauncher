@@ -252,6 +252,10 @@ struct CarCategoryTiles {
     void *list;
 };
 
+// Fires after the Grand Prix / championship track select (Trk_GrandPrixTrackSelectVm_RefreshTrackList) and the
+// championship settings track tab (Trk_SettingsSelectTrackTabVm_RefreshTrackList) rebuild their track list, once per
+// rebuild. `list` is that screen's view model, opaque to handlers; the point is observe-only until an append function
+// arrives in a later payload version. Time Trial's carousel is not covered: its list builder is not found.
 struct TrackSelectBuild {
     static constexpr const char *point = "ui.track_select.build";
     static constexpr uint32_t version = 1;
@@ -280,6 +284,17 @@ struct RouteOpen {
     std::string_view screen() const { return swofty::detail::payload_str(screen_str); }
 };
 
+// One MFD page of osd_main. `name` is the page's panel name (car_settings, pit_settings, car_damage, car_engine,
+// car_temp, mods); a handler sets `hide` to 1 to hide it.
+struct MfdPage {
+    const char *name;
+    uint8_t hide;
+    uint8_t reserved[7];
+};
+
+// `pages` points at `count` MfdPage entries in the game's order, `capacity` is 8. Handlers can only hide: the core
+// writes <panel>_enabled false for each page left with `hide` set, after the game's own availability rules, so a
+// handler never shows a page the game disabled. Reordering, adding and removing pages are refused.
 struct MfdPages {
     static constexpr const char *point = "hud.mfd.pages";
     static constexpr uint32_t version = 1;
@@ -287,6 +302,8 @@ struct MfdPages {
     void *pages;
     int32_t count;
     int32_t capacity;
+
+    MfdPage *page(int index) const { return index >= 0 && index < count ? static_cast<MfdPage *>(pages) + index : nullptr; }
 };
 
 }

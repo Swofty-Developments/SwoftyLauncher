@@ -79,8 +79,6 @@ void MfdTest::update(void *system)
 
 void MfdTest::setup()
 {
-    swofty::log("[hooks] hud.mfd.pages: not hooked yet (the MFD page list has no proven build site: pages come from "
-                "mfd.ui_mfd_metadata and Game_Read_MfdConfig); handlers attach but never run");
     char mode[32] = {};
     if (GetEnvironmentVariableA("SWOFTY_MFD_TEST", mode, sizeof mode) && mode[0])
         test_mode = mode;
