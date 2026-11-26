@@ -14,6 +14,7 @@
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/popup/message_system.hpp"
 #include "core/frontend/ui_vm.hpp"
+#include "core/frontend/vm_path.hpp"
 #include "core/hud/race_hud.hpp"
 
 namespace hud::race_hud {
@@ -114,6 +115,34 @@ int leaves_stats(SwoftyHudStats *out)
     return SWOFTY_ASSET_OK;
 }
 
+int ui_set_text(const char *path, const char *text)
+{
+    if (!path || !text)
+        return SWOFTY_ASSET_INVALID;
+    return state.set_enqueue(path, 0, text, 0, frontend::popup::who(__builtin_return_address(0)), true);
+}
+
+int ui_set_bool(const char *path, int value)
+{
+    if (!path)
+        return SWOFTY_ASSET_INVALID;
+    return state.set_enqueue(path, 1, "", value ? 1 : 0, frontend::popup::who(__builtin_return_address(0)), true);
+}
+
+int ui_set_ref(const char *path, const char *target)
+{
+    if (!path || !target)
+        return SWOFTY_ASSET_INVALID;
+    static std::atomic<bool> told{false};
+    if (!told.exchange(true))
+        swofty::log("[ui] set_ref %s -> %s by %s: not hooked yet; Vm_Set_NodeRef takes a node holder handle whose linking is "
+                    "proven only for the era picker's own set, so a node reference is left unavailable",
+                    path, target, frontend::popup::who(__builtin_return_address(0)).c_str());
+    return SWOFTY_ASSET_UNAVAILABLE;
+}
+
+const SwoftyUi ui_table = {sizeof(SwoftyUi), SWOFTY_UI_VERSION, ui_set_text, ui_set_bool, ui_set_ref};
+
 const SwoftyHud hud_table = {SWOFTY_HUD_VERSION,
                              frontend::popup::api_available,
                              frontend::popup::api_toast,
@@ -138,18 +167,24 @@ bool apply_leaf(const hud::leaves::Leaf &l)
 
 }
 
-int RaceHud::set_enqueue(std::string path, int type, std::string text, int32_t number, const std::string &by)
+int RaceHud::set_enqueue(std::string path, int type, std::string text, int32_t number, const std::string &by, bool any)
 {
     if (!path.empty() && path[0] == '#')
         path.erase(0, 1);
-    bool listed = std::any_of(std::begin(SET_PREFIXES), std::end(SET_PREFIXES),
-                              [&](const char *p) { return path.rfind(p, 0) == 0 && path.size() > strlen(p); });
+    bool listed = any ? frontend::vm_path::settable(path)
+                      : std::any_of(std::begin(SET_PREFIXES), std::end(SET_PREFIXES),
+                                    [&](const char *p) { return path.rfind(p, 0) == 0 && path.size() > strlen(p); });
+    if (any && (type < 0 || type > 2 || !listed)) {
+        swofty::log("[ui] set by %s refused: '%.120s' is not a dotted view-model path (parent.leaf, no spaces or brackets)",
+                    by.c_str(), path.c_str());
+        return SWOFTY_ASSET_INVALID;
+    }
     if (!listed || path.find_first_of(" []") != std::string::npos || path.back() == '.' || type < 0 || type > 2) {
         swofty::log("[hud] set by %s refused: '%.120s' is not a hud_* leaf (ui_menu_data.hud_*, view_model_data.hud*)",
                     by.c_str(), path.c_str());
         return SWOFTY_ASSET_INVALID;
     }
-    if (!frontend::popup::api_available())
+    if (!any && !frontend::popup::api_available())
         return SWOFTY_ASSET_UNAVAILABLE;
     int registered = leaf_table.type_of(path);
     if (registered >= 0 && registered != type) {
@@ -320,3 +355,5 @@ void RaceHud::tick()
 }
 
 extern "C" __declspec(dllexport) const SwoftyHud *SwoftyCoreHud(void) { return &hud::race_hud::hud_table; }
+
+extern "C" __declspec(dllexport) const SwoftyUi *SwoftyCoreUi(void) { return &hud::race_hud::ui_table; }
