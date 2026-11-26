@@ -345,7 +345,12 @@ size_t add_record_tiles(TileList *list, uint8_t stock_index, size_t content_tile
     {
         frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap, tr::Place::career};
         swofty_core::hooks::ui_points::career_content_tiles(&chosen);
-        if (size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap, tr::store_route_exists()))
+        std::vector<std::string> told;
+        size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap, tr::store_route_exists(), &told);
+        for (auto &line : told)
+            if (auto n = record_lines.note())
+                swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+        if (dropped)
             swofty::log("[ui.tile] career: %zu tile(s) a ui.career_content.tiles handler left over the %zu slot(s) or repeated "
                         "are dropped",
                         dropped, opt.cap);

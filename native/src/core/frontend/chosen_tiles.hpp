@@ -21,13 +21,21 @@ struct Chosen {
 };
 
 // What a handler may not do: show more tiles than the screen has room for, or two tiles of one id. A route a handler
-// set that names a ui.route record by its id becomes the record's key, as it does for a record tile.
+// set that names a ui.route record by its id becomes the record's key, as it does for a record tile; an id no record
+// has is passed as written and reported in `lines`, once per tile.
 inline size_t settle(std::vector<frontend::tile_records::Tile> &tiles, size_t cap,
-                     const frontend::tile_records::RouteExists &route_exists = {})
+                     const frontend::tile_records::RouteExists &route_exists = {}, std::vector<std::string> *lines = nullptr)
 {
     if (route_exists)
-        for (auto &t : tiles)
-            t.route = frontend::tile_records::game_route(t.route, route_exists);
+        for (auto &t : tiles) {
+            bool unknown = false;
+            t.route = frontend::tile_records::game_route(t.route, route_exists, &unknown);
+            if (unknown && !t.route_told) {
+                t.route_told = true;
+                if (lines)
+                    lines->push_back(frontend::tile_records::unknown_route_line(t.id, t.route));
+            }
+        }
     std::set<std::string> seen;
     std::vector<frontend::tile_records::Tile> kept;
     for (auto &t : tiles)

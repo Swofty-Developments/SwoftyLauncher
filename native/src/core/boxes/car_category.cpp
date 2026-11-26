@@ -237,7 +237,12 @@ void add_record_tiles(uint8_t *v, Vm_List_AppendChild_t *append, Game_CreateSess
     {
         frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap, tr::Place::car_category};
         swofty_core::hooks::ui_points::car_category_tiles(&chosen);
-        if (size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap, tr::store_route_exists()))
+        std::vector<std::string> told;
+        size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap, tr::store_route_exists(), &told);
+        for (auto &line : told)
+            if (auto n = record_lines.note())
+                swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+        if (dropped)
             swofty::log(
                 "[ui.tile] car_category: %zu tile(s) a ui.car_category.tiles handler left over the %zu slot(s) or repeated "
                 "are dropped",

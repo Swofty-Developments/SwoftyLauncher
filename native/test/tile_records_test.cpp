@@ -2,6 +2,7 @@
 // by id, gate over the facts, the cap, title and image resolution, and a walk of the records in test/content/tiles/tiles.json
 // in load order. Built and run by native/test/run_tests.sh tile_records.
 
+#include "core/frontend/chosen_tiles.hpp"
 #include "core/frontend/tile_records.hpp"
 
 #include <cstdio>
@@ -204,6 +205,62 @@ int main(int argc, char **argv)
            "an image naming a slice record is provided by definition");
     t.image = "art/tile.png";
     expect(tr::missing_slice_warning(t, tr::resolve_image(t, lookup), have, told).empty(), "a plain string is not checked");
+
+    t.image = "mod.a/slice_nope";
+    auto nope = tr::resolve_image(t, lookup);
+    expect(nope.kind == tr::Image::Kind::unresolved &&
+               nope.why == "image slice mod.a/slice_nope is not provided by any enabled ui.texture_slice record",
+           "an image that names a slice record no addon provides is kept as unresolved with the documented warning");
+    t.image = "nonsense";
+    expect(tr::resolve_image(t, lookup).why.find("neither a ui.texture_slice record id nor a #array[name]") != std::string::npos,
+           "an image that is no record id and no #array[name] says what it may be");
+
+    {
+        std::set<std::string> routes{"mod.settings/open_settings"};
+        tr::RouteExists exists = [&](const std::string &id) { return routes.count(id) > 0; };
+        namespace ct = frontend::chosen_tiles;
+        std::vector<tr::Tile> list;
+        ct::Chosen chosen{list, 10, tr::Place::home};
+        ct::ChosenTable table(chosen);
+        auto add = [&](const char *id, const char *route) {
+            SwoftyTileSpec spec{};
+            spec.id = id;
+            spec.title = "lng";
+            spec.route = route;
+            return table.table()->insert(table.table()->self, 0, &spec);
+        };
+        expect(add("h/ok", "mod.settings/open_settings") == SWOFTY_ASSET_OK &&
+                   add("h/typo", "mod.settings/open_setings") == SWOFTY_ASSET_OK &&
+                   add("h/stock", "mod_menu") == SWOFTY_ASSET_OK && add("h/bare", "stdui_nonexistent") == SWOFTY_ASSET_OK,
+               "a handler can insert tiles with a record id, a typo, a stock and a bare route");
+        std::vector<std::string> lines;
+        ct::settle(list, 10, exists, &lines);
+        std::string typo;
+        for (auto &l : lines)
+            typo += l + "\n";
+        expect(lines.size() == 1 &&
+                   lines[0] == "ui.tile h/typo: route mod.settings/open_setings names no enabled ui.route record; the game "
+                               "gets it as written",
+               "settle reports a handler-inserted route id that no enabled ui.route record has, once");
+        bool keyed = false;
+        for (auto &t : list)
+            keyed = keyed || (t.id == "h/ok" && t.route == "open_settings");
+        expect(keyed, "settle turns a handler-inserted record id into the key");
+        lines.clear();
+        ct::settle(list, 10, exists, &lines);
+        expect(lines.empty(), "a tile already told about is not reported again");
+
+        Set rt;
+        rt.add("a/typo", R"({"place":"home","title":"lng","route":"mod.settings/open_setings"})");
+        tr::Options with;
+        with.route_exists = exists;
+        auto r = tr::effective(rt.inputs(), tr::Place::home, &none, with);
+        expect(r.lines.size() == 1 && r.tiles.size() == 1 && r.tiles[0].route_told,
+               "a record tile with an unknown route id is kept and reported by effective");
+        lines.clear();
+        ct::settle(r.tiles, 10, exists, &lines);
+        expect(lines.empty(), "settle does not report it a second time");
+    }
 
     if (argc > 1) {
         std::ifstream f(argv[1], std::ios::binary);

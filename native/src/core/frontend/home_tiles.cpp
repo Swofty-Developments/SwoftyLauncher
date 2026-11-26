@@ -188,7 +188,13 @@ void add_record_tiles(swofty::Context &c, TileList *list, void **career_vt, unsi
     {
         frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap, frontend::tile_records::Place::home};
         swofty_core::hooks::ui_points::home_tiles(list, &chosen);
-        if (size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap, frontend::tile_records::store_route_exists()))
+        std::vector<std::string> told;
+        size_t dropped =
+            frontend::chosen_tiles::settle(found.tiles, opt.cap, frontend::tile_records::store_route_exists(), &told);
+        for (auto &line : told)
+            if (auto n = record_lines.note())
+                swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+        if (dropped)
             swofty::log("[ui.tile] home: %zu tile(s) a ui.home.tiles handler left over the %zu slot(s) or repeated are dropped",
                         dropped, opt.cap);
     }

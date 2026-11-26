@@ -22,8 +22,7 @@
       "type": [
         "string",
         "null"
-      ],
-      "x-ref": "ui.screen"
+      ]
     },
     "extends": {
       "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",

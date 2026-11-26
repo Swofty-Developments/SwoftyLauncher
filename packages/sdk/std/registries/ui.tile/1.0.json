@@ -39,20 +39,18 @@
       ]
     },
     "image": {
-      "description": "The slice the tile shows.",
+      "description": "The slice the tile shows: a ui.texture_slice record id (<addon>/<key>) or a #array[name] string. A slice no enabled record provides is logged, and the tile shows without an image.",
       "type": [
         "string",
         "null"
-      ],
-      "x-ref": "ui.texture_slice"
+      ]
     },
     "route": {
-      "description": "The route a press opens: a ui.route record id (<addon>/<key>) or bare key, or a stock route name. The core passes the game the record's key, the name of the route group the build cloned; a bare key or a stock name passes unchanged.",
+      "description": "The route a press opens: a ui.route record id (<addon>/<key>) or bare key, or a stock route name. The core passes the game the record's key, the name of the route group the build cloned; a bare key or a stock name passes unchanged. An id no enabled record has is logged and passed as written.",
       "type": [
         "string",
         "null"
-      ],
-      "x-ref": "ui.route"
+      ]
     },
     "gate": {
       "description": "Where the record applies: one selector (an object) or a list of selectors that must all match (docs/std/layers.md); empty or null: everywhere.",

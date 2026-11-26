@@ -60,6 +60,7 @@ struct Tile {
     std::string title;
     bool literal = false;
     std::string image, route;
+    bool route_told = false;
     std::shared_ptr<const hooks::Selectors> gate;
 };
 
@@ -92,6 +93,12 @@ inline std::string game_route(const std::string &route, const RouteExists &exist
     if (unknown)
         *unknown = true;
     return route;
+}
+
+inline std::string unknown_route_line(const std::string &tile_id, const std::string &route)
+{
+    return std::string(REGISTRY) + " " + tile_id + ": route " + route +
+           " names no enabled ui.route record; the game gets it as written";
 }
 
 struct Result {
@@ -158,9 +165,10 @@ inline Result effective(const std::vector<Input> &in, Place place, const hooks::
         if (!t.route.empty() && opt.route_exists) {
             bool unknown = false;
             t.route = game_route(t.route, opt.route_exists, &unknown);
-            if (unknown)
-                out.lines.push_back(std::string(REGISTRY) + " " + i.id + ": route " + t.route +
-                                    " names no enabled ui.route record; the game gets it as written");
+            if (unknown) {
+                t.route_told = true;
+                out.lines.push_back(unknown_route_line(t.id, t.route));
+            }
         }
         if (opt.need_route && t.route.empty()) {
             out.refused++;
@@ -224,7 +232,9 @@ inline Image resolve_image(const Tile &t, const SliceOf &slice_of)
                                                             : std::nullopt;
     if (!ref) {
         img.kind = Image::Kind::unresolved;
-        img.why = "image " + t.image + " names no ui.texture_slice record and is not a #array[name] reference";
+        img.why = t.image.find('/') != std::string::npos
+                      ? "image slice " + t.image + " is not provided by any enabled ui.texture_slice record"
+                      : "image " + t.image + " is neither a ui.texture_slice record id nor a #array[name] reference";
         return img;
     }
     img.kind = Image::Kind::slice;

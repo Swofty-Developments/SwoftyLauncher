@@ -1,0 +1,17 @@
+{
+  "ui.tile": {
+    "stock_route": {
+      "place": "home",
+      "title": "lng_mod_menu",
+      "image": "#overrides.home_screen.tiles_solo_6x6[mod_menu]",
+      "route": "mod_menu"
+    },
+    "bare_key": {
+      "place": "home",
+      "title": {
+        "literal": "Settings"
+      },
+      "route": "open_settings"
+    }
+  }
+}
