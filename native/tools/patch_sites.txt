@@ -200,6 +200,7 @@ core/hooks/session_points.hpp: make(rules_init, RULES_INIT, reinterpret_cast<voi
 core/hooks/session_points.hpp: make(director_update, DIRECTOR_UPDATE, reinterpret_cast<void *>(&d_director_update)); => inline spec DIRECTOR_UPDATE
 core/hooks/session_points.hpp: make(director_set_active, DIRECTOR_SET_ACTIVE, reinterpret_cast<void *>(&d_director_set_active)); => inline spec DIRECTOR_SET_ACTIVE
 core/hooks/vtable_point.hpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/ui_points.hpp: bool install(bool late, const std::string &subscribers) override => none
 core/loading/game_settings.cpp: list.push_back({Getter<K>::target, SWOFTY_MIXIN_WRAP, 100, (void *)&get<K>, (void **)&orig<K>}); => inline binding-consts target
 core/render/d3d12/arm_gate.cpp: if (!install(*e.hook, targets[i], detours[i], e.name)) => outside d3d12
 core/render/d3d12/device_hooks.cpp: ok = install(hooks.setname, (*reinterpret_cast<void ***>(buffer))[SETNAME_SLOT], => outside d3d12

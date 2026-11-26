@@ -132,6 +132,8 @@ int career_unblock(const void *from, uint32_t mode);
 void career_start_setup();
 void career_start_drop_module(void *module);
 bool career_start_live();
+bool era_picker_live();
+bool ui_screen_site_live();
 bool in_session_now();
 bool main_menu_account(std::string &name);
 uint32_t career_start_picked();
