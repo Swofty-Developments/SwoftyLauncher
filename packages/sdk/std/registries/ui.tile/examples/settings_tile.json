@@ -1,0 +1,13 @@
+{
+  "ui.tile": {
+    "settings_tile": {
+      "place": "home",
+      "title": "lng_mod_settings",
+      "image": "mod.settings/tile",
+      "route": "mod.settings/open_settings",
+      "gate": {
+        "mode": "driver_career"
+      }
+    }
+  }
+}

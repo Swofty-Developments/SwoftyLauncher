@@ -45,6 +45,7 @@
 #include <swofty/systems/wearables.hpp>
 #include <swofty/systems/tracks.hpp>
 #include <swofty/systems/tyre_damage.hpp>
+#include <swofty/systems/ui.hpp>
 #include <swofty/systems/weather.hpp>
 
 #include "sdk_payloads.h"
@@ -603,6 +604,34 @@ static void schemas()
     content::PackageUi ui_rec;
     CHECK(swofty::to_json(ui_rec).find("\"root\":\"eaid://ui_package/art/\"") != std::string::npos && ui_rec.srgb &&
           ui_rec.archives.empty());
+    CHECK(std::string(ui::texture_slices.name()) == "ui.texture_slice" && std::string(ui::tiles.name()) == "ui.tile" &&
+          std::string(ui::screens.name()) == "ui.screen" && std::string(ui::routes.name()) == "ui.route" &&
+          std::string(ui::options.name()) == "ui.option" && std::string(ui::hud_widgets.name()) == "hud.widget");
+    std::string ui_tile = ui::tiles.schema();
+    CHECK(ui_tile.find("\"x-applies\":\"read\"") != std::string::npos &&
+          ui_tile.find("\"x-ref\":\"ui.texture_slice\"") != std::string::npos &&
+          ui_tile.find("\"x-ref\":\"ui.route\"") != std::string::npos && ui_tile.find("\"car_category\"") != std::string::npos &&
+          ui::tiles.at_major() == "ui.tile@1");
+    CHECK(ui::routes.schema().find("\"x-ref\":\"ui.screen\"") != std::string::npos &&
+          ui::texture_slices.schema().find("\"x-applies\":\"boot\"") != std::string::npos &&
+          ui::hud_widgets.schema().find("\"x-applies\":\"session\"") != std::string::npos);
+    ui::Tile ui_tile_rec;
+    ui_tile_rec.place = ui::Place::f1_world;
+    ui_tile_rec.title = Text::key("lng_mod_tile");
+    ui_tile_rec.image = ui::texture_slices["mod.settings/tile"];
+    ui_tile_rec.route = ui::routes["mod.settings/open"];
+    std::string ui_tile_json = swofty::to_json(ui_tile_rec);
+    CHECK(ui_tile_json.find("\"place\":\"f1_world\"") != std::string::npos &&
+          ui_tile_json.find("\"image\":\"mod.settings/tile\"") != std::string::npos &&
+          ui_tile_json.find("\"route\":\"mod.settings/open\"") != std::string::npos);
+    ui::Tile ui_tile_back;
+    CHECK(swofty::from_json(ui_tile_json, ui_tile_back) && ui_tile_back.place == ui::Place::f1_world &&
+          ui_tile_back.route.id() == "mod.settings/open");
+    CHECK(ui::set_text("career.hub.title", "x") == Result::unavailable && ui::set_bool("a.b", true) == Result::unavailable &&
+          ui::set_ref("a.b", "c.d") == Result::unavailable);
+    ui::events::LangLookup lookup{sizeof lookup, 1, "lng_x", "en", "X", nullptr, nullptr};
+    CHECK(lookup.key() == "lng_x" && lookup.language() == "en" && lookup.text() == "X" &&
+          lookup.set_text("Y") == Result::unavailable);
     std::string kit = content::box_assets.schema();
     CHECK(kit.find("\"x-registry\":\"content.box_assets\"") != std::string::npos &&
           kit.find("\"x-applies\":\"boot\"") != std::string::npos && kit.find("\"marshals\"") != std::string::npos);

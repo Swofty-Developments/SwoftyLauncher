@@ -1,0 +1,11 @@
+{
+  "ui.option": {
+    "parc_ferme_rules": {
+      "id": "game/parc_ferme_rules",
+      "restriction_tags": [
+        "gamesetup_f1",
+        "gamesetup_f1_1990"
+      ]
+    }
+  }
+}

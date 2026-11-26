@@ -1,0 +1,8 @@
+{
+  "hud.widget": {
+    "bad": {
+      "view_model": 5,
+      "tmpl": "ui/x.ui"
+    }
+  }
+}

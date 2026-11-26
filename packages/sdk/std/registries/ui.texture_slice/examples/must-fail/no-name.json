@@ -1,0 +1,8 @@
+{
+  "ui.texture_slice": {
+    "bad": {
+      "array": "overrides.teams.driver_select_team_logo",
+      "image": "art/x.png"
+    }
+  }
+}

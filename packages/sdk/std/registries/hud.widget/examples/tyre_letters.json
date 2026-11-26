@@ -1,0 +1,8 @@
+{
+  "hud.widget": {
+    "tyre_letters": {
+      "view_model": "hud.f1990.tyre_letter",
+      "tmpl": "ui/tyre_letter.ui"
+    }
+  }
+}

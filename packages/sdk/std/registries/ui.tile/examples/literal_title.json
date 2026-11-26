@@ -1,0 +1,10 @@
+{
+  "ui.tile": {
+    "plain": {
+      "place": "car_category",
+      "title": {
+        "literal": "Group C"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "ui.screen": {
+    "bad": {
+      "file": "/ui/settings.ui",
+      "flow": "flow_frontend"
+    }
+  }
+}

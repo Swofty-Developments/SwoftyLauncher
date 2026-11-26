@@ -1,0 +1,7 @@
+{
+  "hud.widget": {
+    "bad": {
+      "view_model": "hud.f1990.tyre_letter"
+    }
+  }
+}

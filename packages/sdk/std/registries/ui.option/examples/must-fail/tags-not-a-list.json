@@ -1,0 +1,8 @@
+{
+  "ui.option": {
+    "bad": {
+      "id": "game/parc_ferme_rules",
+      "restriction_tags": "gamesetup_f1"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "ui.screen": {
+    "settings": {
+      "file": "ui/settings.ui",
+      "flow": "flow_frontend",
+      "anchor": "addon_settings",
+      "view_model": "mod.settings"
+    }
+  }
+}

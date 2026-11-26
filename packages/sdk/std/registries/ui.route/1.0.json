@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ui.route 1.0",
+  "x-registry": "ui.route",
+  "x-version": "1.0",
+  "x-applies": "boot",
+  "x-snapshot": false,
+  "description": "ui::Route (experimental): one front-end route, the game's link from a press to the screen it opens. clone_of names the route group the new one copies.",
+  "type": "object",
+  "properties": {
+    "file": {
+      "description": "The route file of the game it is added to: routes_frontend_general.uir.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_]+\\.uir$"
+    },
+    "clone_of": {
+      "description": "The route group it copies; empty: none.",
+      "type": "string"
+    },
+    "opens": {
+      "description": "The screen the route opens.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-ref": "ui.screen"
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "ui.route",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "file",
+    "opens"
+  ],
+  "additionalProperties": true
+}

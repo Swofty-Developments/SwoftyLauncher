@@ -1,0 +1,9 @@
+{
+  "ui.texture_slice": {
+    "bad": {
+      "array": "driver select logos",
+      "name": "x",
+      "image": "art/x.png"
+    }
+  }
+}
