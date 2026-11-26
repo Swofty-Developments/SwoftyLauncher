@@ -1,6 +1,5 @@
 #include "core/runtime/runtime.hpp"
 
-#include <safetyhook.hpp>
 #include <swofty/mixin.hpp>
 
 #include <atomic>
@@ -8,6 +7,7 @@
 #include <mutex>
 #include <string>
 
+#include "core/hooks/game_point.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/hooks/track_select_point.hpp"
 #include "core/hooks/ui_points.hpp"
@@ -24,27 +24,15 @@ namespace {
 
 namespace ev = swofty::ui::events;
 
-const runtime::Sig S_GP{
-    "Trk_GrandPrixTrackSelectVm_RefreshTrackList",
-    "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 89 CB 48 C7 81 28 09 "
-    "00 00 01",
-    0x1c05600};
-const runtime::Sig S_SETTINGS{
-    "Trk_SettingsSelectTrackTabVm_RefreshTrackList",
-    "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE C7 81 "
-    "04 0B 00 00 01",
-    0x1de65e0};
+constexpr const char *GP = "Trk_GrandPrixTrackSelectVm_RefreshTrackList";
+constexpr const char *CS = "Trk_SettingsSelectTrackTabVm_RefreshTrackList";
 
 constexpr int LOGGED = 6;
 
 using Refresh_t = void(void *vm);
 
-struct Hooks {
-    safetyhook::InlineHook gp, settings;
-    bool live = false;
-};
-
-Hooks *g_hooks = nullptr;
+std::unique_ptr<GamePoint> g_gp;
+std::unique_ptr<GamePoint> g_cs;
 std::atomic<int> g_told{0};
 
 void announce(void *vm, const char *screen)
@@ -56,16 +44,14 @@ void announce(void *vm, const char *screen)
 
 void d_gp(void *vm)
 {
-    g_hooks->gp.call<void>(vm);
-    if (g_hooks->live)
-        announce(vm, "Grand Prix");
+    g_gp->original<void>(vm);
+    announce(vm, "Grand Prix");
 }
 
-void d_settings(void *vm)
+void d_cs(void *vm)
 {
-    g_hooks->settings.call<void>(vm);
-    if (g_hooks->live)
-        announce(vm, "championship settings");
+    g_cs->original<void>(vm);
+    announce(vm, "championship settings");
 }
 
 class TrackSelectLink final : public GameLink {
@@ -73,49 +59,28 @@ public:
     bool install(bool late, const std::string &subscribers) override
     {
         std::lock_guard<std::mutex> g(lock_);
-        Hooks &h = *g_hooks;
-        if (h.live)
-            return true;
-        std::string live;
-        if (!h.gp) {
-            uintptr_t at = runtime::find(S_GP, "ui.track_select.build", "hooks");
-            if (at)
-                if (auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&d_gp)))
-                    h.gp = std::move(*r);
-        }
-        if (!h.settings) {
-            uintptr_t at = runtime::find(S_SETTINGS, "ui.track_select.build", "hooks");
-            if (at)
-                if (auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&d_settings)))
-                    h.settings = std::move(*r);
-        }
-        if (h.gp)
-            live += "Trk_GrandPrixTrackSelectVm_RefreshTrackList";
-        if (h.settings)
-            live += std::string(live.empty() ? "" : " and ") + "Trk_SettingsSelectTrackTabVm_RefreshTrackList";
-        if (live.empty()) {
+        bool gp = g_gp->install(late, subscribers);
+        bool settings = g_cs->install(late, subscribers);
+        if (!gp && !settings) {
             swofty::log("[hooks] ui.track_select.build unavailable: neither track list refresh resolves or hooks on this build; "
                         "subscribers %s not run",
                         subscribers.c_str());
             return false;
         }
-        h.live = true;
-        swofty::log("[hooks] ui.track_select.build live on %s%s: subscribers %s; Time Trial is not covered (its list builder is "
-                    "not found)",
-                    live.c_str(), late ? " (installed late)" : " (window stage)", subscribers.c_str());
+        swofty::log("[hooks] ui.track_select.build live: Grand Prix %s, championship settings %s; Time Trial is not covered "
+                    "(its list builder is not found)",
+                    gp ? "yes" : "no", settings ? "yes" : "no");
         return true;
     }
 
     void uninstall() override
     {
         std::lock_guard<std::mutex> g(lock_);
-        if (!g_hooks->live)
-            return;
-        g_hooks->live = false;
-        swofty::log("[hooks] ui.track_select.build has no subscriber left; the detours stay and fire nothing");
+        g_gp->uninstall();
+        g_cs->uninstall();
     }
 
-    bool installed() const override { return g_hooks->live; }
+    bool installed() const override { return g_gp->installed() || g_cs->installed(); }
 
 private:
     std::mutex lock_;
@@ -125,7 +90,8 @@ private:
 
 void declare_track_select_point(Table &t)
 {
-    g_hooks = new Hooks;
+    g_gp = std::make_unique<GamePoint>(ui_points::TRACK_SELECT_POINT, GP, reinterpret_cast<void *>(&d_gp), game_ops());
+    g_cs = std::make_unique<GamePoint>(ui_points::TRACK_SELECT_POINT, CS, reinterpret_cast<void *>(&d_cs), game_ops());
     auto *link = new TrackSelectLink;
     t.declare_game(ui_points::TRACK_SELECT_POINT, SWOFTY_POINT_MODIFY, swofty::ui::events::TrackSelectBuild::version, link);
 }

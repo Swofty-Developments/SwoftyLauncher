@@ -62,8 +62,8 @@ core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpr
 core/assets/lang_override.cpp: bool install(bool late, const std::string &subscribers) override => none
 core/hooks/mfd_pages_point.cpp: g_point = std::make_unique<GamePoint>(mfd_point::POINT, "Hud_MfdVm_RefreshPanelAvailability", => inline binding Hud_MfdVm_RefreshPanelAvailability
 core/hooks/track_select_point.cpp: bool install(bool late, const std::string &subscribers) override => none
-core/hooks/track_select_point.cpp: if (auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&d_gp))) => inline sig S_GP
-core/hooks/track_select_point.cpp: if (auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&d_settings))) => inline sig S_SETTINGS
+core/hooks/track_select_point.cpp: g_gp = std::make_unique<GamePoint>(ui_points::TRACK_SELECT_POINT, GP, reinterpret_cast<void *>(&d_gp), game_ops()); => inline binding Trk_GrandPrixTrackSelectVm_RefreshTrackList
+core/hooks/track_select_point.cpp: g_cs = std::make_unique<GamePoint>(ui_points::TRACK_SELECT_POINT, CS, reinterpret_cast<void *>(&d_cs), game_ops()); => inline binding Trk_SettingsSelectTrackTabVm_RefreshTrackList
 core/hooks/ui_hot_points.cpp: g_point = std::make_unique<GamePoint>(ui_hot::VM_POINT, "Vm_Resolve_RegistryNode", reinterpret_cast<void *>(&d_resolve), => inline binding Vm_Resolve_RegistryNode
 core/assets/overlay.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fn)); => via
 core/assets/overlay.cpp: return hook(h_resolve, at, &resolve_hook, "overlay: Fs_Resolve_Mount"); => inline sig S_RESOLVE
