@@ -14,7 +14,7 @@
       "pattern": "^[A-Za-z0-9_]+\\.uir$"
     },
     "clone_of": {
-      "description": "The route group it copies; empty: none.",
+      "description": "The route group of the route file it copies. Required: a record without one is refused.",
       "type": "string"
     },
     "opens": {

@@ -19,10 +19,8 @@
 #endif
 
 // UI and strings: texture slices, tiles, screens, routes, options, HUD widgets, one text key in every language,
-// and the options an addon shows in ADDON SETTINGS. The records are declared and stored; a record whose registry
-// has no applier yet is logged as `this core applies nothing from it`. set_text and set_bool write a view-model
-// leaf through the core's SwoftyUi table (queued, applied on the flow thread) and return unavailable on a core
-// without it; set_ref returns unavailable until a core proves what a node reference targets.
+// and the options an addon shows in ADDON SETTINGS. set_text, set_bool and set_ref write a view-model leaf through
+// the core's SwoftyUi table (queued, applied on the flow thread) and return unavailable on a core without it.
 // The 1.x string library (swofty/lang.hpp) writes the calling addon's global layer of a lang.string
 // record; the options of an addon's swofty.json are addon.option records under its id.
 

@@ -1,1 +1,1 @@
-1.0: first version (launcher 1.10.54), experimental: the records are declared and stored; the core applies nothing from them yet.
+1.0: first version (launcher 1.10.54), experimental: the home, F1 World, career content and car category screens add each record after their stock tiles; a press runs route.

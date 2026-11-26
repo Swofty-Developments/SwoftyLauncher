@@ -1,1 +1,1 @@
-1.0: first version (launcher 1.10.54), experimental: the records are declared and stored; the core applies nothing from them yet.
+1.0: first version (launcher 1.10.54), experimental: the launcher's build lowers each record into the addon screen pipeline, the same as operations.screens in swofty.json.
