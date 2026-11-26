@@ -16,8 +16,17 @@
 
 namespace frontend::tile_records {
 
-inline Result read(Place place, const Options &opt)
+inline RouteExists store_route_exists()
 {
+    return [](const std::string &id) {
+        return runtime::older_store().get("ui.route", id).status == swofty_core::registry::Status::ok;
+    };
+}
+
+inline Result read(Place place, Options opt)
+{
+    if (!opt.route_exists)
+        opt.route_exists = store_route_exists();
     auto &st = runtime::older_store();
     std::vector<Value> keep;
     std::vector<std::string> ids = swofty_core::registry::older::in_load_order(st, REGISTRY);

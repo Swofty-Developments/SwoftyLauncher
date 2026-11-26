@@ -9,10 +9,12 @@
 #include "core/hooks/catalogue.hpp"
 #include "core/hooks/dispatch.hpp"
 #include "core/hooks/track_rows.hpp"
+#include "core/hooks/ui_names.hpp"
 #include "core/hooks/ui_points.hpp"
 
 #include <cstdio>
 #include <cstring>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -509,8 +511,34 @@ static void test_chosen()
     expect(ids(carcat) == "x", "car category: a content subscriber does not see the car category point");
 }
 
+static void test_names()
+{
+    namespace un = swofty_core::hooks::ui_names;
+    std::vector<std::string> routes{"mod.settings/open_settings", "other/open_page"};
+    std::vector<std::string> screens{"other/page", "mod.settings/settings", "mod.settings/page"};
+    std::map<std::string, std::string> opens{{"mod.settings/open_settings", "mod.settings/settings"},
+                                             {"other/open_page", "page"}};
+    auto opens_of = [&](const std::string &id) { return opens[id]; };
+    expect(un::screen_of_route("open_settings", routes, screens, opens_of) == "mod.settings/settings",
+           "route screen: the bare name the game fires finds its record and reports the screen id");
+    expect(un::screen_of_route("mod.settings/open_settings", routes, screens, opens_of) == "mod.settings/settings",
+           "route screen: a record id is accepted as well");
+    expect(un::screen_of_route("career_hub", routes, screens, opens_of).empty(), "route screen: a stock route has no screen");
+    expect(un::screen_of_route("open_page", routes, screens, opens_of) == "other/page",
+           "route screen: a bare opens is the screen record of the route's own addon");
+    opens["other/open_page"] = "gone";
+    expect(un::screen_of_route("open_page", routes, screens, opens_of) == "gone",
+           "route screen: an unknown screen is reported as written");
+    expect(un::built_screen("root_x", "settings", screens) == "mod.settings/settings",
+           "built screen: an addon screen reports its ui.screen record id");
+    expect(un::built_screen("MainMenu", "", screens) == "MainMenu", "built screen: a stock screen keeps its root name");
+    expect(un::built_screen("root_x", "launcher_page", screens) == "root_x",
+           "built screen: a screen with no record keeps its root name");
+}
+
 int main()
 {
+    test_names();
     test_chosen();
     test_tile_tables();
     test_tile_event();
