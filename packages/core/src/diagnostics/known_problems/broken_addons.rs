@@ -253,6 +253,11 @@ pub(super) fn steam_1_0_145(e: &Evidence) -> bool {
     e.game_build == Some(crate::build_support::BUILD_1_0_145)
 }
 
+/// Whether the game is the EA app build of F1 25 1.0.145.
+pub(super) fn ea_1_0_145(e: &Evidence) -> bool {
+    e.game_build == Some(crate::build_support::BUILD_1_0_145_EA)
+}
+
 /// Whether F1 25 1.0.145 crashed with a Skip Cutscenes version up to
 /// [`SKIP_CUTSCENES_LAST_BROKEN`] on in the profile, in its own module or after
 /// it logged that it could not find its vtable.
