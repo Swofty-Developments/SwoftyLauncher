@@ -66,8 +66,8 @@ constexpr const char *BOX13_MIXIN = "swofty_core.dll (pit box 13)";
 constexpr const char *UPDATE_MOVEMENT = "Game_PitLane_UpdateMovement";
 constexpr const char *MOVE_DOWN_SPLINE = "Game_PitLane_MoveDownSpline";
 using UpdateMovementFn = void(void *mgr, float dt);
-using MoveDownSplineFn = void(void *pitlane, uint8_t car, void *teleport_req, bool alt_spline, float dt, bool p6, bool blend, bool p8,
-                              bool p9);
+using MoveDownSplineFn = void(void *pitlane, uint8_t car, void *teleport_req, bool alt_spline, float dt, bool p6, bool blend,
+                              bool p8, bool p9);
 UpdateMovementFn *orig_update_movement = nullptr;
 MoveDownSplineFn *orig_move_down = nullptr;
 thread_local int box13_depth = 0;
@@ -104,7 +104,8 @@ void update_movement_entry(void *mgr, float dt)
     }
 }
 
-void move_down_entry(void *pitlane, uint8_t car, void *teleport_req, bool alt_spline, float dt, bool p6, bool blend, bool p8, bool p9)
+void move_down_entry(void *pitlane, uint8_t car, void *teleport_req, bool alt_spline, float dt, bool p6, bool blend, bool p8,
+                     bool p9)
 {
     pb::Redirect r;
     bool on = box13_engage(pitlane, r);
@@ -161,9 +162,10 @@ private:
         else if (!swofty::api->resolve(UPDATE_MOVEMENT) || !swofty::api->resolve(MOVE_DOWN_SPLINE))
             swofty::log("[pit] box 13 redirect off: this build does not resolve %s and %s", UPDATE_MOVEMENT, MOVE_DOWN_SPLINE);
         else
-            out.push_back({BOX13_MIXIN,
-                           {{UPDATE_MOVEMENT, SWOFTY_MIXIN_WRAP, 100, (void *)&update_movement_entry, (void **)&orig_update_movement},
-                            {MOVE_DOWN_SPLINE, SWOFTY_MIXIN_WRAP, 100, (void *)&move_down_entry, (void **)&orig_move_down}}});
+            out.push_back(
+                {BOX13_MIXIN,
+                 {{UPDATE_MOVEMENT, SWOFTY_MIXIN_WRAP, 100, (void *)&update_movement_entry, (void **)&orig_update_movement},
+                  {MOVE_DOWN_SPLINE, SWOFTY_MIXIN_WRAP, 100, (void *)&move_down_entry, (void **)&orig_move_down}}});
         char v[16] = {};
         if (guards::env_off("SWOFTY_PIT_BOX_GUARD", v)) {
             swofty::log("[pit] box guard off (SWOFTY_PIT_BOX_GUARD=%s)", v);

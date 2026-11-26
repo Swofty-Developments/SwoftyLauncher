@@ -277,12 +277,16 @@
 [garage] slots: a team at position %llu of the team order has no garage, the world has %llu; teams past the garage count get no garage slot, their cars still race
 
 [log garage/pit_box.cpp]
+[pit] box 13: the pit lane resolves box 12 from PitBox13's placement instead of the safety car's spot
 [pit] guard: a car in the garage has pit box %d, which has no spline slot; it is not aligned%s
 [pit] race tyre change rule off (SWOFTY_RACE_TYRE_RULE=%s)
 [pit] race tyre change rule off: this build does not resolve %s
+[pit] box 13 redirect off (SWOFTY_PIT_BOX_13=%s)
+[pit] box 13 redirect off: this build does not resolve %s and %s
 [pit] box guard off (SWOFTY_PIT_BOX_GUARD=%s)
 [pit] box guard off: needs %s and %s, which this build does not resolve
 [pit] race tyre change rule %s
+[pit] box 13 redirect %s
 [pit] box guard %s
 
 [log garage/pit_garage_state.cpp]
