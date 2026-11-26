@@ -1587,6 +1587,63 @@ fn with_no_careers_the_list_holds_the_new_career_row_alone() {
     std::fs::remove_dir_all(&out).ok();
 }
 
+fn addon_screens_settings(names: &[(&str, &str)]) -> SessionSettings {
+    let mut s = setup_settings_without();
+    let screens: Vec<serde_json::Value> = names
+        .iter()
+        .map(|(name, anchor)| {
+            serde_json::json!({ "name": name, "file": format!("ui/{name}.ui"), "flow": "flow_options",
+                                "anchor": anchor, "view_model": true })
+        })
+        .collect();
+    s.ui = serde_json::from_value(serde_json::json!({
+        "register": true, "strict": false, "recover": true, "screens": screens
+    }))
+    .unwrap();
+    s
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn addon_screens_of_two_addons_join_the_options_flow_with_their_routes() {
+    let input = stock_input();
+    let settings = addon_screens_settings(&[
+        ("l2a_first", "settings_container"),
+        ("l2a_second", "settings_container"),
+    ]);
+    let out = std::env::temp_dir().join(format!("swofty-addon-screens-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    build(
+        &settings,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    let persistent = ui_file("persistent.erp");
+    let after = groupings(&out.join(&persistent), ROUTES);
+    for name in ["l2a_first", "l2a_second"] {
+        assert!(after.contains_key(name), "{name} has no route group");
+    }
+    let stock = groupings(&input(&persistent), ROUTES);
+    for (gid, routes) in &stock {
+        for (rid, r) in routes {
+            assert_eq!(after[gid].get(rid), Some(r), "{gid}.{rid} changed");
+        }
+    }
+    let report = check::archive_files(&[(
+        persistent.as_str(),
+        input(&persistent).as_path(),
+        out.join(&persistent).as_path(),
+    )])
+    .unwrap();
+    let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    assert!(hard.is_empty(), "{hard:?}");
+    std::fs::remove_dir_all(&out).ok();
+}
+
 fn setup_settings_without() -> SessionSettings {
     let mut s = setup_settings();
     s.addons[0].career_setup = None;

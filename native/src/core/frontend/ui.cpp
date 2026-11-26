@@ -140,6 +140,8 @@ void ScreenLoader::load_config()
     }
     swofty::log("[ui] %ls: %zu addon screen(s), register %s, strict %s, recover %s", src.c_str(), screens.size(),
                 do_register ? "on" : "off", strict ? "on" : "off", recover ? "on" : "off");
+    swofty::log("[registry] ui.screen: %zu screen(s) read from %ls (records and the addons' own declarations)", screens.size(),
+                src.c_str());
     for (auto &s : screens)
         swofty::log("[ui]   %s (%s, anchor %s, djb2 0x%08x, %zu bytes from %s%s)", s.name.c_str(), s.flow.c_str(),
                     s.anchor.c_str(), s.hash, s.data.size(), s.file.c_str(), s.view_model ? ", view model" : "");

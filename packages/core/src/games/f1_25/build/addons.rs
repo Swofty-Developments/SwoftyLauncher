@@ -301,6 +301,12 @@ impl Gather<'_, '_, '_> {
                     .extend(report.warnings.iter().map(|w| format!("{id}: ui: {w}")));
             }
             self.hash.update(&data);
+            self.built.lines.push(format!(
+                "{id}: ui screen {} joins {} at {}",
+                s.name,
+                s.flow,
+                s.anchor.as_deref().unwrap_or("the flow's default anchor")
+            ));
         }
         Ok(())
     }

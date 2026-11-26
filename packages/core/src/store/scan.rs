@@ -166,7 +166,11 @@ impl Store {
             if !dir.join(MANIFEST_FILE).is_file() {
                 continue;
             }
-            let m = match AddonManifest::load(&dir) {
+            let loaded = AddonManifest::load(&dir).and_then(|mut m| {
+                crate::stdlib::screens::lower(&dir, &mut m)?;
+                Ok(m)
+            });
+            let m = match loaded {
                 Ok(m) => m,
                 Err(e) => {
                     let u = Unreadable::of(&dir, &e, &crate::updates::release::current_version());
