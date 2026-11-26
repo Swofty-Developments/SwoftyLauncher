@@ -30,6 +30,15 @@ inline uint32_t button_hash(size_t n)
     return djb2(s.c_str());
 }
 
+// How many ui.tile records the screen can still show once `used` addon slots hold era boxes: era boxes come first.
+inline size_t records_room(size_t used) { return used >= MAX_ADDED ? 0 : MAX_ADDED - used; }
+
+// A slice as the string FillTile resolves into the tile's image node.
+inline std::string slice_path(const std::string &array, const std::string &name)
+{
+    return "#overrides." + array + "[" + name + "]";
+}
+
 // The added box a press command names: button_<stock + 1 + i> is added box i. -1 for anything else.
 inline int added_box_of(uint32_t hash, size_t added)
 {

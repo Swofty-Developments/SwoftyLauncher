@@ -33,6 +33,17 @@ inline Result read(Place place, const Options &opt)
     return effective(in, place, facts.get(), opt);
 }
 
+inline bool has_place(Place place)
+{
+    auto &st = runtime::older_store();
+    for (auto &id : swofty_core::registry::older::in_load_order(st, REGISTRY)) {
+        auto rec = st.get(REGISTRY, id);
+        if (rec.status == swofty_core::registry::Status::ok && place_of(text_of(rec.value["place"])) == place)
+            return true;
+    }
+    return false;
+}
+
 inline SliceOf store_slices()
 {
     return [](const std::string &id) -> std::optional<swofty_core::apply::content::slices::Ref> {

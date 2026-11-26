@@ -188,6 +188,19 @@ int main(int argc, char **argv)
                "fixture: in the season the gated tiles join, a tile with no route is left out");
         expect(ids(walk(tr::Place::f1_world, &menu, {})) == "mod.b/world",
                "fixture: the F1 World place reads only its own record");
+        expect(ids(walk(tr::Place::career, &menu, r)) == "mod.a/career_tile",
+               "fixture: the career place shows its ungated tile; the one with no route is refused");
+        expect(ids(walk(tr::Place::career, &sw13, r)) == "mod.a/career_tile,mod.b/career_gated",
+               "fixture: a gated career tile joins in its content");
+        tr::Options room;
+        room.need_route = true;
+        room.cap = 2;
+        auto cat = walk(tr::Place::car_category, &menu, room);
+        expect(ids(cat) == "mod.a/cat_one,mod.b/cat_two" && cat.capped == 1 && has_line(cat, "over the cap of 2"),
+               "fixture: car category tiles keep load order and the slots left cap the rest, logged");
+        room.cap = 0;
+        auto none = walk(tr::Place::car_category, &menu, room);
+        expect(none.tiles.empty() && none.capped == 3, "fixture: no slot left shows no car category tile");
     }
 
     return failed ? 1 : 0;
