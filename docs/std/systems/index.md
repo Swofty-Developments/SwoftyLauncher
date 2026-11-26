@@ -48,7 +48,7 @@ Shipped in 1.6.0:
 - **[Helmets, suits and gloves](./wearables)** `swofty/systems/wearables.hpp`: `wearables::helmets`, `suits`, `gloves`, `season_sets`.
 - **[Sounds](./sounds)** `swofty/systems/sounds.hpp`: `sounds::engine_sounds`.
 - **[Career](./career)** `swofty/systems/career.hpp`: `career::modes`, `contents`, `seasons`, `calendars`, `ratings`, `characters`, `wizards`, `hub_tabs`, `rnd_trees`, `markets`.
-- **[UI and strings](./ui)** `swofty/systems/ui.hpp`: `ui::strings`, `addon_options`.
+- **[UI and strings](./ui)** `swofty/systems/ui.hpp`: `ui::strings`, `addon_options`, `texture_slices`, `tiles`, `screens`, `routes`, `options` and `hud_widgets` (the last six experimental, 1.10.54), the tile list events and `set_text`, `set_bool`, `set_ref`.
 - **[Sessions](./sessions)** `swofty/systems/sessions.hpp`: `sessions::Rules`, `set_control`.
 - **[Laps](./laps)** `swofty/systems/laps.hpp`: the `laps.recorded` and `laps.sealing` payloads.
 - **[Tracks](./tracks)** `swofty/systems/tracks.hpp`: `tracks::set_track_fuel`, `copy_track_fuel`, `restore_track_fuel`.
