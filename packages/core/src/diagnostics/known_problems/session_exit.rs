@@ -1,7 +1,7 @@
 use super::broken_addons::{ea_1_0_145, steam_1_0_145};
 use super::crash_record::{Fatal, crash_time, frames_start_with, stamp};
 use super::evidence::Evidence;
-use super::memory::commit_percent;
+use super::memory::{PAGE_FILE_STEP, commit_percent};
 use super::wording::SEND_LOGS;
 use super::{Crash, Diagnosis};
 
@@ -88,13 +88,10 @@ pub(super) fn session_exit_memory(c: &Crash) -> Option<Diagnosis> {
                  game, and it is mostly seen on PCs that are short of memory.{memory}"
             ),
             steps: vec![
-                "Turn off add-ons you don't need, especially imported tracks and extra Classic Seasons years."
+                "Turn off add-ons you don't need, especially imported tracks and season packs you aren't racing."
                     .to_owned(),
                 "Close other apps, such as browsers, launchers and overlays, before you press Play.".to_owned(),
-                "Make the page file bigger: Windows Settings, System, About, Advanced system settings, Advanced, \
-                 Performance Settings, Advanced, Virtual memory, Change. Untick Automatically manage, pick the \
-                 game's drive, choose Custom size and set both to at least 32000 MB, then restart the PC."
-                    .to_owned(),
+                PAGE_FILE_STEP.to_owned(),
                 SEND_LOGS.to_owned(),
             ],
         }

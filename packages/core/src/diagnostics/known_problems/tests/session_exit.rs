@@ -117,7 +117,9 @@ fn the_sibling_fault_names_a_nearly_full_memory() {
     let steps = d.text();
     assert!(steps.contains("Turn off add-ons you don't need"), "{steps}");
     assert!(steps.contains("Close other apps"), "{steps}");
-    assert!(steps.contains("page file"), "{steps}");
+    assert!(steps.contains(super::super::memory::PAGE_FILE_STEP), "{steps}");
+    assert!(!steps.contains("Classic Seasons"), "{steps}");
+    assert!(!steps.contains("32000"), "{steps}");
     assert!(steps.contains("Send Logs"), "{steps}");
 }
 
