@@ -1,4 +1,5 @@
 #include "core/boxes/picker/picker.hpp"
+#include "core/hooks/ui_points.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -79,6 +80,15 @@ void site_entry(SwoftyContext *c)
     auto *vm = reinterpret_cast<uint8_t *>(c->rsi);
     if (!vm || !picker.live || picker.off)
         return;
+    struct Announce {
+        uint8_t *vm;
+        ~Announce() { swofty_core::hooks::ui_points::era_tiles(vm + VM_TILE_BEGIN); }
+    } announce{vm};
+    {
+        std::lock_guard<std::mutex> g(picker.lock);
+        if (picker.boxes.empty())
+            return;
+    }
     restore_lists();
     void *mode = at<void *>(vm, VM_MODE);
     void *alloc = at<void *>(vm, VM_ALLOCATOR);

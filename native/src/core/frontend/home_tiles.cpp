@@ -11,6 +11,7 @@
 #include "core/frontend/tile_list.hpp"
 #include "core/frontend/tile_records_read.hpp"
 #include "core/frontend/vm_string.hpp"
+#include "core/hooks/ui_points.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
@@ -241,6 +242,7 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
                 call, (unsigned)index, before, after, item, old_id, item->id, ROUTE, (unsigned long long)c.r12,
                 (unsigned long long)c.r15);
     add_record_tiles(c, list, career_vt, call);
+    swofty_core::hooks::ui_points::home_tiles(list);
 }
 
 #endif

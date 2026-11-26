@@ -78,6 +78,7 @@ public:
     void node_init(safetyhook::Context &c);
     void node_no_object(safetyhook::Context &c);
     void screen_built(safetyhook::Context &c);
+    bool screen_site_live() const { return bool(m_screen); }
 
 private:
     uintptr_t find(const Target &t);

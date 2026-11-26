@@ -223,6 +223,7 @@ void ScreenLoader::load()
 
 namespace runtime {
 void when_code_ready(const char *what, void (*fn)());
+bool ui_screen_site_live() { return frontend::ui::loader.screen_site_live(); }
 }
 
 namespace frontend::ui {
