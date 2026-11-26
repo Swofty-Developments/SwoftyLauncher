@@ -63,6 +63,10 @@ impl Gather<'_, '_, '_> {
             self.addon(id, &mut gathered)?;
         }
         for input in &gathered.hud_inputs {
+            if let Some(t) = &input.record.template {
+                let path = input.dir.join(&t.file);
+                self.hash.update(std::fs::read(&path).map_err(io_err(&path))?);
+            }
             for sprite in input.record.sprites.values() {
                 let path = input.dir.join(&sprite.png);
                 self.hash.update(std::fs::read(&path).map_err(io_err(&path))?);
@@ -337,6 +341,11 @@ impl Gather<'_, '_, '_> {
             gathered
                 .hud_slots
                 .extend(crate::hud::slots::inputs_of(id, f, &doc.slots)?);
+            for w in doc.widgets.keys() {
+                self.built
+                    .lines
+                    .push(format!("hud: hud.widget {w} -> hud.element {id}/{w}"));
+            }
             gathered
                 .hud_inputs
                 .extend(crate::hud::inputs_of(id, &dir, f, doc)?);
