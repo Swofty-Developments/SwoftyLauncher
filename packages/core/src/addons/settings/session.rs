@@ -49,6 +49,10 @@ pub struct SessionSettings {
     /// The Career list screen is built, even with no careers to list (it then holds the New Career row alone).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub resume_list_on: bool,
+    /// The places (home, career) with an enabled ui.tile record that names an image: the UI build adds the image
+    /// templates and writes `ui\tile_images.flag` only when there is one.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tile_images: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -374,6 +378,7 @@ impl SessionSettings {
             resume_needs: Vec::new(),
             resume_list: Vec::new(),
             resume_list_on: false,
+            tile_images: Vec::new(),
         };
         out.check_commands()?;
         Ok(out)

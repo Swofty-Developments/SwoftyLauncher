@@ -16,6 +16,7 @@ pub mod node;
 pub mod pages;
 pub mod patch;
 pub mod rows;
+pub mod tile_image;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -181,7 +182,14 @@ pub fn build(
 
     write_databases(&erp("databases.erp"), state, archives)?;
     write_flow_persistent(&erp("flow_persistent.erp"), lang, archives)?;
-    let frontend = write_frontend(&erp("flow_frontend.erp"), writer, show_panel, archives)?;
+    let frontend = write_frontend(
+        &erp("flow_frontend.erp"),
+        input,
+        writer,
+        show_panel,
+        &settings.tile_images,
+        archives,
+    )?;
     write_leaderboard(&erp(LEADERBOARD_ARCHIVE), archives)?;
     write_playercard(&erp(home_rows::PLAYERCARD_ARCHIVE), archives)?;
 
@@ -195,7 +203,13 @@ pub fn build(
     }
     build.lines.extend(frontend.lines);
     build.warnings.extend(frontend.warnings);
-    write_flags(out, &mut build, persistent, frontend.rows_built)?;
+    write_flags(
+        out,
+        &mut build,
+        persistent,
+        frontend.rows_built,
+        frontend.tile_images_built,
+    )?;
     if !mfd_rows.is_empty() {
         write_mfd_templates(input, out, &mfd_rows, &mut build, archives)?;
     }

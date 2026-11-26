@@ -202,6 +202,14 @@ impl Inputs {
                 .map(|(_, pkg, origin)| (pkg, origin.addon.as_str())),
         );
         session.set_mods(mods.into_iter());
+        session.tile_images = crate::stdlib::tiles::image_places_in(
+            run.order
+                .iter()
+                .map(|id| addon_dir(id))
+                .collect::<Vec<_>>()
+                .iter()
+                .map(PathBuf::as_path),
+        );
         hash.json(&session);
         let menus = loader_dir().is_some();
         let mut resume_save = None;
