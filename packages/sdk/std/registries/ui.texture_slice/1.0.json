@@ -9,7 +9,7 @@
   "type": "object",
   "properties": {
     "array": {
-      "description": "The texture array, as the game's override name: \"overrides.teams.driver_select_team_logo\".",
+      "description": "The texture array, as the game's override name: \"overrides.teams.driver_select_team_logos\" (the \"overrides.\" prefix is optional and the singular driver_select_team_logo is read as the same array).",
       "type": "string",
       "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)+$"
     },
