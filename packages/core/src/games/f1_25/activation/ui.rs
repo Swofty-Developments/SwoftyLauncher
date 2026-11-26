@@ -410,6 +410,10 @@ pub fn stamp(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf) -> Result<Strin
     Ok(crate::game_folder::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
+fn entry_complete(out: &Path, done: &Path, targets: &[String]) -> bool {
+    done.is_file() && targets.iter().all(|rel| out.join(rel).is_file())
+}
+
 pub type Lists = BTreeMap<String, BTreeSet<String>>;
 
 pub type Kept = BTreeMap<(String, String), BTreeSet<String>>;
@@ -553,7 +557,7 @@ pub fn build_ui(
     targets.sort();
     targets.dedup();
     let done = out.join(".done");
-    if !done.is_file() {
+    if !entry_complete(&out, &done, &targets) {
         let loaded: Vec<Map> = maps.iter().map(Map::load).collect::<Result<_>>()?;
         let mut edits: BTreeMap<String, HashMap<String, Resource>> = BTreeMap::new();
 
@@ -760,6 +764,23 @@ pub fn build_ui(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_menus_entry_missing_a_target_is_not_complete() {
+        let out = std::env::temp_dir().join(format!("swofty-menus-entry-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&out);
+        let done = out.join(".done");
+        let targets = vec![ui_file("databases.erp"), ui_file("flow_car_monitor.erp")];
+        std::fs::create_dir_all(out.join(ui_file("databases.erp")).parent().unwrap()).unwrap();
+        std::fs::write(out.join(ui_file("databases.erp")), b"x").unwrap();
+        std::fs::write(&done, b"").unwrap();
+        assert!(!entry_complete(&out, &done, &targets));
+        std::fs::write(out.join(ui_file("flow_car_monitor.erp")), b"x").unwrap();
+        assert!(entry_complete(&out, &done, &targets));
+        std::fs::remove_file(&done).unwrap();
+        assert!(!entry_complete(&out, &done, &targets));
+        let _ = std::fs::remove_dir_all(&out);
+    }
 
     fn array(slices: u8, size: usize) -> Vec<u8> {
         (0..slices).flat_map(|i| vec![i; size]).collect()
