@@ -429,6 +429,7 @@ on-load
   src/core/frontend/home_tiles.cpp  SWOFTY_ON_LOAD
 bindings
   src/core/assets/entitlements.cpp
+  src/core/frontend/ui_vm.cpp
   src/core/frontend/home_tiles.cpp
 explicit
   pit_garage_state  src/core/guards/garage/pit_garage_state.cpp  SWOFTY_HOOK_GUARD(pit_garage_state), arms pit_garage_state

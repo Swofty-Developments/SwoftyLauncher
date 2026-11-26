@@ -17,7 +17,9 @@
 
 #include "core/boxes/car_category_logic.hpp"
 #include "core/boxes/options_store.hpp"
+#include "core/frontend/chosen_tiles.hpp"
 #include "core/frontend/tile_records_read.hpp"
+#include "core/hooks/ui_points.hpp"
 
 // LAN Car Category addon boxes. The host's Car Category screen after the LAN Game dialog is the F1 World
 // container's tab session_create_dlc_select_tab (CreateSessionDLCSelectTabViewModel). Its tile build
@@ -230,6 +232,15 @@ void add_record_tiles(uint8_t *v, Vm_List_AppendChild_t *append, Game_CreateSess
     for (auto &line : found.lines)
         if (auto n = record_lines.note())
             swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+    {
+        frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap};
+        swofty_core::hooks::ui_points::car_category_tiles(&chosen);
+        if (size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap))
+            swofty::log(
+                "[ui.tile] car_category: %zu tile(s) a ui.car_category.tiles handler left over the %zu slot(s) or repeated "
+                "are dropped",
+                dropped, opt.cap);
+    }
     size_t images = 0, shown = 0;
     for (auto &t : found.tiles) {
         void **node = append(v + VM_TILE_SET);

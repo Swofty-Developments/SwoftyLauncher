@@ -12,6 +12,8 @@ namespace ev = swofty::ui::events;
 
 inline constexpr const char *ERA_POINT = "ui.era.tiles";
 inline constexpr const char *HOME_POINT = "ui.home.tiles";
+inline constexpr const char *CAREER_CONTENT_POINT = "ui.career_content.tiles";
+inline constexpr const char *CAR_CATEGORY_POINT = "ui.car_category.tiles";
 inline constexpr const char *TRACK_SELECT_POINT = "ui.track_select.build";
 inline constexpr const char *SCREEN_POINT = "ui.screen.built";
 inline constexpr const char *ROUTE_POINT = "ui.route.open";
@@ -92,6 +94,8 @@ inline bool fire_route(Table &t, const char *route, const char *screen)
 
 void era_tiles(void *list);
 void home_tiles(void *list);
+void career_content_tiles(void *chosen);
+void car_category_tiles(void *chosen);
 void screen_built(const char *screen);
 bool route_open(const char *route);
 bool wants(const char *point);

@@ -126,8 +126,8 @@ inline constexpr Event EVENTS[] = {
 
     {"ui.era.tiles", M, "swofty::ui::events::EraTiles", 1, false, Fired::game, nullptr},
     {"ui.home.tiles", M, "swofty::ui::events::HomeTiles", 1, false, Fired::game, nullptr},
-    {"ui.career_content.tiles", M, "swofty::ui::events::CareerContentTiles", 1, false, Fired::no, nullptr},
-    {"ui.car_category.tiles", M, "swofty::ui::events::CarCategoryTiles", 1, false, Fired::no, nullptr},
+    {"ui.career_content.tiles", M, "swofty::ui::events::CareerContentTiles", 1, false, Fired::game, nullptr},
+    {"ui.car_category.tiles", M, "swofty::ui::events::CarCategoryTiles", 1, false, Fired::game, nullptr},
     {"ui.track_select.build", M, "swofty::ui::events::TrackSelectBuild", 1, false, Fired::no, nullptr},
     {"ui.screen.built", N, "swofty::ui::events::ScreenBuilt", 1, false, Fired::game, nullptr},
     {"ui.route.open", C, "swofty::ui::events::RouteOpen", 1, false, Fired::game, nullptr},

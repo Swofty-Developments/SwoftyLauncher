@@ -17,7 +17,7 @@ namespace swofty_core::hooks {
 namespace {
 
 struct Links {
-    ui_points::SiteLink era, home, screen, route;
+    ui_points::SiteLink era, home, career_content, car_category, screen, route;
 };
 
 std::atomic<Links *> g_links{nullptr};
@@ -56,6 +56,20 @@ void home_tiles(void *list)
         fire_list<ev::HomeTiles>(core(), list);
 }
 
+void career_content_tiles(void *chosen)
+{
+    Links *l = g_links.load(std::memory_order_acquire);
+    if (l && active(l->career_content))
+        fire_list<ev::CareerContentTiles>(core(), chosen);
+}
+
+void car_category_tiles(void *chosen)
+{
+    Links *l = g_links.load(std::memory_order_acquire);
+    if (l && active(l->car_category))
+        fire_list<ev::CarCategoryTiles>(core(), chosen);
+}
+
 void screen_built(const char *screen)
 {
     Links *l = g_links.load(std::memory_order_acquire);
@@ -83,11 +97,17 @@ void declare_ui_points(Table &t)
     auto *l = new Links{
         {ui_points::ERA_POINT, "site_FeTile_EraTilesBuilt", era_live, log},
         {ui_points::HOME_POINT, "site_FeHome_AfterCareerCall", {}, log},
+        {ui_points::CAREER_CONTENT_POINT, "career content select (content_tiles.cpp add_record_tiles)", {}, log},
+        {ui_points::CAR_CATEGORY_POINT, "car category tab (car_category.cpp add_record_tiles)", {}, log},
         {ui_points::SCREEN_POINT, "site_Ui_Job_ScreenDone", [] { return runtime::ui_screen_site_live(); }, log},
         {ui_points::ROUTE_POINT, "Vm_Run_Route", [] { return runtime::career_start_live(); }, log},
     };
     t.declare_game(ui_points::ERA_POINT, SWOFTY_POINT_MODIFY, swofty::ui::events::EraTiles::version, &l->era);
     t.declare_game(ui_points::HOME_POINT, SWOFTY_POINT_MODIFY, swofty::ui::events::HomeTiles::version, &l->home);
+    t.declare_game(ui_points::CAREER_CONTENT_POINT, SWOFTY_POINT_MODIFY, swofty::ui::events::CareerContentTiles::version,
+                   &l->career_content);
+    t.declare_game(ui_points::CAR_CATEGORY_POINT, SWOFTY_POINT_MODIFY, swofty::ui::events::CarCategoryTiles::version,
+                   &l->car_category);
     t.declare_game(ui_points::SCREEN_POINT, SWOFTY_POINT_NOTIFY, swofty::ui::events::ScreenBuilt::version, &l->screen);
     t.declare_game(ui_points::ROUTE_POINT, SWOFTY_POINT_CANCEL, swofty::ui::events::RouteOpen::version, &l->route);
     g_links.store(l, std::memory_order_release);

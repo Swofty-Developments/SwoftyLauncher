@@ -1,7 +1,8 @@
 // Host test for the UI game points ui.era.tiles, ui.home.tiles, ui.screen.built and ui.route.open
 // (hooks/ui_points.hpp): the payload fields, the before/after order, the RouteOpen cancel, the site link
 // (installed with the first subscriber, removed with the last), the catalogue rows and ui.track_select.build
-// and the two content tile points staying unfired. native/test/run_tests.sh ui_points builds and runs it.
+// and the two content tile points (career content, car category) with the chosen tiles their handlers edit. native/test/run_tests.sh ui_points builds and runs it.
+#include "core/frontend/chosen_tiles.hpp"
 #include "core/hooks/catalogue.hpp"
 #include "core/hooks/dispatch.hpp"
 #include "core/hooks/ui_points.hpp"
@@ -151,11 +152,12 @@ static void test_catalogue()
                 return &e;
         return nullptr;
     };
-    for (const char *id : {up::ERA_POINT, up::HOME_POINT, up::SCREEN_POINT, up::ROUTE_POINT}) {
+    for (const char *id :
+         {up::ERA_POINT, up::HOME_POINT, up::CAREER_CONTENT_POINT, up::CAR_CATEGORY_POINT, up::SCREEN_POINT, up::ROUTE_POINT}) {
         auto *e = row(id);
         expect(e && e->fired == cat::Fired::game, std::string(id) + ": catalogue row is Fired::game");
     }
-    for (const char *id : {up::TRACK_SELECT_POINT, "ui.career_content.tiles", "ui.car_category.tiles"}) {
+    for (const char *id : {up::TRACK_SELECT_POINT}) {
         auto *e = row(id);
         expect(e && e->fired == cat::Fired::no, std::string(id) + ": catalogue row stays Fired::no");
     }
@@ -167,8 +169,66 @@ static void test_catalogue()
            "kinds: ui.route.open cancels, ui.screen.built notifies");
 }
 
+static frontend::tile_records::Tile tile(const char *id)
+{
+    frontend::tile_records::Tile t;
+    t.id = id;
+    return t;
+}
+
+static std::string ids(const std::vector<frontend::tile_records::Tile> &v)
+{
+    std::string s;
+    for (auto &t : v)
+        s += (s.empty() ? "" : ",") + t.id;
+    return s;
+}
+
+static int drop_first_handler(void *, SwoftyHookCall *c)
+{
+    auto *e = static_cast<ev::CareerContentTiles *>(c->payload);
+    seen_list = e->list;
+    auto *chosen = static_cast<frontend::chosen_tiles::Chosen *>(e->list);
+    chosen->tiles.erase(chosen->tiles.begin());
+    chosen->tiles.push_back(tile("late"));
+    chosen->tiles.push_back(tile("late"));
+    return 0;
+}
+
+static void test_chosen()
+{
+    Table t;
+    up::SiteLink career(up::CAREER_CONTENT_POINT, "career content select", {}, Fixture::log),
+        car(up::CAR_CATEGORY_POINT, "car category tab", {}, Fixture::log);
+    t.declare_core();
+    t.declare_game(up::CAREER_CONTENT_POINT, SWOFTY_POINT_MODIFY, ev::CareerContentTiles::version, &career);
+    t.declare_game(up::CAR_CATEGORY_POINT, SWOFTY_POINT_MODIFY, ev::CarCategoryTiles::version, &car);
+    t.arm();
+    std::vector<frontend::tile_records::Tile> tiles{tile("a"), tile("b")};
+    frontend::chosen_tiles::Chosen chosen{tiles, 3};
+    up::fire_list<ev::CareerContentTiles>(t, &chosen);
+    expect(ids(tiles) == "a,b" && !career.installed(), "content: nothing runs and nothing changes without a subscriber");
+    uint32_t tok = 0;
+    t.attach("a", up::CAREER_CONTENT_POINT, SWOFTY_PHASE_BEFORE, 0, "", drop_first_handler, nullptr, &tok);
+    expect(career.installed() && !car.installed(), "content: the first subscriber arms only its own link");
+    seen_list = nullptr;
+    up::fire_list<ev::CareerContentTiles>(t, &chosen);
+    expect(seen_list == &chosen, "content: the payload carries the chosen tiles");
+    expect(ids(tiles) == "b,late,late", "content: the handler's edit is in the list before the add step");
+    size_t dropped = frontend::chosen_tiles::settle(tiles, chosen.cap);
+    expect(dropped == 1 && ids(tiles) == "b,late", "content: the add step drops a repeated id");
+    std::vector<frontend::tile_records::Tile> many{tile("1"), tile("2"), tile("3"), tile("4"), tile("5")};
+    expect(frontend::chosen_tiles::settle(many, 2) == 3 && ids(many) == "1,2",
+           "content: the add step keeps within the slots left");
+    std::vector<frontend::tile_records::Tile> carcat{tile("x")};
+    frontend::chosen_tiles::Chosen cc{carcat, 4};
+    up::fire_list<ev::CarCategoryTiles>(t, &cc);
+    expect(ids(carcat) == "x", "car category: a content subscriber does not see the car category point");
+}
+
 int main()
 {
+    test_chosen();
     test_lists();
     test_screen();
     test_route();
