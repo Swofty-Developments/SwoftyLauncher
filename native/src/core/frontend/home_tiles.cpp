@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "core/frontend/f1_world_logic.hpp"
 #include "core/frontend/hidden_tiles.hpp"
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/main_menu_logic.hpp"
@@ -54,12 +55,13 @@ constinit SettingsTile tile;
 
 struct RecordTile {
     std::string title, route;
-    bool localised = true;
+    bool localised = true, world = false;
 };
 
 std::mutex record_lock;
 std::unordered_map<const HomeItem *, RecordTile> record_tiles;
-constinit swofty_core::guards::LogFirst<4> record_lines, image_lines, world_lines;
+constinit swofty_core::guards::LogFirst<4> record_lines, image_lines, world_lines, world_site_lines;
+constinit bool world_site_ready = false;
 
 bool record_of(const HomeItem *item, RecordTile &out)
 {
@@ -125,6 +127,17 @@ bool check()
         return false;
     }
     swofty::log("[core] builder base+0x%llx, hook site base+0x%llx", rva(builder), rva(site));
+#ifdef SWOFTY_MOD_SETTINGS_ACTIVE
+    uintptr_t world = site_FeTile_F1WorldListEnd.address();
+    if (world < builder || world - builder > 0x8000) {
+        swofty::log("[ui.tile] f1_world list site 0x%llx is not inside the builder at 0x%llx (a different exe build?); f1_world "
+                    "tile records will not be shown",
+                    (unsigned long long)world, (unsigned long long)builder);
+    } else {
+        world_site_ready = true;
+        swofty::log("[ui.tile] f1_world list site base+0x%llx", rva(world));
+    }
+#endif
     swofty::log("[core] career_adder base+0x%llx, base_populate base+0x%llx, nestr_from base+0x%llx",
                 rva(FeHome_Add_CareerTile.address()), rva(FeTile_ItemBase_Populate.address()),
                 rva(Ne_Make_StrFromCStr.address()));
@@ -150,7 +163,7 @@ void add_record_tiles(swofty::Context &c, TileList *list, void **career_vt, unsi
 {
     {
         std::lock_guard<std::mutex> g(record_lock);
-        record_tiles.clear();
+        std::erase_if(record_tiles, [](auto &e) { return !e.second.world; });
     }
     frontend::tile_records::Options opt;
     opt.need_route = true;
@@ -184,12 +197,6 @@ void add_record_tiles(swofty::Context &c, TileList *list, void **career_vt, unsi
         added++;
         images += !t.image.empty();
     }
-    auto world = frontend::tile_records::read(frontend::tile_records::Place::f1_world, {});
-    if (!world.tiles.empty())
-        if (auto n = world_lines.note())
-            swofty::log("[ui.tile] f1_world: %zu tile record(s) not shown: the F1 World list builder is not hooked yet (the F1 "
-                        "World screen's tile list site and list struct are not proven)%s",
-                        world.tiles.size(), n.tail ? n.tail : "");
     if (images)
         if (auto n = image_lines.note())
             swofty::log("[ui.tile] home: %zu tile(s) name an image; tile images on home are not hooked yet (the per-tile image "
@@ -243,6 +250,60 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
                 (unsigned long long)c.r15);
     add_record_tiles(c, list, career_vt, call);
     swofty_core::hooks::ui_points::home_tiles(list);
+}
+
+SWOFTY_SITE(site_FeTile_F1WorldListEnd, swofty::Context &c)
+{
+    auto menu_kind = *reinterpret_cast<const uint8_t *>(c.rsp + frontend::f1_world::MENU_KIND_SLOT);
+    auto sub_kind = *reinterpret_cast<const uint8_t *>(c.rsp + frontend::f1_world::SUB_KIND_SLOT);
+    if (!world_site_ready || !frontend::f1_world::is_world_list(menu_kind, sub_kind))
+        return;
+    auto list = reinterpret_cast<TileList *>(c.r14);
+    auto items = frontend::f1_world::items_in(reinterpret_cast<uintptr_t>(list->items_begin),
+                                              reinterpret_cast<uintptr_t>(list->items_end));
+    if (!items) {
+        swofty::log("[ui.tile] f1_world: the items vector of list %p is not a whole number of entries; nothing added", list);
+        return;
+    }
+    frontend::tile_records::Options opt;
+    opt.need_route = true;
+    opt.cap = frontend::f1_world::room_for(*items);
+    auto found = frontend::tile_records::read(frontend::tile_records::Place::f1_world, opt);
+    for (auto &line : found.lines)
+        if (auto n = world_lines.note())
+            swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+    {
+        std::lock_guard<std::mutex> g(record_lock);
+        std::erase_if(record_tiles, [](auto &e) { return e.second.world; });
+    }
+    size_t added = 0;
+    for (auto &t : found.tiles) {
+        auto index = frontend::f1_world::next_index(*items + added);
+        if (!index)
+            break;
+        size_t before = 0, after = 0;
+        frontend::tile_list::last_item(list, &before);
+        FeHome_Add_CareerTile(list, *index);
+        HomeItem *item = frontend::tile_list::last_item(list, &after);
+        if (!item || after != before + 1) {
+            swofty::log("[ui.tile] f1_world: %s: the adder result is unexpected (items %zu -> %zu); tile not added", t.id.c_str(),
+                        before, after);
+            break;
+        }
+        swofty::subclass(item, {{4, reinterpret_cast<void *>(mod_populate)}, {5, reinterpret_cast<void *>(mod_get_action)}});
+        Ne_Make_StrFromCStr(&item->id, t.id.c_str(), 0, 0);
+        {
+            std::lock_guard<std::mutex> g(record_lock);
+            auto title = frontend::tile_records::title_text(t);
+            record_tiles[item] = RecordTile{title.text, t.route, title.localised, true};
+        }
+        added++;
+    }
+    if (added || found.tiles.size() || found.refused)
+        if (auto n = world_site_lines.note())
+            swofty::log("[ui.tile] f1_world: %zu of %zu tile record(s) added after %zu stock tiles (%zu gated out, %zu refused, "
+                        "%zu over the cap)%s",
+                        added, found.tiles.size(), *items, found.gated_out, found.refused, found.capped, n.tail ? n.tail : "");
 }
 
 #endif

@@ -1,0 +1,112 @@
+{
+ "schema": 1,
+ "name": "site_FeTile_F1WorldListEnd",
+ "table": "globals",
+ "author": "Swofty",
+ "row": {
+  "addr": "0x141744fd8",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/14173df80.c 0x141744f43-0x141745016;xref:0x141741bb4,0x14173fc5b,0x141743677,0x141744f8c",
+  "notes": "the mov that follows the last tile release at the end of FeTile_Build_List outer case 3 (F1 World hub, showroom tile last); shared with other menus: r14 = TileList, menu kind is byte [rsp+0x2f0], sub kind byte [rsp+0x2f8]; the populate loop site_FeTile_PopulateLoop follows"
+ },
+ "signature": {
+  "id": "fe_tiles.f1_world_list_end",
+  "section": ".xtls",
+  "pattern": "48 8B 44 24 38 48 85 C0 74 34 66 F0 FF 48 04 48 8B 4C 24 38 66 BA FF FF 31 C0 66 F0 0F B1 51 04 75 1C 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 10 48 8B 54 24 38 48 85 D2 74 06 48 8B 01 FF 50 38 49 8B 76 78",
+  "match": "0x141744fd8",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141744fd8",
+  "kind": "mid",
+  "expect": "48 8B 44 24 38",
+  "names": [
+   "site_FeTile_F1WorldListEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-27",
+    "by": "Swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/home_tiles.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "std-ui-m2v",
+   "kind": "global",
+   "item": "site_FeTile_F1WorldListEnd",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14173df80.c 0x141744f40-0x141745016;xref:0x141744f8c,0x141744fd3,0x141a48cc4,0x1417400cb,0x14173e395",
+   "notes": "gh:std-ui-m2v Re-derived from capstone disassembly of the whole function (Ghidra was not installed on this box). Site 0x141744fd8 is reached only by the fall-through after call 0x1442b3d70 at 0x141744fd3 and by je 0x141744f8c; no branch from inside or outside the function lands in 0x141744fd9-0x141744fdc. r14 is written only at 0x14173dfaa (mov r14,rcx), 0x14174501a and the pop at 0x1417450ea, the last two after the site, and the loop at 0x141745016 cannot reach the site again. Frame is 8 pushes plus sub 0x288 plus the return address, so the 5th and 6th stack args sit at [rsp+0x2f0]=menu kind (caller byte [rsi+0x3a9] via r15b at 0x141a48cb2) and [rsp+0x2f8]=sub kind (byte [rsi+0x3a8] via r14b at 0x141a48cad); the only two reads are movzx at 0x14173e395/0x14173e39d and nothing stores to or takes the address of either slot. Outer menu kinds 1, 2, 3 and 7 all reach the site, kinds 0, 4, 5, 6 never do. Caveats, not failures: outer case 3 (0x14173e836) never reads the sub kind, so every (3,x) follows the same path and a hook filtering sub kind 0 is a choice of the hook. Early-out for kind 3 without passing the site: 0x1417400cb jne 0x141745016 when byte [[0x14604e168]+0x18] (copied to [rsp+0x190] at 0x14173e841) is nonzero, which skips the rest of case 3 and the shared tail, so the site is not reached and the hook does not fire for that build of the list. Out-of-range kinds (>7 at 0x14173e6a6) and kind 5 go straight to 0x141745016 and are not kind 3."
+  }
+ ],
+ "proofs": [
+  {
+   "by": "Swofty",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141744fd8",
+    "target": "0x141744fd8"
+   },
+   "sigcheck": "passed",
+   "digest": "6b06496888b2dce5b0398933e4a7076f14e146801c5cf330215384601d773698"
+  },
+  {
+   "by": "std-ui-m2",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141744fd8",
+    "target": "0x141744fd8"
+   },
+   "sigcheck": "passed",
+   "digest": "6b06496888b2dce5b0398933e4a7076f14e146801c5cf330215384601d773698"
+  },
+  {
+   "by": "std-ui-m2v",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141744fd8",
+    "target": "0x141744fd8"
+   },
+   "sigcheck": "passed",
+   "digest": "6b06496888b2dce5b0398933e4a7076f14e146801c5cf330215384601d773698"
+  }
+ ]
+}

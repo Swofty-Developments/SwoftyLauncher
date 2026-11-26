@@ -81,6 +81,7 @@ inline constexpr data<"g_FeTile_CustomisationSystem", void *> g_FeTile_Customisa
 inline constexpr data<"g_FeTile_SelectedCareerContent", uint32_t> g_FeTile_SelectedCareerContent{}; // L2 experimental
 inline constexpr site<"site_FeTile_CareerContentEnd"> site_FeTile_CareerContentEnd{}; // L2 experimental
 inline constexpr site<"site_FeTile_EraTilesBuilt"> site_FeTile_EraTilesBuilt{}; // L2 experimental
+inline constexpr site<"site_FeTile_F1WorldListEnd"> site_FeTile_F1WorldListEnd{}; // L2 experimental
 inline constexpr site<"site_FeTile_ListRowEntry"> site_FeTile_ListRowEntry{}; // L2 experimental
 inline constexpr site<"site_FeTile_ListRowFieldLoad"> site_FeTile_ListRowFieldLoad{}; // L2 experimental
 inline constexpr site<"site_FeTile_ListRowNone"> site_FeTile_ListRowNone{}; // L2 experimental

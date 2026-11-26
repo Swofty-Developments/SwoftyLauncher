@@ -22781,6 +22781,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_FeTile_F1WorldListEnd: Binding = Binding {
+        id: "site_FeTile_F1WorldListEnd",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_FeTile_ListRowEntry: Binding = Binding {
         id: "site_FeTile_ListRowEntry",
         kind: "site",
