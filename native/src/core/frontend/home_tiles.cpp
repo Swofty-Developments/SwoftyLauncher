@@ -1,12 +1,18 @@
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
 
+#include <mutex>
+#include <string>
+#include <unordered_map>
+
 #include "core/frontend/hidden_tiles.hpp"
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/main_menu_logic.hpp"
 #include "core/frontend/tile_list.hpp"
+#include "core/frontend/tile_records_read.hpp"
 #include "core/frontend/vm_string.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 #include "core/runtime/loader/core_rank.hpp"
@@ -45,6 +51,25 @@ struct SettingsTile {
 
 constinit SettingsTile tile;
 
+struct RecordTile {
+    std::string title, route;
+    bool localised = true;
+};
+
+std::mutex record_lock;
+std::unordered_map<const HomeItem *, RecordTile> record_tiles;
+constinit swofty_core::guards::LogFirst<4> record_lines, image_lines, world_lines;
+
+bool record_of(const HomeItem *item, RecordTile &out)
+{
+    std::lock_guard<std::mutex> g(record_lock);
+    auto it = record_tiles.find(item);
+    if (it == record_tiles.end())
+        return false;
+    out = it->second;
+    return true;
+}
+
 void mod_populate(HomeItem *item, void *node, uint32_t a7)
 {
     unsigned call = ++tile.populate_calls;
@@ -56,6 +81,17 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
     }
     void *reg = *g_Vm_Registry, *parent = vm_node + 8;
     uint8_t no = 0;
+    RecordTile rec;
+    if (record_of(item, rec)) {
+        uint8_t localised = rec.localised ? 1 : 0;
+        frontend::vm::set_string(reg, parent, "title", rec.title.c_str());
+        Vm_Set_Bool(reg, parent, "title_localised", &localised, 1);
+        frontend::vm::set_string(reg, parent, "description", "");
+        Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
+        swofty::log("[core] populate #%u item=%p: ui.tile title '%s' (%s)", call, item, rec.title.c_str(),
+                    rec.localised ? "lang key" : "literal");
+        return;
+    }
     frontend::vm::set_string(reg, parent, "title", TITLE);
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
     frontend::vm::set_string(reg, parent, "description", DESCRIPTION);
@@ -67,8 +103,10 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
 
 Action *mod_get_action(HomeItem *item, Action *out)
 {
-    frontend::tile_list::route_action(out, ROUTE);
-    swofty::log("[core] getAction #%u item=%p -> {type 1, route '%s'}", ++tile.action_calls, item, ROUTE);
+    RecordTile rec;
+    const char *route = record_of(item, rec) ? rec.route.c_str() : ROUTE;
+    frontend::tile_list::route_action(out, route);
+    swofty::log("[core] getAction #%u item=%p -> {type 1, route '%s'}", ++tile.action_calls, item, route);
     return out;
 }
 
@@ -106,6 +144,60 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
 }
 
 #elif defined(SWOFTY_MOD_SETTINGS_ACTIVE)
+
+void add_record_tiles(swofty::Context &c, TileList *list, void **career_vt, unsigned call)
+{
+    {
+        std::lock_guard<std::mutex> g(record_lock);
+        record_tiles.clear();
+    }
+    frontend::tile_records::Options opt;
+    opt.need_route = true;
+    size_t used = size_t(c.r12 & 0xff) + 1;
+    opt.cap = used >= frontend::tile_records::TILE_CAP ? 0 : frontend::tile_records::TILE_CAP - used;
+    auto found = frontend::tile_records::read(frontend::tile_records::Place::home, opt);
+    for (auto &line : found.lines)
+        if (auto n = record_lines.note())
+            swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+    size_t images = 0, added = 0;
+    for (auto &t : found.tiles) {
+        size_t before = 0, after = 0;
+        frontend::tile_list::last_item(list, &before);
+        uint8_t index = uint8_t(c.r12 + 1);
+        FeHome_Add_CareerTile(list, index);
+        HomeItem *item = frontend::tile_list::last_item(list, &after);
+        if (!item || after != before + 1 || reinterpret_cast<void **>(item->vtable) != career_vt) {
+            swofty::log("[ui.tile] hook #%u: %s: the adder result is unexpected (items %zu -> %zu); tile not added", call,
+                        t.id.c_str(), before, after);
+            break;
+        }
+        swofty::subclass(item, {{4, reinterpret_cast<void *>(mod_populate)}, {5, reinterpret_cast<void *>(mod_get_action)}});
+        Ne_Make_StrFromCStr(&item->id, t.id.c_str(), 0, 0);
+        {
+            std::lock_guard<std::mutex> g(record_lock);
+            auto title = frontend::tile_records::title_text(t);
+            record_tiles[item] = RecordTile{title.text, t.route, title.localised};
+        }
+        c.r12 = index;
+        c.r15 = index;
+        added++;
+        images += !t.image.empty();
+    }
+    auto world = frontend::tile_records::read(frontend::tile_records::Place::f1_world, {});
+    if (!world.tiles.empty())
+        if (auto n = world_lines.note())
+            swofty::log("[ui.tile] f1_world: %zu tile record(s) not shown: the F1 World list builder is not hooked yet (the F1 "
+                        "World screen's tile list site and list struct are not proven)%s",
+                        world.tiles.size(), n.tail ? n.tail : "");
+    if (images)
+        if (auto n = image_lines.note())
+            swofty::log("[ui.tile] home: %zu tile(s) name an image; tile images on home are not hooked yet (the per-tile image "
+                        "VM leaf is not proven), they show without it%s",
+                        images, n.tail ? n.tail : "");
+    if (added || found.tiles.size())
+        swofty::log("[ui.tile] hook #%u: %zu of %zu home tile record(s) added (%zu gated out, %zu refused, %zu over the cap)",
+                    call, added, found.tiles.size(), found.gated_out, found.refused, found.capped);
+}
 
 SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
 {
@@ -148,6 +240,7 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
                 "the game's string setter), r12 -> 0x%llx, r15 -> 0x%llx",
                 call, (unsigned)index, before, after, item, old_id, item->id, ROUTE, (unsigned long long)c.r12,
                 (unsigned long long)c.r15);
+    add_record_tiles(c, list, career_vt, call);
 }
 
 #endif
