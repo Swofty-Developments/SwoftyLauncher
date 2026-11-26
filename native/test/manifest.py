@@ -421,6 +421,8 @@ SCRIPTS = [
     Script('career_list', 'Career list Wine test', ['bash', 'native/test/run_career_list_test.sh'], wine=True),
     Script('hooks', 'Hook points, events and services host test', ['{out}/hooks_test'], cwd='test', programs=[hook_test('hooks')]),
     Script('game_points', 'Game hook points host test', ['{out}/game_points_test'], cwd='test', programs=[hook_test('game_points')]),
+    Script('ui_hot', 'Hot UI points (lang.lookup, ui.vm.resolve) and view-model path host test', ['{out}/ui_hot_test'], cwd='test',
+           programs=[hook_test('ui_hot')]),
     Script('session_points', 'Session control, AI controller and spectator points host test', ['{out}/session_points_test'],
            cwd='test', programs=[hook_test('session_points')]),
     Script('car_live', 'Live car operations host test', each('car_live_test', 'car_profile_test', 'car_identity_test', 'ai_racecraft_test', 'setup_layout_registry_test'), cwd='test',

@@ -566,6 +566,22 @@ typedef struct SwoftyHud {
     int (*stats)(SwoftyHudStats *out);
 } SwoftyHud;
 
+/* UI view-model writes (ui::set_text, ui::set_bool, ui::set_ref in swofty/systems/ui.hpp), read through the
+   SwoftyCoreUi export, so an addon built against this header also loads on an older core. A path is a dotted view-model
+   node path (a leading '#' is dropped); the last dot splits the leaf from its parent node, and the parent resolves from
+   the view-model registry root. A write is queued and applied on the game's flow thread; a later write to the same
+   path replaces a queued one. Each call returns SWOFTY_ASSET_OK once queued, SWOFTY_ASSET_INVALID for a malformed path
+   or a type clash with an earlier write, and SWOFTY_ASSET_UNAVAILABLE where the game's registry did not resolve.
+   set_ref is unavailable until a core proves what a node reference targets. */
+#define SWOFTY_UI_VERSION 1
+typedef struct SwoftyUi {
+    uint32_t size;
+    uint32_t version;
+    int (*set_text)(const char *path, const char *text);
+    int (*set_bool)(const char *path, int value);
+    int (*set_ref)(const char *path, const char *target);
+} SwoftyUi;
+
 /* CSV recorder (swofty/log_csv.hpp). Not part of SwoftyApi: the table comes from the core's SwoftyCoreCsv
    export, so an addon built against this header also loads on an older core. Fields are only ever appended.
    Version 1: open declares a file swofty/addons/<addon id>/diag/<name>-<timestamp>.csv with n columns (names
@@ -2086,6 +2102,7 @@ typedef const SwoftyGameMem *(*SwoftyCoreGameMemFn)(void);
 typedef const SwoftyLapHost *(*SwoftyCoreLapHostFn)(void);
 typedef const SwoftySessionHost *(*SwoftyCoreSessionHostFn)(void);
 typedef uint32_t (*SwoftyCoreLangVersionFn)(void);
+typedef const SwoftyUi *(*SwoftyCoreUiFn)(void);
 
 #define SWOFTY_STAGE_WINDOW 1
 
@@ -2114,6 +2131,7 @@ SWOFTY_EXPORT const SwoftyGameMem *SwoftyCoreGameMem(void);
 SWOFTY_EXPORT const SwoftyLapHost *SwoftyCoreLapHost(void);
 SWOFTY_EXPORT const SwoftySessionHost *SwoftyCoreSessionHost(void);
 SWOFTY_EXPORT uint32_t SwoftyCoreLangVersion(void);
+SWOFTY_EXPORT const SwoftyUi *SwoftyCoreUi(void);
 
 #ifdef __cplusplus
 }

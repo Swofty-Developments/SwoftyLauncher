@@ -11,6 +11,7 @@
 #include "core/frontend/addon_page.hpp"
 #include "core/frontend/name_hash.hpp"
 #include "core/frontend/ui_vm.hpp"
+#include "core/frontend/vm_path.hpp"
 #include "core/frontend/vm_string.hpp"
 
 namespace swofty::ui {
@@ -301,14 +302,13 @@ bool VmHost::set_path(const std::string &path, int type, const void *value) cons
     auto *root = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(reg) + 8);
     if (!root)
         return false;
-    size_t dot = path.find_last_of('.');
-    if (dot == std::string::npos || dot == 0 || dot + 1 >= path.size())
+    frontend::vm_path::Split at;
+    if (!frontend::vm_path::split(path, at))
         return false;
-    std::string leaf = path.substr(dot + 1);
-    void **node = resolve(reg, root, path.substr(0, dot).c_str());
+    void **node = resolve(reg, root, at.parent.c_str());
     if (!node || !*node)
         return false;
-    return write(reg, static_cast<uint8_t *>(*node) + 8, leaf.c_str(), type, value);
+    return write(reg, static_cast<uint8_t *>(*node) + 8, at.leaf.c_str(), type, value);
 }
 
 uintptr_t VmHost::node_token(const std::string &path) const

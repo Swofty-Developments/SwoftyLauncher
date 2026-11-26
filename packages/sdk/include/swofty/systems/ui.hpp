@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <atomic>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -7,11 +8,19 @@
 #include <vector>
 #include <swofty/events.hpp>
 #include <swofty/registry.hpp>
+#include <swofty/mixin.hpp>
+#if defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
 
 // UI and strings: texture slices, tiles, screens, routes, options, HUD widgets, one text key in every language,
 // and the options an addon shows in ADDON SETTINGS. The records are declared and stored; a record whose registry
-// has no applier yet is logged as `this core applies nothing from it`. The set_* operations and the
-// events below return unavailable or never fire until the core implements them.
+// has no applier yet is logged as `this core applies nothing from it`. set_text and set_bool write a view-model
+// leaf through the core's SwoftyUi table (queued, applied on the flow thread) and return unavailable on a core
+// without it; set_ref returns unavailable until a core proves what a node reference targets.
 // The 1.x string library (swofty/lang.hpp) writes the calling addon's global layer of a lang.string
 // record; the options of an addon's swofty.json are addon.option records under its id.
 
@@ -117,9 +126,67 @@ SWOFTY_RECORD(HudWidget, view_model, tmpl)
 SWOFTY_RECORD_REGISTRY(HudWidget, "hud.widget")
 inline Registry<HudWidget> hud_widgets{"hud.widget", {.applies = Applies::session}};
 
-inline Result set_text(std::string_view, std::string_view) { return Result::unavailable; }
-inline Result set_bool(std::string_view, bool) { return Result::unavailable; }
-inline Result set_ref(std::string_view, std::string_view) { return Result::unavailable; }
+namespace detail {
+
+inline const SwoftyUi *&table_override()
+{
+    static const SwoftyUi *t = nullptr;
+    return t;
+}
+
+inline const SwoftyUi *table()
+{
+    if (auto *o = table_override())
+        return o;
+#if defined(_WIN32)
+    static std::atomic<const SwoftyUi *> found{nullptr};
+    if (auto t = found.load())
+        return t;
+    HMODULE core = GetModuleHandleW(L"swofty_core.dll");
+    auto get = core ? reinterpret_cast<SwoftyCoreUiFn>(GetProcAddress(core, "SwoftyCoreUi")) : nullptr;
+    const SwoftyUi *t = get ? get() : nullptr;
+    if (t && t->version < 1)
+        t = nullptr;
+    found = t;
+    return t;
+#else
+    return nullptr;
+#endif
+}
+
+inline Result ui_result(int r)
+{
+    return r == SWOFTY_ASSET_OK ? Result::ok
+           : r == SWOFTY_ASSET_LATE ? Result::late
+           : r == SWOFTY_ASSET_UNAVAILABLE ? Result::unavailable
+                                           : Result::invalid;
+}
+
+}
+
+inline Result set_text(std::string_view path, std::string_view text)
+{
+    auto t = detail::table();
+    if (!t || !t->set_text)
+        return Result::unavailable;
+    return detail::ui_result(t->set_text(std::string(path).c_str(), std::string(text).c_str()));
+}
+
+inline Result set_bool(std::string_view path, bool value)
+{
+    auto t = detail::table();
+    if (!t || !t->set_bool)
+        return Result::unavailable;
+    return detail::ui_result(t->set_bool(std::string(path).c_str(), value ? 1 : 0));
+}
+
+inline Result set_ref(std::string_view path, std::string_view target)
+{
+    auto t = detail::table();
+    if (!t || !t->set_ref)
+        return Result::unavailable;
+    return detail::ui_result(t->set_ref(std::string(path).c_str(), std::string(target).c_str()));
+}
 
 }
 

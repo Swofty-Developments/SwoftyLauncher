@@ -629,6 +629,28 @@ static void schemas()
           ui_tile_back.route.id() == "mod.settings/open");
     CHECK(ui::set_text("career.hub.title", "x") == Result::unavailable && ui::set_bool("a.b", true) == Result::unavailable &&
           ui::set_ref("a.b", "c.d") == Result::unavailable);
+    {
+        static std::string ui_path, ui_text;
+        static int ui_flag = -1;
+        SwoftyUi fake_ui{sizeof(SwoftyUi), SWOFTY_UI_VERSION,
+                         [](const char *p, const char *t) -> int {
+                             ui_path = p;
+                             ui_text = t;
+                             return SWOFTY_ASSET_OK;
+                         },
+                         [](const char *p, int v) -> int {
+                             ui_path = p;
+                             ui_flag = v;
+                             return SWOFTY_ASSET_OK;
+                         },
+                         [](const char *, const char *) -> int { return SWOFTY_ASSET_UNAVAILABLE; }};
+        ui::detail::table_override() = &fake_ui;
+        CHECK(ui::set_text("career.hub.title", "Season 1990") == Result::ok && ui_path == "career.hub.title" &&
+              ui_text == "Season 1990");
+        CHECK(ui::set_bool("ui_menu_data.flag", true) == Result::ok && ui_path == "ui_menu_data.flag" && ui_flag == 1);
+        CHECK(ui::set_ref("a.b", "c.d") == Result::unavailable);
+        ui::detail::table_override() = nullptr;
+    }
     ui::events::LangLookup lookup{sizeof lookup, 1, "lng_x", "en", "X", nullptr, nullptr};
     CHECK(lookup.key() == "lng_x" && lookup.language() == "en" && lookup.text() == "X" &&
           lookup.set_text("Y") == Result::unavailable);

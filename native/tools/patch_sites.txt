@@ -59,6 +59,8 @@ core/assets/lang_override.cpp: void refresh_keys(const KeySet &keys) { install(g
 core/assets/lang_override.cpp: size_t s = install(gather(nullptr), nullptr); => none
 core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(g_find_at), reinterpret_cast<void *>(&find_hook)); => inline sig S_SET_FIND
 core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&init_hook)); => inline sig S_MODULE_INIT
+core/assets/lang_override.cpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/ui_hot_points.cpp: g_point = std::make_unique<GamePoint>(ui_hot::VM_POINT, "Vm_Resolve_RegistryNode", reinterpret_cast<void *>(&d_resolve), => inline binding Vm_Resolve_RegistryNode
 core/assets/overlay.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fn)); => via
 core/assets/overlay.cpp: return hook(h_resolve, at, &resolve_hook, "overlay: Fs_Resolve_Mount"); => inline sig S_RESOLVE
 core/assets/overlay.cpp: hook(h_lang, at, &load_lang_hook, "lang: Loc_Load_LanguageFile"); => inline sig S_LOAD_LNG
