@@ -1,0 +1,21 @@
+{
+  "session": "20261126-164110",
+  "addon_version": "0.3.58",
+  "launcher_version": "1.10.53",
+  "steam_build": 26566308,
+  "snapshot_source": "E:\\Program Files\\Steam\\steamapps\\common\\F1 25\\swofty\\loader.log",
+  "snapshot_sha256": "70542f83483f9a7f24ff70b6d66852e93d6ad6a8811af6a33075f9ab851c5ce5",
+  "snapshot_bytes": 10199275,
+  "trace_sha256": "02dc1861495f6168a73f2955c794fd8767e0f14414295748631bc649d2da04a7",
+  "expected_addon_archive_sha256": "c6980714636dd5bca9d10bdf9b3e573e0e74329f82710dee8c127d636ba9af30",
+  "expected_dll_sha256": "0da7672e39bfb0855ed4aba1c29d07b9291e85f12653f6a6347cbce7ac823b7b",
+  "limits": [
+    "Only flags=0 destructor calls were observed; nonzero deletion/free branch remains static/fixture coverage.",
+    "Destructor owners were already untracked after deactivation; active-owner retirement is directly observed in the deactivation pairs.",
+    "Log snapshot may precede session archival/end. Exact captured bytes are retained; later appended output is not claimed.",
+    "Runtime version is logged; retained package/DLL hashes are artifact provenance, not an independent runtime hash attestation."
+  ],
+  "captured_at_utc": "2026-11-26T17:07:05.529280+00:00",
+  "capture_kind": "Immutable snapshot of the session loader.log or current game swofty/loader.log; complete selected lines only; canonical LF.",
+  "raw_snapshot_location_outside_pr": "Research/L3Evidence/OriginalLogs/20261126-164110.loader.log.gz"
+}

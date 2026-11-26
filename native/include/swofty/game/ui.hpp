@@ -153,6 +153,7 @@ inline constexpr address<"Ui_TeamHqOwnerPerks_Slice"> Ui_TeamHqOwnerPerks_Slice{
 inline constexpr address<"Ui_TeamHqPopup_BuildRndResult"> Ui_TeamHqPopup_BuildRndResult{}; // L2 experimental
 using Ui_TeamHq_BuildPerkIconBindings_t = void(void *self, void *perk);
 inline constexpr fn<"Ui_TeamHq_BuildPerkIconBindings", Ui_TeamHq_BuildPerkIconBindings_t> Ui_TeamHq_BuildPerkIconBindings{}; // L2 experimental
+inline constexpr address<"Ui_Unk_140c1c360"> Ui_Unk_140c1c360{}; // L3 stable
 inline constexpr address<"Ui_Update_ContractHubDepartmentRow"> Ui_Update_ContractHubDepartmentRow{}; // L2 experimental
 inline constexpr address<"Ui_Update_ContractHubSecretUpgrades"> Ui_Update_ContractHubSecretUpgrades{}; // L2 experimental
 inline constexpr address<"Ui_Update_FacilityPhaseLabelNodes"> Ui_Update_FacilityPhaseLabelNodes{}; // L2 experimental

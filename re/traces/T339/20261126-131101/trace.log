@@ -1,0 +1,56 @@
+2026-11-26 13:11:05.048 [34892] [core] bindings: 4 set(s) present, selected bindings.steam-26566308.json by PE timestamp 1794312636
+2026-11-26 13:11:05.060 [34892] [core] bindings.steam-26566308.json: 3802 binding(s) for build 46009bd31f49d93a, this exe (rva checked); 12 string-anchored (4 build-agnostic), pattern first
+2026-11-26 13:11:05.079 [34892] [core] bind Sess_PuPanel_BuildComponents -> 0x141f52510 (base+0x1f52510), func dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind site_Sess_PuPanel_Constructed -> 0x141f50657 (base+0x1f50657), site dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind Sess_PuPanel_Destroy -> 0x142172f70 (base+0x2172f70), func dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind Game_CarSetupVm_Initialise -> 0x140c1bc60 (base+0xc1bc60), func dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind Game_CarSetupVm_OnDeactivate_Thunk -> 0x140c1cd40 (base+0xc1cd40), func dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind Game_CarSetupVm_Destroy -> 0x140cd5800 (base+0xcd5800), func dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind vt_Sess_PuPanel -> 0x145760ff0 (base+0x5760ff0), vtable dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind vt_Game_CarSetupVm -> 0x145682740 (base+0x5682740), vtable dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind Game_VehicleManagementVM_HandleCommand -> 0x141f59730 (base+0x1f59730), func dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind Ui_Unk_140c1c360 -> 0x140c1ce20 (base+0xc1ce20), func dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind vt_Career_HubLaptopTab -> 0x1456f9260 (base+0x56f9260), vtable dev via pattern
+2026-11-26 13:11:05.079 [34892] [core] bind vt_Vm_SharedTabModel -> 0x14568f580 (base+0x568f580), vtable dev via pattern
+2026-11-26 13:11:05.082 [34892] [bind] id=Sess_PuPanel_BuildComponents build=steam pass=init result=resolved method=scan matches=1 rva=0x1f52510 match=0x1f52510 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=site_Sess_PuPanel_Constructed build=steam pass=init result=resolved method=scan matches=1 rva=0x1f50657 match=0x1f50647 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=Sess_PuPanel_Destroy build=steam pass=init result=resolved method=scan matches=1 rva=0x2172f70 match=0x2172f70 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=Game_CarSetupVm_Initialise build=steam pass=init result=resolved method=scan matches=1 rva=0xc1bc60 match=0xc1bc60 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=Game_CarSetupVm_OnDeactivate_Thunk build=steam pass=init result=resolved method=scan matches=1 rva=0xc1cd40 match=0xc1cd40 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=Game_CarSetupVm_Destroy build=steam pass=init result=resolved method=scan matches=1 rva=0xcd5800 match=0xcd5800 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=vt_Sess_PuPanel build=steam pass=init result=resolved method=scan matches=1 rva=0x5760ff0 match=0x1f5046f verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=vt_Game_CarSetupVm build=steam pass=init result=resolved method=scan matches=1 rva=0x5682740 match=0xcd580e verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=Game_VehicleManagementVM_HandleCommand build=steam pass=init result=resolved method=scan matches=1 rva=0x1f59730 match=0x1f59730 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=Ui_Unk_140c1c360 build=steam pass=init result=resolved method=scan matches=1 rva=0xc1ce20 match=0xc1ce20 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=vt_Career_HubLaptopTab build=steam pass=init result=resolved method=scan matches=1 rva=0x56f9260 match=0x1e15b80 verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.082 [34892] [bind] id=vt_Vm_SharedTabModel build=steam pass=init result=resolved method=scan matches=1 rva=0x568f580 match=0xc72e2b verified=yes reason="" site_bytes=""
+2026-11-26 13:11:05.396 [34892] addon garage-monitor-diagnostic.dll: loads at the window stage
+2026-11-26 13:11:08.851 [34892] addon garage-monitor-diagnostic.dll: loading e:\program files\steam\steamapps\common\F1 25\swofty\addons\unorthodoxstonendmodding.garage-monitor-retro\native\garage-monitor-diagnostic.dll
+2026-11-26 13:11:08.856 [34892] addon garage-monitor-diagnostic.dll: loaded at 00007ff9f1050000, calling SwoftyAddonInit (API v9)
+2026-11-26 13:11:08.857 [34892] [gmr-retro] Car # enabled: Swofty experimental session entrant bindings
+2026-11-26 13:11:08.857 [34892] [gmr-retro] Session clock: bindings resolved (Swofty native getter, no UDP)
+2026-11-26 13:11:08.857 [34892] [core] addon garage-monitor-diagnostic.dll: registered 6 mixin(s)
+2026-11-26 13:11:08.857 [34892] [gmr-retro] Vehicle native model: Swofty mixins registered
+2026-11-26 13:11:08.857 [34892] [gmr-retro] Vehicle command relay: Setup wrapper registered for native fit/refresh only
+2026-11-26 13:11:08.857 [34892] [gmr-retro] Vehicle tab visibility: native visibility bindings ready
+2026-11-26 13:11:08.857 [34892] addon garage-monitor-diagnostic.dll: SwoftyAddonInit returned 1 (ok)
+2026-11-26 13:11:08.866 [34892] [core] wrap Sess_PuPanel_Destroy at 0x142172f70 (base+0x2172f70) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 13:11:08.866 [34892] [core] wrap Game_CarSetupVm_Initialise at 0x140c1bc60 (base+0xc1bc60) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 13:11:08.866 [34892] [core] wrap Game_CarSetupVm_OnDeactivate_Thunk at 0x140c1cd40 (base+0xc1cd40) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 13:11:08.866 [34892] [core] wrap Game_CarSetupVm_Destroy at 0x140cd5800 (base+0xcd5800) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 13:11:08.866 [34892] [core] wrap Ui_Unk_140c1c360 at 0x140c1ce20 (base+0xc1ce20) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 13:11:08.867 [34892] [core] site site_Sess_PuPanel_Constructed at 0x141f50657 (base+0x1f50657) installed: garage-monitor-diagnostic.dll(0)
+2026-11-26 13:11:12.066 [48204] [gmr-retro] 0.3.57 ready: native live text, 30 visible rows / 13 columns, Live State v7 / HUD v2
+2026-11-26 13:11:12.066 [48204] [gmr-retro] track code '' -> 'TRACK UNAVAILABLE'
+2026-11-26 13:14:06.282 [48204] [gridstart] session.start: mode "my_team", session {"type":"race","session":"race","group":0,"track":"game/baku","weather":0,"laps":0,"setup_mode":""} -> offline mode, the lights check the session type and the cars
+2026-11-26 14:24:01.357 [37016] [gridstart] session.start: mode "my_team", session {"type":"practice","session":"practice_1","group":0,"track":"game/monza","weather":0,"laps":0,"setup_mode":""} -> offline mode, the lights check the session type and the cars
+2026-11-26 14:24:01.431 [37016] [gmr-retro] Vehicle VM captured: 000000034B0F7260, garage identity/vtable/initializer verified
+2026-11-26 14:24:01.987 [41532] [gmr-retro] track code 'monza' -> 'AUTODROMO NAZIONALE DI MONZA, ITALY'
+2026-11-26 14:24:37.321 [31212] [gmr-retro] Vehicle tab hidden through native visibility; component model retained
+2026-11-26 14:24:54.306 [48204] [gmr-retro] Car Setup native activation: 000000034B0BD570, vtable verified, thread 48204; Vehicle initialization queued
+2026-11-26 14:24:54.321 [37016] [gmr-retro] Vehicle initialization deferred: Setup thread=48204, flow-frame thread=37016; no cross-thread call
+2026-11-26 14:24:54.338 [48204] [gmr-retro] Car Setup Vehicle initializer returned: owner=000000034B0F7260 data=00000000283D2400 native rows=6 thread=48204
+2026-11-26 14:24:59.054 [35180] [gmr-retro] Native component fitting requested from Car Setup
+2026-11-26 14:25:00.204 [48204] [gmr-retro] Native component fitting requested from Car Setup
+2026-11-26 14:26:49.385 [48204] [gmr-retro] Vehicle VM released before native teardown: 000000034B0F7260
+2026-11-26 14:26:49.875 [41532] [gmr-retro] track code '' -> 'TRACK UNAVAILABLE'

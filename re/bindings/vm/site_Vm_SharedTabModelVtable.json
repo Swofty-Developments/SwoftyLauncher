@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "site_Vm_SharedTabModelVtable",
+ "table": "globals",
+ "author": "UnorthodoxStoneND",
+ "row": {
+  "addr": "0x140c72376",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "vm",
+  "evidence": "decomp:own disasm 0x140c72940-0x140c72e60;xref:0x140c72e36,0x140ce5af9;doc:re/research/garage-monitor-current-model/README.md",
+  "notes": "LEA RAX,[RIP+disp32] loading the shared nested tab-model vtable. Data identity lookup: read signed disp32 at site+3 and add site+7; no hook is required. Model table extent is not claimed."
+ },
+ "signature": {
+  "id": "vm.shared_tab_model_vtable",
+  "section": ".xtls",
+  "pattern": "4D 89 EE 45 31 C9 E8 ?? ?? ?? ?? 48 8D 05",
+  "match": "0x140c7236b",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c72376",
+  "kind": "mid",
+  "names": [
+   "site_Vm_SharedTabModelVtable"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-26",
+    "by": "UnorthodoxStoneND",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "expect": "48 8D 05",
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c72e2b",
+  "made_on_target": "0x140c72e36",
+  "twin": "made on steam-26566308; the target 0x140c72e36 is KB 0x140c72376: Game_CareerEventsSequencer_Initialise (0xc72940) and site_Game_CareerEventsSequencerFirstRecord (0xc73960) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "UnorthodoxStoneND",
+   "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c72e2b",
+    "target": "0x140c72e36"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3cd31144b4f7b59d6e7d2e95dec777a361d84b4feb62b262712bbde977f3e755"
+  }
+ ]
+}
