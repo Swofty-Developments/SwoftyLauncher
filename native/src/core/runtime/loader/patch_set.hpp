@@ -65,6 +65,8 @@ private:
     struct SiteHandler {
         void (*fn)(SwoftyContext *);
         uint32_t probe;
+        std::string name;
+        uint32_t threw = 0;
     };
 
     struct Mark {

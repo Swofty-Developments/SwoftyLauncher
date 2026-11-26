@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -203,5 +204,69 @@ inline std::vector<uint8_t> entry_bytes(const std::string &name, uint32_t bag_ty
     out.insert(out.end(), body.begin(), body.end());
     return out;
 }
+
+// The buffer the plain store's save capture copies the stream's bytes into. The game calls its append from the stream's
+// write slot, where a C++ exception would unwind through game frames, so an append that cannot allocate gives up the
+// capture instead of throwing: gave_up() holds the reason, and the buffer is released.
+template <class Alloc = std::allocator<uint8_t>> class BasicTeeBuffer {
+public:
+    constexpr explicit BasicTeeBuffer(size_t cap, const Alloc &a = Alloc()) : cap_(cap), bytes_(a) {}
+
+    void clear() noexcept
+    {
+        bytes_.clear();
+        overflow_ = false;
+        no_memory_ = false;
+    }
+
+    void release() noexcept
+    {
+        bytes_.clear();
+        bytes_.shrink_to_fit();
+    }
+
+    void append(const uint8_t *data, uint64_t size) noexcept
+    {
+        if (overflow_ || no_memory_)
+            return;
+        if (bytes_.size() + size > cap_ || bytes_.size() + size < bytes_.size()) {
+            overflow_ = true;
+            return;
+        }
+        try {
+            bytes_.insert(bytes_.end(), data, data + size);
+        } catch (...) {
+            fail();
+        }
+    }
+
+    void push(uint8_t b) noexcept
+    {
+        if (overflow_ || no_memory_)
+            return;
+        try {
+            bytes_.push_back(b);
+        } catch (...) {
+            fail();
+        }
+    }
+
+    bool overflow() const noexcept { return overflow_; }
+    bool no_memory() const noexcept { return no_memory_; }
+    const std::vector<uint8_t, Alloc> &bytes() const noexcept { return bytes_; }
+
+private:
+    void fail() noexcept
+    {
+        no_memory_ = true;
+        release();
+    }
+
+    size_t cap_;
+    bool overflow_ = false, no_memory_ = false;
+    std::vector<uint8_t, Alloc> bytes_;
+};
+
+using TeeBuffer = BasicTeeBuffer<>;
 
 }

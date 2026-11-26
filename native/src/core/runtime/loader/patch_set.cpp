@@ -1,6 +1,8 @@
 #include "core/runtime/loader/patch_set.hpp"
 
 #include <array>
+#include <exception>
+#include <string>
 #include <cstring>
 
 #include "core/diagnostics/perf.hpp"
@@ -8,6 +10,7 @@
 #include "core/runtime/loader/bindings.hpp"
 #include "core/runtime/loader/code_encryption.hpp"
 #include "core/runtime/loader/hook_pool.hpp"
+#include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/image.hpp"
 
 namespace runtime::loader {
@@ -18,11 +21,29 @@ static_assert(offsetof(SwoftyContext, rip) == offsetof(safetyhook::Context64, ri
 
 constinit PatchSet patches;
 
+static void report_throw(const std::string &hook, uint32_t count, const char *what) noexcept
+{
+    if (!api || (count & (count - 1)))
+        return;
+    try {
+        api->log("[core] hook %s threw out of its handler (%u time(s)): %s; the exception is dropped here so it does not unwind "
+                 "through game frames",
+                 hook.c_str(), count, what);
+    } catch (...) {
+    }
+}
+
 template <size_t I> void site_thunk(safetyhook::Context &c)
 {
     for (auto &h : patches.site_chains_[I]) {
         perf::Scope p(h.probe);
-        h.fn(reinterpret_cast<SwoftyContext *>(&c));
+        try {
+            h.fn(reinterpret_cast<SwoftyContext *>(&c));
+        } catch (const std::exception &e) {
+            report_throw(h.name, ++h.threw, e.what());
+        } catch (...) {
+            report_throw(h.name, ++h.threw, "a non-standard exception");
+        }
     }
 }
 
@@ -102,7 +123,7 @@ bool PatchSet::chain_fits(size_t site, size_t handlers) const
 void PatchSet::push_site(size_t site, const Handler &h)
 {
     site_chains_[site].push_back({reinterpret_cast<void (*)(SwoftyContext *)>(h.m->handler),
-                                  perf::probe(perf::owner_of(h.m->handler), "site " + h.m->target)});
+                                  perf::probe(perf::owner_of(h.m->handler), "site " + h.m->target), "site " + h.m->target, 0});
 }
 
 void PatchSet::extend_site(size_t site, const std::vector<Handler> &handlers)
