@@ -205,7 +205,7 @@ pub(super) fn fetch_release(
     base: &str,
     version: &str,
     files: &[(&str, &str)],
-    get: &mut dyn FnMut(&str) -> std::result::Result<Vec<u8>, Failure>,
+    get: &mut Get,
     sleep: &dyn Fn(Duration),
 ) -> Result<()> {
     // Earlier launchers downloaded into this folder and could leave it behind.
@@ -219,14 +219,13 @@ pub(super) fn fetch_release(
                 return Ok(());
             }
             let url = format!("{}/v{version}/{name}", base.trim_end_matches('/'));
-            let body = download_retrying(&url, get, sleep).map_err(|(f, attempts)| {
-                Error::Other(format!(
+            let body = download_verified(&url, name, digest, get, sleep).map_err(|e| match e {
+                Fetched::Failed(f, attempts) => Error::Other(format!(
                     "offline play {version}: {name}{}: {f}",
                     transfer::attempts_note(attempts)
-                ))
+                )),
+                Fetched::Mismatch(e) => Error::Other(format!("offline play {version}: {url}: {e}")),
             })?;
-            match_digest(name, &sha256_bytes(&body), digest)
-                .map_err(|e| Error::Other(format!("offline play {version}: {url}: {e}")))?;
             keep(&to, &body)
         })
         .and_then(|()| install_files(data, &dir, files))
@@ -235,31 +234,80 @@ pub(super) fn fetch_release(
     Ok(())
 }
 
+/// Fetches a file into the bytes already held of it.
+pub(super) type Get<'a> = dyn FnMut(&str, &mut Vec<u8>) -> std::result::Result<(), Failure> + 'a;
+
+/// Attempts one file may make in all, however much each one delivers.
+const MOST_ATTEMPTS: u32 = 20;
+
+/// Why a file did not arrive intact.
+enum Fetched {
+    Failed(Failure, u32),
+    Mismatch(Error),
+}
+
+/// A file that matches `digest`. One that was joined from several partial
+/// downloads and does not match is fetched again from its first byte before
+/// the mismatch counts, so a bad splice cannot fail an install the host could
+/// serve.
+fn download_verified(
+    url: &str,
+    name: &str,
+    digest: &str,
+    get: &mut Get,
+    sleep: &dyn Fn(Duration),
+) -> std::result::Result<Vec<u8>, Fetched> {
+    let mut last = None;
+    for _ in 0..2 {
+        let (body, attempts) = download_retrying(url, get, sleep).map_err(|(f, n)| Fetched::Failed(f, n))?;
+        match match_digest(name, &sha256_bytes(&body), digest) {
+            Ok(()) => return Ok(body),
+            Err(e) if attempts == 1 => return Err(Fetched::Mismatch(e)),
+            Err(e) => {
+                eprintln!("swofty-core: {name}: {e}; downloading it again from the start");
+                last = Some(e);
+            }
+        }
+    }
+    Err(Fetched::Mismatch(last.expect("two tries ran")))
+}
+
 /// `get` for `url`, tried again with the shared backoff while it fails in a
-/// way the next try can get past. The failure carries the attempts made.
+/// way the next try can get past. `get` appends to the body and is called with
+/// what earlier tries delivered, so it can ask for the rest. The wait counts
+/// tries in a row that brought no new byte; one that did starts it over. The
+/// failure carries the attempts made.
 fn download_retrying(
     url: &str,
-    get: &mut dyn FnMut(&str) -> std::result::Result<Vec<u8>, Failure>,
+    get: &mut Get,
     sleep: &dyn Fn(Duration),
-) -> std::result::Result<Vec<u8>, (Failure, u32)> {
-    let last = std::cell::RefCell::new(String::new());
-    let (result, attempts) = transfer::retrying(
-        || {
-            get(url).inspect_err(|f| {
-                last.replace(f.detail.clone());
-            })
-        },
-        |r| r.as_ref().is_err_and(|f| f.transient),
-        |wait| {
-            eprintln!(
-                "swofty-core: {}; trying again in {} ms",
-                last.borrow(),
-                wait.as_millis()
-            );
-            sleep(wait);
-        },
-    );
-    result.map_err(|f| (f, attempts))
+) -> std::result::Result<(Vec<u8>, u32), (Failure, u32)> {
+    let mut body = Vec::new();
+    let (mut attempts, mut streak) = (0, 0);
+    loop {
+        attempts += 1;
+        let before = body.len();
+        let failure = match get(url, &mut body) {
+            Ok(()) => return Ok((body, attempts)),
+            Err(f) => f,
+        };
+        streak = if body.len() > before { 1 } else { streak + 1 };
+        let wait = transfer::retry_delay(streak).filter(|_| failure.transient && attempts < MOST_ATTEMPTS);
+        let Some(wait) = wait else {
+            return Err((failure, attempts));
+        };
+        eprintln!(
+            "swofty-core: {}; trying again in {} ms{}",
+            failure.detail,
+            wait.as_millis(),
+            if body.is_empty() {
+                String::new()
+            } else {
+                format!(" from byte {}", body.len())
+            }
+        );
+        sleep(wait);
+    }
 }
 
 /// Write `body` under a temporary name, flush it to disk and only then give it
@@ -290,11 +338,25 @@ pub(super) const BLOCKED: &str = "the download was blocked on this PC or network
      scanning, a VPN or proxy, a network filter or a Wi-Fi login page; turning that off or trying another \
      network fixes it";
 
+/// The reason given when a download keeps being cut off part-way, or goes quiet,
+/// on a connection that does open.
+pub(super) const CUT_OFF: &str = "the download kept being cut off before it finished; check for a VPN or proxy, antivirus \
+     web filtering or DNS trouble on this PC or network, turn it off or try another network such as a phone \
+     hotspot, then try again";
+
+/// How long a body may go without a byte before the connection counts as dead.
+const STALL: Duration = if cfg!(test) {
+    Duration::from_millis(400)
+} else {
+    Duration::from_secs(30)
+};
+
 /// Why a download brought no file, and whether trying again can get past it.
 #[derive(Debug)]
 pub(super) struct Failure {
     pub(super) detail: String,
     pub(super) blocked: bool,
+    pub(super) cut_off: bool,
     pub(super) transient: bool,
 }
 
@@ -302,6 +364,8 @@ impl std::fmt::Display for Failure {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.blocked {
             write!(f, "{BLOCKED}\n({})", self.detail)
+        } else if self.cut_off {
+            write!(f, "{CUT_OFF}\n({})", self.detail)
         } else {
             f.write_str(&self.detail)
         }
@@ -310,11 +374,17 @@ impl std::fmt::Display for Failure {
 
 impl Failure {
     /// A request that got no answer. A connection, DNS or TLS failure leads with
-    /// [`BLOCKED`]; one that broke or timed out on the way is tried again.
+    /// [`BLOCKED`]; one that broke or timed out on the way is tried again, and one
+    /// that went quiet before its headers arrived ends with [`CUT_OFF`].
     pub(super) fn call(url: &str, e: &ureq::Error) -> Self {
+        let quiet = matches!(
+            e,
+            ureq::Error::Timeout(ureq::Timeout::PerRead | ureq::Timeout::RecvResponse)
+        );
         Self {
             detail: format!("could not download {url}: {e}"),
-            blocked: transfer::transport(e),
+            blocked: transfer::transport(e) && !quiet,
+            cut_off: quiet,
             transient: transfer::retryable_error(e) && !final_failure(e),
         }
     }
@@ -329,49 +399,93 @@ impl Failure {
         Self {
             detail,
             blocked: false,
+            cut_off: false,
             transient: transfer::retryable_status(status),
         }
     }
 
-    /// A body that stopped before its end. One still unfinished when the whole
-    /// timeout ran out leads with [`BLOCKED`], as a stalled transfer is mostly a
-    /// scanner or filter holding it.
+    /// A body that stopped before its end, or went quiet for [`STALL`]. The
+    /// bytes it delivered stay with the caller, and the next try asks for the
+    /// rest.
     pub(super) fn cut_off(detail: String, e: Option<&std::io::Error>) -> Self {
         let inner = e.and_then(|e| e.get_ref()?.downcast_ref::<ureq::Error>());
         Self {
             detail,
-            blocked: inner.is_some_and(|e| matches!(e, ureq::Error::Timeout(ureq::Timeout::Global))),
+            blocked: false,
+            cut_off: true,
             transient: e.is_none_or(transfer::broken) && !inner.is_some_and(final_failure),
+        }
+    }
+
+    /// A server that answered a request for the rest of a file with something
+    /// else; the next try asks for the whole file.
+    fn restart(detail: String) -> Self {
+        Self {
+            detail,
+            blocked: false,
+            cut_off: false,
+            transient: true,
         }
     }
 }
 
-/// A failure the next try would meet again: the connection was refused, or the
-/// file was still unfinished when the whole timeout ran out.
+/// A failure the next try would meet again: the connection was refused.
 fn final_failure(e: &ureq::Error) -> bool {
-    match e {
-        ureq::Error::Timeout(ureq::Timeout::Global) => true,
-        ureq::Error::Io(e) => e.kind() == std::io::ErrorKind::ConnectionRefused,
-        _ => false,
-    }
+    matches!(e, ureq::Error::Io(e) if e.kind() == std::io::ErrorKind::ConnectionRefused)
 }
 
-pub(super) fn download(url: &str) -> std::result::Result<Vec<u8>, Failure> {
-    let resp = ureq::get(url)
+/// The first byte of a `Content-Range: bytes <first>-<last>/<size>`.
+fn range_start(range: &str) -> Option<u64> {
+    let (span, _) = range.trim().strip_prefix("bytes ")?.split_once('/')?;
+    span.split_once('-')?.0.trim().parse().ok()
+}
+
+/// Appends the file at `url` to `body`. A `body` that already holds the start
+/// of the file is continued with a Range request from its end; a server that
+/// answers with the whole file instead has `body` replaced by it. A body that
+/// breaks off leaves what arrived in `body`.
+pub(super) fn download(url: &str, body: &mut Vec<u8>) -> std::result::Result<(), Failure> {
+    let from = body.len();
+    let mut request = ureq::get(url);
+    if from > 0 {
+        request = request.header("Range", format!("bytes={from}-"));
+    }
+    let resp = request
         .config()
         .timeout_connect(Some(Duration::from_secs(30)))
-        .timeout_global(Some(Duration::from_secs(300)))
+        .timeout_per_read(Some(STALL))
         .http_status_as_error(false)
         .build()
         .call()
         .map_err(|e| Failure::call(url, &e))?;
-    let status = resp.status();
-    if !status.is_success() {
-        return Err(Failure::status(url, status.as_u16()));
+    let status = resp.status().as_u16();
+    if status == 416 && from > 0 {
+        body.clear();
+        return Err(Failure::restart(format!(
+            "{url}: the server would not continue at byte {from}; starting over"
+        )));
     }
+    if !resp.status().is_success() {
+        return Err(Failure::status(url, status));
+    }
+    if status == 206 {
+        let start = resp
+            .headers()
+            .get("content-range")
+            .and_then(|h| h.to_str().ok())
+            .and_then(range_start);
+        if from == 0 || start != Some(from as u64) {
+            body.clear();
+            return Err(Failure::restart(format!(
+                "{url}: the server sent another part of the file than byte {from} on; starting over"
+            )));
+        }
+    } else {
+        body.clear();
+    }
+    let kept = body.len();
     let expected = resp.body().content_length();
-    let mut body = Vec::new();
-    let read = std::io::Read::read_to_end(&mut resp.into_body().into_reader(), &mut body);
+    let read = std::io::Read::read_to_end(&mut resp.into_body().into_reader(), body);
     if let Err(e) = read {
         return Err(Failure::cut_off(
             format!("{url}: the download was cut off after {} bytes: {e}", body.len()),
@@ -379,12 +493,16 @@ pub(super) fn download(url: &str) -> std::result::Result<Vec<u8>, Failure> {
         ));
     }
     if let Some(n) = expected
-        && body.len() as u64 != n
+        && (body.len() - kept) as u64 != n
     {
         return Err(Failure::cut_off(
-            format!("{url}: the download was cut off ({} of {n} bytes)", body.len()),
+            format!(
+                "{url}: the download was cut off ({} of {} bytes)",
+                body.len() - kept,
+                n
+            ),
             None,
         ));
     }
-    Ok(body)
+    Ok(())
 }
