@@ -10,6 +10,8 @@ namespace swofty_core::apply::content {
 struct LogoReport {
     std::vector<std::string> lines;
     int built = 0, refused = 0;
+    std::size_t archives = 0;
+    bool overlay = false;
 };
 
 void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report);
