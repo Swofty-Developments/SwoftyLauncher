@@ -21,7 +21,12 @@ using Resolve_t = void *(void *registry, const char *path, const void *base, voi
 
 Table *g_table;
 std::unique_ptr<GamePoint> g_point;
-HotTable<void *> g_hot;
+HotTable<void *> &hot_table()
+{
+    static HotTable<void *> t;
+    return t;
+}
+
 thread_local bool t_in_resolve;
 std::atomic<int> g_told{0};
 constexpr int LOGGED = 8;
@@ -50,7 +55,7 @@ void *d_resolve(void *registry, const char *path, const void *base, void *create
         key += tail;
     }
     t_in_resolve = true;
-    void *supplied = g_hot.resolve(
+    void *supplied = hot_table().resolve(
         key, epoch(),
         [&]() -> std::pair<void *, bool> {
             void *node = ui_hot::fire_vm(*g_table, path, handle_ok);
@@ -67,6 +72,17 @@ void *d_resolve(void *registry, const char *path, const void *base, void *create
 }
 
 }
+
+}
+
+std::optional<std::string> runtime::lang_lookup_fire(const char *key, const char *language, const char *stock)
+{
+    return swofty_core::hooks::ui_hot::fire_lang(swofty_core::hooks::core(), key, language, stock);
+}
+
+uint64_t runtime::lang_lookup_epoch() { return swofty_core::hooks::core().epoch(); }
+
+namespace swofty_core::hooks {
 
 void declare_ui_hot_points(Table &t)
 {

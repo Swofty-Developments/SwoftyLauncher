@@ -2,7 +2,6 @@
 #include "core/assets/lang_lookup.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/hooks/hot_table.hpp"
-#include "core/hooks/ui_hot.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -263,7 +262,12 @@ void flush_keys(const std::map<std::string, std::set<std::string>> &changed, Key
 
 std::atomic<bool> g_lookup_on{false};
 bool g_lookup_wanted;
-swofty_core::hooks::HotTable<const char *> g_hot;
+swofty_core::hooks::HotTable<const char *> &hot_table()
+{
+    static swofty_core::hooks::HotTable<const char *> t;
+    return t;
+}
+
 std::mutex g_hot_texts_lock;
 std::unordered_set<std::string, Hash, Eq> g_hot_texts;
 std::atomic<int> g_hot_told{0};
@@ -279,7 +283,7 @@ uint64_t hot_epoch()
 {
     uint8_t *m = g_module.load(std::memory_order_acquire);
     uint64_t language = m ? *reinterpret_cast<const uint32_t *>(m + MODULE_LANG) & 0x1f : 0x1f;
-    return swofty_core::hooks::core().epoch() << 5 | language;
+    return runtime::lang_lookup_epoch() << 5 | language;
 }
 
 thread_local bool t_in_lookup;
@@ -290,12 +294,11 @@ const char *hot_find(void *set, const char *key)
     if (t_in_lookup)
         return own ? own : h_find.call<const char *>(set, key, 0);
     t_in_lookup = true;
-    const char *supplied = g_hot.resolve(
+    const char *supplied = hot_table().resolve(
         key, hot_epoch(),
         [&]() -> std::pair<const char *, bool> {
             const char *stock = own ? own : h_find.call<const char *>(set, key, 0);
-            auto text = swofty_core::hooks::ui_hot::fire_lang(swofty_core::hooks::core(), key,
-                                                              current_code() ? current_code() : "", stock);
+            auto text = runtime::lang_lookup_fire(key, current_code() ? current_code() : "", stock);
             if (!text)
                 return {nullptr, false};
             if (g_hot_told.fetch_add(1) < HOT_LOGGED)
@@ -387,7 +390,7 @@ public:
     {
         g_lookup_wanted = false;
         if (g_lookup_on.exchange(false)) {
-            g_hot.clear();
+            hot_table().clear();
             swofty::log("[hooks] lang.lookup has no subscriber left; lookups skip the handlers");
         }
     }
