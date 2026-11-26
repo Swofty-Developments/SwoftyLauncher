@@ -108,7 +108,8 @@ void era_tiles(void *list, const SwoftyTileList *tiles);
 void home_tiles(void *list, void *chosen);
 void career_content_tiles(void *chosen);
 void car_category_tiles(void *chosen);
-void screen_built(const char *screen);
+// `root` is the screen's root node name; `registered` the name an addon registered the screen under (null: a stock screen).
+void screen_built(const char *root, const char *registered = nullptr);
 bool route_open(const char *route);
 bool wants(const char *point);
 

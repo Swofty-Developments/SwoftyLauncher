@@ -12,6 +12,7 @@
 #include "core/hooks/hooks.hpp"
 #include "core/hooks/mfd_pages_point.hpp"
 #include "core/hooks/track_select_point.hpp"
+#include "core/hooks/ui_names.hpp"
 #include "core/hooks/ui_points.hpp"
 #include "core/registry/older.hpp"
 #include "core/registry/store.hpp"
@@ -29,10 +30,17 @@ bool active(const GameLink &l) { return l.installed(); }
 
 std::string route_screen(const char *route)
 {
-    auto rec = runtime::older_store().get("ui.route", route);
-    if (rec.status != swofty_core::registry::Status::ok)
-        return {};
-    return frontend::tile_records::text_of(rec.value["opens"]);
+    auto &st = runtime::older_store();
+    return ui_names::screen_of_route(
+        route, registry::older::in_load_order(st, "ui.route"), registry::older::in_load_order(st, "ui.screen"),
+        [&st](const std::string &id) { return frontend::tile_records::text_of(st.get("ui.route", id).value["opens"]); });
+}
+
+std::string built_screen(const char *root, const char *registered)
+{
+    if (!registered || !*registered)
+        return root;
+    return ui_names::built_screen(root, registered, registry::older::in_load_order(runtime::older_store(), "ui.screen"));
 }
 
 }
@@ -88,13 +96,15 @@ void car_category_tiles(void *chosen)
         fire_chosen<ev::CarCategoryTiles>(core(), chosen, chosen);
 }
 
-void screen_built(const char *screen)
+void screen_built(const char *root, const char *registered)
 {
+    const char *screen = root;
     Links *l = g_links.load(std::memory_order_acquire);
     if (!l || !active(l->screen) || !screen || !*screen)
         return;
-    void *view = reinterpret_cast<void *>(frontend::ui_vm_node_token(screen));
-    fire_screen(core(), screen, view);
+    void *view = reinterpret_cast<void *>(frontend::ui_vm_node_token(root));
+    std::string name = built_screen(root, registered);
+    fire_screen(core(), name.c_str(), view);
 }
 
 bool route_open(const char *route)

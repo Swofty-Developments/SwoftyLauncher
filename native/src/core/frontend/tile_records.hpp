@@ -68,10 +68,31 @@ struct Input {
     const Value *record = nullptr;
 };
 
+using RouteExists = std::function<bool(const std::string &)>;
+
 struct Options {
     bool need_route = false;
     size_t cap = TILE_CAP;
+    RouteExists route_exists;
 };
+
+// The route name the game gets for a tile's `route`. A route that names an enabled ui.route record by its id
+// (`<addon>/<key>`) is the key: the build clones the route group under that name. Any other route (a stock route name,
+// or a bare key) passes through unchanged. `unknown` is set when the route looks like a record id but no enabled record
+// has it, so the caller can say so; the string is then passed as written.
+inline std::string game_route(const std::string &route, const RouteExists &exists, bool *unknown = nullptr)
+{
+    if (unknown)
+        *unknown = false;
+    auto at = route.find('/');
+    if (at == std::string::npos || !exists)
+        return route;
+    if (exists(route))
+        return route.substr(at + 1);
+    if (unknown)
+        *unknown = true;
+    return route;
+}
 
 struct Result {
     std::vector<Tile> tiles;
@@ -133,6 +154,13 @@ inline Result effective(const std::vector<Input> &in, Place place, const hooks::
         if (t.place != place) {
             out.other_place++;
             continue;
+        }
+        if (!t.route.empty() && opt.route_exists) {
+            bool unknown = false;
+            t.route = game_route(t.route, opt.route_exists, &unknown);
+            if (unknown)
+                out.lines.push_back(std::string(REGISTRY) + " " + i.id + ": route " + t.route +
+                                    " names no enabled ui.route record; the game gets it as written");
         }
         if (opt.need_route && t.route.empty()) {
             out.refused++;

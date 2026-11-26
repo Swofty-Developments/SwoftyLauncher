@@ -5,7 +5,7 @@
   "x-version": "1.0",
   "x-applies": "boot",
   "x-snapshot": false,
-  "description": "ui::Route (experimental): one front-end route, the game's link from a press to the screen it opens. clone_of names the route group the new one copies.",
+  "description": "ui::Route (experimental): one front-end route, the game's link from a press to the screen it opens. clone_of names the route group the new one copies. The group is named by the record key alone (open_settings, not <addon>/open_settings), and that is the route name the game runs; a ui.tile route names the record by id or key.",
   "type": "object",
   "properties": {
     "file": {
@@ -18,7 +18,7 @@
       "type": "string"
     },
     "opens": {
-      "description": "The screen the route opens.",
+      "description": "The ui.screen the route opens, by record id (<addon>/<key>) or bare key.",
       "type": [
         "string",
         "null"

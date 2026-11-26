@@ -47,7 +47,7 @@
       "x-ref": "ui.texture_slice"
     },
     "route": {
-      "description": "The route a press opens.",
+      "description": "The route a press opens: a ui.route record id (<addon>/<key>) or bare key, or a stock route name. The core passes the game the record's key, the name of the route group the build cloned; a bare key or a stock name passes unchanged.",
       "type": [
         "string",
         "null"

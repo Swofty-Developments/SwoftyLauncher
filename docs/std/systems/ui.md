@@ -337,7 +337,7 @@ A `ui.tile` record adds a tile to one of four screens, after the stock tiles:
 - Every place needs a `route`; a record with no route, no title, or an unknown `place` is refused and logged. `title` is a lang key, or `{ "literal": "text" }` in a data file.
 - Records apply in load order, one per id: a repeated id keeps the first position and the later record's content. Records over the room are not shown and the log counts them.
 - `gate` is a selector over mode, career and content, the same as `lang.string` `within`. It is read at build time; a gated tile does not show where the facts are not known yet.
-- `route` is passed to the game as written: a press runs that route name.
+- `route` names a `ui.route` record or a stock route; see Route names below for how it reaches the game.
 - Images: `image` is a `ui.texture_slice` record id or a `#array[name]` string. Home and career tiles take it through an image template that the launcher's UI build adds only when an enabled record names an image; without it the log says so and the tile shows no image. The car category tab sets it through the tab's own tile fill, and a tile without a usable image shows the F1 2026 tile's image. F1 World tiles have no image.
 - Home, career and car category tiles fire their list event before they are added; F1 World tiles have no event.
 - The stock tiles the game builds itself (Career, Grand Prix, the settings row, F1 2025 and F1 2026 on the car category tab, the content tiles) are not records and cannot be changed through `ui.tile`.
@@ -372,12 +372,21 @@ Limits of the lists:
 - **Era tiles:** `get`, `remove` and `move` cover add-on boxes only; stock tiles are not listed. The stock boxes are game objects (a 16-byte allocator and tile pair per entry, with the title and id in view-model nodes). `ui.era.tiles` fires before the addon boxes are added, so a removed or moved box is added in that order or not at all. Indices count the boxes the picker shows. `get` gives the box's entrant list as `id`, its lang key as `title`, the entrant list its tile selects as `route`, and `place` is `era`.
 - **Track select:** count only. `ui.track_select.build` fires once per rebuild of the Grand Prix and the championship settings track lists, after the game has filled them, and `tracks().count()` is the number of rows, one per displayed track. A row holds node references, not the track id, so `get` returns nothing and there is no remove or insert. Time Trial's carousel is not covered: its list builder is not found. The point needs the two `Trk_*RefreshTrackList` bindings to export; where they do not resolve, the log says `[hooks] ui.track_select.build unavailable` and handlers do not run.
 
+### Route names
+
+One name is used everywhere: the key of the `ui.route` record. The build clones the route group `clone_of` under the record's key (`open_settings` in the example, not `mod.settings/open_settings`), and that is the route name the game runs. A route key is global across addons, so two addons cannot both declare `open_settings`; the build refuses the second.
+
+- **A tile's `route`** names a route record by its id (`mod.settings/open_settings`) or by its bare key (`open_settings`), or is a stock route name (`mod_menu`, `career_hub`). The core turns a record id into the key before it gives the route to the game; a bare key and a stock name pass through unchanged. An id that no enabled record has is logged (`ui.tile <id>: route <id> names no enabled ui.route record; the game gets it as written`) and passed as written, which opens nothing. The same rule covers a route a handler inserts into `ui.home.tiles`, `ui.career_content.tiles` or `ui.car_category.tiles`.
+- **A route's `opens`** names a `ui.screen` record by its id or by its bare key; the screen's registered name is the key.
+- **`ui.route.open`** fires with the route name the game runs (the key) as `route()`. `screen()` is the id of the `ui.screen` record the route opens (`mod.settings/settings`), or empty for a route no record declares (a stock route).
+- **`ui.screen.built`** fires for every screen that builds without error. `screen()` is the id of the addon's `ui.screen` record for an addon screen (`mod.settings/settings`), and the name of the screen's root node for every other screen: stock screens, screens an addon declares in `swofty.json` only, and the options pages the launcher generates.
+
 ## Other UI events
 
 All of these are `Fired::game`: the core installs the hook only once an addon subscribes.
 
-- **`ui.screen.built`** (notify, v1): after the game builds a screen without error, stock or addon. `screen()` is the built screen's root name, and `view` is the token of that view-model node, or null.
-- **`ui.route.open`** (cancel, v1): before the game runs a route (`Vm_Run_Route`). `route()` is the route name. `screen()` is the screen of the `ui.route` record of that name, or empty. A `replace` handler that returns true stops the route.
+- **`ui.screen.built`** (notify, v1): after the game builds a screen without error, stock or addon. `screen()` is the `ui.screen` record id for an addon screen and the root name for any other (see Route names), and `view` is the token of that view-model node, or null.
+- **`ui.route.open`** (cancel, v1): before the game runs a route (`Vm_Run_Route`). `route()` is the route name the game runs. `screen()` is the `ui.screen` record id the route opens, or empty for a stock route (see Route names). A `replace` handler that returns true stops the route.
 - **`hud.mfd.pages`** (modify, v1): the race HUD's MFD pages. `pages` holds `count` entries (6: `car_settings`, `pit_settings`, `car_damage`, `car_engine`, `car_temp`, `mods`) and `capacity` is 8. A handler can only hide a page, by setting `hide` to 1; the core then writes that page's `<name>_enabled` false after the game's own availability rules, so a handler never shows a page the game disabled. Reordering, adding and removing are refused and logged. The point needs the `Hud_MfdVm_RefreshPanelAvailability` binding to export.
 
 ## Options and HUD widgets

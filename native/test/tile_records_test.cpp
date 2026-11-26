@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <fstream>
+#include <set>
 #include <sstream>
 
 namespace tr = frontend::tile_records;
@@ -131,6 +132,30 @@ int main(int argc, char **argv)
     expect(n.tiles.empty() && n.refused == 1 && has_line(n, "needs a route"),
            "a place that needs a route refuses a tile without one");
     expect(tr::effective(nr.inputs(), tr::Place::home, &none).tiles.size() == 1, "a route is optional unless the place needs it");
+
+    {
+        std::set<std::string> routes{"mod.settings/open_settings"};
+        tr::RouteExists exists = [&](const std::string &id) { return routes.count(id) > 0; };
+        expect(tr::game_route("mod.settings/open_settings", exists) == "open_settings",
+               "route: a ui.route record id becomes the key the build cloned the group under");
+        expect(tr::game_route("mod_menu", exists) == "mod_menu" && tr::game_route("open_settings", exists) == "open_settings",
+               "route: a stock route name or a bare key passes through unchanged");
+        bool unknown = false;
+        expect(tr::game_route("mod.gone/open", exists, &unknown) == "mod.gone/open" && unknown,
+               "route: an id no enabled record has passes through as written and is flagged");
+        expect(tr::game_route("mod.settings/open_settings", {}) == "mod.settings/open_settings",
+               "route: no lookup leaves it alone");
+        Set rt;
+        rt.add("a/ok", R"({"place":"home","title":"lng","route":"mod.settings/open_settings"})");
+        rt.add("a/stock", R"({"place":"home","title":"lng","route":"career_hub"})");
+        rt.add("a/typo", R"({"place":"home","title":"lng","route":"mod.settings/open_setings"})");
+        tr::Options with;
+        with.route_exists = exists;
+        auto r = tr::effective(rt.inputs(), tr::Place::home, &none, with);
+        expect(r.tiles.size() == 3 && r.tiles[0].route == "open_settings" && r.tiles[1].route == "career_hub" &&
+                   r.tiles[2].route == "mod.settings/open_setings" && has_line(r, "a/typo: route") && !has_line(r, "a/ok: route"),
+               "route: record tiles get the game's route name, a stale id is reported");
+    }
 
     Set many;
     for (int i = 0; i < 300; i++)
