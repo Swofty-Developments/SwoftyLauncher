@@ -144,7 +144,7 @@ pub fn build(
     let generated = options_pages(settings, &src, &flow, &mut built)?;
     let (setups, setup_lines) = career_setups(input, &src, &flow, &mut built)?;
     let resume = resume_screen(settings, input, &src, &mut built)?;
-    let routing = Routing::of(settings, &built, &generated, &setups);
+    let routing = Routing::of(settings, &built, &generated, &setups)?;
     let mut problems = screen_problems(&built)?;
     let targets = Targets::of(&flow, &setups, resume.as_ref());
     let mfd_rows = mfd_rows(settings);

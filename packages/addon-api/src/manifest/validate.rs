@@ -83,6 +83,21 @@ impl AddonManifest {
                 _ => {}
             }
         }
+        let mut routes = BTreeMap::new();
+        for r in &self.operations.routes {
+            if !valid_screen_name(&r.id) || !valid_screen_name(&r.opens) {
+                return fail(format!("route {}: id and opens must be [a-z0-9_]", r.id));
+            }
+            if !r.file.ends_with(".uir") || r.file.contains('/') || r.file.contains('\\') {
+                return fail(format!("route {}: file must be a bare .uir name", r.id));
+            }
+            if r.clone_of.is_empty() {
+                return fail(format!("route {}: needs clone_of", r.id));
+            }
+            if routes.insert(r.id.as_str(), ()).is_some() {
+                return fail(format!("route {} is declared twice", r.id));
+            }
+        }
         let paths = self
             .operations
             .database

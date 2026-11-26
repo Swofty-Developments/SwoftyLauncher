@@ -68,6 +68,7 @@ pub(super) fn write_persistent(
                     patch::screen_route_groups(&routing.addon_groups),
                     &f1_world,
                 )?;
+                let b = patch::clone_route_groups(&b, &routing.clones, &routing.listed)?;
                 let b = patch::setup_routes(&b, setups, &mut placed.borrow_mut())?;
                 let b = match resume {
                     Some(r) => patch::resume_routes(&b, &r.routes, &mut placed.borrow_mut().routes)?,
@@ -231,7 +232,11 @@ pub(super) fn route_problems(
     check::route_files(
         &route_files,
         &p.flows,
-        &targets.groups(),
+        &targets
+            .groups()
+            .into_iter()
+            .chain(routing.clones.iter().map(|c| c.id.as_str()))
+            .collect::<Vec<_>>(),
         &registered,
         &stock_screens,
     )

@@ -16,6 +16,8 @@ pub struct Operations {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub screens: Vec<ScreenOp>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub routes: Vec<RouteOp>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub assets: Vec<String>,
     /// Files of `hud.element` records the build composes into the HUD's dial scenes
     /// (`docs/reference/ops/hud.md`).
@@ -60,6 +62,15 @@ pub struct ScreenOp {
     pub anchor: Option<String>,
     #[serde(default)]
     pub view_model: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct RouteOp {
+    pub id: String,
+    pub file: String,
+    pub clone_of: String,
+    pub opens: String,
 }
 
 fn default_flow() -> String {

@@ -250,6 +250,9 @@ pub struct RouteClone {
 }
 
 pub fn clone_route_groups(data: &[u8], clones: &[RouteClone], screens: &[String]) -> Result<Vec<u8>> {
+    if clones.is_empty() {
+        return Ok(data.to_vec());
+    }
     edit(data, |p| {
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
         for c in clones {
