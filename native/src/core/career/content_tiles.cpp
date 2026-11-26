@@ -1,5 +1,7 @@
 #include "core/career/content_state.hpp"
+#include "core/frontend/chosen_tiles.hpp"
 #include "core/frontend/tile_records_read.hpp"
+#include "core/hooks/ui_points.hpp"
 #include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -329,6 +331,14 @@ size_t add_record_tiles(TileList *list, uint8_t stock_index, size_t content_tile
     for (auto &line : found.lines)
         if (auto n = record_lines.note())
             swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+    {
+        frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap};
+        swofty_core::hooks::ui_points::career_content_tiles(&chosen);
+        if (size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap))
+            swofty::log("[ui.tile] career: %zu tile(s) a ui.career_content.tiles handler left over the %zu slot(s) or repeated "
+                        "are dropped",
+                        dropped, opt.cap);
+    }
     if (found.tiles.empty()) {
         if (found.capped || found.refused)
             swofty::log("[ui.tile] career: no tile record added (%zu refused, %zu over the %zu slot(s) the %zu content tile(s) "
