@@ -1,4 +1,5 @@
 #include "core/career/content_state.hpp"
+#include "core/frontend/tile_image.hpp"
 #include "core/frontend/tile_records_read.hpp"
 #include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
@@ -66,12 +67,13 @@ std::atomic<TileList *> last_list{nullptr};
 std::mutex row_lock;
 Row row;
 constinit swofty_core::guards::LogFirst<LOG_FIRST> row_lines, rowless_lines, refused_lines, other_lines, record_lines,
-    image_lines;
+    image_lines, image_miss_lines;
 
 struct RecordTile {
     std::string title, route;
     bool localised = true, in_row = false;
     uint32_t model = content::MODEL_2026;
+    frontend::tile_image::Plan image;
 };
 
 std::mutex record_lock;
@@ -248,10 +250,17 @@ void record_populate(HomeItem *item, void *node, uint32_t a7)
     if (!known || !vm)
         return;
     uint8_t localised = rec.localised, no = 0;
-    if (rec.in_row)
+    bool image = rec.image.step == frontend::tile_image::Step::set;
+    if (image)
+        set_text(vm + 8, "type", rec.image.template_name);
+    else if (rec.in_row)
         set_text(vm + 8, "type", content::ADDON_TEMPLATE);
     set_text(vm + 8, "title", rec.title.c_str());
     set_text(vm + 8, "description", "");
+    if (image && !frontend::tile_image::set(vm, rec.image.path))
+        if (auto n = image_miss_lines.note())
+            swofty::log("[ui.tile] career: image %s resolves to no node in the game; the tile shows without it%s",
+                        rec.image.path.c_str(), n.tail ? n.tail : "");
     if (b.set_bool) {
         auto *set = reinterpret_cast<swofty::game::Vm_Set_Bool_t *>(b.set_bool);
         set(registry(), vm + 8, "title_localised", &localised, 1);
@@ -345,7 +354,8 @@ size_t add_record_tiles(TileList *list, uint8_t stock_index, size_t content_tile
                     found.tiles.size());
         return 0;
     }
-    size_t added = 0, images = 0;
+    size_t added = 0;
+    frontend::tile_image::Counts counts;
     for (auto &t : found.tiles) {
         bool y25 = model_kind == content::MODEL_2025;
         HomeItem *item = place_item(list, uint8_t(stock_index + added), in_row, t.id.c_str(), [&](NeAllocator *a) {
@@ -364,18 +374,36 @@ size_t add_record_tiles(TileList *list, uint8_t stock_index, size_t content_tile
         {
             std::lock_guard<std::mutex> g(record_lock);
             auto title = tr::title_text(t);
-            record_items[item] = RecordTile{title.text, t.route, title.localised, in_row, model_kind};
+            auto image = frontend::tile_image::plan(t, tr::store_slices(), frontend::tile_image::template_built(), in_row);
+            switch (image.step) {
+            case frontend::tile_image::Step::set:
+                counts.set++;
+                break;
+            case frontend::tile_image::Step::template_missing:
+                counts.template_missing++;
+                break;
+            case frontend::tile_image::Step::unresolved:
+                counts.unresolved++;
+                if (auto n = image_lines.note())
+                    swofty::log("[ui.tile] career: %s: %s; the tile shows without an image%s", t.id.c_str(), image.why.c_str(),
+                                n.tail ? n.tail : "");
+                break;
+            case frontend::tile_image::Step::none:
+                break;
+            }
+            record_items[item] = RecordTile{title.text, t.route, title.localised, in_row, model_kind, std::move(image)};
         }
         added++;
-        images += !t.image.empty();
         swofty::log("[ui.tile] career: tile %s added as button_%u (route %s)", t.id.c_str(), unsigned(stock_index + added - 1),
                     t.route.c_str());
     }
-    if (images)
+    if (counts.template_missing)
         if (auto n = image_lines.note())
-            swofty::log("[ui.tile] career: %zu tile(s) name an image; tile images on the career select are not hooked yet (the "
-                        "per-tile image VM leaf is not proven), they show without it%s",
-                        images, n.tail ? n.tail : "");
+            swofty::log("[ui.tile] career: %zu tile(s) name an image but this build has no tile image template (the UI build "
+                        "has not written %s); they show without it%s",
+                        counts.template_missing, frontend::tile_image::FLAG, n.tail ? n.tail : "");
+    if (counts.set || counts.template_missing || counts.unresolved)
+        swofty::log("%s", frontend::tile_image::summary("career", counts).c_str());
     swofty::log(
         "[ui.tile] career: %zu of %zu tile record(s) added after %zu content tile(s) (%zu gated out, %zu refused, %zu over "
         "the %zu slot(s) left of %zu)",

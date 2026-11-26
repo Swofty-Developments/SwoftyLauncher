@@ -8,6 +8,7 @@
 #include "core/frontend/hidden_tiles.hpp"
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/main_menu_logic.hpp"
+#include "core/frontend/tile_image.hpp"
 #include "core/frontend/tile_list.hpp"
 #include "core/frontend/tile_records_read.hpp"
 #include "core/frontend/vm_string.hpp"
@@ -55,11 +56,12 @@ constinit SettingsTile tile;
 struct RecordTile {
     std::string title, route;
     bool localised = true;
+    tile_image::Plan image;
 };
 
 std::mutex record_lock;
 std::unordered_map<const HomeItem *, RecordTile> record_tiles;
-constinit swofty_core::guards::LogFirst<4> record_lines, image_lines, world_lines;
+constinit swofty_core::guards::LogFirst<4> record_lines, image_lines, image_miss_lines, world_lines;
 
 bool record_of(const HomeItem *item, RecordTile &out)
 {
@@ -89,6 +91,13 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
         Vm_Set_Bool(reg, parent, "title_localised", &localised, 1);
         frontend::vm::set_string(reg, parent, "description", "");
         Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
+        if (rec.image.step == tile_image::Step::set) {
+            frontend::vm::set_string(reg, parent, "type", rec.image.template_name);
+            if (!tile_image::set(vm_node, rec.image.path))
+                if (auto n = image_miss_lines.note())
+                    swofty::log("[ui.tile] home: image %s resolves to no node in the game; the tile shows without it%s",
+                                rec.image.path.c_str(), n.tail ? n.tail : "");
+        }
         swofty::log("[core] populate #%u item=%p: ui.tile title '%s' (%s)", call, item, rec.title.c_str(),
                     rec.localised ? "lang key" : "literal");
         return;
@@ -160,7 +169,8 @@ void add_record_tiles(swofty::Context &c, TileList *list, void **career_vt, unsi
     for (auto &line : found.lines)
         if (auto n = record_lines.note())
             swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
-    size_t images = 0, added = 0;
+    size_t added = 0;
+    tile_image::Counts counts;
     for (auto &t : found.tiles) {
         size_t before = 0, after = 0;
         frontend::tile_list::last_item(list, &before);
@@ -177,12 +187,28 @@ void add_record_tiles(swofty::Context &c, TileList *list, void **career_vt, unsi
         {
             std::lock_guard<std::mutex> g(record_lock);
             auto title = frontend::tile_records::title_text(t);
-            record_tiles[item] = RecordTile{title.text, t.route, title.localised};
+            auto image = tile_image::plan(t, frontend::tile_records::store_slices(), tile_image::template_built(), false);
+            switch (image.step) {
+            case tile_image::Step::set:
+                counts.set++;
+                break;
+            case tile_image::Step::template_missing:
+                counts.template_missing++;
+                break;
+            case tile_image::Step::unresolved:
+                counts.unresolved++;
+                if (auto n = image_lines.note())
+                    swofty::log("[ui.tile] home: %s: %s; the tile shows without an image%s", t.id.c_str(), image.why.c_str(),
+                                n.tail ? n.tail : "");
+                break;
+            case tile_image::Step::none:
+                break;
+            }
+            record_tiles[item] = RecordTile{title.text, t.route, title.localised, std::move(image)};
         }
         c.r12 = index;
         c.r15 = index;
         added++;
-        images += !t.image.empty();
     }
     auto world = frontend::tile_records::read(frontend::tile_records::Place::f1_world, {});
     if (!world.tiles.empty())
@@ -190,11 +216,13 @@ void add_record_tiles(swofty::Context &c, TileList *list, void **career_vt, unsi
             swofty::log("[ui.tile] f1_world: %zu tile record(s) not shown: the F1 World list builder is not hooked yet (the F1 "
                         "World screen's tile list site and list struct are not proven)%s",
                         world.tiles.size(), n.tail ? n.tail : "");
-    if (images)
+    if (counts.template_missing)
         if (auto n = image_lines.note())
-            swofty::log("[ui.tile] home: %zu tile(s) name an image; tile images on home are not hooked yet (the per-tile image "
-                        "VM leaf is not proven), they show without it%s",
-                        images, n.tail ? n.tail : "");
+            swofty::log("[ui.tile] home: %zu tile(s) name an image but this build has no tile image template (the UI build "
+                        "has not written %s); they show without it%s",
+                        counts.template_missing, tile_image::FLAG, n.tail ? n.tail : "");
+    if (counts.set || counts.template_missing || counts.unresolved)
+        swofty::log("%s", tile_image::summary("home", counts).c_str());
     if (added || found.tiles.size())
         swofty::log("[ui.tile] hook #%u: %zu of %zu home tile record(s) added (%zu gated out, %zu refused, %zu over the cap)",
                     call, added, found.tiles.size(), found.gated_out, found.refused, found.capped);

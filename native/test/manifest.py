@@ -161,6 +161,7 @@ UNITS = [
          args=['../../apps/launcher/assets/fonts/DejaVuSans.ttf', 'fonts/swofty-test-cff.otf'],
          inputs=['../apps/launcher/assets/fonts/DejaVuSans.ttf', 'test/fonts/*.otf']),
     Unit('lang_scope', 'String scope unit test'),
+    Unit('tile_image', 'ui.tile image template and leaf choice unit test'),
     Unit('tile_records', 'ui.tile record logic unit test', args=['content/tiles/tiles.json'], inputs=['test/content/tiles/*.json']),
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
     Unit('standings_drop', 'Standings dropped scores unit test'),
