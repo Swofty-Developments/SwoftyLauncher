@@ -55,94 +55,58 @@
   },
   "ordinary_code_references": [
     {
-      "address": "0x140c72e36",
-      "bytes": "48 8d 05 43 c7 a1 04",
-      "instruction": "lea rax, [rip + 0x4a1c743]"
+      "address": "0x140c72e36"
     },
     {
-      "address": "0x140c79c1d",
-      "bytes": "48 8d 05 5c 59 a1 04",
-      "instruction": "lea rax, [rip + 0x4a1595c]"
+      "address": "0x140c79c1d"
     },
     {
-      "address": "0x140ce5af9",
-      "bytes": "48 8d 05 80 9a 9a 04",
-      "instruction": "lea rax, [rip + 0x49a9a80]"
+      "address": "0x140ce5af9"
     },
     {
-      "address": "0x1414c0223",
-      "bytes": "48 8d 05 56 f3 1c 04",
-      "instruction": "lea rax, [rip + 0x41cf356]"
+      "address": "0x1414c0223"
     },
     {
-      "address": "0x1416464f8",
-      "bytes": "48 8d 05 81 90 04 04",
-      "instruction": "lea rax, [rip + 0x4049081]"
+      "address": "0x1416464f8"
     },
     {
-      "address": "0x141646c6d",
-      "bytes": "48 8d 05 0c 89 04 04",
-      "instruction": "lea rax, [rip + 0x404890c]"
+      "address": "0x141646c6d"
     },
     {
-      "address": "0x14164cbc8",
-      "bytes": "48 8d 05 b1 29 04 04",
-      "instruction": "lea rax, [rip + 0x40429b1]"
+      "address": "0x14164cbc8"
     },
     {
-      "address": "0x14164d67a",
-      "bytes": "48 8d 05 ff 1e 04 04",
-      "instruction": "lea rax, [rip + 0x4041eff]"
+      "address": "0x14164d67a"
     },
     {
-      "address": "0x14164f4ae",
-      "bytes": "48 8d 05 cb 00 04 04",
-      "instruction": "lea rax, [rip + 0x40400cb]"
+      "address": "0x14164f4ae"
     },
     {
-      "address": "0x14164fb1e",
-      "bytes": "48 8d 05 5b fa 03 04",
-      "instruction": "lea rax, [rip + 0x403fa5b]"
+      "address": "0x14164fb1e"
     },
     {
-      "address": "0x141650cf8",
-      "bytes": "48 8d 05 81 e8 03 04",
-      "instruction": "lea rax, [rip + 0x403e881]"
+      "address": "0x141650cf8"
     },
     {
-      "address": "0x141650fce",
-      "bytes": "48 8d 05 ab e5 03 04",
-      "instruction": "lea rax, [rip + 0x403e5ab]"
+      "address": "0x141650fce"
     },
     {
-      "address": "0x141663ecc",
-      "bytes": "48 8d 05 ad b6 02 04",
-      "instruction": "lea rax, [rip + 0x402b6ad]"
+      "address": "0x141663ecc"
     },
     {
-      "address": "0x14166585f",
-      "bytes": "48 8d 05 1a 9d 02 04",
-      "instruction": "lea rax, [rip + 0x4029d1a]"
+      "address": "0x14166585f"
     },
     {
-      "address": "0x141a76ebf",
-      "bytes": "48 8d 05 ba 86 c1 03",
-      "instruction": "lea rax, [rip + 0x3c186ba]"
+      "address": "0x141a76ebf"
     },
     {
-      "address": "0x141ab964c",
-      "bytes": "48 8d 05 2d 5f bd 03",
-      "instruction": "lea rax, [rip + 0x3bd5f2d]"
+      "address": "0x141ab964c"
     },
     {
-      "address": "0x141bbb4e9",
-      "bytes": "48 8d 05 90 40 ad 03",
-      "instruction": "lea rax, [rip + 0x3ad4090]"
+      "address": "0x141bbb4e9"
     },
     {
-      "address": "0x141d98ac5",
-      "bytes": "48 8d 05 b4 6a 8f 03",
-      "instruction": "lea rax, [rip + 0x38f6ab4]"
+      "address": "0x141d98ac5"
     }
   ],
   "first_18_virtual_slots": [
@@ -182,5 +146,6 @@
       "text": "2026-11-26 14:24:37.321 [31212] [gmr-retro] Vehicle tab hidden through native visibility; component model retained"
     }
   ],
-  "upstream_registration_pending": true
+  "upstream_registration_pending": true,
+  "evidence_retention": "Full author disassembly is retained locally outside the contribution; this summary keeps reference addresses, resolution results and proof metadata."
 }
