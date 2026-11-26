@@ -604,8 +604,12 @@ public:
         Facts next = *facts_;
         fn(next);
         next.epoch = facts_->epoch + 1;
+        uint64_t e = next.epoch;
         facts_ = std::make_shared<const Facts>(std::move(next));
+        epoch_.store(e, std::memory_order_release);
     }
+
+    uint64_t epoch() const { return epoch_.load(std::memory_order_acquire); }
 
     // The points with handlers that nothing defines, for the end-of-load report.
     std::vector<std::pair<std::string, std::string>> undefined()
@@ -782,6 +786,7 @@ private:
     bool armed_ = false;
     std::mutex facts_lock_;
     std::shared_ptr<const Facts> facts_;
+    std::atomic<uint64_t> epoch_{0};
     std::mutex ctx_lock_;
     std::vector<std::shared_ptr<Context>> contexts_;
 };

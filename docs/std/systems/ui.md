@@ -294,7 +294,7 @@ ui::strings.add("lng_team_alpine", {
 });
 ```
 
-The game looks text up every frame. The core keeps a table of every `lang.string` record, and each lookup checks the record's `within` against the current content, mode and career. The last record in load order that applies wins; when none applies, the game's own text shows. `lang.lookup` reads that table. The same goes for the other hook points the game calls every frame, such as team logos and view-model nodes. A handler on one of them runs on every call, so it should only read a table of its own.
+The game looks text up every frame. The core keeps a table of every `lang.string` record, and each lookup checks the record's `within` against the current content, mode and career. The last record in load order that applies wins; when none applies, the game's own text shows. `lang.lookup` runs after that table: a `before` handler sees the key, the language and the text that would show, and `set_text` supplies another. The core runs the handlers once per key, the first time the game asks for it, and keeps the answer until the content, the language or the view models change; a key no handler takes keeps its table text or the game's own. With no subscriber the lookup is the same code as without the hook. `ui.vm.resolve` works the same way for view-model paths: a handler sets `node` to a node handle it has for the path, and the core hands it to the game in place of the game's own node. A handler on either point runs once per entry when the table is built, so it should only read a table of its own.
 
 ## Events and operations
 
@@ -307,9 +307,12 @@ events::on<ui::events::VmResolve>().in(events::content("swofty.progressive/f1_ca
     });
 
 ui::set_text("career.hub.title", "Season 1990");
+ui::set_bool("ui_menu_data.my_addon_visible", true);
 swofty::popup::show("Tyres", "Goodyear brings B, C, D and E this weekend.");
 swofty::hud::toast("Driver change", "Gasly replaces Kvyat");
 ```
+
+`set_text` and `set_bool` write a leaf of the view-model registry. The last dot of the path splits the leaf from its parent node, and the parent resolves from the registry root, so `ui_menu_data.my_addon_visible` writes `my_addon_visible` under `ui_menu_data`. The write is queued and applied on the game's flow thread, and a later write to the same path replaces a queued one. They return `unavailable` on a core without the UI table, and `invalid` for a path with no parent, a space or a bracket. `set_ref` returns `unavailable`: what a node reference targets is not proven yet.
 
 ## Readiness and limits
 
