@@ -6,10 +6,10 @@
  "row": {
   "addr": "0x141f4ea57",
   "type": "code",
-  "level": "L3",
+  "level": "L2",
   "subsystem": "session",
-  "evidence": "decomp:own disasm 0x141f50420-0x141f50668;xref:0x141f50621,0x141f50639,0x141f50645,0x141f5064f;trace:T339/20261126-131101:47",
-  "notes": "Common constructor return site for the laptop/garage power-unit VM; RSI holds the fully constructed owner before mov rax,rsi and the epilogue. Constructor installs the power-unit primary vtable and chooses laptop_power_unit or garage_monitor_panel_power_unit by its mode argument. Observe only; this is not a constructor entry or an activation callback. Runtime confirmed on Steam 26566308 only: The constructor-site callback supplied a readable garage owner in RSI that passed both primary-vtable and native name-hash guards. Other-build L3 is not claimed. Local promotion; upstream maintainer acceptance pending."
+  "evidence": "decomp:own disasm 0x141f50420-0x141f50668;xref:0x141f50621,0x141f50639,0x141f50645,0x141f5064f;doc:re/research/garage-monitor-l2-review/L3_EVIDENCE.md",
+  "notes": "Common constructor return site for the laptop/garage power-unit VM; RSI holds the fully constructed owner before mov rax,rsi and the epilogue. Constructor installs the power-unit primary vtable and chooses laptop_power_unit or garage_monitor_panel_power_unit by its mode argument. Observe only; this is not a constructor entry or an activation callback. Runtime confirmed on Steam 26566308 only: The constructor-site callback supplied a readable garage owner in RSI that passed both primary-vtable and native name-hash guards. Other-build L3 is not claimed. Runtime evidence retained for maintainer promotion. Submitted at L2 under the new-record process; actual runtime observations are retained in the evidence report and trace files. The base-branch PR validator does not load new test definitions from this PR."
  },
  "signature": {
   "id": "session.pu_panel_constructed",

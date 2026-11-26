@@ -6,10 +6,10 @@
  "row": {
   "addr": "0x1456f7130",
   "type": "vtable[28]",
-  "level": "L3",
+  "level": "L2",
   "subsystem": "career",
-  "evidence": "decomp:own disasm 0x141e15b80 and 0x14ab9ee80-0x14ab9f136;xref:0x141e15b80,0x14ab9eefb;doc:re/db/functions.tsv;trace:T339/20261126-131101:49",
-  "notes": "Primary shared hub/laptop tab VM vtable, also used by the garage subtabs host. Career_Construct_HubLaptopTab names the KB table and secondary table +0xe0 (28 primary slots). Current constructor writes it at owner+0; a separate ordinary-code reference resolves it without a protected-body signature. Not a garage-only type; this does not identify the nested model at owner+0x630. Runtime confirmed on Steam 26566308 only: The live nearest typed ancestor matched the resolved shared host table before native visibility succeeded. Other-build L3 is not claimed. Local promotion; upstream maintainer acceptance pending."
+  "evidence": "decomp:own disasm 0x141e15b80 and 0x14ab9ee80-0x14ab9f136;xref:0x141e15b80,0x14ab9eefb;doc:re/db/functions.tsv;doc:re/research/garage-monitor-l2-review/L3_EVIDENCE.md",
+  "notes": "Primary shared hub/laptop tab VM vtable, also used by the garage subtabs host. Career_Construct_HubLaptopTab names the KB table and secondary table +0xe0 (28 primary slots). Current constructor writes it at owner+0; a separate ordinary-code reference resolves it without a protected-body signature. Not a garage-only type; this does not identify the nested model at owner+0x630. Runtime confirmed on Steam 26566308 only: The live nearest typed ancestor matched the resolved shared host table before native visibility succeeded. Other-build L3 is not claimed. Runtime evidence retained for maintainer promotion. Submitted at L2 under the new-record process; actual runtime observations are retained in the evidence report and trace files. The base-branch PR validator does not load new test definitions from this PR."
  },
  "signature": {
   "id": "career.hub_laptop_tab",

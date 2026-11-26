@@ -4413,7 +4413,6 @@ pub type Game_Build_CustomisationCatalogue_t = unsafe extern "C" fn(catalogue: *
 pub type Game_Build_PassiveObjectiveKeyName_t =
     unsafe extern "C" fn(out: *mut c_void, index: c_int) -> *mut c_void;
 pub type Game_CameraHelicopter_Reset_t = unsafe extern "C" fn(self_: *mut c_void);
-pub type Game_CarSetupVm_Destroy_t = unsafe extern "C" fn(self_: *mut c_void, flags: c_uint) -> *mut c_void;
 pub type Game_CareerActivities_AddActivity_t =
     unsafe extern "C" fn(calendar: *mut c_void, activity: *const c_void, day: u32);
 pub type Game_CareerActivities_RemoveActivity_t =
@@ -4942,7 +4941,6 @@ pub type Sess_PreRace_ResolveComponents_t = unsafe extern "C" fn(
 pub type Sess_PreRace_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32, dt: f64) -> *mut u32;
 pub type Sess_PuPanel_BuildComponents_t = unsafe extern "C" fn(vm: *mut c_void);
-pub type Sess_PuPanel_Destroy_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Sess_PuPanel_FillComponent_t =
     unsafe extern "C" fn(vm: *mut c_void, a2: u64, slot: u32, a4: u8, a5: u8, entry: *mut c_void);
 pub type Sess_RaceStrategy_RedFlagRecompute_t =
@@ -9019,18 +9017,8 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Game_CarSetupVm_Destroy: Binding = Binding {
-        id: "Game_CarSetupVm_Destroy",
-        kind: "func",
-        status: Status::Stable,
-    };
     pub const Game_CarSetupVm_Initialise: Binding = Binding {
         id: "Game_CarSetupVm_Initialise",
-        kind: "func",
-        status: Status::Stable,
-    };
-    pub const Game_CarSetupVm_OnDeactivate_Thunk: Binding = Binding {
-        id: "Game_CarSetupVm_OnDeactivate_Thunk",
         kind: "func",
         status: Status::Stable,
     };
@@ -19074,11 +19062,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Stable,
     };
-    pub const Sess_PuPanel_Destroy: Binding = Binding {
-        id: "Sess_PuPanel_Destroy",
-        kind: "func",
-        status: Status::Stable,
-    };
     pub const Sess_PuPanel_FillComponent: Binding = Binding {
         id: "Sess_PuPanel_FillComponent",
         kind: "func",
@@ -23529,11 +23512,6 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
-    pub const site_Sess_PuPanel_Constructed: Binding = Binding {
-        id: "site_Sess_PuPanel_Constructed",
-        kind: "site",
-        status: Status::Stable,
-    };
     pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {
         id: "site_Sess_PuPanel_SlotHolder",
         kind: "site",
@@ -23659,11 +23637,6 @@ pub mod bindings {
         kind: "vtable",
         status: Status::Experimental,
     };
-    pub const vt_Career_HubLaptopTab: Binding = Binding {
-        id: "vt_Career_HubLaptopTab",
-        kind: "vtable",
-        status: Status::Stable,
-    };
     pub const vt_Career_MessageDriverContractChanged: Binding = Binding {
         id: "vt_Career_MessageDriverContractChanged",
         kind: "vtable",
@@ -23713,11 +23686,6 @@ pub mod bindings {
         id: "vt_Career_Weekend",
         kind: "vtable",
         status: Status::Experimental,
-    };
-    pub const vt_Game_CarSetupVm: Binding = Binding {
-        id: "vt_Game_CarSetupVm",
-        kind: "vtable",
-        status: Status::Stable,
     };
     pub const vt_Game_CareerContinueDriverViewModel: Binding = Binding {
         id: "vt_Game_CareerContinueDriverViewModel",
@@ -23973,11 +23941,6 @@ pub mod bindings {
         id: "vt_Sess_PressInterviewBase",
         kind: "vtable",
         status: Status::Experimental,
-    };
-    pub const vt_Sess_PuPanel: Binding = Binding {
-        id: "vt_Sess_PuPanel",
-        kind: "vtable",
-        status: Status::Stable,
     };
     pub const vt_Sess_QualifyingSyncReady: Binding = Binding {
         id: "vt_Sess_QualifyingSyncReady",

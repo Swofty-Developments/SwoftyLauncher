@@ -5,11 +5,11 @@
  "author": "UnorthodoxStoneND",
  "row": {
   "addr": "0x140cd4d40",
-  "level": "L3",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void *Game_CarSetupVm_Destroy(void *self, unsigned int flags)",
-  "evidence": "decomp:own disasm 0x140cd5800-0x140cd5c66;xref:0x140cd580e,0x140cd5815,0x140cd5bc9,0x140cd5c14;trace:T340/20261126-164110:194;trace:T340/20261126-164110:195;trace:T340/20261126-164110:196",
-  "notes": "Scalar-deleting Car Setup VM destructor: RCX=self, EDX=deletion flag retained in EDI. Reinstalls the Car Setup vtable, releases setup node references, conditionally frees the owner when the flag is nonzero, and returns self in RAX. Observe entry to retire borrowed owners; do not call for refresh. Runtime confirmed on Steam 26566308 only: The native Setup destructor entry executes with observed unsigned flags=0, forwards to its original continuation and returns the original self pointer; the owner is already untracked after deactivation. Only flags=0 and already-untracked owners were observed. Nonzero deletion/free and active-owner retirement at destructor entry retain static/fixture coverage rather than runtime confirmation. Local promotion; upstream maintainer acceptance pending."
+  "evidence": "decomp:own disasm 0x140cd5800-0x140cd5c66;xref:0x140cd580e,0x140cd5815,0x140cd5bc9,0x140cd5c14;doc:re/research/garage-monitor-l2-review/L3_EVIDENCE.md",
+  "notes": "Scalar-deleting Car Setup VM destructor: RCX=self, EDX=deletion flag retained in EDI. Reinstalls the Car Setup vtable, releases setup node references, conditionally frees the owner when the flag is nonzero, and returns self in RAX. Observe entry to retire borrowed owners; do not call for refresh. Runtime confirmed on Steam 26566308 only: The native Setup destructor entry executes with observed unsigned flags=0, forwards to its original continuation and returns the original self pointer; the owner is already untracked after deactivation. Only flags=0 and already-untracked owners were observed. Nonzero deletion/free and active-owner retirement at destructor entry retain static/fixture coverage rather than runtime confirmation. Runtime evidence retained for maintainer promotion. Submitted at L2 under the new-record process; actual runtime observations are retained in the evidence report and trace files. The base-branch PR validator does not load new test definitions from this PR."
  },
  "signature": {
   "id": "game.car_setup_vm_destroy",

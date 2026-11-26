@@ -6,10 +6,10 @@
  "row": {
   "addr": "0x145680720",
   "type": "vtable[17]",
-  "level": "L3",
+  "level": "L2",
   "subsystem": "game",
-  "evidence": "decomp:own disasm 0x140cd5800-0x140cd5c66;xref:0x140cd580e,0x140cd5815,0x140c07c7a;doc:re/research/garage-monitor-l2-review/README.md#vt_game_carsetupvm;trace:T339/20261126-131101:50;trace:T339/20261126-131101:52",
-  "notes": "Primary Car Setup VM table installed at owner+0. Current Steam 26566308 table has 17 contiguous executable cells followed by null padding and a secondary table. Checked cells include deleting destructor 2, initialise 6, deactivate 7, command 10, binding event 11 and populate 13. Historical identity metadata is retained; this does not assert a complete typed VM layout or other-build table extent. Independent L2 agreement/export pending. Runtime confirmed on Steam 26566308 only: The live Setup owner matched the resolved primary table; the runtime slot-6 initialize identity check passed. Other-build L3 is not claimed. Local promotion; upstream maintainer acceptance pending."
+  "evidence": "decomp:own disasm 0x140cd5800-0x140cd5c66;xref:0x140cd580e,0x140cd5815,0x140c07c7a;doc:re/research/garage-monitor-l2-review/README.md#vt_game_carsetupvm;doc:re/research/garage-monitor-l2-review/L3_EVIDENCE.md",
+  "notes": "Primary Car Setup VM table installed at owner+0. Current Steam 26566308 table has 17 contiguous executable cells followed by null padding and a secondary table. Checked cells include deleting destructor 2, initialise 6, deactivate 7, command 10, binding event 11 and populate 13. Historical identity metadata is retained; this does not assert a complete typed VM layout or other-build table extent. Independent agreement remains pending. Runtime confirmed on Steam 26566308 only: The live Setup owner matched the resolved primary table; the runtime slot-6 initialize identity check passed. Other-build L3 is not claimed. Runtime evidence retained for maintainer promotion. Submitted at L2 under the new-record process; actual runtime observations are retained in the evidence report and trace files. The base-branch PR validator does not load new test definitions from this PR."
  },
  "signature": {
   "id": "game.car_setup_vm",

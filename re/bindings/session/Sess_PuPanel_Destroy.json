@@ -5,11 +5,11 @@
  "author": "UnorthodoxStoneND",
  "row": {
   "addr": "0x142171370",
-  "level": "L3",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void Sess_PuPanel_Destroy(void *self)",
-  "evidence": "decomp:own disasm 0x142172f70-0x1421732ba;xref:0x142172f7c,0x142172f83;trace:T339/20261126-131101:55",
-  "notes": "Non-deleting power-unit VM destruction path; RCX is the owner. Reinstalls the same primary vtable as the constructor, releases panel-owned node references and then base VM references. Entry observation is for invalidating borrowed owners; calling this destroys the native object. Runtime confirmed on Steam 26566308 only: The named destruction-entry wrapper matched and removed the exact previously captured owner before forwarding native teardown. Other-build L3 is not claimed. Local promotion; upstream maintainer acceptance pending."
+  "evidence": "decomp:own disasm 0x142172f70-0x1421732ba;xref:0x142172f7c,0x142172f83;doc:re/research/garage-monitor-l2-review/L3_EVIDENCE.md",
+  "notes": "Non-deleting power-unit VM destruction path; RCX is the owner. Reinstalls the same primary vtable as the constructor, releases panel-owned node references and then base VM references. Entry observation is for invalidating borrowed owners; calling this destroys the native object. Runtime confirmed on Steam 26566308 only: The named destruction-entry wrapper matched and removed the exact previously captured owner before forwarding native teardown. Other-build L3 is not claimed. Runtime evidence retained for maintainer promotion. Submitted at L2 under the new-record process; actual runtime observations are retained in the evidence report and trace files. The base-branch PR validator does not load new test definitions from this PR."
  },
  "signature": {
   "id": "session.pu_panel_destroy",

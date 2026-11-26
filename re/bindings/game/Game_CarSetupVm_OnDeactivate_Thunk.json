@@ -5,11 +5,11 @@
  "author": "UnorthodoxStoneND",
  "row": {
   "addr": "0x140c1c280",
-  "level": "L3",
+  "level": "L2",
   "subsystem": "game",
   "proto": "-",
-  "evidence": "decomp:re/research/garage-monitor-l2-review/setup_deactivation.asm;xref:0x145682778,0x140c1cd40;doc:re/research/garage-monitor-l2-review/README.md#game_carsetupvm_ondeactivate_thunk;trace:T340/20261126-164110:136;trace:T340/20261126-164110:137;trace:T340/20261126-164110:138",
-  "notes": "Car Setup primary vtable slot 7 ordinary-code entry thunk on Steam 26566308. E9 reaches 0x1497d8ef0; the fully read body releases control bindings and saved setup states and resets +0x7e38. Entry observation retires the borrowed Setup owner before native deactivation. Current signature includes build-specific trailing filler; no other-build pattern portability is claimed.  Runtime confirmed on Steam 26566308 only: The native deactivation entry executes, matches the typed Setup owner, retires its tracked state from 1 to 0 before forwarding, and returns normally on the same thread. Eight observed deactivation sequences for the current build; other-build thunk portability remains unclaimed. Local promotion; upstream maintainer acceptance pending."
+  "evidence": "decomp:re/research/garage-monitor-l2-review/setup_deactivation.asm;xref:0x145682778,0x140c1cd40;doc:re/research/garage-monitor-l2-review/README.md#game_carsetupvm_ondeactivate_thunk;doc:re/research/garage-monitor-l2-review/L3_EVIDENCE.md",
+  "notes": "Car Setup primary vtable slot 7 ordinary-code entry thunk on Steam 26566308. E9 reaches 0x1497d8ef0; the fully read body releases control bindings and saved setup states and resets +0x7e38. Entry observation retires the borrowed Setup owner before native deactivation. Current signature includes build-specific trailing filler; no other-build pattern portability is claimed.  Runtime confirmed on Steam 26566308 only: The native deactivation entry executes, matches the typed Setup owner, retires its tracked state from 1 to 0 before forwarding, and returns normally on the same thread. Eight observed deactivation sequences for the current build; other-build thunk portability remains unclaimed. Runtime evidence retained for maintainer promotion. Submitted at L2 under the new-record process; actual runtime observations are retained in the evidence report and trace files. The base-branch PR validator does not load new test definitions from this PR."
  },
  "signature": {
   "id": "game.car_setup_vm_on_deactivate_thunk",
