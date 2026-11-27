@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Log",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x145357250",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "double Ne_Crt_Log(double x)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x145359c10 (RacingPC lab re_groups/_decomp);xref:0x143f15700,0x144f5bfd0",
+  "notes": "(lib) CRT natural logarithm for double: scalar and AVX paths chosen by DAT_146016f0c, table driven (0x1455d3540, 0x1455d3d50, 0x1455d4560) with ln2 split 0.693147122859.. + 5.77e-08, special near-1 polynomial, and error handler func_0x000145377224 for zero, negative and NaN input."
+ },
+ "signature": {
+  "id": "core.crt_log",
+  "section": ".xtls",
+  "pattern": "48 83 EC 58 66 0F 7F 74 24 20 83 3D ?? ?? ?? ?? 00 0F 85 ?? ?? ?? ?? 66 0F 6F D8",
+  "match": "0x145357250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145357250",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Log"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x145359c10",
+  "made_on_target": "0x145359c10",
+  "twin": "made on steam-26566308; the target 0x145359c10 is KB 0x145357250: Ne_Crt_Fmodf (0x5358064) and Ne_Crt_LogFloatAvx (0x535a6f0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x145359c10",
+    "target": "0x145359c10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "53421118c61c3a34311d8a9b81fbfb861cdef6576db6ebaab07d5220d465699a"
+  }
+ ]
+}

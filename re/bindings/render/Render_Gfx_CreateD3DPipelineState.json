@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_CreateD3DPipelineState",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439e3280",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx_CreateD3DPipelineState(void *pso, void *d3d_desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439e5850 (RacingPC lab re_groups/_decomp);xref:0x143a03c40",
+  "notes": "Calls ID3D12Device vtable +0x50 (CreateGraphicsPipelineState) on device at gfx+0x508 with desc and IID 0x1458a23a8, forwards HRESULT to vendor specific handler chosen by gfx+0x880 vendor id (0x8086/0x8087 Intel, 0x10de NVIDIA, 0x1002 AMD), then names the object from pso+8. Skipped (returns 0) when desc+0x18 set and pso+0x784 flags 0x800/0x1000 need features gfx+0x399b/+0x3999 that are off."
+ },
+ "signature": {
+  "id": "render.gfx_create_d3_d_pipeline_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 C7 44 24 28 00 00 00 00 48 83 7A 18 00",
+  "match": "0x1439e3280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439e3280",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_CreateD3DPipelineState"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439e5850",
+  "made_on_target": "0x1439e5850",
+  "twin": "made on steam-26566308; the target 0x1439e5850 is KB 0x1439e3280: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439e5850",
+    "target": "0x1439e5850"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5d1dcb250d8b74b2606d50ebe5669db74efcbfcb5b16372e3871a946a0ed0744"
+  }
+ ]
+}

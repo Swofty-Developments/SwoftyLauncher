@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Import_Call_Hash473b6caf",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1400028c0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_Import_Call_Hash473b6caf(uint32_t a, uint32_t b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1400028c0 (RacingPC lab re_groups/_decomp)",
+  "notes": "Lazy import wrapper: bumps in-call counter 0x145fba734, Ne_Import_ResolveSlotWithRetry, resolves function pointer by hash 0x473b6caf into slot 0x145fbab98 via resolver 0x145fba758, runs optional pre/post hooks (0x145fba768 / 0x145fba770) and calls it with (a,b). Returns 0xfffffffd when unresolved. Likely a platform SDK (Steam/EOS-style) API shim."
+ },
+ "signature": {
+  "id": "core.import_call_hash473b6caf",
+  "section": ".xtls",
+  "pattern": "48 89 74 24 10 57 48 83 EC 20 8B FA 8B F1 F0 83 05 ?? ?? ?? ?? 01",
+  "match": "0x1400028c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1400028c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Import_Call_Hash473b6caf"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1400028c0",
+  "made_on_target": "0x1400028c0",
+  "twin": "made on steam-26566308; the target 0x1400028c0 is KB 0x1400028c0: Ne_Import_ResolveSlotWithRetry (0x2190) and Ne_Thunk_ExternalCall (0x2f90) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1400028c0",
+    "target": "0x1400028c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ad69987314361c26b067bc8d3496fc8f7de8e5d96addf9e039544671fc24aebd"
+  }
+ ]
+}

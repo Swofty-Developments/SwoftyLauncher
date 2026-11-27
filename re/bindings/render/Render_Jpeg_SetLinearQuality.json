@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_SetLinearQuality",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1449d4434",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Jpeg_SetLinearQuality(void *cinfo, int32_t scale_factor, uint8_t force_baseline)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1449d6df4 (RacingPC lab re_groups/_decomp);xref:0x1449d6dc4",
+  "notes": "libjpeg jpeg_set_linear_quality: calls add_quant_table FUN_1449d6e4c for table 0 with std luminance table 0x14539cec0 and table 1 with std chrominance table 0x14539cfc0 using the given scale factor and baseline flag. Hook to force screenshot JPEG quality."
+ },
+ "signature": {
+  "id": "render.jpeg_set_linear_quality",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 30 41 8A D8",
+  "match": "0x1449d4434",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d4434",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_SetLinearQuality"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1449d6df4",
+  "made_on_target": "0x1449d6df4",
+  "twin": "made on steam-26566308; the target 0x1449d6df4 is KB 0x1449d4434: Ne_Format_HresultUnknownFacility (0x49349e0) and Ne_Crt_InitThreadHeader (0x49e2fbc) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1449d6df4",
+    "target": "0x1449d6df4"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a4ce4f4a486bb7e1ea01b59b6c0febf7dc4ff03da12ec0eda67f283295af7b9f"
+  }
+ ]
+}

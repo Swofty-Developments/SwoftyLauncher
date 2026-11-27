@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionManager_RegisterNetCallbacks",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143056b10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GameSessionManager_RegisterNetCallbacks(void *mgr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1430590a0 (RacingPC lab re_groups/_decomp);xref:0x143074360,0x1430750a0,0x1430806e0,0x143080e50,0x1430836f0,0x1430e2af0,0x143165ca0",
+  "notes": "Installs {fn, mgr} delegates on the network session object *(*(mgr+8)+0xd8): incoming connection (vcall +0x78 on +0x110), +0x28 OnIncomingData, +0x38 OnConnectionLeft, +0x48 OnConnectionArrived, +0x58 FUN_14305d170, +0x68 NewSessionToken, +0x78 OnLeavingSession, +0x88 OnSessionMigrationComplete, +0x7a0 OnSessionError. Then rebinds mgr+0x288 to an option found in g_Game_OptionsStore (unsubscribing the old one). Good place to see every session-level net callback."
+ },
+ "signature": {
+  "id": "game.game_session_manager_register_net_callbacks",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 8B 41 08 48 8B B8 D8 00 00 00",
+  "match": "0x143056b10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143056b10",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionManager_RegisterNetCallbacks"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1430590a0",
+  "made_on_target": "0x1430590a0",
+  "twin": "made on steam-26566308; the target 0x1430590a0 is KB 0x143056b10: Game_GameSessionManager_Connect (0x3056a00) and Game_GameSessionManager_ReportJoinError (0x3068090) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1430590a0",
+    "target": "0x1430590a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c342a100a9a6b1eeb9bb2b2a1b1a2ade7545ad61dc0482f956fbd069f8c527c1"
+  }
+ ]
+}

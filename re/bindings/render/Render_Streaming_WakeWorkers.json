@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Streaming_WakeWorkers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ac44c0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint64_t Render_Streaming_WakeWorkers(void *mgr, uint32_t exclude_mask, void *filter)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac6a90 (RacingPC lab re_groups/_decomp);xref:0x143ac19f0",
+  "notes": "Builds a bit mask of worker objects (vector mgr+0x48..+0x50) that are not excluded, are enabled (+0xa8) and match the request filter (filter+4 type mask vs worker +0xa4, or filter+1 with pending bits +0xa9 and not +0xaa), atomically clears their sleeping bits in mgr+0xc4 and signals them: per-worker event at worker+0x200, or in shared mode (mgr+0xee) ORs the mask into mgr+0xe0 and sets either the single worker event or the shared event at mgr+0xd0 (SetEvent, errors traced). Returns last status."
+ },
+ "signature": {
+  "id": "render.streaming_wake_workers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 CE 4C 8B 49 48",
+  "match": "0x143ac44c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ac44c0",
+  "kind": "func_start",
+  "names": [
+   "Render_Streaming_WakeWorkers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ac6a90",
+  "made_on_target": "0x143ac6a90",
+  "twin": "made on steam-26566308; the target 0x143ac6a90 is KB 0x143ac44c0: Ne_JobSystem_CreateJobGroup (0x3ac5bf0) and Ne_Loader_RegisterRequest (0x3acb2b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ac6a90",
+    "target": "0x143ac6a90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "93c03eb92c69c8e937883e31a4f39b852c545b131286b058906a32fd82c18704"
+  }
+ ]
+}

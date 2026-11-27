@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_143991f10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14398f980",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_143991f10(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143991f10 (RacingPC lab re_groups/_decomp)",
+  "notes": "(thunk) Noreturn stub: calls Ne_Crt_InvalidParameterAbort then int3. Out-of-line failure path next to the robin-hood map code at 0x143991940."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_143991f10",
+  "section": ".xtls",
+  "pattern": "48 89 D9 E8 ?? ?? ?? ?? 90 48 83 C4 48",
+  "match": "0x14398c4f8",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14398f980",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_143991f10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14398ea88",
+  "made_on_target": "0x143991f10",
+  "twin": "made on steam-26566308; the target 0x143991f10 is KB 0x14398f980: Ne_EventQueue_DispatchPending (0x398e800) and Ne_Gfx2Renderer_ConstructDevice (0x3993680) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14398ea88",
+    "target": "0x143991f10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cfce18553b69202d77fe8755619cb2aaafd407d300f898dc29da463d2a181461"
+  }
+ ]
+}

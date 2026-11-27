@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_BroadcastDriverMovesVM_Destroy_RowHandles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419d4230",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_BroadcastDriverMovesVM_Destroy_RowHandles(void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419d5a10 (RacingPC lab re_groups/_decomp);xref:0x1419d3810",
+  "notes": "Destructor for a block of VM node handles (0x20 bytes each: vtable, node, prev, next): releases handle at +0x900, then 10 rows of 7 handles (row stride 0xe0, from +0x8e0 down to +0x120), then handles at +0x20 and +0x0. Each release unlinks from the node listener list (node+0x28) and calls Vm_Release_Node."
+ },
+ "signature": {
+  "id": "game.broadcast_driver_moves_vm_destroy_row_handles",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 00 09 00 00",
+  "match": "0x1419d4230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419d4230",
+  "kind": "func_start",
+  "names": [
+   "Game_BroadcastDriverMovesVM_Destroy_RowHandles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419d5a10",
+  "made_on_target": "0x1419d5a10",
+  "twin": "made on steam-26566308; the target 0x1419d5a10 is KB 0x1419d4230: Vm_Get_VirtualHelpPromptVisible (0x19cfef0) and Ui_PurchasePopup_Init (0x19deb90) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419d5a10",
+    "target": "0x1419d5a10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "838f7cf31c7999d28c5f3273cede8fcb61a311dc9f87b834d7c2b9c4757342c1"
+  }
+ ]
+}

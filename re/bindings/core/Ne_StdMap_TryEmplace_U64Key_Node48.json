@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_StdMap_TryEmplace_U64Key_Node48",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b52320",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_StdMap_TryEmplace_U64Key_Node48(void *map, void *out_it_bool, const uint64_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b52370 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) MSVC std::map<uint64,ptr>::try_emplace: lower_bound walk on key at node+0x20, returns existing node with inserted=0, else allocates a 0x30-byte node (value +0x28 zeroed), links it, red-black rebalances and returns {node, 1}. Throws map/set too long at 0x555555555555555 nodes."
+ },
+ "signature": {
+  "id": "core.std_map_try_emplace_u64_key_node48",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 44 24 20 C5 FB 11 70 28",
+  "match": "0x140a2acb4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140b52320",
+  "kind": "call",
+  "names": [
+   "Ne_StdMap_TryEmplace_U64Key_Node48"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140a2ad04",
+  "made_on_target": "0x140b52370",
+  "twin": "made on steam-26566308; the target 0x140b52370 is KB 0x140b52320: Ne_Rng_Mt19937_Refill (0xb4f7a0) and Career_Get_FacilityNodeList (0xb537f0) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140a2ad04",
+    "target": "0x140b52370"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5a7c7bf1bd303ddddb28920f6742c82aec6ac5105eb900787aee079ce23b3467"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SessionResults_AddIndexedTile",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14183d180",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_SessionResults_AddIndexedTile(void *self, void *out_arg, uint8_t index, uint16_t template_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14183e960 (RacingPC lab re_groups/_decomp);xref:0x141836b70",
+  "notes": "Formats a child name from index (fmt 0x14571be18) and gets/creates that VM child. If template_id < 0x100 uses the list node at self+0xb8 and only fills out_arg via 0x141832040; otherwise uses node self+0x220, allocates a 0xb98-byte FeTile (vtable 0x145713a48) with template name from table 0x14571d7e0[low byte, <0x24], sets its 'index' int, pushes {alloc,tile} to vector self+0x240..+0x250 and inits row data at tile+0xe8 via 0x141842180."
+ },
+ "signature": {
+  "id": "game.session_results_add_indexed_tile",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 45 89 CE",
+  "match": "0x14183d180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14183d180",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionResults_AddIndexedTile"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14183e960",
+  "made_on_target": "0x14183e960",
+  "twin": "made on steam-26566308; the target 0x14183e960 is KB 0x14183d180: Game_SessionResults_PopulateTable (0x1836b70) and Career_Bind_SpecialistUpgradeText (0x185ad60) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14183e960",
+    "target": "0x14183e960"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7296c42201726f8f9c6191f82247364f48b31aa43d4e31371352336dc2982ae8"
+  }
+ ]
+}

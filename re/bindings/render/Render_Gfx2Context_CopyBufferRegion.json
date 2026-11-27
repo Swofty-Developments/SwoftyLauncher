@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Context_CopyBufferRegion",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a04f90",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint64_t Render_Gfx2Context_CopyBufferRegion(void *ctx, void *dstBuf, void *srcBuf, int64_t offset, int64_t size)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a07560 (RacingPC lab re_groups/_decomp);xref:0x143f0e980",
+  "notes": "Resolves per-GPU (index device+0x148) native resources of dst and src buffers (+0x90+gpu*0x20, or per-frame table +0xd0 indexed by ctx+0x16f0), records both in the context usage map (cmd+0x58), flushes state (cmd vtbl +0x188) and calls cmd vtbl +0x168 (whole copy, when offset==0 and size==0xffffffff) or +0x170 (dst,offset,src,offset,size). Returns 0, or 0x58 if a resource is missing."
+ },
+ "signature": {
+  "id": "render.gfx2_context_copy_buffer_region",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 4C 89 CE",
+  "match": "0x143a04f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a04f90",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Context_CopyBufferRegion"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a07560",
+  "made_on_target": "0x143a07560",
+  "twin": "made on steam-26566308; the target 0x143a07560 is KB 0x143a04f90: Ne_WindowWin_SetOnMinimised (0x39ffe20) and Ne_Gfx2CommandQueue_PushProfileMarker (0x3a0a2c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a07560",
+    "target": "0x143a07560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "25e190e3973acc4787637ebf7fa6ffc7a292f79ccb5bf0012533b03feca4e1b1"
+  }
+ ]
+}

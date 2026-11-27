@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Create_DefaultViewParamsResource",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c74be0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "uint64_t Render_Create_DefaultViewParamsResource(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c771b0 (RacingPC lab re_groups/_decomp)",
+  "notes": "Allocates a 0x810 view-params object (Render_ViewParams_ConstructDefault, name 0x1458e9ad8), registers it with Render_Gfx2_RegisterResourceNotify, stores it at +0xe0 (allocator +0xd8, old one destroyed), then fills a default identity camera description on the stack and calls Render_SceneView_BuildViewParams. Returns 0 or 0xc on allocation failure."
+ },
+ "signature": {
+  "id": "render.create_default_view_params_resource",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 70 01 00 00 48 89 CE 48 8B B9 E8 02 00 00",
+  "match": "0x143c74be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c74be0",
+  "kind": "func_start",
+  "names": [
+   "Render_Create_DefaultViewParamsResource"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c771b0",
+  "made_on_target": "0x143c771b0",
+  "twin": "made on steam-26566308; the target 0x143c771b0 is KB 0x143c74be0: Ne_CustomisationDecalRenderer_BakePasses (0x3c73230) and Ne_DecalsProjectionAreaProxy_Ctor (0x3c77b20) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c771b0",
+    "target": "0x143c771b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fdfe2f9c73beb234d3eb0520762a6b366db775ab5a2260ddd2f2cb6b037ab92d"
+  }
+ ]
+}

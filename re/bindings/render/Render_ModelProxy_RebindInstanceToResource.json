@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ModelProxy_RebindInstanceToResource",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d4a230",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_ModelProxy_RebindInstanceToResource(void **capture, void *new_resource)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d4c800 (RacingPC lab re_groups/_decomp);xref:0x143d42b80",
+  "notes": "Closure body (captures old resource, expected sub-resource, instance, cache): if new_resource matches the old one's primary/secondary sub-resources, removes the instance from the old resource instance vector +0x38..+0x40 (error 2 if missing), sets instance+0x1e8 = new_resource, calls Render_ModelInstance_Reinit and appends the instance to new_resource vector +0x38. If the old resource has no instances left, computes an MD5 key from its two sub-resource pointers, erases it from the cache robin-hood map at cache+0xe0.. and destroys it via cache+0x10 allocator."
+ },
+ "signature": {
+  "id": "render.model_proxy_rebind_instance_to_resource",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 48 89 D7 48 89 CE 48 8B 4A 28",
+  "match": "0x143d4a230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d4a230",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelProxy_RebindInstanceToResource"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d4c800",
+  "made_on_target": "0x143d4c800",
+  "twin": "made on steam-26566308; the target 0x143d4c800 is KB 0x143d4a230: Render_Model_ValidateMaterialParams (0x3d4b3b0) and Render_Batch_Submit (0x3d4de90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d4c800",
+    "target": "0x143d4c800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bee602e9daca6854c6ea4ec9ed91e819880d39048a2ffa73a12c0e794bb78bd4"
+  }
+ ]
+}

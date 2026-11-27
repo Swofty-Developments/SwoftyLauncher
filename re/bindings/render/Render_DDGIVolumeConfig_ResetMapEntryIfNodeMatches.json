@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_DDGIVolumeConfig_ResetMapEntryIfNodeMatches",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143be6a10",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void Render_DDGIVolumeConfig_ResetMapEntryIfNodeMatches(void *cfgNode, void *map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143be8fe0 (RacingPC lab re_groups/_decomp);xref:0x143be94d0",
+  "notes": "If cfgNode has child 0x1458c2db6 (vtbl +0x90) whose string compare (vtbl +0xe0) with 0x145614ae4 returns 0, finds or inserts key 0 in the robin-hood int->int map (slots +0x18, info +0x20, count +0x28) growing it via 0x143ed3df0 as needed, and writes value 0. Better context needed: the two string literals."
+ },
+ "signature": {
+  "id": "render.ddgi_volume_config_reset_map_entry_if_node_matches",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 85 C9",
+  "match": "0x143be6a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143be6a10",
+  "kind": "func_start",
+  "names": [
+   "Render_DDGIVolumeConfig_ResetMapEntryIfNodeMatches"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143be8fe0",
+  "made_on_target": "0x143be8fe0",
+  "twin": "made on steam-26566308; the target 0x143be8fe0 is KB 0x143be6a10: Ne_CrowdPlugin_LoadXml (0x3be50d0) and Render_Texture_CreateFromResource (0x3bf0140) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143be8fe0",
+    "target": "0x143be8fe0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "49b38ce188074cbe73996ba242e6a5cfdf2fac062475ae26b93f8faa969a51ef"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Jpeg_Prep_CreateContextBuffer",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1449ded0c",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Jpeg_Prep_CreateContextBuffer(void *cinfo)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1449e16cc (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) libjpeg jcprepct.c create_context_buffer: allocs 5*rgroup_height row pointers per component (rgroup = max_v_samp_factor at +0x150), allocs the real 3*rgroup sample rows with alloc_sarray, copies them into the middle and duplicates the wraparound row pointers above and below, storing each component buffer in prep->color_buf (cinfo+0x1f0, +0x10). cxx=create_context_buffer."
+ },
+ "signature": {
+  "id": "core.jpeg_prep_create_context_buffer",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 18 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 48 63 B9 50 01 00 00",
+  "match": "0x1449ded0c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449ded0c",
+  "kind": "func_start",
+  "names": [
+   "Ne_Jpeg_Prep_CreateContextBuffer"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1449e16cc",
+  "made_on_target": "0x1449e16cc",
+  "twin": "made on steam-26566308; the target 0x1449e16cc is KB 0x1449ded0c: Ne_Format_HresultUnknownFacility (0x49349e0) and Ne_Crt_InitThreadHeader (0x49e2fbc) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1449e16cc",
+    "target": "0x1449e16cc"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "226ae2b6188a3cdfdf97f9b804e4c3f9891d0a750c4c0865429c5da5835c1897"
+  }
+ ]
+}

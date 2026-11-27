@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ModelData_FindIndexByHashPair",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d3b8c0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint32_t Render_ModelData_FindIndexByHashPair(void *model_data, uint64_t hash_a, uint64_t hash_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d3de90 (RacingPC lab re_groups/_decomp);xref:0x143d42b80,0x143d3db30",
+  "notes": "Looks up key (hash_a xor hash_b) with FNV-1a bucket hashing in the chained hash map at +0x78/+0x90/+0xa8 and returns the u32 stored at node+0x18, or 0xFFFFFFFF when absent. Used by Render_ModelInstance_Reinit to resolve name hashes to indices."
+ },
+ "signature": {
+  "id": "render.model_data_find_index_by_hash_pair",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 4C 31 C2",
+  "match": "0x143d3b8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3b8c0",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelData_FindIndexByHashPair"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d3de90",
+  "made_on_target": "0x143d3de90",
+  "twin": "made on steam-26566308; the target 0x143d3de90 is KB 0x143d3b8c0: Ne_MipTailGeneratorFactory_ObtainGeneratorResource (0x3d3c280) and Ne_ModelInstance_SetNodeMatrices (0x3d3feb0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d3de90",
+    "target": "0x143d3de90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2807d077fe60bccdaeac8d4b7cb85b104970208dfab67133ee07c04d439d4fb5"
+  }
+ ]
+}

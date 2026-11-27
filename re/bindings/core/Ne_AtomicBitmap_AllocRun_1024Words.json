@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_AtomicBitmap_AllocRun_1024Words",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143e81aa0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_AtomicBitmap_AllocRun_1024Words(uint32_t *bitmap, uint32_t run_len)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143e84070 (RacingPC lab re_groups/_decomp);xref:0x143c10250",
+  "notes": "(lib) Lock-free bitmap allocator: +0 is a search-hint word index, +8 holds 0x400 uint64 words of free bits. Finds run_len contiguous set bits in a word, clears them with a CAS, updates hint, returns (word<<6)|bit or 0xffffffff when full. Used by Asset_MaterialFactory_Parse to grab material slot ranges."
+ },
+ "signature": {
+  "id": "core.atomic_bitmap_alloc_run_1024_words",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 41 89 D1 48 89 CA",
+  "match": "0x143e81aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e81aa0",
+  "kind": "func_start",
+  "names": [
+   "Ne_AtomicBitmap_AllocRun_1024Words"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143e84070",
+  "made_on_target": "0x143e84070",
+  "twin": "made on steam-26566308; the target 0x143e84070 is KB 0x143e81aa0: Render_XeSS_PrepareInputs (0x3dfe460) and Ne_Skeleton_ComputeWorldMatrices (0x3e85830) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143e84070",
+    "target": "0x143e84070"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5a2122f9536b3af7ae9be50bc68d46fefe17bdb10a341e87f093d935dc5335b2"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_SetHdrOutputMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439ca130",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx2Device_SetHdrOutputMode(void *device, int32_t mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439cc700 (RacingPC lab re_groups/_decomp);xref:0x1439be870,0x1439f9210",
+  "notes": "Stores mode at +0x70; if HDR is allowed for the active output (+0x31b1[+0x134-1]) picks backbuffer format byte +0x6c (0x0e SDR, 0x4d for modes 1/3, 0x23 for mode 2) and checks/sets swapchain (+0xa50) colour space via vtbl +0x128/+0x130 (0, 0xc, 1). On Nvidia (+0x880==0x10de) queries display HDR caps through NVAPI thunks (log channel MULTI-GPU, 'NVAPI Error: %s') and sets +0x31b0. Propagates the format to +0xa30 and backbuffer object +0x1d40, optionally pushes display chromaticities (+0x6d8..+0x710) to 0x145381b30, sets dirty flag +0xb40. Good hook for forcing HDR/SDR."
+ },
+ "signature": {
+  "id": "render.gfx2_device_set_hdr_output_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 03 00 00 C5 F8 29 B4 24 D0 03 00 00 48 89 CE 89 51 70",
+  "match": "0x1439ca130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ca130",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_SetHdrOutputMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439cc700",
+  "made_on_target": "0x1439cc700",
+  "twin": "made on steam-26566308; the target 0x1439cc700 is KB 0x1439ca130: Render_OnRaytracingValidationMsg (0x39ca490) and Ne_Gfx2CommandQueue_FlushResourceBarriers (0x39d63f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439cc700",
+    "target": "0x1439cc700"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "358845c7ee12c83502b1617eaa82dd523b87c0c63789681b128d0497168617d6"
+  }
+ ]
+}

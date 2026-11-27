@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_BlockAllocator_TreeRebalance",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a30ac0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint64_t Render_Gfx2_BlockAllocator_TreeRebalance(void **nodeSlot)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a33090 (RacingPC lab re_groups/_decomp);xref:0x143a32c30,0x143a33560",
+  "notes": "AVL-style rebalance of the node at *nodeSlot: balance factor is the signed low 5 bits of byte +0x31, children at +0 and +8; performs single or double rotations when the factor is beyond +-1, rewrites the factors, and recomputes the augmented subtree maximum at +0x2c from own key +0x28 and both children. Returns nonzero when subtree height changed."
+ },
+ "signature": {
+  "id": "render.gfx2_block_allocator_tree_rebalance",
+  "section": ".xtls",
+  "pattern": "53 48 8B 11 0F B6 42 31 C0 E0 03 3C F7",
+  "match": "0x143a30ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a30ac0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_BlockAllocator_TreeRebalance"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a33090",
+  "made_on_target": "0x143a33090",
+  "twin": "made on steam-26566308; the target 0x143a33090 is KB 0x143a30ac0: Ne_UnorderedMap_FindOrEmplace_Fnv8_D (0x3a2d5f0) and Ne_HashMap_FindOrInsert_Float (0x3a34300) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a33090",
+    "target": "0x143a33090"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e0754e96b8c41725f20d94d1895fa7600c5a679b0d853552f57719244f26a002"
+  }
+ ]
+}

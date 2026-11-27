@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_TextureStreamJob_StepReduceMips",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143bfe190",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_TextureStreamJob_StepReduceMips(void *job, void *time_budget, void *tex_ref)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c00760 (RacingPC lab re_groups/_decomp);xref:0x143bfe010",
+  "notes": "Unload path of the texture streaming job: in state 0 (after time-budget check) logs TEXTURE_STREAMING_ACTIONS_UNLOAD 'REDUCE %s from %d to %d' with tex+0x38 (current mip) and +0x39 (target), calls Game_Hbcn_SetAdditionalMips, sets tex+0x38=+0x39 and adds freed bytes to tex+0x18, state=5. State 5 commits the staged resource desc (+0xd8.. to +0x28..) and resolves handle +0xd0, then state=7 and clears busy bit in tex+0x3d. Increments global counter 0x146443b0c."
+ },
+ "signature": {
+  "id": "render.texture_stream_job_step_reduce_mips",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 4C 89 C6",
+  "match": "0x143bfe190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfe190",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureStreamJob_StepReduceMips"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c00760",
+  "made_on_target": "0x143c00760",
+  "twin": "made on steam-26566308; the target 0x143c00760 is KB 0x143bfe190: Ne_PoolList_DestroyNodes (0x3bff4a0) and Render_Write_PngFile (0x3c01d00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c00760",
+    "target": "0x143c00760"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ae9cec62931a45155f610375d4e8e854f43667d8ddcc17cc97aa4d006a6287cf"
+  }
+ ]
+}

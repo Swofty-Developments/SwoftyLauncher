@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_143efd1d0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143efac00",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_143efd1d0(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143efd1d0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(thunk) Noreturn stub: calls Ne_Crt_InvalidParameterAbort then int3. Called from the rehash at 0x143efd1e0."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_143efd1d0",
+  "section": ".xtls",
+  "pattern": "EB 9C E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC",
+  "match": "0x143d3c755",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x2"
+  },
+  "target": "0x143efac00",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_143efd1d0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d3ed25",
+  "made_on_target": "0x143efd1d0",
+  "twin": "made on steam-26566308; the target 0x143efd1d0 is KB 0x143efac00: Ne_HashMap_FatalStub_ModelMaterial (0x3efa950) and Render_BackBuffer_CopyToCpu (0x3f0c1e0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d3ed25",
+    "target": "0x143efd1d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f919fedc6bfeacd00624717a4b2f5268be96d19180e32b501f174de8c28370a8"
+  }
+ ]
+}

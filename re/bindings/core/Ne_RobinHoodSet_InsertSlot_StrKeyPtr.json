@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodSet_InsertSlot_StrKeyPtr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ebbf20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodSet_InsertSlot_StrKeyPtr(void *set, uint64_t *out_index_status, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ebe4f0 (RacingPC lab re_groups/_decomp);xref:0x143c03920",
+  "notes": "(lib) Robin-hood set of pointers keyed by C string at elem+0x10 (FNV-1a 64 then multiplier at set+0x20, Ne_Crt_Strcmp compare). Finds or opens a slot: out status 1 found, 2 new empty slot, 3 new after shifting, 0 overflow after 256 retries; does not store the pointer itself. Set fields +0x28 slots, +0x30 info bytes, +0x38 count, +0x40 mask, +0x48 max load; rehash via FUN_143ebec70."
+ },
+ "signature": {
+  "id": "core.robin_hood_set_insert_slot_str_key_ptr",
+  "section": ".xtls",
+  "pattern": "49 89 E8 E8 ?? ?? ?? ?? 8B 84 24 88 01 00 00",
+  "match": "0x143c019bd",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x143ebbf20",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodSet_InsertSlot_StrKeyPtr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c03f8d",
+  "made_on_target": "0x143ebe4f0",
+  "twin": "made on steam-26566308; the target 0x143ebe4f0 is KB 0x143ebbf20: Ne_MipTailGenerator_Destroy (0x3ead800) and Ne_Gfx2Renderer_FrameEntryNameMap_FatalStub (0x3ec1f20) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c03f8d",
+    "target": "0x143ebe4f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ab2fabbf388fba64a33cd9fe6b927edd13de7d5fe3a7b79bc935ab8cd8b8e4ac"
+  }
+ ]
+}

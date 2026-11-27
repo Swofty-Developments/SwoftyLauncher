@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_143a1e260",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a1bc90",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_143a1e260(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a1e260 (RacingPC lab re_groups/_decomp)",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort then int3. Noreturn failure stub used by the hash map rehash at 0x143a1e270."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_143a1e260",
+  "section": ".xtls",
+  "pattern": "48 C7 86 80 46 00 00 00 00 00 00 EB 8D E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? E8",
+  "match": "0x1439d8826",
+  "anchor": "0x13",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x12"
+  },
+  "target": "0x143a1bc90",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_143a1e260"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439dadf6",
+  "made_on_target": "0x143a1e260",
+  "twin": "made on steam-26566308; the target 0x143a1e260 is KB 0x143a1bc90: Ne_Gfx2_TrackResourceInsert_B (0x3a1c820) and Ne_Gfx2_TrackResourceInsert_C (0x3a1fc00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439dadf6",
+    "target": "0x143a1e260"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b87d868fda739cc416777766b0a058ea83b7ea122440ba4f6b4105704fdaca24"
+  }
+ ]
+}

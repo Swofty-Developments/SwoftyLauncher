@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_MulKey_RefPtrVal16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a2e210",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_MulKey_RefPtrVal16(void *map, uint64_t newBucketCount)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a307e0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) Robin-hood hash map rehash with multiplicative hash where the 16-byte entry is {key, ref-counted pointer}: values are moved (source nulled) and displaced values released through vfn 0x10. Same layout as 0x143a2ea00 (+0x18 entries, +0x20 info, +0x30 mask, +0x38 max load)."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_mul_key_ref_ptr_val16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D3 48 89 CE 49 B8 5C 8F C2 F5 28 5C 8F 02",
+  "match": "0x143a2e210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a2e210",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_MulKey_RefPtrVal16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a307e0",
+  "made_on_target": "0x143a307e0",
+  "twin": "made on steam-26566308; the target 0x143a307e0 is KB 0x143a2e210: Ne_UnorderedMap_FindOrEmplace_Fnv8_D (0x3a2d5f0) and Ne_HashMap_FindOrInsert_Float (0x3a34300) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a307e0",
+    "target": "0x143a307e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7dbeeb8a5696143474f9e677b6f06e3c4d4e1b0299b9ba5d1d9a43766cad8e50"
+  }
+ ]
+}

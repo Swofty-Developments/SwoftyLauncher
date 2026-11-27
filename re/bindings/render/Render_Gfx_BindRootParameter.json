@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_BindRootParameter",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a24520",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx_BindRootParameter(void *ctx, void **layout, uint32_t *param, uint32_t rootIndex, uint32_t *tableCounter)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a26af0 (RacingPC lab re_groups/_decomp);xref:0x143a05070,0x143a05190,0x143a052d0,0x143a05400,0x143a05540,0x143a05710,0x143a058e0,0x143a05bf0",
+  "notes": "Switch on param[0] (0-4). Type 0: descriptor table, skipped unless dirty masks at ctx+0x1288..+0x12a8 hit the layout entry (0x38 stride); allocates descriptors from the device heap (+0x1508), walks 0x18-byte ranges (SRV from ctx+0x1c0, UAV +0x7c0, CBV +0x150, samplers +0xdc0 via hash cache 0x1439e3560), creates or copies views through device vtbl +0x88/+0x90/+0x98/+0xb8, then sets the table on the command list ctx+0x60 and increments *tableCounter. Types 1-4 set root constants, CBV (cached at +0x1470/+0x1570), SRV, UAV; graphics vs compute variant picked from pipeline ctx+0x12d8 (+0x3f8, +0x528/+0x530)."
+ },
+ "signature": {
+  "id": "render.gfx_bind_root_parameter",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 83 C4 20 41 FF C5 48 83 C5 E0 75 DD EB 3E",
+  "match": "0x143a02eb1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143a24520",
+  "kind": "call",
+  "names": [
+   "Render_Gfx_BindRootParameter"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a05481",
+  "made_on_target": "0x143a26af0",
+  "twin": "made on steam-26566308; the target 0x143a26af0 is KB 0x143a24520: Ne_FlatHashMap_FindSlotU64_C (0x3a21a60) and Ne_UnorderedMap_Rehash_Gfx2Buffer (0x3a29f50) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a05481",
+    "target": "0x143a26af0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "862ebf460b9d0736ccb28dd41e76f24e3c12ce3b0b439aa08c93982d021fdd1f"
+  }
+ ]
+}

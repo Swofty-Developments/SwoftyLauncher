@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RbTree_InsertUnique_UserIdKey_Node104",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e81a50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RbTree_InsertUnique_UserIdKey_Node104(void *tree, void *out_pair, const uint8_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e83650 (RacingPC lab re_groups/_decomp);xref:0x141e01a30",
+  "notes": "(lib) std::set style unique insert into a red-black tree with 0x68-byte nodes holding a 0x48-byte user-id key at node+0x20. Ordering: platform byte key+0x40, type byte key+0, then xor of id halves (+8/+0x10, or +0x18/+0x20 for type 7; type 3 with flag +0x38 sorts as max), then +0x18^+0x20. Rebalances inline; out_pair = {node, inserted}."
+ },
+ "signature": {
+  "id": "core.rb_tree_insert_unique_user_id_key_node104",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 4C 8B 71 08",
+  "match": "0x141e81a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e81a50",
+  "kind": "func_start",
+  "names": [
+   "Ne_RbTree_InsertUnique_UserIdKey_Node104"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141e83650",
+  "made_on_target": "0x141e83650",
+  "twin": "made on steam-26566308; the target 0x141e83650 is KB 0x141e81a50: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141e83650",
+    "target": "0x141e83650"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "826f55cb8cfc99520c4aa6bf74262c7a950afc1ac3e90f39775168c697da798d"
+  }
+ ]
+}

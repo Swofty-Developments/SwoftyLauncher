@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ModelProxy_ClearMapEntryIfOwner",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c6c500",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void Render_ModelProxy_ClearMapEntryIfOwner(void *map_owner, uint64_t key, void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c6ead0 (RacingPC lab re_groups/_decomp);xref:0x143d42b80",
+  "notes": "FNV-1a hashes the u64 key and looks it up in the chained hash map at +0x78 (end) / +0x90 (buckets) / +0xa8 (mask); if found and node+0x20 == owner it nulls node+0x20, if not found pushes error 2. Better context needed: the map owner type (same layout as the map used by FUN_143d3de90)."
+ },
+ "signature": {
+  "id": "render.model_proxy_clear_map_entry_if_owner",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 89 D6 C1 EE 10",
+  "match": "0x143c6c500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c6c500",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelProxy_ClearMapEntryIfOwner"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c6ead0",
+  "made_on_target": "0x143c6ead0",
+  "twin": "made on steam-26566308; the target 0x143c6ead0 is KB 0x143c6c500: site_Ne_HwInt_CrowdBillboardDistance (0x3c62706) and Ne_CustomisationDecalRenderer_Render (0x3c70830) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c6ead0",
+    "target": "0x143c6ead0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bb4ab7fd2aa78a2fbf2e9754af0b74ec12fc14911b2114429c3f7d4132a3ec9a"
+  }
+ ]
+}

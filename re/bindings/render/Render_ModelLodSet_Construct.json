@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ModelLodSet_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c16a20",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_ModelLodSet_Construct(void *self, void *owner, void *allocator, uint32_t lod_count, void *lod_ranges, uint32_t *type, uint32_t arg7, void *arg8, void *arg9, uint32_t index_count, uint16_t *indices, void *vec2, void *bounds)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c18ff0 (RacingPC lab re_groups/_decomp);xref:0x143c19510",
+  "notes": "Constructor (vtable 0x1459bf6d8): allocs lod_count pointer slots (+0x20) and lod_count 12-byte entries (+0x40) holding two floats per LOD from lod_ranges plus a precomputed inverse fade range 1/(a-b) clamped to 999.99994 when below 0.001, copies a u16 array (+0x60), builds sub-object at +0x78 via FUN_143c18170, copies 16 bytes to +0xe0 and 32 bytes of bounds to +0xf0, stores type at +0x110 and selects a per-type function from table 0x145a3e960 into +0x120 (type 3 with 8 LODs becomes 9). Roles of the floats inferred, not proven."
+ },
+ "signature": {
+  "id": "render.model_lod_set_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 44 89 CF 4C 89 C3",
+  "match": "0x143c16a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c16a20",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelLodSet_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c18ff0",
+  "made_on_target": "0x143c18ff0",
+  "twin": "made on steam-26566308; the target 0x143c18ff0 is KB 0x143c16a20: Render_Material_CountResourceSlots (0x3c09e60) and Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c18ff0",
+    "target": "0x143c18ff0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e06aa3ee4a298a348bf2e030fa0a746aaf0c46369b0a7e6604a51201b9d16050"
+  }
+ ]
+}

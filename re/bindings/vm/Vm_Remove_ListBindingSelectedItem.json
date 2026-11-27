@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Remove_ListBindingSelectedItem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422b9ae0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "char Vm_Remove_ListBindingSelectedItem(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422bb6e0 (RacingPC lab re_groups/_decomp);xref:0x1422c8c80,0x142334450",
+  "notes": "View-model helper: if list node at +0xe8 is non-empty, removes child key 0 from node +0x60 (once, or once per element when bool flag node at +0x108/+0x28 is true), then finds the bound element in the list (+0x40..+0x48 ptr vector) and erases it, dispatching listener messages 8 (before) and 9 (after). Returns 1 if an element was removed. Better context needed: exact VM class."
+ },
+ "signature": {
+  "id": "vm.remove_list_binding_selected_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 CE 48 8B 89 E8 00 00 00",
+  "match": "0x1422b9ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422b9ae0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Remove_ListBindingSelectedItem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422bb6e0",
+  "made_on_target": "0x1422bb6e0",
+  "twin": "made on steam-26566308; the target 0x1422bb6e0 is KB 0x1422b9ae0: Vm_TeamHqTimeline_AnyDayBoolB (0x22bac60) and Vm_TeamHqAdvance_BuildTimelineBindings (0x22bbab0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422bb6e0",
+    "target": "0x1422bb6e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "942206a7dcf576ab91b0403f33a995bf37718e3e8121140d79363ebf76eae46c"
+  }
+ ]
+}

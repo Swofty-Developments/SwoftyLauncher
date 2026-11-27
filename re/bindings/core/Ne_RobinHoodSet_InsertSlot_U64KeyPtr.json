@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodSet_InsertSlot_U64KeyPtr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ed7390",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t *Ne_RobinHoodSet_InsertSlot_U64KeyPtr(void *set, uint64_t *out_index_status, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ed9960 (RacingPC lab re_groups/_decomp);xref:0x143c0c6d0",
+  "notes": "(lib) Robin-hood set of element pointers keyed by u64 at elem+8 (hash = key * multiplier at set+0x20, xor shift 33). Finds or opens a slot and returns index plus status (1 found, 2/3 slot reserved, 0 overflow); caller stores the pointer. Fields +0x28 slots, +0x30 info bytes, +0x38 count, +0x40 mask, +0x48 max load, +0x50 info inc; rehash via FUN_143eda020."
+ },
+ "signature": {
+  "id": "core.robin_hood_set_insert_slot_u64_key_ptr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4C 89 C3 48 89 D6 48 89 CF C5 C8 57 F6 48 BD 7F 7F 7F 7F 7F 7F 7F 7F 45 31 ED EB 23 4A 8D 14 5D 02 00 00 00 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 41 FF C5 41 81 FD 00 01 00 00 0F 84 ?? ?? ?? ?? 4C 8B 43 08",
+  "match": "0x143ed7390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ed7390",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodSet_InsertSlot_U64KeyPtr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ed9960",
+  "made_on_target": "0x143ed9960",
+  "twin": "made on steam-26566308; the target 0x143ed9960 is KB 0x143ed7390: Ne_Container_GrowVectorChecked (0x3ed7790) and Ne_HashMap_FatalStub_Particles (0x3ee5200) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ed9960",
+    "target": "0x143ed9960"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f48feeb4ff07c0e8ecfd12d917f0dc58304b234f4fc74321a04a8948492beae5"
+  }
+ ]
+}

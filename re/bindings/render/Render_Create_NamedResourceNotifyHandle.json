@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Create_NamedResourceNotifyHandle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c74e20",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void **Render_Create_NamedResourceNotifyHandle(void *self, void **outOwnedPtr, const uint64_t *hashedName)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c773f0 (RacingPC lab re_groups/_decomp)",
+  "notes": "Allocates a 0x28 handle object (vtable 0x1456119b0, hashed name pair at +0x08/+0x10, +0x18 = 0, +0x20 = -1) from the allocator at +0x2e8, returns {allocator, object} in out, and registers it under the name with Render_Gfx2_RegisterResourceNotify on the registry obtained from +0x2f0."
+ },
+ "signature": {
+  "id": "render.create_named_resource_notify_handle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C7 48 89 D6 49 89 CE",
+  "match": "0x143c74e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c74e20",
+  "kind": "func_start",
+  "names": [
+   "Render_Create_NamedResourceNotifyHandle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c773f0",
+  "made_on_target": "0x143c773f0",
+  "twin": "made on steam-26566308; the target 0x143c773f0 is KB 0x143c74e20: Ne_CustomisationDecalRenderer_BakePasses (0x3c73230) and Ne_DecalsProjectionAreaProxy_Ctor (0x3c77b20) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c773f0",
+    "target": "0x143c773f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f5523e027c0c88bccf75c74bd31a7bd2d48cd5028d5b2ef8640afcfc093b2327"
+  }
+ ]
+}

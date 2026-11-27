@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Object_Ctor_AllocDescriptorSlots",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439d7240",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx2Object_Ctor_AllocDescriptorSlots(void *self, const void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439d9810 (RacingPC lab re_groups/_decomp)",
+  "notes": "Ctor (vtable 0x1458a15a8) that copies a 7-qword desc into +0x08..+0x38, initialises 0x28-byte descriptor slot records at +0x40 and +0x68, then per frame-count (device +0x118 mode selects +0x140/+0x144) calls Render_Gfx2_QueueDeferredRelease and Render_Gfx2Device_AllocDescriptorSlot with slot kind 2, and finishes with FUN_1439dfa60. Better context needed: object type (sampler or view) not shown."
+ },
+ "signature": {
+  "id": "render.gfx2_object_ctor_alloc_descriptor_slots",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 02",
+  "match": "0x1439d7240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d7240",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Object_Ctor_AllocDescriptorSlots"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439d9810",
+  "made_on_target": "0x1439d9810",
+  "twin": "made on steam-26566308; the target 0x1439d9810 is KB 0x1439d7240: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439d9810",
+    "target": "0x1439d9810"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "568b66cd9441e9ddf92f6c75ffcb59f90d18c308c77cba4fa3968a9794ef0691"
+  }
+ ]
+}

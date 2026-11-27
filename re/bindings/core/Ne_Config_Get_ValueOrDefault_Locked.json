@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Config_Get_ValueOrDefault_Locked",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a43880",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "int32_t Ne_Config_Get_ValueOrDefault_Locked(void *store, void *key, void **out, void *default_val)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a45e50 (RacingPC lab re_groups/_decomp);xref:0x142f3cb60,0x143043330,0x143b61130,0x1443d82b0",
+  "notes": "Under the lock at store+0x10, looks key up in the name table store+8 (Ne_NameTable_FindByFnv1a_B, 16-byte entries at +0x18..+0x20) and converts the stored value with FUN_14391c260 into *out. Returns 0 on success; on missing table/key writes default and returns 2 (ENOENT); on conversion failure writes default and returns 0x21 (EDOM), also setting thread errno and the errno trace ring. Hook to override config values read by Game_Read_*Config."
+ },
+ "signature": {
+  "id": "core.config_get_value_or_default_locked",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 4C 89 CF 4C 89 C3 49 89 CE 48 89 54 24 30 48 8D 71 10 48 89 F1 E8 ?? ?? ?? ?? 4D 8B 76 08 4D 85 F6 0F 84",
+  "match": "0x143a43880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a43880",
+  "kind": "func_start",
+  "names": [
+   "Ne_Config_Get_ValueOrDefault_Locked"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a45e50",
+  "made_on_target": "0x143a45e50",
+  "twin": "made on steam-26566308; the target 0x143a45e50 is KB 0x143a43880: Ne_Get_SettingU32 (0x3a45810) and Ne_Get_SettingBool (0x3a46160) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a45e50",
+    "target": "0x143a45e50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dd34b238e36222c0de09cc94e9680ca02642b3220740af459b786282a6b66f7d"
+  }
+ ]
+}

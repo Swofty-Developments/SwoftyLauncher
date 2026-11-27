@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Pow",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x145358e70",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "double Ne_Crt_Pow(double x, double y)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14535b830 (RacingPC lab re_groups/_decomp);xref:0x143239800,0x143e83460,0x1441ee1a0,0x1441eeb10,0x1441ef450,0x1441f0780,0x1450146e0,0x145014770",
+  "notes": "(lib) CRT double-precision pow: special cases for 0, 1, inf, NaN and negative bases with integer exponents, table driven log (0x1455cd840, 0x1455ce050, 0x1455d3540, 0x1455d3d50) and exp (0x1455d2eb0, 0x1455d30b0, 64 entries, scale 92.33248 = 64/ln2), AVX and scalar paths, errors via FUN_145377470. Not a hook point."
+ },
+ "signature": {
+  "id": "core.crt_pow",
+  "section": ".xtls",
+  "pattern": "48 81 EC D8 00 00 00 66 0F 7F B4 24 90 00 00 00",
+  "match": "0x145358e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145358e70",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Pow"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14535b830",
+  "made_on_target": "0x14535b830",
+  "twin": "made on steam-26566308; the target 0x14535b830 is KB 0x145358e70: Ne_Crt_FloatToInt32Checked (0x535b1e8) and Ne_Crt_Powf (0x535ced0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14535b830",
+    "target": "0x14535b830"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b620812725c5a933ae899c607f92275051ed1bfff2a58edde1cc78d6dbacc752"
+  }
+ ]
+}

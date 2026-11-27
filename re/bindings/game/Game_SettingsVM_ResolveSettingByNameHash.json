@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsVM_ResolveSettingByNameHash",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141dbccb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint64_t Game_SettingsVM_ResolveSettingByNameHash(void *self, void **name_str)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141dbe8b0 (RacingPC lab re_groups/_decomp);xref:0x141db42d0,0x141dd36f0",
+  "notes": "Hashes the NeStr name with djb2 (seed 0x1505, *33) and switches over ~35 hashes to pick a static key string, then calls 0x1441e5bd0(obj, section string from (self+0x620)+0x8e8, key) on (self+0x620)+0x8e0 and returns its result. Maps UI setting ids to config keys."
+ },
+ "signature": {
+  "id": "game.settings_vm_resolve_setting_by_name_hash",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B B9 20 06 00 00",
+  "match": "0x141dbccb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dbccb0",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsVM_ResolveSettingByNameHash"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141dbe8b0",
+  "made_on_target": "0x141dbe8b0",
+  "twin": "made on steam-26566308; the target 0x141dbe8b0 is KB 0x141dbccb0: Ne_UICrashDumpInfo_SettingsScreenClearSelectedCategory (0x1daff80) and Game_OptionsUI_ApplyFilterLevelCollectChanges (0x1dbef30) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141dbe8b0",
+    "target": "0x141dbe8b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1d72b243d1ba8037554a00e1b7efec7fadd6502dca3a6770bc9160a60c232937"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsTabbingBaseVM_BindContainerNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141d9da60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SettingsTabbingBaseVM_BindContainerNodes(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141d9f660 (RacingPC lab re_groups/_decomp);xref:0x141dde630",
+  "notes": "Resolves \"#view_model_data.settings_container.settings_category\" (+0x948) and \".prompt_handled\" (+0x968), then creates bools under self+0x10: show_prompt_info, show_tab_nav_left (flag +0x8b1), show_tab_nav_right (+0x8b2), show_filter (!+0x8b9), filter_updating, update_filter_has_close, update_content_only, is_tabbing_nav; sets prompt_handled true, calls 0x141dd3500 and vfunc+0x150. Independent re-check (lab blind verifier 2026-11-27): partial, better name Game_SettingsTabbingBaseVM_BindContainerNodes_InitNavFlags: It does resolve two registry nodes (settings_category, prompt_handled), but most of the body sets eight bool VM properties (show_prompt_info, show_tab_nav_left/right, show_filter, filter_updating, update_filter_has_close, update_content_only, is_tabbing_nav) and then calls two virtuals."
+ },
+ "signature": {
+  "id": "game.settings_tabbing_base_vm_bind_container_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 89 CE 48 8B 0D",
+  "match": "0x141d9da60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d9da60",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsTabbingBaseVM_BindContainerNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141d9f660",
+  "made_on_target": "0x141d9f660",
+  "twin": "made on steam-26566308; the target 0x141d9f660 is KB 0x141d9da60: Game_F1WorldRewards_PopulateXpScreen (0x1d83970) and Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList (0x1da5390) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141d9f660",
+    "target": "0x141d9f660"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7c7dd2797c4cdaaff479cfa1e2cc7d6711876124fa9d06ffa786426c62073d51"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Material_ReleaseBindlessResources",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c09950",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Material_ReleaseBindlessResources(void *material)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c0bf20 (RacingPC lab re_groups/_decomp);xref:0x143c0c6d0",
+  "notes": "Resets bindless state before a re-resolve: rewrites bindless id constants with defaults (FUN_143c0dfb0(this,1)), walks the robin-hood set at +0xb0/+0xb8 (count +0xc0) queuing deferred GPU release of each entry (+0x38, +0x30) and returns nodes to free list +0x90, frees buffer +0xe0, releases descriptor handles in vector +0x140..+0x148 via FUN_1439de3c0 (keeps or frees shared table +0x198), clears vector +0x160 and bumps version counter +0x1b0."
+ },
+ "signature": {
+  "id": "render.material_release_bindless_resources",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE B2 01",
+  "match": "0x143c09950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c09950",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_ReleaseBindlessResources"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c0bf20",
+  "made_on_target": "0x143c0bf20",
+  "twin": "made on steam-26566308; the target 0x143c0bf20 is KB 0x143c09950: Render_Material_CountResourceSlots (0x3c09e60) and Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c0bf20",
+    "target": "0x143c0bf20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c582f315796b1215e610462388a746b78576a6513e7087dc239d64e791849886"
+  }
+ ]
+}

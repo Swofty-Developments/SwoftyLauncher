@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_SelectedEntryAndRefreshFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14254d0f0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_SelectedEntryAndRefreshFlags(void *self, uint32_t selKey)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14254f020 (RacingPC lab re_groups/_decomp);xref:0x141a4aa40,0x141a4add0",
+  "notes": "Walks 0x18-byte entries at +0xd8..+0xe0, type-checks entry object (+8), filters by category id (+0x1c vs active record in +0x48/+0x30 list, or 0x7fffffff) and calls 0x1428edbf0(ctx +0x28, u16 entry+0x10, bool entry matches selKey byte0 and u16 at +2). Then stores selKey at +0x1a00 and sets +0x1a04=1."
+ },
+ "signature": {
+  "id": "ui.set_selected_entry_and_refresh_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D7 48 89 CE C6 81 04 1A 00 00 00",
+  "match": "0x14254d0f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14254d0f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_SelectedEntryAndRefreshFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14254f020",
+  "made_on_target": "0x14254f020",
+  "twin": "made on steam-26566308; the target 0x14254f020 is KB 0x14254d0f0: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14254f020",
+    "target": "0x14254f020"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4ffb8534bea3bbf2a49bf8b2c739c8d58194a02c8d3faa3cfd0aaba07d7057e7"
+  }
+ ]
+}

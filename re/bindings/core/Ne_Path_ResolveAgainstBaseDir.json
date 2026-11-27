@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Path_ResolveAgainstBaseDir",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143f41880",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "int Ne_Path_ResolveAgainstBaseDir(void *self, const char *path, void *outFixedStr, char strict)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f43e50 (RacingPC lab re_groups/_decomp)",
+  "notes": "Builds a 260-char path into a fixed string object (out+0x18 buffer, +0x10 ptr, +0x8 capacity 0x104). Rejects empty paths or paths containing a forbidden substring (two patterns selected by strict, via FUN_145361380) with errno 0x16; absolute paths starting with '/' are copied as is, otherwise the base directory at self+0x370 is copied and path appended. Caller 0x143f44190. Better context needed: the forbidden patterns at 0x145a40271/0x145a40278/0x145a40283."
+ },
+ "signature": {
+  "id": "core.path_resolve_against_base_dir",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 40 01 00 00 48 85 D2",
+  "match": "0x143f41880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f41880",
+  "kind": "func_start",
+  "names": [
+   "Ne_Path_ResolveAgainstBaseDir"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143f43e50",
+  "made_on_target": "0x143f43e50",
+  "twin": "made on steam-26566308; the target 0x143f43e50 is KB 0x143f41880: Ne_FileSystem_OpenStream (0x3f3b970) and Ne_PathBuf_Construct (0x3f446e0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143f43e50",
+    "target": "0x143f43e50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8ff752922e6055475ed839baef98986c36afc275a2935537a5c769921ab0aee6"
+  }
+ ]
+}

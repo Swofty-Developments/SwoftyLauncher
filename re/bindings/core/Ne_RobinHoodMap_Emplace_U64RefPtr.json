@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Emplace_U64RefPtr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a2dca0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_Emplace_U64RefPtr(void *map, void *out_iter_inserted, void *key_value_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a30270 (RacingPC lab re_groups/_decomp);xref:0x143a03c40",
+  "notes": "(lib) Robin-hood hash map try-emplace: key u64 at pair[0], moved ref-counted pointer at pair[1] (released via vtable +0x10 if key already exists). Map fields +0x10 hash multiplier, +0x18 16-byte slots, +0x20 info bytes, +0x28 count, +0x30 mask, +0x38 max load (80 percent), +0x40 info inc; grows through FUN_143a307e0. Returns {slot ptr, info ptr, inserted flag}."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_emplace_u64_ref_ptr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 54 24 28",
+  "match": "0x143a2dca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a2dca0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodMap_Emplace_U64RefPtr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a30270",
+  "made_on_target": "0x143a30270",
+  "twin": "made on steam-26566308; the target 0x143a30270 is KB 0x143a2dca0: Ne_UnorderedMap_FindOrEmplace_Fnv8_D (0x3a2d5f0) and Ne_HashMap_FindOrInsert_Float (0x3a34300) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a30270",
+    "target": "0x143a30270"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "44c99f56b9f16d6c160ecbf30917c54ce1bfa902845dd566d63f57d1e859b297"
+  }
+ ]
+}
