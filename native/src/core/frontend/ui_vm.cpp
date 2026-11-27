@@ -10,6 +10,7 @@
 
 #include "core/frontend/addon_page.hpp"
 #include "core/frontend/name_hash.hpp"
+#include "core/frontend/node_calls.hpp"
 #include "core/frontend/node_ref_logic.hpp"
 #include "core/frontend/ui_vm.hpp"
 #include "core/frontend/vm_path.hpp"
@@ -315,8 +316,8 @@ bool VmHost::set_path(const std::string &path, int type, const void *value) cons
 
 int VmHost::set_ref(const std::string &path, const std::string &target) const
 {
-    if (!g_Vm_Registry.address() || !a_path || !Vm_Set_NodeRef.address() || !Vm_Resolve_RegistryNode.address() ||
-        !Vm_Release_Node.address() || !k_Vm_EmptyNodeHandle.address())
+    auto calls = frontend::node_calls::load();
+    if (!g_Vm_Registry.address() || !a_path || !calls)
         return frontend::node_ref::NO_PARENT;
     void *reg = *g_Vm_Registry;
     if (!reg)
@@ -330,14 +331,14 @@ int VmHost::set_ref(const std::string &path, const std::string &target) const
     void **parent = resolve(reg, root, at.parent.c_str());
     if (!parent || !*parent)
         return frontend::node_ref::NO_PARENT;
-    void **empty = reinterpret_cast<void **>(k_Vm_EmptyNodeHandle.address());
+    void **empty = calls.empty;
     static const uintptr_t no_base = 0;
-    void **node = target[0] == '#' ? static_cast<void **>(Vm_Resolve_RegistryNode(reg, target.c_str(), &no_base, nullptr))
+    void **node = target[0] == '#' ? static_cast<void **>(calls.resolve(reg, target.c_str(), &no_base, nullptr))
                                    : resolve(reg, root, target.c_str());
     void *parent_slot = static_cast<uint8_t *>(*parent) + 8;
     return frontend::node_ref::bind(
-        node, empty, [&](void *handle) { return Vm_Set_NodeRef(reg, parent_slot, at.leaf.c_str(), handle, 1); },
-        [&](void *released) { Vm_Release_Node(reg, released); });
+        node, empty, [&](void *handle) { return calls.set_ref(reg, parent_slot, at.leaf.c_str(), handle, 1); },
+        [&](void *released) { calls.release(reg, released); });
 }
 
 uintptr_t VmHost::node_token(const std::string &path) const

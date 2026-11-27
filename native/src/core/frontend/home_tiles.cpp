@@ -17,6 +17,7 @@
 #include "core/frontend/vm_string.hpp"
 #include "core/hooks/ui_points.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/guards/guard.hpp"
 #include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
@@ -140,7 +141,7 @@ bool check()
     }
     swofty::log("[core] builder base+0x%llx, hook site base+0x%llx", rva(builder), rva(site));
 #ifdef SWOFTY_MOD_SETTINGS_ACTIVE
-    uintptr_t world = site_FeTile_F1WorldListEnd.address();
+    uintptr_t world = swofty::api->resolve("site_FeTile_F1WorldListEnd");
     if (world < builder || world - builder > 0x8000) {
         swofty::log("[ui.tile] f1_world list site 0x%llx is not inside the builder at 0x%llx (a different exe build?); f1_world "
                     "tile records will not be shown",
@@ -299,7 +300,7 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
     add_record_tiles(c, list, career_vt, call);
 }
 
-SWOFTY_SITE(site_FeTile_F1WorldListEnd, swofty::Context &c)
+void f1_world_list_end(swofty::Context &c)
 {
     auto menu_kind = *reinterpret_cast<const uint8_t *>(c.rsp + frontend::f1_world::MENU_KIND_SLOT);
     auto sub_kind = *reinterpret_cast<const uint8_t *>(c.rsp + frontend::f1_world::SUB_KIND_SLOT);
@@ -352,6 +353,18 @@ SWOFTY_SITE(site_FeTile_F1WorldListEnd, swofty::Context &c)
                         "%zu over the cap)%s",
                         added, found.tiles.size(), *items, found.gated_out, found.refused, found.capped, n.tail ? n.tail : "");
 }
+
+swofty_core::guards::SiteGuard world_guard{
+    runtime::loader::CoreSetId::f1_world_tiles,
+    {
+        .set = "swofty_core.dll (f1_world tiles)",
+        .name = "[ui.tile] f1_world",
+        .env = "SWOFTY_F1_WORLD_TILES",
+        .needs = {"site_FeTile_F1WorldListEnd"},
+        .mixins = {{"site_FeTile_F1WorldListEnd", SWOFTY_MIXIN_SITE, 0,
+                    (void *)+[](SwoftyContext *c) { f1_world_list_end(*c); }, nullptr}},
+        .armed = "ui.tile records for the f1_world list are added after its stock tiles",
+    }};
 
 #endif
 
