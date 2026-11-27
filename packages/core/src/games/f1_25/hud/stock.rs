@@ -32,6 +32,7 @@ pub trait Stock {
 pub struct GameStock {
     pub(super) game: PathBuf,
     pub(super) originals: BTreeMap<String, PathBuf>,
+    pub(super) known: Option<BTreeSet<String>>,
     pub(super) files: RefCell<BTreeMap<String, Rc<ErpFile>>>,
     pub(super) carried: RefCell<BTreeMap<String, Vec<String>>>,
 }
@@ -41,6 +42,7 @@ impl GameStock {
         Self {
             game: game.into(),
             originals: BTreeMap::new(),
+            known: None,
             files: RefCell::new(BTreeMap::new()),
             carried: RefCell::new(BTreeMap::new()),
         }
@@ -78,9 +80,11 @@ impl GameStock {
             .map(|(rel, rec)| (rel.clone(), objects.path(&rec.sha256)))
             .filter(|(_, p)| p.is_file())
             .collect();
+        let known = base.files.keys().map(|rel| rel.to_ascii_lowercase()).collect();
         Ok(Self {
             game,
             originals,
+            known: Some(known),
             files: RefCell::new(BTreeMap::new()),
             carried: RefCell::new(BTreeMap::new()),
         })
@@ -109,7 +113,7 @@ impl GameStock {
     }
 
     /// Reads which archives carry each of `names` into the cache, one pass over each asset group
-    /// folder; every archive is read from the original the launcher keeps of it when there is one.
+    /// folder, skipping files the launcher's baseline has no record of (copies the player left there); every archive is read from the original the launcher keeps of it when there is one.
     fn scan(&self, names: &[&str]) -> Result<()> {
         let mut by_group: BTreeMap<String, BTreeSet<&str>> = BTreeMap::new();
         {
@@ -141,6 +145,13 @@ impl GameStock {
             crate::erp::erp_files(&dir, group, &mut files);
             files.sort();
             for rel in files {
+                if self
+                    .known
+                    .as_ref()
+                    .is_some_and(|k| !k.contains(&rel.to_ascii_lowercase()))
+                {
+                    continue;
+                }
                 let Ok(f) = ErpFile::open(&self.original(&rel)) else {
                     continue;
                 };
