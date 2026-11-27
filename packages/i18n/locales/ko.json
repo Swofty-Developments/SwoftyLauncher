@@ -366,6 +366,7 @@
   "F1 25 from another folder is running": "다른 폴더의 F1 25가 실행 중입니다",
   "F1 25 from the EA app is running": "EA app 버전 F1 25가 실행 중입니다",
   "F1 25 got stuck": "F1 25가 멈췄습니다",
+  "Found in your last session": "지난 세션에서 발견됨",
   "F1 25 is installed in {folder}, a folder Windows lets only administrators change, so Swofty can't add your mods there.\n\nRestart Swofty Launcher as administrator to play with mods, or move F1 25 to a folder outside Program Files{hint}.": "F1 25가 {folder}에 설치되어 있습니다. 이 폴더는 Windows에서 관리자만 변경할 수 있어 Swofty가 모드를 추가할 수 없습니다.\n\n모드와 함께 플레이하려면 Swofty Launcher를 관리자 권한으로 다시 시작하거나, F1 25를 Program Files 밖의 폴더로 옮기세요{hint}.",
   "F1 25 is launching": "F1 25 실행 중",
   "F1 25 is open, so it restarts for this room. Unsaved progress is lost.": "F1 25가 열려 있어 이 방을 위해 다시 시작됩니다. 저장하지 않은 진행 상황은 사라집니다.",

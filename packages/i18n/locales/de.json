@@ -366,6 +366,7 @@
   "F1 25 from another folder is running": "F1 25 aus einem anderen Ordner läuft",
   "F1 25 from the EA app is running": "F1 25 aus der EA app läuft",
   "F1 25 got stuck": "F1 25 hängt fest",
+  "Found in your last session": "In deiner letzten Sitzung gefunden",
   "F1 25 is installed in {folder}, a folder Windows lets only administrators change, so Swofty can't add your mods there.\n\nRestart Swofty Launcher as administrator to play with mods, or move F1 25 to a folder outside Program Files{hint}.": "F1 25 ist in {folder} installiert, einem Ordner, den unter Windows nur Administratoren ändern dürfen, daher kann Swofty deine Mods dort nicht hinzufügen.\n\nStarte Swofty Launcher als Administrator neu, um mit Mods zu spielen, oder verschiebe F1 25 in einen Ordner außerhalb von Program Files{hint}.",
   "F1 25 is launching": "F1 25 wird gestartet",
   "F1 25 is open, so it restarts for this room. Unsaved progress is lost.": "F1 25 ist geöffnet und wird daher für diesen Raum neu gestartet. Nicht gespeicherter Fortschritt geht verloren.",
