@@ -67,7 +67,7 @@ pub const CORE_REGISTRIES: &[(&str, &str)] = &[
     ("team.logo", "1.0"),
     ("team.pit_times", "1.0"),
     ("team.vehicle_override", "1.0"),
-    ("track", "1.2"),
+    ("track", "1.3"),
     ("track.data", "1.0"),
     ("track.per_package", "1.0"),
     ("track.sponsors", "1.0"),

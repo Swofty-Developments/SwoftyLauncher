@@ -1544,12 +1544,24 @@ fn a_track_record_s_circuit_intro_is_placed_under_videos_and_named_in_the_track_
         "{:?}",
         built.plan.added.keys().collect::<Vec<_>>()
     );
+    for (label, at) in [
+        ("circuit intro", placed),
+        ("circuit intro of the F1 2026 box", placed_26),
+    ] {
+        assert!(
+            built
+                .lines
+                .iter()
+                .any(|l| l.starts_with(&format!("vidring: {label} "))
+                    && l.ends_with(&format!("(video) goes in {at}"))),
+            "{label}: {:?}",
+            built.lines
+        );
+    }
     assert!(
-        built
-            .lines
-            .iter()
-            .any(|l| l.starts_with("vidring: circuit intro ")
-                && l.ends_with(&format!("goes in {placed} and {placed_26}"))),
+        built.lines.contains(
+            &"vidring: its TrackVideo row will hold track_map/swofty/mod.vid/vidring.bk2".to_owned()
+        ),
         "{:?}",
         built.lines
     );
@@ -1586,5 +1598,104 @@ fn a_track_record_s_circuit_intro_is_placed_under_videos_and_named_in_the_track_
     }
     let again = build(&store, "default", &game).unwrap();
     assert_eq!(again.buildhash, built.buildhash);
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_track_record_s_per_box_videos_go_to_each_box_s_own_slot() {
+    if loader_dir().is_some() {
+        return;
+    }
+    let root = std::env::temp_dir().join(format!("swofty-build-trackvideos-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let game = record_track_game(&root);
+    let store = Store::new(root.join("data"));
+    let bink = |tag: u8| {
+        let mut b = b"KB2j".to_vec();
+        b.extend([tag; 64]);
+        b
+    };
+    record_addon_with_video(&store, &root, "mod.many", "manyring", None);
+    let src = root.join("src/mod.many");
+    for (name, tag) in [("a", 1u8), ("b", 2), ("c", 3)] {
+        std::fs::create_dir_all(src.join("videos")).unwrap();
+        std::fs::write(src.join(format!("videos/{name}.bk2")), bink(tag)).unwrap();
+    }
+    let json = src.join("registry/track.json");
+    std::fs::write(
+        &json,
+        std::fs::read_to_string(&json).unwrap().replace(
+            "\"files\"",
+            r#""video": { "f1": "videos/a.bk2", "f1_2026": "videos/b.bk2" }, "time_trial_video": "videos/c.bk2", "files""#,
+        ),
+    )
+    .unwrap();
+    store.install_addon(&src).unwrap();
+
+    let built = build(&store, "default", &game).unwrap();
+    let from = |tag: &str| store.addons_dir().join("mod.many/videos").join(tag);
+    let expect = [
+        ("videos/track_map/swofty/mod.many/manyring.bk2", "a.bk2"),
+        ("videos/track_map/26/swofty/mod.many/manyring.bk2", "b.bk2"),
+        ("videos/track_select/manyring.bk2", "c.bk2"),
+        ("videos/track_select/26/manyring.bk2", "c.bk2"),
+    ];
+    for (at, file) in expect {
+        assert_eq!(built.plan.added[at], from(file), "{at}");
+    }
+    let videos = |k: &&String| k.starts_with("videos/track_");
+    assert_eq!(
+        built.plan.added.keys().filter(videos).count(),
+        4,
+        "{:?}",
+        built.plan.added.keys().collect::<Vec<_>>()
+    );
+    for (label, named_by) in [
+        ("circuit intro", "video.f1"),
+        ("circuit intro of the F1 2026 box", "video.f1_2026"),
+        ("Time Trial background", "time_trial_video"),
+        ("Time Trial background of the F1 2026 box", "time_trial_video"),
+    ] {
+        assert!(
+            built
+                .lines
+                .iter()
+                .any(|l| l.starts_with(&format!("manyring: {label} "))
+                    && l.contains(&format!("({named_by}) goes in videos/"))),
+            "{label}: {:?}",
+            built.lines
+        );
+    }
+    let facts = crate::activation::facts::read(&store.root).unwrap();
+    assert_eq!(
+        facts.tracks["manyring"].video.as_deref(),
+        Some("track_map/swofty/mod.many/manyring.bk2")
+    );
+    let again = build(&store, "default", &game).unwrap();
+    assert_eq!(again.buildhash, built.buildhash);
+    std::fs::write(src.join("videos/c.bk2"), bink(9)).unwrap();
+    store.install_addon(&src).unwrap();
+    assert_ne!(
+        build(&store, "default", &game).unwrap().buildhash,
+        built.buildhash,
+        "a changed Time Trial background is a new build"
+    );
+
+    std::fs::write(
+        &json,
+        std::fs::read_to_string(&json).unwrap().replace(
+            r#""video": { "f1": "videos/a.bk2", "f1_2026": "videos/b.bk2" }, "#,
+            "",
+        ),
+    )
+    .unwrap();
+    store.install_addon(&src).unwrap();
+    let only_wall = build(&store, "default", &game).unwrap();
+    assert_eq!(only_wall.plan.added.keys().filter(videos).count(), 2);
+    let facts = crate::activation::facts::read(&store.root).unwrap();
+    assert_eq!(
+        facts.tracks["manyring"].video, None,
+        "a record with no circuit intro keeps its base's row"
+    );
     std::fs::remove_dir_all(&root).ok();
 }

@@ -169,7 +169,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "track",
-        include_str!("../../../../../sdk/std/registries/track/1.2.json"),
+        include_str!("../../../../../sdk/std/registries/track/1.3.json"),
     ),
     (
         "track.data",

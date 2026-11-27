@@ -1,0 +1,11 @@
+{
+  "track": {
+    "bad": {
+      "$comment": "a file per box is a Bink 2 file as well, so its name ends in .bk2",
+      "code": "bad",
+      "video": {
+        "f1_2026": "videos/bad.mp4"
+      }
+    }
+  }
+}

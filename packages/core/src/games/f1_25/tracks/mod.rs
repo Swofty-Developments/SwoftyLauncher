@@ -37,7 +37,10 @@ pub use self::records::{
 use self::refs::TRACK_DATA;
 pub(crate) use self::refs::keep_track_refs;
 pub(crate) use self::schedule::{Schedule, drop_left_out_orders, option_tracks, restore_weekends};
-pub use self::video::{MAX_VIDEO_BYTES, TrackVideo, track_videos, video_path_26, video_value};
+pub use self::video::{
+    KEYS as VIDEO_KEYS, MAX_VIDEO_BYTES, Placed, Slot, TrackVideo, VideoSet, track_videos, video_path_26,
+    video_value, wall_path,
+};
 
 const TRACKS: &str = "tracks.Track";
 const EVENTS: &str = "schedule.all_track_events.fixed_event";
