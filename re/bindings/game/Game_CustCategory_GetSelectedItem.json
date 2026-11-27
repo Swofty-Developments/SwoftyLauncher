@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CustCategory_GetSelectedItem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142071670",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_CustCategory_GetSelectedItem(void *category)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142073270 (RacingPC lab re_groups/_decomp);xref:0x14207d920",
+  "notes": "Dereferences the selection ref at category+0xd0, walks the VM list at category+0x90 looking for the same node and returns items base (category+0x70) + index*0x2b8; returns 0 when category is null or nothing matches. Context from caller: category of the badge editor."
+ },
+ "signature": {
+  "id": "game.cust_category_get_selected_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 85 C9 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 89 D0 00 00 00",
+  "match": "0x142071670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142071670",
+  "kind": "func_start",
+  "names": [
+   "Game_CustCategory_GetSelectedItem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142073270",
+  "made_on_target": "0x142073270",
+  "twin": "made on steam-26566308; the target 0x142073270 is KB 0x142071670: Ui_MyTeamSetupGeneric_Option (0x2066b90) and Game_CarCustomisation_ApplyDriverNumbers (0x2080590) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142073270",
+    "target": "0x142073270"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "09aef1438b71088b5d28f3f0f7f090afa7412c9692870d49da80befe3625e0ca"
+  }
+ ]
+}

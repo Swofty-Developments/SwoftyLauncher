@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Wear_Build_DriverItemSelection_ForDriver",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141995090",
+  "level": "L2",
+  "subsystem": "wearables",
+  "proto": "void *Wear_Build_DriverItemSelection_ForDriver(void *self, void *out_selection, uint32_t driver_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141996870 (RacingPC lab re_groups/_decomp);xref:0x1418bfbd0,0x141996c70,0x142060140",
+  "notes": "Default-initialises out_selection (vt 0x14570e898, engaged flags cleared at +0xd0, +0x108, +0x140, +0x178, +0x1b0, +0x1b8 = 0xff) and returns it unchanged unless the career object at self+0x20 -> +0x88 -> +0x260 exists, passes a type check and has the k_Career_OwnerSetupComponentDesc component; Ent_EntrantsSystem_FindDriverHead(component+0x408, driver_id) and a strcmp are evaluated but their result is not used. Then queries three current items through self+0x10 slots +0x138, +0x148 and +0x128 (vt+0x10; key at +0x18, 16 bytes at +0x48, u32 at +0x58; defaults 0xffff0010, 0xffff0011, 0xffff000f) and stores them as engaged entries at out+0xa0, +0xd8 and +0x180, writes driver_id to out+0x80 and sets flags +0x84 and +0x8b. Callers 0x1418bfbd0 (option VM refresh, self = vm+800) and Game_CustomisationOptionsVM_OnActivate (self = vm+0x2a8) pass the result to Game_UIThumbnailSystem_FindDriverCustomisationWill; 0x141996c70 uses it while building TeamOwnerSpawn / TeamHQExteriorIdle scene requests. Note: prefix Wear_ / subsystem wearables is kept from the input but is not in the brief.md lane list. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "wearables.build_driver_item_selection_for_driver",
+  "section": ".xtls",
+  "pattern": "41 89 E8 E8 ?? ?? ?? ?? 48 85 F6 74 05",
+  "match": "0x14199559b",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x141995090",
+  "kind": "call",
+  "names": [
+   "Wear_Build_DriverItemSelection_ForDriver"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141996d7b",
+  "made_on_target": "0x141996870",
+  "twin": "made on steam-26566308; the target 0x141996870 is KB 0x141995090: Ui_MyTeamButtonDivider_Init (0x1994330) and Game_MyTeamHq_SpawnFoyerDrivers (0x1997450) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141996d7b",
+    "target": "0x141996870"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f15e95860b14c3b63d93917ca9d0c526d591d0091714cf8d920e88b97c2d097a"
+  }
+ ]
+}

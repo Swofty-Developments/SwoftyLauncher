@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_CopyFromPopupButtonTile",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fcab10",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_CopyFromPopupButtonTile(void *self, void *parent, void *name, char *label)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fcc710 (RacingPC lab re_groups/_decomp);xref:0x141fc7780",
+  "notes": "Calls FeTile_Construct_Tile with template \"customisation_copy_from_popup_button\", sets vtable 0x1457658c0, binds string \"label\" (initialised from the label arg) at +0xc8 and bool \"button_pressed\"=false at +0xe8. Element size 0x108."
+ },
+ "signature": {
+  "id": "ui.construct_copy_from_popup_button_tile",
+  "section": ".xtls",
+  "pattern": "48 8D 94 24 40 05 00 00 E8 ?? ?? ?? ?? 4C 89 AC 24 40 05 00 00",
+  "match": "0x141fc7157",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x141fcab10",
+  "kind": "call",
+  "names": [
+   "Ui_Construct_CopyFromPopupButtonTile"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fc8d57",
+  "made_on_target": "0x141fcc710",
+  "twin": "made on steam-26566308; the target 0x141fcc710 is KB 0x141fcab10: Game_ChallengeCareer_BuildTrackTiles (0x1fc2340) and Game_LiveryAssignVM_OnActivate (0x1fd4da0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fc8d57",
+    "target": "0x141fcc710"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "15b4b6162e215de90192c9b22d2353912523355cdb1b53e8df7d34fadc9ae68c"
+  }
+ ]
+}

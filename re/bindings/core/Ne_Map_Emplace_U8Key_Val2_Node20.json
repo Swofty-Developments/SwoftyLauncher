@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_Emplace_U8Key_Val2_Node20",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143901180",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Map_Emplace_U8Key_Val2_Node20(void *map, void *out_iter_bool, uint8_t *key, uint16_t *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143903710 (RacingPC lab re_groups/_decomp);xref:0x143872b40",
+  "notes": "(lib) Red-black tree emplace with a 0x20 node: key byte at node+0x1a, 2-byte value at +0x1c. Returns {node,inserted}; frees the new node when the key exists. Max size 0x7ffffffffffffff."
+ },
+ "signature": {
+  "id": "core.map_emplace_u8_key_val2_node20",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 4C 89 CB 4D 89 C6 48 89 D6 48 89 CF 48 8B 09 4C 8B 7F 08 48 8B 01 BA 20 00 00 00 41 B8 10 00 00 00 FF 50 18 45 0F B6 06 44 88 40 1A 0F B7 0B",
+  "match": "0x143901180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143901180",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_Emplace_U8Key_Val2_Node20"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143903710",
+  "made_on_target": "0x143903710",
+  "twin": "made on steam-26566308; the target 0x143903710 is KB 0x143901180: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143903710",
+    "target": "0x143903710"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8295a1caa88f1f821fb8fef02053517ecbae8600dd72e2889526eec7d81d8c15"
+  }
+ ]
+}

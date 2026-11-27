@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_CStrKey_Elem8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438ff580",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_CStrKey_Elem8(void *map, uint64_t new_capacity, char force_free)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143901b10 (RacingPC lab re_groups/_decomp);xref:0x143872b40",
+  "notes": "(lib) Robin-hood hash table rehash for 8-byte pointer elements whose pointee starts with a char* key hashed with FNV-1a (0xcbf29ce484222325 / 0x100000001b3) times the multiplier at +0x20. Allocates (cap+overflow)*9+8 bytes via allocator +0x18, rewrites +0x28 entries, +0x30 info bytes, +0x38 count, +0x40 mask, +0x48 max load (80 percent), +0x50 info increment 0x20, +0x54 shift; old block is freed or, if >= 0x240 bytes and force_free is 0, chained into the 0x238-byte node free list at +0x08/+0x10."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_c_str_key_elem8",
+  "section": ".xtls",
+  "pattern": "48 8B 4C 24 60 45 31 C0 E8 ?? ?? ?? ?? E9",
+  "match": "0x1438749b9",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x1438ff580",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_CStrKey_Elem8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143876f49",
+  "made_on_target": "0x143901b10",
+  "twin": "made on steam-26566308; the target 0x143901b10 is KB 0x1438ff580: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143876f49",
+    "target": "0x143901b10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "510b24cfc033c9cf7dedf1ea2981d77bc402220d0cbc5e40d6f54e41779e75ab"
+  }
+ ]
+}

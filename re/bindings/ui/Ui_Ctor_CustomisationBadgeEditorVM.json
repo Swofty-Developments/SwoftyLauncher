@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Ctor_CustomisationBadgeEditorVM",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142067480",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Ctor_CustomisationBadgeEditorVM(void *self, void *vmRegistry, void *allocator, void *arg4)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142069080 (RacingPC lab re_groups/_decomp);xref:0x14148ab00",
+  "notes": "Constructs a 0x16e0-byte view-model registered as \"customisation_badge_editor\" (hash 0x305c570f at +0x140), vtable 0x145769790; stores allocator +0x268 and arg4 +0x270; builds three identical sub-blocks at +0x3d0, +0x928, +0xe80 (each with 4 resource handles and callbacks 0x1416bc3a0/0x1416bce10 plus owner callback 0x142069850/0x142069880); +0x1520=0x10000. Returns self."
+ },
+ "signature": {
+  "id": "ui.ctor_customisation_badge_editor_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4C 89 CB 4C 89 C7",
+  "match": "0x142067480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142067480",
+  "kind": "func_start",
+  "names": [
+   "Ui_Ctor_CustomisationBadgeEditorVM"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142069080",
+  "made_on_target": "0x142069080",
+  "twin": "made on steam-26566308; the target 0x142069080 is KB 0x142067480: Ui_MyTeamSetupGeneric_Option (0x2066b90) and Game_CarCustomisation_ApplyDriverNumbers (0x2080590) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142069080",
+    "target": "0x142069080"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2fa9ea7a0f347fd1d018d76fe1c282d30b860ce24beee8ee7c229a323674b03f"
+  }
+ ]
+}

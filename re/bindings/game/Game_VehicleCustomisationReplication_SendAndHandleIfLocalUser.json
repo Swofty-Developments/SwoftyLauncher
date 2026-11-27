@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplication_SendAndHandleIfLocalUser",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143141520",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_VehicleCustomisationReplication_SendAndHandleIfLocalUser(void *mgr, uint32_t *mode, void *player_key, uint16_t *packed_id, void *customisation, uint8_t conn, void *arg7, void *arg8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143143ab0 (RacingPC lab re_groups/_decomp);xref:0x143142300,0x1431476d0,0x1431c5070",
+  "notes": "Read in full: first calls the KB send function Game_VehicleCustomisationReplicationManager_SendVehicleCustomisa (0x143141520, args forwarded, lost in decompile), then fetches the current user id (random default block, overwritten via g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vfn+0x38) and compares it with the user id in player_key+0x10 (type byte 7: xor of +0x28/+0x30; type 3: +0x18/+0x20 with flags +0x48/+0x49; else Ne_UserId_Equals); only when key flag +0x53 bit 0x10 is set and the ids match it calls 0x143144ae0(mgr, mode, conn, player_key+0x58). Callers: FindOrGeneratePacked after adding a new customisation (mode 1, conn 0), SendUpdatedVehicleCu after replacing the player customisation (mode 1), OnNewConnection for each list node of mgr+0x50 (mode 2, conn id, key = node+0x10). Role of 0x143144ae0 (local-side apply) is not confirmed. Context from caller: host-side replication of livery data. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_send_and_handle_if_local_user",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 18 01 00 00 4C 89 C6 48 89 D7",
+  "match": "0x143141520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143141520",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplication_SendAndHandleIfLocalUser"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143143ab0",
+  "made_on_target": "0x143143ab0",
+  "twin": "made on steam-26566308; the target 0x143143ab0 is KB 0x143141520: Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer (0x31439b0) and Game_RankedMatchingProcessor_CreateSession (0x3153130) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143143ab0",
+    "target": "0x143143ab0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f747cd0efd1c1e72b8fd337d0ea511833f657ffdbc0a0cd52b0b1ba928efba6"
+  }
+ ]
+}

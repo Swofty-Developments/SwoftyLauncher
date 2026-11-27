@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PaddockPass_TryEnterScreen",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142b98fd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_PaddockPass_TryEnterScreen(void *self, uint32_t destination, uint64_t arg, uint64_t category_arg, uint16_t category_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142b9b560 (RacingPC lab re_groups/_decomp);xref:0x141bb7e20,0x141fd7500,0x141feaa50,0x142079f70,0x142084f40,0x142093530",
+  "notes": "Checks service state self+0x2c0: 0 shows message 'paddock_pass_os_fail', 2 'paddock_pass_maintenance', 3 'paddock_pass_series_changeover', and returns false; state 1 verifies tier data and may show 'multipage_paddock_pass_news'. On success it requests a flow transition by destination: 0 'enter_playerhub_podiumpass', 3 'enter_paddock_pass_shop', 4 'enter_paddock_pass_store', 5-7 'enter_unified_store' (self+0x310 = 2 or 3), 8 'enter_item_store_category_select_screen' (stores args at +0x304/+0x30c) and returns true."
+ },
+ "signature": {
+  "id": "game.paddock_pass_try_enter_screen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 8B 81 C0 02 00 00",
+  "match": "0x142b98fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142b98fd0",
+  "kind": "func_start",
+  "names": [
+   "Game_PaddockPass_TryEnterScreen"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142b9b560",
+  "made_on_target": "0x142b9b560",
+  "twin": "made on steam-26566308; the target 0x142b9b560 is KB 0x142b98fd0: Game_F1osTasksystem_CreateTask_GetPPackagesData (0x2b97db0) and Game_Currency_ShowReceivedPopup (0x2b9f900) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142b9b560",
+    "target": "0x142b9b560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f46db07b89013c0b488652c1fa9640d692cb1243872283a0e0d8da268436fc9e"
+  }
+ ]
+}

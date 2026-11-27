@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_AsyncQueue_PushUserIdRequest",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143218150",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint64_t Game_AsyncQueue_PushUserIdRequest(void *queue, const void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14321a6e0 (RacingPC lab re_groups/_decomp);xref:0x1430f6240,0x14318d2f0",
+  "notes": "If queue+0x68 (running) is 0 sets errno 0x58 and returns. Else enters the critical section +0x98, allocates 0x60 bytes from allocator +0x70 (errno 0xC on failure), copy-constructs a message (vtable 0x14579ce90, msg+8, inner vtable 0x145614e20 with 0x40 bytes from msg+0x18 and a dword at +0x58), appends it to the list head +0x58 / tail +0x60, leaves the lock and SetEvent(+0x90); returns 0 or the mapped OS error. Context from caller: both Game_Network_MOXSessionClearingRegistered and Game_CustomisationReplicationManager_OnPlayerSetEntryDiscarded pass g_Game_MessageBus+8, so this is a typed post to the game message bus. Better context needed: vtable 0x14579ce90 would confirm the message type (the 0x40-byte payload looks like a user id block but the code does not prove it). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.async_queue_push_user_id_request",
+  "section": ".xtls",
+  "pattern": "48 8B 48 08 4C 89 FA E8 ?? ?? ?? ?? 48 8B 44 24 40",
+  "match": "0x1430f4af7",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x143218150",
+  "kind": "call",
+  "names": [
+   "Game_AsyncQueue_PushUserIdRequest"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1430f7087",
+  "made_on_target": "0x14321a6e0",
+  "twin": "made on steam-26566308; the target 0x14321a6e0 is KB 0x143218150: Game_F1os_LogLargePayload_SessionBrowserGetSessionByID (0x31eaf70) and Game_NetworkReady_OnUnreadyMessage (0x3228a20) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1430f7087",
+    "target": "0x14321a6e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1e5c8aefd6aedabc68aea7678fce4c8fc4ed292de7c560d38fb4ad326b38a2f3"
+  }
+ ]
+}

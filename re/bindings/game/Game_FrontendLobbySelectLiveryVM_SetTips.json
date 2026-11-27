@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendLobbySelectLiveryVM_SetTips",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14220cc00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_FrontendLobbySelectLiveryVM_SetTips(void *self, uint8_t show_select)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14220e800 (RacingPC lab re_groups/_decomp);xref:0x14220df60",
+  "notes": "On the node bundle at +0x660 sets the bool node +0x10c8 (tip_back) to true and the bool node +0x10a8 (tip_select) to show_select, with the usual valid/type checks."
+ },
+ "signature": {
+  "id": "game.frontend_lobby_select_livery_vm_set_tips",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 88 54 24 2F",
+  "match": "0x14220cc00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14220cc00",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendLobbySelectLiveryVM_SetTips"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14220e800",
+  "made_on_target": "0x14220e800",
+  "twin": "made on steam-26566308; the target 0x14220e800 is KB 0x14220cc00: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14220e800",
+    "target": "0x14220e800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "54e4a6d00d0a2d3ac9a19559cf0660c994dbf29def2ee9bf99d730892e3a9c4e"
+  }
+ ]
+}

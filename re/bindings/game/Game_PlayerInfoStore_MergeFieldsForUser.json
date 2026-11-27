@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerInfoStore_MergeFieldsForUser",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14253b4e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_PlayerInfoStore_MergeFieldsForUser(void *store, void *user_id, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14253d410 (RacingPC lab re_groups/_decomp);xref:0x14312acc0",
+  "notes": "Hashes the tagged user id (tags 3 and 7 handled inline, else Ne_UserId_Equals) and returns early if it is found in the hash map at +0x100/+0x118/+0x130 or in the one at +0x150/+0x168/+0x180. Otherwise it default-builds a large record on the stack (0x14252cda0), copies the existing record from the third map (+0x1a0/+0x1b8/+0x1d0, node+0x50) when present, overlays fields from src (optional 128-char string +0x18 with flag +0x98, u16 +0xa0, u32 +0xb0, 16 bytes +0xb8, u32 +0xc8, 32-char strings +0xe8 and +0x140, +0x110, +0x118, +0x120) and stores it with 0x14253cf00(store, user_id, record). Game_BadgeReplicationManager_ReplacePlayerBadge calls it with *(mgr+0x88), a copy of the user id and its 4th argument when the user is not the local one. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.player_info_store_merge_fields_for_user",
+  "section": ".xtls",
+  "pattern": "49 89 F0 E8 ?? ?? ?? ?? 90 48 81 C4 48 02 00 00",
+  "match": "0x143128c37",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14253b4e0",
+  "kind": "call",
+  "names": [
+   "Game_PlayerInfoStore_MergeFieldsForUser"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14312b1c7",
+  "made_on_target": "0x14253d410",
+  "twin": "made on steam-26566308; the target 0x14253d410 is KB 0x14253b4e0: Game_VoPlaySoundEffectNode_Execute (0x25289b0) and Game_FrontendSceneObject_RespawnAll (0x2549cb0) on either side both sit 0x1f30 above their KB addresses; the match 0x14312b1c7 is KB 0x143128c37: Game_EntrantsManager_OnMutableRoleChanged (0x311ad50) and Game_CustomDriverNetworkMessageHandler_UpdateReplicatedDriver (0x3133fa0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14312b1c7",
+    "target": "0x14253d410"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a1fc1a60c3e062394beb2a767223ec468f66dafa0943ab9b92a33337edc0b7e8"
+  }
+ ]
+}

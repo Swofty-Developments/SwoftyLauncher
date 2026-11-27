@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_FindIndex_CStrKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438ffc40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_RobinHoodMap_FindIndex_CStrKey(void *map, char **key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439021d0 (RacingPC lab re_groups/_decomp);xref:0x143872b40,0x14387f690",
+  "notes": "(lib) Robin-hood lookup by C string: FNV-1a of *key times +0x20, probes info bytes at +0x30 two at a time and confirms with Ne_Crt_Strcmp against the char* held by each 8-byte entry at +0x28. Returns the slot index, or the end index ((info - entries) >> 3, 0 when mask +0x40 is 0) when not found."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_find_index_c_str_key",
+  "section": ".xtls",
+  "pattern": "48 8D 94 24 D0 02 00 00 E8 ?? ?? ?? ?? 48 C1 E0 03",
+  "match": "0x143874d61",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x1438ffc40",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_FindIndex_CStrKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438772f1",
+  "made_on_target": "0x1439021d0",
+  "twin": "made on steam-26566308; the target 0x1439021d0 is KB 0x1438ffc40: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438772f1",
+    "target": "0x1439021d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "727c92fba6e53c1e58599bae5d0e5a984c0fc7c878824dc8df4c628f27d75659"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationSlotMaps_MoveCtor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438d91e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_CustomisationSlotMaps_MoveCtor(void *self, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438db770 (RacingPC lab re_groups/_decomp);xref:0x143872b40",
+  "notes": "Move-constructs the 0x230-byte record: for each of 11 rb-tree maps at +0x00..+0xf0 (stride 0x18; head sizes 0x20, except 0x28 at +0xc0 and 0x38 at +0xd8) it copies the allocator, allocates a fresh sentinel head, then swaps head and size with src so src is left empty; copies u32 +0x108, moves the optional map at +0x110 (flag +0x128) and the two optional 0x78 sub-structs at +0x130/+0x1b0 (flags +0x1a8/+0x228) via FUN_1438dbcb0. Returns self. Context from caller: Game_Read_CustomisationVehicleSlots uses it three times per game-db row (stack record +0x4c8 -> temp, temp -> temp, temp -> freshly taken pool node +8 whose +0 holds the row key), then destroys the temp with 0x1438773b0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.customisation_slot_maps_move_ctor",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 4C 24 48 4C 8B 31",
+  "match": "0x14387463d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1438d91e0",
+  "kind": "call",
+  "names": [
+   "Game_CustomisationSlotMaps_MoveCtor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143876bcd",
+  "made_on_target": "0x1438db770",
+  "twin": "made on steam-26566308; the target 0x1438db770 is KB 0x1438d91e0: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143876bcd",
+    "target": "0x1438db770"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "828b167f40d4f2ecb11509d55aa4d10b2aed8b649ad8b7cfdc6778014462f763"
+  }
+ ]
+}

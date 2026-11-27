@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Customisation_FillPairedSlotColours_FromItem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141426f50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Customisation_FillPairedSlotColours_FromItem(void *customisation, void *item, void *record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141427730 (RacingPC lab re_groups/_decomp);xref:0x141fdd4d0",
+  "notes": "Whole body read but the value meaning is not proven: for the two slot bytes at 0x1456e8ae8..0x1456e8ae9 it engages the optional pair at record+0x60/+0x90 (flag +0xd0, default key 0xffff0013), builds a key from item+slot via 0x141426700, looks it up in the self+0x2a8 table +800 (returns if missing), takes the default entry via +200 and g_FeTile_CustomisationSystem, reuses a matching entry from record+0x1940+slot*0x1820 if present, overwrites the first N (entry+200 +0x38) u32 values with the +8 ids of the objects at item+0x80/+0xa0/+0xc0/+0xe0[slot], inserts via 0x1426abc00 and writes record+0x70+slot*0x30. Context from caller: called right after Game_Customisation_PickRandomEligibleItem under feature flag DAT_146066624 bit 1 in all callers, before the record is passed to Ent_EntrantsSystem_ReplaceVehicleCustomisation. Better context needed: whether the four per-slot ids are colours (the Colours noun is inferred) and what the two slot bytes are. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.customisation_fill_paired_slot_colours_from_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F9 7F B4 24 B0 00 00 00",
+  "match": "0x141426f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141426f50",
+  "kind": "func_start",
+  "names": [
+   "Game_Customisation_FillPairedSlotColours_FromItem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141427730",
+  "made_on_target": "0x141427730",
+  "twin": "made on steam-26566308; the target 0x141427730 is KB 0x141426f50: Game_CustomisationDecals_LoadConfig (0x141f7c0) and Game_CustomisationDecals_UnloadAssetBatch (0x14284c0) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141427730",
+    "target": "0x141427730"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d2710134cf0c9b0b00670d1c2424855c8283e07e7d9369f051cd0258ec99403e"
+  }
+ ]
+}

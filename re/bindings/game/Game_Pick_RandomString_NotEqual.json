@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Pick_RandomString_NotEqual",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141403550",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "char *Game_Pick_RandomString_NotEqual(void *self, char *exclude)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141403b90 (RacingPC lab re_groups/_decomp);xref:0x1416ca160",
+  "notes": "Loops an LCG (seed at self+0x188, x*0x343fd+0x269ec3, >>16 & 0x7fff) picking entries from the pointer array self+0x198..+0x1a0 until the pick is non-null and differs (strcmp) from exclude; returns it. Never terminates if every entry equals exclude. Context from caller: scene/variant name selection when spawning the customisation scene."
+ },
+ "signature": {
+  "id": "game.pick_random_string_not_equal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 4C 8B B1 A0 01 00 00",
+  "match": "0x141403550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141403550",
+  "kind": "func_start",
+  "names": [
+   "Game_Pick_RandomString_NotEqual"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141403b90",
+  "made_on_target": "0x141403b90",
+  "twin": "made on steam-26566308; the target 0x141403b90 is KB 0x141403550: Ne_CrowdPlugin_FindZoneIndex (0x13f3f30) and Ne_StdMap_At_141403b30 (0x1404170) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141403b90",
+    "target": "0x141403b90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5c36622ce80f546f2fc2839f3bda696ed7339d740beddd846e3ef31e0a1e2b02"
+  }
+ ]
+}

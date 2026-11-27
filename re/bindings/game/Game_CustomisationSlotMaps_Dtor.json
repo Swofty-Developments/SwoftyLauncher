@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationSlotMaps_Dtor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143874e20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CustomisationSlotMaps_Dtor(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438773b0 (RacingPC lab re_groups/_decomp);xref:0x143872b40,0x1438d37f0",
+  "notes": "Destroys the members in reverse order: optional sub-objects at +0x1b0 (flag +0x228) and +0x130 (flag +0x1a8) via 0x1438dbf20, an optional tree at +0x110 (flag +0x128), trees at +0xf0, +0xd8, +0xc0, a member at +0x60 (0x1438dbe60), then trees at +0x48, +0x30, +0x18 and +0; each tree erases from header[1] and frees the header through its allocator vtbl+0x38. Callers: Game_Read_CustomisationVehicleSlots destroys its stack temporaries and a rejected node value with it; 0x1438d37f0 (hash table teardown) calls it on node+8 for every occupied slot. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.customisation_slot_maps_dtor",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 B9 28 02 00 00 00",
+  "match": "0x143874e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143874e20",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationSlotMaps_Dtor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438773b0",
+  "made_on_target": "0x1438773b0",
+  "twin": "made on steam-26566308; the target 0x1438773b0 is KB 0x143874e20: Game_CareerWizard_PushNextStep (0x386fe20) and Ui_CareerWizard_ReleaseItemWidgets (0x38775a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438773b0",
+    "target": "0x1438773b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0de5ae04a549d30cc70f03f90237e78736c3f5b0e9115c5d1fefedb7b9c1ca5"
+  }
+ ]
+}

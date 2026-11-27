@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashSet_Insert_PlayerKey_Node96",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143121870",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_HashSet_Insert_PlayerKey_Node96(void *set, void *out_pair, void *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143123e00 (RacingPC lab re_groups/_decomp);xref:0x14310d3b0,0x14312b2f0,0x143132810,0x1431356a0,0x1431373f0,0x143137850,0x143138570,0x14313eb10",
+  "notes": "(lib) std unordered_set style insert: hashes the key (uint id at key+0x48 or user-id xor when flag 0x10000000), returns the existing node if an equal key is in the bucket, otherwise allocates a 0x60 node with a copy of the key, rehashes when the load factor is exceeded and links it. Writes {node, inserted} to out_pair."
+ },
+ "signature": {
+  "id": "core.hash_set_insert_player_key_node96",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 C6 48 89 D3 49 89 CB",
+  "match": "0x143121870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143121870",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashSet_Insert_PlayerKey_Node96"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143123e00",
+  "made_on_target": "0x143123e00",
+  "twin": "made on steam-26566308; the target 0x143123e00 is KB 0x143121870: Game_EntrantsManager_OnMutableRoleChanged (0x311ad50) and Game_CustomDriverNetworkMessageHandler_UpdateReplicatedDriver (0x3133fa0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143123e00",
+    "target": "0x143123e00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "48ddb1f5b9defc12ec1f1f7a75fe642b43f7883d09c088d3d67c7180120bdd8f"
+  }
+ ]
+}

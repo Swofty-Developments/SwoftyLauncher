@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Ctor_ScreenViewModel_WithBoundPath",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141d59ee0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Ctor_ScreenViewModel_WithBoundPath(void *self, void *services, void *allocator, const char *name, const char *path_arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141d5bae0 (RacingPC lab re_groups/_decomp);xref:0x14148ab00",
+  "notes": "Read in full: calls base ctor 0x14431f310(self, services, name, 0, 2, 0), sets vtables 0x14574b490 / +0x260 / +0x268, stores allocator at +0x270, default-inits about 80 VM node handles (+0x830..+0x10c0), floats +0x1100 = 7000.0 and +0x1108 = 0.25, formats two 0x20 inline strings at +0x1138 and +0x1170 from path_arg, then allocs a 0xe8 binding (callback 0x141d5cb30, owner self), parses the +0x1170 string as VM path, subscribes it and stores it at +0x10d0 (allocator +0x10c8); byte +0x1418 = (name equals string 0x1456f8d96); finally resets 9 handles +0x838..+0x960. Caller Game_Register_DriverSuitScreens allocs 0x1420 bytes twice, calls this with two different name/path strings and then overwrites the three vtables with derived ones (0x1456f7910, 0x1456f79d0), so this is a shared base-class ctor; pushes the object into the view-model vector. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.ctor_screen_view_model_with_bound_path",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 F8 29 B4 24 B0 01 00 00 4C 89 C7 48 89 CE",
+  "match": "0x141d59ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d59ee0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Ctor_ScreenViewModel_WithBoundPath"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141d5bae0",
+  "made_on_target": "0x141d5bae0",
+  "twin": "made on steam-26566308; the target 0x141d5bae0 is KB 0x141d59ee0: Game_InGameMenuVM_OnReturnToGarage (0x1d5aec0) and Game_HudVM_ResolveSystems (0x1d5f510) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141d5bae0",
+    "target": "0x141d5bae0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a522fd4e9cd664927b133d7184ddfc79415a9af8b057148b8c989897191855d4"
+  }
+ ]
+}

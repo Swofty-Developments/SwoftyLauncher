@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Construct_PlayerLifeData",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14252ae70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_Construct_PlayerLifeData(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14252cda0 (RacingPC lab re_groups/_decomp);xref:0x1427b2070,0x1430e2af0,0x14318ee50",
+  "notes": "Default constructor of a 0x17b8-byte record: vtable 0x14571d0e0, customisation slot entries (types 1,2,3,5 at +0x10; 0x0d,0x10,0x11,0x0e,0x0f at +0xb8; arrays of 3 x 0xf8 and 3 x 0xa8 of the same), inline 128-char string at +0x698, sub-object at +0x730 (0x142478af0), eight timer blocks stamped with QueryPerformanceCounter (+0xd00..+0x1610), two colour/name entries defaulting to 'none' at +0x1718 and +0x1778, ids at +0x1630..+0x166c set to -1. Callers (all unnamed) build it as a stack temporary: Caller 0x142534f40: fills it via 0x142539250 and passes it to callbacks; Caller 0x142537260: per entry with platform strings, then Game_Make_MaskedUserId_FromPlatformString; Caller 0x14253d410: after a user-id map lookup. Better context needed: no string in the body or callers confirms the 'PlayerLifeData' noun. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.construct_player_life_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 C5 F8 29 B4 24 B0 02 00 00 48 89 CE 48 8D 05",
+  "match": "0x14252ae70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14252ae70",
+  "kind": "func_start",
+  "names": [
+   "Game_Construct_PlayerLifeData"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14252cda0",
+  "made_on_target": "0x14252cda0",
+  "twin": "made on steam-26566308; the target 0x14252cda0 is KB 0x14252ae70: Game_VoPlaySoundEffectNode_Execute (0x25289b0) and Game_FrontendSceneObject_RespawnAll (0x2549cb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14252cda0",
+    "target": "0x14252cda0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "aa8c4ce848f683e7f88785574669703e91ee77f970d56faa9916c3762e7cedab"
+  }
+ ]
+}

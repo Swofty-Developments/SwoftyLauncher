@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Find_Elem192ByResolvedNodeRef",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416d5300",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Find_Elem192ByResolvedNodeRef(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416d68f0 (RacingPC lab re_groups/_decomp);xref:0x141fee5a0",
+  "notes": "Resolves the VM reference at +0x78 (follows reference chain via vtbl+0x30/+0x58, max 0x62 hops) to a node handle, then linearly scans the vector +0x98..+0xa0 (stride 0xc0) for the element whose node handle (+8) equals it. Returns the element pointer or end (+0xa0). Context from caller: decal editor commit looks up the currently selected entry."
+ },
+ "signature": {
+  "id": "game.find_elem192_by_resolved_node_ref",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 49 78 48 8D 1D",
+  "match": "0x1416d5300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416d5300",
+  "kind": "func_start",
+  "names": [
+   "Game_Find_Elem192ByResolvedNodeRef"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416d68f0",
+  "made_on_target": "0x1416d68f0",
+  "twin": "made on steam-26566308; the target 0x1416d68f0 is KB 0x1416d5300: Sess_Resolve_PlayerVehicleRef (0x16cda70) and Career_Get_UpgradeCostAdjust (0x16d69e0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416d68f0",
+    "target": "0x1416d68f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d01594af77922c08895f5f428ed7a8d92c9f99bf2ccdd750093ed64475870c25"
+  }
+ ]
+}

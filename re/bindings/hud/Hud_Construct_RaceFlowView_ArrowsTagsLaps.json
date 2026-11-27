@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Construct_RaceFlowView_ArrowsTagsLaps",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141c185b0",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void *Hud_Construct_RaceFlowView_ArrowsTagsLaps(void *self, void *ui_ctx, void *allocator, const char *name, const char *path_prefix, const char *str6, uint32_t mode, char with_lap_times)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141c1a1b0 (RacingPC lab re_groups/_decomp);xref:0x14148ab00",
+  "notes": "Constructor of a 0x780-byte view: base ctor 0x14431f310, temp strings name and \"flow_race\", vtables 0x14573e9e0/+0x260 0x14573ea60/+0x268 0x14573ea88, allocator at +0x300/+0x308, mode -> +0x430 and +0x750, str6 -> NeStr +0x748, \"invitationals\" -> +0x778, embedded sub-view at +0x440 (name 0x14573ea90 when with_lap_times else 0x145755c6e). Builds children \"<path_prefix>.proximity_arrows\" (0x2b0 bytes, vtable 0x14573e760) and \"<path_prefix>.driver_tag_group\" (0x2a8, vtable 0x14573e550) and, only when with_lap_times != 0, \"<path_prefix>.lap_times\" (0x1080, FUN_14150d350), pushing each as an (allocator, ptr) pair on the vector at +0x310. Caller Game_Register_DriverSuitScreens makes three instances (0x780 each; flags 0/0, 0/1, 1/1 with different name strings), pushes them on its view-model vector and calls their init vfn (+0x260 table slot +8). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "hud.construct_race_flow_view_arrows_tags_laps",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 02 00 00 C5 F8 29 B4 24 70 02 00 00 4D 89 CE 4C 89 C3",
+  "match": "0x141c185b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c185b0",
+  "kind": "func_start",
+  "names": [
+   "Hud_Construct_RaceFlowView_ArrowsTagsLaps"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c1a1b0",
+  "made_on_target": "0x141c1a1b0",
+  "twin": "made on steam-26566308; the target 0x141c1a1b0 is KB 0x141c185b0: Career_Calendar_MoveTrackData (0x1c0c070) and Sess_SpectatorHud_Hide (0x1c253e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c1a1b0",
+    "target": "0x141c1a1b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bc43a4f201e76ea64fd440c07ef9e74fff48b04ab3cf4059493b0d55bff360b5"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Tree_FreeNode_Node176",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143210b70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Tree_FreeNode_Node176(void *tree, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143213100 (RacingPC lab re_groups/_decomp);xref:0x143142d60",
+  "notes": "(lib) Destroys the value in a 0xb0-byte tree node: for each 0x38-byte elem in vector +0x98..+0xa0 releases its inner shared_ptr vector and frees its buffer, frees the outer buffer via allocator +0x90, then frees the node with the tree allocator (vfunc +0x38)."
+ },
+ "signature": {
+  "id": "core.tree_free_node_node176",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D6 48 89 CF 4C 8B AA 98 00 00 00",
+  "match": "0x143210b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143210b70",
+  "kind": "func_start",
+  "names": [
+   "Ne_Tree_FreeNode_Node176"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143213100",
+  "made_on_target": "0x143213100",
+  "twin": "made on steam-26566308; the target 0x143213100 is KB 0x143210b70: Game_F1os_LogLargePayload_SessionBrowserGetSessionByID (0x31eaf70) and Game_NetworkReady_OnUnreadyMessage (0x3228a20) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143213100",
+    "target": "0x143213100"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1df7f8bd205aa05b08967caa38867b1f5f5c18aeee449187096f9a70a37518e8"
+  }
+ ]
+}

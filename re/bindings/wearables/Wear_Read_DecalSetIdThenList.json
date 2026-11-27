@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Wear_Read_DecalSetIdThenList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1413fc4b0",
+  "level": "L2",
+  "subsystem": "wearables",
+  "proto": "int Wear_Read_DecalSetIdThenList(void *self, void *node, void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1413fcaf0 (RacingPC lab re_groups/_decomp);xref:0x1424946b0,0x142500e70",
+  "notes": "Reads \"decal_set_id\" into self+0x08 with Wear_Read_ItemIdField, then looks up a second named child (string 0x145613fa1), checks its type id against the type object at 0x14612bd80 and copies its uint32 into self+0x18, then resolves a reflected field (0x1456e533b) and forwards its data to this->vfunc +0x30 (data, ctx). Returns 0 on success, 0x57 when the child is missing, 0x58 on type mismatch (both also written to the thread errno/trace ring). Context from caller: legacy slot/profile decal lists."
+ },
+ "signature": {
+  "id": "wearables.read_decal_set_id_then_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 4C 89 C7 49 89 D6",
+  "match": "0x1413fc4b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413fc4b0",
+  "kind": "func_start",
+  "names": [
+   "Wear_Read_DecalSetIdThenList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1413fcaf0",
+  "made_on_target": "0x1413fcaf0",
+  "twin": "made on steam-26566308; the target 0x1413fcaf0 is KB 0x1413fc4b0: Ne_CrowdPlugin_FindZoneIndex (0x13f3f30) and Ne_StdMap_At_141403b30 (0x1404170) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1413fcaf0",
+    "target": "0x1413fcaf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1c4f86a226dde180eda0a16a217dbc24f0c3bdb44bd60b3d9a3536c3afb855d6"
+  }
+ ]
+}

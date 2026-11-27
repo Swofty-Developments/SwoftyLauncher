@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_TitleToggleFadePanel",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141d23240",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_TitleToggleFadePanel(void *self, void *ui_ctx, const char *name, void *allocator, void *service)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141d24e40 (RacingPC lab re_groups/_decomp);xref:0x14148ab00",
+  "notes": "Base-class constructor: base ctor 0x14431f310(self, ui_ctx, name, 0, 2, 0), vtables 0x14574cce0/+0x260 0x14574cd70, allocator -> +0x268, service -> +0x2a8 and +0x2b0, then service vfn +0x18(0x14570cb9d, self+0x2b8, 0, 0) to fetch a handle. Builds three sub-elements by appending to name: \".title_toggle\" (FUN_14155c780 at +0x3e8), \".background_fade\" (+0xb70, vtable 0x1456f8fc0) and \".info_header_fade\" (+0xdf0, same vtable), sets +0x1070 = -1, and allocates a 0x10 list sentinel at +0x1180. Caller Game_Register_DriverSuitScreens allocates 0x12f8 bytes, calls this with name 0x1457577b4 and a service picked from the table at (this+0x30)+0x28 by index +0x160 (< 0x13), then overwrites the vtables with 0x145749860/0x1457498f0, so the real object is a derived screen class. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.construct_title_toggle_fade_panel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 60 02 00 00 C5 F8 29 B4 24 50 02 00 00",
+  "match": "0x141d23240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d23240",
+  "kind": "func_start",
+  "names": [
+   "Ui_Construct_TitleToggleFadePanel"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141d24e40",
+  "made_on_target": "0x141d24e40",
+  "twin": "made on steam-26566308; the target 0x141d24e40 is KB 0x141d23240: Game_TrophyCabinetTabVM_OnActivate (0x1d19e40) and Career_RewardsScreen_BuildAcclaimAwarded (0x1d2b700) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141d24e40",
+    "target": "0x141d24e40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ddea3ad9ec84965d6d48c250324ae034942208da1e597142cc16ee458fae6d9b"
+  }
+ ]
+}

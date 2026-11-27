@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_SetLayerHighlightActive",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14142afe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DecalCustomisation_SetLayerHighlightActive(void *cust, char active)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14142b7c0 (RacingPC lab re_groups/_decomp);xref:0x141fee130,0x141fee5a0,0x141ff0620",
+  "notes": "Stores active at cust+0x1b4, reads id cust+0x1b0; float value = 1.0, or when active and id != -1 the float at [[cust+0x1d0]]+8 (0 if null); if cust+0x270 exists writes param 0x1e (8 bytes: 0, value) through the global 0x146c641e0 (vtable +0x20 / +0x30); then for the editor car object (Game_DecalCustomisation_GetEditorCarObject) sends a type-3 message to car+0x188 (0x142b54b40) carrying id|1<<32 when active or -1 when not. Callers: Game_DecalEditor_OnBindingMessage (deactivate) and the preview_car branch of Game_DecalEditor_CommitEdit pass 0; leaving preview in CommitEdit and Game_DecalCatalogue_PlaceOrSwap pass 1. Context from caller: PlaceOrSwap first sets cust+0x1b0 from global 0x146068c00, which CommitEdit matches against the area table id (+0xc), so the highlighted id is a projection-area id rather than a layer. Hook point to force the highlight on or off. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.decal_customisation_set_layer_highlight_active",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 C5 F8 29 74 24 60 89 D3 48 89 CE",
+  "match": "0x14142afe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142afe0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_SetLayerHighlightActive"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14142b7c0",
+  "made_on_target": "0x14142b7c0",
+  "twin": "made on steam-26566308; the target 0x14142b7c0 is KB 0x14142afe0: Game_CustomisationDecals_DeleteFiles (0x142a500) and Game_CustomisationDecals_OpenFile (0x1434060) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14142b7c0",
+    "target": "0x14142b7c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6c6a2104805f27214b1064e3fef3bde4c6f621e57c97f990fd93d8e53d92f49a"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SpecialLiveryEntry_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141968020",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_SpecialLiveryEntry_Ctor(void *self, void *node_a, void *node_b, void *cust_data, char *title, char *description, uint32_t id, uint8_t owned, uint8_t selected, void *info, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141969800 (RacingPC lab re_groups/_decomp);xref:0x14196bfa0",
+  "notes": "Constructs a 0x6980-byte entry: takes over two VM node handles (+0x0, +0x20), copies customisation data to +0x40, sets u16 +0x67c0 = 0xffff, creates bool nodes 'is_selected' (+0x67c8) and 'livery_owned' (+0x67e8) and string nodes 'livery_description' (+0x6808) and 'livery_title' (+0x6828), copies byte + inline str128 + u64 from info to +0x6848.., stores id at +0x6970 and flag at +0x6974, then releases the two source handles. Hook here to force livery_owned for special liveries."
+ },
+ "signature": {
+  "id": "game.special_livery_entry_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4D 89 CE 4C 89 C7 48 89 D3 48 89 CE",
+  "match": "0x141968020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141968020",
+  "kind": "func_start",
+  "names": [
+   "Game_SpecialLiveryEntry_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141969800",
+  "made_on_target": "0x141969800",
+  "twin": "made on steam-26566308; the target 0x141969800 is KB 0x141968020: Ne_Std_ThrowVectorSubscriptError (0x1952cb0) and Ui_Play_FacilityStageCutsceneByIndex (0x19707c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141969800",
+    "target": "0x141969800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a1d45cd6ad75b0a86caad0442cec532c09c232e0e2a87fbf17fdd75c33bd95bd"
+  }
+ ]
+}

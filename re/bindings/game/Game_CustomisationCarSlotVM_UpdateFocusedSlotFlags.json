@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationCarSlotVM_UpdateFocusedSlotFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14200bc60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_CustomisationCarSlotVM_UpdateFocusedSlotFlags(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14200d860 (RacingPC lab re_groups/_decomp);xref:0x14200be00",
+  "notes": "Finds the focused leaf node under self+0x2b0 and its index in list self+0x290; reads the bool node at (self+0x270)+idx*0x128+0x88 and stores its inverse in self+0x880 and bool node self+0x848; ANDs it with 0x14200e810(self, idx) into self+0x950 and bool node self+0x918; then dispatches UI event name at 0x145755a08 with arg 4."
+ },
+ "signature": {
+  "id": "game.customisation_car_slot_vm_update_focused_slot_flags",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 01 FF 50 28 84 C0 0F 84 ?? ?? ?? ?? 48 8B 86 90 02 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 4C 8B B8 80 00 00 00 4D 85 FF 0F 84 ?? ?? ?? ?? 41 BE 48 00 00 00",
+  "match": "0x14200b2b7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14200bc60",
+  "kind": "call",
+  "names": [
+   "Game_CustomisationCarSlotVM_UpdateFocusedSlotFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14200ceb7",
+  "made_on_target": "0x14200d860",
+  "twin": "made on steam-26566308; the target 0x14200d860 is KB 0x14200bc60: Game_CarCustomisation_MarkCarDirtyOff (0x20075c0) and Game_CarCustomisation_ApplyLiveryPreview (0x20107b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14200ceb7",
+    "target": "0x14200d860"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a1da9ce4840a19c34bc91f376cb5f61c9694f35fea8829d0466cea35bba246e1"
+  }
+ ]
+}

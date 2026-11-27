@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Rehash_UserIdKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432184f0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Rehash_UserIdKey(void *map, uint64_t bucket_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14321aa80 (RacingPC lab re_groups/_decomp);xref:0x14318afd0",
+  "notes": "(lib) MSVC-style unordered_map rehash: rounds bucket_count to power of two, reallocates the bucket array (+0x28..+0x38, allocator +0x20) filled with the list sentinel (+0x10), sets mask +0x40 and count +0x48, then relinks every list node into its bucket using the user-id hash (node +0x18 type byte, +0x20..+0x38 words, +0x58 flag bit 0x10000000) and Ne_UserId_Equals. Throws via Ne_Std_ThrowStdException if count too large."
+ },
+ "signature": {
+  "id": "core.hash_map_rehash_user_id_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 B8 01 00 00 00 00 00 00 08 48 39 C2 0F 83 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x1432184f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432184f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Rehash_UserIdKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14321aa80",
+  "made_on_target": "0x14321aa80",
+  "twin": "made on steam-26566308; the target 0x14321aa80 is KB 0x1432184f0: Game_F1os_LogLargePayload_SessionBrowserGetSessionByID (0x31eaf70) and Game_NetworkReady_OnUnreadyMessage (0x3228a20) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14321aa80",
+    "target": "0x14321aa80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "757266c861546dfd6720f503f9809455d006c1bb97272d1f383a1ad106d95d4c"
+  }
+ ]
+}

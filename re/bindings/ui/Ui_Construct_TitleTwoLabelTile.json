@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_TitleTwoLabelTile",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fca700",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_TitleTwoLabelTile(void *self, void *parent, void *name, char *template_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fcc300 (RacingPC lab re_groups/_decomp);xref:0x141fc7780",
+  "notes": "Calls FeTile_Construct_Tile, sets vtable 0x145765838 and binds VM fields bool \"visible\" (=true) at +0xc8, strings \"title\" at +0xe8, \"label_1\" at +0x108, \"label_2\" at +0x128. Element size 0x148. Context from caller: badge slot editor info tile."
+ },
+ "signature": {
+  "id": "ui.construct_title_two_label_tile",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE C6 44 24 20 FF E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 06 C6 44 24 28 01",
+  "match": "0x141fca700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fca700",
+  "kind": "func_start",
+  "names": [
+   "Ui_Construct_TitleTwoLabelTile"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fcc300",
+  "made_on_target": "0x141fcc300",
+  "twin": "made on steam-26566308; the target 0x141fcc300 is KB 0x141fca700: Game_ChallengeCareer_BuildTrackTiles (0x1fc2340) and Game_LiveryAssignVM_OnActivate (0x1fd4da0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fcc300",
+    "target": "0x141fcc300"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "95f7805d9509aed56d025d689c143b28307226c54c2e972813f85f5883c5fc73"
+  }
+ ]
+}

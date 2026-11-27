@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Erase_UserKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143211520",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Erase_UserKey(void *map, void *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143213ab0 (RacingPC lab re_groups/_decomp);xref:0x143142d60,0x143148c80",
+  "notes": "(lib) std::unordered_map erase by key: same 0x9e3779b9 hash of key (+0x10 id, +0x50 flags, +0x58 type, +0x5a u16) as 0x1431440b0, walks bucket (map+0x28, mask +0x40), on equal key fixes bucket bounds, unlinks node from list, decrements size map+0x18 and frees node via allocator map+8."
+ },
+ "signature": {
+  "id": "core.hash_map_erase_user_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 8B 42 50 A9 00 00 00 10 75 05",
+  "match": "0x143211520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143211520",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Erase_UserKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143213ab0",
+  "made_on_target": "0x143213ab0",
+  "twin": "made on steam-26566308; the target 0x143213ab0 is KB 0x143211520: Game_F1os_LogLargePayload_SessionBrowserGetSessionByID (0x31eaf70) and Game_NetworkReady_OnUnreadyMessage (0x3228a20) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143213ab0",
+    "target": "0x143213ab0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6a1f643e50f3d38725076a2ef3b08afe9a7d9c60deab41dec52dcea2ffe6e471"
+  }
+ ]
+}

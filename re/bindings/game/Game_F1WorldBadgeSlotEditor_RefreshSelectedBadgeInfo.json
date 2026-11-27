@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldBadgeSlotEditor_RefreshSelectedBadgeInfo",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fc89c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1WorldBadgeSlotEditor_RefreshSelectedBadgeInfo(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fca5c0 (RacingPC lab re_groups/_decomp);xref:0x141fc7780",
+  "notes": "Resolves the selected ref vm+0x2f0, finds its index i in the list vm+0x2d0, forms key = [vm+0x270]+0x82+i*0x88 and fetches the badge with Ent_Get_Badge_Thunk([vm+0x3f0], key); copies its 128-char name (+0x18, valid flag +0x98) into holder vm+0x328; for the current badge (g_FeTile_CurrentBadgeKey) writes its name (+0x10) into holder vm+0x348, or when unnamed a default (0x145614762), or in customisation context 3 a localised string (key 0x1457656e8 via vm+0x3d8) into node vm+0x350; finally sets node vm+0x310 to Team_Format_RenderBadgePath(key). Caller Game_F1WorldBadgeSlotEditor_A (copy-from popup build, binds loadouts +0x2c8, selected_loadout, badge_texture, copy_from_name, current_name at 0x20 steps) calls it last to fill the texture and name fields for the initially selected row. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.f1_world_badge_slot_editor_refresh_selected_badge_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC C0 00 00 00 48 89 CE 48 8B 89 F0 02 00 00",
+  "match": "0x141fc89c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fc89c0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldBadgeSlotEditor_RefreshSelectedBadgeInfo"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fca5c0",
+  "made_on_target": "0x141fca5c0",
+  "twin": "made on steam-26566308; the target 0x141fca5c0 is KB 0x141fc89c0: Game_ChallengeCareer_BuildTrackTiles (0x1fc2340) and Game_LiveryAssignVM_OnActivate (0x1fd4da0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fca5c0",
+    "target": "0x141fca5c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "48a7f44245768b31a2486666f1e3401ac86b2b05ea111e004dd21d4b4dde3cda"
+  }
+ ]
+}

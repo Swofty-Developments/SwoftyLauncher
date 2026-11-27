@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationVM_RefreshItemBoolNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fd4ba0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CustomisationVM_RefreshItemBoolNode(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fd67a0 (RacingPC lab re_groups/_decomp);xref:0x141fd4da0,0x141fd7500",
+  "notes": "Computes one bool and writes it with Vm_NodeSet_Bool to the node handle at vm+0x5a0 (after null/sentinel/+0x26 bit0/alive/bool-type checks). Value: false when Game_Entitlement_IsNonEaPlayTrial() is true; else with item=FUN_1417f01e0(): no item -> !vm+0xc89; item -> !(item+0x52==0 && item+0x78==8) && (vm+0xc89==0 || item+0x80!=0). Callers Game_LiveryAssignVM_OnActivate (after it sets vm+0xc89 from the customisation system list) and Game_CustomisationVM_OnItemFocus (tail call on focus change) use it to refresh that flag node; which UI flag the node is (name hash) is not visible here. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.customisation_vm_refresh_item_bool_node",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE E8 ?? ?? ?? ?? 84 C0 74 75 C6 44 24 27 00",
+  "match": "0x141fd4ba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fd4ba0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationVM_RefreshItemBoolNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fd67a0",
+  "made_on_target": "0x141fd67a0",
+  "twin": "made on steam-26566308; the target 0x141fd67a0 is KB 0x141fd4ba0: Game_LiveryAssignVM_OnActivate (0x1fd4da0) and Game_LiveryAssignVM_OnDeactivate (0x1fd6980) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fd67a0",
+    "target": "0x141fd67a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a4abe924ca127c5c1470d0b6289a12e319f16bdd87ce4f00a3d0d17e4d9d7123"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_List_FindIndexOfNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442bb7a0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_List_FindIndexOfNode(void *list_handle, void **node, int64_t *out_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442bdd70 (RacingPC lab re_groups/_decomp);xref:0x14207d920",
+  "notes": "Gets the child count of the VM list at handle+0x8 (array form: (end-begin)/8, or count at +0x80), iterates with Ne_Ref_GetListElementOrEmpty and writes the index of the element equal to *node. Returns 0 on success, 3 when not found."
+ },
+ "signature": {
+  "id": "vm.list_find_index_of_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 49 89 CE",
+  "match": "0x1442bb7a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bb7a0",
+  "kind": "func_start",
+  "names": [
+   "Vm_List_FindIndexOfNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442bdd70",
+  "made_on_target": "0x1442bdd70",
+  "twin": "made on steam-26566308; the target 0x1442bdd70 is KB 0x1442bb7a0: Ne_Variant_FormatToString (0x42bc680) and Vm_List_AppendChild (0x42bdef0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442bdd70",
+    "target": "0x1442bdd70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c32dec29f42a97a25bf2f6c595f57fa4178d0f213a75d16e694becd8e94ed037"
+  }
+ ]
+}

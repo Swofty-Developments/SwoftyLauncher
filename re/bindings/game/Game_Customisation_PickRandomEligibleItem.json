@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Customisation_PickRandomEligibleItem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141425260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Customisation_PickRandomEligibleItem(void *customisation, uint32_t packed_key, void *opt_exclude_ids, char apply_filters)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141425a40 (RacingPC lab re_groups/_decomp);xref:0x141425550,0x1416e5e40,0x141fdd4d0",
+  "notes": "Walks the item array self+0x78..+0x80 (stride 0x110) and collects indices of eligible items into a temp vector (allocator self+0x10): skips items whose id (+8) is in the optional exclude list (param_3: vector +8/+0x10, engaged flag +0x20); with apply_filters also skips items whose key is not available for packed_key in the g_FeTile_CustomisationSystem +0x230 table, items whose lookups in self+0x2a8 tables (+400, +800 twice, +0x260) report state != 1, and the item currently equipped (Ent_Get_VehicleCustomisation_Thunk(self+600, self+0x1a8) +0x18/+0x1a). Seeds a 624-word RNG from QueryPerformanceCounter ms, returns items + 0x110*random index or 0 when none, and always resets the exclude optional. Callers 0x141425550 (loops entrant vehicle customisations and rebuilds them), 0x1416e5e40 (loops g_FeTile table +0x230 keys) and Game_CustomisationCarAreaVM_RefreshDecalsNode all pass flag 1 and apply the returned item to a customisation record (0x141426cc0, 0x141427260, 0x141427730) before Ent_EntrantsSystem_ReplaceVehicleCustomisation. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.customisation_pick_random_eligible_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0A 00 00 C5 F8 29 B4 24 40 0A 00 00 44 88 4C 24 27",
+  "match": "0x141425260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141425260",
+  "kind": "func_start",
+  "names": [
+   "Game_Customisation_PickRandomEligibleItem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141425a40",
+  "made_on_target": "0x141425a40",
+  "twin": "made on steam-26566308; the target 0x141425a40 is KB 0x141425260: Game_CustomisationDecals_LoadConfig (0x141f7c0) and Game_CustomisationDecals_UnloadAssetBatch (0x14284c0) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141425a40",
+    "target": "0x141425a40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "855d0840ff422a6a9ad038eea6fb167ffb32086ab355a945ccc313dcc471ae3f"
+  }
+ ]
+}

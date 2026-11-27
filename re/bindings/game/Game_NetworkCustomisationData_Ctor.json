@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkCustomisationData_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142529760",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_NetworkCustomisationData_Ctor(void *self, void *driver, void *wear_a, void *wear_b, void *wear_c3, void *block, uint32_t key, void *p8, void *p9, void *p10, void *p11)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14252b690 (RacingPC lab re_groups/_decomp);xref:0x143186dd0",
+  "notes": "Builds the 0x17d0-byte replicated player customisation object (vtable 0x14571d0e0): three item slots typed 1/2/3 from param_3, wearable slot groups typed 0xd/0x10/0x11/0xe/0xf (one from param_4 at +0xb8, three from param_5 at +0x1b0/+0x2a8/+0x3a0), a block via FUN_14252ca20 at +0x498, key at +0x690, driver name strings (4x inline 128 + 13-char) and a 0x310 blob copied from param_2, then default-inits 8 optional vehicle states with QPC timestamps and key 0x3fff0000, and two \"none\" colour/badge records; finishes with 0x14252cbb0 and FUN_14252ccd0. Slot item id at +0x1a of each 0x30 slot is 0xffff = unset."
+ },
+ "signature": {
+  "id": "game.network_customisation_data_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F9 7F 74 24 30",
+  "match": "0x142529760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142529760",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkCustomisationData_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14252b690",
+  "made_on_target": "0x14252b690",
+  "twin": "made on steam-26566308; the target 0x14252b690 is KB 0x142529760: Game_VoPlaySoundEffectNode_Execute (0x25289b0) and Game_FrontendSceneObject_RespawnAll (0x2549cb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14252b690",
+    "target": "0x14252b690"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "43f80dcdbdaec21855f22849137c57d9c3d5b74e72c1b56e94a5432122d51e2d"
+  }
+ ]
+}

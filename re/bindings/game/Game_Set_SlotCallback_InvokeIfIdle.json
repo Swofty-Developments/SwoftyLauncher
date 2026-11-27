@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Set_SlotCallback_InvokeIfIdle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14388c150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Set_SlotCallback_InvokeIfIdle(void *owner, void *out_result, uint32_t slot, void *callback_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14388e6e0 (RacingPC lab re_groups/_decomp);xref:0x14207d920",
+  "notes": "For slot 2 it only returns result {code 3, text 0x145883d60}. Otherwise it takes entry = *(owner+0x28+slot*8), stores the 16-byte callback (fn, ctx) at entry+0x110/+0x118, clears byte +0x130, calls vfunc +0x18 on the object at entry+0x28 if present, returns result {0, text 0x14562f919} and invokes the callback at once when it is non-null and the state at entry+0x108 is 0 or 7. Game_BadgeEditor_OnCommandRaised uses it on command 0x08f592fb after Game_BadgeEditor_Apply when +0x1520 is set: slot 1 of *(editor+0x1550) with callback 0x14207cf10 bound to the editor, the same function it calls directly when +0x1520 is clear, so this defers the follow-up until the slot is idle. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.set_slot_callback_invoke_if_idle",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 41 83 F8 02",
+  "match": "0x14388c150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14388c150",
+  "kind": "func_start",
+  "names": [
+   "Game_Set_SlotCallback_InvokeIfIdle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14388e6e0",
+  "made_on_target": "0x14388e6e0",
+  "twin": "made on steam-26566308; the target 0x14388e6e0 is KB 0x14388c150: Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) and Sess_HumanController_Update (0x3897f50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14388e6e0",
+    "target": "0x14388e6e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "04ff1d816ea938c7c5bbcd90104aa1ff26af2ee3ae846f70f6288eb17cf42a18"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_ClearForceHighlight",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141ff8370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DecalEditor_ClearForceHighlight(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141ff9f70 (RacingPC lab re_groups/_decomp);xref:0x141ff7550,0x141ffa390",
+  "notes": "If active: gets current area and current slot item, sets \"force_highlight\"=false on the child node (hash 0xd4ee4363) of the item node (+0x10); destroys the inline array at +0x480 (count +0x530, stride 0xb0) and zeroes the count; dispatches a UI event (string 0x145755eea) and sets the bool node +0x3a8 to false."
+ },
+ "signature": {
+  "id": "game.decal_editor_clear_force_highlight",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 80 B9 20 04 00 00 00",
+  "match": "0x141ff8370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff8370",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_ClearForceHighlight"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ff9f70",
+  "made_on_target": "0x141ff9f70",
+  "twin": "made on steam-26566308; the target 0x141ff9f70 is KB 0x141ff8370: Ui_MyTeamDecalEditor_Page (0x1ff64f0) and Game_CarDecals_BuildList (0x2001470) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ff9f70",
+    "target": "0x141ff9f70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "78e87c983e39c9e73e28923250ba599da574edf66fc72fbb04b4887a66502a17"
+  }
+ ]
+}
