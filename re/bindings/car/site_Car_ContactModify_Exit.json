@@ -1,0 +1,67 @@
+{
+ "schema": 1,
+ "name": "site_Car_ContactModify_Exit",
+ "table": "globals",
+ "author": "Kizikafuka",
+ "row": {
+  "addr": "0x142f04dd1",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "car",
+  "evidence": "decomp:own capstone disasm of Car_Contact_ModifyVehicle (KB 0x142f04040, this site KB 0x142f04dd1);xref:0x142f0662e;kb:Car_Contact_ModifyVehicle",
+  "notes": "Common exit of Car_Contact_ModifyVehicle (its first early-out jumps here too): vmovaps xmm6,[rsp+40h], xmm7,[rsp+50h], xmm8,[rsp+60h], rsi = contact record still live. Contact Physics' rigid-body contact (kizi.ai-tweaks, kizi_contact_sim.hpp) computes its contact response here."
+ },
+ "signature": {
+  "id": "car.contact_modify_exit",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 30 4C 8D 44 24 20 E8 ?? ?? ?? ?? C5 F8 28 74 24 40",
+  "match": "0x142f04dc2",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f04dd1",
+  "kind": "mid",
+  "expect": "C5 F8 28 74 24 40",
+  "names": [
+   "site_Car_ContactModify_Exit"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "Kizikafuka",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "kizi.ai-tweaks common/kizi_contact_sim.hpp"
+  ],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f07352",
+  "made_on_target": "0x142f07361",
+  "twin": "made on steam-26566308; the target 0x142f07361 is KB 0x142f04dd1: Game_AutoResetToTrack_FireDeferred (0x2f05fc0) and Game_VehicleProgressSystem_OnVehicleRemoved (0x2f09d80) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "Kizikafuka",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f07352",
+    "target": "0x142f07361"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f783b8ee4faf5ecc85695eed3217b0652b45ebc0b20bc14f7dc652e70303b457"
+  }
+ ]
+}
