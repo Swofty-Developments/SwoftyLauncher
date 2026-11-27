@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Digest_RsaSignGetMdNid",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1452f42a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Digest_RsaSignGetMdNid(void *libctx, void *md)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1452f6c60 (RacingPC lab re_groups/_decomp);xref:0x1452a4740,0x1452a49a0",
+  "notes": "OpenSSL ossl_digest_rsa_sign_get_md_nid. Returns the approved digest nid if found, otherwise searches a second 6 entry name/nid table at 0x1455b5350 with EvpMd_IsA; 0 if no match."
+ },
+ "signature": {
+  "id": "core.ossl_digest_rsa_sign_get_md_nid",
+  "section": ".xtls",
+  "pattern": "40 53 B8 20 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 41 B8 01 00 00 00",
+  "match": "0x1452f42a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1452f42a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Digest_RsaSignGetMdNid"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1452f6c60",
+  "made_on_target": "0x1452f6c60",
+  "twin": "made on steam-26566308; the target 0x1452f6c60 is KB 0x1452f42a0: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1452f6c60",
+    "target": "0x1452f6c60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6dc4a65938527437d939d8cf7378733b97f8a5467cb518494ffb4bbb91f02cf3"
+  }
+ ]
+}

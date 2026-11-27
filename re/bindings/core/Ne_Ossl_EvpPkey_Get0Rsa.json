@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_EvpPkey_Get0Rsa",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144d9c700",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Ossl_EvpPkey_Get0Rsa(void *pkey)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144d9f0c0 (RacingPC lab re_groups/_decomp);xref:0x144f85350",
+  "notes": "OpenSSL EVP_PKEY_get0_RSA. Requires pkey type (+0x0) 6 (RSA) or 0x390 (RSA-PSS) else raises EVP reason 0x7f; then returns the legacy key: pkey+0x20 directly when no keymgmt (+0x60), otherwise the cached legacy copy at +0x28, creating it by downgrade under the pkey lock (+0x38)."
+ },
+ "signature": {
+  "id": "core.ossl_evp_pkey_get0_rsa",
+  "section": ".xtls",
+  "pattern": "B8 28 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 8B 01 83 F8 06 74 3D 3D 90 03 00 00 74 36 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? BA 25 00 00 00 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 45 33 C0 BA 7F 00 00 00 B9 06 00 00 00 E8 ?? ?? ?? ?? 33 C0 48 83 C4 28 C3 48 83 C4 28",
+  "match": "0x144d9c700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144d9c700",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_EvpPkey_Get0Rsa"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144d9f0c0",
+  "made_on_target": "0x144d9f0c0",
+  "twin": "made on steam-26566308; the target 0x144d9f0c0 is KB 0x144d9c700: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144d9f0c0",
+    "target": "0x144d9f0c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "02887ea4ff09bcc743231ba934e7b2c5fcb2a19c661d849b4cced07cb1a1cf9b"
+  }
+ ]
+}

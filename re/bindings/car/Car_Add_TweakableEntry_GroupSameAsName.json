@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Car_Add_TweakableEntry_GroupSameAsName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1446a5800",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_Add_TweakableEntry_GroupSameAsName(void *tweakables, const char *name, void *a3, void *a4, void *a5, uint32_t minv, uint32_t maxv, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1446a8070 (RacingPC lab re_groups/_decomp);xref:0x1446a7e20",
+  "notes": "Copies name (max 31 chars) into an inline string, finds or adds a group with that same name in vector +0x28..+0x30 (stride 0x38), then Game_Tweakables_ConstructNamedEntry(name, a3, {a5,a4}, minv, maxv, +0x68, flag, +0x60) and emplaces it. Context from caller: gearbox channel registration."
+ },
+ "signature": {
+  "id": "car.add_tweakable_entry_group_same_as_name",
+  "section": ".xtls",
+  "pattern": "48 89 DA 49 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40",
+  "match": "0x1446a57eb",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x6"
+  },
+  "target": "0x1446a5800",
+  "kind": "call",
+  "names": [
+   "Car_Add_TweakableEntry_GroupSameAsName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1446a805b",
+  "made_on_target": "0x1446a8070",
+  "twin": "made on steam-26566308; the target 0x1446a8070 is KB 0x1446a5800: Car_Tuning_SetFinalDrive (0x46a7490) and Car_GearBox_UpdateShiftTimersAndFaults (0x46a8940) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1446a805b",
+    "target": "0x1446a8070"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fab12ae80c121b7fda38b984e2caa2f91a961eb2903fab2fe468ce804012abbb"
+  }
+ ]
+}

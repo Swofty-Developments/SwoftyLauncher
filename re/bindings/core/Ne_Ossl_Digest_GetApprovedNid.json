@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Digest_GetApprovedNid",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1452f3e90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Digest_GetApprovedNid(void *libctx, void *md)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1452f6850 (RacingPC lab re_groups/_decomp);xref:0x1452a2210,0x1452a65d0",
+  "notes": "OpenSSL approved-digest NID lookup (ossl_digest_get_approved_nid family). First arg unused. Returns 0 for null md, else walks the 11 entry name/nid table at 0x1455c50a0 using Ne_Ossl_EvpMd_IsA and returns the matching nid."
+ },
+ "signature": {
+  "id": "core.ossl_digest_get_approved_nid",
+  "section": ".xtls",
+  "pattern": "B8 28 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B CA 48 83 C4 28",
+  "match": "0x1452f3e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1452f3e90",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Digest_GetApprovedNid"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1452f6850",
+  "made_on_target": "0x1452f6850",
+  "twin": "made on steam-26566308; the target 0x1452f6850 is KB 0x1452f3e90: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1452f6850",
+    "target": "0x1452f6850"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d07c6e74e979525f7140184b9934b2dbfe79dd6ddf04c744fde404aee91bbb25"
+  }
+ ]
+}

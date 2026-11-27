@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Engine_CtrlCmdString",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x145161c90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Engine_CtrlCmdString(void *engine, const char *cmd_name, const char *arg, int cmd_optional)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x145164650 (RacingPC lab re_groups/_decomp);xref:0x14518d010",
+  "notes": "OpenSSL ENGINE_ctrl_cmd_string. Resolves cmd_name to a command number via the engine ctrl callback (+0x70) or cmd_defns table (+0x90), checks it is executable, reads its flags and dispatches Ne_Ossl_ENGINE_ctrl with a string, a parsed long, or no argument. Unknown command returns 1 when cmd_optional (after clearing errors) else error 0x89."
+ },
+ "signature": {
+  "id": "core.ossl_engine_ctrl_cmd_string",
+  "section": ".xtls",
+  "pattern": "4C 89 44 24 18 57 41 54 41 55 41 57 B8 48 00 00 00",
+  "match": "0x145161c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145161c90",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Engine_CtrlCmdString"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x145164650",
+  "made_on_target": "0x145164650",
+  "twin": "made on steam-26566308; the target 0x145164650 is KB 0x145161c90: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x145164650",
+    "target": "0x145164650"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "059663cd15546187cb6b0e8951be6e354efcfe04fba15eb1a26d78a840414ca0"
+  }
+ ]
+}

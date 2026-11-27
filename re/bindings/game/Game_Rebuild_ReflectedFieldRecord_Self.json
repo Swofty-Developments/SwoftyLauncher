@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Rebuild_ReflectedFieldRecord_Self",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1411cdca0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Rebuild_ReflectedFieldRecord_Self(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1411ce2e0 (RacingPC lab re_groups/_decomp);xref:0x1411d5ea0",
+  "notes": "Destroys all entries of the writer array at +0x2c8 (count u16 at +0x2d0, allocator at +0x2c0) and resets the count, then writes one reflected field (name 0x14568ddb0, type global 0x14612bf08) with value from self vfunc +0x8 via Gdb_Write_ReflectedFieldA, appends it and calls self vfunc +0x10 with the writer. Context from caller: engine management on race session end."
+ },
+ "signature": {
+  "id": "game.rebuild_reflected_field_record_self",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CF",
+  "match": "0x1411cdca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411cdca0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rebuild_ReflectedFieldRecord_Self"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1411ce2e0",
+  "made_on_target": "0x1411ce2e0",
+  "twin": "made on steam-26566308; the target 0x1411ce2e0 is KB 0x1411cdca0: Ne_Bitset_ThrowInvalidPosition_A (0x11c0b30) and Career_Check_ResearchProjectReady (0x11cfb00) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1411ce2e0",
+    "target": "0x1411ce2e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "55688381fcf7330d6c06d38b3b2a16b8f03efadd2a065512d1f02e0ca39d7015"
+  }
+ ]
+}

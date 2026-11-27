@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Lookup_CustomisationItems_ByEntryId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1401aff40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_Lookup_CustomisationItems_ByEntryId(void *out, uint8_t entry_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1401aff40 (RacingPC lab re_groups/_decomp);xref:0x1401aae90",
+  "notes": "Clears three optional flags in out (+0x30, +0x68, +0xa0); 0xff id returns. Looks entry_id up in an FNV-hashed map inside g_Game_Manager+0x290 (buckets +0x658, mask +0x670) to get a (type byte, index) pair, finds the matching 0x108 customisation record (type +0x100, index +0x102) in the per-type list at +0x2f8, then queries g_FeTile_CustomisationSystem catalogs (+0x38 + type*0x10) for its tag 3 and tag 2 items and fills out+0x0 and out+0x38 item refs (guid, id) setting their flags. Context from caller: driver setup resolve, record is probably the team customisation."
+ },
+ "signature": {
+  "id": "game.lookup_customisation_items_by_entry_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 58 01 00 00 48 89 CE 48 8B 05",
+  "match": "0x1401aff40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401aff40",
+  "kind": "func_start",
+  "names": [
+   "Game_Lookup_CustomisationItems_ByEntryId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1401aff40",
+  "made_on_target": "0x1401aff40",
+  "twin": "made on steam-26566308; the target 0x1401aff40 is KB 0x1401aff40: Game_SceneManagerSpawn_MergeScene (0x1a5b10) and Ne_String_AssignWithMode (0x1b9000) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1401aff40",
+    "target": "0x1401aff40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e7a43e8cd455d9973cd4371df57ead6926add0474092a22a2a14e6c8cff53690"
+  }
+ ]
+}

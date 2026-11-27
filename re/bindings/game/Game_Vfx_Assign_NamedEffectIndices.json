@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Assign_NamedEffectIndices",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143b2fde0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_Assign_NamedEffectIndices(void *vfx_mgr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143b323b0 (RacingPC lab re_groups/_decomp);xref:0x1433893d0",
+  "notes": "Zeroes counters at +0x2dc/+0x2e0/+0x2e4/+0x2fc, then walks two intrusive lists ((+0xf0d00)+0x20 and (+0xf0d10)+0x20, name at node+0x60) and writes a running per-name index as float into node+0xb0 (air_cooler, bottle_spray) or node+0xac (char_trans, crwd_smke_tape, firework_flower, firework_direct, track_tickertape, podium_tickertape, v_exhst_flam_f2). Finally, under the critical section at +0xf10d0, adds queued v_exhst_flam_f2 entries (0x68-stride vector in +0x38, name at +0x18) to the +0x2fc count."
+ },
+ "signature": {
+  "id": "game.vfx_assign_named_effect_indices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 C7 81 DC 02 00 00 00 00 00 00",
+  "match": "0x143b2fde0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b2fde0",
+  "kind": "func_start",
+  "names": [
+   "Game_Vfx_Assign_NamedEffectIndices"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143b323b0",
+  "made_on_target": "0x143b323b0",
+  "twin": "made on steam-26566308; the target 0x143b323b0 is KB 0x143b2fde0: Game_Renderer_CreateRenderPasses (0x3b1a140) and Ne_HashMap_FatalStub_ParticleResourcePack (0x3b48e20) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143b323b0",
+    "target": "0x143b323b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e0704bb1ed91b59e95591709d3cc3bed53f8559db0458ec0ad9b7ee8ce21e117"
+  }
+ ]
+}

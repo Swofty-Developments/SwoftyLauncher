@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Ssl_CipherGetEvp",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144c84b70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Ssl_CipherGetEvp(void *ssl_ctx, void *session, void **enc, void **md, int *mac_pkey_type, size_t *mac_secret_size, void **comp, int use_etm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144c87530 (RacingPC lab re_groups/_decomp);xref:0x1450b5420",
+  "notes": "OpenSSL ssl_cipher_get_evp. From session cipher (+0x2f0): optionally finds the compression method by id (+0x2ec); maps algorithm_enc (+0x24) through a 24 entry table to ctx cipher slots (+0x468..) and algorithm_mac (+0x28) through a 14 entry table to ctx digest slots (+0x528..), mac type (+0x430..) and secret size; for TLS1.x without ETM swaps in stitched cipher+mac ciphers (nids 0x393,0x394,0x3b4,0x396,0x3b6). Returns 1 on success."
+ },
+ "signature": {
+  "id": "core.ossl_ssl_cipher_get_evp",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 41 54 41 55 41 56 41 57 B8 40 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B B2 F0 02 00 00",
+  "match": "0x144c84b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c84b70",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Ssl_CipherGetEvp"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144c87530",
+  "made_on_target": "0x144c87530",
+  "twin": "made on steam-26566308; the target 0x144c87530 is KB 0x144c84b70: Ne_Std_ThrowBadFunctionCall (0x49e4194) and Ne_Crt_Chkstk (0x4c8c190) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144c87530",
+    "target": "0x144c87530"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3301458c9a70caa6ead9062f8f0369fdd4174cdc83939ab0e37d8270478a33d1"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PracticeFuel_Get_RaceLapCount",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14295e240",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint32_t Game_PracticeFuel_Get_RaceLapCount(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142960600 (RacingPC lab re_groups/_decomp);xref:0x142972120",
+  "notes": "Gets the current game mode (self+0x1e0 -> +0x88 -> +0x260), finds the index of the session with byte key 1 (else 2) through Game_TyreAllocation_FindIndexByByteKey on the weekend data (+0x240), locates the matching track record (mode +0x1eb list, 0x30 stride) and its layout entry, then returns Game_RaceLength_ComputeLapCount(base laps from layout +0xe0 table[index], session +0x28, session +0x34). Returns 0 when any lookup fails. Good hook to read the race distance used for practice fuel targets."
+ },
+ "signature": {
+  "id": "game.practice_fuel_get_race_lap_count",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 8B 81 E0 01 00 00",
+  "match": "0x14295e240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14295e240",
+  "kind": "func_start",
+  "names": [
+   "Game_PracticeFuel_Get_RaceLapCount"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142960600",
+  "made_on_target": "0x142960600",
+  "twin": "made on steam-26566308; the target 0x142960600 is KB 0x14295e240: site_Career_WeekendObjectiveType (0x295ea73) and Game_PracticeProgrammes_Init (0x29652d0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142960600",
+    "target": "0x142960600"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2d8335abd34ba6c1c90a82eff939c108e203ff90cdcf7ae33c766fe12e54fdd7"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Array_CopyAssign_Elem80_U16Count",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1431a2fb0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_Array_CopyAssign_Elem80_U16Count(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1431a5540 (RacingPC lab re_groups/_decomp);xref:0x140fe3130,0x143037660,0x143038790,0x14303b780,0x143099930,0x1430a3cd0,0x1430a70f0,0x14322f800",
+  "notes": "(lib) Copy assignment of an owned array: count u16 at +0x8, data at +0x10, allocator at +0x18, 0x50-byte elements with a vtable, a 64-byte id block at +0x8 (Ne_Make_RandomIdBlock default) and a u32 at +0x48. Destroys old elements, allocates count*0x50, default-constructs, then copies the 64 bytes and the u32 per element. Returns dst."
+ },
+ "signature": {
+  "id": "core.array_copy_assign_elem80_u16_count",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 CE 48 39 CA",
+  "match": "0x1431a2fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431a2fb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Array_CopyAssign_Elem80_U16Count"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1431a5540",
+  "made_on_target": "0x1431a5540",
+  "twin": "made on steam-26566308; the target 0x1431a5540 is KB 0x1431a2fb0: Game_GameSessionManager_Destroy (0x319b7e0) and Game_CustomDriverNetworkMessageHandler_RemoveCustomDriver (0x31c1a30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1431a5540",
+    "target": "0x1431a5540"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4e798057a2c65ff781c8807a4064037ae3386044aab5e236c28c3612e21a9695"
+  }
+ ]
+}

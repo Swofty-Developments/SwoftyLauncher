@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_EvpMdCtx_Free",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1448fe4f0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Ossl_EvpMdCtx_Free(void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144900eb0 (RacingPC lab re_groups/_decomp);xref:0x1452a2210,0x1452a4740,0x1452f8780",
+  "notes": "OpenSSL EVP_MD_CTX_free pattern: if ctx non-null calls reset helper FUN_144901f70 then Crypto_Free(ctx). Also used on ssl+0x190 handshake digest by the ssl3 finished-mac init."
+ },
+ "signature": {
+  "id": "core.ossl_evp_md_ctx_free",
+  "section": ".xtls",
+  "pattern": "48 85 C9 74 32 53 B8 20 00 00 00 E8",
+  "match": "0x1448fe4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1448fe4f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_EvpMdCtx_Free"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144900eb0",
+  "made_on_target": "0x144900eb0",
+  "twin": "made on steam-26566308; the target 0x144900eb0 is KB 0x1448fe4f0: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144900eb0",
+    "target": "0x144900eb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d4c46d9d75b4a779b8fe68f8f878f098ecc8f20063a96e6b003850c92077c746"
+  }
+ ]
+}

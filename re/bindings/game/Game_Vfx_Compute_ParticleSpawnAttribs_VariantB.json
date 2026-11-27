@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Compute_ParticleSpawnAttribs_VariantB",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14346c0f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14346e670 (RacingPC lab re_groups/_decomp);xref:0x1433adef0",
+  "notes": "Same code as 0x14346b370 with a different tuning-constant block (DAT_1460f2fb0, DAT_1460f9a90.., DAT_1460d0d00.., toggles DAT_1460c8f38..f44) and helper FUN_14346fbb0. Context from caller: tyre kickup particle blocks."
+ },
+ "signature": {
+  "id": "game.vfx_compute_particle_spawn_attribs_variant_b",
+  "section": ".xtls",
+  "pattern": "4D 89 CD E8 ?? ?? ?? ?? C5 FA 10 84 24 74 01 00 00",
+  "match": "0x1433adb53",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14346c0f0",
+  "kind": "call",
+  "names": [
+   "Game_Vfx_Compute_ParticleSpawnAttribs_VariantB"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1433b00d3",
+  "made_on_target": "0x14346e670",
+  "twin": "made on steam-26566308; the target 0x14346e670 is KB 0x14346c0f0: Game_F1os_CreateTask_ReconcileUserEntitlements (0x3453bf0) and Game_PitLane_GetDistanceToBox (0x34b72b0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1433b00d3",
+    "target": "0x14346e670"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1a85008b53d5fabdd20ab82da42079ac95dca4b83301cb2ab9b99048db67c018"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Get_SelectedItemData_FromHolder280",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1420565e0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Get_SelectedItemData_FromHolder280(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1420581e0 (RacingPC lab re_groups/_decomp);xref:0x142057170",
+  "notes": "Same pattern as 0x1420651d0 through the holder at vm+0x280: follows the selection node (holder+0x28), finds its index in the list node (holder+0x8) with Career_Ui_FindChildIndex and returns (holder+0x48)[index*0x10+8]; 0 when nothing is selected. Context from caller: MyTeam setup flow."
+ },
+ "signature": {
+  "id": "ui.get_selected_item_data_from_holder280",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE 48 8B 81 80 02 00 00",
+  "match": "0x1420565e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420565e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Get_SelectedItemData_FromHolder280"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1420581e0",
+  "made_on_target": "0x1420581e0",
+  "twin": "made on steam-26566308; the target 0x1420581e0 is KB 0x1420565e0: Game_MyTeamSetup_FlowMain (0x2057170) and Career_Build_MyTeamSetupSummaryPage (0x20592b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1420581e0",
+    "target": "0x1420581e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "982fda62b0f40fb5a95ae6ee19012035f2b25bcd8a1b47e7ce29c3c71106117e"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_EncoderCtx_SetCleanup",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144da56e0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_EncoderCtx_SetCleanup(void *ctx, void *cleanup)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144da80a0 (RacingPC lab re_groups/_decomp);xref:0x144da8fb0",
+  "notes": "OpenSSL OSSL_ENCODER_CTX setter: stores arg at ctx+0x28 and returns 1; null ctx raises ERR lib 0x3b reason 0xc0102 at line 0x160. Field name (cleanup) inferred from OpenSSL struct order."
+ },
+ "signature": {
+  "id": "core.ossl_encoder_ctx_set_cleanup",
+  "section": ".xtls",
+  "pattern": "B8 28 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 85 C9 75 36 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? BA 60 01 00 00",
+  "match": "0x144da56e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144da56e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_EncoderCtx_SetCleanup"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144da80a0",
+  "made_on_target": "0x144da80a0",
+  "twin": "made on steam-26566308; the target 0x144da80a0 is KB 0x144da56e0: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144da80a0",
+    "target": "0x144da80a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3c91da2daa3467cdd3dfee88e0987d23ae937b136c810c9743720d1aab289cc0"
+  }
+ ]
+}

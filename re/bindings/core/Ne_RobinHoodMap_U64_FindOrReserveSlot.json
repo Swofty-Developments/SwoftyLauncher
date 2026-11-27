@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_U64_FindOrReserveSlot",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445adf30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_U64_FindOrReserveSlot(void *map, uint64_t *out_index_status, const uint8_t *key8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445b07a0 (RacingPC lab re_groups/_decomp);xref:0x1445a9b40,0x1445a9ca0",
+  "notes": "(lib) Robin-hood table insert probe for an 8-byte key: FNV-1a over the 8 bytes times multiplier map+0x10, info byte from low 5 bits (inc +0x40, shift +0x44), mask +0x30, 16-byte slots at +0x18, info bytes at +0x20. Writes {index, status}: 1 = key already present, 2 = empty slot reserved, 3 = slot reserved after shifting later entries up, 0 = failed after 256 retries. Allocates the initial 8-slot table (0xf6 bytes), halves the info increment or rehashes via FUN_1445b0de0 when count +0x28 reaches max load +0x38 (80 percent)."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_u64_find_or_reserve_slot",
+  "section": ".xtls",
+  "pattern": "4C 89 F1 E8 ?? ?? ?? ?? 8B 84 24 A8 00 00 00",
+  "match": "0x1445a74e5",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1445adf30",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_U64_FindOrReserveSlot"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445a9d55",
+  "made_on_target": "0x1445b07a0",
+  "twin": "made on steam-26566308; the target 0x1445b07a0 is KB 0x1445adf30: Game_Vfx_UpdateWheelTyreInstance (0x45af370) and Game_RendererModule_Initialise (0x45b3400) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445a9d55",
+    "target": "0x1445b07a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4d92b6e05998e84f517506c855fe084c1f0a47c4ca348216ed6eff7978bb6eac"
+  }
+ ]
+}

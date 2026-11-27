@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_Resolve_ScenarioList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140ba3950",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_InstantRace_Resolve_ScenarioList(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140ba3930 (RacingPC lab re_groups/_decomp);xref:0x141c2db00",
+  "notes": "Only when the vector at self+0x4a8..+0x4b0 is empty: for each 0x28-byte entry of the name list self+0x488..+0x490 (name at +0x10) finds the scenario in g_Game_Scenarios (+200..+0xd0, 0x58 stride, name at +8->+0x10; first entry if no match) and pushes its pointer, growing the vector by 1.5x with the allocator at +0x4a0."
+ },
+ "signature": {
+  "id": "game.instant_race_resolve_scenario_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 8B 99 A8 04 00 00",
+  "match": "0x140ba3950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba3950",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_Resolve_ScenarioList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ba3930",
+  "made_on_target": "0x140ba3930",
+  "twin": "made on steam-26566308; the target 0x140ba3930 is KB 0x140ba3950: Game_InstantRace_SetupTrackList (0xba28b0) and Sess_Build_ChampionshipEntrantSelection (0xba4370) on either side both sit -0x20 below their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ba3930",
+    "target": "0x140ba3930"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ae9ecd80b80a2556648076d05f8727b313ce35374c7d1f886025a8b2ac57325d"
+  }
+ ]
+}

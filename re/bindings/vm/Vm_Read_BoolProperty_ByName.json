@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Read_BoolProperty_ByName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417513b0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint8_t Vm_Read_BoolProperty_ByName(void *self, const char *name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141752b30 (RacingPC lab re_groups/_decomp);xref:0x142237230,0x142239480",
+  "notes": "Resolves the VM node at self+0x28 through its proxy chain (vtable +0x30 test, max 0x62 hops), resolves the binding chain for name (Ne_Property_ResolveBindingChain), and if the resulting node is valid and its value type id equals the type object at 0x14612bda0 returns the first byte of the value (vtable +0x38), else 0. Releases both temporary node handles. Good read-only hook for a named VM flag."
+ },
+ "signature": {
+  "id": "vm.read_bool_property_by_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 C5 F8 29 74 24 60 48 89 D6 48 89 CF 48 8B 49 28",
+  "match": "0x1417513b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417513b0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Read_BoolProperty_ByName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141752b30",
+  "made_on_target": "0x141752b30",
+  "twin": "made on steam-26566308; the target 0x141752b30 is KB 0x1417513b0: site_Career_RnDListRowDeptIcon (0x1750625) and Ui_Init_CarDriverTeamSelectors (0x175a090) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141752b30",
+    "target": "0x141752b30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0525e44938be135a4036ef757e3b5d3e44f130ea7603e0bb3a80c5db17b53f9"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RbTree_EraseSubtree_ValNestedMap",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142eddda0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RbTree_EraseSubtree_ValNestedMap(void **alloc, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ee0330 (RacingPC lab re_groups/_decomp);xref:0x142e7efd0",
+  "notes": "(lib) Recursive erase of an outer std::map whose node value is an inner map (alloc +0x28, head +0x30). Erases the inner tree via 0x142ee0240 on head->parent, frees the inner head node, then the outer node (allocator vfunc +0x38)."
+ },
+ "signature": {
+  "id": "core.rb_tree_erase_subtree_val_nested_map",
+  "section": ".xtls",
+  "pattern": "4C 89 F1 E8 ?? ?? ?? ?? 49 8B 56 08",
+  "match": "0x142e7cac8",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x142eddda0",
+  "kind": "call",
+  "names": [
+   "Ne_RbTree_EraseSubtree_ValNestedMap"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e7f058",
+  "made_on_target": "0x142ee0330",
+  "twin": "made on steam-26566308; the target 0x142ee0330 is KB 0x142eddda0: Career_Complete_PerkTreeNode (0x2ea8570) and Ne_Container_AbortNoReturn_142ee16c0 (0x2ee3c50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e7f058",
+    "target": "0x142ee0330"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6c9a4453405fc20aa73ec7ec13c76609d1be260c27e4d2fdc3cf8b82a889e534"
+  }
+ ]
+}

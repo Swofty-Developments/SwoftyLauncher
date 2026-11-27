@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Ssl3_CleanupKeyBlock",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144f79270",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Ossl_Ssl3_CleanupKeyBlock(void *ssl)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144f7bc30 (RacingPC lab re_groups/_decomp);xref:0x1450b5420",
+  "notes": "OpenSSL ssl3_cleanup_key_block. Clear-frees the key block pointer at ssl+0x318 with length +0x310 (line 0x136) and zeroes both fields."
+ },
+ "signature": {
+  "id": "core.ossl_ssl3_cleanup_key_block",
+  "section": ".xtls",
+  "pattern": "40 53 B8 20 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B 91 10 03 00 00",
+  "match": "0x144f79270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144f79270",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Ssl3_CleanupKeyBlock"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144f7bc30",
+  "made_on_target": "0x144f7bc30",
+  "twin": "made on steam-26566308; the target 0x144f7bc30 is KB 0x144f79270: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144f7bc30",
+    "target": "0x144f7bc30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4b0c75bdd0959f24fff08e878b8e07848e3bd5108f0e9ddb6c14b3ce603053bd"
+  }
+ ]
+}

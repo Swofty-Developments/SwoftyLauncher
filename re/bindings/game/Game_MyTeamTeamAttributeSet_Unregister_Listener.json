@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamTeamAttributeSet_Unregister_Listener",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140f8f5b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamTeamAttributeSet_Unregister_Listener(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140f90130 (RacingPC lab re_groups/_decomp);xref:0x140fb5490",
+  "notes": "Finds the 64-bit event key for this set by matching its packed id (self+0x28: byte 0 and high u16) in the 0x30-stride table at (self+0x50)+0x2c8..+0x2d0 (key at +8, 0 if absent). If a listener is held (self+0x38 object, +0x40 refcount block) calls Ne_EventRegistry_RemoveListener(self+0x68, listener, key), then clears and releases the shared pointer."
+ },
+ "signature": {
+  "id": "game.my_team_team_attribute_set_unregister_listener",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 49 50",
+  "match": "0x140f8f5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f8f5b0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamTeamAttributeSet_Unregister_Listener"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140f90130",
+  "made_on_target": "0x140f90130",
+  "twin": "made on steam-26566308; the target 0x140f90130 is KB 0x140f8f5b0: Career_Calc_FacilityNodeScaledValueB (0xf8f380) and Career_TeamRenownAndForm_Serialise (0xf95c70) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140f90130",
+    "target": "0x140f90130"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3f3d6f216a5630047a1d3148d3ebc973247f3496ba021153625be5c556e030e2"
+  }
+ ]
+}

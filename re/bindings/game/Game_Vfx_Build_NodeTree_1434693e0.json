@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Build_NodeTree_1434693e0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143466e60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_Build_NodeTree_1434693e0(void *self, void *allocator, uint32_t id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1434693e0 (RacingPC lab re_groups/_decomp);xref:0x1433893d0",
+  "notes": "Same node-tree builder pattern as 0x143468680 with the 0x40 node expanded inline: slots self+0x40..+0x58, id at +0x38, +0x3c=-1, static u16 offset table at DAT_1460fa67a.. initialised once. Context from caller: tyre kickup VFX."
+ },
+ "signature": {
+  "id": "game.vfx_build_node_tree_1434693e0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 89 7B 10 C7 03 00 00 00 00 4B 8B 4C 3D 08 48 8B 01 BA 18 00 00 00 41 B8 08 00 00 00 FF 50 18 C5 78 11 28 48 C7 40 10 00 00 00 00 4B 89 44 3D 18 4B 8B 4C 3D 08 48 89 48 08 89 78 10 C7 00 00 00 00 00 43 89 7C 3D 10 43 C7 44 3D 00 00 00 00 00 48 FF C7 8B 86 80 01 00 00",
+  "match": "0x1433894a9",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143466e60",
+  "kind": "call",
+  "names": [
+   "Game_Vfx_Build_NodeTree_1434693e0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14338ba29",
+  "made_on_target": "0x1434693e0",
+  "twin": "made on steam-26566308; the target 0x1434693e0 is KB 0x143466e60: Game_F1os_CreateTask_ReconcileUserEntitlements (0x3453bf0) and Game_PitLane_GetDistanceToBox (0x34b72b0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14338ba29",
+    "target": "0x1434693e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ac31a5659c6cb59062af115cb28fe149fe20ab69da95022428fa15926c76d9d6"
+  }
+ ]
+}

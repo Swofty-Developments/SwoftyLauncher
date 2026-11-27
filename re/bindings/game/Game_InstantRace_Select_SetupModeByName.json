@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_Select_SetupModeByName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140ba3890",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_InstantRace_Select_SetupModeByName(void *self, const char *mode_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140ba3870 (RacingPC lab re_groups/_decomp);xref:0x141c2db00",
+  "notes": "Searches the setup-mode table (self+0x4d0 -> +0x48..+0x50, 16-byte entries, name at entry->+0xd8->+0x10) for mode_name and stores the result at self+0x438, then falls into the shared body Game_InstantRace_Apply_SetupMode: fills the candidate vector (+0x448) from the name list +0x468 if empty, reseeds the RNG from QueryPerformanceCounter, and calls Game_GameModeEntity_SetSetupMode with the chosen mode or a random one from the mode's list (vtable+0x1d0) when none matched."
+ },
+ "signature": {
+  "id": "game.instant_race_select_setup_mode_by_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 81 D0 04 00 00",
+  "match": "0x140ba3890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba3890",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_Select_SetupModeByName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ba3870",
+  "made_on_target": "0x140ba3870",
+  "twin": "made on steam-26566308; the target 0x140ba3870 is KB 0x140ba3890: Game_InstantRace_SetupTrackList (0xba28b0) and Sess_Build_ChampionshipEntrantSelection (0xba4370) on either side both sit -0x20 below their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ba3870",
+    "target": "0x140ba3870"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "04781316e63b53ecd11685ca13bc04caad683bef286468327d588d502024575b"
+  }
+ ]
+}

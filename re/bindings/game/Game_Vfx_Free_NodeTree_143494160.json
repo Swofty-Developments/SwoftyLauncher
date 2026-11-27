@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Free_NodeTree_143494160",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143491be0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Vfx_Free_NodeTree_143494160(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143494160 (RacingPC lab re_groups/_decomp);xref:0x143494e40",
+  "notes": "Teardown of a small node tree: zeroes state at +0, frees child at +0x18, then child at +0x20 including its nested child chain (+0x18 -> +0x18), each via the owning node allocator (+8) vfunc +0x38, nulling the pointers. Context from caller: tyre value set release."
+ },
+ "signature": {
+  "id": "game.vfx_free_node_tree_143494160",
+  "section": ".xtls",
+  "pattern": "C5 F8 28 D6 E8 ?? ?? ?? ?? 48 8B 56 28",
+  "match": "0x143492a04",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4"
+  },
+  "target": "0x143491be0",
+  "kind": "call",
+  "names": [
+   "Game_Vfx_Free_NodeTree_143494160"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143494f84",
+  "made_on_target": "0x143494160",
+  "twin": "made on steam-26566308; the target 0x143494160 is KB 0x143491be0: Game_F1os_CreateTask_ReconcileUserEntitlements (0x3453bf0) and Game_PitLane_GetDistanceToBox (0x34b72b0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143494f84",
+    "target": "0x143494160"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "35ae43dc1b8527be07ff8e0a0249b6af19c1b1a28499b1342268ed9b916a8ceb"
+  }
+ ]
+}

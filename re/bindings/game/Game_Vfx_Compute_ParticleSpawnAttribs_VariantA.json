@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Vfx_Compute_ParticleSpawnAttribs_VariantA",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143468df0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14346b370 (RacingPC lab re_groups/_decomp);xref:0x1433adef0",
+  "notes": "Particle spawn initialiser with 40 float output pointers (10 vec4 attributes: position, two axes, velocity, scale, random direction, colour-like maxima, constants, size). Mixes Ne_Crt_Rand ranges from tuning globals (DAT_1460f9a30.., DAT_1460d0ca8..) with the shared per-instance float buffer DAT_1460fd6f0 (slot +0xc and +0x1b..+0x25) and interpolated 0x30-byte transforms from DAT_1460fd6b0 (blend DAT_1460fd6a0). Uses helper FUN_14346c8b0 on self+0x58. Context from caller: tyre kickup particle blocks; variant A of three identical templates."
+ },
+ "signature": {
+  "id": "game.vfx_compute_particle_spawn_attribs_variant_a",
+  "section": ".xtls",
+  "pattern": "4D 89 CC E8 ?? ?? ?? ?? C5 FA 10 84 24 74 01 00 00",
+  "match": "0x1433ac56b",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x143468df0",
+  "kind": "call",
+  "names": [
+   "Game_Vfx_Compute_ParticleSpawnAttribs_VariantA"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1433aeaeb",
+  "made_on_target": "0x14346b370",
+  "twin": "made on steam-26566308; the target 0x14346b370 is KB 0x143468df0: Game_F1os_CreateTask_ReconcileUserEntitlements (0x3453bf0) and Game_PitLane_GetDistanceToBox (0x34b72b0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1433aeaeb",
+    "target": "0x14346b370"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cad1a8ced1e3d3d13b30d6cd43f6a977dd1350c13dbd4ff97992da6a94fdec13"
+  }
+ ]
+}

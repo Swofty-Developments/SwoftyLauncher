@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_StrKeyPtr_Node192",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14476b910",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_StrKeyPtr_Node192(void *map, uint64_t newBuckets, uint8_t freeOld)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14476e2d0 (RacingPC lab re_groups/_decomp);xref:0x14476db10",
+  "notes": "(lib) Robin-hood hash map rehash: slots are 8-byte node pointers (+0x28) with info bytes (+0x30), FNV-1a over the C string at *node times multiplier +0x20, 80 percent load factor at +0x48. Old storage is freed or recycled into 0xC0-byte node free lists at +0x8/+0x10. Context from caller: hull shape map keyed by name."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_str_key_ptr_node192",
+  "section": ".xtls",
+  "pattern": "4A 8D 14 55 02 00 00 00 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? E9",
+  "match": "0x14476b4a5",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xe"
+  },
+  "target": "0x14476b910",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_StrKeyPtr_Node192"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14476de65",
+  "made_on_target": "0x14476e2d0",
+  "twin": "made on steam-26566308; the target 0x14476e2d0 is KB 0x14476b910: Ne_Crt_ThrowOverflow_C (0x476e150) and Ne_RobinHoodMap_Str_FindIndex8 (0x476e990) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14476de65",
+    "target": "0x14476e2d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1eefba1429f31e9c1537f912d12520cf1d8ee19cf6be09f1c3732ba1d6a5bd4f"
+  }
+ ]
+}
