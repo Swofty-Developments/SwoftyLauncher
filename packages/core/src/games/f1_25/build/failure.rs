@@ -38,6 +38,24 @@ pub fn named(store: &Store, game: &Path, e: Error) -> Error {
             "{what}. Turn {name} off in this profile, or remove it on the Addons page and install or import it again."
         ));
     }
+    if path.starts_with(store.root.join("cache")) {
+        let file = path
+            .file_name()
+            .map_or_else(String::new, |n| n.to_string_lossy().into_owned());
+        let what = match gone {
+            true => format!(
+                "{file}, which the launcher built for the game folder, is missing from its build output"
+            ),
+            false => format!(
+                "{file}, which the launcher built for the game folder, is incomplete in its build output"
+            ),
+        };
+        return Error::Other(format!(
+            "{what} ({}). An antivirus may have removed it. Allow the launcher's data folder in your antivirus, \
+             then press Play to build again.",
+            path.display()
+        ));
+    }
     if let Ok(rest) = path.strip_prefix(game) {
         let file = slashed(rest);
         let version = crate::game_folder::exe_version::read(&game.join(crate::GAME_EXE));
