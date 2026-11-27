@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ModelProxy_RebuildVariantModelMap",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c176f0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_ModelProxy_RebuildVariantModelMap(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c19cc0 (RacingPC lab re_groups/_decomp);xref:0x143d42b80",
+  "notes": "Frees the old lookup object at self+0x30 and builds a new 0x68-byte one. For each entry of vector +0x40..+0x48 (0x18 bytes: +0 u32 key, +8 resource id) it finds the matching resource in list (*(self+0x18))+8 (0x28 stride), requires it loaded (res+0x28 non-null with +0x70 set; otherwise returns leaving +0x30 null) and inserts key->model into a hash set (FNV-1a over the 4 key bytes). If there are >= 200 entries it also builds a de-duplicated array (obj+0x58, count +0x60, 16-byte items) from every model's +0x70 table. Finally stores at obj+0x64 the max over all models' sub-objects (+0x160..+0x168)->+0x1c8->+0x20 float, floor 1.0. Better context needed: what the u32 key denotes (LOD/variant/part id)."
+ },
+ "signature": {
+  "id": "render.model_proxy_rebuild_variant_model_map",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 68 48 8D 6C 24 60 C5 F8 29 75 F0 49 89 CF",
+  "match": "0x143c176f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c176f0",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelProxy_RebuildVariantModelMap"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c19cc0",
+  "made_on_target": "0x143c19cc0",
+  "twin": "made on steam-26566308; the target 0x143c19cc0 is KB 0x143c176f0: Render_Material_CountResourceSlots (0x3c09e60) and Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c19cc0",
+    "target": "0x143c19cc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3528f9ff73385af25ac5bf351b6f1cdba1d55a62b30a38c82592cc50e412e426"
+  }
+ ]
+}

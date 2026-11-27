@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Material_ExtractScreenEffectParams",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143e92cd0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void Render_Material_ExtractScreenEffectParams(void *pkg, void *out_params, void *material)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143e952a0 (RacingPC lab re_groups/_decomp);xref:0x143e8d350",
+  "notes": "Fills a 0x1c-byte output {+0 float, +4 float intensity, +8 int32 texture/decal slot (-1 default), +0xc float3 colour, +0x18 flag bits} from material parameters looked up with Render_Material_FindParamIndexByHash using hash keys stored in pkg at +0x2c8, +0x2d8, +0x2e8, +0x2f8, +0x308, +0x4d8, and decal entries via Render_DecalLookup_ResolveEntry(pkg+0x318 / pkg+0x4b8, reads +0x160). When the +0x4d8 param is zero the colour is converted sRGB to linear (0.04045 / 12.92 / 2.4 curve) and multiplied by the scalar, setting flag 4; colour components above 1.0 raise errno 0x22. Parameter names are hashes only, so the exact meaning of each field is inferred; handles both material layouts (material+0x30 < 2 sparse table, else +0x100 block stride 0x48)."
+ },
+ "signature": {
+  "id": "render.material_extract_screen_effect_params",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 C5 79 29 54 24 70",
+  "match": "0x143e92cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e92cd0",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_ExtractScreenEffectParams"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143e952a0",
+  "made_on_target": "0x143e952a0",
+  "twin": "made on steam-26566308; the target 0x143e952a0 is KB 0x143e92cd0: Game_ShaderPackage_RegisterSponsorScreenEffects (0x3e8d350) and Ne_CloudGenerator_Destroy (0x3e9f8d0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143e952a0",
+    "target": "0x143e952a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "93332d8c617cd1a49f566e7564407106bf49e7964b60cd101a978ec796ce5d69"
+  }
+ ]
+}

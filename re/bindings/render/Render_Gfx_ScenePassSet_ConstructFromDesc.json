@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_ScenePassSet_ConstructFromDesc",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1400fd6d0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx_ScenePassSet_ConstructFromDesc(void *self, void *gfxCtx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1400fd6d0 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
+  "notes": "Constructor for a per-view pass bundle: stores ctx at self+0, zeroes 12 owner/ptr pairs (+0x08..+0xC0), then for each sub-pass formats a name from desc[0] and index desc+0x64, fills a param list (Render_Gfx_ParamList_PushEntryDollarFlag / PushEntryKind3) and builds a pass via Render_Gfx_InitResourceDescBuilder or helper builders, storing results at self+0x08/+0x18/+0x28/+0x38/+0x48/+0x58/+0x68/+0x78/+0x88/+0x98/+0xA8/+0xB8. Byte desc+0x68 (copied to self+0x138) picks a 2-pass variant vs the full 6-pass variant with sort keys 0x5a000/0x64000/0x20000, byte desc+0x69 adds an optional last pass (self+0xB8); desc[3..8,10] are render-target names hashed into self+0xC8..+0x130. Param-key strings are unresolved pointers so exact pass meaning (gbuffer/forward/depth) is not shown. Better context needed: string contents at 0x1455db679..0x1455db7e9."
+ },
+ "signature": {
+  "id": "render.gfx_scene_pass_set_construct_from_desc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0A 00 00 C5 F8 29 B4 24 40 0A 00 00 4C 89 C7 48 89 CE",
+  "match": "0x1400fd6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1400fd6d0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_ScenePassSet_ConstructFromDesc"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1400fd6d0",
+  "made_on_target": "0x1400fd6d0",
+  "twin": "made on steam-26566308; the target 0x1400fd6d0 is KB 0x1400fd6d0: Game_RaceHelper_GetVehicleIndexByChampPos (0xfb180) and Ne_StrBuf_Printf (0x1009f0) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1400fd6d0",
+    "target": "0x1400fd6d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4c947d1ba57924720aecd0ade344a757adb066d1a9eb073dc99b8c269a11c0bc"
+  }
+ ]
+}

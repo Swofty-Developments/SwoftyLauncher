@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_RtLightingPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143da13a0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_RtLightingPass_Ctor(void *self, void *owner, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143da3970 (RacingPC lab re_groups/_decomp)",
+  "notes": "Render pass ctor (base Render_GeometryPass_Ctor with 0x24 input slots, vtable 0x1459b8030) for the ray-traced lighting/path-trace resolve. Binds from the property bag: target, copydst, copydst2, targetSkyLight, specularHitDistance, splitSignalDiffuse/Specular, guideDiffuse/Specular, and optional unfilteredSplitSignalDiffuse/Specular, targetShadows, albedo, normal, surface, surface2, shadow_mask, gbuffer_depth, stencil, restir, hitPointBuffer, hitCountBuffer, pathSegmentBuffer, pathCountBuffer, extended_gbuffer_1..4, ddgi, rrStyleTargetForMlExportInNRDMode, plus 3 MD5-hashed fixed names. Creates two shared materials once (refcount 0x146c3b828, ptrs 0x146c3b818/0x146c3b820). Property 'mode' compared to a constant sets +0x558=1. Looks up 'scene' in the scene map, allocates 0x340 impl (vtable 0x1459b77d0) at +0x550 and registers callbacks FUN_143d9a940 / 0x143d9a9d0 in scene lists +0x3c8 / +0x3e0. No KB caller."
+ },
+ "signature": {
+  "id": "render.rt_lighting_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 C5 F8 29 B4 24 A0 04 00 00 4C 89 CF 4C 89 C3",
+  "match": "0x143da13a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143da13a0",
+  "kind": "func_start",
+  "names": [
+   "Render_RtLightingPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143da3970",
+  "made_on_target": "0x143da3970",
+  "twin": "made on steam-26566308; the target 0x143da3970 is KB 0x143da13a0: Ne_Gfx2Renderer_EnqueueJobLocked (0x3d918c0) and Ne_Gfx2Renderer_DestroyDeferredEntryB (0x3db4490) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143da3970",
+    "target": "0x143da3970"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9d37f266d464ac260ac5f2abb10fad74d9c4f5bc7210aec01d7f2fc8d7fc0032"
+  }
+ ]
+}

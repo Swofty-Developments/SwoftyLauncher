@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ContractCounteroffer_Construct_FromGdbRow",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c94a00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_ContractCounteroffer_Construct_FromGdbRow(void *self, void *allocator, const char *gdb_row)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c954c0 (RacingPC lab re_groups/_decomp);xref:0x140c969b0",
+  "notes": "Parses one contract counteroffer definition from the game DB row (path at row+0, name at row+0x100): NeString \"title\" at +0x00 (XOR-decoded with k_Gdb_StringXorKey), bool \"required\" at +0x28, bool \"risky\" at +0x29, vector of groups at +0x38 (0x28 bytes each). For each row of child table \"CounterofferStatGroup\" reads \"number_to_select\" (group+0x20) and, from grandchild table \"CounterofferStatDefinition\", a vector of {int32 type, int32 amount} where \"type\" is a case-insensitive FNV-1a64 string hash mapped to enum 1..12 (0 = unknown). Hook or edit these tables to change contract negotiation counteroffer stats."
+ },
+ "signature": {
+  "id": "career.contract_counteroffer_construct_from_gdb_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 08 00 00 C5 78 29 8C 24 B0 08 00 00",
+  "match": "0x140c94a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c94a00",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractCounteroffer_Construct_FromGdbRow"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c954c0",
+  "made_on_target": "0x140c954c0",
+  "twin": "made on steam-26566308; the target 0x140c954c0 is KB 0x140c94a00: Game_WonDriverChampionship_Initialise_2 (0xc936a0) and Career_Msg_SubscribeBankAccountValidTransaction_A (0xc9b550) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c954c0",
+    "target": "0x140c954c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6a92a523b52e95ad5fd7079b8b5368d349de7eeb4ce71b47c77502639589c541"
+  }
+ ]
+}

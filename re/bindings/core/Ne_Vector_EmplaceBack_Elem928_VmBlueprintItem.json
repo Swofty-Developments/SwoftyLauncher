@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_EmplaceBack_Elem928_VmBlueprintItem",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141ac6480",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_EmplaceBack_Elem928_VmBlueprintItem(void *vec, void *src_item)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141ac7c60 (RacingPC lab re_groups/_decomp);xref:0x141ad45a0",
+  "notes": "(lib) Vector emplace_back for 0x3a0-byte VM item elements (vec: allocator +0, begin +8, end +0x10, cap +0x18, growth x1.5). On reallocation it move-constructs every element by relinking 25 VM property nodes (and two plain 0x20 blocks at +0x260 and +0x2c0, tail POD +0x340..+0x398), constructs the new element with the function the KB calls Ui_F1World_SetUpgradeTextureLargeVisible (used here as the element copy constructor) and destroys old ones with Vm_F1WorldBlueprintItem_Destroy. Called from Career_ContractCraft_BuildHeaderIcons to append one header icon item."
+ },
+ "signature": {
+  "id": "core.vector_emplace_back_elem928_vm_blueprint_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CB 48 8B 49 10",
+  "match": "0x141ac6480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ac6480",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_EmplaceBack_Elem928_VmBlueprintItem"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ac7c60",
+  "made_on_target": "0x141ac7c60",
+  "twin": "made on steam-26566308; the target 0x141ac7c60 is KB 0x141ac6480: Ui_F1World_SetUpgradeCardSlotType (0x1ac7820) and Ui_F1World_SetLoadoutUpgradeEmptyOrUnique (0x1ad55a0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ac7c60",
+    "target": "0x141ac7c60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f2fa85bebd8be4755aff82e47268a7c785070ea583a6c22056ebc6b18acba13a"
+  }
+ ]
+}

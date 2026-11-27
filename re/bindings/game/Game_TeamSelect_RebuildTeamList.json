@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_TeamSelect_RebuildTeamList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141873a30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_TeamSelect_RebuildTeamList(void *team_select_vm, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141875210 (RacingPC lab re_groups/_decomp);xref:0x141a69860",
+  "notes": "Rebuilds the contract-negotiation team select screen VM. Stores flag at +0xc69, resolves career world (+0xc78 from +0xc60->+0x88->+0x260), tears down old 0xc48-byte page (count +0xc48) and rebinds nodes selected_team (+0x48), bio_description, chassis, engine_supplier, performance_selected_team, is_f2_mode (+0xae0), can_go_back, show_carousel (+0xb20) plus RnD performance comparison (+0xc0) and two contract rows (+0x338,+0x720). Then collects candidate team ids into a ptr vector (from CareerSetup component or world +0xe18), removes teams per feature flag byte3 bit8 / +0xcb0 lists, sorts via Career_Sort_IntrosortLoop_Ptr8ByFunctor, builds one row per team with FUN_14187aaf0 (row +0x110 bool = has offer from Game_DriverContracts_BuildOffers list +0x3c8, stride 0x48), picks focused team id into +0xc50 (secret meeting team via Game_DriverContracts_GetSecretMeetingTeam, else player team), then calls Game_TeamSelect_FocusTeam and Game_TeamSelect_ShowTeamDrivers. +0xc54=1 means single-team mode (carousel hidden); +0xc68 selects a default/empty player identity. Good hook to alter which teams are offered."
+ },
+ "signature": {
+  "id": "game.team_select_rebuild_team_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 F8 29 BC 24 00 02 00 00 C5 F8 29 B4 24 F0 01 00 00 48 89 CD",
+  "match": "0x141873a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141873a30",
+  "kind": "func_start",
+  "names": [
+   "Game_TeamSelect_RebuildTeamList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141875210",
+  "made_on_target": "0x141875210",
+  "twin": "made on steam-26566308; the target 0x141875210 is KB 0x141873a30: Career_Find_UpgradeEntryByKey (0x1874890) and site_Game_TeamSelect_TeamLogoFormat (0x187b085) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141875210",
+    "target": "0x141875210"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "511656884cee0b8c37ec8709a45a462b475b45b5c09d0e2abc4c534997db17e6"
+  }
+ ]
+}

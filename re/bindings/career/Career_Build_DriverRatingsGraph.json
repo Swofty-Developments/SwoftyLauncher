@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Build_DriverRatingsGraph",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14166eed0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Build_DriverRatingsGraph(uint32_t *self, uint32_t *config)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416704c0 (RacingPC lab re_groups/_decomp);xref:0x1422f6040",
+  "notes": "Copies the graph config (driver id at self+0x38, season index +0x3c, flags +0x40..+0x45, four refcounted strings +0x48..+0x60, min/max weekend counts +0x68/+0x6c) then rebuilds the contract-hub driver ratings graph. Resolves season (self+0x2c0 ptr, +0x2c8 index) from career+0x1030, computes current overall rating (Career_Get_DriverOverallRating, averaged over both drivers in online two-player career) and offer range (Game_DriverContracts_ComputeOfferRange) into bound props and self+0x2d4/+0x2d8; weekend count self+0x2cc and offset +0x2d0 from season calendar +0x288..+0x290 (event state +0x23c: 2 = completed). Builds the X axis with one entry per weekend (props name, texture_override from #overrides.tracks.flags_rectangle_small.%s, weekend_pip_texture_override #overrides.icons.driver_rating_weekend_pip.past/current/future, weekend_state completed/in_progress_or_next_weekend/not_started), Y axis min/max at self+0/+4 rounded outward to step self+8 (default 0..100), then fills series lines from the vector self+0x2a8..+0x2b0 (0x28-byte entries, float samples at +0x10..+0x18) with styles graph_line_ratings, graph_line_ratings_projection, graph_line_dotted_ratings_green, graph_line_dotted_ratings_retain and driver_ratings_graph_pip markers. Hook here to change what the ratings graph plots."
+ },
+ "signature": {
+  "id": "career.build_driver_ratings_graph",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 02 00 00 C5 F8 29 BC 24 D0 02 00 00",
+  "match": "0x14166eed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14166eed0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_DriverRatingsGraph"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416704c0",
+  "made_on_target": "0x1416704c0",
+  "twin": "made on steam-26566308; the target 0x1416704c0 is KB 0x14166eed0: Ne_InternedString_ManageB (0x16689d0) and Career_Bind_FacilityUpgradeNameStrings (0x16752d0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416704c0",
+    "target": "0x1416704c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5cb8008b1171210ac9c01a780b5e9c128aa7dfb87f4b2c4628b30930d69635d4"
+  }
+ ]
+}

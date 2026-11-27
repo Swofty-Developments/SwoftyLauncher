@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_WeekendOptions_Init_EnumGroupSets",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a322e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_WeekendOptions_Init_EnumGroupSets(void *self, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a346a0 (RacingPC lab re_groups/_decomp);xref:0x140be7f60",
+  "notes": "Constructor: sets up three robin-hood hash sets (A at +0x00, B at +0x48, C at +0x90; each has allocator +8, hash seed 0xc4ceb9fe1a85ec53 at +0x10, keys ptr +0x18, dist bytes +0x20, count +0x28, mask +0x30) and a flag byte +0xd8=0, then walks the 6-byte enum table at 0x145670c78..0x145670c7e and inserts value 0 into A, values 1-2 into B and values 3-4 into C; returns self. The table bytes decide which enum values belong to each group, so patching 0x145670c78 changes the grouping; the enum meaning (likely session/format type) is not visible here. Better context needed: how Sess_WeekendOptions_Refresh queries the three sets."
+ },
+ "signature": {
+  "id": "session.weekend_options_init_enum_group_sets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 B8 53 EC 85 1A FE B9 CE C4",
+  "match": "0x142a322e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a322e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_WeekendOptions_Init_EnumGroupSets"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a346a0",
+  "made_on_target": "0x142a346a0",
+  "twin": "made on steam-26566308; the target 0x142a346a0 is KB 0x142a322e0: Sess_Load_GameSetupBranding (0x2a15340) and Game_Garage_FadeOutForExit (0x2a3c920) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a346a0",
+    "target": "0x142a346a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0c6e996f98bcc0cc6359f86886313badf4fd4b9a34abd40aae0a8074365e6134"
+  }
+ ]
+}

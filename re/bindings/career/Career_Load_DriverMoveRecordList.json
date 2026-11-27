@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Load_DriverMoveRecordList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140da9f20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Load_DriverMoveRecordList(void *component, void *prop_bag, void *out_vec, const char *list_name, uint64_t version)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140daaaa0 (RacingPC lab re_groups/_decomp);xref:0x140da7280",
+  "notes": "Save-game loader for one named list of driver contract/move records. Finds the list property list_name in prop_bag (error 0x57 not found, 0x58 wrong type), iterates Ne_PropList_GetBagAtIndex and fills a stack record: for version>=5 six int fields plus one enum field, for version>0xc one extra bool, then three uint16 ids repacked to the (idx&0x3fff)<<16 form, a byte, a 4-byte value, three uint16 and a bool; version>=0x16 adds another bool, version>6 reads a nested one-element list (byte plus two ints), version>0x11 reads a string field via FUN_140d30990. Each record is appended with Career_DriverMoves_AppendRecord(out_vec, rec); returns 0 or the first error code (also written to the TLS errno chain). Field name strings are unresolved data refs."
+ },
+ "signature": {
+  "id": "career.load_driver_move_record_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 C7 49 89 CD",
+  "match": "0x140da9f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140da9f20",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_DriverMoveRecordList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140daaaa0",
+  "made_on_target": "0x140daaaa0",
+  "twin": "made on steam-26566308; the target 0x140daaaa0 is KB 0x140da9f20: Career_Set_DriverContractState (0xd9e9b0) and Game_DriverContractsMyTeamComponent_OpenContractWindow (0xdae9f0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140daaaa0",
+    "target": "0x140daaaa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7bab363ecdeb4be52d0bc62e87ef37f0f668003d07a94c5381d05aa565c04ea8"
+  }
+ ]
+}

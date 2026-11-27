@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Build_SceneSpawnParamsList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a20ab0",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Build_SceneSpawnParamsList(void *self, void *entrants_system, void *entry_lists, void *out_vec, char only_listed_vehicles, void *single_entry_list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a22e70 (RacingPC lab re_groups/_decomp);xref:0x141defc40,0x1421aac60",
+  "notes": "Clears then fills out_vec (elements 0x6780 bytes, built by Game_SceneSpawnParams_CopyConstruct, torn down via Game_CustomisationSet_Dtor on +0x11D0 step 0x4A50 with count +0x5C20). Collects team handles from 0x88-byte entries (+0x5C team handle, +0x50 driver handle, +0x60 vehicle handle, 0x3fff=none) of either single_entry_list (+0x10..+0x18) or every list under entry_lists (+0x10 array, count +0x70, each +0x130 sub-lists count +0x230), and vehicle handles from those entries or from entrants_system+0x358 table (+0x4B0). For each team resolved with Sess_ResolveEntityHandle it emits one spawn param per matching vehicle (vehicle +0x15E/+0x160 team, +0x152 driver, +0x158 optional) carrying driver slot byte entry+0x83 and flag +0x80/+0x81, or a team-only param with the first entry whose +0x81 is set and +0x80 clear; self+0x88 ->+0x260 ->+0xE68==1 is passed as a mode flag. Hook to change which cars/drivers appear in team-select and fan-zone scenes."
+ },
+ "signature": {
+  "id": "teams.build_scene_spawn_params_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 C5 F8 29 B4 24 30 02 00 00 4D 89 CD 4C 89 44 24 70",
+  "match": "0x142a20ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a20ab0",
+  "kind": "func_start",
+  "names": [
+   "Team_Build_SceneSpawnParamsList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a22e70",
+  "made_on_target": "0x142a22e70",
+  "twin": "made on steam-26566308; the target 0x142a22e70 is KB 0x142a20ab0: Sess_Load_GameSetupBranding (0x2a15340) and Game_Garage_FadeOutForExit (0x2a3c920) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a22e70",
+    "target": "0x142a22e70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "63efdaab6b090f68230b708d28ebc2c8baa86ce01e874499e0f1b8a65902d4b7"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Sess_StateCareerHub_Subscribe_Handler_142d54330",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142df0850",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_StateCareerHub_Subscribe_Handler_142d54330(void *bus, void *listener)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142df2de0 (RacingPC lab re_groups/_decomp);xref:0x142d53340",
+  "notes": "Same message-bus subscribe template as 0x142ddce50: registers delegate {fn=0x142d54330 (unnamed career-hub message handler), obj=listener} under message-name key static string 0x14568f9b8 in the bus+0x80 map, under critsec bus+0xC8. Better context needed: the string at 0x14568f9b8 and the body of 0x142d54330 would give the message name."
+ },
+ "signature": {
+  "id": "session.state_career_hub_subscribe_handler_142d54330",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 8E D8 0D 00 00",
+  "match": "0x142d51634",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142df0850",
+  "kind": "call",
+  "names": [
+   "Sess_StateCareerHub_Subscribe_Handler_142d54330"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d53bc4",
+  "made_on_target": "0x142df2de0",
+  "twin": "made on steam-26566308; the target 0x142df2de0 is KB 0x142df0850: Ne_Sort_Elem24 (0x2df08a0) and Sess_IntroVideo_PushAllocRequest (0x2df3450) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d53bc4",
+    "target": "0x142df2de0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "20597bdf9c1bd1b2f81e4584efa10e7b8648fb00c8c8d0dcdbbd831a70e73e36"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamHq_SetupFoyerCustomDriver",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141996ac0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamHq_SetupFoyerCustomDriver(void *ctx, uint32_t slot, uint32_t packed_look, const char *anim_a, const char *anim_b, uint16_t *driver_handle, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419982a0 (RacingPC lab re_groups/_decomp);xref:0x141997450",
+  "notes": "Fetches a driver customisation via Wear_Get_DriverCustomisation_Thunk (g_FeTile_DriverCustomisationKey or fallback key at entrants+0x238 -> +0x268/+0x1b4), copies its item blocks (+0x18..+0x34, and when packed_look hi16==0x3fff also +0x48..+0x64 and +0x78..+0x94, plus +0xc540) into a large stack descriptor (vtable 0x145626810) together with two NeStr names made from anim_a/anim_b, then calls Game_FrontendSceneManager_FindOrCreateNewCustomDriver and Game_FrontendSceneManager_SetupCustomDriver. Descriptor mode field is 6 when ctx[0x18] string equals the constant at 0x145737b02, else 1. Hook point to change the outfit or look of drivers standing in the MyTeam HQ foyer."
+ },
+ "signature": {
+  "id": "game.my_team_hq_setup_foyer_custom_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 08 00 00 4D 89 CF",
+  "match": "0x141996ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141996ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamHq_SetupFoyerCustomDriver"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419982a0",
+  "made_on_target": "0x1419982a0",
+  "twin": "made on steam-26566308; the target 0x1419982a0 is KB 0x141996ac0: Game_MyTeamHq_SpawnFoyerDrivers (0x1997450) and Game_MyTeamHq_SpawnFoyerCar (0x1998fc0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419982a0",
+    "target": "0x1419982a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "116ae10b05e45b12d68677fd9251a44a89a0f1074e9abf2d57efe10c548d57a2"
+  }
+ ]
+}

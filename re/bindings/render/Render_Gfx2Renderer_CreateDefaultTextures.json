@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Renderer_CreateDefaultTextures",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143b71f00",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx2Renderer_CreateDefaultTextures(void *renderer)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143b744d0 (RacingPC lab re_groups/_decomp);xref:0x143b61130",
+  "notes": "Creates the renderer's built-in fallback resources from stack-generated pixel data and registers each by hashed name with Render_Gfx2_RegisterResourceNotify(renderer+0x2238,...). Writes: +0x446d8/+0x446e0 64x64 format 0xe texture + SRV filled with a 0xc0/0x80 8-texel checker pattern, +0x446e8/+0x446f0 64x64 texture + SRV filled with 0xffff8080, +0x446f8/+0x44700 1x1 texture + SRV = 0xff000000, +0x447f0 a 0x210-byte default material with 8 texture slots (5 bound to the checker SRV name, 3 to hash 0xc8ebc9c697d61903), and +0x447f8/+0x44800 a 256x256 single-byte (format 4) texture + SRV built by a bit-interleave loop over 65536 entries (looks like a dither/noise lookup). Good hook to replace the missing-texture or default-normal fallbacks."
+ },
+ "signature": {
+  "id": "render.gfx2_renderer_create_default_textures",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 B8 E8 42 01 00",
+  "match": "0x143b71f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b71f00",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Renderer_CreateDefaultTextures"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143b744d0",
+  "made_on_target": "0x143b744d0",
+  "twin": "made on steam-26566308; the target 0x143b744d0 is KB 0x143b71f00: Ne_Gfx2Renderer_Initialise (0x3b61130) and Ne_Gfx2Renderer_RenderFrame (0x3b7a470) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143b744d0",
+    "target": "0x143b744d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "273b5697f77b4831bba37f94cb8fc8e8596e0fcb03a7578cd17cb6262c9af848"
+  }
+ ]
+}

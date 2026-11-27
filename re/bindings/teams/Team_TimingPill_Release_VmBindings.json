@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_TimingPill_Release_VmBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141760400",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_TimingPill_Release_VmBindings(void *bindings)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141761b80 (RacingPC lab re_groups/_decomp);xref:0x14175b750",
+  "notes": "Destructor for the timing-pill view-model binding block: unlinks and releases (Vm_Release_Node on g_Vm_Registry) about 40 intrusive VM node handles laid out as 0x20-byte slots (vtable 0x145614e48, node ptr, prev, next) from +0x000 up to +0x5c8, plus two raw handles at +0x5e8 and +0x600; slots +0x528..+0x568 are only released when the byte at +0x588 is set, and a sub-object at +0x348 is destroyed via FUN_141611290. No game values are read or written; only useful as the teardown pair of Team_Init_TimingPill. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "teams.timing_pill_release_vm_bindings",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 81 00 06 00 00",
+  "match": "0x141760400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141760400",
+  "kind": "func_start",
+  "names": [
+   "Team_TimingPill_Release_VmBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141761b80",
+  "made_on_target": "0x141761b80",
+  "twin": "made on steam-26566308; the target 0x141761b80 is KB 0x141760400: site_Team_TimingPillBadgeLabel (0x1761a8b) and site_Team_SessionCarBadgeLabel (0x177663e) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141761b80",
+    "target": "0x141761b80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "00b7a34c50bed1c03a1f1ee71e6f433dd1e6536d8b00d39bcb847150ab08cae1"
+  }
+ ]
+}

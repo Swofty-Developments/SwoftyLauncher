@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_PenaltyLog_FillRowViewModel_FromEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141901070",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_PenaltyLog_FillRowViewModel_FromEntry(void *self, void *rowVm, void *logEntry, void *entrantList)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141902850 (RacingPC lab re_groups/_decomp)",
+  "notes": "Fills one penalty/incident log row view-model: finds local player (and P2 for splitscreen) in entrantList (+8..+0x10, 0x88 stride) and the offending entrant by index logEntry+8, sets bool nodes, time string from logEntry+0x24 seconds, driver name/team name/badge path (Team_Format_RenderBadgePath), platform icon, lap text from logEntry+0x10, then Sess_PenaltyLog_FormatInfringementText (type logEntry+0xA, other car logEntry+0xB) and Sess_PenaltyLog_FormatPenaltyText (type logEntry+9, args +0xC/+0x18). Strings: #overrides.player_select.results_icons[p1_result_indicator]/[p2_result_indicator], #overrides.icons.session_crossplay_platform.icon_platforms_generic_console, {o:mixed}%s{/o}. Good hook to read or rewrite stewards log entries; no KB caller listed so the owning class is inferred from callees."
+ },
+ "signature": {
+  "id": "session.penalty_log_fill_row_view_model_from_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 05 00 00 4C 89 CB",
+  "match": "0x141901070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141901070",
+  "kind": "func_start",
+  "names": [
+   "Sess_PenaltyLog_FillRowViewModel_FromEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141902850",
+  "made_on_target": "0x141902850",
+  "twin": "made on steam-26566308; the target 0x141902850 is KB 0x141901070: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141902850",
+    "target": "0x141902850"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "20c42a2caf8f562cdaa301066616900ebcc8504c049553491ef739eeebe82faa"
+  }
+ ]
+}

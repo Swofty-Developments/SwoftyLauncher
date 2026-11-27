@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SessionResultsButtons_Refresh",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417f3ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SessionResultsButtons_Refresh(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417f54c0 (RacingPC lab re_groups/_decomp);xref:0x141d31c70,0x141f62710,0x1422a9750",
+  "notes": "Recomputes the results-screen button/option flags from game mode (+8), session (+0x18), career save (+0x28) and weekend state. Writes bytes +0x58 (mode-type lookup of *(mode+0xf40)+0x1a8 via table 0x14571d424), +0x59..+0x66 (visibility/enable flags: e.g. +0x5b session type in 15..17 mask 0x38000, +0x5c type 15..17 and not online, +0x63/+0x65 session type 1 or 2 = practice, +0x64 replay save available via FUN_142c4b8e0, +0x66 gated by feature flag bit 0x100), +0x50 career component ptr, label string +0x68 (lng_advance_to_qualifying / lng_save_full_race_replay / ?) and tooltip +0x78 (lng_advance_to_next_practice / lng_advance_to_qualifying / lng_tooltip_advance), then pushes the tooltip to the UI binding at +0x48. Current session index/type read from weekend struct (+0x220 array of 0xa0, index +0x238, type at +8). Good hook to force advance/replay buttons."
+ },
+ "signature": {
+  "id": "game.session_results_buttons_refresh",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 CE 48 8B 49 28 48 8D 05",
+  "match": "0x1417f3ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417f3ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionResultsButtons_Refresh"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1417f54c0",
+  "made_on_target": "0x1417f54c0",
+  "twin": "made on steam-26566308; the target 0x1417f54c0 is KB 0x1417f3ce0: Game_FrontendScenePreview_UpdateTick (0x17e8520) and site_Career_UpgradeCardTypeLabel (0x17f9afd) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417f54c0",
+    "target": "0x1417f54c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c78a68f4c3a3a8ab665c15343019583ccd7c3a2a919e44bc66f6db1d4e6a3a82"
+  }
+ ]
+}

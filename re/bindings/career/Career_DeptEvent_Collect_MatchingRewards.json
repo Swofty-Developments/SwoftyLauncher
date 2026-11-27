@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_Collect_MatchingRewards",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140cb4870",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_DeptEvent_Collect_MatchingRewards(void *self, void *out_vec, void *team_ctx, void *event_def)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140cb5330 (RacingPC lab re_groups/_decomp);xref:0x140caf350",
+  "notes": "Returns a pointer vector (allocator self+0x210) in out_vec. Looks up the event category byte event_def+0xd8 in a hash map of the data object from vtable+0x268, compares event_def+0x20 name against two type strings. Path A: gathers all definitions of that category, drops ones already used by the team's dept-event record (list at rec+0xb30, stride 0x58) or conflicting with active sponsor records (stride 0x160, +0xe0/+0x110 checks), picks one at random (LCG 0x343fd/0x269ec3 seeded by RNG service + Career_DeptEvent_GetDriverMagicOffset), and collects the +0xa0 objects whose team-attribute reward name matches; if fewer than 2 candidates remain it clears the used list and recurses. Path B: direct map lookups via rec+0xaf0 and FUN_140cb6a80. Better context needed: exact meaning of the two event type strings and of the returned objects."
+ },
+ "signature": {
+  "id": "career.dept_event_collect_matching_rewards",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 4C 89 CB 4C 89 C6",
+  "match": "0x140cb4870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb4870",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_Collect_MatchingRewards"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cb5330",
+  "made_on_target": "0x140cb5330",
+  "twin": "made on steam-26566308; the target 0x140cb5330 is KB 0x140cb4870: Career_DeptEvent_SimulateOutcomeInsert (0xcb4960) and Career_TeamHqAdvance_CheckContractedDriverActivities (0xcb6c10) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cb5330",
+    "target": "0x140cb5330"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "752a9dd971fca30e59531dbe729f9948571bd57886e56a09b0b463b91f0ea1be"
+  }
+ ]
+}

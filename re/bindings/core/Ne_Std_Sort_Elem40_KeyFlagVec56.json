@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_Sort_Elem40_KeyFlagVec56",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1436b7690",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Std_Sort_Elem40_KeyFlagVec56(void *first, void *last, int64_t ideal, char by_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436b9c20 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) Introsort (std::sort body) over 0x28-byte elements {float key +0x0, bool flag +0x4, allocator +0x8, vector begin/end/cap +0x10/+0x18/+0x20 of 0x38-byte items}. Insertion sort when range <= 0x528 bytes, heap fallback via FUN_1436bb460 when ideal<=0, median via FUN_1436bb7a0, element move via FUN_1436bb310. Comparator: flagged elements first; when by_count!=0 order by vector item count then key, else by key then item count. Better context needed: owner of the 0x28 record (no KB caller)."
+ },
+ "signature": {
+  "id": "core.std_sort_elem40_key_flag_vec56",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 44 88 4C 24 2F",
+  "match": "0x1436b7690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436b7690",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_Sort_Elem40_KeyFlagVec56"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436b9c20",
+  "made_on_target": "0x1436b9c20",
+  "twin": "made on steam-26566308; the target 0x1436b9c20 is KB 0x1436b7690: Sess_Get_VehicleTrackFactor (0x36b0a00) and Sess_RaceStrategy_SortCandidatesA (0x36bc9a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436b9c20",
+    "target": "0x1436b9c20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8f891bcf199938ff3cf8c38d3f9c44a784e2029a142040ab9d334f5a90bfe7ed"
+  }
+ ]
+}

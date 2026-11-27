@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_SessionResultsEntryVM_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418fcfe0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_SessionResultsEntryVM_Ctor(void *self, void *parentNode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418fe7c0 (RacingPC lab re_groups/_decomp);xref:0x141900b20",
+  "notes": "Constructor of one results-row view model (called from 0x141900b20 = FUN_141900b20, the builder above): attaches to the VM node at parentNode+8 and creates a 0x20-byte property holder per field, in order from +0x20: valid, is_online_human, is_other_driver_online_human, show_team_name (default true), show_team_nub, lap_num_str, session_time_str, driver, driver_name, name_shown_in_esr, other_driver_name_shown_in_esr, team, team_name, incident, incident_anonymised, penalty, an int token prop (default -1), a random id block at +0x248, platform_icon, platform_icon_visible, show_badge, badge (default #overrides.default.blank), tech_level, tech_level_icon, tech_level_icon_visible, tech_level_visible, show_player_indicator_icon, player_icon_text, player_icon_colour. String defaults are \"-\". Ends with FUN_1418fffe0(self,0,0). The incident/penalty fields suggest it is shared with the stewards/incident list."
+ },
+ "signature": {
+  "id": "game.session_results_entry_vm_ctor",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F1 48 89 EA 49 89 D8",
+  "match": "0x1418ffdb2",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1418fcfe0",
+  "kind": "call",
+  "names": [
+   "Game_SessionResultsEntryVM_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141901592",
+  "made_on_target": "0x1418fe7c0",
+  "twin": "made on steam-26566308; the target 0x1418fe7c0 is KB 0x1418fcfe0: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141901592",
+    "target": "0x1418fe7c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a2eb25a064847759c7a7e5a3a747dfe1316ad753e97cde2fc6fb67f6a5f2021e"
+  }
+ ]
+}
