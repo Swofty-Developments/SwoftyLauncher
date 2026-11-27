@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14310e870",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "uint32_t Game_PlayerList_ContainsUserId(void *self, const void *user_id)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143110e00 (RacingPC lab re_groups/_decomp);xref:0x1421f3000,0x14256f2b0",
-  "notes": "Scans the vector of 0x50-byte player id entries at +0xc0..+0xc8 for one equal to user_id: flag bit 0x10000000 at +0x48 must match, then either the flags words are equal (no id) or the id payloads match (type 7 and type 3 special cases, else Ne_UserId_Equals). Returns 1 if found; otherwise sets errno 2 and returns 0."
+  "proto": "uint32_t Game_PlayerList_ContainsUserId(void *list, void *id_entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143110e00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1421f0eb0,0x1421f3000,0x14221be30",
+  "notes": "Whole body read. Walks the vector list+0xc0..+0xc8 of 0x50-byte entries and compares each with id_entry: flag bit 0x10000000 of the u32 at +0x48 must agree; without the bit the whole u32 must be equal, with it the id blocks at +0x08 are compared (kind 7: +0x20^+0x28; kind 3: byte +0x41, then +0x40 and +0x10^+0x18; otherwise Ne_UserId_Equals). Returns 1 on a match; otherwise writes error 2 to the TLS error chain and errno trace ring and returns 0. Callers pass [x+0x428] as the list: 0x1421f0eb0 fills a per-player row and stores the result in row byte +0x5b; Game_DataGathererPlayers_Update 0x1421f3000 does the same for the online player rows; 0x14221be30 uses it to drop or keep entrant rows of its 0x58-byte list. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.player_list_contains_user_id",

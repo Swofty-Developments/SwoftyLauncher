@@ -7,9 +7,9 @@
   "addr": "0x140bf92b0",
   "level": "L1",
   "subsystem": "session",
-  "proto": "void Sess_StateCareerHub_PostUiMessage_12_A6(void *state)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bf9d60 (RacingPC lab re_groups/_decomp);xref:0x142d53340",
-  "notes": "Builds a small message {vtable 0x145680680, ids 0x12 and 0xa6, -1} and sends it through 0x144030ad0 on (state+0x2a8)->+0x3d0 with channel 1. Better context needed: meaning of message id pair (0x12,0xa6)."
+  "proto": "void Sess_StateCareerHub_PostUiMessage_12_A6(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bf9d60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d53340",
+  "notes": "Builds a 0x14-byte message (vtable 0x145680680, ids 0x12 and 0xa6, trailing -1) and calls 0x144030ad0((self+0x2a8)+0x3d0, 1, &msg, 0, 0). Context from caller: Sess_StateCareerHub_OnStateEnter calls it on state+0xdd8 right after setting state+0xec8 = 1 and subscribing its handler on the message bus, so self is a member object of the state. Stays L1: the target at +0x3d0 and the meaning of ids 0x12/0xa6 are not shown. Better context needed: 0x144030ad0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.state_career_hub_post_ui_message_12_a6",

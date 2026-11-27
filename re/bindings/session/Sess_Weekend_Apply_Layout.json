@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140af7680",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "void Sess_Weekend_Apply_Layout(void *weekend, void *game_mode, void *layout)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140af76d0 (RacingPC lab re_groups/_decomp);xref:0x140beeeb0",
-  "notes": "Collects pointers to valid entrants (game_mode +0x2e0..+0x2e8 stride 0x88, id +0x5e != 0x3fff, optional filter vfunc +0x1c0), then either keeps the running weekend (prunes not-started 0xa0 session entries at +0x220..+0x228 and appends layout sessions via FUN_140af7260) or resets all sessions (log GAME '%s: Reset called for session.'), calls Career_Teardown_Weekend, copies layout header to +0x240..+0x270, re-adds sessions, Sess_Weekend_RebuildUniqueEntrantList and Sess_Weekend_Start. +0x238 current session index, +0x23c weekend state."
+  "proto": "void Sess_Weekend_Apply_Layout(void *weekend, void *owner, void *layout)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140af76d0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140bafcb0,0x140beeeb0,0x140bf7f50",
+  "notes": "Collects pointers to the active entrants of owner (+0x2e0..+0x2e8, 0x88 each, id word +0x5e != 0x3fff, optional vcall filter) and uses the count. If the weekend already has sessions (+0x220..+0x228, 0xa0 each) or state +0x23c != 0 and they still match the layout entries (layout+0x18..+0x20, 16-byte shared ptrs: same count, type at +8, earlier sessions in state 2), it removes the not-started sessions and re-adds one per layout entry with FUN_140af7260; otherwise it resets every session (log 'Reset called for session.'), on state 0 runs Career_Teardown_Weekend and re-adds, then Sess_Weekend_Start. Both paths copy the layout header to weekend+0x240..+0x270 and call Sess_Weekend_RebuildUniqueEntrantList. Caller Sess_WeekendSetup_LayoutWeekends gets the layout through vcall +0x280 and applies it to each weekend; 0x140bafcb0 and 0x140bf7f50 do the same for one weekend. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.weekend_apply_layout",

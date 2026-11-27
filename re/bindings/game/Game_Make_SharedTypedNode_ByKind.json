@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142775040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void *Game_Make_SharedTypedNode_ByKind(void *out_shared_ptr, void *allocator, uint8_t kind)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1427773c0 (RacingPC lab re_groups/_decomp);xref:0x14279e3f0,0x14279f2c0",
-  "notes": "Switch on kind 0..11: allocates a 0x40 byte object (0x58 for kind 7 with an owned sub-container, 0x268 for kind 11 with an inline 0x200 char string), runs base ctor 0x142771a10, sets a kind-specific vtable (0x1457a13e0..0x1457a1540) and wraps it in a 0x28 byte ref-count control block (vtables 0x1457a6550..0x1457a66b0). Writes {object, control} to out; unknown kind returns a null pair. Better context needed: the callers (team setup rebuild from rows) suggest typed column or value nodes."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1427773c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14279e3f0,0x14279f2c0",
+  "notes": "Factory: switch on kind 0..11 allocates a node from allocator vcall +0x18 (0x40 bytes; 0x58 for kind 7 with an extra owned 0x28 list block; 0x268 for kind 11 with an inline 0x200 string buffer), runs the base ctor 0x142771a10 and sets the per-kind vtable (0x1457a13e0..0x1457a1540), then allocates a 0x28 control block (refcounts 1/1, deleter vtable 0x1457a6550..0x1457a66b0) from the global allocator 0x14612bc00 and writes {node, control} to out; other kinds give a null pair. Context from caller: Game_Unk_14279c070 (inventory/catalog response handler) and Ent_TeamSetup_RebuildFromRows create a node with the kind byte of the row, then fill node +0xc id, +0x10 state and +0x18/+0x20 owner. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.make_shared_typed_node_by_kind",

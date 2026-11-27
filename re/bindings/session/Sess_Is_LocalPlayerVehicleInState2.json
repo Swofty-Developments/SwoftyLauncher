@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14323ed70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "uint32_t Sess_Is_LocalPlayerVehicleInState2(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143241300 (RacingPC lab re_groups/_decomp);xref:0x142d53340,0x142d6cb20",
-  "notes": "Gets the local user identity from (self+0x20)->+0x390, resolves the player record via 0x143068da0 (needs +0x65, +0x63 set and +0x60 >= 0), finds the matching entrant in the list from vcall +0x1c8 of (+0x4f8)+0x1030, takes its vehicle index byte +0x82, checks the vehicle slot byte +0x78 equals record +0x63 and returns whether the participant state byte +0x18 at (+0x80)->+0x148[idx] equals 2."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143241300 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d53340,0x142d6cb20,0x142d72700",
+  "notes": "Reads the local user id from (self+0x20)+0x390 vfunc +0x38, resolves its record with 0x143068da0((self+0x20)+0x100); requires record bytes +0x65 and +0x63 non-zero and short +0x60 >= 0. Lists entrants via vfunc +0x1c8 on (self+0x20)+0x4f8+0x1030, matches the record identity with Sess_Match_EntrantIdentity_Thunk, takes vehicle index byte +0x82 (not 0xff, 0x14079f230 true), checks the byte at ((self+0x20)+0x3c0 -> +0x40)+0xf8[idx] -> +0x78 equals record+0x63, and returns ((self+0x20)+0x80 -> +0x148)[idx] -> +0x18 == 2; frees the temp list. Callers: Sess_StateCareerHub_OnStateEnter stores it in state+0xecd bit 4 and calls Game_Network_RequestDropIn when false; Game_Flow_SessionStateInGameSpectating branches on false; 0x142d72700 picks g_Game_FlowLinkStay when false, else g_Career_FlowLinkContinue. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.is_local_player_vehicle_in_state2",

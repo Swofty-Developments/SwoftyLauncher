@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1417fc100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "teams",
-  "proto": "void Team_Set_TimingPillSetBool68(void *self, uint8_t value, uint8_t useAltSet)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417fd8e0 (RacingPC lab re_groups/_decomp);xref:0x14175f410",
-  "notes": "Selects node set self+0x8 or self+0xa8, resolves its four node handles (+8 list, +0x28, +0x48, +0x68 bools) and writes value to the bool node at set+0x68, then releases the temporary handles. Better context needed: meaning of the +0x68 flag."
+  "proto": "void Team_Set_TimingPillSetBool68(void *block, uint8_t value, uint8_t use_alt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417fd8e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14175f410",
+  "notes": "Selects node set block+0x8 (use_alt=0) or block+0xa8 (use_alt=1), resolves the four node handles at set+0x8, +0x28, +0x48 and +0x68 into temporaries, writes value into the bool node from set+0x68 only (skipped if the node is null, the sentinel 0x146069300 or flagged +0x26 bit 0), then releases all four with Vm_Release_Node. Context from caller: Team_Update_TimingPill passes value = (previous entry byte in node pill+0x48 != new entry byte) for the primary set and again for the alt set when the primary flag is 0, so it acts as an entry-changed trigger. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "teams.set_timing_pill_set_bool68",

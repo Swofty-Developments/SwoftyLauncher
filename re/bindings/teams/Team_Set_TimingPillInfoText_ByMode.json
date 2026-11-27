@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14175d0a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "teams",
   "proto": "void Team_Set_TimingPillInfoText_ByMode(void *pill, uint32_t mode, float seconds, void *source)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14175e820 (RacingPC lab re_groups/_decomp);xref:0x14175f410",
-  "notes": "Fills the extra info text of a timing pill by mode: 0 hides it (bools +0x5d0 and +0x1e8 false); 1 fetches text from source vtbl+0x10 into +0x5a8/+0x5b0 and shows +0x5d0 only if non-empty; 2 and 3 format seconds*1000 as a time string (flag 0 or 1) into string node +0x5b0; 4 takes a string from source vtbl+0x18 and formats it with a NUM parameter. Modes 2-4 then set +0x5d0 and +0x1e8 true. Better context needed: meaning of the mode enum (gap/interval/laptime)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14175e820 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14175f410,0x141763f20,0x141764820",
+  "notes": "Switch on mode: 0 sets the bool nodes pill+0x5d0 and pill+0x1e8 to false (hide); 1 clears +0x1e8, asks source vfunc +0x10 to fill pill+0x5a8, links registry node pill+0x5b0 and sets +0x5d0 true only if the string is non-empty; 2 and 3 format seconds*1000 with Ne_Time_BreakDownMicroseconds (flag 0 or 1) into the string node pill+0x5b0; 4 reads a string from source vfunc +0x18, formats it via Ui_Format_RenownText (NUM token) into +0x5b0; modes 2-4 then set +0x5d0 and +0x1e8 true. Caller 0x141763f20: per-pill gap update, passes mode 3 with ABS(time delta) or mode 0 to hide; caller 0x141764820: updates the five pill slots (stride 0x618 from +0x98), mode 2 with a lap-time value or mode 0; Team_Update_TimingPill passes mode 0 when its param_4 is 0. Batch caller 0x1417645b0 has no visible call in its decompile. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "teams.set_timing_pill_info_text_by_mode",

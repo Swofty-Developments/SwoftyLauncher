@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142397980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "void Sess_LobbyVoteListener_Unsubscribe_AndDestroyBase(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142399580 (RacingPC lab re_groups/_decomp);xref:0x142368bd0",
-  "notes": "Destructor body: sets vtable 0x145776680, removes nine handlers from g_Game_MessageBus (+8 bus, flag +0x68) via func 0x14398a8e0, including Game_LobbyVm_ForwardSlotCommand, Game_LobbyVm_ApplySlotThreeCalls and Game_LobbyVm_ForwardSlotCommand90; when the bus is inactive it records error 0x58 in the errno trace ring instead. Then sets base vtable 0x1457765a0 and destroys and frees the member at +0x70 through the allocator at +0x68. Better context needed: confirm 0x14398a8e0 is the unsubscribe call."
+  "proto": "void Game_LobbyVm_Dtor_UnsubscribeMessages(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142399580 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422092a0,0x142368980,0x142368a30",
+  "notes": "Renamed from Sess_LobbyVoteListener_Unsubscribe_AndDestroyBase: the body is the class destructor and the handlers are Game_LobbyVm_* methods; nothing shows a vote. Sets vtable 0x145776680, removes nine {handler, self} delegates from [g_Game_MessageBus+8] with 0x14398a8e0 (0x142200770, 0x1422007a0, 0x142200870, 0x142200ca0, 0x142200db0, 0x142200de0, Game_LobbyVm_ForwardSlotCommand, Game_LobbyVm_ApplySlotThreeCalls, Game_LobbyVm_ForwardSlotCommand90; error 0x58 in the trace ring when the bus is inactive), then sets the base vtable 0x1457765a0 and destroys the owned object self+0x70 with the allocator self+0x68. Callers 0x142368980 and 0x142368a30: deleting destructors that call this and free self when the flag is set; Caller 0x1422092a0: derived destructor that removes one more delegate and a listener handle at +0x98 first. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.lobby_vote_listener_unsubscribe_and_destroy_base",

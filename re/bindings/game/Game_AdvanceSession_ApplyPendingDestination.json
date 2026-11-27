@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140bf7230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_AdvanceSession_ApplyPendingDestination(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bf7ce0 (RacingPC lab re_groups/_decomp);xref:0x140bf9a00,0x140bf9b30,0x142d56050",
-  "notes": "Commits the pending advance request: copies kind byte +0x310 to +0x318 and target int +0x314 to +0x31c, clears +0x310/+0x314/+0x324. Kind 3 calls FUN_140bf7f50(self,2,target or current,3) and posts bus message 0x14568b6c8; kinds 4 and 6 with a non-zero target call FUN_140bf7f50(self,1,target,1) and post 0x14568b6b8; names come from a 20-entry table at 0x145690f48. First syncs a career component when the current session info has +0x08==1 and +0x10==1."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bf7ce0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140bf9a00,0x140bf9b30,0x142d56050",
+  "notes": "Whole body read. Reads the current session entry via [self+0x278]+0x1030 vcall +0xa8 (type at +8); when type == 1 and +0x10 == 1 and the career component exists it calls 0x1407c3c60 and a vcall +0xd0 with [career+0xe50]^[+0xe58]. Then moves the pending destination: byte +0x310 -> +0x318, u32 +0x314 -> +0x31c, clears +0x310, +0x314 and +0x324. Kind 3: 0x140bf7f50(self, 2, pending id or current type, 3) (sets +0x318 = 4 when the id differs) and posts bus message vt 0x14568b6c8; kind 4 or 6 with a nonzero id: 0x140bf7f50(self, 1, id, 1) and posts vt 0x14568b6b8; other kinds return. Callers: the two SetDestination handlers 0x140bf9a00/0x140bf9b30 call it right after writing +0x310/+0x314, and Sess_StateCareerHubExit_OnStateEnter 0x142d56050 calls it on the component at state+0xdb8. Hook point for the advance destination. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.advance_session_apply_pending_destination",

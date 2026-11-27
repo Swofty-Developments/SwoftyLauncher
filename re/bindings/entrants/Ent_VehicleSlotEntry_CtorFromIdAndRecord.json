@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1424f9310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
-  "proto": "void *Ent_VehicleSlotEntry_CtorFromIdAndRecord(void *dst, uint32_t id, const void *vehicle_record)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424faf10 (RacingPC lab re_groups/_decomp);xref:0x142478370,0x1424787d0",
-  "notes": "Builds a {u32 id at +0x00, vehicle record copy at +0x10} entry: copies header fields, five 0x100-capacity inline strings (vtable 0x145615538, at dst+0x58, +0x170, +0x288, +0x3a0, +0x4b8), a 0x218 block, an inline array of 0x30-byte items (count at src+0x870), a 0x2b0 block and two polymorphic sub-objects (vtables 0x14563ea90, 0x14563eae0). Record size is about 0xce0 bytes."
+  "proto": "void *Ent_VehicleSlotEntry_CtorFromIdAndRecord(void *out, uint32_t id, void *record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424faf10 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142478370,0x1424787d0",
+  "notes": "Whole body read. out+0x00 = id; copies record+0x00.. to out+0x10.. (dest = src + 0x10): 0x48 bytes of header, five inline strings {vt 0x145615538, cap 0x100, ptr, chars} at out+0x58, +0x170, +0x288, +0x3a0, +0x4b8, a 0x218-byte block at +0x5d0, a counted array (count out+0x880, elems 0x30 bytes at out+0x7f0), 0x40 bytes at +0x890, a 0x2b0-byte block at +0x8d0, sub-objects with vt 0x14563ea90 at +0xb80 and vt 0x14563eae0 at +0xc10, tail up to about +0xcf0. Returns out. Callers Ent_EntrantsSystem_ReplaceVehicle 0x142478370 (id = packed handle) and Ent_EntrantsSystem_AddVehicle 0x1424787d0 (id = slot << 16 | 1) build the entry on the stack and pass it to Sess_VehicleTable_EmplaceAt. Hook point to see or edit a user vehicle record before it is stored. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "entrants.vehicle_slot_entry_ctor_from_id_and_record",

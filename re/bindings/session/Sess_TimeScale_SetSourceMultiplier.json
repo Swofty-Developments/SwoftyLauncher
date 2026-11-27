@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142f6ce10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "void Sess_TimeScale_SetSourceMultiplier(void *self, uint32_t source, float scale)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f6f3a0 (RacingPC lab re_groups/_decomp);xref:0x142d6a970",
-  "notes": "For source < 4 stores scale at self+0x1f0+source*4, takes max(1.0, all four) into self+0x1d0 and mirrors it to (+0x48)->+0x1f8 with bool (+0x48)->+0x1f4 = scale > 1 and to (+0x58)->+0x370. For source 2 it also switches a state id at ((+0x1e0)->+0xa0)+0x1058 between two constant ids and fires state events via vcall +0xd8, setting byte +0x2d6. Looks like session time acceleration; hook to observe or clamp the multiplier."
+  "proto": "void Sess_TimeScale_SetSourceMultiplier(void *self, uint32_t slot, float mult)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f6f3a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d6a570,0x142d6a970",
+  "notes": "For slot < 4 stores mult at self+0x1f0+slot*4, computes max(1.0, the four slots) into self+0x1d0, and pushes it to (self+0x48)+0x1f8 with bool (>1.0) at +0x1f4 and to (self+0x58)+0x370; calls 0x144536580 when the result is exactly 1.0 and global 0x146cc5ab0 is set. For slot 2 with self+0x1e0 set it also switches a state id on (self+0x1e0)+0xa0 (+0x1058) between 0x146055f68 and 0x146055fc8 and posts events through vfunc +0xd8, setting byte +0x2d6 to 1 (mult > 1) or 0. Callers: Sess_StateInGamePQ_OnStateExit resets slot 2 to 1.0; 0x142d6a570 (VM property-changed callback registered by that state; reads a numeric property and shares this body's tail) writes slot 2 on state+0x1018. Hook point for the effective time multiplier: self+0x1d0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.time_scale_set_source_multiplier",

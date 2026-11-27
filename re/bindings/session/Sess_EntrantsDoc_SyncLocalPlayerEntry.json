@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142577500",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "void Sess_EntrantsDoc_SyncLocalPlayerEntry(void *self, void *session)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142579430 (RacingPC lab re_groups/_decomp);xref:0x142577080",
-  "notes": "Builds the local user identity (g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vcall +0x38, flags 0x10000000), finds the matching EntrantRecord in session+0x2e0..+0x2e8 via Sess_Match_EntrantIdentity_Thunk, copies its id, driver/vehicle customisation, team/badge stat ids and vehicle ref into an update record, calls 0x1425731b0 and Sess_EntrantsDoc_UpdateEntryById(self+0xd0, session, rec, packed_id)."
+  "proto": "void Sess_EntrantsDoc_SyncLocalPlayerEntry(void *doc, void *participants)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142579430 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142577080",
+  "notes": "Gets the local user id block via g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vfunc +0x38, builds an identity key (vtable 0x145614e20, flags 0x10000000) and scans the EntrantRecord vector at participants+0x2e0..+0x2e8 with Sess_Match_EntrantIdentity_Thunk. If found and id_lo != 0 it builds a fresh record carrying the entrant's id, customisation, team/badge stat ids and vehicle ref, passes it to 0x1425731b0(doc), then Sess_EntrantsDoc_UpdateEntryById(doc+0xd0, participants, rec, packed id) and 0x142575b50(participants). Caller Sess_Read_SelectedGamertags runs it right after Sess_Load_EntrantsDocFromPropertyBag to refresh the local player's row. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.entrants_doc_sync_local_player_entry",

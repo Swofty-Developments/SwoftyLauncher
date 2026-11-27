@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142e1a270",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "void Sess_SpectatorDirector_ApplyDriverToCameraAndUi(void *dir, uint32_t veh_idx)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e1c800 (RacingPC lab re_groups/_decomp);xref:0x142e1b360,0x142e1c2e0",
-  "notes": "Finds a named camera (string 0x14565dc9e) in the camera collection and passes it to Game_RacingCameraArbitrator_RequiresCrossfade for viewport +0x140, clears the target slot (+0x30)->+0x80[viewport] and flag bit 8 at (+0x30)->+0x54, then pushes the driver's view-model node into the UI property at (+0x38)->+0x170 +0xa30 (viewport 0) or +0xa50 (other) and stores veh_idx at +0xb6c or +0xb70."
+  "proto": "void Sess_SpectatorDirector_ApplyDriverToCameraAndUi(void *self, uint32_t driver)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e1c800 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142e1b360,0x142e1c2e0",
+  "notes": "Finds a named camera (string 0x14565dc9e) in the collection at (self+0x20)+0x38+0x70, gathers its two components and calls Game_RacingCameraArbitrator_RequiresCrossfade for view index self+0x140, zeroes the (self+0x30)+0x80[view] slot and clears bit 8 of (self+0x30)+0x54. Then, if the current driver byte self+0xd6 is in range, takes the driver's UI node from (self+0x38)+0x170 tables (+0x3d8/+0x3f8) and writes it with Ne_Property_SetUIDBRefIfChanged into the property at +0xa30 (view 0) or +0xa50 (other view), storing the driver index at +0xb6c or +0xb70. Callers: Sess_SpectatorDirector_Update when driver changes with camera mode 0, and Sess_SpectatorDirector_SetCurrent in its camera == 0 branch. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.spectator_director_apply_driver_to_camera_and_ui",

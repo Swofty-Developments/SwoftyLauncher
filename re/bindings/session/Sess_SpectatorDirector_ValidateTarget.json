@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142e19220",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "void Sess_SpectatorDirector_ValidateTarget(void *dir, uint8_t veh_idx, int32_t *io_status)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e1b7b0 (RacingPC lab re_groups/_decomp);xref:0x142e1abe0,0x142e1b360,0x142e1c680",
-  "notes": "Writes a status to *io_status: 0 when the index is out of range of (+0x40)->+0x28..+0x30, the entity lacks the required component data (+0x58), the per-car record at (+0x58)->+0x30[idx] is masked out, or 0x143071250 blocks it; otherwise uses the per-car state code at (+0x60)->+0x68+idx*0x10 -> +4 (bitmasks 0xe1f8 -> status 2, 0x1e01 -> 0, code 2 -> 1) and finally requires no active entry for that entity in (+0x30)->+0x60..+0x68 (stride 0x38)."
+  "proto": "void Sess_SpectatorDirector_ValidateTarget(void *self, uint8_t driver, int32_t *camera_io)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e1b7b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142e1abe0,0x142e1b360,0x142e1c160",
+  "notes": "In/out camera mode for a driver index. Writes 0 when the index is past the vehicle array ((self+0x40)+0x28..+0x30), when the vehicle entity's component (type 0x146ceab00) has +0x58 null, when the (self+0x58)+0x30[idx] record is inactive or masked (+0x508 against +0x518/+0x520), or when 0x143071250 is true and (self+0x68)+0x29 is 0. Then by state at (self+0x60)+0x68+idx*0x10 -> +4: mask 0x1e01 gives 0, state 2 gives 1, mask 0xe1f8 forces 2; mode 2 is kept only if the (self+0x30)+0x60 list (0x38-byte rows) has a non-null second field for that vehicle, else 1. Callers: Sess_SpectatorDirector_Update validates requested_driver/requested_camera before SetCurrent; SetActive and 0x142e1c160 (steps to next/previous driver in the order list) seed 1 and accept the driver when the result is 1 or 2. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.spectator_director_validate_target",

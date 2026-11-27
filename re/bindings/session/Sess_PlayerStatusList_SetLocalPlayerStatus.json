@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140c77d00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void Sess_PlayerStatusList_SetLocalPlayerStatus(void *self, uint32_t status)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c787c0 (RacingPC lab re_groups/_decomp);xref:0x142d53340,0x142d5ef40",
-  "notes": "Same local-entrant lookup as 0x140c78480; writes status to entry+4 of the matching entry in self+0x2d0..+0x2d8. If the local entrant is not found or has the invalid id 0x3fff it writes status to every entry."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c787c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d53340,0x142d5ef40",
+  "notes": "Same local-entrant lookup as 0x140c78480 (entrant vector at (self+0x278)+0x2e0). When the local entrant is found and its id high word is not 0x3fff, writes status to entry[+4] of the matching entry in self+0x2d0..+0x2d8 (no write if no entry matches); otherwise writes status to every entry in the list. Callers: Sess_StateCareerHub_OnStateEnter sets 0 on entry and 1 after Game_CareerEventsSequencer_OnHubOpened; Game_SessionStateFinaliseResultsSync_OnStateUpdate sets 0. Good hook point for the per-player status value. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.player_status_list_set_local_player_status",

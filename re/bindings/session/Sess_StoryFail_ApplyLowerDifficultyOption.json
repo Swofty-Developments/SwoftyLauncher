@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14112a4e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "void Sess_StoryFail_ApplyLowerDifficultyOption(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14112ab20 (RacingPC lab re_groups/_decomp);xref:0x142d940f0",
-  "notes": "Reads the current option from the selector at self+0x2a0 (vcall +0x10), maps it with Game_ChallengeCareer_FindDifficultyIndex, computes target = difficulty-1 (clamped, 3 when out of range), then either uses it directly (self+0x2a8 set) or finds the option whose name matches the string table at 0x14568f940[target] among 0x50-byte entries, and applies it with vcall +0x18."
+  "proto": "void Sess_Decrement_DifficultyOption(void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14112ab20 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d940f0",
+  "notes": "Renamed from Sess_StoryFail_ApplyLowerDifficultyOption: StoryFail comes only from the caller, the body just steps a difficulty option down by one. Reads the option object at owner+0x2a0 (vcall +0x10 = current value), maps it with Game_ChallengeCareer_FindDifficultyIndex to a byte index, takes index-1 for 1..3 (anything else becomes 3), then either uses that index directly (flag owner+0x2a8 set) or finds the option entry whose name equals the string table 0x14568f940[index] (entries 0x50 apart at option+0x80, range ints at +0xb8/+0xbc, default +0xc0) and applies it with vcall +0x18. Context from caller: Sess_StoryFail_OnRestartChoice calls it on *(this+0xdd0) right before it posts the restart_lower_difficulty bus message; good hook to change the step size. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.story_fail_apply_lower_difficulty_option",

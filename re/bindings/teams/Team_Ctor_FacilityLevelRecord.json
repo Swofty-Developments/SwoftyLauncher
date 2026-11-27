@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140df3320",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "teams",
   "proto": "void *Team_Ctor_FacilityLevelRecord(void *self, void *owner, void *row)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140df3ea0 (RacingPC lab re_groups/_decomp);xref:0x140dea820",
-  "notes": "Constructs a 0x130-byte record from a gamedb row: copies a deobfuscated string from Gdb_FindMetadata(row) into the inline 0x100 string at +0x20 (cap +0x10, ptr +0x18), stores owner at +0x120 and the int field development_level at +0x128, sets vtable 0x145697f90. Better context needed: which string field Gdb_FindMetadata returns (name is hidden in the decompile)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140df3ea0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140dea820",
+  "notes": "Takes the row name from Gdb_FindMetadata(row) (lazy XOR decode with k_Gdb_StringXorKey) and the int field 'development_level', then builds the record: vtable 0x145697f90, inline 256-char string at +8 (chars at +0x20) with the name, owner pointer at +0x120, development_level at +0x128. Returns self. Caller Team_Load_Facilities builds it as the base part of each row of the facility sub-tables (it then reads stat_id, running_cost or facility_shut_down from the same row). Hook here to see or change the level of every loaded facility row. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "teams.ctor_facility_level_record",

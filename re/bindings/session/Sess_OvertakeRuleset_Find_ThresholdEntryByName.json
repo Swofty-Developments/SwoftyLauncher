@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140bb2350",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "int32_t *Sess_OvertakeRuleset_Find_ThresholdEntryByName(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bb2330 (RacingPC lab re_groups/_decomp);xref:0x142d32dc0",
-  "notes": "Searches the groups at (self+0x370)+0x238..+0x240 (16-byte entries, object ptr at +8 with a ptr vector at +0x10..+0x18) for an item whose name string at +0x20 equals the string at self+0x2a0. From that item's ptr vector +0x448..+0x450 returns the first record whose leading int is >= the level (self+0x3e8, or when -1 the int at +0x3a8 of a component fetched via (self+0x328)+0x1030 with key 0x14605f630), falling back to the first record. Better context needed: what the named item and the level represent."
+  "proto": "int32_t *Sess_Find_NamedEntryTierByLevel(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bb2330 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d12370,0x142d1d2d0,0x142d255e0",
+  "notes": "Renamed from Sess_OvertakeRuleset_Find_ThresholdEntryByName: self is the object at ruleset+0x350 used by several rulesets, and the result is chosen by a level value, not only by name. Takes the name string self+0x2a0, scans the groups [self+0x370]+0x238..+0x240 (stride 0x10, record pointers at [group+8]+0x10..+0x18) for a record whose name +0x20 matches (strcmp; falls back to the first group), then takes level = int self+0x3e8, or when that is -1 the int +0x3a8 of the component 0x14605f630 found in [self+0x328]+0x1030, and returns the first pointer in record +0x448..+0x450 whose first int is >= level, else the first one; null when there is no record. Context from caller: Callers 0x142d12370, 0x142d1d2d0 and 0x142d255e0 (ruleset result evaluators) and Sess_OvertakeRuleset_InitRollingStart read the list at result +0x150..+0x158 of 12-byte {float target, u8 kind 0/1/2} to grade the score. Good hook point to change challenge targets. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.overtake_ruleset_find_threshold_entry_by_name",

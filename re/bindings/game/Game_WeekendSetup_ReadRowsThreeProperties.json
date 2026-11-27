@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140b9e0c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_WeekendSetup_ReadRowsThreeProperties(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b9e0a0 (RacingPC lab re_groups/_decomp);xref:0x140b7ba30,0x140b7bab0,0x141352140",
-  "notes": "Gets a gamedb cursor from the virtual at vtable+0x298, and for each row calls the virtual at +0x2c0 (select row i) and then FUN_140b9e1c0 three times with the property names at 0x145672995, 0x1456729a5 and 0x1456729b7. Better context needed: the three string literals name the weekend-setup properties being loaded."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b9e0a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140b7ba30,0x140b7bab0,0x141352140",
+  "notes": "Whole body read. vcall +0x298(self, cursor) fills a GdbTableCursor on the stack, Gdb_Init_TableCursor, then for each row index vcall +0x2c0(self, cursor, i) and three calls 0x140b9e1c0(self, cursor, key) with the string keys 0x145672995, 0x1456729a5 and 0x1456729b7 (texts not visible in the decompile). Nothing is returned; all state goes through the helper. Callers: the three ReadProperties variants (Game_ChampionshipEventWeekendSetup_ReadProperties 0x140b7ba30, Game_WeekendSetup_ReadProperties_Vt68c8d0 0x140b7bab0, Sess_WeekendSetup_LoadFromGdb 0x141352140) call it last, after copying the 0x208 row ref to self+0x318 and reading use_championship_session_setup into self+0x560. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.weekend_setup_read_rows_three_properties",

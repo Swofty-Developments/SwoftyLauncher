@@ -7,9 +7,9 @@
   "addr": "0x1436a3750",
   "level": "L1",
   "subsystem": "session",
-  "proto": "float Sess_Strategy_GetLowestAvgPracticeMetric_ByTyreClass(void *self, uint32_t *out_class)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436a5ce0 (RacingPC lab re_groups/_decomp);xref:0x143698580",
-  "notes": "Locates the practice-programme data object through (self+0x50)->+0x88 (type filtered lists +0x238 and +0x298) and 0x142990db0, which exposes five 0x1c8-byte records (valid ptr at +8, float at +0x1b8). Averages that float over records 0..2 and over records 3..4, writes to *out_class the index (0, 1 or 2) of the smallest non-zero average and returns it; 0 when no data. Better context needed: what the float at +0x1b8 measures."
+  "proto": "float Sess_Strategy_GetLowestAvgPracticeMetric_ByTyreClass(void *sys, int32_t *out_group)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436a5ce0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143698580",
+  "notes": "Walks *(sys+0x50)+0x88 (skips a container type 0x146078668 via its children +0x238..+0x240), finds the component of type 0x1460785a0 in +0x298..+0x2a0 and takes the local player's record from it (FUN_142990db0: entrant id lookup in map +0x548). The record has 5 slots of 0x1c8 bytes (valid ptr at +8, float at +0x1b8); it averages the valid floats of slots 0-2, then slots 3-4, then slots 3-4 again (third group reads the same offsets 0x710/0x8d8 in the decompile), returns the lowest non-zero average and writes group 0/1/2 to *out_group (untouched if none, returns 0). Context from caller: Sess_StrategySystem_Slot3_UpdateAll presets out to 4, multiplies the result by the int at strategy+0x234 and indexes a table at +0x108/+0x78 with the group; FUN_1436b0be0 (scales a track value from Game_TrackData_GetTrack +0xf0) multiplies by the result when it is > 0. Better context needed: nothing in the code proves that the component is practice data or that the groups are tyre classes. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.strategy_get_lowest_avg_practice_metric_by_tyre_class",

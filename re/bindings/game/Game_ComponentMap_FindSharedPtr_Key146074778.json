@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141e52020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void *Game_ComponentMap_FindSharedPtr_Key146074778(void *map, void *out_shared_ptr)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e53c20 (RacingPC lab re_groups/_decomp);xref:0x1421ccf10,0x1421cebc0",
-  "notes": "Looks up the type key 0x146074778 in a bucketed hash map (buckets +0x30, mask +0x48, end node +0x18; key at node+0x10) and returns the stored shared pointer (object node+0x18, control block node+0x20) by value with the ref count incremented; returns {null, null} when missing. The FanZone standings builders use it to fetch a service. Better context needed: which service the key identifies."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e53c20 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141bc0df0,0x1421b9e50,0x1421cb1a0",
+  "notes": "Whole body read. Hash map lookup with a fixed key: bucket = [map+0x48] & 0xd97e199f493ed6b8 in the bucket array [map+0x30] (16-byte {first,last} pairs, end sentinel [map+0x18]); walks nodes via +8 until node+0x10 == 0x146074778; copies the shared pointer at node+0x18/+0x20 to out (refcount at ctrl+8 incremented), or writes {0,0} when the key is absent. Returns out. All three callers pass (x+0x40) as the map: 0x141bc0df0 iterates result+0x1c0..+0x1c8 (16-byte pairs) and picks entries by byte +8; 0x1421cb1a0 stores the pointer pair at self+0x2c8/+0x2d0; 0x1421b9e50 fetches it next to a second masked-key lookup. The type behind key 0x146074778 is not named in any of them. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.component_map_find_shared_ptr_key146074778",

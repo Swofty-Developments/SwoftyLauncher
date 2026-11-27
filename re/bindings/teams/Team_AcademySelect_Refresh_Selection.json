@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141a74290",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "teams",
-  "proto": "void Team_AcademySelect_Refresh_Selection(void *vm)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141a75a70 (RacingPC lab re_groups/_decomp);xref:0x141a731e0",
-  "notes": "Walks the id->slot tree at +0x340 calling func_0x1428edbf0(+0x298, slot u16 at node+0x24, 0) for every node, then takes the selected index (FUN_141a75c80); if inside the list at *(+0x2a0)+0x298 (16-byte entries) posts a bus message (vtable 0x145615558) with the entry first driver id and re-enables up to 3 driver ids of that entry via the same call with 1, else posts the message with invalid id 0x3fff0000 and code 6."
+  "proto": "void Team_AcademySelect_Refresh_Selection(void *screen)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141a75a70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141a731e0,0x141a760e0",
+  "notes": "Walks the std::map at screen+0x340 and calls func_0x1428edbf0(screen+0x298, u16 node+0x24, 0) for every node, then takes the current index from FUN_141a75c80. If it is inside the 16-byte array at *(screen+0x2a0)+0x298 it posts a bus message (vtable 0x145615558, kind 0, first u32 of the entry list) and for up to 3 ids of the entry list (+0x10..+0x18) finds the map node with the same key (byte +0x20, word +0x22) and calls func_0x1428edbf0(.., id, 1); otherwise it posts kind 6 with id 0x3fff0000. Both callers reach it by a tail jump (the body is merged into their decompile): Team_Build_AcademySelect at the end of the screen build, and 0x141a760e0, the screen event handler, on event hash 0x70d928ee. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "teams.academy_select_refresh_selection",

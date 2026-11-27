@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14276f800",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
   "proto": "void *Ent_TeamSetup_FindRowByStatId(void *out_row, int stat_id)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142771b80 (RacingPC lab re_groups/_decomp);xref:0x142772120",
-  "notes": "Opens a gamedb table cursor whose table and row-type names are both the literal \"0000\" and scans rows for one whose int field \"stat_id\" equals the argument, returning it in out_row. If none matches the row is set to \"Invalid\" (index -1). Better context needed: the \"0000\" table name looks like a placeholder, so the real table is unclear."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142771b80 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142772120",
+  "notes": "Whole body read. Builds a GdbTableCursor on the stack (both 0x100 name fields preset to '0000', row_count -1, flag 1), Gdb_Init_TableCursor, then for each row Gdb_Get_RowByIndex(cursor, out_row) and Gdb_Get_FieldInt(out_row, 'stat_id'); returns out_row at the first row whose stat_id equals the argument. No match: out_row becomes the invalid row (both name strings 'Invalid' at +0x000 and +0x100, index -1 at +0x200, byte 0 at +0x204). Which table the cursor opens is not visible in this body. Context from caller: Ent_Parse_TeamSetupRow 0x142772120 calls it in every switch case with the resolved stat id, copies the 0x208-byte row and reads its metadata and fields. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "entrants.team_setup_find_row_by_stat_id",

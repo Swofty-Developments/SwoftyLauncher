@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14276f8e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
-  "proto": "void *Ent_TeamSetup_ReadNameAndDateTime(void *out, void *table, const char *row_label)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142771c60 (RacingPC lab re_groups/_decomp);xref:0x142772120",
-  "notes": "Finds a gamedb row by label, reads and XOR-decrypts its \"name\" string into a 0x200 inline string (out+0x08 capacity, +0x10 ptr, +0x18 data, vtable 0x1456156a0), then builds the sub-table path \"<table>.<row>\" with row type \"date_time\", converts that row with Gdb_Read_DateTimeRowAsTm and stores the resulting time_t at out+0x218 (0 on failure)."
+  "proto": "void *Ent_TeamSetup_ReadNameAndDateTime(void *out, void *row, const char *label)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142771c60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142772120",
+  "notes": "Whole body read. Gdb_Find_RowByLabel(row, child, label); out is an inline string {vt 0x1456156a0, cap 0x200, ptr, chars at +0x18} plus a time at out+0x218. Reads field 'name' of the child row (XOR-decoded with k_Gdb_StringXorKey) into the string, then joins the child row's two 0x100 name parts with '.', finds the 'date_time' sub-row (label 0x145637597), Gdb_Read_DateTimeRowAsTm -> tm, converts with 0x14534d1fc (mktime-like, -1 -> 0) and stores the time at out+0x218. Caller Ent_Parse_TeamSetupRow 0x142772120 calls it with labels first_entry, last_entry, first_win, last_win and copies the name (0x200 bytes) and the time qword into the parsed team record. Context from caller: team history milestones. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "entrants.team_setup_read_name_and_date_time",

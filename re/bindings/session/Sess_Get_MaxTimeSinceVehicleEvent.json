@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14360f020",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "float Sess_Get_MaxTimeSinceVehicleEvent(void *self, uint8_t event_index)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436115b0 (RacingPC lab re_groups/_decomp);xref:0x142a56ff0,0x142f59870",
-  "notes": "For every vehicle in the list at (+0x188)->+0x48 (only when byte +0x108 of that object is 1) looks up the per-vehicle table at (+0x190)->+0x60 (stride 0x48, key vehicle+0x38), takes the 0x14-byte entry event_index, and if its flag bit 8 is set and its timestamp (+0x0c) is non-zero computes session time minus timestamp (session clock read from +0x230 of the timing object, extrapolated with QueryPerformanceCounter when running). Returns the maximum elapsed time in XMM0."
+  "proto": "float Sess_Get_MaxTimeSinceVehicleEvent(void *self, uint8_t vehicle_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436115b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142a56ff0,0x142f59870",
+  "notes": "Whole body read. Needs [self+0x190] != 0 and byte [[self+0x188]+0x108] == 1, else 0. For each pointer in the vector [self+0x188]+0x48..+0x50: index u32 at +0x38 picks a 0x48-byte record in [[self+0x190]+0x60], whose inner vector +0x10 (0x14-byte elems) is indexed by vehicle_idx; when flag byte +4 has bit 8 and the float time at +0xc is nonzero, elapsed = session time (clock [[self+0x190]+0x88]+0x230: +0x60, or +0x70 plus scaled QueryPerformanceCounter time when +0x98 is set) minus that time. Returns the maximum elapsed over all entries. Callers: Game_Engineer_OnSafetyCarMessage 0x142a56ff0 tests the result < 1.0 s; Sess_SafetyCar_ComputeTargetSpeed 0x142f59870 passes [sc+0x120]+0x50 and divides by +0x1e4 for a 0..1 ramp. Context from caller: the object is the safety car tether state. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.get_max_time_since_vehicle_event",

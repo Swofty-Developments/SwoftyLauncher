@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14360f280",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "float Sess_SafetyCar_GetMaxElapsedSinceMarkTime(void *sc, uint8_t slot)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143611810 (RacingPC lab re_groups/_decomp);xref:0x142f59870",
-  "notes": "Only when +0x190 is set and (+0x188)->+0x108 == 1: for every entry in (+0x188)->+0x48..+0x50 reads the 0x14-byte record [slot] of that entry's row (rows 0x48 bytes at (+0x190)->+0x60), and if flags & 5 == 4 and time +8 is non-zero computes session clock minus that time; returns the maximum, else 0."
+  "proto": "float Sess_SafetyCar_GetMaxElapsedSinceMarkTime(void *self, uint8_t veh_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143611810 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142f59870",
+  "notes": "Returns 0 unless self+0x190 is set and (self+0x188)+0x108 == 1. For each item in the (self+0x188) list +0x48..+0x50 it indexes the table at (self+0x190)+0x60 (rows 0x48 bytes) by item+0x38, takes the per-vehicle entry (0x14 bytes) and, when its flags at +4 satisfy (flags & 5) == 4 and the float time at +8 is non-zero, computes session clock ((self+0x190)+0x88 -> +0x230 timer) minus that time; returns the maximum. Caller Sess_SafetyCar_ComputeTargetSpeed passes (ctx+0x120)+0x50, divides the result by a duration, clamps to 0..1 and uses it to blend the speed back from the reduced percentage (+0x1c0). (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.safety_car_get_max_elapsed_since_mark_time",

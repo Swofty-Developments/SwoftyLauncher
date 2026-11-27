@@ -7,9 +7,9 @@
   "addr": "0x142f29310",
   "level": "L1",
   "subsystem": "session",
-  "proto": "uint64_t Sess_Race_IsVehicleOutOrCriticallyDamaged(void *race, uint8_t veh_idx)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f2b8a0 (RacingPC lab re_groups/_decomp);xref:0x142f2ba60",
-  "notes": "Resolves vehicle state via cache race+0xa0[idx]; returns 1 if state flag +0x31 bit 0x40 is set. Otherwise requires idx < 0x1b and a session-type dependent range of the per-car value at (race+0x1b0)->+0x2d8 +0x78+idx*0x70, then inspects the car component at +0x18->+0x58->+0x5c8: returns 1 if any item in +0xb0..+0xb8 has byte +0x38 set or if the sum of three clamped ratios (+0x50/+0x38, +0x48/+0x34, +0x4c/+0x34) reaches the threshold at 0x145f9845c. Better context needed: the ratios look like damage or wear fractions."
+  "proto": "uint64_t Sess_Race_IsVehicleOutOrCriticallyDamaged(void *self, uint8_t veh_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f2b8a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142f2ba60",
+  "notes": "Resolves the vehicle record via self+0xa0[idx] (fallback scan +0x88..+0x90). Returns 1 if record+0x31 has flag 0x40. Otherwise needs idx < 0x1b, entity component at rec+0x18 -> +0x58, state from (self+0x1b0)+0x2d8 table (stride 0x70, +0x78) in 3..5 for type 0 or 1..5 for type 1 (type at (self+0x1b0)+0x68+idx*0x10 -> +0xc); then returns 1 if any item in component+0x5c8 list +0xb0..+0xb8 has byte +0x38 set, or if the sum of three clamped ratios (+0x50/+0x38 capped at 2, +0x48/+0x34 and +0x4c/+0x34 capped at 1) reaches the float at 0x145f9845c. Callers: Sess_SafetyCar_CanVehicleRejoin returns the inverse of it when the unlap state is not 1; 0x141033810 (large per-vehicle update that fills 0x200-byte rows) uses it as the result flag after Sess_Rules_CanVehicleUnlap succeeds. Stays L1: that the ratios are damage is inferred, not shown. Self is the same object the SafetyCar methods take. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.race_is_vehicle_out_or_critically_damaged",

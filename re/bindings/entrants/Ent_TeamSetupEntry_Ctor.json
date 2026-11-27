@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142785ff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "entrants",
-  "proto": "void *Ent_TeamSetupEntry_Ctor(void *self, void *owner, void *row_by_value)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142788370 (RacingPC lab re_groups/_decomp);xref:0x14279f2c0",
-  "notes": "Constructs a team-setup entry (vtables 0x1457a1ae0 then 0x1457a1b20) from a parsed row passed by value: owner at +0x08, u16 id +0x10 and byte +0x12, 0x200 name string at +0x18, value +0x230, shared pointer +0x238/+0x240, three empty owner-bound containers at +0x248, +0x260, +0x278. Releases the row's shared pointer (row+0x230) on exit."
+  "proto": "void *Ent_TeamSetupEntry_Ctor(void *self, void *alloc, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142788370 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14279f2c0",
+  "notes": "Whole body read. Base constructor: vt 0x1457a1ae0 then 0x1457a1b20 at +0x00; alloc at +0x08, +0x258 and +0x278; u16 src+0 -> +0x10, u8 src+2 -> +0x12; inline string {vt 0x1456156a0 at +0x18, cap 0x200 at +0x20, ptr +0x28, chars +0x30} copied from src+0x20; qword src+0x220 -> +0x230; shared pointer src+0x228/+0x230 copied to +0x238/+0x240 (refcount +1); +0x248..+0x257, +0x260..+0x277 and +0x280..+0x29b zeroed. Releases the shared pointer held in src (src is consumed). Caller Ent_TeamSetup_RebuildFromRows 0x14279f2c0 allocates 0x2a8- and 0x2a0-byte objects, calls this, and for the 0x2a8 one then sets the derived vt 0x1457a1b00 and +0x2a0/+0x2a4. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "entrants.team_setup_entry_ctor",

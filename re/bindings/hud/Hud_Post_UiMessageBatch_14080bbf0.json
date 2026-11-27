@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14080bba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "hud",
   "proto": "void Hud_Post_UiMessageBatch_14080bbf0(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14080bbf0 (RacingPC lab re_groups/_decomp);xref:0x1414b4670,0x142a3db60,0x142a3f9b0,0x142d7f6b0,0x142e1abe0",
-  "notes": "Nine times in a row: gets the UI owner via vcall +0x58 on (*(self+0x108))+0x10, logs \"UI_MESSAGE\" \"%s()(%s).\" and calls vtable+0x38 on the object at owner+0x378 with (message name, 1, 0). The nine message name strings (0x14566046e, 0x14565ee41, 0x14565c955, 0x14565ee78, 0x14564aca0, 0x14565da29, 0x14565da4a, 0x14565da70, 0x14565da8b) are not visible in the decompile. Better context needed: the string contents decide whether this hides or resets the session HUD panels (callers are session exit, garage enter/leave, spectator director)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14080bbf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14111f190,0x1414b4670,0x142a3db60",
+  "notes": "Nine times in a row: gets the UI root via vcall +0x58 on [self+0x108]+0x10, logs on channel UI_MESSAGE ('%s()(%s).', hash 0x5cfa8e6d) and calls the sink at root+0x378 vcall +0x38 with (name, 1, 0) for nine fixed message-name strings (0x14566046e, 0x14565ee41, 0x14565c955, 0x14565ee78, 0x14564aca0, 0x14565da29, 0x14565da4a, 0x14565da70, 0x14565da8b). No state is written in self. Context from caller: called by Game_SessionHud_OnSessionExit, by Game_FadeRequests_OnLocalHumanEnteredGarage at entry, and by Caller 0x14111f190: validates the mid-session save and restores the replay state, then posts this batch. Better context needed: the nine string values would say which HUD elements the batch closes or resets. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "hud.post_ui_message_batch_14080bbf0",

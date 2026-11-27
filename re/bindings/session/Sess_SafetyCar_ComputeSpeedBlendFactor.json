@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14360ea70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "float Sess_SafetyCar_ComputeSpeedBlendFactor(void *sc, uint8_t veh_idx)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143611000 (RacingPC lab re_groups/_decomp);xref:0x142f59870",
-  "notes": "Returns a 0..1 factor: 1.0 when the vehicle state (+0x60[idx] cache) has +0x20 set with +0x3c == 0. Otherwise max of (a) a distance ramp 1 - (clamp(state+0x3c, +0x1d4, +0x1d8) - +0x1d4)/(+0x1d8 - +0x1d4), only when global mode byte (0x146100698)+0x108 is 1..3, and (b) a timer ramp 1 - remaining/const(0x145f98c88) using session clock versus (+0x198)->+0x40 when any entry in (+0x188) has state code 0xe (1.0 when code is 0xe or 0xf without timer)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143611000 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142f59870",
+  "notes": "Returns a 0..1 factor. Resolves the vehicle record via sc+0x60[idx] (scan +0x48..+0x50); returns 1.0 when record+0x20 exists and its +0x3c is 0. Otherwise takes the max of (a) 1 - (clamp(record+0x3c, sc+0x1d4, sc+0x1d8) - lo)/(hi - lo), only when the global mode byte (0x146100698 -> +0x108) is 1..3, and (b) a time ramp 1 - remaining/const(0x145f98c88) when an entry in the sc+0x188 list has state 0xe (remaining = mark time at (sc+0x198)+0x40 + const - session clock), or 1.0 when only state 0xe/0xf entries exist. Caller Sess_SafetyCar_ComputeTargetSpeed lerps the vehicle target speed toward sc+0x1bc with this factor. Tunables: sc+0x1d4/+0x1d8 range, 0x145f98c88 ramp seconds. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.safety_car_compute_speed_blend_factor",

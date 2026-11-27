@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142d1d650",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "void Sess_Apply_EntrantStartDistanceOverrides(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142d1fbe0 (RacingPC lab re_groups/_decomp);xref:0x142d32dc0",
-  "notes": "Walks the 0x18-byte per-entrant array at self+0x3f8..+0x400; for entries with +1 set and float +0xc > 0 it finds the entrant by vehicle index (+0x82), resolves the vehicle entity component (key 0x146ceab00) and writes max(0, track_length * fraction) to float +0x100 of (component+0x58)+0x540, capped by the XOR-decoded value of +0x98 ^ +0xa0, clearing bit0 of +0x10c. Track length is float +0xf0 of Game_TrackData_GetTrack. Bit 4 of byte +0x1b in the matching entry of list +0x2d0 is cleared before and set after the write."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142d1fbe0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d32dc0,0x142d37240",
+  "notes": "Session = [[self+0x320]+0x88]+0x260 (skipped when its type derives from 0x14612bca8); reads track length float +0xf0 from Game_TrackData_GetTrack and the participant list (session+0x1030 vcall +0xa8, +0x20..+0x28, stride 0x88). For each override in self+0x3f8..+0x400 (stride 0x18: u8 car index +0, u8 enabled +1, float fraction +0xc > 0) it finds the participant with +0x82 == car index, takes the vehicle [[self+0x308]+0x28][index], gets component 0x146ceab00 and writes the float [[comp+0x58]+0x540]+0x100 = min(value decoded from +0x98 xor +0xa0, track_length * fraction), not below 0, and clears bit 0 of +0x10c; bit 4 of byte +0x1b in the matching entry of the 0x14605cfe0 component list +0x2d0..+0x2d8 is cleared before and set after. Callers: Sess_OvertakeRuleset_InitRollingStart, and Caller 0x142d37240: reads start_lights_duration from gamedb, calls Sess_Load_EntrantHeadStartOverrides and then this. Hook point for per-car start distance. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.apply_entrant_start_distance_overrides",

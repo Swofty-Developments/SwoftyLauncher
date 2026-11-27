@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1417fb690",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "teams",
-  "proto": "void Team_Set_TimingPillFlagPair(void *self, uint8_t flagA, uint8_t flagB, uint8_t useAltSet)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417fce70 (RacingPC lab re_groups/_decomp);xref:0x14175f410",
-  "notes": "Selects node set self+0x8 (visibility handle +0x88) or the alternate set self+0xa8 (+0x128), reads the current bool nodes at set+0x28 and set+0x48, and only if either differs writes resolved node = flagA and not flagB, set+0x28 = flagA, set+0x48 = flagB. Inputs come from 0x1417fd170. Better context needed: meaning of the two flags."
+  "proto": "void Team_Set_TimingPillFlagPair(void *block, uint8_t flag_a, uint8_t flag_b, uint8_t use_alt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417fce70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141479c20,0x14175f410",
+  "notes": "Picks the node set block+0x8 with handle block+0x88 (use_alt=0) or block+0xa8 with handle block+0x128 (use_alt=1), resolves the handle to a temporary node, reads the current bools of set+0x28 and set+0x48, and only when they differ from (flag_a, flag_b) writes temp node = flag_a AND NOT flag_b, set+0x28 = flag_a, set+0x48 = flag_b; then releases the temp node with Vm_Release_Node. Callers: 0x141479c20: computes both pairs with Team_Unk_1417fd170 on obj+0x318 and applies primary then alt (alt only if primary flag_a is 0, else Team_Clear_TimingPillAltFlagPair); Team_Update_TimingPill does the same on pill+0x348. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "teams.set_timing_pill_flag_pair",

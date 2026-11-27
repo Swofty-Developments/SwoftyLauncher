@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143167a50",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "int Game_Read_UserIdField_FromArrayElem(void *out_id, void *arr, uint64_t index)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143169fe0 (RacingPC lab re_groups/_decomp);xref:0x14245ab20",
-  "notes": "Array-element variant of the user id reader: FUN_14393cf90(arr,index) fills a 0x400 blob, a bit reader optionally reads a ranged type tag (must be 7) then a 32-bit flags word, the id is deserialised into out+0x08..+0x47 and flags stored at out+0x48. Same 0x10000000 fix-up as the object variant: an empty id is replaced by the local user id from g_Game_Manager."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143169fe0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14245ab20",
+  "notes": "Whole body read. Array-element variant of 0x143169980: 0x14393cf90(arr, index, buf) reads the element blob into a 0x400 stack buffer, wrapped as a bit stream; if the first bit is set it reads a ranged uint 0..0x12 that must be 7, then reads an unaligned u32 (flags), then 0x1441256d0 deserialises the 0x40-byte id block; result goes to out+0x08..+0x47, flags to out+0x48. Same substitution as the object variant: flag 0x10000000 with a default id is replaced by the id from [[g_Game_Manager+0x140]+0x198]+0x1c0 vcall +0x38. Returns the read status. Caller Ent_Deserialise_EntrantVector 0x14245ab20 calls it once per saved entrant index to fill the id of a temporary entrant record before it unpacks the packed u64 words. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.read_user_id_field_from_array_elem",

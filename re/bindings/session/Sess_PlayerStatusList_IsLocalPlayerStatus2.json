@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140c779c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "bool Sess_PlayerStatusList_IsLocalPlayerStatus2(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c78480 (RacingPC lab re_groups/_decomp);xref:0x142d53340",
-  "notes": "Resolves the local user's EntrantRecord id in (self+0x278)->+0x2e0..+0x2e8 (default id 0x3fff0000 when absent), finds the entry with the same id in the pointer list self+0x2d0..+0x2d8 (entry u32 +0 packed id, u32 +4 status) and returns status == 2; false when no entry."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c78480 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d53340,0x142d53eb0",
+  "notes": "Builds the local user identity key (g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vfunc +0x38), finds the matching EntrantRecord in (self+0x278)+0x2e0..+0x2e8 and takes its packed id (default 0x3fff0000), then scans the pointer list self+0x2d0..+0x2d8 for the entry whose first u32 has the same low byte and high word and returns entry[+4] == 2; false if none. Callers: Sess_StateCareerHub_OnStateEnter resets the status to 0 when this is true (component fetched from the registry by key 0x14605d088); 0x142d53eb0 (returns whether the hub may proceed, OR-ing several blocking flags) treats true as a blocker. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.player_status_list_is_local_player_status2",

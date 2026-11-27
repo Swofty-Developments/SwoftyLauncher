@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1427698a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "uint64_t Sess_ParticipantsSetup_Resolve_EntrantCandidate(void *self, void *slot)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14276bc20 (RacingPC lab re_groups/_decomp);xref:0x14256f2b0",
-  "notes": "When a session object exists ((self+0xa8)+0x88 then +0x260) it packs the u16 at (self+0x98)+0x68 into slot+0x6e and sets flag slot+0x72. If slot+0x54 is set and slot+0x52 is not 0x3fff it calls Sess_Entrant_BuildCandidate with the 16-byte id at session+0xe10, stores the first u32 of the result in slot+0x68 with flag +0x6c and returns 1; otherwise returns 0."
+  "proto": "uint64_t Sess_Entrant_ResolveCandidateIds(void *ctx, void *candidate)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14276bc20 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14256f2b0",
+  "notes": "Renamed from Sess_ParticipantsSetup_Resolve_EntrantCandidate: self is the helper object at setup+0xa8, not the ParticipantsSetup itself, and the body writes two id fields. Returns 0 when the session [[ctx+0xa8]+0x88]+0x260 is missing. Otherwise packs the u16 at [ctx+0x98]+0x68 into candidate+0x6e as (v & 0x3fff) << 16 | v >> 14 and sets +0x72 = 1; when candidate+0x54 is set and u16 +0x52 != 0x3fff it calls Sess_Entrant_BuildCandidate with ctx+0xa0, the 16 bytes at session+0xe10 and allocator ctx+8, stores the first u32 of the result in candidate+0x68, sets +0x6c = 1, frees the result and returns 1. Caller Sess_ParticipantsSetup_ApplySelection calls it for a mode 1 selection whose entry id is not yet resolved, before it copies the candidate into the entrants document. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.participants_setup_resolve_entrant_candidate",

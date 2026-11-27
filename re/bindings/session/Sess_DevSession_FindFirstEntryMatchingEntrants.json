@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142a0adb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "void *Sess_DevSession_FindFirstEntryMatchingEntrants(void *self, void *out_optional, void *entrant_vec)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a0d170 (RacingPC lab re_groups/_decomp);xref:0x1411264c0",
-  "notes": "Iterates the 0x30 byte entries at self+0x298..+0x2a0; for each it collects the records of entrant_vec (stride 0x88) whose packed handle at +0x58 equals the entry handle at +0. The first entry with at least one match is copied to out {u32 handle, allocator, vector of 4 byte handles, int at +0x28} with engaged flag +0x30 = 1; if none matches the flag is 0. Better context needed: the meaning of the entry table (dev session overrides per team or driver) comes from the caller."
+  "proto": "void *Sess_Find_FirstEntryMatchingEntrants(void *self, void *out_optional_entry, void *entrant_vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a0d170 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1411264c0,0x141fc1610,0x14258da60",
+  "notes": "Renamed from Sess_DevSession_FindFirstEntryMatchingEntrants: self is a component found by type lookup in the callers, not the DevSession class, so that prefix came only from one caller. Walks the entries self+0x298..+0x2a0 (stride 0x30: u32 id +0, allocator +8, u32 vector +0x10..+0x18, u32 +0x28); for each one collects the entrant records (entrant_vec +8..+0x10, stride 0x88) whose byte +0x58 and u16 +0x5a equal the id low byte and high word; the first entry with at least one match is deep-copied to out and out+0x30 is set to 1, otherwise out+0x30 = 0. Context from caller: Sess_DevSession_Apply and Callers 0x141fc1610 and 0x14258da60 (session setup paths) pass the returned id, or 0x3fff0000 when empty, to Ui_CareerSelectMyTeam_SetDriverIconActive on the same component. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.dev_session_find_first_entry_matching_entrants",

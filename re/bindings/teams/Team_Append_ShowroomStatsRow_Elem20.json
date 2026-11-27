@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142e0d600",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "teams",
-  "proto": "uint64_t Team_Append_ShowroomStatsRow_Elem20(void *vec, void *row)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e0fb90 (RacingPC lab re_groups/_decomp);xref:0x142e102b0",
-  "notes": "Vector emplace_back of a 0x20-byte element constructed in place by FUN_142e0f180(dst, row), a row parser that starts by reading the field wins; grows 1.5x with memcpy relocation. Returns 0. Better context needed: full field list of FUN_142e0f180 to name the row type."
+  "proto": "uint64_t Team_Append_ShowroomStatsRow_Elem20(void *vec, void *gdb_row)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e0fb90 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142e102b0",
+  "notes": "Vector push-back for 0x20-byte elements: vec+0 allocator, +8 begin, +0x10 end, +0x18 capacity; when full grows by 1.5x (alloc vfunc +0x18, memcpy old, free vfunc +0x38), then constructs the new element in place with 0x142e0f180(row), which reads the Gdb fields wins, poles, name, driver. Returns 0. Context from caller: Team_Load_ShowroomData loops the showroom.drivers_history / driver_history table rows and appends each one to the vector at showroom+0x68, so the rows are driver history stats; hook here to see every showroom driver row as it is loaded. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "teams.append_showroom_stats_row_elem20",

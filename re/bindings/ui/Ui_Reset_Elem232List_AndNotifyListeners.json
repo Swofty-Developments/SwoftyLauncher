@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141f704f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
   "proto": "void Ui_Reset_Elem232List_AndNotifyListeners(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f720f0 (RacingPC lab re_groups/_decomp);xref:0x1421aac60",
-  "notes": "Clears the vector at +0xc0..+0xc8 (0xe8-byte elements, releasing NeStr refs at +0x10, +0x18, +0xe0), clears flag +0xd8, pushes one default element (type 8, ids -1) with Ne_Vector_PushBack_Elem232_WeakRefs(+0xb8), then fires the listener hub at +0x10 for key 0x14606e640 calling each listener vfunc +0x8 with self+0xb0. Better context needed: which UI list (likely button prompts / actions) this is."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f720f0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1421aac60",
+  "notes": "Clears flag self+0xd8, releases the three strings (+0xe0, +0x18, +0x10) of every 232-byte element in the vector self+0xc0..+0xc8 and empties it, pushes one default element (type 8, pair 1/7, byte 6, ids -1) with Ne_Vector_PushBack_Elem232_WeakRefs(self+0xb8), then finds the listener list for key 0x14606e640 in the hub at self+0x10 and calls each listener (vcall +8) with self+0xb0, with the usual deferred listener removal. Caller Team_Build_FanZoneTeamSelect looks the object up in a map by key 0x14606e660 and resets it when its flag +0x18 is set. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "ui.reset_elem232_list_and_notify_listeners",

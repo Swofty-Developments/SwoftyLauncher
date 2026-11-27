@@ -7,9 +7,9 @@
   "addr": "0x1425704a0",
   "level": "L1",
   "subsystem": "session",
-  "proto": "void Sess_ParticipantsSetup_Build_PlayerCandidateList(void *self, uint64_t max_count)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425723d0 (RacingPC lab re_groups/_decomp);xref:0x14256f2b0",
-  "notes": "Clears the 0x50-byte record vector at self+0x138..+0x140, then fills it up to max_count with XOR-masked player ids (records with vtable 0x145614e20) pushed through 0x14257f030 on self+0x130. Sources in order: results of 0x14253b9a0 on self+0xd8 with type filter {1,2,4} (0x1810-byte results, id at +0x17d0), a list fetched from the provider at (self+0xe8)+0x3a0 vtable+0x30, and the 0xa8-byte entries at +0x50..+0x58 of the global at 0x146c66520+0x110 whose state +0x48 is in bit mask 0x768. Duplicates of ids already in the first source are skipped."
+  "proto": "void Sess_ParticipantsSetup_Build_PlayerCandidateList(void *setup, uint64_t max_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425723d0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14256f2b0",
+  "notes": "Clears the vector setup+0x130 (0x50-byte elements holding a 0x40-byte xor-masked id block and tag 0x10000000) and refills it with up to max_count unique ids from three sources: records returned by 0x14253b9a0([setup+0xd8], filter bytes {1,2,4}, max_count) (stride 0x1810, id at +0x17d0), a second id list (stride 0x40) filled through [[setup+0xe8]+0x3a0] vcall +0x30, and the entries of [0x146c66520]+0x110 (+0x50..+0x58, stride 0xa8) whose state [+0xa0]+0x48 is in bit mask 0x768, built with Game_XorMaskedId3_Ctor(type 7). Duplicates are skipped by comparing the decoded ids. Callers: Sess_ParticipantsSetup_ApplySelection passes the selectable entrant count or the count at +0x4a60; Caller 0x14257c6b0: wrapper that calls it with max 20 and returns 0. Better context needed: the names of 0x14253b9a0 and of the +0x3a0 service would prove that the ids are players. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.participants_setup_build_player_candidate_list",

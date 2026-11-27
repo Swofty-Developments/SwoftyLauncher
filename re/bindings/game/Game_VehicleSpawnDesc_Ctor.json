@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1428bf170",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void *Game_VehicleSpawnDesc_Ctor(void *self, void *base_src, void *opt_livery, uint8_t f1, uint8_t f2, void *opt_shared_vec, uint8_t f3, uint16_t w, void *opt_item_array, uint8_t f4)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1428c1530 (RacingPC lab re_groups/_decomp);xref:0x1416ca160,0x1417e8990,0x141998fc0,0x141a731e0,0x141f2a4b0,0x1421cebc0,0x14254bc80,0x1427ad4f0",
-  "notes": "Builds a large spawn description for a customised show-room vehicle: copy-constructs the 0x6780-byte base, then optional livery block at +0x6780 (valid +0x67b0), optional vector of shared pointers at +0x67b8 (valid +0x67f0, source vector is destroyed), bytes +0x67f8 and u16 +0x67f9, optional inline array of 0x30-byte items at +0x6800 (count +0x6860, valid +0x6870, source cleared), and flags +0x6898, +0x6899, +0x689a."
+  "proto": "void *Game_VehicleSpawnDesc_Ctor(void *self, void *scene_params, void *opt_a, uint8_t b4, uint8_t b5, void *opt_ptr_vec, uint8_t b7, uint16_t w8, void *opt_arr, uint8_t b10)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1428c1530 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140249730,0x1416c8ce0,0x1416ca160",
+  "notes": "Whole body read. Copy-constructs the base via Ne_Struct_CopyConstructInlineStrings, then three optionals: +0x6780 (vt 0x145614fa0, engaged flag +0x67b0) from opt_a when opt_a+0x30 is set; a vector of shared pointers at +0x67b8..+0x67e8 (flag +0x67f0) copied from opt_ptr_vec when its +0x38 is set; an inline array of 0x30-byte elems (vt 0x145661560) at +0x6800 with count +0x6860 (flag +0x6870) from opt_arr when its +0x70 is set. Scalars: b7 -> +0x67f8, w8 -> +0x67f9, +0x6890 = 0, b4 -> +0x6898, b5 -> +0x6899, b10 -> +0x689a. Destroys the by-value opt_ptr_vec and opt_arr and returns self. Callers build scene_params with Game_SceneSpawnParams_CopyConstruct first: Game_MyTeamCustomisation_SpawnScene 0x1416ca160 (twice, near the 'MyTeamVehicle' string) and 0x140249730 (fills a caller-supplied desc with b4 = 1). Context from caller: the 'Vehicle' noun comes from the MyTeam scene, the body itself only shows a spawn description. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.vehicle_spawn_desc_ctor",

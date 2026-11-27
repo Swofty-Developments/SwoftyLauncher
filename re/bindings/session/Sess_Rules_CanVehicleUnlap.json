@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1435a8770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
   "proto": "bool Sess_Rules_CanVehicleUnlap(void *rules, uint8_t veh_idx)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435aad00 (RacingPC lab re_groups/_decomp);xref:0x142f2ba60",
-  "notes": "Resolves the vehicle state for veh_idx then the state of the vehicle index stored at its +0x38; returns false if that state has +0x32 bit 0x40, or +0x33 bit 2 while global byte 0x145f98460 is 0; otherwise returns Sess_Race_ComputeUnlapLapState() != -1."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435aad00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141033810,0x142f2ba60",
+  "notes": "Resolves the vehicle record through (rules+0x40)+0xa0[idx] (fallback scan with cache fill), re-resolves by the record's own index byte +0x38, then returns false if flag 0x40 at +0x32 is set or flag 2 at +0x33 is set while global byte 0x145f98460 is 0; otherwise returns Sess_Race_ComputeUnlapLapState() != -1. Callers: Sess_SafetyCar_CanVehicleRejoin(self+0x7b0 rules) returns 0 when this is false; 0x141033810 (large per-vehicle update) calls it after CanVehicleRejoin fails to decide whether to test Sess_Race_IsVehicleOutOrCriticallyDamaged. No bounds check on idx 0xff: the scan loop has no end test. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.rules_can_vehicle_unlap",

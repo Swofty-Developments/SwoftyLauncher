@@ -7,9 +7,9 @@
   "addr": "0x1436a4800",
   "level": "L1",
   "subsystem": "session",
-  "proto": "float Sess_Strategy_GetPracticeRatio_ForTyreIndex(void *self, uint32_t tyre_idx)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436a6d90 (RacingPC lab re_groups/_decomp);xref:0x143698580",
-  "notes": "Same data lookup as 0x1436a5ce0; returns record[tyre_idx] float +0x1a4 divided by +0x1ac, with fallbacks to neighbouring records (average of the other dry ones for idx < 3, the other wet one for idx 3/4, then cross-class), clamped to [0.75, 1.4]; returns 1.0 when no data. Likely a measured-versus-expected scale (e.g. tyre wear) fed into strategy."
+  "proto": "float Sess_Strategy_GetPracticeRatio_ForTyreIndex(void *sys, uint32_t slot)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436a6d90 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143698580",
+  "notes": "Same component and local-player record lookup as 0x1436a5ce0. Returns slot ratio float +0x1a4 / float +0x1ac of slot*0x1c8 (slot valid when ptr +8 is set and both > 0). Fallbacks when the ratio is 0: for slot 0-2 the neighbour slots (averaged when both exist), then slot 3, then slot 4; for slot 3/4 the other one of the pair, then slot 2, then the average of slots 0 and 1. Result is clamped to 0.75..1.4, default 1.0. Context from caller: Sess_StrategySystem_Slot3_UpdateAll calls it for 0..4 and multiplies five per-compound floats (+0x98e0..+0x98f0 based) into strategy+0x1e8..+0x208, so the slot is a tyre compound index. Better context needed: the practice origin of the record is not shown by the code. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.strategy_get_practice_ratio_for_tyre_index",

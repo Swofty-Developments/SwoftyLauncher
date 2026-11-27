@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1438a8550",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "session",
-  "proto": "float Sess_VirtualPerformance_EstimateSpeedAtLapFraction(void *self, void *entrant, float lap_fraction, void *a4, uint32_t a5, uint32_t a6, uint32_t a7)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438aaae0 (RacingPC lab re_groups/_decomp);xref:0x14243e250,0x142f6d700,0x142f73d20,0x14389c840",
-  "notes": "Wraps lap_fraction into 0..1, converts it to a track distance (vcall +0x188, track index at entrant+0x04), then samples Sess_VirtualPerformance_EvalBlocksAtDistance at distance-3, distance and distance+3 (wrapped by lap length from +0xa0 table, stride 0x48) and returns the average of 3/dt before and 3/dt after, i.e. a central-difference speed estimate. Returns 0 if no data is loaded."
+  "proto": "float Sess_VirtualPerformance_EstimateSpeedAtLapFraction(void *self, void *ctx, float lap_fraction, void *a4, uint32_t a5, uint32_t a6, uint32_t a7)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438aaae0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14243e250,0x142f6ad40,0x142f6d700",
+  "notes": "Whole body read. Returns 0 when the vector +0x108..+0x110 is empty or [[self+0x48]+0x28]+0x18 is null. Wraps the fraction into 0..1, converts it to a distance with vcall +0x188(self, frac, ctx+4), takes d-3 and d+3 metres wrapped at the lap length (float at [self+0xa0] + idx*0x48, valid when vcall +0x178 is true), evaluates Sess_VirtualPerformance_EvalBlocksAtDistance at the three distances (adding the value at the last sample when a point wraps past the lap end) and returns the mean of 3/(t(d)-t(d-3)) and 3/(t(d+3)-t(d)), i.e. speed in m/s. Callers: Game_DRLSystem_Update 0x14243e250 stores it per racing line sample; 0x142f6ad40 integrates dt*speed in a loop to advance a virtual entrant's distance; Game_Network_VirtualSessionEntrantEntrant 0x142f6d700 uses it as the virtual speed trap value. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.virtual_performance_estimate_speed_at_lap_fraction",

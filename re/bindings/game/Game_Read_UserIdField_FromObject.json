@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1431673f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "int Game_Read_UserIdField_FromObject(void *out_id, void *json_obj)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143169980 (RacingPC lab re_groups/_decomp);xref:0x141023620,0x142577080,0x1429232c0,0x1429d6df0,0x142bf87c0",
-  "notes": "Reads a serialised user id from a data object: finds a named child (string at 0x1458214e7), type-checks it as int (error 0x57 missing, 0x58 wrong type), reads a second named blob (0x1458214f3) into a 0x400 buffer, bit-deserialises it into the 0x40-byte id at out+0x08 and stores the int flags at out+0x48. If flags has 0x10000000 and the id equals the empty id, it is replaced by the local user id from g_Game_Manager+0x140 ->+0x198 ->+0x1c0 (vcall +0x38). Returns 0 or errno."
+  "proto": "int Game_Read_UserIdField_FromObject(void *out_id, void *bag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143169980 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140bc4440,0x140fe77d0,0x140fe7b50",
+  "notes": "Whole body read. Finds child key 0x1458214e7 in the property bag (missing -> error 0x57, type not 0x14612bf38 -> 0x58, both written to the TLS error chain and the errno trace ring), reads its u32 flags, reads blob key 0x1458214f3 into a 0x400 stack buffer (0x143934670), deserialises a 0x40-byte id block from it as a bit stream (0x1441256d0) into out+0x08..+0x47 and stores the flags at out+0x48. If flag 0x10000000 is set and the id equals a default id block, it is replaced by the id from [[g_Game_Manager+0x140]+0x198]+0x1c0 vcall +0x38 and flags become 0x10000000. Returns 0 or the error code. Caller 0x140bc4440: loads a saved list of bags and pushes each id block into the vector at self+0x388; callers 0x140fe77d0/0x140fe7b50: rebuild an id-keyed map from a property list. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.read_user_id_field_from_object",
