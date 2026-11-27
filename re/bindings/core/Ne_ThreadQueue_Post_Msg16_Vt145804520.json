@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_ThreadQueue_Post_Msg16_Vt145804520",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14302dce0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_ThreadQueue_Post_Msg16_Vt145804520(void *queue, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143030270 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0",
+  "notes": "(lib) Worker queue post: if running flag +0x68 is 0 sets errno 0x58; else locks CS +0x98, allocates 0x10 node from allocator +0x70 with vtable 0x145804520, copies msg+8, appends to list (head +0x58, tail +0x60), unlocks and SetEvent(+0x90). Returns 0 or errno (0xc on alloc fail)."
+ },
+ "signature": {
+  "id": "core.thread_queue_post_msg16_vt145804520",
+  "section": ".xtls",
+  "pattern": "48 8D 94 24 20 05 00 00 E8 ?? ?? ?? ?? 83 FB 02",
+  "match": "0x142f98bf1",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x14302dce0",
+  "kind": "call",
+  "names": [
+   "Ne_ThreadQueue_Post_Msg16_Vt145804520"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f9b181",
+  "made_on_target": "0x143030270",
+  "twin": "made on steam-26566308; the target 0x143030270 is KB 0x14302dce0: Game_TodData_FindScenarioParam (0x2ff89e0) and Game_Read_UIMovieBuildSetting (0x30370b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f9b181",
+    "target": "0x143030270"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9d0a27f89c38a12060cd14ef560481c67a8e9716a37ea3d282b9b3ed0ac70fe9"
+  }
+ ]
+}

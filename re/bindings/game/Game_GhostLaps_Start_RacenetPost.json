@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_Start_RacenetPost",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f8d030",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_GhostLaps_Start_RacenetPost(void *self, void *data_span, void *lap_info)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f8f5c0 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0",
+  "notes": "Base64-style encodes the ghost blob (data_span ptr,size) via 0x144047560, fills user info from the account token (Game_Account_FillUserInfoFromToken), builds HTTP headers Authorization: Bearer <token>, x-title-id: F12025, Content-Type: application/json, builds a JSON body from the user id string, lap_info +0x0/+0x4/+0x8 ints (printed as strings), +0xc/+0x10 ints, +0x14 bool, optional +0x18 string and the encoded blob, then starts the HTTP transaction through 0x14404ddb0 with completion Game_GhostLaps_PostToRacenetDone and stores the transaction id in the map at self +0x48. Returns 0 on start, else errno-style 1/0x50/0x58/0xc. Requires (+0x8)->+0x3c8->+0x7cc enabled. Log: Post ghost to racenet http transaction {%d} started. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.ghost_laps_start_racenet_post",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 06 00 00 C5 F8 29 B4 24 20 06 00 00 48 8B 41 08",
+  "match": "0x142f8d030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8d030",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_Start_RacenetPost"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f8f5c0",
+  "made_on_target": "0x142f8f5c0",
+  "twin": "made on steam-26566308; the target 0x142f8f5c0 is KB 0x142f8d030: Game_GhostRivalFinder_OnEnumerateRivalsCompleted (0x2f89bc0) and Game_GhostLapsStorageSystem_Dtor (0x2f932b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f8f5c0",
+    "target": "0x142f8f5c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "24a29b58fcee9c7a2f91aa4731f099f87d5cef555f16f46bfab6b5c399b09905"
+  }
+ ]
+}

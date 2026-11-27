@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_PooledList_Free_BlockChain",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14302d3f0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_PooledList_Free_BlockChain(void **head)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14302f980 (RacingPC lab re_groups/_decomp);xref:0x142f932b0,0x14302f070",
+  "notes": "(lib) Recursively frees a chain of pool blocks: frees the node buffer (+0x10) through the block allocator (+0x20, vfunc +0x38), recurses into next (+0x08), then frees the block header through the owner allocator. Decompile shows a mangled second parameter."
+ },
+ "signature": {
+  "id": "core.pooled_list_free_block_chain_14302d3f0",
+  "section": ".xtls",
+  "pattern": "48 8D 8E A0 02 00 00 E8 ?? ?? ?? ?? 48 89 F9",
+  "match": "0x142f90e81",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x14302d3f0",
+  "kind": "call",
+  "names": [
+   "Ne_PooledList_Free_BlockChain"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f93411",
+  "made_on_target": "0x14302f980",
+  "twin": "made on steam-26566308; the target 0x14302f980 is KB 0x14302d3f0: Game_TodData_FindScenarioParam (0x2ff89e0) and Game_Read_UIMovieBuildSetting (0x30370b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f93411",
+    "target": "0x14302f980"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "03cfeff44b0ed8b21c370d43b2fb9c55e12ab70e47cd3fadfe0f4f0336fed643"
+  }
+ ]
+}

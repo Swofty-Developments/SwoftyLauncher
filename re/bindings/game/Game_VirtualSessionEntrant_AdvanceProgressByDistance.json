@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_VirtualSessionEntrant_AdvanceProgressByDistance",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f68b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_VirtualSessionEntrant_AdvanceProgressByDistance(void *self, void *perf_ctx, float *track_info, int *end_condition, float distance)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f6b110 (RacingPC lab re_groups/_decomp);xref:0x142f73d20",
+  "notes": "Loops while distance > 0: finds the current sector from g_Live_SectorEnds, and if the remaining distance does not reach the sector end calls Game_VehicleProgress_Update(self+0x28, new pos, sector, 1) and returns. Otherwise it stops if end_condition is met (type 0: lap count vs lap data +0x9c48, type 1: time limit vs +0x9c60), writes an estimated sector time with Game_Network_MOXOSQLittleBitRandomnessVariance via 0x14098c7f0 (or resets the 200-byte lap record with Sess_LapRecord_Construct when +0xb2d or a lap mismatch is set), moves progress to the next sector, queues a 0x30-byte message (vtable 0x145805480: entrant index, lap, sector, flags) on g_Game_MessageBus and calls Game_Network_VirtualSessionBroadcastNewLap when the sector index wraps. Good hook point for simulated (off-track) car lap and sector progress. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.virtual_session_entrant_advance_progress_by_distance",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 69 C5 C8 00 00 00",
+  "match": "0x142f721c8",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142f68b80",
+  "kind": "call",
+  "names": [
+   "Game_VirtualSessionEntrant_AdvanceProgressByDistance"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f74758",
+  "made_on_target": "0x142f6b110",
+  "twin": "made on steam-26566308; the target 0x142f6b110 is KB 0x142f68b80: Sess_Progress_SyncResultRecord (0x2f6a440) and Sess_LapSim_PrepareVehicleParams (0x2f6cbd0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f74758",
+    "target": "0x142f6b110"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2d0dd2342b068b02bc8d9ec2a190a5f3925cd85a414407f2b987a76a938b7f60"
+  }
+ ]
+}

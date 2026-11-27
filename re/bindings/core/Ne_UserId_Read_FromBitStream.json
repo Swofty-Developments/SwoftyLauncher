@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_UserId_Read_FromBitStream",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144123100",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "bool Ne_UserId_Read_FromBitStream(char *id, void *bitstream)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441256d0 (RacingPC lab re_groups/_decomp);xref:0x1408106a0,0x142f8c990,0x14305abd0,0x144039bf0,0x144093090",
+  "notes": "Inverse of 0x144124d90: reads tag (must be <= 7) into id[0], optional 64-bit value stored obfuscated at +0x08 against key +0x10 (tag 0 instead skips a zero-terminated byte string), optional 128-bit value into +0x18/+0x28 against keys +0x20/+0x30, bool +0x39 and for tag 3 bool +0x38. Read cursor +0x24, bit length +0x20, error flag +0x28. Returns success."
+ },
+ "signature": {
+  "id": "core.user_id_read_from_bit_stream",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D7 48 89 CE C7 44 24 3C FF FF FF FF",
+  "match": "0x144123100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144123100",
+  "kind": "func_start",
+  "names": [
+   "Ne_UserId_Read_FromBitStream"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441256d0",
+  "made_on_target": "0x1441256d0",
+  "twin": "made on steam-26566308; the target 0x1441256d0 is KB 0x144123100: Ne_UserId_ToDisplayString (0x4124cd0) and Ne_PresenceNameResolverEADP_UpdateToResolveList (0x4128c80) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441256d0",
+    "target": "0x1441256d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dea37d28025d15ecc9581e23ddd3bf27bb828a57f644d016035dfd1003bcf0d8"
+  }
+ ]
+}

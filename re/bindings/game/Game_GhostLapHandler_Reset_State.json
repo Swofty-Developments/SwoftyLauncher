@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapHandler_Reset_State",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f91dd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GhostLapHandler_Reset_State(void *self, char reset_ghost_entities, char full_reset)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f94360 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0,0x142fa9720",
+  "notes": "Logs to GHOSTLAP-TRACE, calls Game_GhostLapHandler_CancelTasks and 0x142f9fb50, then re-initialises the ghost entry slots at +0xa0, +0x140 and +0x1e8 to defaults (random id block, 0x3fff0000, 0xff) with state ints +0x9c, +0x138, +0x1d8 = 2. With full_reset it also frees the buffer +0x320, resets the entry at +0x338, clears +0x510/+0x518, +0x3d0, +0x420, +0x4a0 and empties the string map at +0x4b0..+0x4f8. With reset_ghost_entities it looks up key 0x1461046a8 in the map at (+0x20)->+0x30 and resets entities [3], [4] (only on full_reset) and [5] of its list +0x50 with the same code as 0x1437adc40."
+ },
+ "signature": {
+  "id": "game.ghost_lap_handler_reset_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 44 89 C3",
+  "match": "0x142f91dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f91dd0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapHandler_Reset_State"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f94360",
+  "made_on_target": "0x142f94360",
+  "twin": "made on steam-26566308; the target 0x142f94360 is KB 0x142f91dd0: Game_GhostLapHandler_CancelTasks (0x2f93470) and Game_GhostLapsStorageSystem_Connect (0x2f95990) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f94360",
+    "target": "0x142f94360"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "35c97b3fec0581cc69fdbe2bebe27f4b1b519307bcd79dd0d250fca519fd5211"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Load_StoryEventModifierConditions",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141395f20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Load_StoryEventModifierConditions(void *cond_list, const char *parent_key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141396560 (RacingPC lab re_groups/_decomp)",
+  "notes": "Builds the row key parent_key + '.' + (parent_key+0x100 string), then for 11 gamedb child tables in turn (Gdb_Init_TableCursor / Gdb_Get_RowByIndex) allocates one condition object per row from the allocator at list+0x00 (vcall +0x18) and push-backs the pair {allocator,obj} into the 16-byte-element vector at list+0x08 begin / +0x10 end / +0x18 capacity (grow x1.5). Each object: +0x00 vtable (base 0x1456e1cf0 then derived), +0x08 Gdb_FindMetadata name. Tables in order with size, vtable, fields, bus subscription (g_Game_MessageBus+8, Ne_Subscribe_BusMessage): EventModifierConditionFullEvent 0x10 vt 0x1456e1eb0; EventModifierConditionProximityToDriver 0x38 vt 0x1456e1f80 (distance->+0x2c, condition->+0x30 bool by FNV-1a lowercase hash 0x9bfe3eacc09e83d1, direction->+0x31 enum 0/1/2 by hashes 0x546752eb74e0895e / 0x39227ba9039e1a99, driver->+0x28 via Sess_Resolve_DriverRef, default 0x3fff0000); EventModifierConditionObjectiveCompleted 0x60 vt 0x1456e1ef0 (condition->+0x20 bool hash 0x35e61d7c35eda1c2, objective_index->+0x50, delay->+0x58; subscribes story_objective_passed handler 0x1413a8810 and story_event_started handler 0x1413a8960); EventModifierConditionProgressReached 0x30 vt 0x1456e1f40 (condition->+0x20 bool hash 0xf900dbf4a064dff1, progress->+0x24; story_event_started handler 0x1413a9070); EventModifierConditionDriverEnteredPit 0x28 vt 0x1456e1db0 (driver->+0x20; MessageCarEnteredPitLane handler 0x1413a77b0); EventModifierConditionDriverFinishedRace 0x28 vt 0x1456e1df0 (driver->+0x20; vehicle_status_changed handler 0x1413a7b90); EventModifierConditionDriverRetired 0x28 vt 0x1456e1e30 (driver->+0x20; vehicle_status_changed handler 0x1413a7f80); EventModifierConditionElapsedTime 0x30 vt 0x1456e1e70 (time->+0x28; story_event_started handler 0x1413a8370); EventModifierConditionTimeSinceVOLine 0x38 vt 0x1456e1fc0 (vo_line->+0x18 string ptr, time->+0x20; story_vo_line_played handler 0x1413a9830); EventModifierConditionAfterMidRaceCutscene 0x30 vt 0x1456e1d30 (delay->+0x28; story_mid_event_cinematic_finished handler 0x1413a7210); EventModifierConditionAfterSnapshot 0x18 vt 0x1456e1d70. Gdb strings are XOR-decoded inline with k_Gdb_StringXorKey. Modder use: this is the factory for story/scenario event-modifier trigger conditions; the listed handlers and vtables are the hook points for each condition type, and the table/column names are the database fields to edit. caller not identified found in _decomp (likely called via an event-modifier loader or vtable), so L1. Better context needed: the caller would confirm the owning class (story event modifier) and what param_2 names."
+ },
+ "signature": {
+  "id": "game.load_story_event_modifier_conditions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 04 00 00 C5 F8 29 BC 24 70 04 00 00 C5 F8 29 B4 24 60 04 00 00 48 89 CE",
+  "match": "0x141395f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141395f20",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_StoryEventModifierConditions"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141396560",
+  "made_on_target": "0x141396560",
+  "twin": "made on steam-26566308; the target 0x141396560 is KB 0x141395f20: Ne_OptionalVector56_CopyAssign (0x136b970) and Game_EventModifier_SetWheelWetnessGripScale (0x13a6970) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141396560",
+    "target": "0x141396560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0aeefda344e01c782a01485bc6e55d9efe36fc8abac9c779d2b09da73f78b962"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_Start_WriteGhostFile",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142fa3de0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GhostLaps_Start_WriteGhostFile(void *self, void *data_span)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142fa6370 (RacingPC lab re_groups/_decomp);xref:0x142fa5770",
+  "notes": "Logs GHOSTLAP-TRACE/GHOSTLAPS, sets deadline self+0x70 (QPC + global), bails with 'no active presence' unless presence obj ([[[self+0x10]+0x40]+0x140]+0x198, flags +0x1c8 bits 0|1, +0x1c0) exists; builds the ghostlap filename via snprintf from the leaderboard name ([self+0x58]+0x68, skipping 3 chars), counts thresholds in [+0x58]+0x98..+0xa0 <= +0x88 as an index, copies data_span {ptr,size} into a byte vector and queues an async op on the task queue self+0x520 with continuation Game_GhostLaps_UploadRemote; op id stored at self+0x134. Caller Game_GhostLaps_SavePersonalBest calls it with the serialised lap buffer after caching the new PB, only when global byte 0x1460980d0 is set, so this is the hook for remote ghost storage. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.ghost_laps_start_write_ghost_file",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 48 89 D7",
+  "match": "0x142fa3de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa3de0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_Start_WriteGhostFile"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142fa6370",
+  "made_on_target": "0x142fa6370",
+  "twin": "made on steam-26566308; the target 0x142fa6370 is KB 0x142fa3de0: Game_GhostLapHandler_EvaluatePerformanceState (0x2fa1e00) and site_Sess_TimeTrialLeaderboard_TabChild (0x2fce099) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142fa6370",
+    "target": "0x142fa6370"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7117ca94f06c6d8eb2362372237392415b0682ab351c558d3cf0b797217edabb"
+  }
+ ]
+}

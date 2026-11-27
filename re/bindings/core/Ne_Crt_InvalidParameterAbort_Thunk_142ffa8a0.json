@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_142ffa8a0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142ff8310",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_142ffa8a0(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ffa8a0 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort then int3; no-return failure path used when the map insert at 0x142ffa2e0 reports status 0."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_142ffa8a0",
+  "section": ".xtls",
+  "pattern": "41 89 C1 E9 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC",
+  "match": "0x142f9ce8b",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x142ff8310",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_142ffa8a0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f9f41b",
+  "made_on_target": "0x142ffa8a0",
+  "twin": "made on steam-26566308; the target 0x142ffa8a0 is KB 0x142ff8310: Game_TodData_FindScenarioParam (0x2ff89e0) and Game_Read_UIMovieBuildSetting (0x30370b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f9f41b",
+    "target": "0x142ffa8a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5da0e3663268c87af94323dce17f8fd770eb03a0171a7b513cad505bfecf2a44"
+  }
+ ]
+}

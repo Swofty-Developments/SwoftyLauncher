@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Update_PlayerCameraSelection",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1406c19b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Update_PlayerCameraSelection(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1406c19f0 (RacingPC lab re_groups/_decomp);xref:0x1406bf170",
+  "notes": "Builds a list of up to two player objects (self+0xb8->+0x20->+0x140->+0x198 and +0x1a0). Per player: takes vehicle index self+0x60 or Sess_Get_PlayerVehicleIndex when 0xff, collects the id byte of every entry with type +0x18 == 2 from self+0xc0 (+0x108..+0x110), reorders it with FUN_14084b5d0 / FUN_14084bb40 (unknown helpers given a preferred index), takes the first id, finds the matching vehicle in self+0xf8 (+0x28..+0x30, match on +0x58->+0xe8), fills a 0x30 target struct from its entity components and passes it to Game_RacingCameraArbitrator_RequiresCrossfade(self+0xe8, target, vehicle, playerSlot, 2, 0, 2). Caller Game_ControllerSet_SetFlag calls it when flag bit 0x4000 is cleared, right after clearing bit 0x100 at self+0xf0+0x54. FUN_14084c270 contains an inlined copy and jumps into this body (no call seen, not listed in xref). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.update_player_camera_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 49 89 CC 48 8B B9 B8 00 00 00",
+  "match": "0x1406c19b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406c19b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Update_PlayerCameraSelection"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1406c19f0",
+  "made_on_target": "0x1406c19f0",
+  "twin": "made on steam-26566308; the target 0x1406c19f0 is KB 0x1406c19b0: Game_CinematicSafetyCar_FadeIn (0x6c1560) and Game_CinematicSafetyCar_RunThenFadeIn (0x6c1e60) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1406c19f0",
+    "target": "0x1406c19f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "51b597b288cdef69088f6acdcdabdd777bce929471bbbbd8704340704cf5c0f0"
+  }
+ ]
+}

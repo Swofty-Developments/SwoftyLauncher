@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_ThreadQueue_Post_Msg16_Vt145804910",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14302ee40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_ThreadQueue_Post_Msg16_Vt145804910(void *queue, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1430313d0 (RacingPC lab re_groups/_decomp);xref:0x142fa9720",
+  "notes": "(lib) Worker queue post: errno 0x58 if running flag +0x68 is 0; else under CS +0x98 allocates a 0x10 node (vtable 0x145804910), copies msg+8, appends to list +0x58/+0x60 and calls SetEvent on +0x90. Returns 0 or errno."
+ },
+ "signature": {
+  "id": "core.thread_queue_post_msg16_vt145804910",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 43 08 48 85 C0 74 29 48 98",
+  "match": "0x142fa7f1a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14302ee40",
+  "kind": "call",
+  "names": [
+   "Ne_ThreadQueue_Post_Msg16_Vt145804910"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142faa4aa",
+  "made_on_target": "0x1430313d0",
+  "twin": "made on steam-26566308; the target 0x1430313d0 is KB 0x14302ee40: Game_TodData_FindScenarioParam (0x2ff89e0) and Game_Read_UIMovieBuildSetting (0x30370b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142faa4aa",
+    "target": "0x1430313d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b6f952d3f1f0c917a0c116cf1f6bf62c6ee06bb88852e5d6293441dfc256f77d"
+  }
+ ]
+}

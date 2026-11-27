@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_ThreadQueue_Post_Msg16_Vt1457b9468",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429fffb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_ThreadQueue_Post_Msg16_Vt1457b9468(void *queue, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a02370 (RacingPC lab re_groups/_decomp);xref:0x142fa9720",
+  "notes": "(lib) Same template as 0x142a02000 with node vtable 0x1457b9468: 0x10 node carrying msg+8, appended under CS +0x98 to list +0x58/+0x60, event +0x88 signalled. Returns 0, 0x58 or 0xc."
+ },
+ "signature": {
+  "id": "core.thread_queue_post_msg16_vt1457b9468",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 31 C0 48 83 C4 38 C3 CC CC CC CC 41 57 41 56",
+  "match": "0x142930970",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1429fffb0",
+  "kind": "call",
+  "names": [
+   "Ne_ThreadQueue_Post_Msg16_Vt1457b9468"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142932d30",
+  "made_on_target": "0x142a02370",
+  "twin": "made on steam-26566308; the target 0x142a02370 is KB 0x1429fffb0: Ne_HashMap_Rehash (0x2a00dc0) and Ui_CareerSelectMyTeam_SetDriverIconActive (0x2a0c9f0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142932d30",
+    "target": "0x142a02370"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bb19660a5c83da1b84b3c6f65a4b0cbeeb0f15206727e359b984dd5fc23a79ee"
+  }
+ ]
+}

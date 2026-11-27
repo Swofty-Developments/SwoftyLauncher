@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineRequests_Start_UserFileRead",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f88700",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_OnlineRequests_Start_UserFileRead(void *mgr, void *request, void *callback)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f8ac90 (RacingPC lab re_groups/_decomp);xref:0x142f8dd20,0x142f9a8b0,0x142fa28b0",
+  "notes": "Allocates a 0x28-byte request handle with id = ++mgr+0x58, copies the request (two strings at +0x08 and +0x98, ids +0x38..+0x90, kind byte +0x50) and the 16-byte callback into a 0xf0-byte task (vtable 0x1458044f0), builds a file request whose name is printed from the XOR of two 64-bit ids (request+0x58/+0x60, or +0x68/+0x70 for kind 7) and whose type code comes from kind and index +0x90 (tables 0x145805f9c..0x145805fd8), queues it on the service at [mgr+0x60]+0x388, registers the handle in the map mgr+0x10 and returns the id. Callers: Game_GhostLapHandler_Update starts the rival ghost download with Game_Ghostlaps_OnDownloadGhostlapCompleted (id to finder+0x378); 0x142fa28b0 starts a download with callback Game_GhostLaps_Download (id to +0x134); 0x142f8dd20 builds the request record and forwards it, writing the id to its out param. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.online_requests_start_user_file_read",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 4C 89 C3",
+  "match": "0x142f88700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f88700",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineRequests_Start_UserFileRead"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f8ac90",
+  "made_on_target": "0x142f8ac90",
+  "twin": "made on steam-26566308; the target 0x142f8ac90 is KB 0x142f88700: Game_GhostRivalFinder_OnEnumerateRivalsCompleted (0x2f89bc0) and Game_GhostLapsStorageSystem_Dtor (0x2f932b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f8ac90",
+    "target": "0x142f8ac90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e56013e773f2afcf2850b12ede051d8aea814a419e83d5d98c5275940278fc1a"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineWeeklyEvent_ApplyEventData",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432d5180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_OnlineWeeklyEvent_ApplyEventData(void *self, void *opt_data, void **event_sp)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432d7700 (RacingPC lab re_groups/_decomp);xref:0x142588990",
+  "notes": "Sets self+0x54 from the event (enabled byte +1, mode byte +2): mode 9 -> 4, mode 8 -> 3, mode 1 -> 1 or 2 depending on short +0x5e == 0x3fff of the 0x230-byte session entry flagged 0x10 at +0x4b. Copies opt_data into self+0x170 when given; if Game_Unk_1432d6d90(self)+8 is null logs \"WEEKLY_GP\" \"Resetting game mode\" and resets self+0x68; then stores the flagged entry's +0x5c (rotated) in self+0x68, looks up option hash 0x4b5e0163 in *(self+0x150)+0x340 (kept at self+0x158) and sets its bit via 0x142ac20c0 when not already in the 256-bit set at +0x5e0. Finally calls Game_OnlineWeeklyEvent_UpdateParticipant(self, self+0x178, 1) when +0x180 is set, else state self+0x50 = 3 if +0x198 else 2."
+ },
+ "signature": {
+  "id": "game.online_weekly_event_apply_event_data",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 4C 89 C6 48 89 CF 49 8B 18",
+  "match": "0x1432d5180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432d5180",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineWeeklyEvent_ApplyEventData"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1432d7700",
+  "made_on_target": "0x1432d7700",
+  "twin": "made on steam-26566308; the target 0x1432d7700 is KB 0x1432d5180: Sess_PersistStream_LoadFromFile (0x32d6ab0) and Game_F1osTask_SpawnChild_Vt145835c00 (0x32d7fe0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1432d7700",
+    "target": "0x1432d7700"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "51fa5b95e72645906270463517429ec5684bfe13eb767798a822074f2f6f35a7"
+  }
+ ]
+}

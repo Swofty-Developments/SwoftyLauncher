@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_JsonWriter_Push_FormattedScope",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432b5940",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1os_JsonWriter_Push_FormattedScope(void *writer, const char *fmt, ...)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432b7ed0 (RacingPC lab re_groups/_decomp);xref:0x14108fed0,0x141099e40,0x1425d5f30,0x142610730,0x142617760,0x142643340,0x1427e9c20,0x1427f0690",
+  "notes": "Variadic: returns if scope depth (+0x60) is already 0x40. Formats fmt with vsnprintf into a stack buffer, reserves and appends the text to the writer path string (+0x38 string object, +0x40 capacity, +0x48 chars) and pushes a new scope whose end offset (+0x70 + depth*8) is the previous offset plus the formatted length, then depth++. The matching pop truncates the string back to the previous offset. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.f1os_json_writer_push_formatted_scope",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 54 56 57 53 48 83 EC 10 48 8D 6C 24 10 4C 89 4D 58",
+  "match": "0x1432b5940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b5940",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_JsonWriter_Push_FormattedScope"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1432b7ed0",
+  "made_on_target": "0x1432b7ed0",
+  "twin": "made on steam-26566308; the target 0x1432b7ed0 is KB 0x1432b5940: Game_F1os_DestroyOnlineServiceTaskBase (0x32b5fb0) and Game_F1osTasksystem_CreateTask_Vt14583c2a0 (0x32bd690) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1432b7ed0",
+    "target": "0x1432b7ed0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bb8e7f72b24afed6c7cf354a5826bb683d947abe74c69b0e637b0cd78c64541e"
+  }
+ ]
+}

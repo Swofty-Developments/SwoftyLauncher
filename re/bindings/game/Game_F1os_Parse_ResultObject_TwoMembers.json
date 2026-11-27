@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_Parse_ResultObject_TwoMembers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1427dc3f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1os_Parse_ResultObject_TwoMembers(void *out_holder, void *reader)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1427de770 (RacingPC lab re_groups/_decomp);xref:0x1427d36d0,0x1427f5c60",
+  "notes": "Allocates a 0x38 object (vtables 0x145833cf8 / 0x1458398a0 / 0x1458398a8, two zeroed sub-objects at +8 and +0x20) plus a 0x28 refcount block, stores them as a shared pointer at out_holder+8/+0x10 and releases the previous one. If the top node of the reader value stack (reader+0x10 ring deque) is non-null it looks up two member keys in the 0x20-byte member array: a 7-char key (0x14565eb60) parsed by FUN_1427ded10 into obj+8, and an 11-char key (0x145672e8b) parsed by FUN_1427df560 into obj+0x20, with Ne_RingDeque_PushBack_F1os before and a pop after each. Context from caller: Gdb_Define_UpgradeDiscountTables calls it on self+0x30 after finding an 11-char member, Game_F1os_OnResult_SubmitRaceFinish calls it on result+0x10 after finding an 18-char member (0x1457a8e97); key strings not visible in the decompile. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.f1os_parse_result_object_two_members",
+  "section": ".xtls",
+  "pattern": "48 8D 48 30 48 89 EA E8 ?? ?? ?? ?? 48 8B 45 10",
+  "match": "0x1427d2d84",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x1427dc3f0",
+  "kind": "call",
+  "names": [
+   "Game_F1os_Parse_ResultObject_TwoMembers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1427d5104",
+  "made_on_target": "0x1427de770",
+  "twin": "made on steam-26566308; the target 0x1427de770 is KB 0x1427dc3f0: Game_F1wAction_Destroy_EmptyAction (0x27c5b80) and Game_F1os_LogLargePayload_ClaimRewards (0x280b460) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1427d5104",
+    "target": "0x1427de770"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e441d12daf19219ac89bba8f78b08656440c1deede773921c894f412c534e478"
+  }
+ ]
+}

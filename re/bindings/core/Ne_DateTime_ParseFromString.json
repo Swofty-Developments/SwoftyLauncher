@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_DateTime_ParseFromString",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14392cf10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "bool Ne_DateTime_ParseFromString(void *out, const char *text)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14392f4a0 (RacingPC lab re_groups/_decomp);xref:0x140ad80c0,0x142765ae0,0x14287be60",
+  "notes": "Null text returns 0. Scans six ints from text with the format at 0x145892b00 (0x1401dbdc0); on exactly 6 it builds a tm-style struct (year-1900, month-1), converts with 0x14534d1f4 and stores the result at out+0 unless it is -1, then copies up to 24 chars of text into the inline string at out+0x20 (data ptr out+0x18, capacity 0x19 at out+0x10). Returns whether 6 fields were parsed. Callers pass a JSON string value and keep only out+0: Game_Standings_WriteDriversPointsList for two date members of a record (+0x168/+0x170), Game_F1osVote_ApplyEventResponse for the question date (obj+0x30), 0x14287be60 (JSON field handler that stores the time at [self+8]+0x55f8 and sets byte +0x5600). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.date_time_parse_from_string",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 48 85 D2 0F 84",
+  "match": "0x14392cf10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14392cf10",
+  "kind": "func_start",
+  "names": [
+   "Ne_DateTime_ParseFromString"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14392f4a0",
+  "made_on_target": "0x14392f4a0",
+  "twin": "made on steam-26566308; the target 0x14392f4a0 is KB 0x14392cf10: Ne_StringTable_Lookup (0x392ce40) and Ne_Timer_ConstructQpcDeadline (0x392f930) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14392f4a0",
+    "target": "0x14392f4a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6992ed693ca4adc173c7a3443871abdb211b47a0017dcd5b8c2cbc56216d2507"
+  }
+ ]
+}

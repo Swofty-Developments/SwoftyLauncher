@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Get_EntrantDisplayName_Str129",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140bc5cf0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_Get_EntrantDisplayName_Str129(void *self, void *out_str129, void *entrant_key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bc5cd0 (RacingPC lab re_groups/_decomp);xref:0x1429d1010",
+  "notes": "Builds an inline string (cap 0x81, data at out+0x18, final vtable 0x14568fe38) in out. If self+0x2c0 is set, scans records self+0x3b0..+0x3b8 with Sess_Match_EntrantIdentity_Thunk against entrant_key; when record flag byte bit 0x10 is set and 0x140bc5f40(self, rec id) is true it copies the name from Game_NetIdentityNameCache_Lookup([self+0x2b0]+0x540, identity block), otherwise it copies the 0x81-byte name stored in the record; empty string when not found. Caller Game_InstantRace_FlagSaveSlot calls it on component 0x14605cd20 (only when the entrant kind is 2) and copies the result into the save slot info name field. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.get_entrant_display_name_str129",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 48 89 D6 80 B9 C0 02 00 00 00",
+  "match": "0x140bc5cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bc5cf0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Get_EntrantDisplayName_Str129"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140bc5cd0",
+  "made_on_target": "0x140bc5cd0",
+  "twin": "made on steam-26566308; the target 0x140bc5cd0 is KB 0x140bc5cf0: Game_EntrantsManager_ResolveAndCloseDocument (0xbb3680) and Game_SeasonLength_PushCalendarEntry (0xbc9d60) on either side both sit -0x20 below their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140bc5cd0",
+    "target": "0x140bc5cd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0ba2ed16bfb144113ff1e125e6ae3769384b222054959c4b052c18ae4fbd4d0"
+  }
+ ]
+}

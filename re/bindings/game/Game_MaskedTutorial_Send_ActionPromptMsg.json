@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MaskedTutorial_Send_ActionPromptMsg",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142e6df90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_MaskedTutorial_Send_ActionPromptMsg(void *self, void *step)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e70520 (RacingPC lab re_groups/_decomp);xref:0x142e6f7c0,0x142e6fd40",
+  "notes": "Builds a message (vtable 0x14576fd90) with five ref-counted NeStr fields and 3 flag bytes and sends it via 0x142e70e10(g_Game_MessageBus, msg). step==0: default strings 'Menu Accept' plus four empty strings and flags 0; step!=0: strings from self+0x78,+0x90,+0x88,+0xa0,+0x98 and flag bytes self+0x2d..+0x2f. Return value is only the last string refcount (not meaningful). Callers: Game_MaskedTutorial_FinishQueue passes 0 to restore the default accept prompt; 0x142e6f7c0 (advances to the next tutorial step, then notifies 'new_step_ready' on [self+0x158]) passes the step so the prompt matches it. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.masked_tutorial_send_action_prompt_msg",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 00 00 00 48 8B 35",
+  "match": "0x142e6df90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e6df90",
+  "kind": "func_start",
+  "names": [
+   "Game_MaskedTutorial_Send_ActionPromptMsg"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e70520",
+  "made_on_target": "0x142e70520",
+  "twin": "made on steam-26566308; the target 0x142e70520 is KB 0x142e6df90: Game_Check_TutorialStepTriggerPresent (0x2e6f2a0) and Gdb_Index_TutorialStepTable (0x2e715f0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e70520",
+    "target": "0x142e70520"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5e2cf8a719fe2c5fb2d86ceefbc857f6c7885b75d2bdd56cc1baad2a8e76ccb3"
+  }
+ ]
+}

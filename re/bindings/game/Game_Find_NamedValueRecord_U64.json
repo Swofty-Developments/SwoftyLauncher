@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Find_NamedValueRecord_U64",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14314acd0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_Find_NamedValueRecord_U64(void *record, const char *name, uint64_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14314d260 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0,0x142fa9720",
+  "notes": "Copies name into a 32-char inline string, looks it up in the hash map at record+0xe0 (FUN_143214380; slots +0x108, end +0x110) and, if found, writes the 8-byte value at node+0x38 to out. Returns found flag. Context from caller: reads a named column of a leaderboard row for ghost laps."
+ },
+ "signature": {
+  "id": "game.find_named_value_record_u64",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D BE E8 01 00 00",
+  "match": "0x142fa7c7b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14314acd0",
+  "kind": "call",
+  "names": [
+   "Game_Find_NamedValueRecord_U64"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142faa20b",
+  "made_on_target": "0x14314d260",
+  "twin": "made on steam-26566308; the target 0x14314d260 is KB 0x14314acd0: Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer (0x31439b0) and Game_RankedMatchingProcessor_CreateSession (0x3153130) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142faa20b",
+    "target": "0x14314d260"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4099de1da53189d3d64158e385b1c80e3018f6e2242c949d9332a8e8375b13ce"
+  }
+ ]
+}

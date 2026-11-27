@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_FreeResult_GetCalendar",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b1af10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_F1os_FreeResult_GetCalendar(void *req)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b1af60 (RacingPC lab re_groups/_decomp);xref:0x140b17bf0,0x140b17cf0,0x140b19c50",
+  "notes": "Same template as 0x142672850 (grep-verified, not read line by line): nulls and frees result record +0x1a8 (allocator +0x1a0) and owned objects +0x1c8 (allocator +0x1c0) and +0x1b8 (allocator +0x1b0)."
+ },
+ "signature": {
+  "id": "game.f1os_free_result_get_calendar",
+  "section": ".xtls",
+  "pattern": "C5 F8 29 B4 24 10 01 00 00 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 4C 8B A7 A0 00 00 00",
+  "match": "0x140b19c13",
+  "anchor": "0x10",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xf"
+  },
+  "target": "0x140b1af10",
+  "kind": "call",
+  "names": [
+   "Game_F1os_FreeResult_GetCalendar"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140b19c63",
+  "made_on_target": "0x140b1af60",
+  "twin": "made on steam-26566308; the target 0x140b1af60 is KB 0x140b1af10: Game_TodCurveBinding_EvalAt (0xb12c60) and Game_F1os_LogLargePayload_GetCalendar (0xb1b030) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140b19c63",
+    "target": "0x140b1af60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2dcecee80bec21915e7f91bfd3e45232c49936f5795befbc7203883c2cdbd271"
+  }
+ ]
+}

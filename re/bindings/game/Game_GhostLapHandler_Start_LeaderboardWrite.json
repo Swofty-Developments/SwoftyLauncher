@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapHandler_Start_LeaderboardWrite",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142fa0a60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GhostLapHandler_Start_LeaderboardWrite(void *self, void *lap_entry, void *ghost_data_span)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142fa2ff0 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0",
+  "notes": "Validates the lap (entry +0x70 total ms must match sector sum +0x74 + +0x78 + +0x7c within 10 ms unless 0x4fffffff; resets via 0x142f94360 if the car check at +0x18 fails), builds leaderboard columns from entry fields +0x48..+0x88 (team/car ids, assists, sector times, lap time, timestamp), attaches the ghost blob, picks the board definition matching name (+0x58)->+0x68 and serialises the write, then queues it on the online service with callback Game_GhostLaps_WriteLeaderboard; request id is stored at self +0x1d4. Finally parses board ids (Game_TimeTrialLeaderboard_ParseBoardIds) and calls Game_StatEvent_WritePersonalBest. Good hook point for intercepting time-trial lap uploads. Log: memory storage laptime is %d ms."
+ },
+ "signature": {
+  "id": "game.ghost_lap_handler_start_leaderboard_write",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 08 00 00 C5 F8 29 B4 24 30 08 00 00",
+  "match": "0x142fa0a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa0a60",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapHandler_Start_LeaderboardWrite"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142fa2ff0",
+  "made_on_target": "0x142fa2ff0",
+  "twin": "made on steam-26566308; the target 0x142fa2ff0 is KB 0x142fa0a60: Game_GhostLapHandler_EvaluatePerformanceState (0x2fa1e00) and site_Sess_TimeTrialLeaderboard_TabChild (0x2fce099) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142fa2ff0",
+    "target": "0x142fa2ff0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "636dfe5c2499e24df7b7332a2fa26b7ad8ca59e291e4983f54bf0f11a0a398fa"
+  }
+ ]
+}

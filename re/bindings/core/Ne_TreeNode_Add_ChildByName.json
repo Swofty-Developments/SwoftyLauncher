@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_TreeNode_Add_ChildByName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143651e50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_TreeNode_Add_ChildByName(void *parent, void *child)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436543e0 (RacingPC lab re_groups/_decomp);xref:0x142f95990",
+  "notes": "Returns 0x16 if child is null; emplaces child into parent hash map +0x138 keyed by the 64-char name at child+0x70 (0x58 if the key already exists); then calls func 0x143654470(child, parent) and on success Ne_TreeNode_PropagateFlagsToChildren with child flags (+0xc8 xor +0xd0) or +0xd8. Returns 0 on success."
+ },
+ "signature": {
+  "id": "core.tree_node_add_child_by_name",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 54 24 28 48 85 D2",
+  "match": "0x143651e50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143651e50",
+  "kind": "func_start",
+  "names": [
+   "Ne_TreeNode_Add_ChildByName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436543e0",
+  "made_on_target": "0x1436543e0",
+  "twin": "made on steam-26566308; the target 0x1436543e0 is KB 0x143651e50: site_Game_SaveData_ContainersDone (0x365424c) and Ne_Detach_ChildNode (0x3654740) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436543e0",
+    "target": "0x1436543e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "96a03fe748fcf9faf611ed44fa22aafa9cd608c18dbfef78db799b1e8dda9644"
+  }
+ ]
+}

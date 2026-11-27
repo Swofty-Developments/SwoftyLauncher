@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_U32_InsertSlot",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142ff7d50",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_U32_InsertSlot(void *map, void *out_idx_status, uint32_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ffa2e0 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0",
+  "notes": "(lib) Robin-hood map insert for a uint32 key with 16-byte slots (map +0x10 hash multiplier, +0x18 slots, +0x20 info bytes, +0x28 count, +0x30 mask, +0x38 max load, +0x40 info increment): returns slot index and status 1 = key already present, 2 = new empty slot, 3 = new slot after shifting, 0 = failed after 256 rehash attempts; grows or rehashes via 0x142ffa8b0. Callers then write key and value into the slot."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_u32_insert_slot",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 84 24 08 03 00 00",
+  "match": "0x142fa507f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142ff7d50",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_U32_InsertSlot"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142fa760f",
+  "made_on_target": "0x142ffa2e0",
+  "twin": "made on steam-26566308; the target 0x142ffa2e0 is KB 0x142ff7d50: Game_TodData_FindScenarioParam (0x2ff89e0) and Game_Read_UIMovieBuildSetting (0x30370b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142fa760f",
+    "target": "0x142ffa2e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c69124e0b087a4637cd75f1955d9f425b739ca54b4c9758a4893222644bfc5a4"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_CopyConstruct_InlineStr32",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142ff6d00",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_CopyConstruct_InlineStr32(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ff9290 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0",
+  "notes": "(lib) Copy constructor of a robin-hood hash map (hash seed 0xc4ceb9fe1a85ec53, 80 percent load, info bytes after the slot array): allocates slots plus info bytes, memcpys the info bytes and for each used slot allocates a 0x40 node from the free list (0x142ff9500) holding an inline 32-char string (copied +0x18..+0x30) and a value at +0x38."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_copy_construct_inline_str32",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 84 24 00 05 00 00",
+  "match": "0x142f9b213",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142ff6d00",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_CopyConstruct_InlineStr32"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f9d7a3",
+  "made_on_target": "0x142ff9290",
+  "twin": "made on steam-26566308; the target 0x142ff9290 is KB 0x142ff6d00: Game_TodData_FindScenarioParam (0x2ff89e0) and Game_Read_UIMovieBuildSetting (0x30370b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f9d7a3",
+    "target": "0x142ff9290"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "20f2c619adee2cc7e7a22b1dc3c4ca2db6f25934d866f6fc069605f21a2431a3"
+  }
+ ]
+}

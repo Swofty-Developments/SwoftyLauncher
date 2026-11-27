@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_ThreadQueue_Post_Msg16_Vt1457b9478",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429ffc40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_ThreadQueue_Post_Msg16_Vt1457b9478(void *queue, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a02000 (RacingPC lab re_groups/_decomp);xref:0x142fa9720",
+  "notes": "(lib) Worker queue post: errno 0x58 if running flag +0x68 is 0; else under CS +0x98 allocates a 0x10 node (vtable 0x1457b9478), copies msg+8, appends to list head +0x58 / tail +0x60 and signals event +0x88. Returns 0, 0x58 or 0xc."
+ },
+ "signature": {
+  "id": "core.thread_queue_post_msg16_vt1457b9478",
+  "section": ".xtls",
+  "pattern": "48 89 4C 24 40 48 8B 48 08 48 8D 54 24 40 E8 ?? ?? ?? ?? E9",
+  "match": "0x142fa7ff2",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xe"
+  },
+  "target": "0x1429ffc40",
+  "kind": "call",
+  "names": [
+   "Ne_ThreadQueue_Post_Msg16_Vt1457b9478"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142faa582",
+  "made_on_target": "0x142a02000",
+  "twin": "made on steam-26566308; the target 0x142a02000 is KB 0x1429ffc40: Ne_HashMap_Rehash (0x2a00dc0) and Ui_CareerSelectMyTeam_SetDriverIconActive (0x2a0c9f0) on either side both sit 0x23c0 above their KB addresses; the match 0x142faa582 is KB 0x142fa7ff2: Game_GhostLapHandler_EvaluatePerformanceState (0x2fa1e00) and site_Sess_TimeTrialLeaderboard_TabChild (0x2fce099) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142faa582",
+    "target": "0x142a02000"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4f68c47fec7869dc53e4189971708f652a4f24c86d1e7b8f7c54fcce2a0195d3"
+  }
+ ]
+}

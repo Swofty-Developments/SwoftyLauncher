@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_OpQueue_Enqueue_OperationWithHandle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14302afd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_OpQueue_Enqueue_OperationWithHandle(void *queue, void *out_handle, void **op_pair, void *arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14302d560 (RacingPC lab re_groups/_decomp);xref:0x142f9a8b0,0x142fbccd0",
+  "notes": "Calls op vfunc +0x10 with queue[1], builds the result handle via FUN_14301b700(out, queue[0], op, arg), then moves the op pointer pair into a ring deque at queue+0x70 (buf +0x80, cap +0x88, head +0x90, count +0x98; 0x18-byte slots tagged 1), growing it when full. Returns out_handle. Context from caller: ghost lap / leaderboard async operations. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "core.op_queue_enqueue_operation_with_handle",
+  "section": ".xtls",
+  "pattern": "4D 89 F0 E8 ?? ?? ?? ?? 48 8B 9C 24 70 02 00 00",
+  "match": "0x142f9b802",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x14302afd0",
+  "kind": "call",
+  "names": [
+   "Ne_OpQueue_Enqueue_OperationWithHandle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f9dd92",
+  "made_on_target": "0x14302d560",
+  "twin": "made on steam-26566308; the target 0x14302d560 is KB 0x14302afd0: Game_TodData_FindScenarioParam (0x2ff89e0) and Game_Read_UIMovieBuildSetting (0x30370b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f9dd92",
+    "target": "0x14302d560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6dca4c062ac584c4156f1e316ccc28068a6ec18581eb6b13149f51d8ac7fa6b0"
+  }
+ ]
+}

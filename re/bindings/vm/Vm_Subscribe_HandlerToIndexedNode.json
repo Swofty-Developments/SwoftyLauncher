@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Subscribe_HandlerToIndexedNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418d03b0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Subscribe_HandlerToIndexedNode(int which, uint64_t *delegate)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418d1b90 (RacingPC lab re_groups/_decomp);xref:0x1414bf5f0,0x1414f6f60,0x141527ec0,0x141530130,0x141537a30",
+  "notes": "Selects one of two node names (which==0 -> string at 0x14565d47c, else 0x1456fa3a3), resolves it in g_Vm_Registry with Game_UiBinding_ResolveA, and if the 16-byte delegate is non-null registers it with Ne_BusMessage_SubscribeHandlerUnique; then releases the temporary node handles. Context from caller: lap time / HUD view models subscribing to per-player message nodes."
+ },
+ "signature": {
+  "id": "vm.subscribe_handler_to_indexed_node",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 30 E8 ?? ?? ?? ?? 4C 89 7C 24 70",
+  "match": "0x14153fed9",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1418d03b0",
+  "kind": "call",
+  "names": [
+   "Vm_Subscribe_HandlerToIndexedNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1415414c9",
+  "made_on_target": "0x1418d1b90",
+  "twin": "made on steam-26566308; the target 0x1418d1b90 is KB 0x1418d03b0: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses; the match 0x1415414c9 is KB 0x14153fed9: Game_Mfd_FuelMixUp (0x1534960) and Game_LeaderboardRowVM_Populate (0x156ed60) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1415414c9",
+    "target": "0x1418d1b90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e7174ee0fb1aa2d4824d1b210df2728fb61b44c17513cc2e0f37904775434d33"
+  }
+ ]
+}

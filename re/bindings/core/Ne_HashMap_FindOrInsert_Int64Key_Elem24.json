@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindOrInsert_Int64Key_Elem24",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1426ed500",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_FindOrInsert_Int64Key_Elem24(void *map, int64_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1426ef880 (RacingPC lab re_groups/_decomp);xref:0x142588990",
+  "notes": "(lib) Robin-hood map operator[]: hashes *key with multiplier map+0x10, probes info bytes +0x20 and 0x18-byte slots +0x18; on miss inserts {key, 0, 0} (shifting via 0x1426efcd0, releasing any stale owned value), growing via 0x1426efe70 or halving info increment +0x40 when load limit +0x38 is hit. Returns pointer to the value part (slot+8)."
+ },
+ "signature": {
+  "id": "core.hash_map_find_or_insert_int64_key_elem24",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 45 31 FF C5 C8 57 F6",
+  "match": "0x1426ed500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1426ed500",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_FindOrInsert_Int64Key_Elem24"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1426ef880",
+  "made_on_target": "0x1426ef880",
+  "twin": "made on steam-26566308; the target 0x1426ef880 is KB 0x1426ed500: Game_F1os_LogLargePayload_GetCompendiumRewards (0x26d29e0) and Game_F1os_F1WorldTask_Update (0x273c900) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1426ef880",
+    "target": "0x1426ef880"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e9485ae3aec51937cba9094ffefa837ac7c6389af7545ebaf5f2356f3191a7e2"
+  }
+ ]
+}

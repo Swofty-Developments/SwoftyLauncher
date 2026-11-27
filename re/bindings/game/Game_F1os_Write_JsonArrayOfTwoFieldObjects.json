@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_Write_JsonArrayOfTwoFieldObjects",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1427eb220",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1os_Write_JsonArrayOfTwoFieldObjects(void *writer, void *vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1427ed5a0 (RacingPC lab re_groups/_decomp);xref:0x1427e9c20,0x1427f0690",
+  "notes": "Opens a scope on the writer (FUN_1432b7ed0), then for each 0x10-byte element in vec+0x8..vec+0x10: writer vfunc +0x50 (begin element i), opens an object scope, writes two fields via vfunc +0x40 (key 0x1457a8fad from elem+0x8, key 0x1457a8fa0 from elem+0xc), pops the scope (writer depth +0x60, offsets +0x68..), vfunc +0x58 (end element); finally pops the outer scope. Both callers are request builders (Game_F1os_Create_EnterRaceSession, Game_F1os_Create_SubmitRaceFinish) that open a named key and call this only when the source vector pointer (+0x10 resp. +0x20 of the request data) is non-null. Key strings not resolved; hook here to see or alter the list sent to the server. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.f1os_write_json_array_of_two_field_objects",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8D 15",
+  "match": "0x1427eb220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1427eb220",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_Write_JsonArrayOfTwoFieldObjects"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1427ed5a0",
+  "made_on_target": "0x1427ed5a0",
+  "twin": "made on steam-26566308; the target 0x1427ed5a0 is KB 0x1427eb220: Game_F1wAction_Destroy_EmptyAction (0x27c5b80) and Game_F1os_LogLargePayload_ClaimRewards (0x280b460) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1427ed5a0",
+    "target": "0x1427ed5a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "43ca059cfe8a08b0818dbfa11e79a9ef8a04f350d8dd5ef90e614749e085e0a0"
+  }
+ ]
+}

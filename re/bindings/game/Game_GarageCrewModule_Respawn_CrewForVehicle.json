@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewModule_Respawn_CrewForVehicle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140388c10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GarageCrewModule_Respawn_CrewForVehicle(void **crew_slots, uint8_t vehicle_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140388c50 (RacingPC lab re_groups/_decomp);xref:0x142a43a80",
+  "notes": "Under the global critical section 0x146047a38: if vehicle_idx equals Sess_Get_PlayerVehicleIndex(player 0), scans the 32-entry crew instance array for the instance whose +0x120 == vehicle_idx, destroys and frees it (Game_GarageCrewInstance_Destroy), clears the slot and calls Game_GarageCrewModule_SpawnGarageCrew with the old instance's +0x11c id. Context from caller: run when a player drops in. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.garage_crew_module_respawn_crew_for_vehicle",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 48 8B 0D",
+  "match": "0x140388c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140388c10",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewModule_Respawn_CrewForVehicle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140388c50",
+  "made_on_target": "0x140388c50",
+  "twin": "made on steam-26566308; the target 0x140388c50 is KB 0x140388c10: Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3 (0x386360) and site_Game_GarageCrew_SpawnVector (0x389354) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140388c50",
+    "target": "0x140388c50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fb1819e213cf427684aead98791637102f93beb7995467c22b14124adb80a9df"
+  }
+ ]
+}

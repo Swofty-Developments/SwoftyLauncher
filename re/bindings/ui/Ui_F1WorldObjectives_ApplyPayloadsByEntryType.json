@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_F1WorldObjectives_ApplyPayloadsByEntryType",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14272f640",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_F1WorldObjectives_ApplyPayloadsByEntryType(void *self, void *payloads)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1427319c0 (RacingPC lab re_groups/_decomp);xref:0x142588990",
+  "notes": "Calls Ui_F1WorldObjectives_ResolveEntryById(self, &vec, *(int *)payloads) to get a vector of shared entry pointers; for each entry the type byte entry+8 selects a payload block (4: payloads+0x10, 5: +0x58, 6: +0xa0; each a shared byte buffer plus a string), which is copied and passed with the entry reference to 0x142731ea0; other types are skipped; then the vector is released. Only listed caller 0x142588990 failed to decompile, so the call site was not seen. Class prefix rests on the KB callee name only. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.f1_world_objectives_apply_payloads_by_entry_type",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 D7 4C 63 02",
+  "match": "0x14272f640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14272f640",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1WorldObjectives_ApplyPayloadsByEntryType"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1427319c0",
+  "made_on_target": "0x1427319c0",
+  "twin": "made on steam-26566308; the target 0x1427319c0 is KB 0x14272f640: Game_F1os_LogLargePayload_GetCompendiumRewards (0x26d29e0) and Game_F1os_F1WorldTask_Update (0x273c900) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1427319c0",
+    "target": "0x1427319c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fa8e24010daee3d0f01b3591e7a0c77192cda97e3e48c8676c0403b03cf099c5"
+  }
+ ]
+}
