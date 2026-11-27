@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Find_InputActionState_ByFlagPriority",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144204920",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Find_InputActionState_ByFlagPriority(void *input_ctx, uint32_t action_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144206ef0 (RacingPC lab re_groups/_decomp);xref:0x14421a340,0x144231b00,0x144251270,0x144259310,0x14425a610",
+  "notes": "Returns the 200-byte state record for action_id (0..0x26) or the null record 0x146ca69e0. Walks devices at +0x18..+0x20 (filtered by predicate list at +0x58, skipping devices whose +0x1c0 obj has +0x11 set) in four passes, returning the first record whose flag byte +0xc0 has bit 8, then 2, then 0x10, then 1; falls back to FUN_1442dc750 and then a default device scan (stride 0x1e80, largest squared float at +0xc). Callers test +0xc0 bits 1 and 9, so this is the hook point for menu button state."
+ },
+ "signature": {
+  "id": "ui.find_input_action_state_by_flag_priority",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 83 FA 26 7F 18",
+  "match": "0x144204920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144204920",
+  "kind": "func_start",
+  "names": [
+   "Ui_Find_InputActionState_ByFlagPriority"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144206ef0",
+  "made_on_target": "0x144206ef0",
+  "twin": "made on steam-26566308; the target 0x144206ef0 is KB 0x144204920: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144206ef0",
+    "target": "0x144206ef0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bc29b7cb56d312365690a1f38b81457ffcba21e9ade5a8fd9f0c6fc30bba603c"
+  }
+ ]
+}

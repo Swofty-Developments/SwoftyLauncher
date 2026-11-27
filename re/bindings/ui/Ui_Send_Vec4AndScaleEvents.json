@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Send_Vec4AndScaleEvents",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14424ff70",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Send_Vec4AndScaleEvents(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144252540 (RacingPC lab re_groups/_decomp);xref:0x144251f80,0x144252750",
+  "notes": "Whole body read: builds event type 0x21 (vtable 0x1457862d0) with vec4 = scale(+0xa8) * vec4(+0x60) + vec4(+0x70) + vec4(+0xc0) and event type 0x24 (vtable 0x14588dc10) with {scale, scale, 1.0, 0}; both carry ids self->vf+0x10() and [self+0x50]+0x40 and are sent only when both ids are nonzero, through g_Vm_UiSystem->vf+0x68(): queue at +0x28 (Ne_Queue_EnqueueEventRecord / 0x1438f19c0) or Game_Ui_NotifyAllListeners when byte +0x188 is set. Callers: 0x144251f80 Vm_Unk_14424f9b0 (per-frame update of move/scale animation entries, posts the new transform) and 0x144252750 (reset: zeroes +0x60, sets scale +0xa8 = 1.0, then posts). Context from caller: fields are a pan/zoom transform (moveSpeed, scaleSpeed, zoomFactor reflection strings). Good hook to read or override the posted offset and scale. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.send_vec4_and_scale_events",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 48 89 CE 48 8B 01",
+  "match": "0x14424ff70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14424ff70",
+  "kind": "func_start",
+  "names": [
+   "Ui_Send_Vec4AndScaleEvents"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144252540",
+  "made_on_target": "0x144252540",
+  "twin": "made on steam-26566308; the target 0x144252540 is KB 0x14424ff70: Ne_UINodeBase_OnVMSetDataContext (0x424b9b0) and Ui_Bind_TopLevelFacilityHeader (0x4254510) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144252540",
+    "target": "0x144252540"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6e533cfe8ace18babb05ec7ea5f79662e376b9cbdb3d0c71191624e1e9b9c4f5"
+  }
+ ]
+}

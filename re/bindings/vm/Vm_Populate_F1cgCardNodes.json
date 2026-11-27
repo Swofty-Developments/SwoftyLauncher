@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Populate_F1cgCardNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14277ece0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Populate_F1cgCardNodes(void *card_vm, void **card_ref)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142781060 (RacingPC lab re_groups/_decomp);xref:0x14277fef0,0x1427859a0,0x142785b70",
+  "notes": "Reads the card instance *card_ref (+0xc count/int, +0x18 definition, +0x38 time, +0x34 state) and its definition (+0x10 type, +0x11 category, +0x12 rarity, +0x230 theme id, +0x234 definition id, +0x260 item list) and writes the VM nodes: s32 at +0x358 and +0x378, type/category strings at +0x3b0/+0x3d0, rarity text +0x48 and icon path \"#overrides.f1cg.cards.rarity_icon.%s\" at +0x88, owned flag +0x418 from FUN_1427713a0, per-item bools at +0x138/+0x158/+0x178 with refs at +0xd0/+0xf0/+0x110. It finds the row in \"f1cg_theme_definitions\" whose \"id\" equals the theme id and links bg_name, frame_name, image_array, vfx_name, style_name at +0x1b8..+0x230, then binds \"#f1cg_definitions.%d\" at +0x258 and copies card_name (+0x298) and card_date (+0x278); if +0x758 is set it also formats the acquire date into +0x740. Caller 0x14277fef0: populates the full card view and then handles definition type 7 extras; callers 0x1427859a0 and 0x142785b70: small callbacks that copy the shared card ref and call this. Good hook to change what a F1 World collectible card shows. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.populate_f1cg_card_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 49 89 D7 48 89 CF",
+  "match": "0x14277ece0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14277ece0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Populate_F1cgCardNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142781060",
+  "made_on_target": "0x142781060",
+  "twin": "made on steam-26566308; the target 0x142781060 is KB 0x14277ece0: site_Career_TeamDeptEnumStore (0x27765d8) and Game_F1os_F1CGTask_Update (0x27a1ea0) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142781060",
+    "target": "0x142781060"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "758f82cca5c2aa454740fc70163930de25f536e80e614bb052c8677668090270"
+  }
+ ]
+}

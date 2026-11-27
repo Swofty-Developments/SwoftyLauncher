@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Init_TitleValueRow_Named",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429b85c0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Init_TitleValueRow_Named(void *row, void *parent, const char *childName, const char *title)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429ba980 (RacingPC lab re_groups/_decomp);xref:0x1429ba3b0",
+  "notes": "If childName has none of the characters # . [ ] it hashes the name (djb2, seed 0x1505, x33) and calls Vm_GetOrCreate_ChildNode, else uses the empty handle; then sets \"title\" = title and \"value\" = \"-\" via Vm_Set_String and stores the two property handles at row+0x8 and row+0x28; temp handles are released. Context from caller: row of the practice tyre wear table."
+ },
+ "signature": {
+  "id": "vm.init_title_value_row_named",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4C 89 CF 48 89 CE 48 8D 05",
+  "match": "0x1429b85c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429b85c0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Init_TitleValueRow_Named"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1429ba980",
+  "made_on_target": "0x1429ba980",
+  "twin": "made on steam-26566308; the target 0x1429ba980 is KB 0x1429b85c0: Ne_Math_QuatFromEulerXYZ (0x29ae5a0) and Career_Write_AwardedUpgradeReward (0x29bda00) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1429ba980",
+    "target": "0x1429ba980"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "85b0113f2c4e6e0ff84df496b203e0faaf1bf666cc3d7167fff021d53f094621"
+  }
+ ]
+}

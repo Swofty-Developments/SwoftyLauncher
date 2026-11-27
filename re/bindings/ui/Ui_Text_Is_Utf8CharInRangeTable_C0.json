@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Is_Utf8CharInRangeTable_C0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144438f90",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "bool Ui_Text_Is_Utf8CharInRangeTable_C0(void *self, const uint8_t *utf8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14443b560 (RacingPC lab re_groups/_decomp);xref:0x144315390",
+  "notes": "Identical to 0x14443b450 but searches the 12 byte range table at self+0xc0..+0xc8. Better context needed: which character class the +0xc0 table holds. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "ui.text_is_utf8_char_in_range_table_c0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 4D 39 FE",
+  "match": "0x1443137d6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144438f90",
+  "kind": "call",
+  "names": [
+   "Ui_Text_Is_Utf8CharInRangeTable_C0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144315da6",
+  "made_on_target": "0x14443b560",
+  "twin": "made on steam-26566308; the target 0x14443b560 is KB 0x144438f90: Ne_InputMapper_FindBindingByHash (0x4436c60) and Ne_OSHttpOperation_OnStart (0x443cf00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144315da6",
+    "target": "0x14443b560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c00e4729bbabb868bc635a13973ce075b3e37c23dd1711a41cfa87263323a528"
+  }
+ ]
+}

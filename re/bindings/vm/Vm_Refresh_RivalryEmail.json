@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Refresh_RivalryEmail",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418be3f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Refresh_RivalryEmail(void *email_vm, void *email)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418bfbd0 (RacingPC lab re_groups/_decomp);xref:0x1418b5970",
+  "notes": "Copies rivalry type (email+0xf0 -> vm+0x408) and email type (email+0xf1 -> vm+0x409), sets title strings at +0x48/+0x88/+0x68, caches the career object (+0x308), k_Career_RivalManagerComponentDesc (+0x310) and the contracts manager (+0x318), copies the entrant list and finds the player. For rivalry types 0-2 it finds the player's driver rivalry in rival manager +0xbd8, for type 3 the team rivalry in +0xbf8; it stores the intensity level (+0x40a), both overall ratings (+0x40c/+0x410), the player and rival refs (+0xc8/+0xe8), two score values (+0x110/+0x130), the difference (+0x150) with its description (+0x168/+0x170, flag +0x190) and a thumbnail request. It then writes reward data from the per-type table (rival manager +0x810/+0x6c8/+0x2a8/+0x928, 0x48 stride by intensity) to +0xa8/+0x270/+0x290/+0x2b0, intensity text and texture (+0x1c8/+0x1e8/+0x210) and, for email type 2 or 3, the \"#overrides.career.laptop.rivalry_email_close_proximity_bg.win\" or \".loss\" texture at +0x230 with flag +0x250. Caller Vm_CareerEmail_BindTemplates runs it for template case 0xc after binding the rivalry nodes; good hook to change what rivalry emails show. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.refresh_rivalry_email",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 48 89 D6",
+  "match": "0x1418be3f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418be3f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Refresh_RivalryEmail"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418bfbd0",
+  "made_on_target": "0x1418bfbd0",
+  "twin": "made on steam-26566308; the target 0x1418bfbd0 is KB 0x1418be3f0: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418bfbd0",
+    "target": "0x1418bfbd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "48e1e344701d5772d93679040d3a87915dddaf01deb5f3fbe2d91437019e12ce"
+  }
+ ]
+}

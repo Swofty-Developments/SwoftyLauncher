@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_1426ad450",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1426ab0d0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_1426ad450(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1426ad450 (RacingPC lab re_groups/_decomp);xref:0x142511840",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort then int3; noreturn failure path."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_1426ad450",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? BA 23 FB F6 D6",
+  "match": "0x1426ab0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1426ab0d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_1426ad450"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1426ad450",
+  "made_on_target": "0x1426ad450",
+  "twin": "made on steam-26566308; the target 0x1426ad450 is KB 0x1426ab0d0: Game_F1os_LogLargePayload_UpgradeCard (0x2697990) and Game_F1os_LogLargePayload_GetCompendiumRewards (0x26d29e0) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1426ad450",
+    "target": "0x1426ad450"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c2271a118d9e1600b4ca1c096ed90a653de71f57a2ee33187c3e800a0b4b7c2c"
+  }
+ ]
+}

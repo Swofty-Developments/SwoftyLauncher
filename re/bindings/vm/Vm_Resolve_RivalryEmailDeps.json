@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Resolve_RivalryEmailDeps",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418bdfa0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int32_t Vm_Resolve_RivalryEmailDeps(void *self, void *services, void *system_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418bf780 (RacingPC lab re_groups/_decomp);xref:0x1418b5970",
+  "notes": "Dependency resolve for the VM refreshed by 0x1418bfbd0: +0x2e8 = localisation (services vfunc+0x28, &DAT_146cba218), +0x2f8 = k_Live_EntrantsSystemKey, +0x2f0 = k_Live_GameModeSystemKey, +0x300 = system keyed &DAT_146082b30 (thumbnail system), then inits sub-object +0x320 via 0x1419961e0. Returns 0 or 0x16 with errno trace."
+ },
+ "signature": {
+  "id": "vm.resolve_rivalry_email_deps",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D3 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 87 E8 02 00 00",
+  "match": "0x1418bdfa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418bdfa0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Resolve_RivalryEmailDeps"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418bf780",
+  "made_on_target": "0x1418bf780",
+  "twin": "made on steam-26566308; the target 0x1418bf780 is KB 0x1418bdfa0: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418bf780",
+    "target": "0x1418bf780"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0de70e76647ce199bbca405d913fe4831132c3e07dabdbd1af7e9c984b7f31f5"
+  }
+ ]
+}

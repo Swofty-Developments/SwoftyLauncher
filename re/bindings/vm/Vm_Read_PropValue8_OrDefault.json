@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Read_PropValue8_OrDefault",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14417dd20",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "char Vm_Read_PropValue8_OrDefault(void **props, void *key, void **out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441802f0 (RacingPC lab re_groups/_decomp);xref:0x144212290,0x14421b2a0,0x144233030",
+  "notes": "Whole body read. props = {package base, PkgObj}. Looks up key (hash at key+0) in the PkgObj (inline 12-byte key table when count word >= 0x1000000, else Vm_Find_PkgObjectKey_Thunk). If the value word has the high bit set it is a sub-object offset (base + (v & 0x7fffff), Vm_PkgObj_ResolveRootOffset) and key 0x425ed3ca (string 0x145614ae4) is looked up inside it; otherwise the value of the key itself is used. A value word > 0xffffff selects an 8-byte pointer from the object's pointer table (obj + *obj, slot index = v >> 24), anything else yields the default 0x14612bf70. Writes *out; returns 3 when the key is missing or the pointer is NULL, else 0. Context from caller: the returned pointer is used as a type descriptor (vt+8 creates an instance with the UiSystem allocator, vt+0x10 gives a type id that 0x144212290 compares between keys 0x1bcf29d8 and 0x32608848); callers are control init functions 0x144212290, 0x14421b2a0 (key 0xd872e2a5) and 0x144233030 (key 0xbde64e3e). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.read_prop_value8_or_default",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 4C 89 C6 48 89 D7 48 89 CB 48 8B 49 08 8B 51 04 81 FA FF FF FF 00 77 1F",
+  "match": "0x14417dd20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14417dd20",
+  "kind": "func_start",
+  "names": [
+   "Vm_Read_PropValue8_OrDefault"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441802f0",
+  "made_on_target": "0x1441802f0",
+  "twin": "made on steam-26566308; the target 0x1441802f0 is KB 0x14417dd20: Ne_EventBus_Unsubscribe (0x417e580) and Ne_UIAction_C_closeScreenId (0x4185c30) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441802f0",
+    "target": "0x1441802f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "79c8e63d6aeb49c95771d75a04376d421558364b44a2b8a68662d957a3a09b7d"
+  }
+ ]
+}

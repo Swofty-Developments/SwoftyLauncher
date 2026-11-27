@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_MessageQueue_Enqueue_Node70",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141614170",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int32_t Ne_MessageQueue_Enqueue_Node70(void *queue, void *item, uint8_t wake)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141615760 (RacingPC lab re_groups/_decomp);xref:0x142313e00,0x1435442c0",
+  "notes": "Thread-safe enqueue: returns 0x58 if queue+0x68 (running flag) is 0. Otherwise enters the critical section at +0xd8, allocates a 0x70-byte node from the allocator at +0x70, copy-constructs item into it (0x141615ae0), appends it to the singly linked list (+0x58 head, +0x60 tail, next at node+8), ORs wake into +0x6b and leaves the lock. If wake is set and the flag was clear it signals the event at +0xc8. Returns 0 or 0xc on allocation failure."
+ },
+ "signature": {
+  "id": "core.message_queue_enqueue_node70",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 80 79 68 00 0F 84 ?? ?? ?? ?? 44 89 C3 48 89 D7 48 89 CE 48 8B 89 D8 00 00 00 FF 15 ?? ?? ?? ?? 48 8B 4E 70 48 8B 01 BA 70 00 00 00",
+  "match": "0x141614170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141614170",
+  "kind": "func_start",
+  "names": [
+   "Ne_MessageQueue_Enqueue_Node70"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141615760",
+  "made_on_target": "0x141615760",
+  "twin": "made on steam-26566308; the target 0x141615760 is KB 0x141614170: Ne_Set_FixedString (0x1602370) and Vm_Set_ShortProperty_WithUnknownName (0x16209c0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141615760",
+    "target": "0x141615760"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9a247c0e1c5091c5b48ea001c22344915e996ab1a6b7014c5e30159c86c67a47"
+  }
+ ]
+}

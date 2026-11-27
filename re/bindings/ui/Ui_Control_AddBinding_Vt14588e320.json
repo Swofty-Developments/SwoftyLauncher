@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Control_AddBinding_Vt14588e320",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438ec8d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint32_t Ui_Control_AddBinding_Vt14588e320(void *control, const char *path, uint32_t id_hash, uint32_t user_u32, void **delegate_a, void **delegate_b, char flag8, uint8_t mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438eee60 (RacingPC lab re_groups/_decomp);xref:0x1437f30f0,0x14380a1d0,0x144212290",
+  "notes": "Whole body read. Finds the binding-set component (type 0x146ca5978) in control+0x30..+0x38 or creates it (0x48 bytes, vtable 0x145a71f80, attached with 0x14424b130 to 0x14417baa0(control); if control byte +0xa bit 0x10 it is marked live 0x101 and stale bindings are purged) and appends it to the component vector. Then allocates a 0x130-byte binding from pool *0x146ca5990: vtable 0x14588e320, Ne_ResourceHandle at +8, mode byte +0xf0, id_hash +0xf4, path string +0xf8, owner set +0x100, callback 0x1442b1210 at +0xd8, the two 16-byte delegates at +0x108 and +0x118, user_u32 at +0x128. An existing binding with the same id and delegates is destroyed first; the new one is appended to the set vector (+0x20..+0x30), bit 0x08 of +0xe8 = flag8, and it is resolved against the set's source (+0x38) via Vm_Binding_SetSourceAndResolve and Vm_Binding_ResolveAndSubscribe when the set is live. Returns id_hash. Callers 0x1437f30f0, 0x14380a1d0 and 0x144212290 are control class init functions: after Vm_Read_PropBinding succeeds they register the path with a per-property thunk pair and a u32 field of the control (e.g. id 0x34bfd32a with +0x70; 0xaebb323 with +0x94; 0x144212290 uses the djb2 hash of the path and +0xa8), always flag8=0, mode=0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.control_add_binding_vt14588e320",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C7 44 24 40 77 68 E1 C7",
+  "match": "0x143807ef1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1438ec8d0",
+  "kind": "call",
+  "names": [
+   "Ui_Control_AddBinding_Vt14588e320"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14380a481",
+  "made_on_target": "0x1438eee60",
+  "twin": "made on steam-26566308; the target 0x1438eee60 is KB 0x1438ec8d0: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14380a481",
+    "target": "0x1438eee60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ed56cfa9c4fc30cde0e2f5195bc797a846631c695dd0dcfcff8db8f4736fb75f"
+  }
+ ]
+}

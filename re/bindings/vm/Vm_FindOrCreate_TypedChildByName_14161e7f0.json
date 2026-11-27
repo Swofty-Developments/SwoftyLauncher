@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_FindOrCreate_TypedChildByName_14161e7f0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14161d200",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void **Vm_FindOrCreate_TypedChildByName_14161e7f0(void *registry, void **parent_handle, const char *name, void *value, int32_t set_if_found)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14161e7f0 (RacingPC lab re_groups/_decomp);xref:0x14158eeb0,0x1417acca0,0x141e71490",
+  "notes": "Whole body read. Rejects a null name, a null parent and names containing '#', '.', '[' or ']'; hashes the name with djb2 (seed 0x1505, x33) and looks the child up (Vm_Find_ChildNodeByNameHash for list parents). A found child must have type descriptor 0x14612b9f8, and if set_if_found == 1 its value is set from value (0x14161e4c0). Otherwise it allocates a 0x68-byte node from the registry allocator, constructs it with hash and value (0x14161ec00) and adds it with Vm_Node_InsertChildAtIndex(-1) or Vm_Node_AddKeyedChild; on failure the node is destroyed. Returns the node handle or the empty handle 0x146067080. Caller Ui_Rnd_SetDepartmentPipColourA passes a 0x20-byte value (0,1.0f,0,1.0f pattern) with set_if_found 1 and stores the handle in the holder at view+0x1a0. Caller 0x14158eeb0: screen init, binds child 0x145613725 into holder +0xe50. Caller 0x141e71490: same pattern into holder +0xe0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.find_or_create_typed_child_by_name_14161e7f0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 AE 50 0E 00 00",
+  "match": "0x14158e31e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14161d200",
+  "kind": "call",
+  "names": [
+   "Vm_FindOrCreate_TypedChildByName_14161e7f0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14158f90e",
+  "made_on_target": "0x14161e7f0",
+  "twin": "made on steam-26566308; the target 0x14161e7f0 is KB 0x14161d200: Ne_Set_FixedString (0x1602370) and Vm_Set_ShortProperty_WithUnknownName (0x16209c0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14158f90e",
+    "target": "0x14161e7f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "574595422ba8d6f44ee352f653922109f79e43a457e61d58bab15ca5897ecbbf"
+  }
+ ]
+}

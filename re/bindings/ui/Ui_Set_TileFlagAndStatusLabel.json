@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_TileFlagAndStatusLabel",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418a3390",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_TileFlagAndStatusLabel(void *self, void *node, int32_t status, bool flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418a4b70 (RacingPC lab re_groups/_decomp);xref:0x141fbb8e0,0x141fbfae0,0x141fc0300",
+  "notes": "Lazily initialises self (if byte +0x20 is 0: self[0] = self[5], clears +8..+0x1f, sets +0x20), builds three node holders with FUN_1418a4d60, writes flag into the third holder's bool node (Vm_NodeSet_Bool), then calls Career_ChallengeEvent_SetStatusLabel(self, holders, status) and FUN_14194fd00(self, holders) and releases the holders. Context from caller: FeTile_ChallengeCareerEpisodeTile_Build and callers 0x141fbfae0 / 0x141fc0300 (challenge career screen refreshes that next call Game_ChallengeCareer_BuildTrackTiles) pass flag = whether the episode's item list (stride 0x18, byte +0xc) has all entries set, and status from the screen (+0x4f0). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.set_tile_flag_and_status_label",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC 88 00 00 00 44 89 C7",
+  "match": "0x1418a3390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418a3390",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_TileFlagAndStatusLabel"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418a4b70",
+  "made_on_target": "0x1418a4b70",
+  "twin": "made on steam-26566308; the target 0x1418a4b70 is KB 0x1418a3390: site_Career_RnDPerfGotoName (0x18965e3) and Career_RenownForm_BuildRenownText (0x18aea30) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418a4b70",
+    "target": "0x1418a4b70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3d156f40b0afe05ecb4e81c35fe167b292942903f42ca4531fff203c7ed4425c"
+  }
+ ]
+}

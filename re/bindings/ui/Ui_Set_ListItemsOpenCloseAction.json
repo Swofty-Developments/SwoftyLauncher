@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_ListItemsOpenCloseAction",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438357c0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_ListItemsOpenCloseAction(void *open_str, void *close_str, void *list_node, uint64_t first, uint64_t last)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143837d50 (RacingPC lab re_groups/_decomp);xref:0x143832120",
+  "notes": "For each index in [first, last) gets the list element of list_node (Ne_Ref_GetListElementOrEmpty), resolves its \"open_action\" and \"close_action\" children and, when they are writable string properties (type 0x146ca7508), writes open_str and close_str with Vm_NodeSet_String. Hook point to retarget the actions bound to list rows. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "ui.set_list_items_open_close_action",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 54 24 30 48 89 4C 24 28",
+  "match": "0x1438357c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438357c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_ListItemsOpenCloseAction"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143837d50",
+  "made_on_target": "0x143837d50",
+  "twin": "made on steam-26566308; the target 0x143837d50 is KB 0x1438357c0: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143837d50",
+    "target": "0x143837d50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "146eb641b51f06c70e203702cfc70a6b8939584af8f88f2e1b106630d4650e84"
+  }
+ ]
+}

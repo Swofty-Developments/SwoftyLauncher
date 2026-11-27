@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Init_RatingDifferenceNodeHandles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14166e270",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Init_RatingDifferenceNodeHandles(void *self, void *unused, void *parent)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14166f860 (RacingPC lab re_groups/_decomp);xref:0x14166fb80",
+  "notes": "Ctor of five 0x20-byte node handles: resolves four token nodes under the parent node ([parent+8]+8 or the empty handle) with Ui_Resolve_TokenNodeByName_B (names 0x1456fee0a, 0x1456fee19, 0x1456fee29, 0x1456fee37) into self+0x00, +0x20, +0x40, +0x60 (vtable 0x145660588) and one int node 'difference_to_target_rating' via Vm_Set_Int into self+0x80 (vtable 0x1456624b8), each linked into the node's handle list with a refcount bump; returns self. Caller Vm_Init_EmailTemplateBinding 0x14166fb80 builds it in place at its +0x78 as part of its own ctor. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.init_rating_difference_node_handles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 4C 89 C7 48 89 CE 49 8B 40 08",
+  "match": "0x14166e270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14166e270",
+  "kind": "func_start",
+  "names": [
+   "Vm_Init_RatingDifferenceNodeHandles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14166f860",
+  "made_on_target": "0x14166f860",
+  "twin": "made on steam-26566308; the target 0x14166f860 is KB 0x14166e270: Ne_InternedString_ManageB (0x16689d0) and Career_Bind_FacilityUpgradeNameStrings (0x16752d0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14166f860",
+    "target": "0x14166f860"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "45de63fd8e399384504bf1be506d554605fbfdc7250a2d1bb93a68537e9e1387"
+  }
+ ]
+}

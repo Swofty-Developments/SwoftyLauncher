@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_EmplaceBack_ElemC0_StrIntIntByte",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1437f8b50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_EmplaceBack_ElemC0_StrIntIntByte(void *vec, uint32_t *b, uint32_t *a, void **name, uint8_t *flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437fb0e0 (RacingPC lab re_groups/_decomp);xref:0x1437f7780",
+  "notes": "(lib) emplace_back on a vector of 0xc0-byte entries {allocator, begin, end, cap}: grows by 1.5x (moving old entries with 0x14417eb10), then constructs an entry with vtable 0x14588d190, NeStr copy of *name at +0xa0, *a at +0xa8, *b at +0xb0, byte 0 at +0xb8 and *flag at +0xb9; old entries release their NeStr (+0xa0, +0x28, +0x20) and VM node handle (+0x30). Context from caller: F1CsElement overlay list."
+ },
+ "signature": {
+  "id": "core.vector_emplace_back_elem_c0_str_int_int_byte",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4D 89 CE 4D 89 C4",
+  "match": "0x1437f8b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437f8b50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_EmplaceBack_ElemC0_StrIntIntByte"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1437fb0e0",
+  "made_on_target": "0x1437fb0e0",
+  "twin": "made on steam-26566308; the target 0x1437fb0e0 is KB 0x1437f8b50: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437fb0e0",
+    "target": "0x1437fb0e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "72421525f64228ce539eeb6ef54185d782539564d62fd0b69ffde7d48fa2050f"
+  }
+ ]
+}

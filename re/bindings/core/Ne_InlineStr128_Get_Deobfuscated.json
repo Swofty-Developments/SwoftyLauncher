@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_InlineStr128_Get_Deobfuscated",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144425d90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint8_t *Ne_InlineStr128_Get_Deobfuscated(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144428360 (RacingPC lab re_groups/_decomp);xref:0x1444262b0",
+  "notes": "Computes the djb2 hash of the buffer at +0x10 and compares it with the plaintext hash stored at +0x98; if equal returns the buffer as is, otherwise XORs the whole buffer (capacity +8) in place with k_Gdb_StringXorKey and returns it. Good hook point to read flow state names in plaintext."
+ },
+ "signature": {
+  "id": "core.inline_str128_get_deobfuscated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 8B 41 10",
+  "match": "0x144425d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144425d90",
+  "kind": "func_start",
+  "names": [
+   "Ne_InlineStr128_Get_Deobfuscated"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144428360",
+  "made_on_target": "0x144428360",
+  "twin": "made on steam-26566308; the target 0x144428360 is KB 0x144425d90: site_FeFlow_AfterStateLink (0x4427248) and Ne_FlowStateInterruptManager_ConsumeInterrupt (0x4428b00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144428360",
+    "target": "0x144428360"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6e26fcbd84f49901bcb73cada0122e6985efabb0a7f7530ff60ca4a9c02c277a"
+  }
+ ]
+}

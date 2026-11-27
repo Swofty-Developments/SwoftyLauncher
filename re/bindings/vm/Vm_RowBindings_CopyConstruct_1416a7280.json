@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_RowBindings_CopyConstruct_1416a7280",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416a5c90",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_RowBindings_CopyConstruct_1416a7280(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416a7280 (RacingPC lab re_groups/_decomp);xref:0x141ef7e80",
+  "notes": "Copy constructor of a 0x170-byte bindings struct (vtable 0x1456fa7a8, then derived 0x14570df10). Re-binds 11 typed VM handles from src: node (+0x08), type 0x1456904f8 (+0x28), strings (+0x48, +0x68), bool (+0x88), type 0x145690628 (+0xa8), node-ref style 0x1456611f0 (+0xc8, +0x148) and bools (+0xe8, +0x108, +0x128). Copies the u32 at +0x168 and u16 at +0x16c. Context from caller: TeamHq finances rows."
+ },
+ "signature": {
+  "id": "vm.row_bindings_copy_construct_1416a7280",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 66 39 BC 24 94 01 00 00",
+  "match": "0x1416a4117",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1416a5c90",
+  "kind": "call",
+  "names": [
+   "Vm_RowBindings_CopyConstruct_1416a7280"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416a5707",
+  "made_on_target": "0x1416a7280",
+  "twin": "made on steam-26566308; the target 0x1416a7280 is KB 0x1416a5c90: site_Game_DriverSelect_BadgeFormat (0x16a6e10) and Ui_Rnd_SetCompletionTimelineIcons (0x16b5d40) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416a5707",
+    "target": "0x1416a7280"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "da074d783cc2b92b53ef0be17f5082c71b433746476ad87699e9456151c2f13b"
+  }
+ ]
+}

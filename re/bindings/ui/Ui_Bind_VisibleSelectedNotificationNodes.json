@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_VisibleSelectedNotificationNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1420b5f20",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Bind_VisibleSelectedNotificationNodes(void *self, void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1420b7b20 (RacingPC lab re_groups/_decomp);xref:0x14209f1f0,0x1420b8990",
+  "notes": "Constructs three bool node holders under owner+0x8: +0x0 \"visible\", +0x20 \"selected\", +0x40 \"notification_visible\", each created with default false. Returns self."
+ },
+ "signature": {
+  "id": "ui.bind_visible_selected_notification_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 D7 48 89 CE C6 44 24 2F 00 48 8B 42 08 48 8D 50 08 48 85 C0 48 8D 1D ?? ?? ?? ?? 48 0F 44 D3 48 8B 0D ?? ?? ?? ?? C7 44 24 20 00 00 00 00",
+  "match": "0x1420b5f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420b5f20",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_VisibleSelectedNotificationNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1420b7b20",
+  "made_on_target": "0x1420b7b20",
+  "twin": "made on steam-26566308; the target 0x1420b7b20 is KB 0x1420b5f20: Career_RenownFormVM_Init (0x209bd20) and Career_RenownFormDetails_BuildPills (0x20b9760) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1420b7b20",
+    "target": "0x1420b7b20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a96f3c1a579eb298f262879b3ed62f0372c7a70ec31c555c635615331da2ee5d"
+  }
+ ]
+}

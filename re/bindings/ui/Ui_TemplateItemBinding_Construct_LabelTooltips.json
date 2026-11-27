@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TemplateItemBinding_Construct_LabelTooltips",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438fbfc0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_TemplateItemBinding_Construct_LabelTooltips(void *self, void *vm_node, void **tooltips_node, void *label_desc, void *sub_arg, void **tmpl)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438fe550 (RacingPC lab re_groups/_decomp);xref:0x14385c150",
+  "notes": "Calls Ui_TemplateItemBinding_Construct(self, vm_node, tmpl), sets vtable 0x14588cd58, binds \"label\" (string) at +0x88, \"loc_tag\" (bool at label_desc+0x10) at +0xa8, constructs a sub-object at +0xc8 with 0x141932f10(self+0xc8, vm_node, sub_arg) and binds \"tooltips\" (node ref = *tooltips_node) at +0x188. Context from caller: button rows of the spawned contract popup."
+ },
+ "signature": {
+  "id": "ui.template_item_binding_construct_label_tooltips",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 4D 89 CE 4C 89 C3 48 89 D7 48 89 CE 4C 8B 84 24 C8 00 00 00",
+  "match": "0x1438fbfc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438fbfc0",
+  "kind": "func_start",
+  "names": [
+   "Ui_TemplateItemBinding_Construct_LabelTooltips"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438fe550",
+  "made_on_target": "0x1438fe550",
+  "twin": "made on steam-26566308; the target 0x1438fe550 is KB 0x1438fbfc0: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438fe550",
+    "target": "0x1438fe550"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d75532aab419b6374c61034066e74079a1b7e4d17febc0210591d8d67b0b3e12"
+  }
+ ]
+}

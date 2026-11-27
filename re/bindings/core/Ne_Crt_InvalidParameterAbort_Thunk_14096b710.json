@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_14096b710",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14096b6c0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_14096b710(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14096b710 (RacingPC lab re_groups/_decomp);xref:0x14096b230",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort then int3. Container overflow handler next to the set insert at 0x14096b3e0."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_14096b710",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 4F 0F 88",
+  "match": "0x14096b6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14096b6c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_14096b710"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14096b710",
+  "made_on_target": "0x14096b710",
+  "twin": "made on steam-26566308; the target 0x14096b710 is KB 0x14096b6c0: Gdb_Define_RewardsTableColumns (0x95f730) and Ne_Struct_CopyConstructInlineStrings (0x96cd40) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14096b710",
+    "target": "0x14096b710"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f2d765a396aa81ca060f594fdeee2907f08dc8239076a99aca05ac21bedd272f"
+  }
+ ]
+}

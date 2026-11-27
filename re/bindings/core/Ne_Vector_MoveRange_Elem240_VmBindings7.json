@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_MoveRange_Elem240_VmBindings7",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141b5c310",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_MoveRange_Elem240_VmBindings7(void *first, void *last, void *dest)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141b5dee0 (RacingPC lab re_groups/_decomp);xref:0x141a63e50",
+  "notes": "(lib) Uninitialized-move of a range of 0xf0 byte elements: copies +0 qword, relinks the 7 intrusive VM binding nodes (+0x08..+0xe0, fixing owner list head +0x28 and prev/next back pointers), zeroes the source links, copies the +0xe8 byte. Element layout matches the struct built by 0x141b5d950."
+ },
+ "signature": {
+  "id": "core.vector_move_range_elem240_vm_bindings7",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 39 D1 0F 84 ?? ?? ?? ?? 31 C0 4C 8D 0D ?? ?? ?? ?? C5 F8 57 C0 4C 8D 15 ?? ?? ?? ?? 4C 8D 1D ?? ?? ?? ?? 48 8D 35 ?? ?? ?? ?? EB 48 66 2E 0F 1F 84 00 00 00 00 00",
+  "match": "0x141b5c310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b5c310",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_MoveRange_Elem240_VmBindings7"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141b5dee0",
+  "made_on_target": "0x141b5dee0",
+  "twin": "made on steam-26566308; the target 0x141b5dee0 is KB 0x141b5c310: Ne_Map_FindOrInsertSlot_StringKey (0x1b55950) and Ne_RichText_BuildLocalisedFragmentList (0x1b639e0) on either side both sit 0x1bd0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141b5dee0",
+    "target": "0x141b5dee0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f9b3b9f714138d7445ecd6d51d4e6ffd2b0a59252e58a34dc2f42e69b1dfd207"
+  }
+ ]
+}

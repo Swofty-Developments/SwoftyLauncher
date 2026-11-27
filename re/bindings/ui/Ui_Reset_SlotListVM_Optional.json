@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Reset_SlotListVM_Optional",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1420465c0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Reset_SlotListVM_Optional(void *opt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1420481c0 (RacingPC lab re_groups/_decomp);xref:0x142045a00,0x142047ea0",
+  "notes": "Only acts when the engaged byte at +0xe8 is set: unlinks and releases six Vm node handles (holders at +0xc0, +0xa0, +0x80, +0x60, +0x40, +0x20; each resets its vtable to 0x145614e48 and calls Vm_Release_Node), destroys the element range +0x8..+0x10 with FUN_142158570, frees the buffer through the allocator at +0x0 (vcall +0x38), zeroes +0x8..+0x18 and clears +0xe8. Callers: Ui_LiveryCustomisation_InitSponsorToggle resets screen+0x268 before rebuilding it; 0x142047ea0 is the screen teardown that releases the assignment entries and then resets screen+0x268. Context from caller: the array at +0x8 is the per-slot entry list (stride 0x148) and the handles are the slot_list / selected_slot style bindings. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.reset_slot_list_vm_optional",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 80 B9 E8 00 00 00 00",
+  "match": "0x1420465c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420465c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Reset_SlotListVM_Optional"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1420481c0",
+  "made_on_target": "0x1420481c0",
+  "twin": "made on steam-26566308; the target 0x1420481c0 is KB 0x1420465c0: Game_CarCustomisation_ApplyAllCustomisation (0x2013fb0) and Career_MyTeamSetup_AdvanceFadeOut (0x20557b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1420481c0",
+    "target": "0x1420481c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "449f577a07f4212ae49aa4d1170ef568e7cca8bfd7bb5c90a7f4f9b6a5bbd885"
+  }
+ ]
+}

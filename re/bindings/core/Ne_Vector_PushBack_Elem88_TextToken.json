@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_Elem88_TextToken",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443a29e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_PushBack_Elem88_TextToken(void *vec, void *token)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1443a4fb0 (RacingPC lab re_groups/_decomp);xref:0x144315390",
+  "notes": "(lib) Push-back into a vector {alloc, begin, end, cap} of 0x58 byte elements using copy constructor 0x1443a5100. Grows by 1.5x: copy-constructs the old elements into the new buffer, frees each old element's inner buffer (+0x28, allocator +0x20) and then the old storage."
+ },
+ "signature": {
+  "id": "core.vector_push_back_elem88_text_token",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 49 89 D6",
+  "match": "0x1443a29e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443a29e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_PushBack_Elem88_TextToken"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1443a4fb0",
+  "made_on_target": "0x1443a4fb0",
+  "twin": "made on steam-26566308; the target 0x1443a4fb0 is KB 0x1443a29e0: Ne_HashMap_Rehash_1443908e0 (0x4392eb0) and Ne_AnimClipResourceFactory_CreateResource (0x43b7e50) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1443a4fb0",
+    "target": "0x1443a4fb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5cdfa992f39c5c887af16697d05b53aee680b03125b16bbea3d926b7410f0662"
+  }
+ ]
+}

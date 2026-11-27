@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Remove_LockedMapEntry_ByValue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14416bb10",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Remove_LockedMapEntry_ByValue(void *self, void *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14416e0e0 (RacingPC lab re_groups/_decomp);xref:0x1441cd210",
+  "notes": "Takes the exclusive lock at self+0x58, iterates the occupied slots of the hash map (slots +0x28, meta +0x30, count +0x38) for a node whose +8 value equals value, pushes that node on the free list at self+8, backward-shift deletes the slot and decrements the count. Returns 0 on removal, 0x57 if not found. Context from caller: node factory registry."
+ },
+ "signature": {
+  "id": "vm.remove_locked_map_entry_by_value",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 49 89 D6 48 89 CF 48 8D 71 58",
+  "match": "0x14416bb10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14416bb10",
+  "kind": "func_start",
+  "names": [
+   "Vm_Remove_LockedMapEntry_ByValue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14416e0e0",
+  "made_on_target": "0x14416e0e0",
+  "twin": "made on steam-26566308; the target 0x14416e0e0 is KB 0x14416bb10: Ne_IntrusivePtr_Assign (0x416d7f0) and Ne_UIFlow_UnloadAssetsGroups (0x416e790) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14416e0e0",
+    "target": "0x14416e0e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a4e238373582afee4dcc76f585feb2111ebbc2426a1124bece5172a0ad863204"
+  }
+ ]
+}

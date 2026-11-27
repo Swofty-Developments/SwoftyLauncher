@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Clear_ReleaseRefValues_141b567b0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141b54be0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Clear_ReleaseRefValues_141b567b0(void *map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141b567b0 (RacingPC lab re_groups/_decomp);xref:0x142405660",
+  "notes": "(lib) Robin-hood style map clear: for every occupied slot (info bytes +0x30, node ptrs +0x28, mask +0x40) drops the shared refcount at node+0x10 (strong +8, weak +0xc), frees the bucket array via allocator +0x18 if not inline, then frees the node pool block list at +0x10 and zeroes +8 and +0x38."
+ },
+ "signature": {
+  "id": "core.hash_map_clear_release_ref_values_141b567b0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 05 ?? ?? ?? ?? 00 E8",
+  "match": "0x1424045a5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141b54be0",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_Clear_ReleaseRefValues_141b567b0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424061a5",
+  "made_on_target": "0x141b567b0",
+  "twin": "made on steam-26566308; the target 0x141b567b0 is KB 0x141b54be0: Ne_Map_FindOrInsertSlot_StringKey (0x1b55950) and Ne_RichText_BuildLocalisedFragmentList (0x1b639e0) on either side both sit 0x1bd0 above their KB addresses; the match 0x1424061a5 is KB 0x1424045a5: Career_MyTeamYoungDriverProgramme_SelectDriver (0x2400110) and Sess_WeekendManager_PrepareTrackLoad (0x240b9b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424061a5",
+    "target": "0x141b567b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "eca0937fa8a82ed65233ff3b2f70b2ee5de4121540c035dcbcec47ed31f46dfe"
+  }
+ ]
+}

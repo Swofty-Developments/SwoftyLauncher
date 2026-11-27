@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Destroy_Range_CardPairVM_Elem7392",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423babf0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Destroy_Range_CardPairVM_Elem7392(void *first, void *last)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423bc7f0 (RacingPC lab re_groups/_decomp);xref:0x14234ca30",
+  "notes": "Range destructor over elements of 0x1ce0 bytes: releases node handles at +0x1cc0 and +0x1ca0, calls Vm_Release_RnDSlotNodes(+0xeb0), releases handles +0xe80, +0xe60, +0xe40, calls Vm_Release_RnDSlotNodes(+0x50), then releases handles +0x20 and +0x00. Each release unlinks the handle from the node watcher list and calls Vm_Release_Node."
+ },
+ "signature": {
+  "id": "ui.destroy_range_card_pair_vm_elem7392",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 8D 1D ?? ?? ?? ?? C5 C8 57 F6 EB 2B 0F 1F 44 00 00 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00 48 81 C7 E0 1C 00 00",
+  "match": "0x1423babf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423babf0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Destroy_Range_CardPairVM_Elem7392"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423bc7f0",
+  "made_on_target": "0x1423bc7f0",
+  "twin": "made on steam-26566308; the target 0x1423bc7f0 is KB 0x1423babf0: Vm_ContractRow_Destroy (0x23ae250) and Ne_Queue_EnqueueEventRecord (0x23bd920) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423bc7f0",
+    "target": "0x1423bc7f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e783af085e32731d2a2dc579c39ecfafbfa45113e9389eb667c9f1461aaf033e"
+  }
+ ]
+}

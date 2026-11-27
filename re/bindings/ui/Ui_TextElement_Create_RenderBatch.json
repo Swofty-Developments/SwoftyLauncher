@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TextElement_Create_RenderBatch",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14430c1d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_TextElement_Create_RenderBatch(void *element, void *font_res)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14430e7a0 (RacingPC lab re_groups/_decomp);xref:0x14430e310,0x144311af0,0x144315390",
+  "notes": "Allocates a 0xb0-byte batch (vt 0x145a73be0) from the UI-system allocator, sets its u16 index +0x48 to the current count of the vector element+0x320..+0x328, identity-like floats at +0x60..+0x9f, and through the renderer object 0x146c641e0 creates its resource (+0x40), a 0x38 header (+0x38) and a constant buffer sized from uisys+0x8254 (first quarter filled with 1.0, then uisys+0x8250 16-byte blocks copied from uisys+0x8258). Copies 0x40 bytes from font_res+0x18 into parameter slot 3, stores font_res at +0x50, calls 0x1443100e0(element, batch), sets dirty bits (element+0x73 bit 0, [element+0x1a8]+5 bits 0x08/0x10/0x40, bit 40 from element+0x188), push_backs the batch into element+0x320 and calls element vt+0xe0(element,0). Returns the batch or NULL when allocation fails. Context from caller: Ne_UITextElement_SetText calls it with element+0x288 when the batch vector is empty; 0x144311af0 and Ui_TextElement_Slot47 call it when no existing batch matches the font name ([batch+0x50]+0x10 strcmp) and then set the batch string at +0xa0. Caller 0x144311af0: text layout step that picks or creates the batch for a glyph run. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.text_element_create_render_batch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 D3 48 89 CE 48 8B 0D",
+  "match": "0x14430c1d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14430c1d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_TextElement_Create_RenderBatch"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14430e7a0",
+  "made_on_target": "0x14430e7a0",
+  "twin": "made on steam-26566308; the target 0x14430e7a0 is KB 0x14430c1d0: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14430e7a0",
+    "target": "0x14430e7a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9ef12a4b8bc1a6a03ffa42d51e53485bd1550797eb4a16ab8dd4fcfcade50b75"
+  }
+ ]
+}

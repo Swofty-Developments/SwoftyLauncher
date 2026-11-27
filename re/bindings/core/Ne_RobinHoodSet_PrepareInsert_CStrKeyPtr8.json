@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodSet_PrepareInsert_CStrKeyPtr8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14096b390",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodSet_PrepareInsert_CStrKeyPtr8(void *owner, void *out_idx_status, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14096b3e0 (RacingPC lab re_groups/_decomp);xref:0x14096b230",
+  "notes": "(lib) Find-or-make-slot step of a robin-hood set of 8-byte pointers embedded at owner+0x10 (multiplier +0x20, slots +0x28, info +0x30, count +0x38, mask +0x40, max load +0x48, info inc +0x50). Key is the C string at *(elem+0x10), FNV-1a 64 hashed. Writes {index, status}: 1 = already present, 2 = empty slot claimed, 3 = slot made by shifting, 0 = grow failed (func 0x14096b890) or 256 retries. Context from caller: list item widget lookup by name."
+ },
+ "signature": {
+  "id": "core.robin_hood_set_prepare_insert_c_str_key_ptr8",
+  "section": ".xtls",
+  "pattern": "88 83 98 00 00 00 48 8D 54 24 28 48 89 F9 49 89 D8 E8 ?? ?? ?? ?? 8B 44 24 30",
+  "match": "0x14096b2f0",
+  "anchor": "0x12",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x11"
+  },
+  "target": "0x14096b390",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodSet_PrepareInsert_CStrKeyPtr8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14096b340",
+  "made_on_target": "0x14096b3e0",
+  "twin": "made on steam-26566308; the target 0x14096b3e0 is KB 0x14096b390: Gdb_Define_RewardsTableColumns (0x95f730) and Ne_Struct_CopyConstructInlineStrings (0x96cd40) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14096b340",
+    "target": "0x14096b3e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cbc36f174cb6151ab62fa84f4aaa1e06e316c2d08dbb86ad894a09fdeaae3982"
+  }
+ ]
+}

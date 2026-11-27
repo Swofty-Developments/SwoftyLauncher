@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Compare_RefStrings_ByOperator",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144277be0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Compare_RefStrings_ByOperator(void **lhs, void **rhs, uint32_t op)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14427a1b0 (RacingPC lab re_groups/_decomp);xref:0x144279c90",
+  "notes": "Compares two refcounted strings (hash at +0, refcount u16 at +4, length bits at +6, chars at +9) with op 0 ==, 1 <, 2 <=, 3 >, 4 >=, 5 != using pointer/hash shortcuts then Ne_Crt_Strcmp; returns bool. Releases both string refs and nulls the holders before returning."
+ },
+ "signature": {
+  "id": "vm.compare_ref_strings_by_operator",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 41 83 F8 05",
+  "match": "0x144277be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144277be0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Compare_RefStrings_ByOperator"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14427a1b0",
+  "made_on_target": "0x14427a1b0",
+  "twin": "made on steam-26566308; the target 0x14427a1b0 is KB 0x144277be0: Game_ProfanityFilter_FilterText (0x426f500) and Ui_DataDrivenMessage_Init (0x42a5640) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14427a1b0",
+    "target": "0x14427a1b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "30b39221a200407cb25c09b89f5d88edc61dfed91279e1a78b8f23bc34645cc7"
+  }
+ ]
+}

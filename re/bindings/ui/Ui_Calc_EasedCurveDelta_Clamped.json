@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Calc_EasedCurveDelta_Clamped",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1447c7a10",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "float Ui_Calc_EasedCurveDelta_Clamped(void *anim, float t0, float t1, float max_delta, float param)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447ca3d0 (RacingPC lab re_groups/_decomp);xref:0x144169bf0",
+  "notes": "Float args arrive in xmm1..xmm3 plus one stack float. Returns 0 if max_delta <= 0. Switch on mode +0x20 (0..4), scale +0x24, curve object +0x28 (curve +0x20 ease type 0..7 with pow/sin/cos variants, +0x24 duration, +0x28 exponent clamped 1..6); computes a curve integral difference between t0 and t1 via 0x14395eef0 / 0x14395ef50, multiplies by scale and clamps to [0, max_delta]. Callers pass t0 = 0, t1 = elapsed time and max_delta = remaining distance: 0x1441fb320 (steps a value at +0xc toward target +0x10 and adds/subtracts the result), 0x1441e3110 (animation step case 3, accumulates time at +0x2c), Ui_LayoutTree_Walk (three scroll/offset style updates with node +0x78 time). Stays L1: the per-mode maths was read but not fully resolved because of AVX register noise. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.calc_eased_curve_delta_clamped",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC D8 00 00 00 C5 78 29 AC 24 C0 00 00 00",
+  "match": "0x1447c7a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447c7a10",
+  "kind": "func_start",
+  "names": [
+   "Ui_Calc_EasedCurveDelta_Clamped"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1447ca3d0",
+  "made_on_target": "0x1447ca3d0",
+  "twin": "made on steam-26566308; the target 0x1447ca3d0 is KB 0x1447c7a10: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1447ca3d0",
+    "target": "0x1447ca3d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c56718b020007d85da883b53e34883e7ca05753844e2457628885a0fcb344224"
+  }
+ ]
+}

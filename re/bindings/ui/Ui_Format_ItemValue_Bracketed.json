@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Format_ItemValue_Bracketed",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419e6d50",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Format_ItemValue_Bracketed(void *self, void *out_str, void *item)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419e8530 (RacingPC lab re_groups/_decomp);xref:0x1419e0950",
+  "notes": "out_str starts empty. Resolves the localised text for the key returned by item vfn +0x28 through the language provider at (self+0xed8) (+0x28 + idx(+0x160)*0x10, vfn +0x18). If the text is non empty and the type byte from item vfn +8 is not 0x16, formats \"lng_generic_value_bracketed\" with that text as a string argument (type 9, name at 0x14570eb5d) via Vm_Format_LocalisedTextToVariant into out_str."
+ },
+ "signature": {
+  "id": "ui.format_item_value_bracketed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 58 4D 89 C6 48 89 D6",
+  "match": "0x1419e6d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419e6d50",
+  "kind": "func_start",
+  "names": [
+   "Ui_Format_ItemValue_Bracketed"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419e8530",
+  "made_on_target": "0x1419e8530",
+  "twin": "made on steam-26566308; the target 0x1419e8530 is KB 0x1419e6d50: Ui_PurchaseMessage_ApplySelectedTier (0x19e61f0) and Game_BroadcastViewVehicleVM_OnActivate (0x19fe850) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419e8530",
+    "target": "0x1419e8530"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7432cdf74769624303252b7d737b2dc4f369a45c4a15a4dbb6a5367939a9476e"
+  }
+ ]
+}

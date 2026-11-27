@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Load_UidfDataSource_KeyedGroup",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442ac790",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Load_UidfDataSource_KeyedGroup(void *alloc, void *pkg_frag, void *pkg_obj, void *parent)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442aed60 (RacingPC lab re_groups/_decomp);xref:0x1442ae430,0x1442af830",
+  "notes": "Creates the child vector header at parent+0x10 when missing, allocates a 0x18-byte node, appends it to that vector, reads the name (key hash 0xfe07306) into node+0, then resolves the member table (key hash 0x871f67c3) with Vm_PkgObj_ResolveRootOffset and walks its keyed entries (count = low 24 bits of +4, stride 8 or 0xc, offset at +0xc). For every member it reads the type string (key hash 0xd34355db) and dispatches to itself, 0x1442af830 or 0x1442b02e0 with the new node as parent; returns 0 or an error code (3 = key missing) that is also written to the TLS error slot and trace ring. Context from caller: Vm_Load_UidfDataSources 0x1442ae430 runs the same type dispatch at the top level; its KB note gives the three type strings as Dictionary, Array, Variable, so this is the Dictionary case. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.load_uidf_data_source_keyed_group",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 4D 89 CE 4D 89 C7 48 89 D6",
+  "match": "0x1442ac790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442ac790",
+  "kind": "func_start",
+  "names": [
+   "Vm_Load_UidfDataSource_KeyedGroup"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442aed60",
+  "made_on_target": "0x1442aed60",
+  "twin": "made on steam-26566308; the target 0x1442aed60 is KB 0x1442ac790: Ne_ListenerHandle_Unregister (0x42acf50) and Ui_Compare_NodeHandles (0x42b3e80) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442aed60",
+    "target": "0x1442aed60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7d4c2ce172dfe72696b3f5aaf46b6ffd40a33fdab929f2a87a7680d420648b86"
+  }
+ ]
+}

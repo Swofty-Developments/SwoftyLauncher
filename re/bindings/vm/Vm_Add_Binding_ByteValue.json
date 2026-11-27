@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Add_Binding_ByteValue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438f0d40",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Add_Binding_ByteValue(void *owner, const char *path, uint32_t id, uint8_t value, void *delegate_a, void *delegate_b, char flag, uint8_t opt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438f32d0 (RacingPC lab re_groups/_decomp);xref:0x14428d890",
+  "notes": "Same as the string variant but the binding (0x130 bytes, vtable 14588e3a0) stores a single byte value at +0x128: path string +0xf8, id +0xf4, owner +0x100, delegates +0x108/+0x118; replaces a duplicate in owner's vector (+0x20..+0x28), sets bit 3 of +0xe8 from flag, resolves against the owner's source node and subscribes when owner +0x40 is set. Returns the id."
+ },
+ "signature": {
+  "id": "vm.add_binding_byte_value",
+  "section": ".xtls",
+  "pattern": "45 89 F1 E8 ?? ?? ?? ?? 48 8B 44 24 50",
+  "match": "0x14428beae",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1438f0d40",
+  "kind": "call",
+  "names": [
+   "Vm_Add_Binding_ByteValue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14428e47e",
+  "made_on_target": "0x1438f32d0",
+  "twin": "made on steam-26566308; the target 0x1438f32d0 is KB 0x1438f0d40: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses; the match 0x14428e47e is KB 0x14428beae: Game_ProfanityFilter_FilterText (0x426f500) and Ui_DataDrivenMessage_Init (0x42a5640) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14428e47e",
+    "target": "0x1438f32d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2e9f00d403aa98e1d4e084263d7d5900ee2081d054214d71545f302070770de0"
+  }
+ ]
+}

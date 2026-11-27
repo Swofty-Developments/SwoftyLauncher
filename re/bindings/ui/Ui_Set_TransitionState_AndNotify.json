@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_TransitionState_AndNotify",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14422d360",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_TransitionState_AndNotify(void *el, uint8_t state)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14422f930 (RacingPC lab re_groups/_decomp);xref:0x14422f5a0,0x14422f710,0x14422f8c0,0x1442301a0",
+  "notes": "Whole body read (continues in chunks at 0x1442302xx-0x144230acd). Writes state byte +0x78 (0..3), sets NeStr +0x80 to the state name from table 0x145a87328 and pushes it with Vm_NodeSet_String into the child node with id 0x10614a06 of the first component of type 0x146ca5978, prunes dead children, calls vf+0x148(el,0); if flags +0x08 has 0x4000001 and list +0x60..+0x68 is not empty it derives target progress +0x9c from state, +0x90 and +0x98, posts per-entry events type 0x1d / 0x08 / 0x0a (ids el->vf+0x10() and component +0x40) through g_Vm_UiSystem->vf+0x68(), stores +0x94 from a lookup by id +0x8c/+0x88, then calls 0x14422f5a0. Callers: 0x14422f5a0 (progress step, sets state 0 when +0x9c reaches 0 and 3 when it reaches 1), 0x14422f710 (event handler, state 0 or 3 by event id), 0x14422f8c0 (reset to state 0), 0x1442301a0 Vm_Unk_14422dbd0 (state 0 or 2). Good hook to watch open/close state changes. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.set_transition_state_and_notify",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 88 51 78",
+  "match": "0x14422d360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14422d360",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_TransitionState_AndNotify"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14422f930",
+  "made_on_target": "0x14422f930",
+  "twin": "made on steam-26566308; the target 0x14422f930 is KB 0x14422d360: Ne_VideoPlayer_OpenFile (0x421ed20) and Ne_UIInterrupt_HandleSignal (0x4230cd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14422f930",
+    "target": "0x14422f930"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d2fb32d681401c475a92f1bbacab68b987f8560bb0b8a982637d9e0779f676fb"
+  }
+ ]
+}

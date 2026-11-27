@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_TryEmplace_CStrKey_OwnedPtr_B",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429fa330",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_TryEmplace_CStrKey_OwnedPtr_B(void *map, void *out_iter_inserted, const char **key, void *alloc_ptr_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429fc6f0 (RacingPC lab re_groups/_decomp);xref:0x1428f7470",
+  "notes": "(lib) Same template body as 0x1429fbb60 for another value type: C-string keyed robin-hood try_emplace moving {allocator, owned ptr} into a 0x18-byte slot, returns {slot, info, inserted}. Uses shift helper FUN_1429fcc20 and rehash FUN_1429fcda0."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_try_emplace_c_str_key_owned_ptr_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 94 24 B8 0F 00 00",
+  "match": "0x1428fcacc",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1429fa330",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_TryEmplace_CStrKey_OwnedPtr_B"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428fee8c",
+  "made_on_target": "0x1429fc6f0",
+  "twin": "made on steam-26566308; the target 0x1429fc6f0 is KB 0x1429fa330: Game_SaveSlotManager_Deserialise (0x29d8bd0) and Ne_Crt_AbortNoReturn_B (0x2a00c40) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428fee8c",
+    "target": "0x1429fc6f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "79609f06150c9cf52718e3f5238a52184bbdcb5a90c47b148b652faa8c9ecdfe"
+  }
+ ]
+}

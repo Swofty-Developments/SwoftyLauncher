@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "FeFlow_StateFrontend_UpdateStatusStringNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1436d12b0",
+  "level": "L2",
+  "subsystem": "fe_flow",
+  "proto": "uint64_t FeFlow_StateFrontend_UpdateStatusStringNode(void *state)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436d3840 (RacingPC lab re_groups/_decomp);xref:0x1436d0050,0x1436d46b0",
+  "notes": "Reads the uint status at (state+0xcf0)+0x38; when it differs from the cached copy at state+0x13b8 it stores it, builds a string from the offset table 0x145875d90 for values 0,1,2,5 (empty otherwise), sets the VM bool node at state+0x13a0 to false and the VM string node at state+0x1388 to that string. Hook to observe front-end status changes."
+ },
+ "signature": {
+  "id": "fe_flow.state_frontend_update_status_string_node",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B 81 F0 0C 00 00",
+  "match": "0x1436d12b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d12b0",
+  "kind": "func_start",
+  "names": [
+   "FeFlow_StateFrontend_UpdateStatusStringNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436d3840",
+  "made_on_target": "0x1436d3840",
+  "twin": "made on steam-26566308; the target 0x1436d3840 is KB 0x1436d12b0: Game_ContractTeamSelect_OnExit (0x36c7d70) and Game_BetaCode_OnEntered (0x36d7ba0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436d3840",
+    "target": "0x1436d3840"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cac18d416bd61696424d714e863619178e13fd3981c254e58d95981c3c3ee9d3"
+  }
+ ]
+}

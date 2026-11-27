@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Flag_CurrentSlotAndCheckAllSlots",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438592b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool Career_Flag_CurrentSlotAndCheckAllSlots(void *career)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14385b840 (RacingPC lab re_groups/_decomp);xref:0x141726da0,0x1417278e0,0x1417285b0",
+  "notes": "Takes the mode at career+0xf08 (or, when its type check matches the wrapper type 0x14612bca8, the first non-wrapper child in +0x238..+0x240) and loops the slot pointers at +0x268..+0x270. The slot equal to the current one (+0x280) with (byte +0x171 & 0x14) == 0 and byte +0xd0 == 0 is passed to Game_InstantRace_FlagSaveSlot(mode, slot, 1). Returns the AND of byte +0xd1 over all slots whose +0x171 bit 0 is clear (true if there are none). Context from caller: FeTile_Route_CareerItem and FeHome_Unk_141726160 open the new-career path only when it returns false and at least one slot has bit 0 clear; Game_TOPLevelUI_CurrentCareerCompletedProgressSave pairs it with its Current Career completed log, so +0xd1 reads as a per-slot completed flag. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "career.flag_current_slot_and_check_all_slots",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 8B B1 08 0F 00 00",
+  "match": "0x1438592b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438592b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Flag_CurrentSlotAndCheckAllSlots"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14385b840",
+  "made_on_target": "0x14385b840",
+  "twin": "made on steam-26566308; the target 0x14385b840 is KB 0x1438592b0: Game_UITrack_Apply_DevContractTrack (0x3856480) and Career_Get_RnDRecognitionDescription (0x385d290) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14385b840",
+    "target": "0x14385b840"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5e0486ef55e8874e54f9f06eb78e2683487801d764d0a3b229adc79ce9a5168a"
+  }
+ ]
+}

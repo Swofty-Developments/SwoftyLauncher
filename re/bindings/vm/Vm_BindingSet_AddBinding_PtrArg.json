@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_BindingSet_AddBinding_PtrArg",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438f45a0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_BindingSet_AddBinding_PtrArg(void *node, const char *path, uint32_t id, void *arg, void *delegateA, void *delegateB, char flag, uint8_t opt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438f6b30 (RacingPC lab re_groups/_decomp);xref:0x14420b250",
+  "notes": "Same body as 0x1438f2fc0 but the 0x130 binding gets vtable 0x14588e2e0 and stores an 8-byte arg at +0x128 instead of a byte. Finds or creates the 0x48 binding set on node +0x30 vector, replaces a binding with equal id (+0xf4) and delegates (+0x108..+0x120), resolves against set source +0x38 and returns the id."
+ },
+ "signature": {
+  "id": "vm.binding_set_add_binding_ptr_arg",
+  "section": ".xtls",
+  "pattern": "45 31 C9 E8 ?? ?? ?? ?? 48 89 6C 24 58",
+  "match": "0x14382cec3",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1438f45a0",
+  "kind": "call",
+  "names": [
+   "Vm_BindingSet_AddBinding_PtrArg"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14382f453",
+  "made_on_target": "0x1438f6b30",
+  "twin": "made on steam-26566308; the target 0x1438f6b30 is KB 0x1438f45a0: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14382f453",
+    "target": "0x1438f6b30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8608bb91550be482f870a9b215be9dd2b1d914ad74f157cf71b8ede1044dabac"
+  }
+ ]
+}

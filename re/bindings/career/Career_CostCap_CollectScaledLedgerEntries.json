@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_CostCap_CollectScaledLedgerEntries",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c9d200",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_CostCap_CollectScaledLedgerEntries(void *comp, void *outVec, uint32_t team, uint32_t from, uint32_t to)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c9dcc0 (RacingPC lab re_groups/_decomp);xref:0x140ab2f70,0x142313e00",
+  "notes": "Calls Career_Bank_CollectLedgerEntriesInRange(comp+0x290) and Career_CostCap_FindTeamInfo, then copies into outVec (0x14-byte elements, allocator comp+0x210) every ledger entry whose kind byte +0x11 is 1 with type in {11,12,28} or kind 0 with type 6, multiplying the int amount at +4 by the team info float factor. Returns outVec. Hook here to change what counts toward the cost cap."
+ },
+ "signature": {
+  "id": "career.cost_cap_collect_scaled_ledger_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 44 89 C3 48 89 D6",
+  "match": "0x140c9d200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c9d200",
+  "kind": "func_start",
+  "names": [
+   "Career_CostCap_CollectScaledLedgerEntries"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c9dcc0",
+  "made_on_target": "0x140c9dcc0",
+  "twin": "made on steam-26566308; the target 0x140c9dcc0 is KB 0x140c9d200: Career_CostCap_LoadConfig (0xc9d720) and Career_CostCap_WriteSaveData (0xc9e110) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c9dcc0",
+    "target": "0x140c9dcc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8a08fc86a9ab92432e111f5eba0af9bce88b07d8fd095c151ec508a7e8914616"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_UidfNode_ReadStringByKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144180380",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_UidfNode_ReadStringByKey(void *nodeRef, void *outStrRef, void *keyRef)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144182950 (RacingPC lab re_groups/_decomp);xref:0x144181bc0",
+  "notes": "nodeRef = {pkg base, pkg object}. Looks up the key; if the value id has the top bit set it resolves the referenced object (Vm_PkgObj_ResolveRootOffset, offset = id & 0x7fffff) and reads key 0x425ed3ca from it, otherwise reads the value directly with Ne_PackedTable_ReadValueById. Returns a 24-byte string ref (vtable 0x145614270 plus two qwords) in outStrRef; a missing key records error 3 and gives an empty ref."
+ },
+ "signature": {
+  "id": "vm.uidf_node_read_string_by_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 4C 89 C3 48 89 D6 48 89 CF 48 8B 49 08",
+  "match": "0x144180380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144180380",
+  "kind": "func_start",
+  "names": [
+   "Vm_UidfNode_ReadStringByKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144182950",
+  "made_on_target": "0x144182950",
+  "twin": "made on steam-26566308; the target 0x144182950 is KB 0x144180380: Ne_EventBus_Unsubscribe (0x417e580) and Ne_UIAction_C_closeScreenId (0x4185c30) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144182950",
+    "target": "0x144182950"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c9f99e4f1c9d7cbce4a233244ada18d80db44d691cbb5b9a1c51e38c781e595c"
+  }
+ ]
+}

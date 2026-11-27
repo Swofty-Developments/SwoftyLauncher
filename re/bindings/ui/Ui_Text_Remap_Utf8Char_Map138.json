@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Remap_Utf8Char_Map138",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1444390a0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint8_t Ui_Text_Remap_Utf8Char_Map138(void *ui_mgr, const uint8_t *in_char, uint8_t *out_char)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14443b670 (RacingPC lab re_groups/_decomp);xref:0x144313230,0x14431ad00,0x14431cf40",
+  "notes": "Decodes one UTF-8 codepoint from in_char, looks it up in the robin-hood map at ui_mgr+0x138 and copies the mapped entry's UTF-8 bytes (up to 4, at entry+4) plus codepoint +8 and valid byte +0xc to out_char; returns 1 if a mapping was found, else copies the input through. Context from caller: used when the style case mode is 1 (sibling 0x14443b840 for mode 2), so this is likely the upper-case table."
+ },
+ "signature": {
+  "id": "ui.text_remap_utf8_char_map138",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 89 C8 44 0F BE 0A",
+  "match": "0x1444390a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444390a0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Remap_Utf8Char_Map138"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14443b670",
+  "made_on_target": "0x14443b670",
+  "twin": "made on steam-26566308; the target 0x14443b670 is KB 0x1444390a0: Ne_InputMapper_FindBindingByHash (0x4436c60) and Ne_OSHttpOperation_OnStart (0x443cf00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14443b670",
+    "target": "0x14443b670"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "380777b0ff849145db65db484023575c931c59ec192f9190c323409bdcb82d46"
+  }
+ ]
+}

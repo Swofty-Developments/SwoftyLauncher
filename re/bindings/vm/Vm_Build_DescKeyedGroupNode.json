@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Build_DescKeyedGroupNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442b6a00",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Build_DescKeyedGroupNode(void *ctx, void *alloc, uint32_t tag, void *pkgBase, void *desc, void **nodeAlloc, void **parentHandle, void **pathStr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442b8fd0 (RacingPC lab re_groups/_decomp);xref:0x1441daf70,0x1442b9ef0",
+  "notes": "Reads the entry name (key hash 0x0fe07306) from the packed descriptor, extends pathStr as \"%hs.%hs\", reads flag key 0x47b0fbf7, finds the child of *parentHandle whose +0x20 hash equals djb2(name), or creates it with Vm_Node_CreateGroupChildByHash and registers it with FUN_1442b6740(nodeAlloc, tag, &handle). Calls the callback ctx+0x08 (user ctx+0x10) with (handle, path). Then walks the keyed child table at key 0x871f67c3 (entries 8 or 0xc bytes), reads each child's type string (key 0xd34355db) and dispatches to itself, 0x1442b9ef0 or 0x1442bb420. Returns 0 or an error code (0x16 null parent, 3 key missing) and releases pathStr. Vm_Parse_DbTypeDescriptor does the same three-way dispatch for top-level entries; 0x1442b9ef0 calls it for nested entries. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.build_desc_keyed_group_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 8B B4 24 98 01 00 00",
+  "match": "0x1442b6a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b6a00",
+  "kind": "func_start",
+  "names": [
+   "Vm_Build_DescKeyedGroupNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442b8fd0",
+  "made_on_target": "0x1442b8fd0",
+  "twin": "made on steam-26566308; the target 0x1442b8fd0 is KB 0x1442b6a00: Vm_Release_Node (0x42b6340) and Ne_Variant_FormatToString (0x42bc680) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442b8fd0",
+    "target": "0x1442b8fd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b4391d625c54c236c771df435634a0e26838ea2135842aa6aaaa2e44d98f0bd9"
+  }
+ ]
+}

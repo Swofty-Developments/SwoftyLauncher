@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_CStrFnv1a_FindIndex_KeyAt10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443965b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_RobinHoodMap_CStrFnv1a_FindIndex_KeyAt10(void *map, void *key_obj)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144398b80 (RacingPC lab re_groups/_decomp);xref:0x144313230,0x144315390",
+  "notes": "(lib) Robin-hood map find: FNV-1a 64 hash of the C string at key_obj+0x10, multiplied by map+0x20, probes info bytes at map+0x30 and compares with strcmp against the +0x10 string of each pointer slot at map+0x28. Returns the slot index, or the end index when not found."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_c_str_fnv1a_find_index_key_at10",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 78 E8 ?? ?? ?? ?? 48 C1 E0 03",
+  "match": "0x14430ee90",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1443965b0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_CStrFnv1a_FindIndex_KeyAt10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144311460",
+  "made_on_target": "0x144398b80",
+  "twin": "made on steam-26566308; the target 0x144398b80 is KB 0x1443965b0: Ne_HashMap_Rehash_1443908e0 (0x4392eb0) and Ne_AnimClipResourceFactory_CreateResource (0x43b7e50) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144311460",
+    "target": "0x144398b80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d64fdc1aa5aa6d4fd420631d1f3b67a21635f0846080405efc293b5bfb04f837"
+  }
+ ]
+}

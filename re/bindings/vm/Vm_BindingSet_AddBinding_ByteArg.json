@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_BindingSet_AddBinding_ByteArg",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438f0a30",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_BindingSet_AddBinding_ByteArg(void *node, const char *path, uint32_t id, uint8_t arg, void *delegateA, void *delegateB, char flag, uint8_t opt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438f2fc0 (RacingPC lab re_groups/_decomp);xref:0x14420b250,0x14425b980,0x144274de0,0x14428be00,0x1442a5640",
+  "notes": "Scans node component vector +0x30..+0x38 for the binding-set type (type chain 0x146ca5978), else allocs a 0x48 set (vtable 0x145a71f80) from g_Vm_UiSystem allocator and pushes it (+0x40 capacity). Then allocs a 0x130 binding (vtable 0x14588e3a0): +0xf4 id, +0xf8 path NeStr, +0x100 owner set, +0x108/+0x118 two 16-byte delegates, +0x128 byte arg, +0xe8 bit3 flag, +0xf0 opt; removes an existing binding with same id and delegates, appends to set vector +0x20/+0x28, calls Vm_Binding_SetSourceAndResolve and Vm_Binding_ResolveAndSubscribe; returns id. Good hook to see every widget data binding path."
+ },
+ "signature": {
+  "id": "vm.binding_set_add_binding_byte_arg",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C7 44 24 40 42 2F AA A2",
+  "match": "0x143807ff6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1438f0a30",
+  "kind": "call",
+  "names": [
+   "Vm_BindingSet_AddBinding_ByteArg"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14380a586",
+  "made_on_target": "0x1438f2fc0",
+  "twin": "made on steam-26566308; the target 0x1438f2fc0 is KB 0x1438f0a30: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14380a586",
+    "target": "0x1438f2fc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ea9c40f70b175ff7d7ebf69adb2f1eb6868d312fdfcd254fd9b8d1729d6e2c90"
+  }
+ ]
+}

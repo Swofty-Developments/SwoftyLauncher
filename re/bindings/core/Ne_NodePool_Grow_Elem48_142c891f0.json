@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_NodePool_Grow_Elem48_142c891f0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c86c60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_NodePool_Grow_Elem48_142c891f0(void **pool)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c891f0 (RacingPC lab re_groups/_decomp);xref:0x142baa200",
+  "notes": "(lib) Pool allocator grow for 0x30-byte nodes: block element count doubles from 4 up to 0x4000 by walking the block list, allocates count*0x30+8 via allocator pool[2], links the block into pool[1] and threads elements into the free list pool[0]."
+ },
+ "signature": {
+  "id": "core.node_pool_grow_elem48_142c891f0",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8D 79 08 B9 04 00 00 00 48 89 F8 66 2E 0F 1F 84 00 00 00 00 00 48 89 CB 48 81 F9 00 20 00 00 77 0C 48 8B 00 48 8D 0C 1B 48 85 C0 75 E8 48 C1 E3 04 4C 8D 0C 5B",
+  "match": "0x142c86c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c86c60",
+  "kind": "func_start",
+  "names": [
+   "Ne_NodePool_Grow_Elem48_142c891f0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c891f0",
+  "made_on_target": "0x142c891f0",
+  "twin": "made on steam-26566308; the target 0x142c891f0 is KB 0x142c86c60: Sess_Result_DecodeVehicleResult (0x2c7ea10) and Ne_WindowWin_BuildResolutionOptions (0x2c92d30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c891f0",
+    "target": "0x142c891f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0c4d35ed1bd4ca438b813e20b6d44c351691d17b158af561091b1ec84d8b6d7"
+  }
+ ]
+}

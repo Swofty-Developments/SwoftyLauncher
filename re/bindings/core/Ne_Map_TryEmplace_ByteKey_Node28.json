@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_TryEmplace_ByteKey_Node28",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141933b40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Map_TryEmplace_ByteKey_Node28(void *map, void **out_pair, uint8_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141935320 (RacingPC lab re_groups/_decomp);xref:0x141813850",
+  "notes": "(lib) std::map<uint8,int32> try_emplace: lower_bound on the byte key at node+0x1c; if absent allocates a 0x28 node (value int at +0x20 zeroed), links it and runs red-black rebalancing; out={node, inserted flag}. Throws map/set too long at 0x666666666666666 elements."
+ },
+ "signature": {
+  "id": "core.map_try_emplace_byte_key_node28",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 84 24 90 00 00 00 FF 40 20",
+  "match": "0x1418125c3",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141933b40",
+  "kind": "call",
+  "names": [
+   "Ne_Map_TryEmplace_ByteKey_Node28"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141813da3",
+  "made_on_target": "0x141935320",
+  "twin": "made on steam-26566308; the target 0x141935320 is KB 0x141933b40: Ne_Map_DestroySubtree (0x1924350) and Ne_Std_ThrowVectorSubscriptError (0x1952cb0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141813da3",
+    "target": "0x141935320"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "694dff48b2e089811177b3669a487151df84ca798287f3594bcb1e1ee2f5fb8e"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Read_BoolProp_RegisterBinding",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14381cee0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint8_t Ui_Read_BoolProp_RegisterBinding(void *owner, void *node, void *key, const char *name, uint8_t def, void *cb_a, void *cb_b, uint8_t *out_bound)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14381f470 (RacingPC lab re_groups/_decomp);xref:0x14381c430,0x14382f580,0x144202160",
+  "notes": "Sets *out_bound=0, looks up key (u32 hash at key+0) in the packed property object node+0x50 (inline table of 0xc-byte entries or Vm_Find_PkgObjectKey_Thunk; follows a root offset and sub-key 0x425ed3ca when the value has the top bit set) and reads the value with Ne_PackedTable_ReadValueById; returns def when the key is missing or the read fails. Then tries Vm_Read_PropBinding(node+0x48, key, str): on success reads a flag via 0x144180c00, hashes name with djb2 (0x1505, *33) and calls 0x1438f2fc0(owner, binding_path, hash, value, cb_a, cb_b, 0, flag) to register the binding, and sets *out_bound=1. Returns value != 0. Context from caller: Hud_MiniMapControl_Setup, the scroll-container init 0x14382f580 and Vm_ElementBase_Init pass the current bit as def and store the result back into a flag bit of the control. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.read_bool_prop_register_binding",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4C 89 CF 4C 89 C3 49 89 D7",
+  "match": "0x14381cee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14381cee0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Read_BoolProp_RegisterBinding"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14381f470",
+  "made_on_target": "0x14381f470",
+  "twin": "made on steam-26566308; the target 0x14381f470 is KB 0x14381cee0: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14381f470",
+    "target": "0x14381f470"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "48b2f8c150bbc7bb9d2e494d0bd1ded1b2b5b5be76e47a04e41158a8fc2c597b"
+  }
+ ]
+}

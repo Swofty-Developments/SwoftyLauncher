@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Register_TypeHandler_14437e700",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14437c130",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_Register_TypeHandler_14437e700(void *registry, void *context)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14437e700 (RacingPC lab re_groups/_decomp);xref:0x1441c6ad0",
+  "notes": "Same pattern as 0x14437db80 with type descriptor 0x145a76c08, but it also builds and destroys a temporary default message object on the stack (vtable 0x145a76bf0, id field 0x40, a 4-char string made with Ne_Make_StrFromBuffer). Checks flag +0x68 (else 0x58), stores {FUN_1442c2410, context} via Ne_HashMap_Set_OwnedPtrValue_At80; returns 0 or 0xc."
+ },
+ "signature": {
+  "id": "vm.register_type_handler_14437e700",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC A0 00 00 00 80 79 68 00 0F 84 ?? ?? ?? ?? 48 89 D3 48 89 CE 48 8B 49 78 48 8B 01 BA 10 00 00 00 41 B8 08 00 00 00 FF 50 18 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 C7 48 8D 05 ?? ?? ?? ?? 48 89 07 48 89 5F 08 48 C7 44 24 30 00 00 00 00 48 C7 44 24 38 40 00 00 00",
+  "match": "0x14437c130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14437c130",
+  "kind": "func_start",
+  "names": [
+   "Vm_Register_TypeHandler_14437e700"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14437e700",
+  "made_on_target": "0x14437e700",
+  "twin": "made on steam-26566308; the target 0x14437e700 is KB 0x14437c130: Ne_StringMap_EmplaceNode (0x434aff0) and Ne_Crt_ThrowOverflow_B (0x4385690) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14437e700",
+    "target": "0x14437e700"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f14c57785b8eb30d598fa141b605be2fb9f154bb3f5b510b574afd1b6c5ad15"
+  }
+ ]
+}

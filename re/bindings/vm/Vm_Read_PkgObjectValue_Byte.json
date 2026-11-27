@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Read_PkgObjectValue_Byte",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144246100",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Read_PkgObjectValue_Byte(void *pkg_ref, void *key, uint8_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442486d0 (RacingPC lab re_groups/_decomp);xref:0x144202160",
+  "notes": "Same lookup as the U32 reader: finds key in the package object at pkg_ref+8, follows a bit-31 reference to another object and reads key hash 0x425ed3ca there, else reads directly with Ne_PackedTable_ReadValueById (type desc 0x1456905e0). Writes the 1-byte result to *out and returns 0, or 3 when the key is missing."
+ },
+ "signature": {
+  "id": "vm.read_pkg_object_value_byte",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 87 DC 05 00 00 00",
+  "match": "0x14429356f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144246100",
+  "kind": "call",
+  "names": [
+   "Vm_Read_PkgObjectValue_Byte"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144295b3f",
+  "made_on_target": "0x1442486d0",
+  "twin": "made on steam-26566308; the target 0x1442486d0 is KB 0x144246100: Ne_UINodeBase_ParentVisible (0x423c610) and Ne_UINodeBase_SetElementVisibility (0x4249e10) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144295b3f",
+    "target": "0x1442486d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7988554d8fe471564156cb1721f835c3a22ea88772efccb110fc71eeba340f37"
+  }
+ ]
+}

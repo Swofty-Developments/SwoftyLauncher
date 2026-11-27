@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Is_ScreenTreeReady",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144249070",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "bool Vm_Is_ScreenTreeReady(void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14424b640 (RacingPC lab re_groups/_decomp);xref:0x144184c30",
+  "notes": "Recursive check. Looks up node id (vcall +0x10) in the hash map of the object returned by g_Vm_UiSystem vcall +0x68 (map fields +0x100..+0x134). If the id is absent or its entry has +0x10 != 0, byte +0x14c == 0 and +0x20 != 0, returns the AND of the same check over all children (node+0x18 -> vector +8..+0x10). Otherwise returns 0 when the node type tag (vcall +0x80) is 0x43534955 'UISC' or the entry has +0x10 != 0 and state +0x148 == 2, else 1. Vm_Open_Screen calls it on the screen root after applying the open flags and only then runs Vm_Unk_14424d7c0(system, node, &str). Meaning of state 2 is not shown by the code. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.is_screen_tree_ready",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 CE 48 8B 0D",
+  "match": "0x144249070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144249070",
+  "kind": "func_start",
+  "names": [
+   "Vm_Is_ScreenTreeReady"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14424b640",
+  "made_on_target": "0x14424b640",
+  "twin": "made on steam-26566308; the target 0x14424b640 is KB 0x144249070: Ne_UINodeBase_SetElementVisibility (0x4249e10) and Ne_UINodeBase_OnVMSetDataContext (0x424b9b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14424b640",
+    "target": "0x14424b640"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "92e1399d256459cc9ba9d0eccd6c5305a53913bd514be67bf88784135619f7cd"
+  }
+ ]
+}

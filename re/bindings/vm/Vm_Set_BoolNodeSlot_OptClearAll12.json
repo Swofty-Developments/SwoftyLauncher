@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_BoolNodeSlot_OptClearAll12",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1421e50c0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Set_BoolNodeSlot_OptClearAll12(void *slots, int32_t *index, uint8_t value, int32_t *mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1421e6cc0 (RacingPC lab re_groups/_decomp);xref:0x142200f00,0x142201030,0x142201860,0x1422033f0,0x142218380",
+  "notes": "slots holds 12 node handles at +8 with stride 0x20. If *mode==1 it first writes false to every valid bool node (0x188/0x20 = 12 slots), then if *index<12 writes value to slot[*index] via Vm_NodeSet_Bool after checking the node is valid and of g_Vm_BoolTypeDesc type. Works as a radio-button style setter. Context from caller: lobby ready-state and objective banner view-models."
+ },
+ "signature": {
+  "id": "vm.set_bool_node_slot_opt_clear_all12",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 D7 48 89 CE 44 88 44 24 2F",
+  "match": "0x1421e50c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1421e50c0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_BoolNodeSlot_OptClearAll12"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1421e6cc0",
+  "made_on_target": "0x1421e6cc0",
+  "twin": "made on steam-26566308; the target 0x1421e6cc0 is KB 0x1421e50c0: Game_FrontendLobbyVM_OnScreenActivated (0x21d3a00) and Game_DataGathererPlayers_Update (0x21f3000) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1421e6cc0",
+    "target": "0x1421e6cc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "da791d0c7239ea921f22f3010fce94ee7440d5ae64a05bfe9423fa91f711378f"
+  }
+ ]
+}

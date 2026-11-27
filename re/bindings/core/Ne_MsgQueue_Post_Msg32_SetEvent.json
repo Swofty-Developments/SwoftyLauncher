@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_MsgQueue_Post_Msg32_SetEvent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144382520",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_MsgQueue_Post_Msg32_SetEvent(void *queue, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144384af0 (RacingPC lab re_groups/_decomp);xref:0x14423ef70,0x144242460,0x1442514f0,0x144257c20",
+  "notes": "If queue+0x68 (running) is 0 sets errno 0x58. Otherwise enters critical section queue+0xd8, allocates a 0x20 node from allocator queue+0x70 (errno 12 on failure), copies msg+8, +0x10 and u32 +0x18, sets vtable 0x145a75fc0, appends to the singly linked queue (head +0x58, tail +0x60), sets pending flag +0x6b and calls SetEvent(queue+0xd0) if it was not already pending. Context from caller: UI list/zoom-pan updates posted to a worker."
+ },
+ "signature": {
+  "id": "core.msg_queue_post_msg32_set_event",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 B0 00 00 00 01",
+  "match": "0x14423d026",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144382520",
+  "kind": "call",
+  "names": [
+   "Ne_MsgQueue_Post_Msg32_SetEvent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14423f5f6",
+  "made_on_target": "0x144384af0",
+  "twin": "made on steam-26566308; the target 0x144384af0 is KB 0x144382520: Ne_StringMap_EmplaceNode (0x434aff0) and Ne_Crt_ThrowOverflow_B (0x4385690) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14423f5f6",
+    "target": "0x144384af0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "86a1dbc0dd26c428d5cc6e807c74da26d0dcfd9f77c57b20c5b430953f1852e3"
+  }
+ ]
+}

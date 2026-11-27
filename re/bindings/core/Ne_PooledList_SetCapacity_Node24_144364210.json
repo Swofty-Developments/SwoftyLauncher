@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_PooledList_SetCapacity_Node24_144364210",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144361c40",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_PooledList_SetCapacity_Node24_144364210(void *list, uint64_t capacity, uint64_t maxCapacity)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144364210 (RacingPC lab re_groups/_decomp);xref:0x14419d7a0",
+  "notes": "(lib) Same code as 0x144353d10 for another element type: pooled doubly linked list with 0x18-byte nodes, grows by chaining a new node block into the free list at +0x18, shrinks by rebuilding through a temp list (element copy FUN_144364b20, block free FUN_144364da0). Stores capacity at +0x38 and max at +0x40; returns 0 or 0xc."
+ },
+ "signature": {
+  "id": "core.pooled_list_set_capacity_node24_144364210",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 85 ?? ?? ?? ?? 48 8B 87 E8 00 00 00",
+  "match": "0x14436156b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144361c40",
+  "kind": "call",
+  "names": [
+   "Ne_PooledList_SetCapacity_Node24_144364210"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144363b3b",
+  "made_on_target": "0x144364210",
+  "twin": "made on steam-26566308; the target 0x144364210 is KB 0x144361c40: Ne_StringMap_EmplaceNode (0x434aff0) and Ne_Crt_ThrowOverflow_B (0x4385690) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144363b3b",
+    "target": "0x144364210"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f088af7be8a38c85c40648ff7bc2ecd5bf0a2fb37dd95a8eb407f62220050d8"
+  }
+ ]
+}

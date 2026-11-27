@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_Ptr_Locked_144177840",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144175270",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_PushBack_Ptr_Locked_144177840(void *owner, void *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144177840 (RacingPC lab re_groups/_decomp);xref:0x14419d7a0",
+  "notes": "(lib) Enters the critical section at *owner, appends the 8-byte value to the vector at +0x58 begin, +0x60 end, +0x68 capacity (allocator +0x50), growing by 1.5x with memcpy and freeing the old buffer, then leaves the critical section."
+ },
+ "signature": {
+  "id": "core.vector_push_back_ptr_locked_144177840",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 09",
+  "match": "0x144175270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144175270",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_PushBack_Ptr_Locked_144177840"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144177840",
+  "made_on_target": "0x144177840",
+  "twin": "made on steam-26566308; the target 0x144177840 is KB 0x144175270: Game_MyTeamIntro_InitMaterialSlotStatics (0x4170c70) and Ne_EventBus_Unsubscribe (0x417e580) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144177840",
+    "target": "0x144177840"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cc13147f817c012ad4b699ea631ac63dee8fdc70a2b7a58b2648fc83a07342f8"
+  }
+ ]
+}

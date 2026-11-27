@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Find_LockedMapValue_ByU32Key",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144161470",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Find_LockedMapValue_ByU32Key(void *self, uint32_t key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144163a40 (RacingPC lab re_groups/_decomp);xref:0x144202160",
+  "notes": "Takes the shared lock at self+0x58, probes the robin-hood hash map (multiplier +0x20, slots +0x28, meta +0x30, mask +0x40, step +0x50) whose slots point to nodes {u32 key, +8 value}, returns node+8 value or 0 if absent, then unlocks."
+ },
+ "signature": {
+  "id": "vm.find_locked_map_value_by_u32_key",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 C7 49 8B 4E 10",
+  "match": "0x1437e9e3f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144161470",
+  "kind": "call",
+  "names": [
+   "Vm_Find_LockedMapValue_ByU32Key"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1437ec3cf",
+  "made_on_target": "0x144163a40",
+  "twin": "made on steam-26566308; the target 0x144163a40 is KB 0x144161470: Ne_Ugc_UpdateItemCallback (0x4162a90) and Ne_Format_String (0x41656c0) on either side both sit 0x25d0 above their KB addresses; the match 0x1437ec3cf is KB 0x1437e9e3f: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437ec3cf",
+    "target": "0x144163a40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a999b2ebb29f19cf52242584689bd5732f179507c45b033ba2a3024706d4e4a5"
+  }
+ ]
+}

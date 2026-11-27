@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_NodeHolders_Vt145716fc0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418bc3e0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_NodeHolders_Vt145716fc0(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418bdbc0 (RacingPC lab re_groups/_decomp);xref:0x1418b5970,0x14191a890",
+  "notes": "Renamed from Vm_Destroy_EmailDriverRatingsVM: neither the body nor the callers show driver ratings; the body only shows a destructor for the class with vtable 0x145716fc0. It sets that vtable, releases the node holders (vtable 0x145614e48, Vm_Release_Node) at +0x440, +0x420, +0x400, +0x3e0, destroys the member at +0xe0 with FUN_14166fd10, then releases the holders at +0xc0, +0xa0, +0x80, +0x60, +0x20. Context from caller: Vm_CareerEmail_BindTemplates builds this VM on the stack for template case 0xb (nodes starting/current/difference/description/met_target_texture, filled by FUN_1418be230 and Career_Email_SetRecognitionAttachmentText) and destroys it here; caller 0x14191a890: scalar deleting destructor that calls this and then frees the object when its flag is set. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.destroy_node_holders_vt145716fc0",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 3D ?? ?? ?? ?? 48 89 B9 40 04 00 00",
+  "match": "0x1418bc3e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418bc3e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_NodeHolders_Vt145716fc0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418bdbc0",
+  "made_on_target": "0x1418bdbc0",
+  "twin": "made on steam-26566308; the target 0x1418bdbc0 is KB 0x1418bc3e0: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418bdbc0",
+    "target": "0x1418bdbc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f27acfea7cfe7e29002c73059b02abb1ae4ce6a563515d488a729a0c70888755"
+  }
+ ]
+}

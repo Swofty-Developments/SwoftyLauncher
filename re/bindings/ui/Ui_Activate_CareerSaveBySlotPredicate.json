@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Activate_CareerSaveBySlotPredicate",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438587f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Activate_CareerSaveBySlotPredicate(void *game, void *a2, void *a3, void *slot_key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14385ad80 (RacingPC lab re_groups/_decomp);xref:0x141726da0,0x141735810,0x141a12530",
+  "notes": "Finds a career save with Career_Find_CareerSaveByPredicate(game, vt_Game_DriverCareerSlotPredicate capturing slot_key), calls FUN_14385b120(save, a2, a3), sets bit 0 of the save-manager system byte +0x1b0 (looked up by k_Game_SaveMgrSystemKey in g_Game_Manager+0x30) and calls 0x14365f490, then FUN_1407c16d0(save, 0) and Game_Game_SetCurrentGameMode(game, save+0xf08). Context from caller: FeTile_Route_CareerItem, caller 0x141735810 (career wizard reset handler) and Game_CareerContinueDriver_StartNewCareer call it right after clearing the current game mode when starting a new driver career, with a2 = string 0x14570f025. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.activate_career_save_by_slot_predicate",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? EB 35 48 C7 44 24 30 00 00 00 00",
+  "match": "0x141a1102e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1438587f0",
+  "kind": "call",
+  "names": [
+   "Ui_Activate_CareerSaveBySlotPredicate"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141a1280e",
+  "made_on_target": "0x14385ad80",
+  "twin": "made on steam-26566308; the target 0x14385ad80 is KB 0x1438587f0: Game_UITrack_Apply_DevContractTrack (0x3856480) and Career_Get_RnDRecognitionDescription (0x385d290) on either side both sit 0x2590 above their KB addresses; the match 0x141a1280e is KB 0x141a1102e: site_Game_CareerContinue_MyTeamSlotTitle (0x1a11013) and Career_WizardTitleSliceVM_OnActivate (0x1a1b990) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a1280e",
+    "target": "0x14385ad80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dccde5880dc78edde29e060b66a42f6933dd6cc083c3c7f5825c314f508737b9"
+  }
+ ]
+}

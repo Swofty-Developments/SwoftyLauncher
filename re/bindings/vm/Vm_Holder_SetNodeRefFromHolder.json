@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Holder_SetNodeRefFromHolder",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423e8cb0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Holder_SetNodeRefFromHolder(void *dstHolder, void *srcHolder)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423ea8b0 (RacingPC lab re_groups/_decomp);xref:0x1423e6b00",
+  "notes": "Takes a temporary counted reference to the node behind srcHolder +0x8 (or the empty handle), and if dstHolder +0x8 is a live node whose value type id matches 0x146ca7550 writes the reference with Ne_Property_SetUIDBRefIfChanged. Releases the temporary and returns dstHolder."
+ },
+ "signature": {
+  "id": "vm.holder_set_node_ref_from_holder",
+  "section": ".xtls",
+  "pattern": "48 81 C1 F0 22 00 00 E8 ?? ?? ?? ?? 4C 89 F9",
+  "match": "0x1423e60af",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x1423e8cb0",
+  "kind": "call",
+  "names": [
+   "Vm_Holder_SetNodeRefFromHolder"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423e7caf",
+  "made_on_target": "0x1423ea8b0",
+  "twin": "made on steam-26566308; the target 0x1423ea8b0 is KB 0x1423e8cb0: Vm_MyTeamWorkforce_Bind (0x23e6b00) and Career_TeamHqContractsVM_OnActivate (0x23eb2e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423e7caf",
+    "target": "0x1423ea8b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ca3e934d0e4a5a122f315eecf9bf4c9c400828ba28cbefcf1f027b437b5cabc7"
+  }
+ ]
+}

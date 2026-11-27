@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Tick_NodeHandler",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441f2a60",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Tick_NodeHandler(void *slot, float dt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441f5030 (RacingPC lab re_groups/_decomp);xref:0x144169bf0",
+  "notes": "If +0x68 != +0x6c and +0x6c != -1 calls 0x1441f5170(slot, [+0x6c], 0) to switch to the requested entry. Then if handler +0x10 is set calls handler vt+0x18(handler, slot, dt); on a 0 return posts message vt 0x145a75d10 (size 0x38: slot +0x40, [slot+8]+0x194 owner id, handler +0x30) to [UI system vt+0x68]+0x30 via 0x144381830, clears +0x10, sets +0x18 = -1 and releases the ref-counted strings in the vector +0x28..+0x30 (stride 0x10). Caller Ui_LayoutTree_Walk calls it for both pointers in [node+0x1b8] when the flattened slot flag bit0 is set, passing the frame dt as float. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.tick_node_handler",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 C5 F8 28 F1 48 89 CE 8B 51 6C",
+  "match": "0x1441f2a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441f2a60",
+  "kind": "func_start",
+  "names": [
+   "Ui_Tick_NodeHandler"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441f5030",
+  "made_on_target": "0x1441f5030",
+  "twin": "made on steam-26566308; the target 0x1441f5030 is KB 0x1441f2a60: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441f5030",
+    "target": "0x1441f5030"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "187dd312a07ea14637221edbb665941a1512731c68a314a6ea8f18a8ddd04f21"
+  }
+ ]
+}

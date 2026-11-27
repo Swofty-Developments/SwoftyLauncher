@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_MsgQueue_Enqueue_Copy64",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14438be30",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_MsgQueue_Enqueue_Copy64(void *queue, const void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14438e400 (RacingPC lab re_groups/_decomp);xref:0x144288690",
+  "notes": "If the queue is open (+0x68), locks the critical section at +0xd8, allocates 0x40 bytes from the allocator at +0x70 and copy-constructs the message (vtable 0x145a764c0, fields +8..+0x18, ref-counted strings at +0x20 and +0x38, +0x28/+0x30), links it at the tail (+0x58 head, +0x60 tail), sets the pending byte +0x6b and calls SetEvent on +0xd0 if it was clear. Records errno 0x58 when closed or 0xc on allocation failure."
+ },
+ "signature": {
+  "id": "vm.msg_queue_enqueue_copy64",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 80 79 68 00 0F 84 ?? ?? ?? ?? 48 89 D3",
+  "match": "0x14438be30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14438be30",
+  "kind": "func_start",
+  "names": [
+   "Vm_MsgQueue_Enqueue_Copy64"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14438e400",
+  "made_on_target": "0x14438e400",
+  "twin": "made on steam-26566308; the target 0x14438e400 is KB 0x14438be30: Ne_Crt_ThrowOverflow_B (0x4385690) and Ne_Container_AbortNoReturn_1443908d0 (0x4392ea0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14438e400",
+    "target": "0x14438e400"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b11b220bb7d5d6e04cd704996b9966038f9cfe64ded4bc7a89d959918febeefc"
+  }
+ ]
+}

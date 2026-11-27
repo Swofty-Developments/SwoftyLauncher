@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Get_PaddockPassRarityTextureKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419e6aa0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Get_PaddockPassRarityTextureKey(void *out_str, void *item)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419e8280 (RacingPC lab re_groups/_decomp);xref:0x1419e0950",
+  "notes": "Reads the rarity byte via item vfn +0x20 and returns a NeStr: 1 \"#overrides.paddock_pass.rarity.rty_common\", 2 rty_uncommon, 3 rty_rare, 4 rty_epic, 5 rty_legendary, 6 and 7 rty_setitem. Feature flag bit 0x10 or an unknown rarity gives rty_common; unknown logs on channel \"PP\": \"Item rarity: %i does not have a texture assigned to it\". Good hook point to retexture rarity frames."
+ },
+ "signature": {
+  "id": "ui.get_paddock_pass_rarity_texture_key",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 44 24 40 48 8D 50 09 48 85 C0 48 0F 44 D3 4C 89 E1",
+  "match": "0x1419e20cd",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1419e6aa0",
+  "kind": "call",
+  "names": [
+   "Ui_Get_PaddockPassRarityTextureKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419e38ad",
+  "made_on_target": "0x1419e8280",
+  "twin": "made on steam-26566308; the target 0x1419e8280 is KB 0x1419e6aa0: Ui_PurchaseMessage_ApplySelectedTier (0x19e61f0) and Game_BroadcastViewVehicleVM_OnActivate (0x19fe850) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419e38ad",
+    "target": "0x1419e8280"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "16a545d2475c5a8b773178752b519d2eebdc8b8bbea5bc9b768daa6ca6fe7ab0"
+  }
+ ]
+}

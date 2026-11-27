@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_SponsorsBlock_ReleaseNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419554e0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_SponsorsBlock_ReleaseNodes(void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141956cc0 (RacingPC lab re_groups/_decomp);xref:0x141918880,0x1423f6110,0x1423f6b90",
+  "notes": "Destructor body of a view-model block: unlinks and Vm_Release_Node's the node handles at +0x2f8, +0x2d8, +0x2b8, +0x278 and +0x00 (each handle = vtable 0x145614e48, node, prev, next), destroys the vector at +0x2a0/+0x2a8 (elements 0x338 bytes, FUN_141942d10 per element, freed via allocator +0x298), frees the owned object +0x270 via allocator +0x268, and calls Vm_SponsorsList_DestroyBindings(block+0x28). Returns nothing. Caller 0x141918880: destructor of the wrapping object (vtable 0x14571ca50), calls this on obj+0x40; Vm_MyTeamSponsors_Bind and caller 0x1423f6b90 (clears the same array) run it over each 0x388-byte element of the array at vm+0x690 (count vm+0x9f8) before rebuilding or tearing down. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.sponsors_block_release_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 4C 8D 35 ?? ?? ?? ?? 4C 89 B1 F8 02 00 00",
+  "match": "0x1419554e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419554e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_SponsorsBlock_ReleaseNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141956cc0",
+  "made_on_target": "0x141956cc0",
+  "twin": "made on steam-26566308; the target 0x141956cc0 is KB 0x1419554e0: Ne_Std_ThrowVectorSubscriptError (0x1952cb0) and Ui_Play_FacilityStageCutsceneByIndex (0x19707c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141956cc0",
+    "target": "0x141956cc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fa643ef90141a88eeb7124868bd24eac7822b1e76767e9d087afb40d0c45c462"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Reset_SlotArray_ToCount",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144195ea0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Reset_SlotArray_ToCount(void *slots, void *def)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144198470 (RacingPC lab re_groups/_decomp);xref:0x14418a940",
+  "notes": "Writes -1 to slots+0x00, releases every refcounted string in the vector of 16-byte {key, NeStr*} entries (+0x10 begin, +0x18 end, +0x20 capacity, allocator at +0x08) and empties it. If def is non-null it reserves def+0x28 entries and appends that many zeroed entries. Context from caller: per-instance parameter slots when a route is started."
+ },
+ "signature": {
+  "id": "vm.reset_slot_array_to_count",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 49 89 D5 48 89 CF C7 01 FF FF FF FF",
+  "match": "0x144195ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144195ea0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Reset_SlotArray_ToCount"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144198470",
+  "made_on_target": "0x144198470",
+  "twin": "made on steam-26566308; the target 0x144198470 is KB 0x144195ea0: Vm_Run_Route (0x418a940) and Ne_Make_StrFromCStr (0x4199ab0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144198470",
+    "target": "0x144198470"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "46f9d9190119193002beada76f1d94f7dd98d59cdd2d0a793ffbbf8f03999e34"
+  }
+ ]
+}

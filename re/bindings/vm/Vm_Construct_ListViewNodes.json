@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Construct_ListViewNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144324ea0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Construct_ListViewNodes(void *self, void *parent, int32_t viewW, int32_t viewH, int64_t listSize, uint8_t flag, int64_t dataStride, int32_t overwrite)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144327470 (RacingPC lab re_groups/_decomp);xref:0x144240b80",
+  "notes": "Constructor of a block of bound node handles under parent node (parent+8): root at +0, then Vm_Set_Int nodes \"x_offset\" (-1) at +0x20, \"y_offset\" (-1) at +0x40, \"view_width\" at +0x60, \"view_height\" at +0x80, \"list_size\" at +0xa0, a bool node (name at 0x145a751fa) at +0xc0 and \"data_stride\" at +0xe0. Good place to see or change the scrolling list window parameters."
+ },
+ "signature": {
+  "id": "vm.construct_list_view_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 D7 48 89 CE 8B AC 24 C8 00 00 00",
+  "match": "0x144324ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144324ea0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Construct_ListViewNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144327470",
+  "made_on_target": "0x144327470",
+  "twin": "made on steam-26566308; the target 0x144327470 is KB 0x144324ea0: Ne_UiEvent_DispatchByName (0x43235b0) and Ne_Make_StrFromBuffer (0x4339fc0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144327470",
+    "target": "0x144327470"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "36b484140e55fe44fba8abcd23bc6144c1caea6a4ba52fa47941f8ae5f2fccd8"
+  }
+ ]
+}

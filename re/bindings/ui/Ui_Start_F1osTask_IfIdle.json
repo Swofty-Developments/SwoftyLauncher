@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Start_F1osTask_IfIdle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1433738b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Start_F1osTask_IfIdle(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143375e30 (RacingPC lab re_groups/_decomp);xref:0x141f5c700",
+  "notes": "Clears self+0x6c; when no task is held at self+0x58 it creates one through Game_F1osTasksystem_CreateTask_HoldingPageHint on the task system self+0x48, appends the shared pointer to the vector at self+0x28 and stores it in self+0x58/+0x60. If the task's byte +0x48 is already set it drops the reference and sets state self+0x68 = 0, else sets state 1."
+ },
+ "signature": {
+  "id": "ui.start_f1os_task_if_idle",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 C7 41 6C 00 00 00 00",
+  "match": "0x1433738b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1433738b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Start_F1osTask_IfIdle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143375e30",
+  "made_on_target": "0x143375e30",
+  "twin": "made on steam-26566308; the target 0x143375e30 is KB 0x1433738b0: Game_EALoginTask_Update (0x3375190) and Game_HandleUserEntitlementsUpdateTask_OnChildDone (0x3379bd0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143375e30",
+    "target": "0x143375e30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d8a9ca289345d44bc5bb56efb7716886dfa134a53780aed2916d780b0b42b6ae"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodSet_InsertOrFind_Key16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1426aaa20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodSet_InsertOrFind_Key16(void *set, uint64_t *out_index_status, uint8_t *key16)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1426acda0 (RacingPC lab re_groups/_decomp);xref:0x142511840",
+  "notes": "(lib) Robin-hood hash table: FNV-1a over 16 key bytes times multiplier set+0x20, entries (pointers to 16-byte keys) at +0x28, info bytes at +0x30, count +0x38, mask +0x40, max load +0x48, info increment +0x50, shift +0x54. Finds the key or shifts entries up to make a slot; grows/rehashes through FUN_1426ad5d0 or halves info bits when overflowing; up to 0x100 retries. Writes out[0]=slot index and out[1]=status (1 found, 2/3 slot reserved, 0 failed)."
+ },
+ "signature": {
+  "id": "core.robin_hood_set_insert_or_find_key16",
+  "section": ".xtls",
+  "pattern": "49 89 F0 E8 ?? ?? ?? ?? 44 8B 64 24 28",
+  "match": "0x1426abab3",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1426aaa20",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodSet_InsertOrFind_Key16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1426ade33",
+  "made_on_target": "0x1426acda0",
+  "twin": "made on steam-26566308; the target 0x1426acda0 is KB 0x1426aaa20: Game_F1os_LogLargePayload_UpgradeCard (0x2697990) and Game_F1os_LogLargePayload_GetCompendiumRewards (0x26d29e0) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1426ade33",
+    "target": "0x1426acda0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "10cff16373378d6973214276ce628225ab33cb694011d5766f571758b6f9f3a4"
+  }
+ ]
+}

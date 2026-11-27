@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TileList_FocusSelectedOrFirstChild",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14383c4f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TileList_FocusSelectedOrFirstChild(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14383ea80 (RacingPC lab re_groups/_decomp);xref:0x143832480",
+  "notes": "If the selected child at self+0x108 is null it picks the first item in the vector +0x130..+0x138 whose vcall +0xf0 returns true and stores it at +0x108. When that child lacks flag 8 at +0x08 it calls child vcall +0x98(1), Game_TileList_PushChildSelection_Thunk(self, child) and raises node event 0x146105594; then, if flag 2 at +0x11a is set and nodes +0x68/+0x70/+0x78 exist, sets flag 4 at +0x11a and flag 0x10 at +0x119. With no eligible child it calls self vcall +0x98(1)."
+ },
+ "signature": {
+  "id": "ui.tile_list_focus_selected_or_first_child",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B B9 08 01 00 00",
+  "match": "0x14383c4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14383c4f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_TileList_FocusSelectedOrFirstChild"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14383ea80",
+  "made_on_target": "0x14383ea80",
+  "twin": "made on steam-26566308; the target 0x14383ea80 is KB 0x14383c4f0: Game_TileList_PushChildSelection_Thunk (0x383d920) and Game_UITrack_Select_DefaultTrack (0x3854680) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14383ea80",
+    "target": "0x14383ea80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ff859402c0ef044c6da4505db5c7f726aa16e0a2495712460856c1a0bcafa3b7"
+  }
+ ]
+}

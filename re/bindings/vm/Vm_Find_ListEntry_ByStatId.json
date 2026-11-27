@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Find_ListEntry_ByStatId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424bfff0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Find_ListEntry_ByStatId(void *outHandle, uint16_t statId)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424c1bf0 (RacingPC lab re_groups/_decomp);xref:0x142087420",
+  "notes": "Iterates the registry list child with hash 0x3f22d0d2 (path string at 0x14576f57c) from index 0: for each element (Ne_Ref_GetListElementOrEmpty) resolves child stat_id via Vm_Resolve_RegistryNode, type-checks it against descriptor 0x14612bf38 and compares the value with statId. On match writes a node handle to the element into outHandle; when the index passes the list size returns an empty handle. Returns outHandle."
+ },
+ "signature": {
+  "id": "vm.find_list_entry_by_stat_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 4C 24 50",
+  "match": "0x1424bfff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424bfff0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Find_ListEntry_ByStatId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424c1bf0",
+  "made_on_target": "0x1424c1bf0",
+  "twin": "made on steam-26566308; the target 0x1424c1bf0 is KB 0x1424bfff0: Game_EntrantsUi_OnCharacterListLoaded (0x24bc8c0) and Ui_Release_FacilityUpgradeSlotsNodes (0x24cde70) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424c1bf0",
+    "target": "0x1424c1bf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3e3f2f4e8f3f03ccbcc057df5a62405a73eabe7578d82391cb0c1952540231f8"
+  }
+ ]
+}

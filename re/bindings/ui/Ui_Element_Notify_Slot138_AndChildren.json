@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Element_Notify_Slot138_AndChildren",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442059b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Element_Notify_Slot138_AndChildren(void *elem, uint32_t arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144207f80 (RacingPC lab re_groups/_decomp);xref:0x143800ef0,0x143808890,0x14380ab00",
+  "notes": "Calls elem vt+0x1b0; scans components elem+0x30..+0x38 for type 0x146ca5498 and takes its int +0x40 as id; for component type 0x146ca32e0 writes +0x94 = elem id (vt+0x10) and +0x98 = id, then 0x14417f410; calls vt+0x148(elem,0). If id != 0: when (char)arg != 0 posts message vt 0x14588ddf0 (size 0x18: elem id, id, vt+0xf8 flag) to the UI system listener ([g_Vm_UiSystem vt+0x68]+0x28, or Game_Ui_NotifyAllListeners); for component type 0x146ca5658 with +0x14 != -1 posts message vt 0x14588de30 (size 0xc). Last, calls vt+0x138(child, arg) on every child in [elem+0x18]+8..+0x10. Context from caller: Ui_F1HeElement_Slot138 (vtable slot 0x138 override) calls it first as the base implementation; 0x143800ef0 and 0x143808890 are other element overrides that start with the same base call. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.element_notify_slot138_and_children",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 89 D3 48 89 CE 48 8B 01",
+  "match": "0x1442059b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442059b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Element_Notify_Slot138_AndChildren"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144207f80",
+  "made_on_target": "0x144207f80",
+  "twin": "made on steam-26566308; the target 0x144207f80 is KB 0x1442059b0: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144207f80",
+    "target": "0x144207f80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dac2f8df0905c80d10a7a9eb3a1417c61f98b6ee4c1f568c526fc0f502d5fca7"
+  }
+ ]
+}

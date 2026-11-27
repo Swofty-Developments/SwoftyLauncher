@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_UpsellDisplayMode_LoadLayout",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142428190",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Set_UpsellDisplayMode_LoadLayout(void *tile, int32_t item_id, void *msg_arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142429d90 (RacingPC lab re_groups/_decomp);xref:0x1419e4350,0x142429fd0",
+  "notes": "Whole body read. Maps item_id 0x6e/0x6f/0x70/0x71 to mode 3/1/0/4 (any other id gives 5) and stores the byte at tile+0x328; posts a bus message (vtable 0x14578f230) with the mode string from table 0x14578f1a0 and msg_arg; loads layout 'display_upsell', 'display_upsell_grid' (mode 4) or 'display_upsell_fixed_layout' (mode 2) through 0x143859a70([tile+0x248], 0x1d, name) and copies the result into tile+0x260..+0x320 (inline 0x80 string at +0x288, fields +0x308..+0x320). Caller Ui_PurchasePopup_Refresh passes the int at +0x220 of its current record; caller FeTile_Find_UnlockItemByEntrantLabel passes the id of the matched row or -1 when no row matches. Good hook point to see which upsell layout opens. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.set_upsell_display_mode_load_layout",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 8D 0C D5 90 FC FF FF",
+  "match": "0x142428190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142428190",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_UpsellDisplayMode_LoadLayout"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142429d90",
+  "made_on_target": "0x142429d90",
+  "twin": "made on steam-26566308; the target 0x142429d90 is KB 0x142428190: Game_DifficultySystem_ApplySettingsToUi (0x241b150) and FeTile_Check_EntrantListUsable (0x242a390) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142429d90",
+    "target": "0x142429d90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ab649be630c9e117fa8fd8ee905eec2fd4c85044385df93a9bd18cde643ed7a2"
+  }
+ ]
+}

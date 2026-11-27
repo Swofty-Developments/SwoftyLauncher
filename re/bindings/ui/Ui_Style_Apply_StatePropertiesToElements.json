@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Style_Apply_StatePropertiesToElements",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441faf20",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Style_Apply_StatePropertiesToElements(void *style_mgr, void *target, void *elem_list, int32_t state_hash, uint32_t arg5)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441fd4f0 (RacingPC lab re_groups/_decomp);xref:0x1442fc140,0x1442fdac0,0x144315390",
+  "notes": "For each 8-byte element in elem_list [+8,+0x10): gathers matching rule sets via callback FUN_144382860, dedups their states (0x20 entries at rule+0x28..+0x30) by name (hash/len/strcmp), builds per-state lists (0x30 entries) of properties (0x40 entries keyed by id at +4), resolves missing value objects from the table at style_mgr+0x30..+0x38, applies per-component overrides (ids 0x2b5e6..0x2b5ff) to vec3 (type 0x14612be88) and vec4 (0x14612b9d8) values. Then picks the state whose name hash == state_hash (0x1505 matches unnamed), looks up each property descriptor in style_mgr+0x10..+0x18, widens the value to a vec4 (vec4/vec3/float/bool) and calls target vtable +0xd0(target, elem, desc, &vec4, arg5) when (desc+8 & ~2)==0. Callers 0x1442fc140 and 0x1442fdac0: after FUN_1442fcb00(elem, name, 0) apply state hash 0x597902 with arg5=0x1505 to elem+0x168; Ui_TextElement_Slot47 applies state *(*(elem+0x1b8))+0x68. style_mgr comes from global 0x146ca6de0 vtable +0x50. Good hook to observe style property pushes. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.style_apply_state_properties_to_elements",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 BC 24 20 01 00 00 C5 F8 29 B4 24 10 01 00 00 44 89 4C 24 7C",
+  "match": "0x1441faf20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441faf20",
+  "kind": "func_start",
+  "names": [
+   "Ui_Style_Apply_StatePropertiesToElements"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441fd4f0",
+  "made_on_target": "0x1441fd4f0",
+  "twin": "made on steam-26566308; the target 0x1441fd4f0 is KB 0x1441faf20: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441fd4f0",
+    "target": "0x1441fd4f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "13e3223b424b8d8bc9486f4471d5f2800d1dc328feaf8154bcc011effa714e37"
+  }
+ ]
+}

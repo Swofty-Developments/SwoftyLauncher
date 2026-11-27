@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_Highlighted_AndTitleLoctag",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14234c390",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_Highlighted_AndTitleLoctag(void *card, uint8_t highlighted)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14234df90 (RacingPC lab re_groups/_decomp);xref:0x14234ca30,0x14234e980",
+  "notes": "Writes highlighted to the bool node at card+0xe48 (bound as highlighted by the constructor 0x14234ef30) and sets the string holder at card+0xe20 (bound as title_loctag) to the constant at 0x14578386b when true or the constant at 0x145614762 when false."
+ },
+ "signature": {
+  "id": "ui.set_highlighted_and_title_loctag",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 89 D3 48 89 CE 88 54 24 27 48 8B B9 48 0E 00 00",
+  "match": "0x14234c390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14234c390",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_Highlighted_AndTitleLoctag"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14234df90",
+  "made_on_target": "0x14234df90",
+  "twin": "made on steam-26566308; the target 0x14234df90 is KB 0x14234c390: Ui_MyTeamDriverSelect_Enter (0x234ca30) and Career_Enter_EngineeringTopLevel (0x234f560) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14234df90",
+    "target": "0x14234df90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d90c2c287d389bb1db04b840a382e33917122637f7fb9b8b650affe3872e72fe"
+  }
+ ]
+}

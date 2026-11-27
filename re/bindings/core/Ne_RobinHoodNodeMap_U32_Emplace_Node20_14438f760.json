@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodNodeMap_U32_Emplace_Node20_14438f760",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14438d190",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodNodeMap_U32_Emplace_Node20_14438f760(void *map, void *out_iter, uint32_t *key, void *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14438f760 (RacingPC lab re_groups/_decomp);xref:0x14428d890",
+  "notes": "(lib) Pops a 0x20-byte node from the free list (+8), fills key +0, value {u64 +8, byte +0x10, refcounted string +0x18}, and inserts its pointer into the robin-hood table; if the key already exists the node is released back and the existing slot returned. out_iter gets {slot ptr, info ptr, inserted flag}; grows via 0x14438f120 and aborts after 256 failed attempts."
+ },
+ "signature": {
+  "id": "core.robin_hood_node_map_u32_emplace_node20_14438f760",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4D 89 CF 4D 89 C4 48 89 54 24 28 48 89 CB",
+  "match": "0x14438d190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14438d190",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodNodeMap_U32_Emplace_Node20_14438f760"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14438f760",
+  "made_on_target": "0x14438f760",
+  "twin": "made on steam-26566308; the target 0x14438f760 is KB 0x14438d190: Ne_Crt_ThrowOverflow_B (0x4385690) and Ne_Container_AbortNoReturn_1443908d0 (0x4392ea0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14438f760",
+    "target": "0x14438f760"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a50521c2b448a779fc123abe8f8ed0fbac2c92dbcdf136530a863b9bcd512448"
+  }
+ ]
+}

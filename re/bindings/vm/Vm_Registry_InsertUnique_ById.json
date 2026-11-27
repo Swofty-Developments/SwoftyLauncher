@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Registry_InsertUnique_ById",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14416b9e0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Registry_InsertUnique_ById(void *registry, void *entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14416dfb0 (RacingPC lab re_groups/_decomp);xref:0x14419d7a0",
+  "notes": "Returns 0x16 if the u32 id at entry+0x10 is zero. Otherwise takes the lock at registry+0x58, probes the robin-hood map at +0x20..+0x54 (pointer entries keyed by their first u32) for the id; returns 0x25 if it already exists, else inserts {id, entry} with FUN_144346fa0 and returns 0 (0xc if the insert failed). Context from caller: registers a VM node class."
+ },
+ "signature": {
+  "id": "vm.registry_insert_unique_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 48 89 54 24 28 83 7A 10 00",
+  "match": "0x14416b9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14416b9e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Registry_InsertUnique_ById"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14416dfb0",
+  "made_on_target": "0x14416dfb0",
+  "twin": "made on steam-26566308; the target 0x14416dfb0 is KB 0x14416b9e0: Ne_IntrusivePtr_Assign (0x416d7f0) and Ne_UIFlow_UnloadAssetsGroups (0x416e790) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14416dfb0",
+    "target": "0x14416dfb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "47a9882b45058983430a5e1f312164c4df094df11915e0b60b72d9f683989177"
+  }
+ ]
+}
