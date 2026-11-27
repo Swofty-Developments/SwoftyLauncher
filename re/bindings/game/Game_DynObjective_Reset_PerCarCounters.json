@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DynObjective_Reset_PerCarCounters",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14118f4a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DynObjective_Reset_PerCarCounters(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14118fae0 (RacingPC lab re_groups/_decomp);xref:0x14118f250",
+  "notes": "Frees the vector at self+0xd0/+0xd8/+0xe0 (allocator self+200) and refills it with one 8-byte entry {u32 car index, u32 0} for every index 0..N-1 where N = ((self+0xb8)+0xf8)+0x180, growing 1.5x. Context from caller: per-car counters for the legal overtake disruption objective."
+ },
+ "signature": {
+  "id": "game.dyn_objective_reset_per_car_counters",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 CE 48 8D B9 D0 00 00 00",
+  "match": "0x14118f4a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14118f4a0",
+  "kind": "func_start",
+  "names": [
+   "Game_DynObjective_Reset_PerCarCounters"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14118fae0",
+  "made_on_target": "0x14118fae0",
+  "twin": "made on steam-26566308; the target 0x14118fae0 is KB 0x14118f4a0: Game_DynObjDefendPosition_AccumulateTime (0x118ee60) and Game_DynObjDefendPosition_CheckRivalChange (0x118fc50) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14118fae0",
+    "target": "0x14118fae0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8507609a2510bba033c9b693abf527a1cc6c2a6931eca00b49d947ae7863efb9"
+  }
+ ]
+}

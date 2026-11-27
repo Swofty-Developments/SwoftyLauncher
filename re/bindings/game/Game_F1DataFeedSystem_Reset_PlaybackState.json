@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeedSystem_Reset_PlaybackState",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c18cc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1DataFeedSystem_Reset_PlaybackState(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c1b250 (RacingPC lab re_groups/_decomp);xref:0x142c1a130,0x142c2b720",
+  "notes": "Selects the source by mode at self+0x168 (0 -> +0x178, 1 -> +0x180, 2 -> +0x188) and copies its first 8 bytes to the cursor at +0x165c, clears 24 per-car flags (stride 0x30 starting at +500), calls Game_F1DataFeed_FetchCarDataFrame(self, self+0x165c), then resets 24 per-car state slots of 0xc0 bytes at +0x18b470 (first qword 0xffffffff00000000, float 1.0 at +0x7c of the slot) and sets +0x16c0 = 1."
+ },
+ "signature": {
+  "id": "game.f1_data_feed_system_reset_playback_state",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 8B 81 68 01 00 00",
+  "match": "0x142c18cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c18cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeedSystem_Reset_PlaybackState"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c1b250",
+  "made_on_target": "0x142c1b250",
+  "twin": "made on steam-26566308; the target 0x142c1b250 is KB 0x142c18cc0: Game_F1DataFeedSystem_Init (0x2c1a130) and Sess_Result_RequestStatus (0x2c25130) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c1b250",
+    "target": "0x142c1b250"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b2dc2bcdfa7a82f61c6230d18bba75448da35b3df68d7be5a43cde91aa3b13ed"
+  }
+ ]
+}

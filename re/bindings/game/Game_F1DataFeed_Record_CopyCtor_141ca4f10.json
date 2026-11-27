@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeed_Record_CopyCtor_141ca4f10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141ca3310",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_F1DataFeed_Record_CopyCtor_141ca4f10(void *self, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141ca4f10 (RacingPC lab re_groups/_decomp);xref:0x142c2b720",
+  "notes": "Copy-constructs a 0x16a8-byte record made of inline strings (64 at +0, 256 at +0x58, 128 at +0x170, 32-char at +0x218/+0x250/+0x2e8, 16-char at +0x298/+0x2c0/+0x320/+0x348/+0x370), scalars at +0x208..+0x210, +0x288..+0x290, +0x398, then 24 entries of 200 bytes at +0x3a0 (three 32-char strings plus 28 bytes of POD), then deep-copies two vectors: 12-byte elems at +0x1660 and 0xa8-byte elems (with a 128-char string) at +0x1680, and copies +0x16a0. Better context needed: record type name (session/driver info of the data feed)."
+ },
+ "signature": {
+  "id": "game.f1_data_feed_record_copy_ctor_141ca4f10",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 48 8D 41 18",
+  "match": "0x141ca3310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ca3310",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeed_Record_CopyCtor_141ca4f10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ca4f10",
+  "made_on_target": "0x141ca4f10",
+  "twin": "made on steam-26566308; the target 0x141ca4f10 is KB 0x141ca3310: Career_Update_RnDRushPanel (0x1c90ca0) and Game_LoadingScreenVM_OnScreenActivated (0x1ca5fe0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ca4f10",
+    "target": "0x141ca4f10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0c21ceadc6bea3db00a6daa03275652064eae05cda24ba8d63cc349cebeeb5a"
+  }
+ ]
+}

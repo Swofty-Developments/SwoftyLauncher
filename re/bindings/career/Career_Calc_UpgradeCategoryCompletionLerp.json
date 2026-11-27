@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_UpgradeCategoryCompletionLerp",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1409c3b90",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "float Career_Calc_UpgradeCategoryCompletionLerp(void *self, const char *category_list, void *entrant, void *career)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1409c3be0 (RacingPC lab re_groups/_decomp);xref:0x1409b9af0",
+  "notes": "If career (param_4) is null: looks up an option in the options store at (*(self+8)+0x60)+0x270 and returns 1.0 when its value index is 0. Otherwise maps entrant+0x50 id to a team via career+0x278 table (elem 0x88, +0x50/+0x52 id, +0x58 team), finds the team object in career+0x298..+0x2a0, calls Career_Query_EnabledUpgrades, and for each category byte in the list (count at list+0x20) counts upgrades with +0x70 == category and those whose state byte *(+200)-8 == 3. Returns lerp(min, max, completed/total) using two stack float args. Context from caller: Ai_CannedEvents_ScheduleRace."
+ },
+ "signature": {
+  "id": "career.calc_upgrade_category_completion_lerp",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 B8 98 24 00 00 E8 ?? ?? ?? ?? 48 29 C4",
+  "match": "0x1409c3b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409c3b90",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_UpgradeCategoryCompletionLerp"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1409c3be0",
+  "made_on_target": "0x1409c3be0",
+  "twin": "made on steam-26566308; the target 0x1409c3be0 is KB 0x1409c3b90: Ai_CannedEvents_LoadPerRaceDnfs (0x9c2b60) and Ne_Timer_GetElapsedSeconds (0x9d2b10) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1409c3be0",
+    "target": "0x1409c3be0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3f7d6cf64b73a61980c395e7cc754190129541f9c92d5b1575c0d9e1d03efb02"
+  }
+ ]
+}

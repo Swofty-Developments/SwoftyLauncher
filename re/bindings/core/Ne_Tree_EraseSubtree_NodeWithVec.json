@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Tree_EraseSubtree_NodeWithVec",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c89c90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Tree_EraseSubtree_NodeWithVec(void *tree, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c8c220 (RacingPC lab re_groups/_decomp);xref:0x142c03cd0,0x142c864d0",
+  "notes": "(lib) Recursive red-black tree subtree erase (std::map _Erase pattern): recurses on right child node[2], iterates left node[0], stops at nil flag byte +0x19. For each node frees an owned buffer at +0x30 via allocator at +0x28 (vcall +0x38), zeroes +0x30..+0x40, then frees the node via the tree allocator at tree+0 (vcall +0x38). Context from caller: highlights overtake monitor map teardown."
+ },
+ "signature": {
+  "id": "core.tree_erase_subtree_node_with_vec",
+  "section": ".xtls",
+  "pattern": "48 89 07 49 8B 56 08 48 89 D9 E8 ?? ?? ?? ?? 4D 89 76 08",
+  "match": "0x142c022ed",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xa"
+  },
+  "target": "0x142c89c90",
+  "kind": "call",
+  "names": [
+   "Ne_Tree_EraseSubtree_NodeWithVec"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c0487d",
+  "made_on_target": "0x142c8c220",
+  "twin": "made on steam-26566308; the target 0x142c8c220 is KB 0x142c89c90: Sess_Result_DecodeVehicleResult (0x2c7ea10) and Ne_WindowWin_BuildResolutionOptions (0x2c92d30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c0487d",
+    "target": "0x142c8c220"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1763b129de4a877699815efe8fce0d43396abe21854cf3d88759cf67cd06c699"
+  }
+ ]
+}

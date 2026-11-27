@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ai_Find_EntrantMapEntry_ByManagerIdentity",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14297e9c0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void *Ai_Find_EntrantMapEntry_ByManagerIdentity(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142980d80 (RacingPC lab re_groups/_decomp);xref:0x1415212b0,0x14297f9b0,0x142981a60,0x142981fe0",
+  "notes": "Gets the session entrant container via ((self+0x1e0)->+0x88)->+0x260, fetches an identity block from g_Game_Manager (+0x140)->+0x198->+0x1c0 vcall +0x38 (falls back to a random id block), finds the matching EntrantRecord in +0x2e0..+0x2e8 with Sess_Match_EntrantIdentity_Thunk, builds its 16-bit entrant key (id_hi, 14 bits, 0x3fff = invalid, plus id_lo in the top 2 bits) and looks it up in the red-black tree map at self+0x450. Returns pointer to the mapped value (node+0x28) or null. Context from caller: per-entrant practice/quali pace data; good read point for the identified (likely local) entrant's pace record. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "ai.find_entrant_map_entry_by_manager_identity",
+  "section": ".xtls",
+  "pattern": "48 8B 4A 08 E8 ?? ?? ?? ?? 48 85 C0",
+  "match": "0x1418ea0a2",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4"
+  },
+  "target": "0x14297e9c0",
+  "kind": "call",
+  "names": [
+   "Ai_Find_EntrantMapEntry_ByManagerIdentity"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418eb882",
+  "made_on_target": "0x142980d80",
+  "twin": "made on steam-26566308; the target 0x142980d80 is KB 0x14297e9c0: Game_Build_PassiveObjectiveKeyName (0x297e150) and Game_TrackAcclimatisation_CalcTyreTarget (0x2984b00) on either side both sit 0x23c0 above their KB addresses; the match 0x1418eb882 is KB 0x1418ea0a2: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418eb882",
+    "target": "0x142980d80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9148613b6f580cad50adeb5816625a191c47f1aa2ea353fe893b80e2bb231b21"
+  }
+ ]
+}

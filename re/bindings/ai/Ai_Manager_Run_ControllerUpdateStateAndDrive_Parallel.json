@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ai_Manager_Run_ControllerUpdateStateAndDrive_Parallel",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1406057a0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Manager_Run_ControllerUpdateStateAndDrive_Parallel(void *mgr, float dt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1406057e0 (RacingPC lab re_groups/_decomp);xref:0x140605410",
+  "notes": "Increments global counter DAT_14610a8e8, reads car count from (mgr+0x38)+8 and worker count from job system mgr+0xf0 (+0x24), then calls Ai_Controller_UpdateStateAndDrive(controllers[mgr+0x50][i], dt, mgr+0x38) for every i using an atomic shared index; with more than one worker it also dispatches Ai_Job_ForEachCall_1405f5c50 via jobsys vfunc +0x10 and waits with Ne_JobSignal_WaitWithTimeout. Decrements the counter on exit. Good hook point to wrap the per-car AI state and drive update."
+ },
+ "signature": {
+  "id": "ai.manager_run_controller_update_state_and_drive_parallel",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 70 C5 FA 11 4C 24 5C F0 FF 05",
+  "match": "0x1406057a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406057a0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Manager_Run_ControllerUpdateStateAndDrive_Parallel"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1406057e0",
+  "made_on_target": "0x1406057e0",
+  "twin": "made on steam-26566308; the target 0x1406057e0 is KB 0x1406057a0: Ai_Create_VehicleController (0x6042c0) and Ai_Eval_ClampedTestSpeed (0x6068e0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1406057e0",
+    "target": "0x1406057e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5512109ef2101f91c89e7c67f42dbaf76a36b1e7e4cf3d3b9557c3bfaeee2667"
+  }
+ ]
+}

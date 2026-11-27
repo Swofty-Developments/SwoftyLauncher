@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ctor_MillisecondStampedObject",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14460a4c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Ctor_MillisecondStampedObject(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14460cd30 (RacingPC lab re_groups/_decomp);xref:0x14463d630",
+  "notes": "Constructor: lazily caches QueryPerformanceFrequency/1000, reads QueryPerformanceCounter plus global offset 0x14610a9f8, and stores the current time in milliseconds as u32 at +8; sets vtable 0x1456145a8 at +0, byte +0x10 = 0 and qword +0x14 = 0. Context from caller: built during racing vehicles initialise; role of the object not shown here."
+ },
+ "signature": {
+  "id": "core.ctor_millisecond_stamped_object",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 7F 57",
+  "match": "0x14460a4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14460a4c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ctor_MillisecondStampedObject"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14460cd30",
+  "made_on_target": "0x14460cd30",
+  "twin": "made on steam-26566308; the target 0x14460cd30 is KB 0x14460a4c0: Game_VehicleProgressSystem_GetDistanceData (0x4607020) and Game_TodData_FindParam (0x46114b0) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14460cd30",
+    "target": "0x14460cd30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "427436728825428bad16134915bc556ebdaaa19abe1147eac657737774733f03"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeed_Load_CarStreamFile",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c1c090",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_F1DataFeed_Load_CarStreamFile(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c1e620 (RacingPC lab re_groups/_decomp);xref:0x142c2b720",
+  "notes": "Returns when car index self+0x19bc is negative. Builds a directory string with snprintf, stores a timestamp (QueryPerformanceCounter) at +0x1698, formats a per-car file path using the entry (+0x88)+0x28[idx] field +0x78, opens it (wide path), reads the whole file (seek end, tell, alloc via self+0x10, read, close; errno 2 trace when open fails). Splits by newline and sscanf-parses each line into a 0x60-byte record {line index, 8 floats, 2 more values, default 1.0} appended to the vector at +0x1758, then builds an index object at +0x1770 over pointers to all records (FUN_142c3dc30). Hook point to inspect or replace recorded real-car stream data."
+ },
+ "signature": {
+  "id": "game.f1_data_feed_load_car_stream_file",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 07 00 00 C5 F8 29 B4 24 00 07 00 00 8B 81 BC 19 00 00",
+  "match": "0x142c1c090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c1c090",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeed_Load_CarStreamFile"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c1e620",
+  "made_on_target": "0x142c1e620",
+  "twin": "made on steam-26566308; the target 0x142c1e620 is KB 0x142c1c090: Game_F1DataFeedSystem_Init (0x2c1a130) and Sess_Result_RequestStatus (0x2c25130) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c1e620",
+    "target": "0x142c1e620"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d23e907120b3fd6d9c9500989f788edbef5b8cdca63afeebb7fdce9b7006a5ec"
+  }
+ ]
+}

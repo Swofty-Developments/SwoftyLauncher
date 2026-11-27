@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_Introsort_F32_Ascending",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a039e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_Introsort_F32_Ascending(float *first, float *last, uint64_t depthBudget)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a05da0 (RacingPC lab re_groups/_decomp);xref:0x142981fe0",
+  "notes": "(lib) std::sort introsort over a float array, ascending: insertion sort below 33 elements, median-of-three / ninther pivot with fat partition of equal keys, recursion on the smaller side, heap sort fallback when the depth budget is exhausted. Context from caller: sorts lap times while building the quali pace lap time cache."
+ },
+ "signature": {
+  "id": "core.sort_introsort_f32_ascending",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 84 F7 E8 03 00 00",
+  "match": "0x1429802a1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142a039e0",
+  "kind": "call",
+  "names": [
+   "Ne_Sort_Introsort_F32_Ascending"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142982661",
+  "made_on_target": "0x142a05da0",
+  "twin": "made on steam-26566308; the target 0x142a05da0 is KB 0x142a039e0: Ne_HashMap_Rehash (0x2a00dc0) and Ui_CareerSelectMyTeam_SetDriverIconActive (0x2a0c9f0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142982661",
+    "target": "0x142a05da0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6d219274345f587077948963445ee13d97512999a9407bb23732b6380240b6d4"
+  }
+ ]
+}

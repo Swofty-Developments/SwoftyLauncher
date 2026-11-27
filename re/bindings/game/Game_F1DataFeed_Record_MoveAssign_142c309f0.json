@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeed_Record_MoveAssign_142c309f0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c2e460",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_F1DataFeed_Record_MoveAssign_142c309f0(void *self, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c309f0 (RacingPC lab re_groups/_decomp);xref:0x142c2b720",
+  "notes": "Assigns the 0x16a8-byte data feed record field by field (same layout as ctor 0x142c199a0: inline strings, scalars, 24 entries of 200 bytes), appends src vector of 12-byte elems (+0x1668) into self and pushes each 0xa8-byte elem of src +0x1688 via FUN_142cb7b90 into self+0x1680, then frees and zeroes both src vectors. Returns self."
+ },
+ "signature": {
+  "id": "game.f1_data_feed_record_move_assign_142c309f0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 48 89 D7 48 89 CE 48 8D 41 18",
+  "match": "0x142c2e460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c2e460",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeed_Record_MoveAssign_142c309f0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c309f0",
+  "made_on_target": "0x142c309f0",
+  "twin": "made on steam-26566308; the target 0x142c309f0 is KB 0x142c2e460: Sess_Result_RequestStatus (0x2c25130) and Game_FullRaceReplaySystem_Init (0x2c47600) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c309f0",
+    "target": "0x142c309f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "32ba3466f9849a528fd10d69656659911f90742ac7165cd6cd5d465cf392c9d7"
+  }
+ ]
+}

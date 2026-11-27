@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_MemoryStream_Seek",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14399bac0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_MemoryStream_Seek(void *stream, uint64_t offset, int origin)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14399e050 (RacingPC lab re_groups/_decomp);xref:0x142c2b720,0x142c33810,0x142c34a10,0x1430f8e20",
+  "notes": "Seek on a memory reader: origin 0 absolute, 1 adds size at +0x10, 2 adds current position at +0x18; any other origin sets position 0. If the target is <= size (+0x10) it is stored to +0x18 and 0 is returned; otherwise sets thread error code 5, logs to g_Ne_ErrnoTraceRing and returns 5 without moving."
+ },
+ "signature": {
+  "id": "core.memory_stream_seek",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 45 85 C0 74 14",
+  "match": "0x14399bac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14399bac0",
+  "kind": "func_start",
+  "names": [
+   "Ne_MemoryStream_Seek"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14399e050",
+  "made_on_target": "0x14399e050",
+  "twin": "made on steam-26566308; the target 0x14399e050 is KB 0x14399bac0: Ne_ActorManager_InsertEntryNode (0x3999ef0) and Ne_DataReader_DetectFormat (0x39a1d30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14399e050",
+    "target": "0x14399e050"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "515fd551852d0186b2d80be48ee6a6fe5f4f09f323d03ac95d337139409b1afb"
+  }
+ ]
+}

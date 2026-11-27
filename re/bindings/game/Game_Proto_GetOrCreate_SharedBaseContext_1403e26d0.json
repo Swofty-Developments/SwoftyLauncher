@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Proto_GetOrCreate_SharedBaseContext_1403e26d0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1403e2690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Proto_GetOrCreate_SharedBaseContext_1403e26d0(void *msg, void *out_shared_ptr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1403e26d0 (RacingPC lab re_groups/_decomp);xref:0x140774f30,0x140876f20",
+  "notes": "Lazily allocates a 400-byte refcounted block (vtable 0x145625f90, counts 1/1), runs Ne_Proto_BaseContext_Construct on block+0x10, stores object at msg+0x50 and control block at msg+0x58 (releasing any previous one), then returns a shared_ptr copy {msg+0x50, msg+0x58} with the strong count incremented. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.proto_get_or_create_shared_base_context_1403e26d0",
+  "section": ".xtls",
+  "pattern": "89 6B 64 48 8D 54 24 30 48 89 D9 E8 ?? ?? ?? ?? 48 8B 54 24 30",
+  "match": "0x1407755ed",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xb"
+  },
+  "target": "0x1403e2690",
+  "kind": "call",
+  "names": [
+   "Game_Proto_GetOrCreate_SharedBaseContext_1403e26d0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14077562d",
+  "made_on_target": "0x1403e26d0",
+  "twin": "made on steam-26566308; the target 0x1403e26d0 is KB 0x1403e2690: Ai_Write_AdaptiveAiSessionRecord (0x3e1a50) and Game_Analytics_BakedLiverySponsor_WriteJson (0x4201d0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14077562d",
+    "target": "0x1403e26d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8b3c3e2c48471428f2ae295ee93de8e7f242d6aa8d515da615a257100ce7305d"
+  }
+ ]
+}

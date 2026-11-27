@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerSetEntry_FormatDebugString",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14303d5a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "char *Game_PlayerSetEntry_FormatDebugString(void *entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14303fb30 (RacingPC lab re_groups/_decomp);xref:0x1430cb730,0x14310ae70,0x14310c150,0x143111870,0x143111b50,0x1431239a0,0x14316b880,0x14316ca10",
+  "notes": "Formats a debug description into a rotating static buffer (8 slots of 0x100 bytes at 0x14609a9a0, cursor 0x14609a990) and returns the slot pointer. Uses Game_NetParticipant_FormatDebugName(entry+0, entry+0x10), int16 at +0x60, int8 +0x62, byte +0x63, six bool flags at +0x64,+0x65,+0x66,+0x67,+0x69,+0x68 printed as two alternative strings, and elapsed time = (end tick +0x80 or current QPC - start tick +0x78) / frequency +0x88. Logging only, not a behaviour hook."
+ },
+ "signature": {
+  "id": "game.player_set_entry_format_debug_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 8B 05",
+  "match": "0x14303d5a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303d5a0",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerSetEntry_FormatDebugString"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14303fb30",
+  "made_on_target": "0x14303fb30",
+  "twin": "made on steam-26566308; the target 0x14303fb30 is KB 0x14303d5a0: Game_Read_UIMovieBuildSetting (0x30370b0) and Game_GameSessionManager_Connect (0x3056a00) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14303fb30",
+    "target": "0x14303fb30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6b7dafcced93306b42209d8de74407388c81847b3d5c9604ad0462899c3a948a"
+  }
+ ]
+}
