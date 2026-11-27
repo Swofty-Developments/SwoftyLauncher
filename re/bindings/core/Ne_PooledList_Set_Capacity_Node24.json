@@ -12,7 +12,7 @@
   "notes": "(lib) Pooled intrusive list resize: growing allocates a 0x28 block header plus capacity-delta 0x18-byte nodes and threads them on the free list (+0x18); shrinking pops nodes or rebuilds through a temporary list (recursive, FUN_14302fc80 inserts). Writes capacity +0x38 and max +0x40. Returns 0 or errno 0xc."
  },
  "signature": {
-  "id": "core.pooled_list_set_capacity_node24",
+  "id": "core.pooled_list_set_capacity_node24_14302cae0",
   "section": ".xtls",
   "pattern": "E8 ?? ?? ?? ?? 48 8B 96 A8 02 00 00 48 85 D2 74 0C 48 8D 8E A0 02 00 00 E8 ?? ?? ?? ?? 48 89 F9",
   "match": "0x142f90e70",

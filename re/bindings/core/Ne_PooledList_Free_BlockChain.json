@@ -12,7 +12,7 @@
   "notes": "(lib) Recursively frees a chain of pool blocks: frees the node buffer (+0x10) through the block allocator (+0x20, vfunc +0x38), recurses into next (+0x08), then frees the block header through the owner allocator. Decompile shows a mangled second parameter."
  },
  "signature": {
-  "id": "core.pooled_list_free_block_chain",
+  "id": "core.pooled_list_free_block_chain_14302d3f0",
   "section": ".xtls",
   "pattern": "48 8D 8E A0 02 00 00 E8 ?? ?? ?? ?? 48 89 F9",
   "match": "0x142f90e81",
