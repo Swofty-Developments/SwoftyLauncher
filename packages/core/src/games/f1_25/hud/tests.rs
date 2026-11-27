@@ -689,10 +689,34 @@ fn copies_of_game_archives_in_the_folder_are_not_carriers() {
     assert_eq!(archives.len(), 1);
     assert!(lines.is_empty(), "{lines:?}");
     assert!(check::uncovered(&stock, &archives).unwrap().is_empty());
+    std::fs::remove_dir_all(&dir).ok();
+}
 
-    let mut missing = GameStock::new(&dir);
-    missing.known = Some([format!("{ui}/flow_missing.erp")].into());
-    assert!(missing.carriers(&[screens::CAP]).unwrap()[screens::CAP].is_empty());
+#[test]
+fn an_archive_the_baseline_does_not_list_carries_when_no_listed_one_does() {
+    let dir = std::env::temp_dir().join(format!("swofty-hud-unlisted-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    let ui = "2025_asset_groups/ui_package";
+    for (rel, names) in [
+        ("flow_race.erp", vec![screens::CAP]),
+        ("screens/hud_spectator_2.erp", vec![screens::SPECT_TABLE]),
+        ("screens/hud_spectator_2 - Copy.erp", vec![screens::SPECT_TABLE]),
+    ] {
+        let path = dir.join(ui).join(rel);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, fake_archive(&names)).unwrap();
+    }
+    let mut stock = GameStock::new(&dir);
+    stock.known = Some([format!("{ui}/flow_race.erp")].into());
+    let carriers = stock.carriers(&[screens::CAP, screens::SPECT_TABLE]).unwrap();
+    assert_eq!(carriers[screens::CAP], [format!("{ui}/flow_race.erp")]);
+    assert_eq!(
+        carriers[screens::SPECT_TABLE],
+        [
+            format!("{ui}/screens/hud_spectator_2 - Copy.erp"),
+            format!("{ui}/screens/hud_spectator_2.erp")
+        ]
+    );
     std::fs::remove_dir_all(&dir).ok();
 }
 

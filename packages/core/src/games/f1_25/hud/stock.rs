@@ -80,7 +80,11 @@ impl GameStock {
             .map(|(rel, rec)| (rel.clone(), objects.path(&rec.sha256)))
             .filter(|(_, p)| p.is_file())
             .collect();
-        let known = base.files.keys().map(|rel| rel.to_ascii_lowercase()).collect();
+        let known = base
+            .files
+            .keys()
+            .map(|rel| rel.replace('\\', "/").to_ascii_lowercase())
+            .collect();
         Ok(Self {
             game,
             originals,
@@ -113,7 +117,7 @@ impl GameStock {
     }
 
     /// Reads which archives carry each of `names` into the cache, one pass over each asset group
-    /// folder, skipping files the launcher's baseline has no record of (copies the player left there); every archive is read from the original the launcher keeps of it when there is one.
+    /// folder, looking at files the launcher's baseline has no record of (copies the player left there) only for a name no recorded archive carries; every archive is read from the original the launcher keeps of it when there is one.
     fn scan(&self, names: &[&str]) -> Result<()> {
         let mut by_group: BTreeMap<String, BTreeSet<&str>> = BTreeMap::new();
         {
@@ -144,29 +148,63 @@ impl GameStock {
             let mut files = Vec::new();
             crate::erp::erp_files(&dir, group, &mut files);
             files.sort();
+            let mut unlisted = Vec::new();
             for rel in files {
                 if self
                     .known
                     .as_ref()
                     .is_some_and(|k| !k.contains(&rel.to_ascii_lowercase()))
                 {
+                    unlisted.push(rel);
                     continue;
                 }
-                let Ok(f) = ErpFile::open(&self.original(&rel)) else {
-                    continue;
-                };
-                for r in &f.erp.resources {
-                    if wanted.contains(r.name.as_str())
-                        && let Some(list) = found.get_mut(&r.name)
-                        && list.last() != Some(&rel)
-                    {
-                        list.push(rel.clone());
-                    }
-                }
+                self.collect(&rel, wanted, &mut found, false);
+            }
+            let missing: BTreeSet<&str> = wanted
+                .iter()
+                .copied()
+                .filter(|n| found.get(*n).is_none_or(Vec::is_empty))
+                .collect();
+            if missing.is_empty() {
+                continue;
+            }
+            for rel in unlisted {
+                self.collect(&rel, &missing, &mut found, true);
             }
         }
         self.carried.borrow_mut().extend(found);
         Ok(())
+    }
+
+    fn collect(
+        &self,
+        rel: &str,
+        wanted: &BTreeSet<&str>,
+        found: &mut BTreeMap<String, Vec<String>>,
+        unlisted: bool,
+    ) {
+        let path = self.original(rel);
+        let f = match ErpFile::open(&path) {
+            Ok(f) => f,
+            Err(e) => {
+                eprintln!("hud: could not open {rel} to look for stock resources: {e}");
+                return;
+            }
+        };
+        for r in &f.erp.resources {
+            if wanted.contains(r.name.as_str())
+                && let Some(list) = found.get_mut(&r.name)
+                && list.last().map(String::as_str) != Some(rel)
+            {
+                if unlisted {
+                    eprintln!(
+                        "hud: no archive the launcher has a record of carries {}; using {rel}, which is not in its baseline",
+                        r.name
+                    );
+                }
+                list.push(rel.to_owned());
+            }
+        }
     }
 }
 
