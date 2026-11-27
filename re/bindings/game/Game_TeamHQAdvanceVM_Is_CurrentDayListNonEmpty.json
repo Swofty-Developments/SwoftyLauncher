@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1422ca780",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "bool Game_TeamHQAdvanceVM_Is_CurrentDayListNonEmpty(void *vm)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422cc380 (RacingPC lab re_groups/_decomp);xref:0x1422c1af0,0x1422cbf80",
-  "notes": "Takes first row object of the list at *(vm+0x780)+0x328, reads its uint VM property (+0x28) and compares it with *(*(vm+0x6e0)+0x2b0)/1440 (minutes to day index); if equal returns whether the row child collection at +0xe8 has any elements. Better context needed: exact meaning of the +0x2b0 time field."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422cc380 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422c1af0,0x1422cbf80",
+  "notes": "Whole body read. Takes the first entry of the vector at [vm+0x780]+0x328/+0x330, reads its typed int node at entry+0x28 (type id checked against 0x14612bf38) and compares it with the current day = [[vm+0x6e0]+0x2b0] / 1440 (shift 5 then multiply 0x5b05b06). If the days match it returns whether the node at entry+0xe8 has elements (list size (+0x48 - +0x40)/8 or holder count +0x80); otherwise 0. Career_Populate_RnDAdvanceResults uses it to choose AnimateOnNotifications over the contracted-driver check; Game_TeamHQAdvanceViewModel_Update uses it to set the wait flag vm+0x766 and dispatch a UI event (log channel TEAMHQ ADVANCE). Good read-only hook to see whether the advance stops on the current day. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.team_hq_advance_vm_is_current_day_list_non_empty",

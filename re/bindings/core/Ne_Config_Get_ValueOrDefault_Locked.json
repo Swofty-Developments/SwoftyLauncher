@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143a43880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "int32_t Ne_Config_Get_ValueOrDefault_Locked(void *store, void *key, void **out, void *default_val)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a45e50 (RacingPC lab re_groups/_decomp);xref:0x142f3cb60,0x143043330,0x143b61130,0x1443d82b0",
-  "notes": "Under the lock at store+0x10, looks key up in the name table store+8 (Ne_NameTable_FindByFnv1a_B, 16-byte entries at +0x18..+0x20) and converts the stored value with FUN_14391c260 into *out. Returns 0 on success; on missing table/key writes default and returns 2 (ENOENT); on conversion failure writes default and returns 0x21 (EDOM), also setting thread errno and the errno trace ring. Hook to override config values read by Game_Read_*Config."
+  "proto": "uint64_t Ne_Config_Get_U64SizeOrDefault_Locked(void *cfg, const char *name, uint64_t *out, uint64_t def)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a45e50 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141c359a0,0x142f3cb60,0x143043330",
+  "notes": "Renamed from Ne_Config_Get_ValueOrDefault_Locked: the value is parsed by FUN_14391c260 into a uint64 (0x hex and K/G size suffixes), so the type is known. Locks cfg+0x10, looks name up in the FNV-1a name table at cfg+8 (Ne_NameTable_FindByFnv1a_B, 16-byte entries from +0x18, end +0x20), parses entry+8 into *out and returns 0; if the table or key is missing writes def and returns 2, on parse failure writes def and returns 0x21; error codes also go to the TLS errno chain and g_Ne_ErrnoTraceRing; unlocks. Callers: Game_Read_GameConfig_5 reads the u64 at +0xf0 (key 0x1457fa13f), Game_Read_NetworkConfig uses it for var type 6, 0x141c359a0 (a constructor) reads two 0x80-default limits into +0x1430/+0x1438. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.config_get_value_or_default_locked",

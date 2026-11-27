@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1442efbb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void Render_Release_EntryGfxResources(void *self, void **entryRef)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442f2180 (RacingPC lab re_groups/_decomp)",
-  "notes": "For the entry at **entryRef, releases three owned resources at +0x28, +0x48 and +0x18 (allocators at +0x20, +0x40, +0x10): first calls Render_Gfx2_LookupEntryOrDefault(self+0xc0 manager, 16-byte name copied from the resource, 0), then nulls the slot, runs the resource vfn[1](0) and frees it through allocator vfn +0x38. Called from 0x1442f1be0."
+  "proto": "void Render_Release_EntryGfxResources(void *self, void *map_iter)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442f2180 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1442effa0,0x1442f1be0",
+  "notes": "Dereferences the iterator to the entry value and releases three owned named objects: entry+0x28 and entry+0x48 (name read at obj+0x58) and entry+0x18 (name at obj+0x18). Each is unregistered from the registry at self+0xc0 with Render_Gfx2_LookupEntryOrDefault(reg, name, 0), its slot nulled, its deleting dtor called and its memory freed with the allocator stored 8 bytes before the slot. Caller 0x1442f1be0: clear/teardown of a hash map at self+0x78; it calls this for every occupied slot before destroying and recycling the nodes. The call from 0x1442effa0 was not visible in its decompile. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.release_entry_gfx_resources",

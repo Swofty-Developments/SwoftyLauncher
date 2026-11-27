@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143c15ba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_Skeleton_BuildFromBoneRecords(void *skel, const uint64_t *namePair, void *allocator, uint32_t boneCount, const uint32_t *boneRecords, const char *nameBase, char genNames)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c18170 (RacingPC lab re_groups/_decomp)",
-  "notes": "Builds a skeleton: +0x00 u16 bone count, one allocation (+0x40, size +0x48) split into +0x20 3x4 matrices from the record 4x4 (words 0xc..0x1b, transposed), +0x18 3x4 matrices composed from translation (2..4), quaternion (5..8) and scale (9..0xb), +0x10 i16 parent index (word 1), +0x08 u32 bone name ids (Game_Get_ModelNodeId of name at nameBase + word 0, or printf(nameBase, i) when genNames), +0x28 byte flags (0x1c), +0x30 u16 (0x1d). Record size 0x78. For 64+ bones also builds a name-id to index robin-hood map at +0x50. Key hook for rigid car skinning."
+  "proto": "void *Render_Skeleton_BuildFromBoneRecords(void *out, const uint64_t *name_pair, void *allocator, uint32_t bone_count, const uint32_t *records, const char *name_base, char indexed_names)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c18170 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143c18ff0",
+  "notes": "Fills out: count u16 at +0x0, allocator +0x38, name pair +0x58; allocates one block split into two 0x30-byte matrix arrays (+0x18, +0x20), u32 node ids (+0x8), u16 array (+0x10), u8 array (+0x28) and u16 array (+0x30). Per 0x78-byte record: node id = Game_Get_ModelNodeId(name_base+rec[0], or a printf of name_base and index when indexed_names), parent/short from rec[1], a 3x4 matrix built from quaternion rec[5..8], scale rec[9..11] and translation rec[2..4], a second 3x4 matrix transposed from rec[0xc..0x1a], byte rec[0x1c], short rec[0x1d]. With 64 or more bones it also builds a node-id -> index hash map at +0x50. Caller 0x143c18ff0: ctor of a larger object that embeds this at +0x78 and passes its bone count and record pointer through. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.skeleton_build_from_bone_records",

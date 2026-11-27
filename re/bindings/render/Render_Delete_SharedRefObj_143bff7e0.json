@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143bfd210",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void Render_Delete_SharedRefObj_143bff7e0(void **allocAndObj)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143bff7e0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Deleter for a {allocator, object} pair: runs the same teardown as 0x143c01250 on the object (frees +0x30 buffer, drops the intrusive ref at +0x1e0 under global CS 0x146046868, frees vector +0x180) and then frees the object through the allocator vfn 0x38. Better context needed: object class."
+  "proto": "void Render_Delete_SharedRefObj_143bff7e0(void **alloc_obj_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143bff7e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143bff9e0",
+  "notes": "Takes a pair {allocator, obj}; if both are set it runs the same teardown as 0x143c01250 inline (free buffer obj+0x30 via allocator obj+0x18, release the refcounted object obj+0x1e0 under global CS 0x146046868, free the vector obj+0x180 via allocator +0x178) and then frees obj through allocator vfunc +0x38. Caller 0x143bff9e0: texture streaming state machine; Context from caller: obj is the finished streaming load request moved out of the state (0x143c00f10) before being destroyed. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.delete_shared_ref_obj_143bff7e0",

@@ -7,9 +7,9 @@
   "addr": "0x1413305b0",
   "level": "L1",
   "subsystem": "game",
-  "proto": "void *Game_LiveryModel_Build_ForEntrantIndex(void *self, void *out)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141330bf0 (RacingPC lab re_groups/_decomp);xref:0x142a9faf0",
-  "notes": "Walks the 16-byte slot array *(self+0x278)+0x1040..0x1048, summing each provider's item count (vcalls +0xd0/+0xd8 on obj+0x208, list at +0x288..0x290) until it exceeds the index self+0x514, then asks that provider for its primary (vcall +0xa0) or fallback (+0xb0) object and builds out via 0x142459210(out, obj+0x18, self+0x210), or via 0x142459390 from the list returned by vcall +0x1c8."
+  "proto": "void *Game_LiveryModel_Build_ForEntrantIndex(void *self, void *out_list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141330bf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142a9faf0",
+  "notes": "Whole body read. Walks the 16-byte entries of the vector at [self+0x278]+0x1040/+0x1048 (object pointer at +8, interface at object+0x208), adds up the sizes of the vectors at +0x288/+0x290 returned by vt+0xd8(0) and stops at the entry whose running total exceeds the index self+0x514 (entries with vt+0xd0 == 0 end the search). For that entry it fills out_list with 0x142459210(out, obj+0x18, self+0x210) when vt+0xa0 or vt+0xb0 returns an object, else from the entrant list of vt+0x1c8 through 0x142459390. Context from caller: Game_LiveryModel_Init gets self as the component 0x146065fb0 of another object and then picks the team by garage_id from the list. Better context needed: self is not the LiveryModel and the meaning of index +0x514 is open, so the name stays unproven. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.livery_model_build_for_entrant_index",

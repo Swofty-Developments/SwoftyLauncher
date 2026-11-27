@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143cf7a10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Release_PassResources_ResetBounds(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143cf9fe0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Teardown: releases 11 Gfx2 resources at +0x50..+0xa0 via Render_Gfx2Device_DestroyAndTrackResource_4ac8, unregisters and destroys the named handles at +0xb0..+0x100 (allocator/object pairs), calls Render_Pass_ReleaseOutputBuffers on +0xf0, resets the AABB at +0x20..+0x3f to +FLT_MAX/-FLT_MAX with w 1.0, frees the sub-object at +0x10 through FUN_143d10ee0 and clears flags +0x1d0/+0x1d1. Better context needed: owning class."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143cf9fe0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143cf7960,0x143cf9c20",
+  "notes": "Takes and destroys the 11 gfx resources at self+0x50..+0xa0 via Render_Gfx2Device_DestroyAndTrackResource_4ac8, unregisters (Render_Gfx2_LookupEntryOrDefault with null) and frees the owned named objects at +0xc0, +0xb0, +0xd0, +0xe0, +0x100, +0xf0, clears +0x108 and the flag at +0x1d1, resets the bounds at +0x20..+0x3f to (FLT_MAX x3, 1.0) and (-FLT_MAX x3, 1.0), zeroes +0x0, releases the owned object at +0x10 through 0x143d10ee0 and clears the flag at +0x1d0. Caller 0x143cf9c20: teardown routine that calls this first and then destroys the remaining resources of the same object. The call from 0x143cf7960 was not visible in its decompile. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.release_pass_resources_reset_bounds",

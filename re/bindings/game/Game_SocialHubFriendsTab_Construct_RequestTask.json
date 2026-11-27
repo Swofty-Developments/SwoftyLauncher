@@ -7,9 +7,9 @@
   "addr": "0x141dfe6a0",
   "level": "L1",
   "subsystem": "game",
-  "proto": "void *Game_SocialHubFriendsTab_Construct_RequestTask(void *self, void *owner, void *shared_ptr, void **str_a, void **str_b)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e002a0 (RacingPC lab re_groups/_decomp);xref:0x141e01a30",
-  "notes": "Constructor: base vtable 0x145751ca8 then derived 0x145752928; copies a shared_ptr into +8/+0x10 (consumes the by-value argument), add-refs two NeStr into +0x18 and +0x20, stores owner at +0x28 and zeroes +0x30..+0x48. Better context needed: class name of vtable 0x145752928."
+  "proto": "void *Game_SocialHubFriendsTab_Construct_RequestTask(void *self, void *owner, void *shared_ptr_pair, void **str_a, void **str_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e002a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141e01a30",
+  "notes": "Whole body read. Constructor of a 0x50-byte object: base vtable 0x145751ca8, shared pointer copy at +0x08/+0x10, two ref-counted NeStr at +0x18 and +0x20, then final vtable 0x145752928, owner at +0x28 and zeros at +0x30..+0x48; the by-value shared pointer argument is released at the end. Context from caller: Game_FriendsList_SocialHubFriendsTabBaseViewModel allocates it from the allocator at vm+0x270 (also passed as owner), then stores {allocator, object} in a tree keyed by user id and at one site sets a string at +0x48, so it looks like a per-friend entry and not a task. Better context needed: the class behind vtable 0x145752928 decides whether RequestTask is right. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.social_hub_friends_tab_construct_request_task",

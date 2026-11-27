@@ -7,9 +7,9 @@
   "addr": "0x1436ae600",
   "level": "L1",
   "subsystem": "session",
-  "proto": "int32_t Sess_Get_TyreInfoMappedCompoundId(void *ctx, uint8_t vehicle_idx, uint32_t arg)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436b0b90 (RacingPC lab re_groups/_decomp);xref:0x141bc6d30",
-  "notes": "Calls Sess_Build_VehicleTyreInfo(tmp, ctx, vehicle_idx, arg, const 0x14585b5a4, 0.0) and maps the int at tmp+0x1c (0..2) through the 3-entry int table at 0x14585bc90; returns -1 when out of range. Read-only helper used by the garage cockpit VM to learn the fitted tyre category."
+  "proto": "int32_t Sess_Get_TyreInfoMappedCompoundId(void *src, uint8_t vehicle_index, uint32_t flags)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436b0b90 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141bc6d30",
+  "notes": "Whole body read. Calls Sess_Build_VehicleTyreInfo(out, src, vehicle_index, flags, 0x14585b5a4, 0.0) into a 0x20-byte stack struct, takes the int at +0x1c and maps values 0..2 through the 3-entry table 0x14585bc90; anything else returns -1. Game_GarageCockpitViewModel_OnCommandRaised calls it with [vm+0x290]+0x80, vehicle vm+0x2f0 and flags = (session type 0x12 or 5..14) | 2, and only continues with the tyre component when the result is not -1. Better context needed: the meaning of tyre info field +0x1c and of the table values (compound id is not proven). (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.get_tyre_info_mapped_compound_id",

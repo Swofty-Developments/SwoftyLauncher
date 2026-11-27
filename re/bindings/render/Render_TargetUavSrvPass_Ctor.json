@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143c418a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_TargetUavSrvPass_Ctor(void *self, void *owner, void *renderer, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c43e70 (RacingPC lab re_groups/_decomp)",
-  "notes": "Pass constructor: Render_GeometryPass_Ctor with 4 bind slots, vtable 0x1458e8880. On first instance (refcount 0x1464d44d0) creates the shared 0x210 material stored at 0x1464d44c8 and registers resource 0x1458e88a8. Binds slot 1 from prop target, slot 2 from optional targetUAV, slot 3 from optional targetSRV, and allocates a 0xe8 helper with a critical section at +0x550. Better context needed: pass class name string not visible."
+  "proto": "void *Render_TargetUavSrvPass_Ctor(void *self, void *allocator, void *ctx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c43e70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140101230",
+  "notes": "Calls Render_GeometryPass_Ctor(self, allocator, ctx, props, 4), sets vtable 0x1458e8880. On first instance (counter 0x1464d44d0) it builds a shared 0x210-byte material at 0x1464d44c8 (Render_Material_FillMeTextureSlots, Render_Material_CountResourceSlots) and registers resource notify 0x1458e88a8. Binds resource slots through self+0x20: slot 0 = 0x1458e88a8, slot 1 = property 'target', slot 2 = 'targetUAV' (empty if absent), slot 3 = 'targetSRV'; allocates a 0xe8-byte helper with a critical section into self+0x550. Caller 0x140101230: factory that clones the resource desc arrays, allocates 0x560 bytes, runs this ctor and returns {allocator, object}. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.target_uav_srv_pass_ctor",

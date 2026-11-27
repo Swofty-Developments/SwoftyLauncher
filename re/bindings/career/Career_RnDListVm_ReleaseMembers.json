@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141929bf0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_RnDListVm_ReleaseMembers(void *members)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14192b3d0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Member destructor: releases VM node handles at +0x120, +0xe0, +0xc0, +0xa0, +0x60, +0x20, +0x00 (unlink + Vm_Release_Node), destroys vector of 0x3f0-byte items +0x108 via Vm_RnDViewModel_ReleaseMembers, and destroys two vectors of owned {alloc,obj} pairs at +0x88 and +0x48."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14192b3d0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1419004d0,0x141900b20",
+  "notes": "Member teardown in reverse order: unlinks and Vm_Release_Node for the node holders at +0x120, +0xe0, +0xc0, +0xa0, +0x60, +0x20 and +0x00; runs Vm_RnDViewModel_ReleaseMembers over the 0x3f0-stride array +0x108..+0x110 and frees it via allocator +0x100; destroys and frees the two {allocator, object} pair vectors at +0x88 (allocator +0x80) and +0x48 (allocator +0x40). Caller 0x1419004d0: teardown, calls it on self+0x68 when the built flag self+0x1a8 is set and clears the flag; caller 0x141900b20: list populate, does the same before rebuilding. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "career.rn_d_list_vm_release_members",

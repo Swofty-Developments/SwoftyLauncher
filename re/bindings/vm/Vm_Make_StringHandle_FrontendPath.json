@@ -7,9 +7,9 @@
   "addr": "0x141d92eb0",
   "level": "L1",
   "subsystem": "vm",
-  "proto": "void *Vm_Make_StringHandle_FrontendPath(void *out_handle, void **path)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141d94ab0 (RacingPC lab re_groups/_decomp);xref:0x141d93e30",
-  "notes": "Resolves a string node under the VM registry root (g_Vm_Registry+8) with Game_VmBinding_ResolveStringNode(registry, root, *path, NeStr \"frontend\", 0) and constructs a typed string node handle (vtable 0x1456616e0) in out_handle, add-ref'ing the node and linking into its listener list."
+  "proto": "void *Vm_Make_StringHandle_DefaultFrontend(void *out_handle, const char **path)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141d94ab0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141d93e30",
+  "notes": "Renamed from Vm_Make_StringHandle_FrontendPath: the node path is *path (arg 3), while \"frontend\" is passed in the value slot of Game_VmBinding_ResolveStringNode (same position as the value in Vm_Set_String), so it is the default string and not a path. Resolves the string node *path under the g_Vm_Registry root (+8), links out_handle+8..+0x18 into the node's handle list (+0x28) with a refcount bump at +0x24, sets vtable 0x1456616e0 and returns out_handle. Context from caller: Game_SessionResultsContainerViewModel_SetupNextState builds the handle for path 0x14565ff30 and at once overwrites it with Vm_Holder_SetCStr(0x1456140ab) when a feature flag and *(sys+0x291) are set. Better context needed: the exact meaning of arg 4 of Game_VmBinding_ResolveStringNode. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "vm.make_string_handle_frontend_path",

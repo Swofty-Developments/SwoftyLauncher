@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143a19530",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Gfx2_PtrSet_InsertLocked_143a1bb00(void *lock, void *ptr, void *set)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a1bb00 (RacingPC lab re_groups/_decomp)",
-  "notes": "Same body as 0x143a16600 with helpers FUN_143a1bb90/FUN_143a1c1c0: locked insert of {ptr, 1} into a 16-byte-entry set at +0x18, counters +0x108/+0x110 incremented. Better context needed: what the set tracks."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a1bb00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439d9760",
+  "notes": "Same template as 0x143a16600 for another set type: lock, probe via 0x143a1bb90 for {ptr, 1}, status 0 -> 0x143a1c1c0, status 2/3 -> write entry at set+0x18[slot], bump set+0x108 and set+0x110, unlock. Caller 0x1439d9760: device method that registers each new 0x98-byte object (vtable 0x1458a15a8) in the tracking set at device+0x42d0 with lock device+0x3ab0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx2_ptr_set_insert_locked_143a1bb00",

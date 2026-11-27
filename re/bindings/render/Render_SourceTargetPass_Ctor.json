@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143dd8700",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void *Render_SourceTargetPass_Ctor(void *self, void *owner, void *gfx, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ddacd0 (RacingPC lab re_groups/_decomp);xref:0x140129830",
-  "notes": "Pass constructor on top of Render_GeometryPass_Ctor (vtbl 0x1459b9ca0): on first instance builds a shared 0x210-byte material singleton (0x146c3ce90, refcount 0x146c3ce98) and registers resource notify 0x1459b9cc8; binds resource slots 0,1,2 from the notify name and props 'target' and 'source', stores a formatted hashed name at +0x558, sets +0x568=1 when prop 'mode' equals string 0x14560fd88, allocates a 0x160 helper with CS at +0x550."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ddacd0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140129830,0x1442effa0",
+  "notes": "Reads the count of prop 0x145614b06 from the prop bag and calls Render_GeometryPass_Ctor with count*2+3 slots; sets vtable 0x1459b9ca0; on first instance (counter 0x146c3ce98) builds the shared 0x210-byte material (hash 0x434978fa937f5176, global 0x146c3ce90) and registers the notify 0x1459b9cc8; binds slot 0 = 0x1459b9cc8, slot 1 = prop \"target\", slot 2 = prop \"source\" through self[4] vt+0x30; stores a formatted hashed name at +0x558/+0x560; +0x568 = 1 when prop \"mode\" equals the string at 0x14560fd88; allocates a 0x160-byte helper with a critical section into +0x550. Callers: Render_Gfx_BuildConfigEntry and 0x1442effa0 (builds a pass from a param list) both allocate 0x570 bytes and construct with it. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.source_target_pass_ctor",

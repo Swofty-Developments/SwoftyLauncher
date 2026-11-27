@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143a003d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "uint64_t Render_Gfx2Context_ClearUnorderedAccessView(void *ctx, void *view, const void *values)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a029a0 (RacingPC lab re_groups/_decomp);xref:0x143c3d5a0,0x143eebfd0",
-  "notes": "Takes a view object (type +0x44, resource +0x48), records the resource in the context usage map, flushes (cmd vtbl +0x188) and calls cmd vtbl +0x78 with (gpu handle view+0xd0+gpu*0x50, cpu handle view+0xa0+gpu*0x50, native resource view+0x148 or per-frame table, values, 0, 0). Argument shape matches a UAV clear; inferred, not confirmed by strings."
+  "proto": "uint64_t Render_Gfx2Context_ClearUnorderedAccessView(void *ctx, void *uavView, const float *values)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a029a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143c3d5a0,0x143c815c0,0x143cace20",
+  "notes": "Frame index = *(g 0x14618eaa8 +0x148). Picks the view's resource record (view+0x44 kind 1 or 7: view+0x48 + idx*0x40 + 0x180, else *(view+0x48 +0x2a8 + idx*8)) and, if its +0x10 is set, adds it to the command list's used-resource set (cmd[0xb], cmd = ctx+0x60); calls cmd vt+0x188 (flush state), then if view+0xa0+idx*0x50 is non-zero calls cmd vt+0x78 with (view+0xd0+idx*0x50, that handle, resource view+0x148[idx] or per-context fallback view+0x140[ctx+0x16f0], values, 0, 0), matching the ClearUnorderedAccessViewFloat argument layout. Returns 0. Callers: Render_CloudGenPass_Execute clears the UAVs (+0x1a8) of pass textures +0x468/+0x470; 0x143c815c0 and 0x143cace20 (pass execute functions) clear their target UAVs after Render_Gfx2_UploadTextureSubresource. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx2_context_clear_unordered_access_view",

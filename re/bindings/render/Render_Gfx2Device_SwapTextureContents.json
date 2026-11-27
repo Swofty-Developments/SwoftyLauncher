@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1439dffa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "uint64_t Render_Gfx2Device_SwapTextureContents(void *device, void *texA, void *texB)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439e2570 (RacingPC lab re_groups/_decomp)",
-  "notes": "Swaps the backing state of two Gfx2 texture objects: collects dependent view lists (FUN_1439e1410), swaps core (FUN_1439d64c0) and the sub-objects at +0x1a0/+0x1a8/+0x1b0/+0x1b8 and +0x298->+0x80, updates the device descriptor index table (+0x1d28, dirty flag +0x1ca8) and re-allocates view descriptors via Render_Gfx2Device_AllocViewDescriptor_A/B. Returns 0."
+  "proto": "uint64_t Render_Gfx2Device_SwapTextureContents(void *device, void *tex_a, void *tex_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439e2570 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143bff9e0,0x143c00760",
+  "notes": "Collects dependent view lists of both textures (0x1439e1410), swaps the core resource (0x1439d64c0) and field-swaps the view sub-objects at +0x1a0, +0x1a8 (handles +0x90..+0xd8, +0xe0..+0x128), +0x1b0, +0x1b8 and +0x298->+0x80; writes the new descriptor indices into the device table +0x1d28 and sets dirty byte +0x1ca8. Then copies the new view desc into every dependent view and re-creates it via Render_Gfx2Device_AllocViewDescriptor_A/B; returns 0. Callers 0x143bff9e0 and 0x143c00760: texture streaming state machines (TEXTURE_STREAMING logs) that swap the live texture (+0x8) with the staged one holding the new mip set, then copy the staged desc +0xd8.. to +0x28... (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx2_device_swap_texture_contents",

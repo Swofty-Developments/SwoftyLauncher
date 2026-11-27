@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141955100",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "uint64_t Game_SessionResultsButtonBar_Dtor(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419568e0 (RacingPC lab re_groups/_decomp);xref:0x1422a9750",
-  "notes": "Destructor matching the layout bound by 0x14182efa0: if +0xe8 set releases node handles +0xc8 and +0x88 and destroys the button vector +0xb0..+0xc0, sets vtable 0x14571c948, then drops three NeStr refs at +0x78,+0x70,+0x68."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419568e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141914f40,0x1422a9750,0x1422aa670",
+  "notes": "Destructor of the 0xf0-byte button bar: if bound (+0xe8) releases the selected_button node (+0xd0), destroys the button entry vector (+0xb0..+0xc0) through the allocator at +0xa8 and releases the list node (+0x90); then sets vtable 0x14571c948 and drops the three refcounted strings at +0x78, +0x70, +0x68. Same teardown as the start of Game_SessionResultsButtonBar_BindAndPopulate. Callers: 0x141914f40 is the deleting destructor (calls this, then frees if flag), OnTabActivated and 0x1422aa670 (the view model's deactivate/cleanup) loop it over vm+0x970 with count vm+0xa60. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.session_results_button_bar_dtor",

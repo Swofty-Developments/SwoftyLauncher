@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143f99e70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "uint64_t Ne_TypeHandlerMap_Dispatch_ByTypeHash(void *obj, void *registry)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f9c440 (RacingPC lab re_groups/_decomp);xref:0x1445797d0,0x14460af60",
-  "notes": "Gets obj type descriptor via vtable +0x08, takes its 32-bit id at +0x10 and looks it up in a robin-hood map in registry (+0x18 seed, +0x20 entries of 16 bytes, +0x28 meta, +0x38 mask). On hit tail-calls handler vtable +0x10 (handler, obj); on miss sets engine errno 3 (TLS chain + trace ring) and returns 3. Better context needed: registry type (handler/serializer per type)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f9c440 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143f9cae0,0x143fa5bd0,0x1443c1820",
+  "notes": "Whole body read: gets the type descriptor via obj vcall +8 and its u32 hash at +0x10, probes the robin-hood map in registry (multiplier +0x18, 16-byte entries +0x20, info bytes +0x28, mask +0x38, info inc +0x48, shift +0x4c) and, when an entry with a non-null handler (+8) exists, tail-calls handler vcall +0x10 (handler, obj) and returns its result; otherwise records error code 3 in the TLS error list and trace ring and returns 3. Caller 0x143f9cae0 and 0x143fa5bd0: pop each child from the pointer stack at obj+0x38..+0x40, call child vcall +0x30 with the registry, then dispatch obj itself and return the dispatch result, or the last child error when the dispatch returned 0. Caller 0x1443c1820: unregisters callbacks and frees sub-objects +0x60..+0x80 of obj, then dispatches obj to its type handler. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.type_handler_map_dispatch_by_type_hash",

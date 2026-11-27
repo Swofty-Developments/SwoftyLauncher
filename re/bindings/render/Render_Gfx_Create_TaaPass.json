@@ -7,9 +7,9 @@
   "addr": "0x14012a330",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void **Render_Gfx_Create_TaaPass(void **builder, void **outPair, void *p3, void *p4, void *p5, void *p6, void *p7, void *p8)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012a330 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Builds a param list (3 scratch buffers 0x400/0x1000/0x200) with ~30 key/value entries via Render_Gfx_ParamList_PushEntryDollarFlag, name formatted with builder+0x1b8 view index, kind3 entry from builder+0x1b0, plus builder[0x1a]; then alloc 0x560 and ctor 0x143def400 (TAA: history1/history2/colourbox/dilated_depth/aces_lut) with extra arg builder[0x85]. Frees scratch buffers."
+  "proto": "void *Render_Gfx_Create_TaaPass(void **factory, void **out, void *a3, void *a4, void *a5, void *a6, void *a7, void *a8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012a330 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Builds its own param list (3 scratch buffers 0x400/0x1000/0x200 from factory[0]): name formatted with the int at factory+0x1b8, about 30 key/value pairs (6 from arguments a3..a8, one from factory[0x1a], the rest constants) plus a kind-3 entry with the int at factory+0x1b0; clones it into a resource desc, allocates 0x560 bytes and constructs with 0x143def400(obj, allocator, factory[1], desc, factory[0x85]); writes {allocator, object} to out and frees the scratch buffers. Only caller Render_Gfx_BuildConfigObject 0x140104f70 failed to decompile (timeout). Better context needed: the key strings and ctor 0x143def400 decide the pass class. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx_create_taa_pass",

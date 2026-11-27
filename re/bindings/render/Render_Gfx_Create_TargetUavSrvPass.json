@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140101230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void **Render_Gfx_Create_TargetUavSrvPass(void **builder, void **outPair, void *paramList)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140101230 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Same factory template: clone paramList, alloc 0x560, ctor 0x143c43e70 (pass reading target/targetUAV/targetSRV), return {allocator, pass} in outPair. Better context needed: exact pass type of ctor 0x143c43e70."
+  "proto": "void *Render_Gfx_Create_TargetUavSrvPass(void **factory, void **out, void *params)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140101230 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1400fd6d0,0x140104f70",
+  "notes": "Same factory template: clones params into a stack resource desc, allocates 0x560 bytes (align 0x10) from factory[0], constructs with 0x143c43e70 (vtable 0x1458e8880, reads props target / targetUAV / targetSRV), writes {allocator, object} to out, releases the desc. Caller 0x1400fd6d0: pushes 3 params (name, 0x145614ac1, 0x145614b06) and stores the pass in owner slot [0x18], destroying the previous one. 0x140104f70 failed to decompile. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx_create_target_uav_srv_pass",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143c08ba0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Material_BuildDerivedNames(void *material)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c0b170 (RacingPC lab re_groups/_decomp)",
-  "notes": "On the 0x210 material object: unless flag +0x1b4 is set, takes the type index (0x143c0b5a0), looks up its name in table 0x1459c06d0 and interns it (FNV-1a) into +0x1f8/+0x200 and +0x1b8/+0x1c0. Scans entries in vector +0x140 (each ->+0x20 with arrays +0x528 and +0x568); if only the +0x568 array is populated it copies that name to +0x1b8 and sets +0x1b4. Then formats three derived names from the base name and interns them into +0x1c8, +0x1d8, +0x1e8."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c0b170 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143c0e130",
+  "notes": "If byte +0x1b4 is 0 it interns the base name from the table 0x1459c06d0 indexed by 0x143c0b5a0(material), else reuses +0x1f8/+0x200; writes name ptr/FNV-1a hash to +0x1f8/+0x200 and +0x1b8/+0x1c0. Scans the pass vector +0x140 (per pass +0x20 -> ranges +0x528 and +0x568); if only the +0x568 range has entries it takes the name from that entry and sets +0x1b4=1. Then formats three strings (formats at 0x1458c482e, 0x1458c483d, 0x1458c484c, the last two with the name), interns them and stores ptr/hash at +0x1c8/+0x1d0, +0x1d8/+0x1e0, +0x1e8/+0x1f0. Caller 0x143c0e130: large material load/build routine that calls this as its last step after bumping the counter at +0x1b0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.material_build_derived_names",

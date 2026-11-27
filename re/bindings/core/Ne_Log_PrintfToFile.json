@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143918d70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "void Ne_Log_PrintfToFile(const char *fmt, ...)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14391b300 (RacingPC lab re_groups/_decomp);xref:0x1406d63a0,0x1439baaa0,0x1443d82b0",
-  "notes": "Variadic logger: vsnprintf to measure, formats up to 0x3ff chars into a stack buffer, then if the global log FILE (DAT_146108f18) is open writes it with a prefix/separator format (0x14391b440 fprintf-like) and flushes (0x145357a4c); sets DAT_146108f20 after first line. Good hook point for capturing engine log lines (called from Render_Check_GfxResult)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14391b300 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1406c5c80,0x1406cda70,0x1406d63a0",
+  "notes": "Whole body read. Formats the varargs twice with Ne_Crt_VsnprintfWrapper (first for the length, then into a stack buffer capped at 0x3ff chars), and when the file handle at 0x146108f18 is open it writes separator + text with 0x14391b440 (separator 0x14565af47 only after the first write, flag 0x146108f20) and flushes. Caller 0x1406c5c80: crash-report init, opens that file from the module file name + process id and writes cl=%d (0x1629b8); caller 0x1406cda70: fatal handler, writes ipe=true once before Ne_FatalAbort; Game_Elastic_ElasticSearchDisabledViaConfig writes one more key. The file is a small key=value crash info file, not the normal game log. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.log_printf_to_file",

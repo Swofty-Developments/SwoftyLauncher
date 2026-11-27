@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1422b9cc0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
-  "proto": "void Career_RnDAdvance_ApplyListedActivityItems(void *vm, void *career, uint32_t slot, void *arg4)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422bb8c0 (RacingPC lab re_groups/_decomp);xref:0x1422c1af0,0x14232cde0",
-  "notes": "Iterates the VM list node at vm+0x108 [slot*0xc0 + 0x48], reads each element child 'index' (uint typed, desc 0x14612bf38), fetches the current activity record via Career_Get_ActivityRecordByIndex(career+0x48, +0x428) and passes item pointer array +0xa0[index] to 0x1419a1230(career, item, arg4). Better context needed: what 0x1419a1230 does with the item."
+  "proto": "void Career_RnDAdvance_ApplyListedActivityItems(void *row_owner, void *ctx, uint32_t row_idx, void *accum_out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422bb8c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422c1af0,0x1422c8aa0,0x14232cde0",
+  "notes": "Walks the VM list held at *(row_owner+0x108)+row_idx*0xc0+0x48 (array count (end-begin)>>3 or keyed count +0x80), reads each element's uint child \"index\" (type desc 0x14612bf38), fetches the current activity record via Career_Get_ActivityRecordByIndex(*(ctx+0x48), its +0x428) and, when index < count of the record's pointer array +0xa0..+0xa8, calls 0x1419a1230(ctx, items[index], accum_out). Context from caller: accum_out is an 8-byte {cash, resource points} total; Career_Populate_RnDAdvanceResults and Vm_TeamHqMyTeam_OnNewDay_ShowPopup loop row_idx over the popup rows and log POPUP_REWARDS \"Rewards Due\", caller 0x1422c8aa0 (posts the reward bus messages) calls it with row 0 and logs \"Rewards Given\"; a 4th caller 0x142334270 does the same. Hook point to read or scale daily popup rewards; whether 0x1419a1230 only sums or also grants is not visible here. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "career.rn_d_advance_apply_listed_activity_items",

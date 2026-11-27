@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140249f40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_FeScene_Bind_FirstVehicleProxyToJoint(void *self, void *scene)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140249f40 (RacingPC lab re_groups/_decomp);xref:0x1402657b0",
-  "notes": "When the int16 joint/slot id at self+0x5e8 is valid (!= -1): calls 0x1428b3960(*(self+0x5f0)+0xe10, &id, 1), then iterates scene actors (array scene+0x78, count *(scene+0xa0)+0x100), and for the first actor whose type chain reaches DAT_146048678 calls Game_FeVehicleProxyActor_BindToJoint with five fixed joint name strings and the id."
+  "proto": "void Game_FeScene_Bind_FirstVehicleProxyToJoint(void *scene, void *group)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140249f40 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1402657b0",
+  "notes": "Whole body read. Does nothing when the 16-bit handle at scene+0x5e8 is -1. Otherwise calls 0x1428b3960([scene+0x5f0]+0xe10, &scene+0x5e8, 1), then walks the actor array group+0x78 (count [group+0xa0]+0x100), checks each actor type chain (vt+8) against type 0x146048678, and for the first match only calls Game_FeVehicleProxyActor_BindToJoint with five fixed name strings (0x14561074a, 0x145610ba3, 0x145610ba0, 0x145610b9d, 0x145610b9a) and the handle scene+0x5e8. Game_MyTeamIntro_ReleaseMaterialSlots calls it for the two groups at scene+0x840 and scene+0x848 after releasing the slots +0x5e8/+0x5ea with the same 0x1428b3960 and argument 0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.fe_scene_bind_first_vehicle_proxy_to_joint",

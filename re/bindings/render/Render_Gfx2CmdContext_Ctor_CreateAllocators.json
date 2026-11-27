@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1439d47d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_Gfx2CmdContext_Ctor_CreateAllocators(void *self, void *owner)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439d6da0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Ctor of a large Gfx2 command-context object (vtable 0x1458a1120, owner at +0x50, 0x7008-byte zeroed block at +0x1a40). Creates 3 sets of D3D12 command allocators via device(+0x508) vfn 0x48 for types 0/2/3 into +0x08/+0x20/+0x38, sizes a 0x40-filled byte vector from device +0x4a0 count, and pops a context id from the device free-id stack (+0x1d88/+0x1d90) into +0x16f0. Better context needed: caller would confirm the class name."
+  "proto": "void *Render_Gfx2CmdContext_Ctor_CreateAllocators(void *self, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439d6da0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439d6c60",
+  "notes": "Ctor of a 0x8a48-byte object: sets vtable 0x1458a1120, stores allocator at +0x50, zeroes state, sizes a byte vector at +0x1708 from device list (+0x4a0..+0x4a8) filled with 0x40, fills +0x1724..+0x1824 with -1, memsets 0x7008 bytes at +0x1a40. Then loops 3 times calling native device (g_device+0x508) vfunc +0x48 with types 0, 2 and 3 into slots +0x8.., +0x20.., +0x38.. (9 command allocators) and pops a uint32 id from the device free-id stack (+0x1d88/+0x1d90) into +0x16f0. Caller 0x1439d6c60: device method that allocates the object under CS +0x2668, appends it to the vector at +0xba8 and registers it in a tracking set. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx2_cmd_context_ctor_create_allocators",

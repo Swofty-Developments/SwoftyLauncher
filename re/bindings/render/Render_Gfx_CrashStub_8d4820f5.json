@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1439b8810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Gfx_CrashStub_8d4820f5(void)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439bada0 (RacingPC lab re_groups/_decomp);xref:0x1439baaa0",
-  "notes": "Deliberate crash: writes constant 0x8d4820f5 to address 1. Used by Render_Check_GfxResult as a distinct fatal-fault site for one error class."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439bada0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439baaa0",
+  "notes": "Whole body writes the constant 0x8d4820f5 to address 1, a deliberate access violation with a marker value. Context from caller: Render_Check_GfxResult calls it at the end of the fatal path when the HRESULT is 0x8007000e (E_OUTOFMEMORY). Good breakpoint to catch GPU out-of-memory crashes. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx_crash_stub_8d4820f5",

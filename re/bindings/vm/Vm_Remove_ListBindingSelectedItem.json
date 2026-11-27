@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1422b9ae0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
-  "proto": "char Vm_Remove_ListBindingSelectedItem(void *vm)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422bb6e0 (RacingPC lab re_groups/_decomp);xref:0x1422c8c80,0x142334450",
-  "notes": "View-model helper: if list node at +0xe8 is non-empty, removes child key 0 from node +0x60 (once, or once per element when bool flag node at +0x108/+0x28 is true), then finds the bound element in the list (+0x40..+0x48 ptr vector) and erases it, dispatching listener messages 8 (before) and 9 (after). Returns 1 if an element was removed. Better context needed: exact VM class."
+  "proto": "uint8_t Vm_Remove_ListBindingFirstItem(void *binding)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422bb6e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422c8c80,0x142334450",
+  "notes": "Renamed from Vm_Remove_ListBindingSelectedItem: the code removes element index 0, no selection index is read. Returns early if the list node binding+0xe8 is null or empty (vtable+0x10 is-list -> count from +0x40..0x48, else vtable+0x28 -> count +0x80). Removes child key 0 from the node at binding+0x60 (once, or once per element of [binding+0x108]+0x48 when the bool node [binding+0x108]+0x28 is true), calls 0x1423ac5a0(binding+0x100, ..), then takes element 0 via Ne_Ref_GetListElementOrEmpty, finds it in the list node's child array (+0x40..0x48), dispatches list messages 8 (before) and 9 (after), detaches and releases the child, shifts the array down and returns 1; 0 if not found or the node is locked (+0x26 bit 0). Callers Game_TeamHQAdvanceViewModel_ShowTodayCards and Career_TeamHqMyTeamVM_ClearStopping call it when the card list count is non-zero to pop the front card before reading the new element 0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "vm.remove_list_binding_selected_item",

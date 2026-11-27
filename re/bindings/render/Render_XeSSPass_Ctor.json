@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143dfd720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_XeSSPass_Ctor(void *self, void *a2, void *gfx, void *propBag)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143dffcf0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Ctor of a Render_GeometryPass subclass with 13 slots (vtable 0x1459bb050). Builds a shared material on first instance (0x146c3d240), binds props source/target/motionVectors/transparencyMask/velocity/velocity2/depth/stencil/taa_input(optional)/exposureBuffer(optional), then allocs a 0xf8 context (vtable 0x1459baf50, 0x50-byte GPU buffer at +0xb0) stored at self+0x570 and calls Render_XeSS_Recreate on it. Factory caller 0x14012bbf0."
+  "proto": "void *Render_XeSSPass_Ctor(void *self, void *allocator, void *gfx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143dffcf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14012bbf0",
+  "notes": "Calls Render_GeometryPass_Ctor with 0xd bind slots, sets vtable 0x1459bb050, stores two hashed names at self+0x550 and +0x560, creates a shared 0x210-byte material on first instance (refcount 0x146c3d248) and binds \"source\", \"target\", \"motionVectors\", \"transparencyMask\", \"velocity\", \"velocity2\", \"depth\", \"stencil\", optional \"taa_input\" and \"exposureBuffer\". Allocates a 0xf8-byte state object (critical section, vtable 0x1459baf50), gives it a 0x50-byte gfx buffer at +0xb0, calls Render_XeSS_Recreate on it and stores it at self+0x570. Caller 0x14012bbf0: factory that clones the desc arrays, allocates 0x580 bytes and returns an {allocator, pass} pair. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.xe_ss_pass_ctor",

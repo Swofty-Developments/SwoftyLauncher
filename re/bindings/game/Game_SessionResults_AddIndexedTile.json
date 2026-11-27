@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14183d180",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void *Game_SessionResults_AddIndexedTile(void *self, void *out_arg, uint8_t index, uint16_t template_id)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14183e960 (RacingPC lab re_groups/_decomp);xref:0x141836b70",
-  "notes": "Formats a child name from index (fmt 0x14571be18) and gets/creates that VM child. If template_id < 0x100 uses the list node at self+0xb8 and only fills out_arg via 0x141832040; otherwise uses node self+0x220, allocates a 0xb98-byte FeTile (vtable 0x145713a48) with template name from table 0x14571d7e0[low byte, <0x24], sets its 'index' int, pushes {alloc,tile} to vector self+0x240..+0x250 and inits row data at tile+0xe8 via 0x141842180."
+  "proto": "void *Game_SessionResults_AddIndexedTile(void *self, void *row_out, uint8_t index, uint16_t flags)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14183e960 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141836b70,0x141841a90",
+  "notes": "Formats the row node name from format 0x14571be18 with index. If flags < 0x100 it get-or-creates that child under the node at self+0xb8 and builds the row bindings straight into row_out via 0x141832040. Otherwise it creates the child under self+0x220, picks the template name from table 0x14571d7e0[(uint8_t)flags] (<0x24, else \"?\"), allocates a 0xb98 tile (FeTile_Construct_Tile, vtable 0x145713a48), binds int \"index\", builds the row bindings inside the tile (+0xe8) via 0x141832040, sets index, pushes the {allocator, tile} pair onto the vector self+0x238..+0x250 and copies the tile's row bindings into row_out via 0x141842180; returns row_out. Game_SessionResults_PopulateTable calls it once per result row and then fills the returned bindings; caller 0x141841a90: pre-creates self+0x88 rows and immediately destroys the temp row struct with Game_SessionResults_DestroyRows. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.session_results_add_indexed_tile",

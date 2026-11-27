@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141e4e8c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_SettingsVehicleEntryNodes_Delete(void *allocator, void *elem)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e504c0 (RacingPC lab re_groups/_decomp);xref:0x141dde630,0x141de0d90",
-  "notes": "Releases 23 Vm node handles laid out every 0x20 bytes in a 0x2e0-byte element (from +0x2c0 down to +0), then frees the element through allocator vfunc+0x38. Deleter for a heap vehicle entry node block."
+  "proto": "void Game_SettingsVehicleEntryNodes_Delete(void *allocator, void *nodes)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e504c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141dde040,0x141dde630,0x141de0d90",
+  "notes": "Destroys a 0x2e0-byte block of 23 VM node-ref slots (0x20 each: vtable 0x145614e48, node, prev, next). For each slot from +0x2c0 down to +0x0 it unlinks the ref from the node's ref list (node+0x28 head), calls Vm_Release_Node(g_Vm_Registry,node) and zeroes it, then tail-calls allocator vtable+0x38 (free) on the block. Callers: the SettingsViewModel dtor path 0x141dde040 (frees vm[0x159] with allocator vm[0x158]), Game_SettingsViewModel_BuildAiVehicleBlockList (frees the old block before installing a new one) and Game_SettingsViewModel_OnEntrantVehicleEntryUpdated (frees vm+0xac8 with vm+0xac0). Slot names 'SettingsVehicleEntry' are context from callers. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.settings_vehicle_entry_nodes_delete",

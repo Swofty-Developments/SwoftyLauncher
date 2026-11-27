@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1442ef610",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "int64_t Render_PassResourceCache_Destruct(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442f1be0 (RacingPC lab re_groups/_decomp);xref:0x143b61130",
-  "notes": "Teardown: unregisters listener 0x146ca6c40 from +0xb8, for each live entry of robin-hood map +0x20 (elem 0x20) calls Render_Gfx_DestroyPassResources and frees it, clears node map +0x78 (0x1442f2180 / 0x1442f22d0, nodes returned to free list +0x58), frees block list +0x60 and map storage. Class name is a guess from the callee."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442f1be0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143b61130,0x143b760e0,0x144336a70",
+  "notes": "Destructor body: unregisters via (self+0xb8)->vt+0x10 with key 0x146ca6c40, then clears and frees two hash maps: map A (+0x20 entries of 0x20 bytes, +0x28 ctrl bytes, +0x30 count, +0x38 mask) whose values {allocator, pass} get Render_Gfx_DestroyPassResources plus allocator vt+0x38 free, and node map B (+0x78/+0x80/+0x88/+0x90, nodes cleaned by 0x1442f2180/0x1442f22d0, free list +0x58, chunk list +0x60 freed via allocator +0x68). Callers: Ne_Gfx2Renderer_Initialise replaces renderer slot [0x8750] and destroys the old one; 0x143b760e0 (renderer teardown) destroys the same slot; 0x144336a70 is the scalar deleting destructor wrapper. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.pass_resource_cache_destruct",

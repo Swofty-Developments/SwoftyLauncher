@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143a14030",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Gfx2_PtrSet_InsertLocked_143a16600(void *lock, void *ptr, void *set)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a16600 (RacingPC lab re_groups/_decomp)",
-  "notes": "If ptr is non-null: takes the lock (0x1449e4c50/0x1449e4c74), inserts {ptr, 1} into the open-addressing set at set (entries +0x18, 16 bytes each) via FUN_143a16690/FUN_143a16cc0 and bumps counters +0x108 and +0x110. One of three identical template instances. Better context needed: what the set tracks."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a16600 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439d6c60",
+  "notes": "If ptr is non-null: takes the lock (0x1449e4c50), probes the pointer hash set (0x143a16690) for the entry {ptr, 1}; status 0 goes to the grow/insert path 0x143a16cc0, status 2 or 3 writes the 16-byte entry at set+0x18[slot]; increments counters set+0x108 and set+0x110; unlocks (0x1449e4c74). Caller 0x1439d6c60: device method that registers each newly built 0x8a48-byte command context in the tracking set at device+0x3ab8 with lock device+0x3ab0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx2_ptr_set_insert_locked_143a16600",

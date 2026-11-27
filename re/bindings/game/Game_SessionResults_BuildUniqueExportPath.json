@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142c48860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void *Game_SessionResults_BuildUniqueExportPath(void *self, void *out_wpath256)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c4adf0 (RacingPC lab re_groups/_decomp);xref:0x141d93e30",
-  "notes": "Builds a wide-char output path for a session results export: base dir from self+0x20 vtable (CreateDirectoryW), then name = game-mode string + '_' + local entrant team name + '_' + track name (+0xe80 or +0x220) + '_' + localtime stamp, char-mapped, plus extension from vtable+0x10. Uses GetFileAttributesW and appends a counter 1..99999 until the name is free. Good hook to redirect results file output."
+  "proto": "void *Game_Build_UniqueTimestampedFilePath(void *self, void *out_wpath)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c4adf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141d2f6d0,0x141d30220,0x141d93e30",
+  "notes": "Renamed from Game_SessionResults_BuildUniqueExportPath: the body shows only a file path builder, \"SessionResults\" and \"Export\" come from the callers. Gets the directory from the provider at self+0x20 (vfunc +8) and CreateDirectoryW's it, builds a wide name \"<g_Game_Manager+0x1a8 -> +0x30 -> +0x78 string>_<entrant team/vehicle name>_<string at mode+0xe80 or +0x220>_<day month year hour minute from localtime>\" (mode object = *(*(self+0x28)+0x88)+0x260), replaces characters via FUN_142c4e6e0 and maps each char, then joins dir + name + extension (vfunc +0x10); if GetFileAttributesW shows the file exists it appends a counter 1..99999 until free. Result is an inline wide string (vtable 0x1457d90b8, cap 0x100, buffer at out+0x18), empty on failure. Callers (0x141d2f6d0 on event hash 0x74b6c0c, 0x141d30220 same hash, SetupNextState on 0x505aa8b2) check self+0x6e1 and pass the path to Game_Unk_142c48e10, which stores it at self+0x498 and queues an async job. Context from caller: triggered from session results container view models. Hook point to change the output file name. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.session_results_build_unique_export_path",

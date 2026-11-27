@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1416fcb70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
-  "proto": "void Ui_Toggle_BoolNodesAndLabel(void *widget)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416fe160 (RacingPC lab re_groups/_decomp);xref:0x142bc3680",
-  "notes": "Flips three typed VM properties: bool node at widget+0x68 (v = !v), bool node at +0x288 (v = !v), int node at +0x48 (v = (v+1) mod 2, via Ne_Property_SetS32IfChanged), then sets the string holder at widget+0x20 to one of two constant strings (0x1457025d2 / 0x1457025f5) depending on the new +0x68 value. Better context needed: widget class."
+  "proto": "void Ui_Toggle_BoolNodesAndLabel(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416fe160 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142bc3680",
+  "notes": "Reads bool VM node +0x68 and writes its negation (Vm_NodeSet_Bool), same for bool node +0x288, replaces s32 node +0x48 with (v+1) mod 2 (Ne_Property_SetS32IfChanged), then sets the string holder +0x20 to 0x1457025d2 if node +0x68 is now true, else 0x1457025f5. Context from caller: Game_PauseAvailabilityViewModel_OnCommandRaised reaches it by tail jump in command-hash case 0x8d1fc0b9 with self=*(vm+0x1088)+0x4a8 (body is merged into the caller decompile), so it is a pause-menu toggle handler. Hook point for that toggle. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "ui.toggle_bool_nodes_and_label",

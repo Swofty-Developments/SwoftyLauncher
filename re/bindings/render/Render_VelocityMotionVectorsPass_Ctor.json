@@ -7,9 +7,9 @@
   "addr": "0x143c9cb40",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void *Render_VelocityMotionVectorsPass_Ctor(void *self, void *owner, void *renderer, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c9f110 (RacingPC lab re_groups/_decomp)",
-  "notes": "Pass constructor (vtable 0x1459ab360, 9 bind slots, hashed names at +0x550 and +0x560, shared material at 0x1464d50d0). Binds props input, output, depth, velocity, velocity2, stencil, motionVectors, viewportRes and allocates a 0xf8 helper (vtable 0x1459ab260, floats 1,1,1,0.01) at +0x570. Better context needed: exact pass name string at 0x1459ab388 not visible."
+  "proto": "void *Render_VelocityMotionVectorsPass_Ctor(void *self, void *allocator, void *gfx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c9f110 (RacingPC lab re_groups/_decomp, L1 re-check with callers)",
+  "notes": "Calls Render_GeometryPass_Ctor with 9 bind slots, sets vtable 0x1459ab360, stores two hashed names at self+0x550 and +0x560, creates a shared 0x210-byte material on first instance (refcount 0x1464d50d8) and binds desc keys \"input\", \"output\", \"depth\", \"velocity\", \"velocity2\", \"stencil\", \"motionVectors\", \"viewportRes\" to slots 1-8. Allocates a 0xf8-byte state object (critical section, vtable 0x1459ab260, floats 1.0, 1.0, 1.0, 0.01) stored at self+0x570. Context from caller: 0x14012bf10 is a factory that clones the desc arrays, allocates 0x580 bytes and returns an {allocator, pass} pair; it sits next to the XeSS pass factory and the state object has the same 0xf8 shape and shares one material name with the XeSS pass, so this may be another upscaler pass. Better context needed: the vtable 0x1459ab260 methods or the static name strings would decide the real class name. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.velocity_motion_vectors_pass_ctor",

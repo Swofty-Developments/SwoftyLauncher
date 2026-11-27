@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1442efd00",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Destroy_FiveOwnedPtrs(void *pairs)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442f22d0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Destructor of a struct of five {allocator, object} pairs (0x00..0x48): in reverse order calls object vfn[1](0) then allocator vfn +0x38 (free) for each non-null pair. Called from 0x1442f1be0 on entry+0x10, same owner as Render_Release_EntryGfxResources."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442f22d0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1442effa0,0x1442f1be0",
+  "notes": "Destroys five {allocator, object} pairs in reverse order (pairs+0x40/+0x48 down to +0x0/+0x8): when both are non-null it calls the object's deleting dtor (vfunc +0x8, arg 0) and frees it with allocator vfunc +0x38. Slots are not nulled. Caller 0x1442f1be0: hash map clear/teardown that applies it to node+0x10 of every occupied slot and then pushes the node on the free list at self+0x58. The call from 0x1442effa0 was not visible in its decompile. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.destroy_five_owned_ptrs",

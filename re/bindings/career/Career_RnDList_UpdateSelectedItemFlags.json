@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141904090",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
   "proto": "void Career_RnDList_UpdateSelectedItemFlags(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141905870 (RacingPC lab re_groups/_decomp)",
-  "notes": "If active (self+0x1a8), resolves the selected node (self+0x110) to an index with Career_Ui_FindChildIndex under self+0xd0, picks the item VM (tile list +0xf0 when self+0x61, else 0x3f0-byte array +0x170), reads two bool nodes at item+0x28 and +0x48, gates them on game-mode type checks and career state (+0x750), and writes the result to bool node self+0x130, then mirrors that node into bool self+0x150. Better context needed: names of the two bound bools."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141905870 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141900b20",
+  "notes": "No-op unless self+0x1a8 is set. Resolves the selected node from the holder at self+0x110 (follows node refs up to 0x62 deep), finds its child index under the list node self+0xd0 with Career_Ui_FindChildIndex and picks the item VM (tile vector self+0xf0 entry+0xe8 when self+0x61, else array self+0x170 stride 0x3f0). Reads the item's bool nodes at +0x28 and +0x48, gates the result on 0x14077c7d0(obj,1), on whether the object at ctx(+0x10)->+0x88->+0x260 derives from type 0x14612bca8 and on byte +0x750 of *(self+0x20)+0xd8, writes it to the bool node self+0x130 and then mirrors that node's value into the bool node self+0x150. Caller 0x141900b20: list populate, calls it last after subscribing the selection handler. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "career.rn_d_list_update_selected_item_flags",

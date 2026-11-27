@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "render",
   "proto": "void Render_RttGenerator_Destruct(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143e8ce00 (RacingPC lab re_groups/_decomp);xref:0x143e95ee0",
-  "notes": "Destructor body (sets vtable 0x1459bff10): unregisters from link resolver (+0x18,+0x20), drops lookup entry +0x30, frees vectors/lists at +0x810..+0x828, +0x7f8/+0x800, functor +0x190, vectors +0x138, +0x120 and +0x108, queues deferred release of GPU handles +0xf8, +0x70, +0x68, +0x60 and resolves handles +0xf0, +0xe8, then releases a thread-local slot id (+0x58) in the global bitmap DAT_14618e690. Exact class name not shown; caller is Render_Rtt_ReleaseGeneratorBuffers."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143e8ce00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143e95ee0",
+  "notes": "Destructor body: sets vtable 0x1459bff10, calls Ne_LinkResolver_RegisterLinkable(+0x18, +0x20), Render_Gfx2_LookupEntryOrDefault(dev, self+0x30, 0), frees vectors/lists at +0x818, +0x7f8..+0x800, +0x190, +0x138, +0x120, +0x108 through their allocators, releases device objects +0xf8 (deferred), +0xf0, +0xe8, +0x70, +0x68, +0x60 on 0x14618eaa8, then returns the id at +0x58 to a TLS-cached id pool (0x14618e690 bitmap). Caller 0x143eb7530: scalar deleting destructor (calls this, frees self when flag != 0). Context from caller: Render_Rtt_ReleaseGeneratorBuffers destroys it as the member at +0x2c0 of a generator entry, so the class is a sub-object of the RTT generator entry and the class noun is not confirmed by this body. Better context needed: the vtable 0x1459bff10 RTTI or name string. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.rtt_generator_destruct",

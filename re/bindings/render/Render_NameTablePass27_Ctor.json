@@ -7,9 +7,9 @@
   "addr": "0x143cb96a0",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void *Render_NameTablePass27_Ctor(void *self, void *alloc, void *gfx, void **nameTable)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143cbbc70 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Not GeometryPass-derived: sets base vtable 0x145a3ce50 then 0x1459ae0d0, copies name pair from nameTable[0], creates a 0x1b-slot bind layout (Render_Gfx2_BindLayout_Create, callback 0x143eedd30) at self+0x28. Shared material at 0x1465369d0. Binds 27 slots from nameTable[1..0x13] strings plus MD5-hashed literals. Better context needed: pass purpose."
+  "proto": "void *Render_NameTablePass27_Ctor(void *self, void *allocator, void *gfx, void **names)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143cbbc70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Not a GeometryPass: sets vtable 0x145a3ce50 then 0x1459ae0d0, copies name pair from names[0], stores allocator +0x18 and gfx +0x20, creates a 27-slot bind layout via Render_Gfx2_BindLayout_Create(dev, 0x1b, callback 0x143eedd30) into +0x28, creates a shared material once (refcount 0x1465369d8) and binds slots 0..0x1a (0xc skipped) from a plain array of name strings (names[1..0x13]) plus five MD5-hashed lowercase literals. Caller Render_Gfx_BuildConfigObject decompile timed out. Better context needed: literal names at 0x1459ae110/0x1459ae15c/0x1459ae1ab would identify the pass. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.name_table_pass27_ctor",

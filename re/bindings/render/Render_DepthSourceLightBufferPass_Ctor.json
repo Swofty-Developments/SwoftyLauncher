@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143d32310",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_DepthSourceLightBufferPass_Ctor(void *self, void *owner, void *renderer, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d348e0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Pass constructor (vtable 0x1459b3ec0, 4 bind slots, shared material at 0x146545988). Binds props depth_source (slot 1), optional surface (slot 2) and lightBuffer (slot 3), reads an optional bool prop into +0x550, allocates a 0x98 helper at +0x558 and stores a hashed name formatted from +0x528 at +0x560/+0x568. Better context needed: pass name string not visible."
+  "proto": "void *Render_DepthSourceLightBufferPass_Ctor(void *self, void *allocator, void *gfx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d348e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140100be0,0x142fb2580",
+  "notes": "Calls Render_GeometryPass_Ctor with 4 bind slots, sets vtable 0x1459b3ec0, creates a shared 0x210-byte material on first instance (refcount 0x146545990) and binds \"depth_source\" to slot 1, optional \"surface\" to slot 2 and \"lightBuffer\" to slot 3. An optional int key sets the bool at self+0x550, a 0x98-byte helper object is allocated and stored at +0x558, and a name formatted from the field at self+0x528 is hashed into +0x560. Caller 0x140100be0: factory that clones the desc arrays, allocates 0x570 bytes and returns an {allocator, pass} pair. The call from 0x142fb2580 was not visible in its decompile. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.depth_source_light_buffer_pass_ctor",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1432cb3a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "bool Game_FriendsService_Is_UserInList140(void *svc, const void *user_id)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432cd930 (RacingPC lab re_groups/_decomp);xref:0x141e01a30,0x1432cba50",
-  "notes": "If the id has no account part (+0x18 == +0x20) resolves it through the friend objects at svc+0x210..0x218 (shared_ptr pairs, id at obj+0x10, account ids at obj+0x28/+0x30) using the user-id equality rules (type 7, type 3, else Ne_UserId_Equals); then scans the 0x40-byte id array svc+0x140..0x148 for a matching +0x18^+0x20 account hash. Better context needed: what list +0x140 is (blocked or pending users)."
+  "proto": "bool Game_FriendsService_Is_UserInList140(void *svc, void *user_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432cd930 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141685b90,0x1416863e0,0x141cbb0f0",
+  "notes": "Whole body read. user_id is a 0x40-byte id block. When its two words at +0x18/+0x20 are equal it first looks the user up in the shared-pointer list at svc+0x210/+0x218 (entry id at +0x10; type 7 compares +0x28 xor +0x30, type 3 compares +0x18/+0x20 and the bytes at +0x48, others use Ne_UserId_Equals) and takes that entry's +0x28/+0x30 pair. Then scans the 0x40-byte entries at svc+0x140/+0x148 and returns 1 when entry (+0x18 xor +0x20) equals the pair xor. Caller 0x141685b90: friend action handler, picks Game_GameEadpModule_RemoveFriendRequestQueuedRequestID when true; caller 0x1416863e0: builds the player context menu and picks one of two labels for the friend entry; caller 0x141cbb0f0: skips an invite-type step when the user is already in the list. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.friends_service_is_user_in_list140",

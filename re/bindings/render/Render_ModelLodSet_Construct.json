@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143c16a20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_ModelLodSet_Construct(void *self, void *owner, void *allocator, uint32_t lod_count, void *lod_ranges, uint32_t *type, uint32_t arg7, void *arg8, void *arg9, uint32_t index_count, uint16_t *indices, void *vec2, void *bounds)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c18ff0 (RacingPC lab re_groups/_decomp);xref:0x143c19510",
-  "notes": "Constructor (vtable 0x1459bf6d8): allocs lod_count pointer slots (+0x20) and lod_count 12-byte entries (+0x40) holding two floats per LOD from lod_ranges plus a precomputed inverse fade range 1/(a-b) clamped to 999.99994 when below 0.001, copies a u16 array (+0x60), builds sub-object at +0x78 via FUN_143c18170, copies 16 bytes to +0xe0 and 32 bytes of bounds to +0xf0, stores type at +0x110 and selects a per-type function from table 0x145a3e960 into +0x120 (type 3 with 8 LODs becomes 9). Roles of the floats inferred, not proven."
+  "proto": "void *Render_ModelLodSet_Construct(void *self, void *desc, void *allocator, uint32_t lod_count, void *lod_records, uint32_t *mode, uint32_t arg7, void *arg8, void *arg9, uint32_t index_count, uint16_t *indices, void *vec16, void *bounds32)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c18ff0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143b23dd0,0x143c19510",
+  "notes": "Whole body read: vtable 0x1459bf6d8, lod_count at +0x10, allocator +0x18; allocates lod_count pointers (+0x20) and lod_count 12-byte entries (+0x40), copies index_count u16 values (+0x60..+0x70), constructs a sub-object at +0x78 (0x143c18170), copies 16 bytes to +0xe0 and 32 bytes to +0xf0, mode to +0x110. Each entry gets two floats from the 8-byte source records and entry[i]+8 = 1/(entry[i].f1 - entry[i+1].f0), 999.99994 when the gap is below 0.001, last entry 0. Picks a function pointer for +0x120 from table 0x145a3e960 by mode (mode 3 with 8 LODs becomes 9, mode above 12 becomes 2). Caller Render_ModelResource_Parse allocates 0x130 bytes, passes the parsed LOD distance records and stores the result in the model resource [6]. Caller 0x143b23dd0: builds a default one-LOD set with +-50 bounds for an object at +0xf0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.model_lod_set_construct",

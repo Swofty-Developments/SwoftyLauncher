@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143c8d200",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_DeferredResolvePass_Ctor(void *self, void *owner, void *renderer, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c8f7d0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Pass constructor (vtable 0x1458eab90, 0x12 bind slots, shared material at 0x1464d4768). Binds props target, albedo, normal, surface, surface2, depth, lightTilingPass, lightBuffer, optional viewportRes and vrsImage. Stores mode at +0x550 (2 default, 5 or 4 from prop mode), clear flag at +0x554 and the GPU marker name in the inline string at +0x570 (default DeferredResolve, prop markerName). Good hook to find the deferred lighting pass."
+  "proto": "void *Render_DeferredResolvePass_Ctor(void *self, void *allocator, void *gfx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c8f7d0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1401010a0,0x142fb2580",
+  "notes": "Calls Render_GeometryPass_Ctor with 0x12 bind slots, sets vtable 0x1458eab90, on first instance (refcount 0x1464d4770) creates and registers a shared 0x210-byte material, then binds slots from desc keys \"target\", \"albedo\", \"surface\", \"surface2\", \"normal\", \"depth\", \"lightTilingPass\", \"lightBuffer\", optional \"viewportRes\" and \"vrsImage\" plus fixed names. \"mode\" string maps to 2/4/5 stored at self+0x550, \"clear\" to a bool at +0x554, \"markerName\" (default \"Deferred Resolve\") is copied into the inline 128-char string at self+0x558. Caller 0x1401010a0: factory that clones the desc arrays, allocates 0x5f0 bytes and returns an {allocator, pass} pair. The call from 0x142fb2580 was not visible in its decompile. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.deferred_resolve_pass_ctor",

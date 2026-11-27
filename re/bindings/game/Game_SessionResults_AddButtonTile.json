@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14182dc90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_SessionResults_AddButtonTile(void *self, char flag, const char *display_text, const char *command, uint8_t enabled)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14182f470 (RacingPC lab re_groups/_decomp)",
-  "notes": "Creates a 0x148-byte FeTile (vtable 0x145713a28) from template 'session_results_button' under VM node self+0x90 named by command; binds VM fields open_anim (bool), is_enabled (bool), display_text and command (strings), sets display_text, open_anim = (flag==0), is_enabled = enabled, command, then pushes {alloc,tile} onto vector self+0xb0..+0xc0. Hook to add or rename session-results buttons."
+  "proto": "void Game_SessionResults_AddButtonTile(void *self, int8_t index, const char *display_text, const char *command, uint8_t enabled)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14182f470 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14182efa0",
+  "notes": "Get-or-creates the child named command (djb2) under the node at self+0x90, allocates a 0x148 tile from self+0x80 with template \"session_results_button\" (vtable 0x145713a28) and binds open_anim (bool), is_enabled (bool), display_text and command (strings); then sets display_text, open_anim = (index == 0), is_enabled = enabled and command, and pushes the {allocator, tile} pair onto the vector self+0xa8..+0xc0. Caller 0x14182efa0: builds the results screen button bar, one call per feature flag byte at self+0x59..+0x66 with a running index (first button uses the string at self+0x78 and enabled flag self+0x5a, the rest pass enabled=1). Hook point to add or relabel result-screen buttons. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.session_results_add_button_tile",

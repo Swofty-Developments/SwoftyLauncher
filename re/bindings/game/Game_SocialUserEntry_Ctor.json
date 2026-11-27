@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14184b8c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void *Game_SocialUserEntry_Ctor(void *self, void *allocator, void **str_a, void **str_b, const char *name, void *user_id_0x48, void **str_c)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14184d0a0 (RacingPC lab re_groups/_decomp);xref:0x141c36400,0x141df7b70,0x141e01a30",
-  "notes": "Constructs a record: moves NeStr refs into +0 and +8, builds an Ne string at +0x10 from name with the given allocator, copies a 0x48-byte id block to +0x38, moves a third NeStr to +0x80; the three source refs are released and nulled."
+  "proto": "void *Game_SocialUserEntry_Ctor(void *self, void *allocator, void **name_str, void **text_str, const char *icon_path, void *user_id, void **extra_ref)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14184d0a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141c36400,0x141df7b70",
+  "notes": "Constructs a 0x88-byte entry: +0x0 and +0x8 take refcounted NeStr refs from name_str/text_str (refcount at +4), +0x10 is an Ne string (vtable 0x145614eb8, allocator arg, inline buffer at +0x30) filled from the C string icon_path, +0x38..+0x7f is a 0x48-byte copy of user_id, +0x80 takes the ref from extra_ref; the three by-value ref arguments are then released and zeroed. Returns self. Callers Game_SocialNotifications_Update and Game_FriendsList_OnGetFriendsDone construct it in place when pushing into 0x88-stride vectors (+0x13f8/+0x1400/+0x1418), passing the user name, a text key such as lng_wants_to_invite_you_to_play and icons like #overrides.icons.social_request.game_invite / friend_request. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.social_user_entry_ctor",

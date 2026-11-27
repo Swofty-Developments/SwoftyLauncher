@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143dece30",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_TemporalAAPass_Ctor(void *self, void *a2, void *gfx, void *propBag, void *a5)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143def400 (RacingPC lab re_groups/_decomp)",
-  "notes": "Ctor of a Render_GeometryPass subclass with 26 resource slots (vtable 0x1459ba530), stores a5 at +0x550. Binds prop-bag names history1/history2/input/depth/velocity/velocity2/stencil/reflectionDepth/output/heatmap/outputDLISP/crossFade/dilated_depth/dilated_velocity/history_depth/history_weight/history_rejection/colourbox_y/colourbox_cgco/aces_lut/aces_sdr_lut(optional)/dispatchIndirectArgs/dispatchIndirectGroupIDs to slots 2..0x19; first instance creates a shared 0x440-byte GPU buffer in 0x146c3d0d8. Name inferred from the resource names (temporal AA / upscale resolve); factory caller 0x14012a330."
+  "proto": "void *Render_TemporalAAPass_Ctor(void *self, void *allocator, void *gfx, void *desc, void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143def400 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14012a330",
+  "notes": "Calls Render_GeometryPass_Ctor with 0x1a bind slots, sets vtable 0x1459ba530, stores arg5 at self+0x550 and binds desc keys \"history1\", \"history2\", \"input\", \"depth\", \"velocity\", \"velocity2\", \"stencil\", \"reflectionDepth\", \"output\", \"heatmap\", \"outputDLISP\", \"crossFade\", \"dilated_depth\", \"dilated_velocity\", \"history_depth\", \"history_weight\", \"history_rejection\", \"colourbox_y\", \"colourbox_cgco\", \"aces_lut\", optional \"aces_sdr_lut\", \"dispatchIndirectArgs\", \"dispatchIndirectGroupIDs\". On first instance (refcount 0x146c3d0c8) it creates a shared 0x440-byte buffer kept in the global at 0x146c3d0d8. Caller 0x14012a330: factory that builds the desc, allocates 0x560 bytes, passes one extra pointer through as arg5 and returns an {allocator, pass} pair. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.temporal_aa_pass_ctor",

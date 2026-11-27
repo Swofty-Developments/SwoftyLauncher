@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1418343c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void *Game_SessionResultsStringsVm_Construct(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141835ba0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Constructor: calls base ctor 0x144241240 then registers three string VM fields under node self+0x08: disqualified_string='lng_disqualified' (+0x20), did_not_finish_string='lng_did_not_finish' (+0x40), no_time_string='lng_no_time' (+0x60), each as a linked node handle with vtable 0x1456616e0."
+  "proto": "void *Game_SessionResultsStringsVm_Construct(void *self, void *parent_node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141835ba0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141835820",
+  "notes": "Runs the base init 0x144241240, then under the node at self+8 binds three string values with Vm_Set_String and stores their holders: disqualified_string = \"lng_disqualified\" at +0x20, did_not_finish_string = \"lng_did_not_finish\" at +0x40, no_time_string = \"lng_no_time\" at +0x60 (holder vtable 0x1456616e0); returns self. Caller 0x141835820: constructor of the results view model, which binds \"results_current\" and then constructs this sub-object at its +0x110 with the same parent node. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.session_results_strings_vm_construct",

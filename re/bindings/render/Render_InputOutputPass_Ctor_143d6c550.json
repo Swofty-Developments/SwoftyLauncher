@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143d69f80",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_InputOutputPass_Ctor_143d6c550(void *self, void *owner, void *renderer, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d6c550 (RacingPC lab re_groups/_decomp)",
-  "notes": "Minimal pass constructor (vtable 0x1459b5690, 3 bind slots): slot 0 is the MD5 hash of a lowercased 0x31-char constant name at 0x1459b56b8, slot 1 is prop input and slot 2 is prop output. Better context needed: the constant name would identify the effect."
+  "proto": "void *Render_InputOutputPass_Ctor_143d6c550(void *self, void *allocator, void *gfx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d6c550 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14012a9a0",
+  "notes": "Calls Render_GeometryPass_Ctor with 3 bind slots and sets vtable 0x1459b5690. Slot 0 is bound to the MD5 hash of a lower-cased 0x31-char static name at 0x1459b56b8, slot 1 to the desc key \"input\" and slot 2 to \"output\"; no other state is added. Caller 0x14012a9a0: factory that clones the desc arrays, allocates 0x550 bytes and returns an {allocator, pass} pair. Better context needed: the static name string at 0x1459b56b8 would give the real pass name. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.input_output_pass_ctor_143d6c550",

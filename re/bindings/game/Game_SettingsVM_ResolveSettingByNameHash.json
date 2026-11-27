@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141dbccb0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "uint64_t Game_SettingsVM_ResolveSettingByNameHash(void *self, void **name_str)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141dbe8b0 (RacingPC lab re_groups/_decomp);xref:0x141db42d0,0x141dd36f0",
-  "notes": "Hashes the NeStr name with djb2 (seed 0x1505, *33) and switches over ~35 hashes to pick a static key string, then calls 0x1441e5bd0(obj, section string from (self+0x620)+0x8e8, key) on (self+0x620)+0x8e0 and returns its result. Maps UI setting ids to config keys."
+  "proto": "void *Game_SettingsVM_Resolve_StringByNameHash(void *self, void **name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141dbe8b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141da6270,0x141da92d0,0x141db42d0",
+  "notes": "Renamed from Game_SettingsVM_ResolveSettingByNameHash: the input is an entry/category name (e.g. \"cat_driver_icons\") and the result is used as a string value, not a setting. Computes the djb2 hash (5381, x33) of the NeStr *name, maps about 35 known hashes to constant key strings (default 0x145638190), then returns func_0x1441e5bd0(*(*(sys+0x8e0)+8), NeStr(*(sys+0x8e8)), NeStr(key)) with sys=*(self+0x620). Callers (Game_SettingsEditScreenViewModel_WorkoutEntriesAction with \"cat_driver_icons\", 0x141da6270 and 0x141da92d0 with the name from an entry's node, both settings row builders) write the result with Vm_NodeSet_String into the entry's string node +0x198, mostly when DAT_14606c9dc == 1. Hook point to remap per-category strings. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.settings_vm_resolve_setting_by_name_hash",

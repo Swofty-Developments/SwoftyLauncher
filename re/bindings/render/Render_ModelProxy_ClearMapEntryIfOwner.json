@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143c6c500",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void Render_ModelProxy_ClearMapEntryIfOwner(void *map_owner, uint64_t key, void *owner)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c6ead0 (RacingPC lab re_groups/_decomp);xref:0x143d42b80",
-  "notes": "FNV-1a hashes the u64 key and looks it up in the chained hash map at +0x78 (end) / +0x90 (buckets) / +0xa8 (mask); if found and node+0x20 == owner it nulls node+0x20, if not found pushes error 2. Better context needed: the map owner type (same layout as the map used by FUN_143d3de90)."
+  "proto": "void Render_ModelProxy_ClearMapEntryIfOwner(void *map, uint64_t key, void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c6ead0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143d40b10,0x143d42b80",
+  "notes": "Whole body read: FNV-1a hashes the 8 key bytes, masks with map+0xa8, walks the bucket chain (bucket array +0x90, 16-byte first/last pairs, end sentinel +0x78) for a node with key at +0x10; when found and node+0x20 equals owner it sets node+0x20 to 0, otherwise leaves it; when the key is missing it records error code 2 in the TLS error list and trace ring. Caller Render_ModelProxy_HandleMessage (message 0x17) uses it to drop the proxy's old registration (key at proxy+0x178, map from gfx vcall +0x2a0 result +0x18) before storing a new key. Caller 0x143d40b10: destructor of the same object, clears its registration for key +0x208. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.model_proxy_clear_map_entry_if_owner",

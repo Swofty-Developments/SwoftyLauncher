@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1418402b0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_SessionResultsStdVM_RebuildRowsForTab(void *self, uint32_t tab)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141841a90 (RacingPC lab re_groups/_decomp);xref:0x1422a9750",
-  "notes": "If (tab&0xffff)>0xff formats a name and calls FUN_141841f50. Loops self+0x88 count calling FUN_14183e960(self, tmp, i, tab) then Game_SessionResults_DestroyRows. Then writes first list element of self+0xb8 into node +0xd8 (selected) and the list count into node +0xf8."
+  "proto": "void Game_SessionResultsStdVM_RebuildRowsForTab(void *self, uint32_t spec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141841a90 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422a9750",
+  "notes": "If the high byte of the 16-bit spec is set it formats a header string (0x14571b4e1) and calls FUN_141841f50(self, str, spec); then for i < *(self+0x88) builds row i with FUN_14183e960(self, tmp, i, spec) and frees the temp via Game_SessionResults_DestroyRows. Finally writes the first element of the list at +0xb8 into the UIDB-ref node +0xd8 and the list count into node +0xf8. Context from caller: Game_SessionResultsStandardViewModel_OnTabActivated calls it on the results object at vm+0x6d0 with *(u8 *)(vm+0x638) | 0x100 when vm+0x630 is null (otherwise Game_SessionResults_PopulateTable); \"Tab\" in the name is caller context. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.session_results_std_vm_rebuild_rows_for_tab",

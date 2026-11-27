@@ -7,9 +7,9 @@
   "addr": "0x143cd88c0",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void *Render_SkyShadowMaskPass_Ctor_FromDesc(void *self, void *owner, void *renderer, const void *desc)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143cdae90 (RacingPC lab re_groups/_decomp)",
-  "notes": "Constructs a pass (vtable 0x1459affc0) from a desc struct: name pair from desc[0], creates a 0x13-slot bind layout (Render_Gfx2_BindLayout_Create) at +0x28 and binds slots from the string fields desc[1..0x10], a constant 0x1459ae100 in slot 0xb and the MD5 of g_skyshadowmasktex in slot 0xf. Copies desc[0x13],[0x14] to +0x40/+0x48, ints desc+0x88/+0x8c to +0x50/+0x54 and a bool from desc+0x90 to +0x58. Better context needed: true pass name."
+  "proto": "void *Render_SkyShadowMaskPass_Ctor_FromDesc(void *self, void *allocator, void *gfx, void *desc_ptr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143cdae90 (RacingPC lab re_groups/_decomp, L1 re-check with callers)",
+  "notes": "Constructs a pass from a flat desc struct: copies the 16-byte name from desc[0], stores allocator and gfx at +0x18 and +0x20, creates a 0x13-slot bind layout at +0x28, sets vtable 0x1459affc0 and binds slots 0-10, 0xd, 0xe, 0x10-0x12 from name pointers desc[1..0x10]; slot 0xf is bound to the inline MD5 hash of \"g_skyshadowmasktex\". desc[0x11] goes to +0x50, the int at desc+0x8c to +0x54, desc[0x12] != 0 to the bool at +0x58, desc[0x13] and [0x14] to +0x40 and +0x48. Context from caller: 0x14012af00 formats four names with an index from its own +0x1b8 field, fills the desc from ten passed names and returns an {allocator, pass} pair of 0x60 bytes. Better context needed: \"SkyShadowMask\" comes only from one of the 19 bound textures, the vtable 0x1459affc0 methods would confirm the class. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.sky_shadow_mask_pass_ctor_from_desc",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141834040",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void *Game_SessionResultsVM_Construct_ResultsBinding(void *self, void *allocator, void *vm_node, uint8_t flag, uint32_t mode)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141835820 (RacingPC lab re_groups/_decomp);xref:0x141d31c70,0x1422a9750",
-  "notes": "Constructor for the results table helper: stores allocator +0, mode +0x88, node handle +0x90, sub-binding +0xb0 (0x1442a3de0), node ref \"results_current\" at +0xd0 (subscribed to handler 0x141835eb0), another VM value at +0xf0, child block +0x110 (FUN_141835ba0), an empty red-black tree head (0x78-byte sentinel) at +0x268, flag at +0x288, and registers loc key \"lng_results_plus_laps\" with 0x14417fd60."
+  "proto": "void *Game_SessionResultsVM_Construct_ResultsBinding(void *self, void *allocator, void *parent_node, uint8_t flag, uint32_t mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141835820 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141d31c70,0x1422a9750",
+  "notes": "Constructor of a 0x290-byte results list object: stores allocator at +0x0/+0x198/+0x260, mode at +0x88, links parent_node at +0x90, binds a list at +0xb0 (name 0x14565c7bc), the \"results_current\" node at +0xd0..+0xe8 and a second node (0x145713a60) at +0xf0, builds status strings via FUN_141835ba0 at +0x110 (lng_disqualified, lng_did_not_finish, lng_no_time), allocates a 0x78 tree sentinel at +0x268, stores flag at +0x288, subscribes handler 0x141835eb0 on results_current and registers \"lng_results_plus_laps\"; returns self. Callers construct it in place at vm+0x6d0 (count at vm+0x960): Game_SessionResultsStandardViewModel_OnTabActivated with (1, *(vm+0x678)), Game_ResultsContainerVM_OnActivate with (0, 0xe), then call Game_SessionResults_Resolve_SystemDeps_Full on it. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.session_results_vm_construct_results_binding",

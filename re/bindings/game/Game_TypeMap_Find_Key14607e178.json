@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141835350",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void *Game_TypeMap_Find_Key14607e178(void *map)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141836b30 (RacingPC lab re_groups/_decomp);xref:0x141cb32b0",
-  "notes": "Looks up the fixed key pointer 0x14607e178 (a type/service id) in a robin-hood u64 map via Ne_RobinHoodMap_U64_FindIndex and returns the 8-byte value at entry+8 or 0 when absent (entries +0x18, end +0x20). Better context needed: which service/component type 0x14607e178 identifies."
+  "proto": "void *Game_TypeMap_Find_Key14607e178(void *type_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141836b30 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141836480,0x1419de490,0x141b12c60",
+  "notes": "Calls Ne_RobinHoodMap_U64_FindIndex(type_map, &key) with the fixed key pointer 0x14607e178, indexes the 16-byte slot array at map+0x18 and returns slot+8 (value pointer), or 0 when the slot equals the end pointer map+0x20. Context from caller: all three callers are init routines that resolve a chain of required systems from the same type-keyed map (keys like k_Live_GameModeSystemKey, k_Live_PenaltyLogKey) and abort when one is null; 0x141836480 stores the result at +0x78, 0x1419de490 at +0xca8, 0x141b12c60 likewise. Better context needed: which system type owns key 0x14607e178. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.type_map_find_key14607e178",

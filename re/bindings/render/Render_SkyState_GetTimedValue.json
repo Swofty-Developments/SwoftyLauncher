@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142e15710",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_SkyState_GetTimedValue(void *track, void *out_value16)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e17ca0 (RacingPC lab re_groups/_decomp);xref:0x142e164b0",
-  "notes": "Returns a 16-byte value from a sky track: if track[0] source is null returns cached track+0x10; else takes shared lock at clock+0x268 (clock = track[1]), and if FUN_142ee2190 says active computes time either from clock+0x90 (mode +0x40 == 1) or clamp01((clock+0x68 + clock+0x70) * clock+0x80 / max(clock+0x84, 0.01)), times 24 when clock+0x22, re-evaluates the curve into track+0x10 when the time differs from cached track+0x30, or returns override track+0x20 when clock+0x60 flag +0xb4 and track+0x35. Semantics of the value (colour or direction) not shown."
+  "proto": "float *Render_TimedCurveBinding_EvalVec4(void *binding, float *out_vec4)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e17ca0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142e164b0",
+  "notes": "Renamed from Render_SkyState_GetTimedValue: self is a 0x50-byte curve binding member, not the sky state, and the body evaluates and caches a 16-byte value. Whole body read: when binding[0] (curve) is 0 it copies the default 16 bytes at +0x10; otherwise it locks clock (+8) +0x268, checks 0x142ee2190, takes time = clock+0x90 when +0x40 == 1, else clamp01((f64 +0x68 + f64 +0x70) * f32 +0x80 / max(f32 +0x84, 0.01)), times 24.0 when clock+0x22 is set; when the clock override object (+0x60, flag +0xb4) and binding+0x35 are set it returns the override at +0x20, else re-evaluates the curve (0x142ee2300) into +0x10 only when time differs from the cached +0x30, and returns +0x10. Context from caller: Render_SkyState_Update calls it on bindings at sky+0x50, +0xa0, +0xf0, +0x140, +0x190, +0x4e0, +0x530, +0x670, +0x840, +0x890 (next to scalar Game_TodCurveBinding_EvalNow) and writes xyz into the per-view sky constants at +0x42a30... Good hook to override time-of-day sky colours. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.sky_state_get_timed_value",

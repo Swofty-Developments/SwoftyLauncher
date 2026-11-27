@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143c2c590",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void Render_Frustum_ComputeCornersFromPlanes(float *outCorners8x4, const float *planes6x4)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c2eb60 (RacingPC lab re_groups/_decomp)",
-  "notes": "Computes the 8 frustum corner points as triple-plane intersections: for each combination of plane 0 or 1, plane 2 or 3, plane 4 or 5 it uses cross products of the plane normals and -1/det times the plane w terms. Writes 8 vec4 (32 floats) to out. Pure math, no side effects."
+  "proto": "void Render_Frustum_ComputeCornersFromPlanes(float *out_corners8x4, const float *planes6x4)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c2eb60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143ca7860",
+  "notes": "Reads six vec4 planes and writes eight vec4 points, each the intersection of three planes solved with cross products and -1/det: (0,2,4) (1,2,4) (0,3,4) (1,3,4) (0,2,5) (1,2,5) (0,3,5) (1,3,5). Pure math, no globals. Caller 0x143ca7860: builds the six planes on the stack from sums and differences of basis rows, calls this and averages four of the corners (x0.25) to get a centre point. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.frustum_compute_corners_from_planes",

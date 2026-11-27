@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143a05e20",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "uint64_t Render_Gfx2Context_CopyTextureRegion(void *ctx, void *dstTex, uint32_t a3, uint32_t a4, uint32_t a5, uint32_t a6, uint32_t a7, void *srcTex, uint32_t a9, uint32_t a10, uint32_t a11, uint32_t a12, uint32_t a13, uint32_t a14, uint32_t a15, uint32_t a16)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a083f0 (RacingPC lab re_groups/_decomp);xref:0x143c3d5a0",
-  "notes": "Resolves native textures of dst and src (+0x1c0+gpu*0x20 or per-frame table +0x200), records both (+0x2a8) in the context usage map, flushes and forwards all sub-resource/offset/box arguments to 0x143a07de0 on the native command list (cmd+0x78) when cmd+0x20 <= 2. Returns 0xe when a texture is missing. Meaning of the individual ints not verified."
+  "proto": "uint64_t Render_Gfx2Context_CopyTextureRegion(void *ctx, void *texA, uint32_t a3, uint32_t a4, uint32_t a5, uint32_t a6, uint32_t a7, void *texB, uint32_t a9, uint32_t a10, uint32_t a11, uint32_t a12, uint32_t a13, uint32_t width, uint32_t height, uint32_t depth)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a083f0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143a08620,0x143c3d5a0,0x143c9d500",
+  "notes": "Resolves the native resource of both textures for the current frame index (tex+0x1c0+idx*0x20, fallback tex+0x200[ctx+0x16f0]*0x30+0x18+idx*8); returns 0xe if either is missing. Adds both resource records (tex+0x2a8[idx], if +0x10 set) to the command list's used-resource set, calls cmd vt+0x188, and when cmd+0x20 <= 2 forwards all 16 arguments to 0x143a07de0 with the native list cmd+0x78; returns its result. Callers: 0x143a08620 copies every mip/slice of one texture into another (extent from the source mip size); Render_CloudGenPass_Execute copies slices inside pass textures +0x468/+0x470; 0x143c9d500 (pass execute) copies sub-rectangles between its targets. texA is most likely the destination (the argument order of callers), not proven in this body. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx2_context_copy_texture_region",

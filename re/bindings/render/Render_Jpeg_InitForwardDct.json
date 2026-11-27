@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1449d5514",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Jpeg_InitForwardDct(void *cinfo)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1449d7ed4 (RacingPC lab re_groups/_decomp);xref:0x1449d77ec",
-  "notes": "libjpeg jinit_forward_dct by slot: allocs 0x138 struct into cinfo+0x218 (fdct), sets start_pass FUN_1449dfedc and zeroes two 4-entry divisor table arrays. Identified from struct slot order (0x1e0 master .. 0x220 entropy)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1449d7ed4 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1449d77ec",
+  "notes": "Whole body read: allocates 0x138 bytes from the JPEG memory manager (cinfo+8, first vtable entry, pool 1), stores it at cinfo+0x218 (fdct), sets its start_pass to 0x1449dfedc and clears two 4-entry pointer tables at +0xa8 and +0x118 (integer and float divisor tables). Matches libjpeg jinit_forward_dct. Caller Render_Jpeg_InitCompressDctModules (jinit_compress_master) calls it unconditionally after the colour/downsample/prep modules. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.jpeg_init_forward_dct",

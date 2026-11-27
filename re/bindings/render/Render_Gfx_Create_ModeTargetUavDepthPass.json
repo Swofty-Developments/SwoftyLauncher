@@ -7,9 +7,9 @@
   "addr": "0x140129ce0",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void **Render_Gfx_Create_ModeTargetUavDepthPass(void **builder, void **outPair, void *paramList, void **extra)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140129ce0 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Factory template with one extra arg: clone paramList, alloc 0x560, ctor 0x143dd9490(pass, alloc, builder[1], desc, *extra); that ctor reads mode/targetUAV/depth. Better context needed: pass type of 0x143dd9490."
+  "proto": "void *Render_Gfx_Create_ModeTargetUavDepthPass(void **factory, void **out, void *params, void **extra)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140129ce0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Factory template: clones params into a stack resource desc (seed 0xc4ceb9fe1a85ec53), allocates 0x560 bytes (align 0x10) from factory[0] vt+0x18, constructs with 0x143dd9490(obj, allocator, factory[1], desc, *extra), writes {allocator, object} to out, releases the desc. Only caller Render_Gfx_BuildConfigObject 0x140104f70 failed to decompile (timeout), so the call site could not be read. Better context needed: the ctor 0x143dd9490 decides the pass class. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx_create_mode_target_uav_depth_pass",

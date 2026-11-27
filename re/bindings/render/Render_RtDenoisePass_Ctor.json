@@ -7,9 +7,9 @@
   "addr": "0x143d5d160",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void *Render_RtDenoisePass_Ctor(void *self, void *alloc, void *gfx, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d5f730 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Render_GeometryPass_Ctor with 0x18 slots, vtable 0x1459b5060; shared material at 0x146545a50. Binds inGbufferDepth/Albedo/Normal/Surface/Extended1-4, inShadow, in/outAoHit, in/outDiffHit, in/outSpecHit, in/outSpecAlphaHit, inTranslucency, outShadowTranslucency, validation, outNormalRoughness, outObjectMotion. Allocs 0x3f0 impl (vtable 0x1459b4d50) at self+0x550 and resets globals 0x145f99684..0x145f997fe (denoiser settings, 0.002 and 0.05 floats)."
+  "proto": "void *Render_RtDenoisePass_Ctor(void *self, void *allocator, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d5f730 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Render_GeometryPass_Ctor with 0x18 slots, vtable 0x1459b5060, shared material once (refcount 0x146545a58). Binds props inGbufferDepth/Albedo/Normal/Surface/Surface2/Extended1..4, inShadow, inAoHit, outAoHit, inSpecHit, inSpecAlphaHit, outSpecHit, outSpecAlphaHit, inDiffHit, outDiffHit, inTranslucency, outShadowTranslucency, validation, outNormalRoughness, outObjectMotion to slots 1..0x17; allocates a 0x3f0-byte state (vtable 0x1459b4d50) into +0x550 and writes denoiser default globals at 0x145f99684.. (0.002, 0.05). 'Denoise' is inferred from the in/out hit-signal pairs, not from a string. Caller Render_Gfx_BuildConfigObject decompile timed out. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.rt_denoise_pass_ctor",

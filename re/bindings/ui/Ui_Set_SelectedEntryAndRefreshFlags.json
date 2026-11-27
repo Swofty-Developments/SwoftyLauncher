@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14254d0f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "ui",
-  "proto": "void Ui_Set_SelectedEntryAndRefreshFlags(void *self, uint32_t selKey)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14254f020 (RacingPC lab re_groups/_decomp);xref:0x141a4aa40,0x141a4add0",
-  "notes": "Walks 0x18-byte entries at +0xd8..+0xe0, type-checks entry object (+8), filters by category id (+0x1c vs active record in +0x48/+0x30 list, or 0x7fffffff) and calls 0x1428edbf0(ctx +0x28, u16 entry+0x10, bool entry matches selKey byte0 and u16 at +2). Then stores selKey at +0x1a00 and sets +0x1a04=1."
+  "proto": "void Ui_Set_SelectedEntryAndRefreshFlags(void *self, uint32_t packed_key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14254f020 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141a4aa40,0x141a4add0,0x141a4b400",
+  "notes": "Clears self+0x1a04, then walks the 0x18-stride entries at self+0xd8..0xe0: for each entry whose object (+0x8) derives from type 0x146047430 and whose object+0x1c equals the id of the first active record (byte +0x10 == 1) in [self+0x48]+0x30..0x38 (or 0x7fffffff when none is active), calls 0x1428edbf0([self+0x28], entry u16 +0x10, match) with match = entry byte +0x0 == key low byte and entry u16 +0x2 == key high word. Finally stores self+0x1a00 = packed_key and self+0x1a04 = 1. Context from caller: Game_UiMessageScreen_Destructor and 0x141a4b400 (restores the pending loadout, then updates decals) pass a customisation entry's packed key (+0x4); Game_CustomisationCarCategorySelectViewModel_OnCommandRaised passes 0x3fff0000 (none) on the object at vm+0x3c0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "ui.set_selected_entry_and_refresh_flags",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143b58980",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Gfx_List_PushEntry24_MergeRunKind3(void *list, uint64_t a, uint64_t b)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143b5af50 (RacingPC lab re_groups/_decomp)",
-  "notes": "Appends a 24-byte record {a, b, 0} to the vector at +0x50/+0x58/+0x60 (allocator +0x48, grow x1.5), then either increments the count (+0x20) of the last run node in the list at +0x70 if its kind (+0x10) is 3, or allocates a 0x28 run node {kind 3, startIndex, count 1} via allocator +0x68. Better context needed: owner class of the list."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143b5af50 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143bd53c0",
+  "notes": "Appends the 24-byte entry {a, b, 0} to the vector at list+0x50/+0x58/+0x60 (allocator +0x48, 1.5x growth). Then looks at the tail node of the intrusive list at +0x70 (count +0x78): if its kind (+0x10) is 3 it increments that node's run length (+0x20); otherwise allocates a 0x28-byte node {kind=3, first index=+0x18, length=1} from allocator +0x68 and links it at the tail. Caller 0x143bd53c0: large builder that creates Gfx2 device objects and, for item kinds 0/1, appends the item to the list selected by the index at item+0x20 (second argument is the builder itself). (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx_list_push_entry24_merge_run_kind3",

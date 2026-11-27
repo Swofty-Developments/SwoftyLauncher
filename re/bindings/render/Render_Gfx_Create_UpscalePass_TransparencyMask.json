@@ -7,9 +7,9 @@
   "addr": "0x14012bbf0",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void **Render_Gfx_Create_UpscalePass_TransparencyMask(void **builder, void **outPair, void *paramList)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012bbf0 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Factory template: clone paramList, alloc 0x580, ctor 0x143dffcf0 (upscaler-style pass: source/target/motionVectors/transparencyMask/velocity/depth/taa_input/exposureBuffer). Returns {allocator, pass}."
+  "proto": "void *Render_Gfx_Create_UpscalePass_TransparencyMask(void **factory, void **out, void *params)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012bbf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Factory template: clones params into a stack resource desc, allocates 0x580 bytes (align 0x10) from factory[0], constructs with 0x143dffcf0, writes {allocator, object} to out, releases the desc. Only caller Render_Gfx_BuildConfigObject 0x140104f70 failed to decompile (timeout), so the call site could not be read. Better context needed: the ctor 0x143dffcf0 decides the pass class. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx_create_upscale_pass_transparency_mask",

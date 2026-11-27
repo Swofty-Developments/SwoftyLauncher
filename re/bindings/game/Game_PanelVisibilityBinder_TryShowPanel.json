@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14190e8d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "bool Game_PanelVisibilityBinder_TryShowPanel(void *self, void **owner, void *vm_parent, void *arg)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419100b0 (RacingPC lab re_groups/_decomp);xref:0x1422a9750",
-  "notes": "Returns false if \"panel_shown_once\" node (+0x40) is true. Locks weak ptr at (*owner)+0xf0/+0xf8; if target byte +2 == 0x0e allocates a 0x40 helper (vtable 0x14571b1c0) into self+0x10, calls its vfunc+8 and sets \"panel_visible\" true. Returns current panel_visible value."
+  "proto": "bool Game_PanelVisibilityBinder_TryShowPanel(void *self, void **panel_ref, void *parent_node, void *arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419100b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422a9750",
+  "notes": "Returns false if the bool node at self+0x40 is already true. Otherwise locks the weak pointer at *panel_ref+0xf0/+0xf8; if the target's byte +2 equals 0x0e it allocates a 0x40-byte child object (vtable 0x14571b1c0, bound under parent_node as 0x14571c7c6) into self+0x10 (old one destroyed), calls its vfunc +8 with (0x14571c7c6, 0x145719956, arg), sets the bool node self+0x20 to true and clears the byte at self+0x58. Returns the bool node self+0x20. Caller Game_SessionResultsStandardViewModel_OnTabActivated calls it on vm+0xaf0 with (vm+0x690, vm node, *(vm+0x688)) and dispatches two UI events when it returns true. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.panel_visibility_binder_try_show_panel",

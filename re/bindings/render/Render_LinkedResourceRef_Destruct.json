@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143ccd6c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_LinkedResourceRef_Destruct(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ccfc90 (RacingPC lab re_groups/_decomp);xref:0x143c67e40,0x143c68960",
-  "notes": "Releases the shared_ptr at +0x30/+0x38 (strong then weak count), resets vtbl to 0x145a3cfe8 and, when link name +0x28 is set, re-registers it with the link resolver obtained from owner +0x20 (Ne_LinkResolver_RegisterLinkable)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ccfc90 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143c67e40,0x143c68960,0x143c774f0",
+  "notes": "Destructor body: zeroes the shared pointer pair +0x30/+0x38 and drops the control block (strong count +8, weak count +0xc, vt[0] dispose, vt[1] destroy); sets base vtable 0x145a3cfe8; if +0x28 is set it gets the resolver from (+0x20)->vt+8()->vt+0x18() and calls Ne_LinkResolver_RegisterLinkable(resolver, +0x28); then the member destructor of +0x38 runs again (no-op). Callers: Render_CustomisationDecals_Teardown, Render_DecalsSet_ReleaseAllGpuResources and 0x143c774f0 (decals set build, replaces the old object) all call it on the object at owner+0x1e8 and then free it with allocator owner+0x1e0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.linked_resource_ref_destruct",

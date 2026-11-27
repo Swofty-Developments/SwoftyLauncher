@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140002720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "uint32_t Render_NvApi_Call_Afd1b02c(void *a1, void *a2)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140002720 (RacingPC lab re_groups/_decomp);xref:0x1439be870,0x144023dc0",
-  "notes": "NVAPI-style lazy import wrapper: bumps in-call counter 0x145fba734, ensures init, resolves interface id 0xafd1b02c through the query-interface pointer 0x145fba758 (cached at 0x145fbaa58), calls it with pre/post trace callbacks, returns 0xfffffffd when unavailable. Which NVAPI entry the id maps to is not established."
+  "proto": "uint32_t Render_NvApi_Call_Afd1b02c(void *gpuHandle, void *info)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140002720 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439be870,0x144023dc0",
+  "notes": "NvAPI-style stub: increments the call counter 0x145fba734, ensures the library via Ne_Import_ResolveSlotWithRetry, resolves interface id 0xafd1b02c through the query pointer 0x145fba758 (cached at 0x145fbaa58, returns 0xfffffffd when missing), calls optional pre/post hooks 0x145fba768/0x145fba770 and returns the function's status. Callers: Render_Gfx2Device_Initialise calls it for each handle enumerated by 0x1400023c0 with info version 0x20050 and uses info+0x10 (non-zero clears device+0x399e) and info+0x14 (non-zero sets device+0x39a0); Game_Options_Apply does the same scan and sets a flag when info+0x14 is non-zero. The NvAPI function name for this id is not resolved here. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.nv_api_call_afd1b02c",

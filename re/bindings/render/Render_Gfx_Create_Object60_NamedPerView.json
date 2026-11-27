@@ -7,9 +7,9 @@
   "addr": "0x14012af00",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void **Render_Gfx_Create_Object60_NamedPerView(void **builder, void **outPair, void *name, uint8_t flag, uint32_t val, void *n0, void *n1, void *n2, void *n3, void *n4, void *n5, void *n6, void *n7, void *n8, void *n9)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012af00 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Interns a formatted name (name + view index at builder+0x1b8) with FNV-1a 64 hash, interns 3 more per-view names, fetches reflection ptr at builder[2]+0x58 (+0x48 cached) and builder[2]+0x60, packs all into a stack desc (10 passthrough names, flag, flag^1, val) and constructs a 0x60-byte object via 0x143cdae90. Better context needed: type built by 0x143cdae90."
+  "proto": "void *Render_Gfx_Create_Object60_NamedPerView(void **factory, void **out, void *name, uint8_t flag, uint32_t a5, void *a6, void *a7, void *a8, void *a9, void *a10, void *a11, void *a12, void *a13, void *a14, void *a15)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012af00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Formats a name from argument 3 and the int at factory+0x1b8 (FNV-1a 64 hash, interned in g_Ne_StringTable), formats 3 more names with the same int, fills a desc struct with the 10 pointer arguments a6..a15, constants, flag ^ 1, a5, flag, the reflection handle of *(factory[2]+0x58) (+0x48, lazily registered) and *(factory[2]+0x60); allocates 0x60 bytes (align 0x10) and constructs with 0x143cdae90; writes {allocator, object} to out. Only caller Render_Gfx_BuildConfigObject 0x140104f70 failed to decompile (timeout). Better context needed: the ctor 0x143cdae90 decides the class. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx_create_object60_named_per_view",

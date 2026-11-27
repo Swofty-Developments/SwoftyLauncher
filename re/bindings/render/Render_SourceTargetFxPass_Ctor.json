@@ -7,9 +7,9 @@
   "addr": "0x143c39570",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void *Render_SourceTargetFxPass_Ctor(void *self, void *alloc, void *gfx, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c3bb40 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Render_GeometryPass_Ctor with 3 slots, vtable 0x1458c7f10; two hashed names at +0x550/+0x560; shared material at 0x1464d43f0 (refcount 0x1464d43f8). Binds slot1=props target, slot2=props source (optional, empty if missing). Allocs 0x98 impl with critical section, floats 0.8 and 1.0 at +0x88, stored at self+0x570. Better context needed: effect type (strings unresolved)."
+  "proto": "void *Render_SourceTargetFxPass_Ctor(void *self, void *allocator, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c3bb40 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Calls Render_GeometryPass_Ctor with 3 slots, sets vtable 0x1458c7f10, hashes two literal names into +0x550/+0x560, creates the shared 0x210-byte material once (refcount 0x1464d43f8, ptr 0x1464d43f0), binds slot 0 material, slot 1 props 'target', slot 2 props 'source' via binder at +0x20, and allocates a 0x98-byte state object (vtable 0x1458c7e30, floats 0.8 and 1.0 at +0x88) into +0x570. Caller Render_Gfx_BuildConfigObject decompile timed out, so its use is known only from the KB name (config pass factory). Better context needed: the literal strings at 0x1458c7f38/0x1458c7f5c would give the effect name ('Fx' is a guess). (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.source_target_fx_pass_ctor",

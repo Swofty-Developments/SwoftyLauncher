@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143160230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "char *Game_NetworkInvite_Format_StateDebugString(uint32_t *state, char *buf, int32_t buf_len)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1431627c0 (RacingPC lab re_groups/_decomp);xref:0x143075790,0x1430b2ff0,0x143162e50,0x143165ca0,0x143166420,0x143167220",
-  "notes": "snprintf of a human-readable description of a network state record: state enum at +0 (0..13, names table 0x145820240), sub-state fields at +0x78, +0x70, +0xd8 (6-entry names table 0x1458201c0), +0xf0..+0x100 for state 5, +0x10c/+0x110 for state 8. A different format is used when 0x1430675a0() returns false. Debug/log text only."
+  "proto": "char *Game_NetworkInvite_Format_InviteDataString(uint32_t *invite_data, char *buf, int32_t size)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1431627c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143075790,0x1430b2ff0,0x143162e50",
+  "notes": "Renamed from Game_NetworkInvite_Format_StateDebugString: the argument is the invite data block (callers pass m_inviteData, e.g. InviteManager+0x18), not the manager state. Whole body read. Checks validity with 0x1430675a0; invalid data prints the type name from table 0x145820240 (14 entries, index invite_data[0]) with format 0x1458203f1. Valid data switches on the type 1..13: types 1/2/3 add a sub-state name from table 0x1458201c0 (fields +0x78, +0x70, +0xd8), type 5 adds +0xf0/+0xf8/+0x100, type 8 adds a nested type +0x10c and an index +0x110. Writes into buf with Ne_Crt_Snprintf(size) and returns buf. All three callers use the text only for NETWORK-INVITE log lines (static buffer 0x1460bf0f0, 0x80 bytes). (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.network_invite_format_state_debug_string",

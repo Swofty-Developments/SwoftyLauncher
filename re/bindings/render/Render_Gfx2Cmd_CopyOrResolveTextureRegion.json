@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143a05810",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "uint64_t Render_Gfx2Cmd_CopyOrResolveTextureRegion(void *cmdList, uint32_t ctxIdx, void *srcTex, int srcMip, int srcSlice, uint32_t srcX, uint32_t srcY, int srcZ, void *dstTex, int dstMip, int dstSlice, uint32_t dstX, uint32_t dstY, int dstZ, uint32_t w, uint32_t h, uint32_t d)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a07de0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Returns 0x16 if any extent is 0 or a block-compressed format (+0x38) has non-4-aligned coords. Reads dims +0x20/+0x24/+0x28, mip count +0x2c, sample count +0x3c, picks the native resource (+0x1c0 per frame or +0x200 per-context table) and issues cmdList vfn 0x88 (CopyResource) for full identical copies, vfn 0x80 (CopyTextureRegion) with a box otherwise, or vfn 0x98 (ResolveSubresource) when sample counts differ."
+  "proto": "uint64_t Render_Gfx2Cmd_CopyOrResolveTextureRegion(void *cmd_list, uint32_t ctx_id, void *dst_tex, int32_t dst_mip, int32_t dst_slice, uint32_t dst_x, uint32_t dst_y, int32_t dst_z, void *src_tex, int32_t src_mip, int32_t src_slice, uint32_t src_x, uint32_t src_y, int32_t src_z, uint32_t w, uint32_t h, uint32_t d)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a07de0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143a083f0",
+  "notes": "Returns 0x16 when w/h/d is zero or block-compressed formats (tex+0x38) are not 4-aligned. Resolves native resources (tex+0x1c0 per device index, or per-context table +0x200), computes subresource = mipCount*slice+mip. Equal sample counts (+0x3c): whole-resource match calls cmd vfunc +0x88 (full copy), otherwise vfunc +0x80 with a source box built from src offset and size; different sample counts calls vfunc +0x98 (resolve) with the dst format. Returns 0. Caller 0x143a083f0: command-context wrapper that checks both native resources, records them in the context usage map, flushes via vfunc +0x188 and then calls this with the native list at +0x78 and context id +0x16f0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx2_cmd_copy_or_resolve_texture_region",

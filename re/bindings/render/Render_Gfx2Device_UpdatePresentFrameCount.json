@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1439cb190",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
   "proto": "void Render_Gfx2Device_UpdatePresentFrameCount(void *device)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439cd760 (RacingPC lab re_groups/_decomp);xref:0x1439be870,0x1439f6720",
-  "notes": "Computes frames-per-present value at +0x2658: when +0x39ec is set, or +0x39a1 for max into +0x39c4, queries four 0x28-byte contexts at +0x3a00 through function pointer 0x14618d748 with two GUID-like id blocks; otherwise uses swapchain vtbl +0x88 count delta against +0x5080 (when +0x5070), or 0x145381b40 on +0x5088 (when +0x5084), else 1. Looks like frame-generation accounting; SDK identity not confirmed."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439cd760 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439be870,0x1439f6720",
+  "notes": "Writes device+0x2658 (frames presented by the last Present, min 1). If device+0x39a1 is set it first sets device+0x39c4 = max(1, value) from the SDK query 0x14618d748 over 4 entries at device+0x3a00 (step 0x28). Then: device+0x39ec != 0 takes +0x2658 from the same query; else device+0x5070 uses swap chain (device+0xa50) vt+0x88 (GetLastPresentCount) and stores the delta to device+0x5080; else device+0x5084 uses 0x145381b40(device+0x5088); else 1. Callers: Render_Gfx2Device_Initialise calls it once at the end of init; Render_Gfx2Device_PresentFrame calls it every frame after the present. Useful read point for frame generation multipliers. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.gfx2_device_update_present_frame_count",

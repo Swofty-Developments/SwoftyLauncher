@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x140d38770",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
-  "proto": "void **Vm_GetOrCreate_TypedChild_Desc14612bf18(void **alloc_ref, void **parent_handle, const char *name, void *value, int mode)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d392f0 (RacingPC lab re_groups/_decomp);xref:0x140c168d0,0x140c21010,0x1414a0a50,0x141bc8880,0x141cb21c0,0x141f8aff0,0x141fa26e0,0x141fad740",
-  "notes": "Vm_Set_* style helper for the value type whose descriptor is 0x14612bf18: rejects names containing # . [ ], finds the child (0x1442b3700 or keyed lookup), verifies type and when mode==1 assigns value via 0x140d39860; otherwise djb2-hashes the name (seed 0x1505, x33), allocates a 0x68-byte node (ctor 0x140d395f0) and inserts it via Vm_Node_InsertChildAtIndex / Vm_Node_AddKeyedChild. Returns node handle or empty handle 0x146056810. Better context needed: concrete value type of descriptor 0x14612bf18."
+  "proto": "void **Vm_GetOrCreate_TypedChild_Desc14612bf18(void *registry, void **parent_handle, const char *name, void *value, int32_t set_if_exists)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d392f0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140c14ce0,0x140c154f0,0x140c168d0",
+  "notes": "Rejects names containing # . [ ] (bitmask 0x500000000000801 on c-0x23) and returns the empty handle 0x146056810 on any failure. Looks up the child of *parent_handle by name (keyed or indexed parent); if found it must have type desc 0x14612bf18, and with set_if_exists==1 and node flag +0x26 bit0 clear the value is written via 0x140d39860; if missing it hashes the name (djb2 0x1505*33), allocates a 0x68 node from the registry allocator (vtbl+0x18), constructs it with 0x140d395f0(node, alloc, 0, &hash, value) and attaches it with Vm_Node_AddKeyedChild or Vm_Node_InsertChildAtIndex(-1), destroying it if attach fails; returns the node handle (node+8). Context from caller: same call shape as Vm_Set_Int/Vm_Set_Bool; callers pass 8-byte counts for \"setup_data_count\", \"setup_group_count\" (0x140c14ce0: builds the car setup data VM), \"count\" (0x140c154f0: builds one setup group) and \"num_presets\" (Game_CarSetupVm_PopulatePresets), so this is very likely the 64-bit unsigned Vm_Set variant. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "vm.get_or_create_typed_child_desc14612bf18",

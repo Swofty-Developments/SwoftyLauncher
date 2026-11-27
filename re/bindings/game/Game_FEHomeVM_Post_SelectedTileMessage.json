@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x141bb46a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
   "proto": "void Game_FEHomeVM_Post_SelectedTileMessage(void *vm, uint8_t flag)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141bb62a0 (RacingPC lab re_groups/_decomp);xref:0x141bb5820,0x141bb64a0",
-  "notes": "Reads the FE home model at vm+0x378 (optional at +0x158/+0x170 must be engaged, selection index +0x178, 16 bytes at +0x180), counts children of the selected VM list node, picks tile record index*0x2a8 from array +0x1a8 (name at +0x208) and posts a bus message (vtable 0x145753840) on g_Game_MessageBus with index, count, vm+0x3f8, tile name and flag."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141bb62a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141bb5820,0x141bb64a0",
+  "notes": "Whole body read. From the tile model at vm+0x378 it reads 16 bytes at +0x180, the selected index +0x178 and the optional node +0x158 (throws bad optional access when +0x170 is 0), counts that node's children (list size or holder count +0x80), and takes the string at +0x208 of the selected 0x2a8-byte tile entry (array +0x1a8). Builds a message with vtable 0x145753840 = {16 bytes, index, child count, vm+0x3f8 time, string, flag} and posts it on g_Game_MessageBus. FeHome_Handle_Command calls it with 0 before routing to_news; Game_FEHomeViewModel_OnUpdate calls it with 1 before the automatic to_news route, so flag = automatic. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.fe_home_vm_post_selected_tile_message",

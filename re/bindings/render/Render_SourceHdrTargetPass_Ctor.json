@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1442df730",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "render",
-  "proto": "void *Render_SourceHdrTargetPass_Ctor(void *self, void *alloc, void *gfx, void *props)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442e1d00 (RacingPC lab re_groups/_decomp);xref:0x140129b50",
-  "notes": "Render_GeometryPass_Ctor with 4 slots, vtable 0x145a732a0. First instance (count 0x146ca6c18) creates two shared materials (0x146ca6c08, 0x146ca6c10) and a 0x28 shared block. Binds slot0=props source, slot1=optional sourceHdr, slot2=target; bool prop into +0x558; if a third prop is absent and +0x559 is 0, allocs 0x7a0 impl (vtable 0x145a73050) with two Gfx2 buffers (12-byte init data {0,1.0,2.0}, and 0x50 size), stored at self+0x550."
+  "proto": "void *Render_SourceHdrTargetPass_Ctor(void *self, void *allocator, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442e1d00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140129b50",
+  "notes": "Whole body read: Render_GeometryPass_Ctor with 4 slots, vtable 0x145a732a0; on first instance (counter 0x146ca6c18) creates a shared 0x28-byte list (0x146ca6c00) and two materials (0x146ca6c08, 0x146ca6c10) with Render_Material_InitParamSlots. Reads props 'source', 'target', optional 'sourceHdr', a bool prop into +0x558 and a key whose presence sets +0x559; when +0x559 is 0 allocates a 0x7a0-byte state (vtable 0x145a73050) with two Gfx2 buffers (+0x758 and +0x38) into +0x550. Binds slot 0 source, 1 sourceHdr, 2 target, 3 material. Caller Render_Gfx_ConfigObject_InitResourceEntry clones the resource desc, allocates 0x560 bytes (align 0x10) and calls this ctor with {allocator, gfx, desc}, returning {allocator, object}. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.source_hdr_target_pass_ctor",

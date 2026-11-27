@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143f41880",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "int Ne_Path_ResolveAgainstBaseDir(void *self, const char *path, void *outFixedStr, char strict)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f43e50 (RacingPC lab re_groups/_decomp)",
-  "notes": "Builds a 260-char path into a fixed string object (out+0x18 buffer, +0x10 ptr, +0x8 capacity 0x104). Rejects empty paths or paths containing a forbidden substring (two patterns selected by strict, via FUN_145361380) with errno 0x16; absolute paths starting with '/' are copied as is, otherwise the base directory at self+0x370 is copied and path appended. Caller 0x143f44190. Better context needed: the forbidden patterns at 0x145a40271/0x145a40278/0x145a40283."
+  "proto": "int32_t Ne_Path_ResolveAgainstBaseDir(void *self, const char *path, void *out_fixed_str, uint8_t strict)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f43e50 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143f2ce30,0x143f44190",
+  "notes": "Validates path: null or empty, or a hit from the substring/charset search 0x145361380 (pattern set chosen by the strict flag), sets the thread errno chain to 0x16, logs to the errno trace ring and returns 0x16. Otherwise writes into the fixed string at out+0x18 (capacity 0x104 at out+0x8, data pointer at out+0x10): a path starting with '/' is copied as is, any other path is appended to the 0x104-byte base directory stored at self+0x370. Returns 0. Caller 0x143f44190: resolves the path with this, then walks the mount list at self+0xf8 to find the entry whose prefix matches the resolved path and strips that prefix. The call from 0x143f2ce30 was not visible in its decompile. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.path_resolve_against_base_dir",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1400028c0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "uint32_t Ne_Import_Call_Hash473b6caf(uint32_t a, uint32_t b)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1400028c0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Lazy import wrapper: bumps in-call counter 0x145fba734, Ne_Import_ResolveSlotWithRetry, resolves function pointer by hash 0x473b6caf into slot 0x145fbab98 via resolver 0x145fba758, runs optional pre/post hooks (0x145fba768 / 0x145fba770) and calls it with (a,b). Returns 0xfffffffd when unresolved. Likely a platform SDK (Steam/EOS-style) API shim."
+  "proto": "uint32_t Ne_Import_Call_Hash473b6caf(uint32_t a1, uint32_t a2)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1400028c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439cc700",
+  "notes": "Increments the in-call counter 0x145fba734, runs Ne_Import_ResolveSlotWithRetry(0,0), lazily resolves the cached function pointer 0x145fbab98 through the query-by-id callback 0x145fba758(0x473b6caf), brackets the call with the optional pre/post hooks 0x145fba768/0x145fba770 and returns the callee's status (0xfffffffd when unresolved). Context from caller: 0x1439cc700 (graphics device setup, NVIDIA vendor 0x10de branch, logs MULTI-GPU \"NVAPI Error: %s\") calls it last with the display id and a mode byte (0xc, 1 or 0) derived from the requested multi-GPU mode; this is an NVAPI interface-id stub. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.import_call_hash473b6caf",

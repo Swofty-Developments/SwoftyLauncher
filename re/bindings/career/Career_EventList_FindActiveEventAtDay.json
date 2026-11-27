@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1422c6df0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "career",
-  "proto": "void *Career_EventList_FindActiveEventAtDay(void *self, uint16_t day)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422c89f0 (RacingPC lab re_groups/_decomp);xref:0x1422c5140,0x142330180",
-  "notes": "Iterates 16-byte entries self+0x50..+0x58; for objects (entry+8) deriving from type 0x146065fd8: returns 0 if day < start (u16 at +0xa), returns the object if day <= end (vfunc+0x10) and byte +0xc is 0. Returns 0 if none. Better context needed: exact event class."
+  "proto": "void *Career_EventList_FindActiveEventAtDay(void *list, uint16_t day)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422c89f0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1422c5140,0x142330180",
+  "notes": "Walks the 0x10-stride entries at list+0x50..0x58; for each object (entry+0x8) whose type (vtable+0x0) derives from 0x146065fd8: returns null as soon as day < obj+0xa (start day, list is sorted), otherwise returns the object when day <= vtable+0x10() (end day) and the byte obj+0xc is clear. Returns null if none. Callers Game_TeamHQAdvanceViewModel_OnCommandRaised and Career_TeamHqMyTeamVM_OnCommandRaised pass the activity record from Career_Get_ActivityRecordByIndex and day = ([x+0x2b0] >> 5) / 45, then use result+0x10 -> +0x8 (u16 id) for a lookup via 0x1412656e0. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "career.event_list_find_active_event_at_day",

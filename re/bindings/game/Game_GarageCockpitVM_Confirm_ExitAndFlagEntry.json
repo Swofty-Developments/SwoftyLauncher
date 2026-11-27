@@ -8,8 +8,8 @@
   "level": "L1",
   "subsystem": "game",
   "proto": "void Game_GarageCockpitVM_Confirm_ExitAndFlagEntry(void *vm)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141bc7e40 (RacingPC lab re_groups/_decomp);xref:0x141bc6d30",
-  "notes": "Posts an empty bus message (vtable 0x1456fa5f0) on g_Game_MessageBus, calls 0x141bc3ad0(vm, 1), then in the global table *(DAT_146cc5a80)+0x60 (0x14-byte rows) ORs bit 8 into bytes +0 and +8 of the row indexed by byte vm+0x2f0. Better context needed: what the global table is (looks like per-player input/ready flags)."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141bc7e40 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141bc6d30",
+  "notes": "Whole body read. Posts an empty message with vtable 0x1456fa5f0 on g_Game_MessageBus, calls 0x141bc3ad0(vm, 1), then in the global object at 0x146cc5a80 sets bit 8 in bytes +0 and +8 of the 0x14-byte entry (array +0x60/+0x68) indexed by the byte vm+0x2f0. Game_GarageCockpitViewModel_OnCommandRaised calls it for commands 0xf161f384, 0x6f00abca and 0x3c3e50f5 only when vm+0x2d0 is set, right before Game_Vr_ExecuteTransition with the name garage_cockpit_token; without vm+0x2d0 it calls 0x141bc7ef0. Context from caller: vm+0x2f0 is the player vehicle index (Sess_Get_PlayerVehicleIndex). Better context needed: message 0x1456fa5f0 and the table at 0x146cc5a80 are not identified, so the verb Confirm is not proven. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.garage_cockpit_vm_confirm_exit_and_flag_entry",

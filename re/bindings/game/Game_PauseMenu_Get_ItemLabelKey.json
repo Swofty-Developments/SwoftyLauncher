@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142bc2d10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "const char *Game_PauseMenu_Get_ItemLabelKey(void *self, uint32_t item_id)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142bc52a0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Maps pause menu item id 0..0x17 to a localisation key: lng_restart_lap, (1) text read from VM '#pause_flow.instant_replay_label', lng_reset_to_track, lng_return_to_garage / lng_return_to_grid (session +0x2b0 flag +0x1cb), lng_checkpoint_load, lng_restart_session, lng_display_ghost_cars, lng_race_director, lng_skip_formation_lap, lng_hot_loading ('0000' in solo_testing), lng_simulate_session, lng_end_session, lng_hud_retire, lng_quit_to_main_menu / lng_quit_to_event_hub; default 'invalid'. Handy enum reference for pause menu modding."
+  "proto": "const char *Game_PauseMenu_Get_ItemLabelKey(void *menu, uint32_t item)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142bc52a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142bc10f0",
+  "notes": "Switch on item 0..0x17 returning a localisation key (lng_restart_lap, lng_reset_to_track, lng_restart_session, lng_hud_retire, lng_quit_to_main_menu ...), default 'invalid'. Item 1 reads VM node #pause_flow.instant_replay_label; item 3 picks lng_return_to_grid when *(*(*(menu+0x400)+0x88)+0x260)+0x2b0 has byte +0x1cb set; item 0x12 returns '0000' for game mode string solo_testing else lng_hot_loading; item 0x17 returns lng_quit_to_event_hub if menu+0x398 entry is in a list. Caller 0x142bc10f0: builds the pause menu tiles (pause_options_button) and uses the key as each tile label; good hook to relabel pause items. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.pause_menu_get_item_label_key",

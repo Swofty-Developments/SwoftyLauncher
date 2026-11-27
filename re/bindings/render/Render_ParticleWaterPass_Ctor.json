@@ -7,9 +7,9 @@
   "addr": "0x143d679b0",
   "level": "L1",
   "subsystem": "render",
-  "proto": "void *Render_ParticleWaterPass_Ctor(void *self, void *alloc, void *gfx, void *props, void *a5, void *a6)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d69f80 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
-  "notes": "Render_GeometryPass_Ctor with 0x10 slots, vtable 0x1459b55c0; stores a5/a6 at +0x550/+0x558; inline 128-char name at +0x560 defaulting to ParticleWater, overridden by props name. Shared material at 0x146545c70. Binds mainRTV/surface2/mainDSV/half,quarter,tinyRTV and SRV/depthSRV/depthpyramidsource/spd/mask0Uav/mask1Uav/mask2Uav."
+  "proto": "void *Render_ParticleWaterPass_Ctor(void *self, void *allocator, void *gfx, void *props, void *arg5, void *arg6)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d69f80 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Whole body read: Render_GeometryPass_Ctor with 0x10 slots, vtable 0x1459b55c0, stores arg5/arg6 at +0x550/+0x558, inline 128-char string at +0x560 defaulting to the literal 'ParticleWater' and overwritten by props 'name' when present; shared material once (refcount 0x146545c78). Binds props mainRTV, surface2, mainDSV, halfRTV, quarterRTV, tinyRTV, halfSRV, quarterSRV, tinySRV, depthSRV, depthpyramidsource, spd, mask0Uav, mask1Uav, mask2Uav to slots 0..0xe and the material to 0xf. Context from caller: Render_Gfx_BuildConfigObject (decompile timed out; factory role from KB name) creates this pass from render config. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "render.particle_water_pass_ctor",
