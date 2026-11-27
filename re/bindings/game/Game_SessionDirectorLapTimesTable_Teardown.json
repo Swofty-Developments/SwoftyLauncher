@@ -9,7 +9,7 @@
   "subsystem": "game",
   "proto": "void Game_SessionDirectorLapTimesTable_Teardown(void *self)",
   "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141906c90 (RacingPC lab re_groups/_decomp);xref:0x141d55c80,0x1422a6470,0x1422a6fe0",
-  "notes": "If built flag +0x168 set, FUN_14192b820(self+0x88) destroys the table bindings and clears the flag; then releases the two VM node handles at +0x68 and +0x48 (unlink + Vm_Release_Node). Pairs with 0x141907300 (same +0x168/+0x88 fields). Note one caller is a Hud lap-recorded subscriber, so the struct may be shared."
+  "notes": "If built flag +0x168 set, FUN_14192b820(self+0x88) destroys the table bindings and clears the flag; then releases the two VM node handles at +0x68 and +0x48 (unlink + Vm_Release_Node). Pairs with 0x141907300 (same +0x168/+0x88 fields). Note a caller is a Hud lap-recorded subscriber, so the struct may be shared."
  },
  "signature": {
   "id": "game.session_director_lap_times_table_teardown",
