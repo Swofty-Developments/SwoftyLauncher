@@ -666,6 +666,37 @@ fn a_resource_carried_outside_the_made_for_archives_goes_there_too() {
 }
 
 #[test]
+fn copies_of_game_archives_in_the_folder_are_not_carriers() {
+    let dir = std::env::temp_dir().join(format!("swofty-hud-strays-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    let ui = "2025_asset_groups/ui_package";
+    for rel in ["flow_race.erp", "bakflow_race.erp", "flow_race - Copy.erp"] {
+        let path = dir.join(ui).join(rel);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, fake_archive(&[screens::CAP])).unwrap();
+    }
+    let mut stock = GameStock::new(&dir);
+    stock.known = Some([format!("{ui}/flow_race.erp")].into());
+    let carriers = stock.carriers(&[screens::CAP]).unwrap();
+    assert_eq!(carriers[screens::CAP], [format!("{ui}/flow_race.erp")]);
+    let mut archives = vec![Built {
+        file: "hud_screen_scene.erp".into(),
+        erps: vec![format!("{ui}/flow_race.erp")],
+        bytes: fake_archive(&[screens::CAP]),
+    }];
+    let mut lines = Vec::new();
+    cover_carriers(&stock, &mut archives, &mut lines).unwrap();
+    assert_eq!(archives.len(), 1);
+    assert!(lines.is_empty(), "{lines:?}");
+    assert!(check::uncovered(&stock, &archives).unwrap().is_empty());
+
+    let mut missing = GameStock::new(&dir);
+    missing.known = Some([format!("{ui}/flow_missing.erp")].into());
+    assert!(missing.carriers(&[screens::CAP]).unwrap()[screens::CAP].is_empty());
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
 fn two_screen_records_get_a_host_scene_each() {
     let Some(stock) = game() else { return };
     let dir = addon_dir("two-screens");
