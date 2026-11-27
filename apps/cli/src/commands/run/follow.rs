@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{Result, bail};
 use swofty_core::diagnostics::crash::{Event, LogScan, Symbols, fatal_name};
-use swofty_core::session::{LogMark, SessionRecord};
+use swofty_core::session::{LoaderLog, SessionRecord};
 use swofty_core::{GAME_EXE, STEAM_APP_ID};
 
 use crate::console::output::{blank, say};
@@ -15,7 +15,7 @@ pub(crate) struct Follower {
     fallback: Option<PathBuf>,
     pos: u64,
     buf: String,
-    stale: Option<Option<LogMark>>,
+    source: Option<LoaderLog>,
 }
 
 impl Follower {
@@ -25,7 +25,7 @@ impl Follower {
             fallback: None,
             pos: 0,
             buf: String::new(),
-            stale: None,
+            source: None,
         }
     }
 
@@ -43,19 +43,24 @@ impl Follower {
             .or_else(|| std::fs::File::open(self.fallback.as_ref()?).ok())
     }
 
-    pub(crate) fn replacing(path: PathBuf, before: Option<LogMark>) -> Self {
+    pub(crate) fn tracking(source: LoaderLog) -> Self {
         Self {
-            stale: Some(before),
-            ..Self::new(path)
+            path: source.game_log().to_path_buf(),
+            source: Some(source),
+            ..Self::new(PathBuf::new())
         }
     }
 
     pub(crate) fn lines(&mut self) -> Vec<String> {
-        if let Some(before) = &self.stale {
-            if !LogMark::replaced(&self.path, before.as_ref()) {
+        if let Some(source) = &self.source {
+            let Some(path) = source.current() else {
                 return Vec::new();
+            };
+            if path != self.path {
+                self.path = path;
+                self.pos = 0;
+                self.buf.clear();
             }
-            self.stale = None;
         }
         let Some(mut f) = self.open() else {
             return Vec::new();
@@ -86,11 +91,11 @@ pub(crate) struct Follow {
 }
 
 impl Follow {
-    pub(crate) fn new(dir: &Path, loader: Option<(PathBuf, Option<LogMark>)>, symbols: Symbols) -> Self {
+    pub(crate) fn new(dir: &Path, loader: Option<LoaderLog>, symbols: Symbols) -> Self {
         let loader = Some(match loader {
-            Some((path, before)) => Follower {
+            Some(source) => Follower {
                 fallback: Some(dir.join("loader.log")),
-                ..Follower::replacing(path, before)
+                ..Follower::tracking(source)
             },
             None => Follower::new(dir.join("loader.log")),
         });
@@ -240,7 +245,9 @@ pub(crate) fn symbols(game: &Path, exe: Option<&Path>) -> Symbols {
 
 #[cfg(all(test, unix))]
 mod tests {
-    use swofty_core::session::LOADER_LOG;
+    use std::time::{Duration, SystemTime};
+
+    use swofty_core::session::{LOADER_FALLBACK, LOADER_LOG, LogMark};
 
     use crate::commands::run::tests::{STALE, session_dir, temp_log};
 
@@ -251,7 +258,13 @@ mod tests {
         let dir = session_dir("rotate");
         let log = dir.join("game").join(LOADER_LOG);
         std::fs::write(&log, STALE).unwrap();
-        let mut follower = Follower::replacing(log.clone(), LogMark::read(&log));
+        let mut follower = Follower::tracking(LoaderLog::new(
+            &dir.join("game"),
+            LogMark::read(&log),
+            &dir,
+            None,
+            SystemTime::now(),
+        ));
         assert!(follower.lines().is_empty());
         assert!(follower.lines().is_empty());
         std::fs::rename(&log, log.with_file_name("loader.prev.log")).unwrap();
@@ -267,19 +280,71 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
     }
 
+    fn fallback_follower(name: &str, request: &str) -> (PathBuf, PathBuf, Follower) {
+        let dir = session_dir(name);
+        let log = dir.join("game").join(LOADER_LOG);
+        std::fs::write(&log, STALE).unwrap();
+        let fallback = dir.join(LOADER_FALLBACK);
+        std::fs::create_dir_all(fallback.parent().unwrap()).unwrap();
+        let source = LoaderLog::new(
+            &dir.join("game"),
+            LogMark::read(&log),
+            &dir,
+            Some(request.into()),
+            SystemTime::now(),
+        );
+        (dir, fallback, Follower::tracking(source))
+    }
+
+    const ATTACH: &str =
+        "2026-11-26 19:03:33.849 [ 7676] swofty loader (version.dll proxy) attached, pid 19284";
+
+    #[test]
+    fn follows_the_fallback_log_when_the_game_folder_refuses_the_loader() {
+        let (dir, fallback, mut follower) = fallback_follower("fallback-follow", "abc123");
+        assert!(follower.lines().is_empty());
+        let request = "2026-11-26 19:03:33.849 [ 7676] session env: set 0 of 0 variable(s) (launch request abc123); the file could not be removed";
+        std::fs::write(&fallback, format!("{ATTACH}\n{request}\npar")).unwrap();
+        assert_eq!(follower.lines(), [ATTACH, request]);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn ignores_a_fallback_log_from_an_earlier_session() {
+        let (dir, fallback, mut follower) = fallback_follower("fallback-stale", "abc123");
+        std::fs::write(&fallback, format!("{ATTACH}\n")).unwrap();
+        std::fs::File::options()
+            .write(true)
+            .open(&fallback)
+            .unwrap()
+            .set_modified(SystemTime::now() - Duration::from_secs(3600))
+            .unwrap();
+        assert!(follower.lines().is_empty());
+        std::fs::write(
+            &fallback,
+            format!(
+                "{ATTACH}\n2026-11-26 19:03:33.849 [ 7676] session env: set 0 of 0 (launch request other99)\n"
+            ),
+        )
+        .unwrap();
+        assert!(follower.lines().is_empty());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
     #[test]
     fn reports_a_game_process_proton_could_not_start() {
         let dir = session_dir("run-process");
         let log = dir.join("game").join(LOADER_LOG);
         std::fs::write(&log, STALE).unwrap();
         let before = LogMark::read(&log);
+        let source = LoaderLog::new(&dir.join("game"), before, &dir, None, SystemTime::now());
         std::fs::write(
             dir.join(format!("steam-{STEAM_APP_ID}.log")),
             include_str!("../../../../../packages/core/tests/fixtures/steam-run-process-731.txt"),
         )
         .unwrap();
         std::fs::write(dir.join("exit_code"), "1\n").unwrap();
-        let mut follow = Follow::new(&dir, Some((log, before)), Symbols::default());
+        let mut follow = Follow::new(&dir, Some(source), Symbols::default());
         follow.poll();
         assert_eq!(follow.last_loader, None);
         let err = follow.summary().unwrap_err().to_string();
