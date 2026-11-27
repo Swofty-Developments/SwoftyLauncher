@@ -154,4 +154,31 @@ inline size_t pick_setup_mode(const std::vector<SetupModeOffer> &modes, const st
     return h;
 }
 
+constexpr size_t NO_LIST = size_t(-1);
+
+// The entrant list a Grand Prix direct start names, among the names the entrants system holds. The game's list
+// lookup (0x1424286e0, name to stat id) builds the path "Invalid.entrant_lists" for a name it has no entry for and
+// then dereferences the garbage it reads there, so a name is looked up only once it is known to be held.
+inline size_t find_list(const std::vector<std::string> &names, const std::string &want)
+{
+    if (want.empty())
+        return NO_LIST;
+    for (size_t i = 0; i < names.size(); i++)
+        if (names[i] == want)
+            return i;
+    return NO_LIST;
+}
+
+inline std::string unknown_list_why(const std::vector<std::string> &names, const std::string &want, size_t shown = 40)
+{
+    std::string why = "no entrant list '" + want + "' (a box is its entrant list's name, not its package's; lists:";
+    size_t n = 0;
+    for (const auto &name : names)
+        if (!name.empty() && n++ < shown)
+            why += " " + name;
+    if (n > shown)
+        why += " and " + std::to_string(n - shown) + " more";
+    return why + ")";
+}
+
 }
