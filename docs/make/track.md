@@ -285,6 +285,22 @@ TrackHighlights_N
 TrackVideo_N
 ```
 
+### Give it its own circuit intro
+
+Before a session the game plays a circuit intro, the track's map with its corners and DRS zones. Hockenheim clones Austria's, so it would show the Red Bull Ring. To show Hockenheim's, add a Bink 2 file to the addon and name it in the record:
+
+```json [registry/track.json]
+{ "track": { "hockenheim": { "code": "hockenheim", "base": "game/austria", "files": "track/", "video": "videos/hockenheim.bk2" } } }
+```
+
+In the C++ version, set `extra["video"] = "videos/hockenheim.bk2"` on the record. The build places the file at `videos/track_map/swofty/mod.hockenheim/hockenheim.bk2`, and the core points the track's `TrackVideo_N` row at it when it clones the rows at boot.
+
+- The file is Bink 2 (it starts with `KB2`) and at most 256 MB. The game's own are 1920x1080, 30 fps, about 16 s, with no audio. Encode yours as [Make a startup video](/make/startup-video#_3-encode-bink-2) does: `radvideo64 binkc`.
+- Without `video`, Hockenheim plays Austria's intro, as before.
+- A missing file, a name that doesn't end in `.bk2`, a file that isn't Bink 2 or one over the limit is a build warning. Hockenheim is still added and plays Austria's intro.
+
+The core logs `circuit intro track_map/swofty/mod.hockenheim/hockenheim.bk2` for the track at boot, and `circuit intro opened: <path>` each time the game plays one. See [Circuit intro video](/std/systems/tracks#circuit-intro-video).
+
 ## 4. Check the boxes that inherit it
 
 <Split>

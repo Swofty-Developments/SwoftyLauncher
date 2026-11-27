@@ -20,6 +20,7 @@ mod profile;
 mod records;
 mod refs;
 mod schedule;
+mod video;
 
 const STOCK_WITH_DATA: [&str; 36] = [
     "melbourne",

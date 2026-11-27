@@ -14,6 +14,13 @@ int main()
     expect(!trk::parse_facts(R"({"version": 2})", &why).loaded && why.find("version 2") != std::string::npos,
            "a version 2 file is not read");
     expect(!trk::parse_facts("[1]", &why).loaded, "a file that isn't an object is not read");
+    {
+        trk::Facts v = trk::parse_facts(
+            R"({"version":1,"profile":"p","tracks":{"ring":{"video":"track_map/swofty/mod.x/ring.bk2"},"plain":{}}})", &why);
+        const trk::TrackFacts *ring = v.track("ring"), *plain = v.track("plain");
+        expect(ring && ring->video == "track_map/swofty/mod.x/ring.bk2" && plain && plain->video.empty(),
+               "a track's video is read from the facts, and is empty without one");
+    }
     std::string line;
     expect(!trk::facts_profile_matches(facts, "Other", &line) &&
                line == "[tracks] track-facts.json is for profile Classic Seasons; this build is Other: no facts",

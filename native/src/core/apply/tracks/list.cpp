@@ -147,6 +147,14 @@ const Facts &facts()
     return f;
 }
 
+bool any_track_video()
+{
+    for (auto &[code, t] : facts().tracks)
+        if (!t.video.empty())
+            return true;
+    return false;
+}
+
 int setup_mode_stat(const std::string &setup_mode) { return setup_mode_stat_of(db_cell_read(), setup_mode); }
 
 BoxInfo box_info(registry::Store &store, const std::string &package, const std::string &entrant_list)
