@@ -10,6 +10,7 @@ pub const MAX_VIDEO_BYTES: u64 = 256 * 1024 * 1024;
 const MAGIC: &[u8; 3] = b"KB2";
 const GAME_DIR: &str = "videos/";
 const VALUE_DIR: &str = "track_map/swofty";
+const SET_26_DIR: &str = "track_map/26/swofty";
 
 /// A circuit intro a track record ships: the file in the addon, and where the build puts it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,6 +20,8 @@ pub struct TrackVideo {
     pub source: PathBuf,
     /// The game-folder path the build places it at.
     pub game_path: String,
+    /// The same file in the game's `track_map/26/` set, the one the F1 2026 box plays its intros from.
+    pub game_path_26: String,
     /// What the track's `TrackVideo` row holds: the path below `videos/`.
     pub value: String,
 }
@@ -36,6 +39,12 @@ pub fn video_value(addon: &str, code: &str) -> String {
             .collect::<String>()
     };
     format!("{VALUE_DIR}/{}/{}.bk2", safe(addon), safe(code))
+}
+
+/// The game-folder path of the copy in the `track_map/26/` set of the video whose `TrackVideo` value is `value`.
+pub fn video_path_26(value: &str) -> String {
+    let rest = value.strip_prefix(VALUE_DIR).unwrap_or(value);
+    format!("{GAME_DIR}{SET_26_DIR}{rest}")
 }
 
 fn check(dir: &Path, rel: &str) -> Result<PathBuf, String> {
@@ -91,6 +100,7 @@ pub fn track_videos(
                         code: t.code,
                         source,
                         game_path: format!("{GAME_DIR}{value}"),
+                        game_path_26: video_path_26(&value),
                         value,
                     });
                 }

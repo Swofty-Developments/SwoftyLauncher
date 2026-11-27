@@ -76,13 +76,15 @@ fn a_bink_2_file_in_the_addon_is_placed_for_a_kept_track() {
             v.id.as_str(),
             v.code.as_str(),
             v.value.as_str(),
-            v.game_path.as_str()
+            v.game_path.as_str(),
+            v.game_path_26.as_str()
         ),
         (
             "mod.v/ring",
             "ring",
             "track_map/swofty/mod.v/ring.bk2",
-            "videos/track_map/swofty/mod.v/ring.bk2"
+            "videos/track_map/swofty/mod.v/ring.bk2",
+            "videos/track_map/26/swofty/mod.v/ring.bk2"
         )
     );
     assert_eq!(v.source, root.join("mod.v/videos/ring.bk2"));

@@ -732,7 +732,7 @@ In code, set `extra["video"]` the same way. The path is relative to the addon's 
 - is at most 256 MB.
 - is encoded with RAD Video Tools; [Make a startup video](/make/startup-video#_3-encode-bink-2) has the `radvideo64 binkc` recipe. Render the map, corner numbers and DRS zones yourself.
 
-The build puts the file in the game folder at `videos/track_map/swofty/<addon id>/<code>.bk2`, with the other files it adds, so it is rolled back with them and never replaces a stock video. The core sets the track's `TrackVideo_N.value`, the row the game reads the file from, to `track_map/swofty/<addon id>/<code>.bk2` in the same step that clones the track's rows at boot, and logs one line for the track:
+The build puts the file in the game folder at `videos/track_map/swofty/<addon id>/<code>.bk2`, with the other files it adds, so it is rolled back with them and never replaces a stock video. The intro plays in the F1 2026 box, which takes its intros from the game's `track_map/26/` set, so the build places a second copy at `videos/track_map/26/swofty/<addon id>/<code>.bk2`. The core sets the track's `TrackVideo_N.value`, the row the game reads the file from, to `track_map/swofty/<addon id>/<code>.bk2` in the same step that clones the track's rows at boot, and logs one line for the track:
 
 ```text
 [tracks] track mod.okayama/okayama: okayama: circuit intro track_map/swofty/mod.okayama/okayama.bk2 (the track row's TrackVideo was track_map/melbourne.bk2)

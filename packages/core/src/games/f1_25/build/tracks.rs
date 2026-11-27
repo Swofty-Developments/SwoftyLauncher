@@ -467,19 +467,17 @@ impl Pipeline<'_, '_> {
             }
         }
         for v in &tracks.videos {
-            if built
-                .plan
-                .added
-                .insert(v.game_path.clone(), v.source.clone())
-                .is_some()
-            {
-                return Err(Error::Map(format!("{} is placed by two tracks", v.game_path)));
+            for path in [&v.game_path, &v.game_path_26] {
+                if built.plan.added.insert(path.clone(), v.source.clone()).is_some() {
+                    return Err(Error::Map(format!("{path} is placed by two tracks")));
+                }
             }
             built.lines.push(format!(
-                "{}: circuit intro {} goes in {}",
+                "{}: circuit intro {} goes in {} and {}",
                 v.code,
                 v.source.display(),
-                v.game_path
+                v.game_path,
+                v.game_path_26
             ));
         }
         Ok(())

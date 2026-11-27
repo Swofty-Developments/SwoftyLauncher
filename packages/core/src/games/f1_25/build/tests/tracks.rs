@@ -1526,10 +1526,13 @@ fn a_track_record_s_circuit_intro_is_placed_under_videos_and_named_in_the_track_
 
     let built = build(&store, "default", &game).unwrap();
     let placed = "videos/track_map/swofty/mod.vid/vidring.bk2";
-    assert_eq!(
-        built.plan.added[placed],
-        store.addons_dir().join("mod.vid/videos/vidring.bk2")
-    );
+    let placed_26 = "videos/track_map/26/swofty/mod.vid/vidring.bk2";
+    for at in [placed, placed_26] {
+        assert_eq!(
+            built.plan.added[at],
+            store.addons_dir().join("mod.vid/videos/vidring.bk2")
+        );
+    }
     assert_eq!(
         built
             .plan
@@ -1537,7 +1540,7 @@ fn a_track_record_s_circuit_intro_is_placed_under_videos_and_named_in_the_track_
             .keys()
             .filter(|k| k.starts_with("videos/track_map/"))
             .count(),
-        1,
+        2,
         "{:?}",
         built.plan.added.keys().collect::<Vec<_>>()
     );
@@ -1545,7 +1548,8 @@ fn a_track_record_s_circuit_intro_is_placed_under_videos_and_named_in_the_track_
         built
             .lines
             .iter()
-            .any(|l| l.starts_with("vidring: circuit intro ") && l.ends_with(&format!("goes in {placed}"))),
+            .any(|l| l.starts_with("vidring: circuit intro ")
+                && l.ends_with(&format!("goes in {placed} and {placed_26}"))),
         "{:?}",
         built.lines
     );
