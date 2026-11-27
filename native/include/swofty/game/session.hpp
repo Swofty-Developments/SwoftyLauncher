@@ -629,6 +629,8 @@ inline constexpr address<"Sess_Progress_ComputeTimeGap"> Sess_Progress_ComputeTi
 inline constexpr address<"Sess_Progress_SyncResultRecord"> Sess_Progress_SyncResultRecord{}; // L2 experimental
 using Sess_PuPanel_BuildComponents_t = void(void *vm);
 inline constexpr fn<"Sess_PuPanel_BuildComponents", Sess_PuPanel_BuildComponents_t> Sess_PuPanel_BuildComponents{}; // L3 stable
+using Sess_PuPanel_Destroy_t = void(void *self);
+inline constexpr fn<"Sess_PuPanel_Destroy", Sess_PuPanel_Destroy_t> Sess_PuPanel_Destroy{}; // L2 experimental
 using Sess_PuPanel_FillComponent_t = void(void *vm, uint64_t a2, uint32_t slot, uint8_t a4, uint8_t a5, void *entry);
 inline constexpr fn<"Sess_PuPanel_FillComponent", Sess_PuPanel_FillComponent_t> Sess_PuPanel_FillComponent{}; // L2 experimental
 inline constexpr address<"Sess_PursuitRuleset_FinaliseResults"> Sess_PursuitRuleset_FinaliseResults{}; // L2 experimental
@@ -923,6 +925,7 @@ inline constexpr site<"site_Sess_PitRankEpilogue"> site_Sess_PitRankEpilogue{}; 
 inline constexpr site<"site_Sess_PitRankListNext"> site_Sess_PitRankListNext{}; // L2 experimental
 inline constexpr site<"site_Sess_PitRankListSlot"> site_Sess_PitRankListSlot{}; // L2 experimental
 inline constexpr site<"site_Sess_PitRankOwnSlot"> site_Sess_PitRankOwnSlot{}; // L2 experimental
+inline constexpr site<"site_Sess_PuPanel_Constructed"> site_Sess_PuPanel_Constructed{}; // L2 experimental
 inline constexpr site<"site_Sess_PuPanel_SlotHolder"> site_Sess_PuPanel_SlotHolder{}; // L2 experimental
 inline constexpr site<"site_Sess_SessionEnter_VehicleLookup"> site_Sess_SessionEnter_VehicleLookup{}; // L2 experimental
 inline constexpr site<"site_Sess_TimeTrialLeaderboard_BoundTabChild"> site_Sess_TimeTrialLeaderboard_BoundTabChild{}; // L2 experimental
@@ -973,6 +976,7 @@ inline constexpr vtable<"vt_Sess_PostLoadDataSync", 16> vt_Sess_PostLoadDataSync
 inline constexpr vtable<"vt_Sess_PreRace", 20> vt_Sess_PreRace{}; // L2 experimental, SessionStatePreRace
 inline constexpr vtable<"vt_Sess_PressInterview", 21> vt_Sess_PressInterview{}; // L2 experimental, SessionStatePressInterview
 inline constexpr vtable<"vt_Sess_PressInterviewBase", 21> vt_Sess_PressInterviewBase{}; // L2 experimental, SessionStatePressInterviewBase
+inline constexpr vtable<"vt_Sess_PuPanel", 28> vt_Sess_PuPanel{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_QualifyingSyncReady", 16> vt_Sess_QualifyingSyncReady{}; // L2 experimental, StateQualifyingSyncReady
 inline constexpr vtable<"vt_Sess_RaceRuleset", 60> vt_Sess_RaceRuleset{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_ReadyMonitor", 16> vt_Sess_ReadyMonitor{}; // L2 experimental, StateReadyMonitor

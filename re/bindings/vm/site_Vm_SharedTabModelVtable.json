@@ -40,11 +40,41 @@
   "made_on_target": "0x140c72e36",
   "twin": "made on steam-26566308; the target 0x140c72e36 is KB 0x140c72376: Game_CareerEventsSequencer_Initialise (0xc72940) and site_Game_CareerEventsSequencerFirstRecord (0xc73960) on either side both sit 0xac0 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "site_Vm_SharedTabModelVtable",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x140c72e36 is lea rax,[rip+0x4a1c743] = 0x14568f580 inside the pdata function 0x140c72940-0x140c74ac8 (KB Game_CareerEventsSequencer_Initialise plus 0xac0), stored at [rbx+0x540] right after call 0x14431f310, bytes 48 8D 05 match expect and the table is the same one the HubLaptopTab ctor stores at +0x630 (0x14ab9efb8);xref:0x140c72e39,0x14ab9efbb,0x140ce5afc",
+   "notes": "gh:Swofty-Developments generic nested model base table stored by about 20 constructors, the identity as a tab model rests on the HubLaptopTab nested model at +0x630, extent not claimed"
+  }
+ ],
  "proofs": [
   {
    "by": "UnorthodoxStoneND",
    "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c72e2b",
+    "target": "0x140c72e36"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3cd31144b4f7b59d6e7d2e95dec777a361d84b4feb62b262712bbde977f3e755"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

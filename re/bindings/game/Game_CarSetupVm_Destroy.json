@@ -39,11 +39,41 @@
   "made_on_target": "0x140cd5800",
   "twin": "made on steam-26566308; the target 0x140cd5800 is KB 0x140cd4d40: Career_DeptEvent_ReadRandomParameters (0xccbd90) and Ne_Sort_IntrosortU16 (0xcda860) on either side both sit 0xac0 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "func",
+   "item": "Game_CarSetupVm_Destroy",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x140cd5800-0x140cd5c66 pdata function start, edx kept in edi, reinstalls vtable 0x145682740 and +0x260, releases node refs at 0x7e18/0x7e28/0x7e90/0x7df8, test edi then free path at 0x140cd5bc9, returns rsi (self) in rax;xref:0x140cd580e,0x140cd5bc9,0x145682750 (vtable slot 2)",
+   "notes": "gh:Swofty-Developments scalar deleting destructor, slot 2 of the Car Setup table"
+  }
+ ],
  "proofs": [
   {
    "by": "UnorthodoxStoneND",
    "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cd5800",
+    "target": "0x140cd5800"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "71eab15fa75627f146a3529586b1522da6abb0c4381e92342432c656686887f2"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
