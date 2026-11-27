@@ -301,6 +301,40 @@ In the C++ version, set `extra["video"] = "videos/hockenheim.bk2"` on the record
 
 The core logs `circuit intro track_map/swofty/mod.hockenheim/hockenheim.bk2` for the track at boot, and `circuit intro opened: <path>` each time the game plays one. See [Circuit intro video](/std/systems/tracks#circuit-intro-video).
 
+#### A video per box
+
+The F1 2026 box has its own set of intros, so a track can bring a different one for it. Make `video` an object with a file per box:
+
+```json [registry/track.json]
+{ "track": { "hockenheim": { "code": "hockenheim", "base": "game/austria", "files": "track/",
+  "video": { "f1": "videos/hockenheim.bk2", "f1_2026": "videos/hockenheim-2026.bk2" } } } }
+```
+
+| Key | Plays in | Placed at |
+|---|---|---|
+| `f1` | the F1 boxes before 2026 | `videos/track_map/swofty/mod.hockenheim/hockenheim.bk2` |
+| `f1_2026` | the F1 2026 box | `videos/track_map/26/swofty/mod.hockenheim/hockenheim.bk2` |
+
+- A string is the same file for every box. With only `f1`, both play it; with only `f1_2026`, both play that, since the track has one row.
+- There is no key for F2: no row of the database names an F2 intro, so it can't be pointed at an add-on's file. An `f2` key is a build warning and the whole `video` is ignored.
+- A key whose file can't be used is a build warning, and that box falls back to the other key.
+
+#### The Time Trial background
+
+The Time Trial track select plays a background video of the selected track. Give Hockenheim one with `time_trial_video`, a string or the same per-box object:
+
+```json [registry/track.json]
+{ "track": { "hockenheim": { "code": "hockenheim", "base": "game/austria", "files": "track/",
+  "time_trial_video": { "f1": "videos/select.bk2", "f1_2026": "videos/select-2026.bk2" } } } }
+```
+
+The build places the files at `videos/track_select/hockenheim.bk2` and `videos/track_select/26/hockenheim.bk2`, the names the game gives the track by its code.
+
+- It only shows where Hockenheim offers Time Trial, and an added track doesn't unless its record sets `time_trial` ([the track system](/std/systems/tracks#circuit-intro-video)).
+- A `time_trial_video` with only `f1_2026` shows in the F1 2026 box only.
+- Without one, the game looks for `videos/track_select/hockenheim.bk2` and finds nothing; what the screen shows then is not tested.
+- The core doesn't log it opening: the game opens it as a video resource.
+
 ## 4. Check the boxes that inherit it
 
 <Split>
