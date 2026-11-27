@@ -27,13 +27,13 @@ pub(crate) fn start(c: &mut Command) -> Result<Child> {
         })
 }
 
-/// Every error the wrapper stops with is kept for Send Logs, in the wrapper
+/// Every error a wrapper Steam started stops with is kept for Send Logs, in the wrapper
 /// log and as the launch's failure unless this run already recorded a more
 /// specific one (`since` is when the run began).
-pub(crate) fn note_failed(store: &Store, e: &anyhow::Error, since: f64) {
+pub(crate) fn note_failed(store: &Store, e: &anyhow::Error, since: f64, launcher_started: bool) {
     let chain = causes(e);
     crate::console::output::tee_line("error", &chain.join(": "));
-    if matches!(e.downcast_ref(), Some(swofty_core::Error::Blocked(_))) {
+    if launcher_started || matches!(e.downcast_ref(), Some(swofty_core::Error::Blocked(_))) {
         return note_blocked(store, e);
     }
     if launch::Failure::read(&store.root).is_some_and(|f| f.at >= since) {
@@ -109,7 +109,7 @@ mod tests {
         let root = std::env::temp_dir().join(format!("swofty-run-{}-failed", std::process::id()));
         let store = Store::new(&root);
         let e = anyhow::anyhow!("access denied").context("staging offline play");
-        note_failed(&store, &e, 0.0);
+        note_failed(&store, &e, 0.0, false);
         let f = launch::Failure::read(&root).unwrap();
         assert_eq!(
             f.cause,
@@ -126,16 +126,42 @@ mod tests {
     }
 
     #[test]
+    fn a_launcher_started_wrapper_records_only_blocked_starts() {
+        let root = std::env::temp_dir().join(format!("swofty-run-{}-launcher", std::process::id()));
+        let store = Store::new(&root);
+        note_failed(
+            &store,
+            &anyhow::anyhow!("two plugins with the same file name"),
+            0.0,
+            true,
+        );
+        assert_eq!(launch::Failure::read(&root), None);
+        let block = Block::from_code(&root.join("f1op-probe.exe"), 4551).unwrap();
+        let blocked = anyhow::Error::from(swofty_core::Error::Blocked(block.clone()));
+        note_failed(&store, &blocked, 0.0, true);
+        assert_eq!(
+            launch::Failure::read(&root).map(|f| f.cause),
+            Some(launch::Cause::Blocked(block))
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn a_failure_this_run_already_recorded_is_kept() {
         let root = std::env::temp_dir().join(format!("swofty-run-{}-kept", std::process::id()));
         let store = Store::new(&root);
         let running = already_running(&store, 77, "close it");
-        note_failed(&store, &running, 0.0);
+        note_failed(&store, &running, 0.0, false);
         assert_eq!(
             launch::Failure::read(&root).map(|f| f.cause),
             Some(launch::Cause::AlreadyRunning { pid: 77 })
         );
-        note_failed(&store, &anyhow::anyhow!("later"), crate::time::now_secs() + 60.0);
+        note_failed(
+            &store,
+            &anyhow::anyhow!("later"),
+            crate::time::now_secs() + 60.0,
+            false,
+        );
         assert!(matches!(
             launch::Failure::read(&root).map(|f| f.cause),
             Some(launch::Cause::Failed { .. })

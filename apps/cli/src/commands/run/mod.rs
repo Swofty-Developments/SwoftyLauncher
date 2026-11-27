@@ -99,7 +99,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
                     wrapper::run(store, profile, &args, &g)
                 })
             })
-            .inspect_err(|e| failure::note_failed(store, e, since));
+            .inspect_err(|e| failure::note_failed(store, e, since, wrapper_log::launcher_started()));
     }
     launch::run(store, profile, &args, &g)
 }

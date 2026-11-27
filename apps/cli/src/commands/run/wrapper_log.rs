@@ -11,8 +11,12 @@ use crate::console::output::tee_to;
 pub(super) const LAUNCHER_LOGGED: &str = "SWOFTY_WRAPPER_LOG_REDIRECTED";
 const CAP: u64 = 256 << 10;
 
+pub(super) fn launcher_started() -> bool {
+    std::env::var_os(LAUNCHER_LOGGED).is_some()
+}
+
 pub(super) fn start(store: &Store) {
-    if std::env::var_os(LAUNCHER_LOGGED).is_some() {
+    if launcher_started() {
         return;
     }
     let args: Vec<OsString> = std::env::args_os().skip(1).collect();
