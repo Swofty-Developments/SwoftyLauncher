@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamDriverDetails_SetupSceneDriver",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14196ea60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_MyTeamDriverDetails_SetupSceneDriver(void *self, void *driver, uint64_t opt_stage, const char *str_a, const char *str_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141970240 (RacingPC lab re_groups/_decomp);xref:0x142348d70,0x1423fda20",
+  "notes": "If the optional stage argument has its present flag (bit 32) set, calls Ui_Play_FacilityStageCutsceneByIndex(self+0x18, stage). Then gets a custom driver slot with Game_FrontendSceneManager_FindOrCreateNewCustomDriver(self+0x08, 0xffff) stored at self+0x28, fills a setup descriptor (vtable 0x145626810) with driver+0x50/+0x54/+0x58 ids, the two strings and fixed flags, and calls Game_FrontendSceneManager_SetupCustomDriver. Spawns the 3D driver model for the driver details and young driver renew screens."
+ },
+ "signature": {
+  "id": "career.my_team_driver_details_setup_scene_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 04 00 00 4C 89 CF",
+  "match": "0x14196ea60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14196ea60",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamDriverDetails_SetupSceneDriver"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141970240",
+  "made_on_target": "0x141970240",
+  "twin": "made on steam-26566308; the target 0x141970240 is KB 0x14196ea60: Ne_Std_ThrowVectorSubscriptError (0x1952cb0) and Ui_Play_FacilityStageCutsceneByIndex (0x19707c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141970240",
+    "target": "0x141970240"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fdf98d68c278a5643cf02683f165c0d02cc2b5bcdf87a5967c0a01d604e29257"
+  }
+ ]
+}

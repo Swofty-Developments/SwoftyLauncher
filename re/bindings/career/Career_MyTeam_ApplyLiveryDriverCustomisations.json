@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeam_ApplyLiveryDriverCustomisations",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14144abe0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_MyTeam_ApplyLiveryDriverCustomisations(void *self, uint32_t packed_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14144b3c0 (RacingPC lab re_groups/_decomp);xref:0x143702070",
+  "notes": "packed_id is byte id + u16 at bits 16..31 (0x3fff = none). With an active career (self+0x2a8 -> +0x88 -> +0x260) it resolves the team record (0x88-byte elems at career+0x2e0, +0x50/+0x52 id), checks flag +0x4b bit 0x10 or FUN_14144bbb0/FUN_14144bc50, gets the vehicle customisation (+0xe0) and rewrites up to 5 driver customisation records twice (two FUN_1413fac80 queries) via Ent_EntrantsSystem_ReplaceDriverCustomisation, padding missing slots with 0xffff0009. Without a career it falls back to Career_MyTeam_SyncDriverCustomisationsFromLivery."
+ },
+ "signature": {
+  "id": "career.my_team_apply_livery_driver_customisations",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 C6 00 00",
+  "match": "0x14144abe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14144abe0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeam_ApplyLiveryDriverCustomisations"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14144b3c0",
+  "made_on_target": "0x14144b3c0",
+  "twin": "made on steam-26566308; the target 0x14144b3c0 is KB 0x14144abe0: Game_DecalGeneration_ReadBackCompressed (0x14387c0) and Ne_FlagMaskSet_SetBit (0x144e040) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14144b3c0",
+    "target": "0x14144b3c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "64abe57393fb9f650b0c7224b631da3eb0bd737973c26cccc8837974eedb6c61"
+  }
+ ]
+}

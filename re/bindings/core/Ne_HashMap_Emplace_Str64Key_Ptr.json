@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Emplace_Str64Key_Ptr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143683170",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_Emplace_Str64Key_Ptr(void *map, void *outIter, void *srcNode, void **value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143685700 (RacingPC lab re_groups/_decomp);xref:0x1407caec0,0x1407d2860,0x1407f7370,0x140a24a40,0x140ae61b0,0x140f6a7b0,0x1429673c0,0x143238450",
+  "notes": "(lib) Takes a node from the freelist at +0x8 (refills via 0x143685e60), builds an inline 64-char string key copied from src +0x18..+0x57, stores *value at node[0xb], inserts via FUN_143685830 and handles result codes 0..3 (duplicate returns node to freelist). Writes iterator (slot ptr, ctrl ptr) and inserted flag to outIter."
+ },
+ "signature": {
+  "id": "core.hash_map_emplace_str64_key_ptr",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 7C 24 68 00 74 3D",
+  "match": "0x140a27e38",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143683170",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_Emplace_Str64Key_Ptr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140a27e88",
+  "made_on_target": "0x143685700",
+  "twin": "made on steam-26566308; the target 0x143685700 is KB 0x143683170: Sess_ScStoppedCar_MapEmplace (0x3684610) and Ne_Sequence_Deserialize (0x368eff0) on either side both sit 0x2590 above their KB addresses; the match 0x140a27e88 is KB 0x140a27e38: Sess_Restart_ResetGridLineup (0xa12580) and Game_SpeechSystem_PostLine (0xa30bb0) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140a27e88",
+    "target": "0x143685700"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "94c78c0456a112a43eef8ce0721e9d5e6ac085a479aae83af973fbc8ffb1d829"
+  }
+ ]
+}

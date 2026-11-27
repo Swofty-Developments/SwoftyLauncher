@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Pick_RandomUpgradePairSameGroup",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fc6dd0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Pick_RandomUpgradePairSameGroup(void *self, void *out_list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fc7950 (RacingPC lab re_groups/_decomp);xref:0x1422e9250",
+  "notes": "Locks the weak ref at self+8/+0x10, queries Career_Query_EnabledUpgradesByTypeMask with type 6 or 1 (owner+0x5c == 1) and mask owner+0x60, falling back to type 1 mask 0x3f. Seeds an MT19937-style state with vcall(self+0x30,3) + u16(self+0x1a)*0x539, picks a random upgrade, collects all with the same int at upgrade+0x58 and writes up to 2 pointers into out_list (count at +0x10)."
+ },
+ "signature": {
+  "id": "career.pick_random_upgrade_pair_same_group",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 B8 18 22 00 00",
+  "match": "0x140fc6dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc6dd0",
+  "kind": "func_start",
+  "names": [
+   "Career_Pick_RandomUpgradePairSameGroup"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140fc7950",
+  "made_on_target": "0x140fc7950",
+  "twin": "made on steam-26566308; the target 0x140fc7950 is KB 0x140fc6dd0: Career_Deserialise_ClaimedFlag (0xfc7620) and Career_DeptEventReward_CreateUpgradeDiscount (0xfc8030) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140fc7950",
+    "target": "0x140fc7950"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "541435684cbd7ca8ef7c82bc624c60cae83575b98d6405fb7f8aaa32cdc1d9f2"
+  }
+ ]
+}

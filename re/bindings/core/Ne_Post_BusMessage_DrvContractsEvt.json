@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Post_BusMessage_DrvContractsEvt",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140e0ab40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Post_BusMessage_DrvContractsEvt(void *bus, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140e0b6c0 (RacingPC lab re_groups/_decomp);xref:0x140d800b0,0x140d80d10",
+  "notes": "Typed message-bus post: fails with errno 0x58 if bus+0x68 is clear; otherwise under critical section bus+0x98 allocates a 0x20 node from bus+0x70, copies msg+8 and 13 payload bytes from msg+0x10, sets vtable 0x14569a1f0, appends to the queue (head +0x58, tail +0x60) and signals event bus+0x90. Returns 0 or a mapped Win32 error."
+ },
+ "signature": {
+  "id": "core.post_bus_message_drv_contracts_evt",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? EB 05 44 8B 74 24 20",
+  "match": "0x140d7f745",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140e0ab40",
+  "kind": "call",
+  "names": [
+   "Ne_Post_BusMessage_DrvContractsEvt"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d802c5",
+  "made_on_target": "0x140e0b6c0",
+  "twin": "made on steam-26566308; the target 0x140e0b6c0 is KB 0x140e0ab40: Career_DriverAcademies_MapFindOrAdd (0xe09d60) and Ne_Sort_IntrosortDriverPtrsByKey (0xe0db80) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d802c5",
+    "target": "0x140e0b6c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b59c433add3b5d321dcce635cbb953cda15143d8b53e8f781fc397eb386cf551"
+  }
+ ]
+}

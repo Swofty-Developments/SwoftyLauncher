@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqContainerVM_SelectFallbackTab",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422d69f0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_TeamHqContainerVM_SelectFallbackTab(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422d85f0 (RacingPC lab re_groups/_decomp);xref:0x1422d8290,0x1422d8940",
+  "notes": "Queries menu vm+0x2c0 for item id 0x5b810a5c; depending on the result (and on item 0x2062deb7 in the menu at vm+0x7c8) it iterates the tab list at menu+0x3a0 and calls Ui_Resolve_MyTeamTabNode on menu+0x28 until one resolves, then dispatches the UI event named at 0x14577dfa7 with a type-4 argument. Better context needed: which tabs the two id hashes are."
+ },
+ "signature": {
+  "id": "career.team_hq_container_vm_select_fallback_tab",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CE 48 8D B9 C0 02 00 00",
+  "match": "0x1422d69f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422d69f0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqContainerVM_SelectFallbackTab"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422d85f0",
+  "made_on_target": "0x1422d85f0",
+  "twin": "made on steam-26566308; the target 0x1422d85f0 is KB 0x1422d69f0: Ui_DriverMarket_SetOpenedFromRenewalPopup (0x22d8540) and Career_Bind_RnDDepartmentsTable_B (0x22d8850) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422d85f0",
+    "target": "0x1422d85f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "716af4b7ba0e8d910b24ccf3e838f7782af8a2cf9bf4d071b61af6137e92811c"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Lobby_CallWithLocalPlayerIdentity",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143115f50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Lobby_CallWithLocalPlayerIdentity(void *self, uint32_t a, uint32_t b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1431184e0 (RacingPC lab re_groups/_decomp);xref:0x142213b00",
+  "notes": "Returns 0 unless byte self+0xdc is set and (self+0x28)->+0x438 is non-null. Otherwise builds the local player identity record (Ne_Make_RandomIdBlock default, overwritten from g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vfunc +0x38, flags 0x10000000) and forwards to FUN_143118600(self, identity, a, b). Better context needed: FUN_143118600 decides the role (caller reads a contract id for the lobby vehicle select)."
+ },
+ "signature": {
+  "id": "game.lobby_call_with_local_player_identity",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC B0 00 00 00 80 B9 DC 00 00 00 00",
+  "match": "0x143115f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143115f50",
+  "kind": "func_start",
+  "names": [
+   "Game_Lobby_CallWithLocalPlayerIdentity"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1431184e0",
+  "made_on_target": "0x1431184e0",
+  "twin": "made on steam-26566308; the target 0x1431184e0 is KB 0x143115f50: Game_EntrantsManager_HandleCustomSELiveryReplace (0x31160f0) and Game_EntrantsManager_ClaimFreeEntrant (0x3119020) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1431184e0",
+    "target": "0x1431184e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1f203a4f87bbdb70e1dd39ac81d9dd500e4a9ecc1f464e5d4e84f904baff1361"
+  }
+ ]
+}

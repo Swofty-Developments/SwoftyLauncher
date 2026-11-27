@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Deserialise_SharedTeamModifiers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1434f7a90",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint32_t Career_Deserialise_SharedTeamModifiers(void *self, void *propBag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1434fa020 (RacingPC lab re_groups/_decomp);xref:0x14123ff70",
+  "notes": "Reads a list property from propBag; per entry reads two u16 fields (map key and a packed id stored at node+0x10), parses the modifier body with FUN_1434fab70, erases any existing node with that key from the u16 hash map at self+0x18.., allocates a node from free-list self+0x20 and inserts it (FUN_1435dc820). Afterwards enumerates teams (vcall +0x1C8 on *(self[1]+0x1058)+0x208) and calls Career_Init_SharedTeamModifiers for any id (from +0x50) missing from the map. Returns errno-style code (0x57 missing, 0x58 wrong type)."
+ },
+ "signature": {
+  "id": "career.deserialise_shared_team_modifiers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 78 29 84 24 20 01 00 00 C5 F8 29 BC 24 10 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 89 D0 48 89 CE",
+  "match": "0x1434f7a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434f7a90",
+  "kind": "func_start",
+  "names": [
+   "Career_Deserialise_SharedTeamModifiers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1434fa020",
+  "made_on_target": "0x1434fa020",
+  "twin": "made on steam-26566308; the target 0x1434fa020 is KB 0x1434f7a90: Ne_HashMap_U64_Insert (0x34f6700) and Career_Add_TeamModifier (0x34faf90) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434fa020",
+    "target": "0x1434fa020"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0bee0c9bf375dd8e51e2ffc7e1382ee52fdeda022c5bba8f2a36694e8c9aa0d2"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_DriverMarket_BuildCandidateSet_ByTeamAndAge",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140dc9f20",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_DriverMarket_BuildCandidateSet_ByTeamAndAge(void *self, void *outMap, uint32_t *teamId)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140dcaaa0 (RacingPC lab re_groups/_decomp);xref:0x140d993d0,0x140dca020",
+  "notes": "Initialises a robin-hood hash map at outMap (allocator self+0x210, seed 0xc4ceb9fe1a85ec53), fetches records via ((self+0x278)+0x1030) virtual +0x1c8, keeps those whose id at +0x58 equals *teamId, then for each one passing virtual +0x268 gets an age limit from virtual +0x2b8 (arg ((self+0x4e0)->+0x2b0 >> 5)/45) and tests Career_DriverContracts_IsDriverInAgeRange; accepted driver ids (+0x50) are inserted keyed by packed u16 id and the value dword gets bit 0 set. Returns outMap."
+ },
+ "signature": {
+  "id": "career.driver_market_build_candidate_set_by_team_and_age",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 4C 89 C7 48 89 D6 49 89 CE",
+  "match": "0x140dc9f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dc9f20",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverMarket_BuildCandidateSet_ByTeamAndAge"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140dcaaa0",
+  "made_on_target": "0x140dcaaa0",
+  "twin": "made on steam-26566308; the target 0x140dcaaa0 is KB 0x140dc9f20: Career_MyTeamSetup_CopyOptionIdList (0xdc9940) and Career_DriverContracts_HasTeamForDriver (0xdcb380) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140dcaaa0",
+    "target": "0x140dcaaa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6984b96a170788fd2b87ee79b9d8068a86706558160acb72374882df2667a9ed"
+  }
+ ]
+}

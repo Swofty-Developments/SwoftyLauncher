@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_SaveData_WriteFieldAndElementArray",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c94130",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Career_SaveData_WriteFieldAndElementArray(void *self, void *writer)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c94bf0 (RacingPC lab re_groups/_decomp);xref:0x140c9a160,0x141100700",
+  "notes": "Writes one reflected field from self+0x20 (key 0x145614a62), then creates a reflected array field (key 0x145690492), reserves it for (self+0x10 - self+0x08)/8 entries and writes each pointer element through Gdb_Get_ReflectedTypeInfo plus 0x140c94db0. Returns the first non-zero error code. Shared by Contract and Sponsors save writers."
+ },
+ "signature": {
+  "id": "career.save_data_write_field_and_element_array",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D3 48 89 CF",
+  "match": "0x140c94130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c94130",
+  "kind": "func_start",
+  "names": [
+   "Career_SaveData_WriteFieldAndElementArray"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c94bf0",
+  "made_on_target": "0x140c94bf0",
+  "twin": "made on steam-26566308; the target 0x140c94bf0 is KB 0x140c94130: Game_WonDriverChampionship_Initialise_2 (0xc936a0) and Career_Msg_SubscribeBankAccountValidTransaction_A (0xc9b550) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c94bf0",
+    "target": "0x140c94bf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b05dbd81efd41cc8a9b1d280600311d18f76e9d3998f28a50b5bfd41524a0ca6"
+  }
+ ]
+}

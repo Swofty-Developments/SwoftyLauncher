@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_Tree_EraseSubtree_FacilityHeads",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1403308a0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Std_Tree_EraseSubtree_FacilityHeads(void *alloc, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1403308a0 (RacingPC lab re_groups/_decomp);xref:0x14025d1f0",
+  "notes": "(lib) Recursive MSVC std::_Tree subtree erase: recurses into right child (+0x10), frees the node through the allocator vfunc +0x38 and continues with the left child until the nil flag +0x19 is set."
+ },
+ "signature": {
+  "id": "core.std_tree_erase_subtree_facility_heads",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 80 7A 19 00 74 08 48 83 C4 20 5B 5F 5E C3 48 89 D7 48 89 CE EB 0C 0F 1F 00 80 7B 19 00 48 89 DF 75 E4 48 8B 57 10 48 89 F1 E8 ?? ?? ?? ?? 48 8B 1F 48 8B 0E 48 85 C9 74 E0 48 8B 01 48 89 FA FF 50 38 EB D5 CC CC CC CC CC 41 57 41 56 41 54 56 57 55 53 48 83 EC 30",
+  "match": "0x1403308a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403308a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_Tree_EraseSubtree_FacilityHeads"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1403308a0",
+  "made_on_target": "0x1403308a0",
+  "twin": "made on steam-26566308; the target 0x1403308a0 is KB 0x1403308a0: Ne_Std_ThrowMapSetTooLong (0x330460) and site_Game_DriverTalksToCrew01_TeamRecord (0x3390dc) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1403308a0",
+    "target": "0x1403308a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7fed6cc1328b1623a45543428f9a52eff19484498d7e639533293ce311dbdc17"
+  }
+ ]
+}

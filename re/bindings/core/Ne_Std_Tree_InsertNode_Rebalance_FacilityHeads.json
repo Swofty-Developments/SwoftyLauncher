@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_Tree_InsertNode_Rebalance_FacilityHeads",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140330650",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Std_Tree_InsertNode_Rebalance_FacilityHeads(void *tree, void *where, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140330650 (RacingPC lab re_groups/_decomp);xref:0x14025aeb0",
+  "notes": "(lib) MSVC std::_Tree insert-at with red-black rebalancing: increments size tree+8, links node under where (parent ptr + left/right flag), updates head min/max, then recolours and rotates (colour byte +0x18, nil flag +0x19)."
+ },
+ "signature": {
+  "id": "core.std_tree_insert_node_rebalance_facility_heads",
+  "section": ".xtls",
+  "pattern": "49 89 C0 E8 ?? ?? ?? ?? 49 89 7F 28",
+  "match": "0x14025bd41",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140330650",
+  "kind": "call",
+  "names": [
+   "Ne_Std_Tree_InsertNode_Rebalance_FacilityHeads"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14025bd41",
+  "made_on_target": "0x140330650",
+  "twin": "made on steam-26566308; the target 0x140330650 is KB 0x140330650: Ne_Std_ThrowMapSetTooLong (0x330460) and site_Game_DriverTalksToCrew01_TeamRecord (0x3390dc) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14025bd41",
+    "target": "0x140330650"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7b642297abbd55cd131c180a0bf7e72d5a4a784b9c84f5421ed1688164daac97"
+  }
+ ]
+}

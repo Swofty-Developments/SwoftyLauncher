@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_UpgradeConditionFactory_CreateByName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140f4ec00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_UpgradeConditionFactory_CreateByName(void *factory, const char *name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140f4f780 (RacingPC lab re_groups/_decomp);xref:0x140f600a0",
+  "notes": "If enabled flag at +0x10 is set, copies name (max 255 chars) to a stack buffer, does a lower_bound in a std::map keyed by C string (node key ptr +0x30, nil flag +0x19) and on exact match calls vtable+8 of the creator object stored at node +0x138, returning its result, else 0. Hook to see which upgrade condition types get created by name."
+ },
+ "signature": {
+  "id": "career.upgrade_condition_factory_create_by_name",
+  "section": ".xtls",
+  "pattern": "48 89 F9 E8 ?? ?? ?? ?? 8B 00 89 46 44",
+  "match": "0x140f4fc2e",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140f4ec00",
+  "kind": "call",
+  "names": [
+   "Career_UpgradeConditionFactory_CreateByName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140f507ae",
+  "made_on_target": "0x140f4f780",
+  "twin": "made on steam-26566308; the target 0x140f4f780 is KB 0x140f4ec00: Career_Init_ConditionTypeRegistry (0xf3d860) and Career_Init_SponsorTypeEntry (0xf53ac0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140f507ae",
+    "target": "0x140f4f780"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f07291b7892565bb4782f999b93fa9f37f705513959a449a3ed2b52d496b4a70"
+  }
+ ]
+}

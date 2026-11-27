@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_Schedule_AddTodayEntry_Kind1B_ForId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1412692d0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Schedule_AddTodayEntry_Kind1B_ForId(void *sched, uint32_t ownerId, uint32_t time)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141269910 (RacingPC lab re_groups/_decomp);xref:0x140dae9f0",
+  "notes": "In today's day record (vector +0x410 stride 0x80, index +0x428) finds the owner slot (list +0x60..+0x68 stride 0xd8, id at +0xc0), looks up the activity definition with kind byte +0x10 == 0x1b in map +0x378, checks its game-mode mask +0x60 against Career_Is_MyTeamGameMode, creates an entry via slot vfunc+8 and inserts it time-ordered (ushort +0xa) into the slot entry vector +0x48, then re-sorts. Kind 0x1b meaning not shown; called when the My Team contract window opens."
+ },
+ "signature": {
+  "id": "career.schedule_add_today_entry_kind1_b_for_id",
+  "section": ".xtls",
+  "pattern": "41 89 D8 E8 ?? ?? ?? ?? 4C 8B BE 78 02 00 00",
+  "match": "0x140dae698",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1412692d0",
+  "kind": "call",
+  "names": [
+   "Career_Schedule_AddTodayEntry_Kind1B_ForId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140daf218",
+  "made_on_target": "0x141269910",
+  "twin": "made on steam-26566308; the target 0x141269910 is KB 0x1412692d0: Career_Calendar_IgnoreActivitiesInRange (0x1268910) and Career_Check_RecordSetContainsKind (0x126d820) on either side both sit 0x640 above their KB addresses; the match 0x140daf218 is KB 0x140dae698: Game_DriverContractsMyTeamComponent_OpenContractWindow (0xdae9f0) and Game_DriverContractsMyTeamComponent_ProgressDay (0xdaf7c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140daf218",
+    "target": "0x141269910"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "79fe5f14499bab67699f95f38f35c9b9819bcfef4cb2879f987714d58f3291e2"
+  }
+ ]
+}

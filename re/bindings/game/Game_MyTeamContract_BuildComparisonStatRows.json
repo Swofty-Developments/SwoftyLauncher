@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamContract_BuildComparisonStatRows",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423081e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamContract_BuildComparisonStatRows(void *self, void *driverCardA, void *driverCardB)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142309de0 (RacingPC lab re_groups/_decomp);xref:0x142308150",
+  "notes": "Clears the stat row vector (+0x6d0 base, +0x22f0..+0x2300, 0x428-byte rows), sets the overall comparison from int(float +0x3b0) of both cards, then for each stat in k_Career_DriverStatisticsComponentDesc list +0x2d0..+0x2d8 builds a row (name +0x378, icon +0x378 path), reads each card's value from its stat list +0x658..+0x660 (0x2e8 elems, id +0x158, node +0x88), sets team colours from team data +0x57c and pushes the row."
+ },
+ "signature": {
+  "id": "game.my_team_contract_build_comparison_stat_rows",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 4C 89 C3",
+  "match": "0x1423081e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423081e0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamContract_BuildComparisonStatRows"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142309de0",
+  "made_on_target": "0x142309de0",
+  "twin": "made on steam-26566308; the target 0x142309de0 is KB 0x1423081e0: Career_MyTeamContract_OnDriverSelected (0x23099e0) and Game_MyTeamContract_SetDriversVisible (0x230b380) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142309de0",
+    "target": "0x142309de0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ffce61a0dd961f8f4ac02944e2ef29f422c04ac1a19805d76d5b989410a93cda"
+  }
+ ]
+}

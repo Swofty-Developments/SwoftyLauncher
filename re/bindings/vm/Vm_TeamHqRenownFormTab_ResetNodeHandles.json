@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqRenownFormTab_ResetNodeHandles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142353c80",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_TeamHqRenownFormTab_ResetNodeHandles(void *opt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142355880 (RacingPC lab re_groups/_decomp);xref:0x1423554a0",
+  "notes": "Optional-style reset: when the engaged byte at +0x120 is set, unlinks and releases (Vm_Release_Node) the nine intrusive VM node handles at +0x00..+0x100 (0x20 apart, in reverse order), resets their vtables to the base 0x145614e48 and clears the byte."
+ },
+ "signature": {
+  "id": "vm.team_hq_renown_form_tab_reset_node_handles",
+  "section": ".xtls",
+  "pattern": "48 89 D9 E8 ?? ?? ?? ?? 48 8D 54 24 38",
+  "match": "0x142353981",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x142353c80",
+  "kind": "call",
+  "names": [
+   "Vm_TeamHqRenownFormTab_ResetNodeHandles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142355581",
+  "made_on_target": "0x142355880",
+  "twin": "made on steam-26566308; the target 0x142355880 is KB 0x142353c80: Career_TeamHq_GetRenownFormTab (0x23554a0) and Ui_TeamHqOwnerPerks_Header (0x2355f00) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142355581",
+    "target": "0x142355880"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e34f79adbc7c530801b7813e99e58df9fb431b0f6c6d4aec549f1847e00c5503"
+  }
+ ]
+}

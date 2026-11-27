@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_SetUnlockFlag_ActiveTeams",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1434ff240",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_ResourcePoints_SetUnlockFlag_ActiveTeams(void **self, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435017d0 (RacingPC lab re_groups/_decomp);xref:0x14122a660",
+  "notes": "Iterates every entry of the hash map at self+0x38..+0x50, writes flag to entry+8, and for entries whose packed team key matches an 0x88-byte entrant record (owner+0x2e0, id +0x52, type +0x50) that has +0x81 == 0 or +0x80 < 2 posts bus message 0x1458504c0 with the unpacked key. Entry+8 is the same lock byte tested by 0x14350b9e0."
+ },
+ "signature": {
+  "id": "career.resource_points_set_unlock_flag_active_teams",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 48 83 79 50 00",
+  "match": "0x1434ff240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434ff240",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_SetUnlockFlag_ActiveTeams"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1435017d0",
+  "made_on_target": "0x1435017d0",
+  "twin": "made on steam-26566308; the target 0x1435017d0 is KB 0x1434ff240: Career_Adjust_RpDriverWallet (0x3501570) and Career_ResourcePointsAward_WriteSaveData (0x35039e0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1435017d0",
+    "target": "0x1435017d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fbdb284ea4cc2b57436b44f96da88677579d6656a8fc4b948b796a9e24380def"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContracts_IsPlayerEntryActiveKind9",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d80860",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint8_t Career_DriverContracts_IsPlayerEntryActiveKind9(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d813e0 (RacingPC lab re_groups/_decomp);xref:0x1436c3cf0,0x1436c6c60",
+  "notes": "Same body as 0x140d81590: finds the local player EntrantRecord in (+0x278)->+0x2e0..+0x2e8, then the object in (+0x350)->+0x298..+0x2a0 whose id at +0x50 matches; returns true only if +0x2c != 0 and byte +0x12 == 9. Gates ContractUpdate/ContractTeamSelect entry; meaning of kind 9 not shown by the code."
+ },
+ "signature": {
+  "id": "career.driver_contracts_is_player_entry_active_kind9",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? EB 02 31 C0 88 86 5B 0D 00 00",
+  "match": "0x1436c1857",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d80860",
+  "kind": "call",
+  "names": [
+   "Career_DriverContracts_IsPlayerEntryActiveKind9"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436c3de7",
+  "made_on_target": "0x140d813e0",
+  "twin": "made on steam-26566308; the target 0x140d813e0 is KB 0x140d80860: Game_DriverContracts_AdvanceSecretMeeting (0xd80d10) and Game_DriverContracts_BuildOffers (0xd81a70) on either side both sit 0xb80 above their KB addresses; the match 0x1436c3de7 is KB 0x1436c1857: Career_ContractUpdate_OnEnter (0x36c3cf0) and Career_ContractUpdate_OnUpdate (0x36c4390) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436c3de7",
+    "target": "0x140d813e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b7416e0da5ce91fe63fa677233a1ffde06395857138ebd0762e87d7b7a457322"
+  }
+ ]
+}

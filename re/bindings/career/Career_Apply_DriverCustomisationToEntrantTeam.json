@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Apply_DriverCustomisationToEntrantTeam",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414019c0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Apply_DriverCustomisationToEntrantTeam(void *self, char *entrant_key, uint8_t *custom_key, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141402000 (RacingPC lab re_groups/_decomp);xref:0x141401750,0x141402410",
+  "notes": "Runs only when entrant_key[0]==1 and custom_key[0]==1 and Wear_Get_DriverCustomisation_Thunk(*(self+0x28), custom_key) returns a record. Resolves a team slot id via 0x14246f660; if the id is 0x3fff it builds a fresh team customisation and calls Ent_EntrantsSystem_AddTeamCustomisation, otherwise it finds the existing team record (id at +0x100/+0x102), copies its 128-char name block (+0x78..+0xf0) and calls Ent_EntrantsSystem_ReplaceTeam_2. In both paths the two colour/decal blocks come from the customisation record at +0x48..+0x64 and +0x78..+0x94."
+ },
+ "signature": {
+  "id": "career.apply_driver_customisation_to_entrant_team",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 28 01 00 00 80 3A 01 0F 85",
+  "match": "0x1414019c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414019c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Apply_DriverCustomisationToEntrantTeam"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141402000",
+  "made_on_target": "0x141402000",
+  "twin": "made on steam-26566308; the target 0x141402000 is KB 0x1414019c0: Ne_CrowdPlugin_FindZoneIndex (0x13f3f30) and Ne_StdMap_At_141403b30 (0x1404170) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141402000",
+    "target": "0x141402000"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "51cc1f31194aee2f1793a8463edbaa988845b9ee7c8681a68afbb8162eb96d55"
+  }
+ ]
+}

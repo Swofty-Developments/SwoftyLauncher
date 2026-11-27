@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamOwnerBackgroundVM_UpdatePerkDetail",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14205cc80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_MyTeamOwnerBackgroundVM_UpdatePerkDetail(void *vm, uint64_t item_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14205e880 (RacingPC lab re_groups/_decomp);xref:0x14205df00",
+  "notes": "Gets the owner perk for category min(vm+0x2b8, 4) from vm+0x2a0 via Career_Get_OwnerPerkByIndex, deep-copies its 0x30-byte item list and takes the id list of item_index. By category: 0 looks up the id in OwnerPerksComponent +0x488 (stride 0x20) and sets title/description/type strings at panel(vm+0x278)+0x300..+0x380; 1 looks it up in MyTeamFacilitiesComponent +0x330 (stride 0x28) and fills three progress blocks (kinds 0/1/2, value/max ratio, colours) at +0x3c0..+0x620; 2 reads four ints from CareerSetupComponent +0x4e0 (stride 0x38) into +0x640..+0x6a0; 3 formats a number from CareerSetupComponent +0x4c0 and a percent ((mult-1)*100 from func 0x140f7cbd0) into +0x6c0/+0x6e0."
+ },
+ "signature": {
+  "id": "career.my_team_owner_background_vm_update_perk_detail",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 49 89 CE 48 8B 89 A0 02 00 00",
+  "match": "0x14205cc80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14205cc80",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamOwnerBackgroundVM_UpdatePerkDetail"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14205e880",
+  "made_on_target": "0x14205e880",
+  "twin": "made on steam-26566308; the target 0x14205e880 is KB 0x14205cc80: Career_MyTeamOwnerBackgroundVM_OnAction (0x205df00) and Career_Init_UpgradesWorkforceStatRow (0x205f510) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14205e880",
+    "target": "0x14205e880"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c5dcf919ce9748668b135352d2d4ea41ea5e0fe3de16d37f4c27952780fd08e5"
+  }
+ ]
+}

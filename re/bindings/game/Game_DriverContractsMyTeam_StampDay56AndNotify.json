@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DriverContractsMyTeam_StampDay56AndNotify",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140dbac50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_DriverContractsMyTeam_StampDay56AndNotify(void *comp, void *contract_entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140dbb7d0 (RacingPC lab re_groups/_decomp);xref:0x140dbc7c0",
+  "notes": "Calls Career_Unk_140db6920(comp, entry+0x5c driver id), writes the current career day (minutes at comp+0x2a8 -> +0x2b0 divided by 1440) to entry+0x56, then posts bus message 0x145698fd0 carrying driver id (entry+0x5c) and the local player's team id (EntrantRecord team_stat_id from mode comp+0x278). Better context needed: which meeting outcome this branch of OnMeetingComplete represents."
+ },
+ "signature": {
+  "id": "game.driver_contracts_my_team_stamp_day56_and_notify",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 48 89 D6 48 89 CF 8B 52 5C",
+  "match": "0x140dbac50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dbac50",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverContractsMyTeam_StampDay56AndNotify"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140dbb7d0",
+  "made_on_target": "0x140dbb7d0",
+  "twin": "made on steam-26566308; the target 0x140dbb7d0 is KB 0x140dbac50: Career_DriverContractsMyTeam_PostApproachMessages (0xdb81e0) and Career_DriverContracts_BuildDriverContractQuote (0xdbc210) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140dbb7d0",
+    "target": "0x140dbb7d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1d4aba467b059395b28bc443dee50e3dbae55a19643775e419b7e739c9ac3f3a"
+  }
+ ]
+}

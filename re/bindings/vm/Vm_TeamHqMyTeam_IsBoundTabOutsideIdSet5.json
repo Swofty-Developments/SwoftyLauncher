@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_IsBoundTabOutsideIdSet5",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141993880",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "bool Vm_TeamHqMyTeam_IsBoundTabOutsideIdSet5(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141995060 (RacingPC lab re_groups/_decomp);xref:0x142330180",
+  "notes": "Gets the bound item via Vm_TeamHqMyTeam_FindBoundIndexA and reads its id hash (**(item+0x10)); returns false when the id is one of 0xc3912f14, 0x10de9d15, 0x111c8c30, 0x123b2071, 0x7a4e191b, true otherwise (also true when nothing is bound)."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_is_bound_tab_outside_id_set5",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? 48 85 C0 74 3F 48 8B 40 10",
+  "match": "0x141993880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141993880",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_IsBoundTabOutsideIdSet5"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141995060",
+  "made_on_target": "0x141995060",
+  "twin": "made on steam-26566308; the target 0x141995060 is KB 0x141993880: Ui_MyTeamButtonDivider_Init (0x1994330) and Game_MyTeamHq_SpawnFoyerDrivers (0x1997450) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141995060",
+    "target": "0x141995060"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2e95f0ca2c603ae16ffe0b05447366ff7f3372b9db7c245c172d00c57cdcd386"
+  }
+ ]
+}

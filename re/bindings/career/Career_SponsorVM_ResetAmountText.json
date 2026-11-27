@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorVM_ResetAmountText",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141864b60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_SponsorVM_ResetAmountText(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141866340 (RacingPC lab re_groups/_decomp);xref:0x1423f7e30",
+  "notes": "Formats amount 0 with Ui_Format_ResourcePointsAmountText (no sign flags, style 0x12, options {2,0x903,1}) and writes it to the string node at +0x320 if valid and writable; releases the temp string."
+ },
+ "signature": {
+  "id": "career.sponsor_vm_reset_amount_text",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 48 89 CE 66 C7 44 24 58 01 00 48 B8 00 00 00 00 01 00 00 00 48 89 44 24 5C 48 8D 05 ?? ?? ?? ?? 48 89 44 24 50 48 B8 02 00 00 00 03 09 00 00",
+  "match": "0x141864b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141864b60",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorVM_ResetAmountText"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141866340",
+  "made_on_target": "0x141866340",
+  "twin": "made on steam-26566308; the target 0x141866340 is KB 0x141864b60: Vm_SponsorSlots_Bind (0x1865a10) and Vm_SponsorGoalsText_Refresh (0x18666a0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141866340",
+    "target": "0x141866340"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "42fd747abb28fea72836f1242949a1cfe030028d7a58e400e3bef9c1d02dc626"
+  }
+ ]
+}

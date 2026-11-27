@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorsVM_DestroySponsorBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424da440",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_SponsorsVM_DestroySponsorBindings(void *bindings)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424dc040 (RacingPC lab re_groups/_decomp);xref:0x1423f9390",
+  "notes": "Destructor for a sponsor detail binding block: releases holder +0x2d8, destroys the vector of 0x180-byte loyalty level items at +0x2c0..+0x2c8 (FUN_1424dc280, allocator +0x2b8), frees owned object +0x250 (allocator +0x248) and releases 21 node holders from +0x298 down to +0x8 at 0x20 spacing."
+ },
+ "signature": {
+  "id": "career.sponsors_vm_destroy_sponsor_bindings",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 D8 02 00 00",
+  "match": "0x1424da440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424da440",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorsVM_DestroySponsorBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424dc040",
+  "made_on_target": "0x1424dc040",
+  "twin": "made on steam-26566308; the target 0x1424dc040 is KB 0x1424da440: Game_Sort_SponsorEntries_MedianPivot (0x24d91a0) and Ne_Vector_InsertGrow_Elem40 (0x24de600) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424dc040",
+    "target": "0x1424dc040"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a639d2b45185849ba67fcf50fa3238907c6618a7f2287bdf26428c7fb4284f66"
+  }
+ ]
+}

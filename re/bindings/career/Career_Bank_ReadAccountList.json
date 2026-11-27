@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ReadAccountList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c5ea60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Bank_ReadAccountList(void *bank, void *save_obj, void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c5f520 (RacingPC lab re_groups/_decomp);xref:0x140c5e450",
+  "notes": "Destroys existing 0x1B0-byte account records in the vector bank+0x10..+0x18 (Career_Bank_BudgetRecords_Destroy), looks up a property list by name (0x14568d588) and checks its type, then for each bag builds a temp account, calls Career_Bank_ReadAccount and pushes it with Ne_Vector_PushBack_Elem0x1B0. Returns 0, 0x57 (missing) or 0x58 (wrong type)."
+ },
+ "signature": {
+  "id": "career.bank_read_account_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 C5 F8 29 B4 24 E0 01 00 00 4C 89 C7 48 89 D6",
+  "match": "0x140c5ea60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c5ea60",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ReadAccountList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c5f520",
+  "made_on_target": "0x140c5f520",
+  "twin": "made on steam-26566308; the target 0x140c5f520 is KB 0x140c5ea60: Career_Bank_ReadSaveData (0xc5e450) and Career_Bank_WriteSaveData (0xc5f830) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c5f520",
+    "target": "0x140c5f520"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a5e2832cf0a00e8e0883918797afcc28ff78cd73c6e9c37cb5f354107f5d15d7"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Collect_ListNameCommandPairs",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14199a8e0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Collect_ListNameCommandPairs(void *self, void *unused, void *outPairVec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14199c0c0 (RacingPC lab re_groups/_decomp);xref:0x142336ff0",
+  "notes": "Clears outPairVec (16-byte pairs of refcounted NeStr), resolves node at self+0x28 through two binding-chain paths to a list node, then for each list element reads string properties \"name\" and \"command\" and appends the pair via FUN_14199c830. Used by team HQ timeline dept-event animation to gather animation commands."
+ },
+ "signature": {
+  "id": "vm.collect_list_name_command_pairs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 4C 89 C6 48 89 CF",
+  "match": "0x14199a8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14199a8e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Collect_ListNameCommandPairs"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14199c0c0",
+  "made_on_target": "0x14199c0c0",
+  "twin": "made on steam-26566308; the target 0x14199c0c0 is KB 0x14199a8e0: Vm_TeamHqAdvanceItem_ReleaseNodes_99a580 (0x199bd60) and Vm_TeamHqAdvanceItem_ReleaseNodes_99ca90 (0x199e270) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14199c0c0",
+    "target": "0x14199c0c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "edf680c1b08c504457891e9b5ef48691c26db77f24841518ec1416cbcb51ce7d"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_140fb5f80",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fb5400",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_140fb5f80(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fb5f80 (RacingPC lab re_groups/_decomp);xref:0x140f85aa0",
+  "notes": "(thunk) Noreturn stub: calls Ne_Crt_InvalidParameterAbort then int3. Overflow failure path of the facilities hash map insert."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_140fb5f80",
+  "section": ".xtls",
+  "pattern": "48 8B 4C 24 38 48 8B 01 48 89 07 48 89 39 E8 ?? ?? ?? ?? CC",
+  "match": "0x140f7cfbe",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xe"
+  },
+  "target": "0x140fb5400",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_140fb5f80"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140f7db3e",
+  "made_on_target": "0x140fb5f80",
+  "twin": "made on steam-26566308; the target 0x140fb5f80 is KB 0x140fb5400: Career_Format_MoraleDepartmentEffectText (0xfa0f30) and Career_Init_MyTeamRewardTypeRegistry (0xfc14c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140f7db3e",
+    "target": "0x140fb5f80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "72423cdd2a35e9bf844ed7f0139b11bc3b32dba670866bdd701caf5efabf9397"
+  }
+ ]
+}

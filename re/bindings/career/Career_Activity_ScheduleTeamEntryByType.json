@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Activity_ScheduleTeamEntryByType",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141269420",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Activity_ScheduleTeamEntryByType(void *activity_mgr, uint32_t team_id, uint32_t day, char type)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141269a60 (RacingPC lab re_groups/_decomp);xref:0x1411050f0",
+  "notes": "In the current activity record (array +0x410 stride 0x80, index +0x428) finds the 0xd8-byte team block at +0x60..+0x68 matching team_id, finds the entry definition in the hash map +0x378/+0x380 whose byte +0x10 == type, checks def flags +0x60 against (isMyTeam+1), creates an entry (team vt+0x8 / vt+0x10 with def id +0x8 and day) and inserts it into the team list at +0x50..+0x58 before the first entry whose day (u16 +0xa) >= day, then re-sorts the list."
+ },
+ "signature": {
+  "id": "career.activity_schedule_team_entry_by_type",
+  "section": ".xtls",
+  "pattern": "56 57 4C 8B 91 10 04 00 00 4D 85 D2",
+  "match": "0x141269420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141269420",
+  "kind": "func_start",
+  "names": [
+   "Career_Activity_ScheduleTeamEntryByType"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141269a60",
+  "made_on_target": "0x141269a60",
+  "twin": "made on steam-26566308; the target 0x141269a60 is KB 0x141269420: Career_Calendar_IgnoreActivitiesInRange (0x1268910) and Career_Check_RecordSetContainsKind (0x126d820) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141269a60",
+    "target": "0x141269a60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "10e3ec168a38c8cdbe9b46e2df977bd88529347a88ad6beec0868eb6e628d01f"
+  }
+ ]
+}

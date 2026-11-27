@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ElasticSearchReporter_FillRndUpgradeInfo",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140777d50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_ElasticSearchReporter_FillRndUpgradeInfo(void *module, void *evt, void *upgradeMsgSharedPtr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140777d90 (RacingPC lab re_groups/_decomp);xref:0x14071a350,0x14071abc0,0x14071b430,0x14071bca0,0x14071d3b0,0x14071dc40",
+  "notes": "Shared filler for all six RnD upgrade telemetry events. Finds the local player entrant in the career (module+0x209c0 -> +0x88 -> +0x260, list +0x2e0) and returns 0 unless evt+0x10 team id equals the player team. Otherwise writes into the upgrade sub-message: three enum name strings from the upgrade definition evt+0x18 (bytes +0x71, +0x70, +0x72), byte +0xb0 = evt+0x20, state name from k_Career_UpgradeStateNameTable[evt+0x28], ints +0xd8 = def+0x90, +0xdc = def+0x5c, +0xe0 = evt+0x2c, and two more enum names from evt+0x29 and evt+0x2a. Releases the shared pointer and returns 1. Good read-only hook to observe My Team upgrade events."
+ },
+ "signature": {
+  "id": "game.elastic_search_reporter_fill_rnd_upgrade_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4C 89 C6 48 8B 81 C0 09 02 00",
+  "match": "0x140777d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140777d50",
+  "kind": "func_start",
+  "names": [
+   "Game_ElasticSearchReporter_FillRndUpgradeInfo"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140777d90",
+  "made_on_target": "0x140777d90",
+  "twin": "made on steam-26566308; the target 0x140777d90 is KB 0x140777d50: Game_AdaptiveAi_RecordSessionFinished (0x774f30) and site_Career_TeleRecordTypeName (0x777f3f) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140777d90",
+    "target": "0x140777d90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f25739af56793fb7722048a8f085f5bb972b085b169dce636f84047c142d970f"
+  }
+ ]
+}

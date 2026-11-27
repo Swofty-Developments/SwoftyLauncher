@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Find_LowestUnusedIndex_Elem88",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142457f60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint64_t Game_Find_LowestUnusedIndex_Elem88(void *vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142459b60 (RacingPC lab re_groups/_decomp);xref:0x1411284f0,0x14276e330,0x142c2b720",
+  "notes": "Collects the int at +0x48 of every 0x88-byte element in vector +0x8..+0x10 into a temporary array, sorts it (FUN_1424e3ed0) and returns the first position i where sorted[i] != i (the element count if all indices 0..n-1 are used). Used to allocate the next free slot index."
+ },
+ "signature": {
+  "id": "game.find_lowest_unused_index_elem88",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 EC D8 00 00 00 48 8D AC 24 80 00 00 00 48 89 CF",
+  "match": "0x142457f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142457f60",
+  "kind": "func_start",
+  "names": [
+   "Game_Find_LowestUnusedIndex_Elem88"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142459b60",
+  "made_on_target": "0x142459b60",
+  "twin": "made on steam-26566308; the target 0x142459b60 is KB 0x142457f60: Career_Build_LineupChanges (0x2459690) and Career_Collect_PlayerTeamDriverContracts (0x245a160) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142459b60",
+    "target": "0x142459b60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5e4730027dcd2785925ac96131818f4aead0456687247a18adf12021745e26b4"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_ListenerHub_Dispatch_Event146070498",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142402fb0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_ListenerHub_Dispatch_Event146070498(void *hub, void *event)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142404bb0 (RacingPC lab re_groups/_decomp);xref:0x141eeef30",
+  "notes": "(lib) Finds the listener bucket for type key 0x146070498 in the map at hub+0xc0 (0x28-byte buckets at +0xd8), bumps the dispatch depth at hub+0x1c, calls vfunc +8 of every listener (16-byte entries) not present in the pending-removal list +0x110..+0x118 (sets errno 2 before each call), then flushes pending removals with Ne_ListenerHub_RemoveListenerEntry when depth returns to 0."
+ },
+ "signature": {
+  "id": "core.listener_hub_dispatch_event146070498",
+  "section": ".xtls",
+  "pattern": "89 48 28 48 8B 48 10 E8 ?? ?? ?? ?? E9",
+  "match": "0x1423112ca",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x142402fb0",
+  "kind": "call",
+  "names": [
+   "Ne_ListenerHub_Dispatch_Event146070498"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142312eca",
+  "made_on_target": "0x142404bb0",
+  "twin": "made on steam-26566308; the target 0x142404bb0 is KB 0x142402fb0: Career_MyTeamYoungDriverProgramme_SelectDriver (0x2400110) and Sess_WeekendManager_PrepareTrackLoad (0x240b9b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142312eca",
+    "target": "0x142404bb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "303f9f16c84a250634f9856ed06ae861683012ff7fa75d5b572bf74efd34a174"
+  }
+ ]
+}

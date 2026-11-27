@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DriverContracts_SaveStateFields",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d83af0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_DriverContracts_SaveStateFields(void *state, void *writer)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d84670 (RacingPC lab re_groups/_decomp);xref:0x140d72f20",
+  "notes": "Writes four reflected fields with Gdb_Write_ReflectedFieldA using the same names as 0x140d84200: u8 +0x14, u16 +0x18, packed id from +0x20/+0x22 ((lo<<14)|hi16), u32 +0x1c. Appends each field object to the writer list (count at writer+0x10). Returns first non-zero error."
+ },
+ "signature": {
+  "id": "game.driver_contracts_save_state_fields",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D6 48 89 CF 0F B6 41 14",
+  "match": "0x140d83af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d83af0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverContracts_SaveStateFields"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d84670",
+  "made_on_target": "0x140d84670",
+  "twin": "made on steam-26566308; the target 0x140d84670 is KB 0x140d83af0: Career_Needs_DriverContract (0xd83c10) and Career_ContractRenewal_Deserialise (0xd85470) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d84670",
+    "target": "0x140d84670"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "24407c89900faa186e7ddc716b171b0f4a274e182b8d04c844fd56b9ec09e6c3"
+  }
+ ]
+}

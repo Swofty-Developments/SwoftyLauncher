@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DriverStatistics_CreatePlayerNamedStatHandles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14113ef50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_DriverStatistics_CreatePlayerNamedStatHandles(void *comp)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14113f590 (RacingPC lab re_groups/_decomp);xref:0x14113fcf0,0x141141c30",
+  "notes": "Runs only when vector +0x5f0..+0x5f8 is empty. For each entrant with flag 0x10 at +0x4b and each name in the list +0x5d0..+0x5d8 it finds the definition by strcmp in the registry map comp+0x370 (+0xb8), derives a key from the entrant identity and calls FUN_142aa5710 to create a handle, which is pushed to the vector at +0x5e8 (FUN_140cbabc0) if new."
+ },
+ "signature": {
+  "id": "game.driver_statistics_create_player_named_stat_handles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 8B 81 F8 05 00 00",
+  "match": "0x14113ef50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14113ef50",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverStatistics_CreatePlayerNamedStatHandles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14113f590",
+  "made_on_target": "0x14113f590",
+  "twin": "made on steam-26566308; the target 0x14113f590 is KB 0x14113ef50: Career_Get_DriverOverallRating (0x113d760) and Career_ContractNegotiationsHost_RegisterMessageHandlers_Alloc (0x1141c30) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14113f590",
+    "target": "0x14113f590"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "aa3f65b1354ba2c373c2d9463f73e2799de5f507bdffe11810ff32e4438808cf"
+  }
+ ]
+}

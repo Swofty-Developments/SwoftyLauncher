@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_RnDRewardPanel_ProgressNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14191ff90",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_Bind_RnDRewardPanel_ProgressNodes(void *self, void *parent_vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141921770 (RacingPC lab re_groups/_decomp);xref:0x141800d50",
+  "notes": "VM sub-panel constructor: attaches to a child of parent_vm (name string 0x1456f8917), creates int nodes \"current\" (+0x20) and \"max\" (+0x40), builds a nested panel at +0x60 via FUN_141806b50 (name 0x14571a890) and resolves three token nodes at +0x120/+0x140/+0x160 (names 0x14571a8a5/0x14571a8ba/0x14571a8ce). Better context needed: the unnamed node strings would give the exact widget name."
+ },
+ "signature": {
+  "id": "career.bind_rn_d_reward_panel_progress_nodes",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 48 8D 3D ?? ?? ?? ?? 48 0F 44 D7 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? C7 44 24 2C 00 00 00 00",
+  "match": "0x14191ff90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14191ff90",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_RnDRewardPanel_ProgressNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141921770",
+  "made_on_target": "0x141921770",
+  "twin": "made on steam-26566308; the target 0x141921770 is KB 0x14191ff90: Ui_Purchase_SelectTierButton (0x18e10c0) and Ui_Rnd_SetUpgradeRewards (0x1921af0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141921770",
+    "target": "0x141921770"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5c2c0dec1ff9704d48a1c2806ff3a772abb5d17fb429ce7bbc15b26d0f482fae"
+  }
+ ]
+}

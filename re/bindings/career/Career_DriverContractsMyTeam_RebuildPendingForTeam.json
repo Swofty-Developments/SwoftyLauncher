@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractsMyTeam_RebuildPendingForTeam",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140dad980",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_DriverContractsMyTeam_RebuildPendingForTeam(void *comp)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140dae500 (RacingPC lab re_groups/_decomp);xref:0x140dae9f0",
+  "notes": "Removes pending entries of state 0 and 1, finds the player team id, collects entrant records (stride 0x88) whose team +0x58 matches into a pointer vector and sorts it. For state 0 then 1 it takes the first driver that is not leaving (+0x81==0 or +0x80<2) and not listed in the id map at +0x850, drops any existing pending entry for that driver (array +0x4dc stride 0x68, count +0x6f0) and calls Career_DriverContractsMyTeam_AddPendingEntry(driverId, state)."
+ },
+ "signature": {
+  "id": "career.driver_contracts_my_team_rebuild_pending_for_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 CE 31 D2",
+  "match": "0x140dad980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dad980",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractsMyTeam_RebuildPendingForTeam"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140dae500",
+  "made_on_target": "0x140dae500",
+  "twin": "made on steam-26566308; the target 0x140dae500 is KB 0x140dad980: Career_Set_DriverContractState (0xd9e9b0) and Game_DriverContractsMyTeamComponent_OpenContractWindow (0xdae9f0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140dae500",
+    "target": "0x140dae500"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6fdfd3834efd299b799c4d78a8481fab6645d23647995187aabab4eb87f3fdf8"
+  }
+ ]
+}

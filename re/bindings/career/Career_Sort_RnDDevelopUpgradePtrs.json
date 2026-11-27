@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_Sort_RnDDevelopUpgradePtrs",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e5e4a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Sort_RnDDevelopUpgradePtrs(void **first, void **last, int64_t depth_limit, void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e600a0 (RacingPC lab re_groups/_decomp);xref:0x141c4a2b0",
+  "notes": "Introsort (median-of-3/ninther, heap fallback via FUN_141e60cc0, insertion sort under 33 elems) over upgrade pointers. Key is the last history entry (item+0xc8 minus 0x10): if ctx+0x338 == 0 order by u16 at -0xc only; otherwise status byte -8 == 4 first, then entries with flag -7 == 1 and status 3 or 8, then by the u16 at -0xc. Comparator defines card ordering on the develop screen."
+ },
+ "signature": {
+  "id": "career.sort_rn_d_develop_upgrade_ptrs",
+  "section": ".xtls",
+  "pattern": "49 89 F1 E8 ?? ?? ?? ?? 49 89 F8 4C 89 E0",
+  "match": "0x141e5e729",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x141e5e4a0",
+  "kind": "call",
+  "names": [
+   "Career_Sort_RnDDevelopUpgradePtrs"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141e60329",
+  "made_on_target": "0x141e600a0",
+  "twin": "made on steam-26566308; the target 0x141e600a0 is KB 0x141e5e4a0: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141e60329",
+    "target": "0x141e600a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4fd1fdb21469d233ac6f550d0868eb715444974046dbd463ab12e909bbd3d0b1"
+  }
+ ]
+}

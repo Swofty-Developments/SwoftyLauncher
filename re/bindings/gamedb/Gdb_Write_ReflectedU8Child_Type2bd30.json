@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Gdb_Write_ReflectedU8Child_Type2bd30",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141100060",
+  "level": "L1",
+  "subsystem": "gamedb",
+  "proto": "uint32_t Gdb_Write_ReflectedU8Child_Type2bd30(void *node, uint8_t *value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141100aa0 (RacingPC lab re_groups/_decomp);xref:0x1410ff3c0",
+  "notes": "Writes one byte value as a reflected child field named by the string at 0x145614ad5 with type descriptor DAT_14612bd30: Gdb_Write_ReflectedFieldA, init (vt+0x50), assign (vt+0x40), append to node child array (+0x8, count u16 +0x10). Returns the error code. Used by the sponsors save tree writer."
+ },
+ "signature": {
+  "id": "gamedb.write_reflected_u8_child_type2bd30",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 0F B6 02 88 44 24 27",
+  "match": "0x141100060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141100060",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Write_ReflectedU8Child_Type2bd30"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141100aa0",
+  "made_on_target": "0x141100aa0",
+  "twin": "made on steam-26566308; the target 0x141100aa0 is KB 0x141100060: Career_Sponsors_WriteSaveTree (0x10ff3c0) and Career_Load_SponsorDecalIncomeTiers (0x1101ce0) on either side both sit 0xa40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141100aa0",
+    "target": "0x141100aa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8a22a4593eaee91e942d5884d569074cd5ef95a4b100c8bb28ebf0e9947d0bca"
+  }
+ ]
+}

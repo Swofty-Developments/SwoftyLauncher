@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ReadTransactionArrays",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c6ec20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Bank_ReadTransactionArrays(void *save_node, void *account)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c6f6e0 (RacingPC lab re_groups/_decomp);xref:0x140c6de90",
+  "notes": "Clears the 20-byte transaction vector at account+8..+0x18, finds three reflected array fields (keys at 0x145685538, 0x145685549, 0x14568555d), requires equal lengths (else 0x16), then per index reads a u32, a u64 and a packed u32 and appends {+0 type byte clamped to 30, +4 u32, +8 u64, +0x10 byte clamped to 3, +0x11 bool}. Vector grows 1.5x."
+ },
+ "signature": {
+  "id": "career.bank_read_transaction_arrays",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 D6 48 89 CF 48 8B 42 08",
+  "match": "0x140c6ec20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c6ec20",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ReadTransactionArrays"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c6f6e0",
+  "made_on_target": "0x140c6f6e0",
+  "twin": "made on steam-26566308; the target 0x140c6f6e0 is KB 0x140c6ec20: Career_Bank_WriteAccount (0xc6e770) and Career_Bank_WriteBudgetData (0xc6fa10) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c6f6e0",
+    "target": "0x140c6f6e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "55b8aa3ce8d4ee791b1980d752e737539653c5dbbfddfda0218fae54c3a719db"
+  }
+ ]
+}

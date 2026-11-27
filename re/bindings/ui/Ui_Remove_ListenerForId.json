@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Remove_ListenerForId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442299e0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "int Ui_Remove_ListenerForId(void *registry, uint32_t id, void *listener)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14422bfb0 (RacingPC lab re_groups/_decomp);xref:0x14384ae80,0x14384bd70,0x14424bda0,0x1442514f0,0x144251f80",
+  "notes": "Looks up id in the robin-hood map at +0x68/+0x70 (16-byte slots, value = listener vector ptr), removes the {listener,flag} 16-byte entry matching listener; if a dispatch is in progress (global 0x146ca67e0 > 0) it instead queues {id,listener} in the pending vector at +0x140 and clears the entry flag. Frees the vector and erases the map slot (backward shift, size +0x78) when empty. Returns 0x58 if registry +0x30 is null, 0x16 if id is 0, else 0."
+ },
+ "signature": {
+  "id": "ui.remove_listener_for_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 83 79 30 00",
+  "match": "0x1442299e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442299e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Remove_ListenerForId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14422bfb0",
+  "made_on_target": "0x14422bfb0",
+  "twin": "made on steam-26566308; the target 0x14422bfb0 is KB 0x1442299e0: Ne_VideoPlayer_OpenFile (0x421ed20) and Ne_UIInterrupt_HandleSignal (0x4230cd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14422bfb0",
+    "target": "0x14422bfb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0c6ca7c1809c860385418031d41e18f33ec09e882feeb4e9a8e60762bd944872"
+  }
+ ]
+}

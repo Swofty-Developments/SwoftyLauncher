@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_RndUpgradeAdaptedRecord_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1405880b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Analytics_RndUpgradeAdaptedRecord_Construct(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1405880f0 (RacingPC lab re_groups/_decomp);xref:0x14071d3b0",
+  "notes": "Constructs the telemetry message: type name string to base ctor 0x144937b50, vtable 0x145632a70, zeroes sub-message pointers +0x48..+0x68 and an extra 16 bytes at +0x70. cxx=f1.proto.RnDUpgradeAdaptedRecord"
+ },
+ "signature": {
+  "id": "game.analytics_rnd_upgrade_adapted_record_construct",
+  "section": ".xtls",
+  "pattern": "48 89 C1 E8 ?? ?? ?? ?? 8B 43 30 89 47 70",
+  "match": "0x14071d5ad",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1405880b0",
+  "kind": "call",
+  "names": [
+   "Game_Analytics_RndUpgradeAdaptedRecord_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14071d5ed",
+  "made_on_target": "0x1405880f0",
+  "twin": "made on steam-26566308; the target 0x1405880f0 is KB 0x1405880b0: Game_Analytics_WriteRndUpgradeInfo (0x5868a0) and Ai_CarProfile_Dtor (0x5ed510) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14071d5ed",
+    "target": "0x1405880f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fd922d4e2fa4155ef360ae15bb4ba89414b392b2f379eab87a102d26b3be0794"
+  }
+ ]
+}

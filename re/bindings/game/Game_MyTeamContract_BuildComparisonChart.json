@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamContract_BuildComparisonChart",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142308ae0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint64_t Game_MyTeamContract_BuildComparisonChart(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14230a6e0 (RacingPC lab re_groups/_decomp);xref:0x142308150",
+  "notes": "Rebuilds the chart element array at +0x2bc0 (0x170-byte elems, count +0x2d30): creates an axis with min 0 and max 100, two data series coloured with each driver's team colour (team +0x57c, fallback 0xffffffff), then for every stat row in +0x22f0..+0x22f8 adds the two values (row nodes +0x350 and +0x88) as points and dispatches a UI event by name via Ne_UiEvent_DispatchByName."
+ },
+ "signature": {
+  "id": "game.my_team_contract_build_comparison_chart",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 49 89 CD 48 8B 41 10",
+  "match": "0x142308ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142308ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamContract_BuildComparisonChart"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14230a6e0",
+  "made_on_target": "0x14230a6e0",
+  "twin": "made on steam-26566308; the target 0x14230a6e0 is KB 0x142308ae0: Career_MyTeamContract_OnDriverSelected (0x23099e0) and Game_MyTeamContract_SetDriversVisible (0x230b380) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14230a6e0",
+    "target": "0x14230a6e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "784bed16eb6a24d8dfae821f3c796e8277702624c955f3bdb7cb79d8b30a2d91"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_BankAccount_Subscribe_EndSeasonStart",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d44750",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_BankAccount_Subscribe_EndSeasonStart(void *bus, void *self, void *member_fn_desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d452d0 (RacingPC lab re_groups/_decomp);xref:0x140c65480",
+  "notes": "If bus+0x68 is set, allocates a 16-byte delegate {fn = desc[0], this = self + (int)desc[1]} from allocator bus+0x78 and calls Ne_Subscribe_BusMessage(bus, \"EndSeasonStart\", delegate). Returns 0, or errno 0x58 (bus not ready) / 0xc (alloc failed) with errno trace."
+ },
+ "signature": {
+  "id": "career.bank_account_subscribe_end_season_start",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 C7 44 24 28 00 00 00 00 4C 8D 44 24 20 48 89 F2 E8 ?? ?? ?? ?? C6 86 F0 03 00 00 01",
+  "match": "0x140c64a54",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d44750",
+  "kind": "call",
+  "names": [
+   "Career_BankAccount_Subscribe_EndSeasonStart"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c65514",
+  "made_on_target": "0x140d452d0",
+  "twin": "made on steam-26566308; the target 0x140d452d0 is KB 0x140d44750: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140c65514 is KB 0x140c64a54: Career_Bank_WriteSaveData (0xc5f830) and Career_Bank_UnregisterMessageHandlers (0xc65560) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c65514",
+    "target": "0x140d452d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3762ddb11938787baedd914f6b867c29eac6bac3a8f3288c0eb89a71636d4eb6"
+  }
+ ]
+}

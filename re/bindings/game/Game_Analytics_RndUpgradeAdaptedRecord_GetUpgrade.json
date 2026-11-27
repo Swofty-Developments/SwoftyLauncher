@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_RndUpgradeAdaptedRecord_GetUpgrade",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140588d80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Analytics_RndUpgradeAdaptedRecord_GetUpgrade(void *self, void *outSharedPtr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140588dc0 (RacingPC lab re_groups/_decomp);xref:0x14071d3b0",
+  "notes": "Lazily allocates the 0x138-byte upgrade-info sub-message (FUN_14058f4d0) into self+0x60/+0x68 and returns a shared pointer copy."
+ },
+ "signature": {
+  "id": "game.analytics_rnd_upgrade_adapted_record_get_upgrade",
+  "section": ".xtls",
+  "pattern": "89 47 78 4C 8D B4 24 E8 00 00 00 48 89 F9 4C 89 F2 E8 ?? ?? ?? ?? 48 89 F1",
+  "match": "0x14071d5ca",
+  "anchor": "0x12",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x11"
+  },
+  "target": "0x140588d80",
+  "kind": "call",
+  "names": [
+   "Game_Analytics_RndUpgradeAdaptedRecord_GetUpgrade"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14071d60a",
+  "made_on_target": "0x140588dc0",
+  "twin": "made on steam-26566308; the target 0x140588dc0 is KB 0x140588d80: Game_Analytics_WriteRndUpgradeInfo (0x5868a0) and Ai_CarProfile_Dtor (0x5ed510) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14071d60a",
+    "target": "0x140588dc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "80e85800b0c7b651a5e58f9e44135f3989dc180b63a0aef42b4bf55abe5b5c77"
+  }
+ ]
+}

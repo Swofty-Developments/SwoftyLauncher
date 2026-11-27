@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_DriverContracts_LoadStateFields",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d83680",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_DriverContracts_LoadStateFields(void *state, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d84200 (RacingPC lab re_groups/_decomp);xref:0x140d73c40",
+  "notes": "Reads four reflected fields by name: u8 clamped to max 3 into +0x14, u16 into +0x18, u16 packed id unpacked ((v&0x3fff)<<16 | v>>14) into +0x20, u32 into +0x1c. Returns 0, or 0x57 (missing) / 0x58 (type mismatch) and logs to the errno trace ring. Save counterpart is 0x140d84670."
+ },
+ "signature": {
+  "id": "game.driver_contracts_load_state_fields",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 89 C3 49 8B 4C 24 08",
+  "match": "0x140d7391c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d83680",
+  "kind": "call",
+  "names": [
+   "Game_DriverContracts_LoadStateFields"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d7449c",
+  "made_on_target": "0x140d84200",
+  "twin": "made on steam-26566308; the target 0x140d84200 is KB 0x140d83680: Career_Needs_DriverContract (0xd83c10) and Career_ContractRenewal_Deserialise (0xd85470) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d7449c",
+    "target": "0x140d84200"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "58a1c3be1769051c48060a18d6990e1eba5b3b655bd5da4733677e8f6b165283"
+  }
+ ]
+}

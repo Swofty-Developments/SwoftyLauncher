@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamHq_SpawnTeamOwner",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141995490",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamHq_SpawnTeamOwner(void *self, uint32_t ownerKey)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141996c70 (RacingPC lab re_groups/_decomp);xref:0x14199a560",
+  "notes": "Builds a frontend character spawn request using spawn point \"TeamOwnerSpawn\" and animation \"TeamHQExteriorIdle\", optional appearance blocks from FUN_141996870 and a flag from Ui_Get_CustomisationContext()==2 or g_Game_MyTeamSetupData byte 0x14606f37c, then calls Ui_Setup_DriverFrontendForPerkAcclaim on the scene manager at self[0]. If ownerKey is invalid (0x3fff) it first calls FUN_1419964d0."
+ },
+ "signature": {
+  "id": "game.my_team_hq_spawn_team_owner",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC B8 05 00 00",
+  "match": "0x141995490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141995490",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamHq_SpawnTeamOwner"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141996c70",
+  "made_on_target": "0x141996c70",
+  "twin": "made on steam-26566308; the target 0x141996c70 is KB 0x141995490: Ui_MyTeamButtonDivider_Init (0x1994330) and Game_MyTeamHq_SpawnFoyerDrivers (0x1997450) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141996c70",
+    "target": "0x141996c70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f0b32c5797feebf5ae08f4a3eade942295781533310d6d86d1952b55da3f9003"
+  }
+ ]
+}

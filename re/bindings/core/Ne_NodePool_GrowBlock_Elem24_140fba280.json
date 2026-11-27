@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_NodePool_GrowBlock_Elem24_140fba280",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fb9700",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_NodePool_GrowBlock_Elem24_140fba280(void *pool)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fba280 (RacingPC lab re_groups/_decomp);xref:0x140f96590",
+  "notes": "(lib) Bulk node pool grow: block size doubles per existing block (4 nodes up to 0x4000), allocates count*0x18+8 bytes from the allocator at pool+0x10, links the block into the block list at pool+8 and threads all 0x18-byte nodes into the free list headed at pool+0."
+ },
+ "signature": {
+  "id": "core.node_pool_grow_block_elem24_140fba280",
+  "section": ".xtls",
+  "pattern": "75 0B 48 89 F1 E8 ?? ?? ?? ?? 49 89 C5",
+  "match": "0x140f94485",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x140fb9700",
+  "kind": "call",
+  "names": [
+   "Ne_NodePool_GrowBlock_Elem24_140fba280"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140f95005",
+  "made_on_target": "0x140fba280",
+  "twin": "made on steam-26566308; the target 0x140fba280 is KB 0x140fb9700: Career_Format_MoraleDepartmentEffectText (0xfa0f30) and Career_Init_MyTeamRewardTypeRegistry (0xfc14c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140f95005",
+    "target": "0x140fba280"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "db5d3d83130c0a9e2f61fe08873a7600283077e0415a4a6d230df849dc56e70d"
+  }
+ ]
+}

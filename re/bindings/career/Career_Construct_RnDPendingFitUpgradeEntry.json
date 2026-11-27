@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Construct_RnDPendingFitUpgradeEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141c62ad0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Construct_RnDPendingFitUpgradeEntry(void *self, void *parent_holder, uint64_t unused, int32_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141c646d0 (RacingPC lab re_groups/_decomp);xref:0x141c63540",
+  "notes": "Constructor of a pending-fit upgrade entry binding: node holder at +0x00 from the parent node, properties \"index\" (+0x20, = index), \"visible\" (+0x40, true), \"enabled\" (+0x60, true), \"is_new\" (+0x80, true), then Ui_Rnd_BuildUpgradeCardBinding at +0xa0 on the same node. Returns self."
+ },
+ "signature": {
+  "id": "career.construct_rn_d_pending_fit_upgrade_entry",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 44 89 4C 24 2C",
+  "match": "0x141c62ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c62ad0",
+  "kind": "func_start",
+  "names": [
+   "Career_Construct_RnDPendingFitUpgradeEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c646d0",
+  "made_on_target": "0x141c646d0",
+  "twin": "made on steam-26566308; the target 0x141c646d0 is KB 0x141c62ad0: Career_Update_RnDEquipToDriverButton_B (0x1c63e00) and site_Career_RnDUpgradeInfoTypeLabel (0x1c71c5a) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c646d0",
+    "target": "0x141c646d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "04e390ad8e913538744a224becab137b747ad8b4c9bd8a56d9bfa9acd3c54074"
+  }
+ ]
+}

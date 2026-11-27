@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Pick_SponsorNameVariant",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1410482c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Pick_SponsorNameVariant(void *mgr, uint32_t *sponsor_id, void *seed_src, uint16_t filter)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141048f80 (RacingPC lab re_groups/_decomp);xref:0x141886530",
+  "notes": "Finds the sponsor record (mgr+0x278 -> +0x2e0 list stride 0x88, id at +0x50/+0x52), its definition id at +0x58, the per-sponsor state in mgr+0x298 (stride 0x128) and the definition in mgr+0x590 -> +0x298 (stride 0x88); returns one 0x160-byte variant entry from definition+0x18..+0x20 chosen by seed (seed_src+8 + packed id + state+0x14 + state+0x24) modulo count. If filter high byte set, first restricts to entries whose byte +0xd8 equals filter low byte (0 or 1), falling back to the full list. Returns 0 when anything is missing (id 0x3fff = invalid)."
+ },
+ "signature": {
+  "id": "career.pick_sponsor_name_variant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CE 4C 8B 89 90 05 00 00",
+  "match": "0x1410482c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410482c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Pick_SponsorNameVariant"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141048f80",
+  "made_on_target": "0x141048f80",
+  "twin": "made on steam-26566308; the target 0x141048f80 is KB 0x1410482c0: Game_Read_PitCrewTrainingConfig (0x102bdd0) and Game_StoryPressInterview_Initialise (0x1057c70) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141048f80",
+    "target": "0x141048f80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e852c017dac0f7b362de1179fd62aaef53b0d9532b9b115875c0e92b7b9f0ced"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_RenownForm_CollectGossip_AboveThreshold",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140f991c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_RenownForm_CollectGossip_AboveThreshold(void *self, void *out_vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140f99d40 (RacingPC lab re_groups/_decomp);xref:0x141989640",
+  "notes": "Builds a pointer list over the 0x78-byte category records at self+0xd8..+0xe0, sorts it (FUN_140fbae00 with comparator ctx self+0xd0), then iterates ascending: score = weighted average of (rec+8 + sample[0]) by sample[1] over the 16-byte samples at rec+0x18..+0x20, times rec+4, times self+0xf4 (or 1-self+0xf4 when rec type byte >10). If score >= config (self+0x18)+0x60 it pushes a pointer to the 0x28-byte entry rec+0x38[rec+0x70] into out_vec (allocator self+0x138)."
+ },
+ "signature": {
+  "id": "career.renown_form_collect_gossip_above_threshold",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CB 48 8B 81 38 01 00 00 48 89 02 C5 F8 57 C0 C5 F8 11 42 08 48 C7 42 18 00 00 00 00",
+  "match": "0x140f991c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f991c0",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownForm_CollectGossip_AboveThreshold"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140f99d40",
+  "made_on_target": "0x140f99d40",
+  "twin": "made on steam-26566308; the target 0x140f99d40 is KB 0x140f991c0: Career_RenownData_ComputeFormLevel (0xf99c00) and Career_Load_MyTeamRewardDefinitions (0xf9a850) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140f99d40",
+    "target": "0x140f99d40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "61d36395bc9f7c7b1201e48d3b17764cd53f4268e102bec4b0f2f8768359257e"
+  }
+ ]
+}

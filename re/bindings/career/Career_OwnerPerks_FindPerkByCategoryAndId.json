@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_OwnerPerks_FindPerkByCategoryAndId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14100b860",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_OwnerPerks_FindPerkByCategoryAndId(void *self, void *out_shared_ptr, uint8_t category, uint32_t perk_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14100c520 (RacingPC lab re_groups/_decomp);xref:0x14100c3f0",
+  "notes": "Looks up the byte key category in the hash map at self+0x2b0 (pointer slots +0x2b8, info +0x2c0, mask +0x2d0), holds the found entry's shared ref (+0x10), then queries the entry's sub-container (+8) with 0x1410cfb20(container, &tmp, perk_id) and promotes the resulting weak pointer to a shared pointer written to out_shared_ptr; out is zeroed when the category or perk is missing or expired. Better context needed: the key is assumed to be the perk category/tree byte."
+ },
+ "signature": {
+  "id": "career.owner_perks_find_perk_by_category_and_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 D6 48 89 C8",
+  "match": "0x14100b860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14100b860",
+  "kind": "func_start",
+  "names": [
+   "Career_OwnerPerks_FindPerkByCategoryAndId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14100c520",
+  "made_on_target": "0x14100c520",
+  "twin": "made on steam-26566308; the target 0x14100c520 is KB 0x14100b860: Career_OnlineNegotiationsB_ProcessContractRecv (0x10037f0) and Career_Get_BackgroundOutcomeField (0x1016bd0) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14100c520",
+    "target": "0x14100c520"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "38081442df4f853d43b8bed9eacb54d38a409f095382233fce7e5e8a16376fbc"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_InsertSlot_CStrKey_Elem16_140fb3a80",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fb2f00",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_InsertSlot_CStrKey_Elem16_140fb3a80(void *map, uint64_t *out_slot_state, const char **key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fb3a80 (RacingPC lab re_groups/_decomp);xref:0x140f6c400",
+  "notes": "(lib) Robin-hood hash map find-or-reserve slot for a C string key (FNV-1a 64 times multiplier +0x10), 16-byte elements at +0x18, info bytes at +0x20, count +0x28, mask +0x30, max +0x38. Returns slot index and state (0 fail, 1 found, 2 empty slot, 3 shifted) in out; grows through FUN_140fb4060, first allocation 0xf6 bytes."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_insert_slot_c_str_key_elem16_140fb3a80",
+  "section": ".xtls",
+  "pattern": "48 89 F1 E8 ?? ?? ?? ?? 8B 44 24 30 83 F8 02 74 0B",
+  "match": "0x140f6bfcf",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140fb2f00",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_InsertSlot_CStrKey_Elem16_140fb3a80"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140f6cb4f",
+  "made_on_target": "0x140fb3a80",
+  "twin": "made on steam-26566308; the target 0x140fb3a80 is KB 0x140fb2f00: Career_Format_MoraleDepartmentEffectText (0xfa0f30) and Career_Init_MyTeamRewardTypeRegistry (0xfc14c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140f6cb4f",
+    "target": "0x140fb3a80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "85e5ba98dd5cb530fb31e74a0f74f81021dc82f4cce6be6a8813f39fa07bc416"
+  }
+ ]
+}

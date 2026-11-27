@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_Destroy_RnDDeptIconStripEntries",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e60650",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Destroy_RnDDeptIconStripEntries(void *vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e62250 (RacingPC lab re_groups/_decomp);xref:0x141c896f0",
+  "notes": "Clears and frees a vector {allocator, begin, end, cap} of 0x140-byte entries; for each entry with byte +0x138 set it releases 8 Vm node holders at +0x38..+0x118 (step 0x20), then frees the buffer via allocator vfunc +0x38 and zeroes the vector."
+ },
+ "signature": {
+  "id": "career.destroy_rn_d_dept_icon_strip_entries",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4F 89 A4 3D 78 0A 00 00",
+  "match": "0x141c87b84",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141e60650",
+  "kind": "call",
+  "names": [
+   "Career_Destroy_RnDDeptIconStripEntries"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c89784",
+  "made_on_target": "0x141e62250",
+  "twin": "made on steam-26566308; the target 0x141e62250 is KB 0x141e60650: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c89784",
+    "target": "0x141e62250"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9c729f2cc3f87cbed00a05298e0c8e45f5cae525a6d95e894264d1841aad0eed"
+  }
+ ]
+}

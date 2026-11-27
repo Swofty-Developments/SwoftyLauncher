@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneDriver_IsSpawnedAndIdle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1428cde10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "bool Game_FrontendSceneDriver_IsSpawnedAndIdle(void *sceneDriver)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1428d01d0 (RacingPC lab re_groups/_decomp);xref:0x1417e8520,0x1418689b0,0x141997450,0x1428cb420",
+  "notes": "Twin of 0x1428c84f0 for the driver actor: flag +0x44c, u16 id +0x44a, owner (+0x98) hash map at +0x958..+0x98c, entry object busy bytes +0xf0 and +0xf1. Returns 1 when the id is absent or both bytes are 0."
+ },
+ "signature": {
+  "id": "game.frontend_scene_driver_is_spawned_and_idle",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 80 B9 4C 04 00 00 00 0F 84",
+  "match": "0x1428cde10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428cde10",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneDriver_IsSpawnedAndIdle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428d01d0",
+  "made_on_target": "0x1428d01d0",
+  "twin": "made on steam-26566308; the target 0x1428d01d0 is KB 0x1428cde10: Game_MyTeamCustomisation_PlayVideoWallVideo (0x28c1110) and Game_FrontendSceneManager_ProcessPendingDriverChanges (0x28d02f0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428d01d0",
+    "target": "0x1428d01d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "05a8bcb954b97b3268f2933cfa36d60882d55be184d0feb0031cf260df7a3eda"
+  }
+ ]
+}

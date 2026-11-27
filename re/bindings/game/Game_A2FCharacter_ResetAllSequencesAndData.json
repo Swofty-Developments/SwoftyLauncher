@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_A2FCharacter_ResetAllSequencesAndData",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14025da90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_A2FCharacter_ResetAllSequencesAndData(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14025da90 (RacingPC lab re_groups/_decomp);xref:0x14025d1f0",
+  "notes": "Clears flag 0x40 at +0x74 and pointer +0x58 on the three sequence objects at self+0x548/+0x550/+0x558, clears flags +0x400 and +0x2c0, resets the 0x80-byte inline buffer at +0x598..+0x5a8, calls Game_WorldActorProxy_RequestSetDisabled(actor, 0) for every node of the tree at +0x60 (value +0x28), and for every node of the tree at +0x78 calls vfunc +0x28 on all tracks of its sequence (+0xb8) and clears its flag. Logs \"Reset All Sequences and Data\" on channel A2FCharacter (audio-to-face character)."
+ },
+ "signature": {
+  "id": "game.a2_f_character_reset_all_sequences_and_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 48 89 CE 48 8B 81 48 05 00 00",
+  "match": "0x14025da90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14025da90",
+  "kind": "func_start",
+  "names": [
+   "Game_A2FCharacter_ResetAllSequencesAndData"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14025da90",
+  "made_on_target": "0x14025da90",
+  "twin": "made on steam-26566308; the target 0x14025da90 is KB 0x14025da90: Game_FacilityHeads_RegisterCommandMessages_2 (0x25d1f0) and Game_FacilityHeads_CollectAssetGroupDescs (0x25de70) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14025da90",
+    "target": "0x14025da90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "951fb34be43b57913cf87c8fa645469359c080467acc1d0453d673c599e75171"
+  }
+ ]
+}

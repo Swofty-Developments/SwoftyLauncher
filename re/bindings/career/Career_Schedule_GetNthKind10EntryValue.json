@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Schedule_GetNthKind10EntryValue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141269000",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint32_t Career_Schedule_GetNthKind10EntryValue(void *sched, uint32_t n, uint32_t dayIndex)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141269640 (RacingPC lab re_groups/_decomp);xref:0x140d800b0,0x140d83290,0x140dae9f0,0x140e38b70,0x1411014c0,0x14126a7e0",
+  "notes": "For the given day record (dayIndex 0xffffffff = current, from owner +0x278 vfunc +0xf8) walks the collected entries, and for the n-th entry with definition kind byte 10 returns entry vfunc +0x10. If none, returns the current day number (calendar +0x2d8 -> +0x2b0 minutes /1440). Better context needed: unit of the vfunc +0x10 result (likely a day or time stamp)."
+ },
+ "signature": {
+  "id": "career.schedule_get_nth_kind10_entry_value",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 89 D7 49 89 CE",
+  "match": "0x141269000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141269000",
+  "kind": "func_start",
+  "names": [
+   "Career_Schedule_GetNthKind10EntryValue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141269640",
+  "made_on_target": "0x141269640",
+  "twin": "made on steam-26566308; the target 0x141269640 is KB 0x141269000: Career_Calendar_IgnoreActivitiesInRange (0x1268910) and Career_Check_RecordSetContainsKind (0x126d820) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141269640",
+    "target": "0x141269640"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b7d26300fe296595525a1c9bf3241c6a5336d6f7d9e7cd97083e790c4080cb6a"
+  }
+ ]
+}

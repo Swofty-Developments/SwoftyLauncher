@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantKeyMap_Find",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143141940",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void **Game_EntrantKeyMap_Find(void *map, void **out_iter, void *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143143ed0 (RacingPC lab re_groups/_decomp);xref:0x140fde2f0,0x14220f820,0x143142300,0x143142d60,0x143143ca0,0x1431478e0,0x1432b46e0",
+  "notes": "Chained hash-map find. Hash = boost-style combine of the entrant identity (key+0x50 id, or for flag 0x10000000 the xor of the online user-id words at +0x18/+0x20 or +0x28/+0x30 depending on type byte +0x10) with the packed u16 from +0x58/+0x5a, masked by map+0x40; walks the bucket list (buckets +0x28) comparing identity (Ne_UserId_Equals fallback), +0x5a short and +0x58 byte. Writes the node or the end sentinel map+0x10 to *out_iter."
+ },
+ "signature": {
+  "id": "game.entrant_key_map_find",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 41 8B 40 50",
+  "match": "0x143141940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143141940",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantKeyMap_Find"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143143ed0",
+  "made_on_target": "0x143143ed0",
+  "twin": "made on steam-26566308; the target 0x143143ed0 is KB 0x143141940: Game_VehicleCustomisationReplicationManager_AddReplicatedPlayer (0x31439b0) and Game_RankedMatchingProcessor_CreateSession (0x3153130) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143143ed0",
+    "target": "0x143143ed0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ec950ee213e1fad0f128e8f7e8b078dce208ad5487985836b408f25afecbc0a0"
+  }
+ ]
+}

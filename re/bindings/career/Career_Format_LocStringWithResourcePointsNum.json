@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Format_LocStringWithResourcePointsNum",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14169d520",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Format_LocStringWithResourcePointsNum(void *out_str, uint64_t loc_id, int32_t points, void *loc_mgr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14169eb10 (RacingPC lab re_groups/_decomp);xref:0x14169f840",
+  "notes": "Formats points with Ui_Format_ResourcePointsAmountText, looks up the localised template for loc_id through the active language table (loc_mgr+0x28 + index(loc_mgr+0x160)*0x10, vfunc +0x18), registers the amount as format argument named \"NUM\" (arg type 9, up to 8 inline arg slots) and writes the substituted string to out_str via Ne_String_AssignWithMode. Hook to change the displayed resource point boost number."
+ },
+ "signature": {
+  "id": "career.format_loc_string_with_resource_points_num",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 38 04 00 00 4D 89 CE 48 89 D3",
+  "match": "0x14169d520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14169d520",
+  "kind": "func_start",
+  "names": [
+   "Career_Format_LocStringWithResourcePointsNum"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14169eb10",
+  "made_on_target": "0x14169eb10",
+  "twin": "made on steam-26566308; the target 0x14169eb10 is KB 0x14169d520: Career_Build_PerkResourcePointsBoostEntry (0x169d650) and Vm_Release_PerkRowNodes (0x169f240) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14169eb10",
+    "target": "0x14169eb10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "04484b4f4a792702f0f0880163ae863fab7c624fe81610a712bb2ea7a8204d58"
+  }
+ ]
+}

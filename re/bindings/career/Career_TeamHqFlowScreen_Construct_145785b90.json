@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqFlowScreen_Construct_145785b90",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142326000",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_TeamHqFlowScreen_Construct_145785b90(void *screen, void *arg2, void *owner, const char *screen_name, void *arg5, uint32_t mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142327c00 (RacingPC lab re_groups/_decomp);xref:0x141663570",
+  "notes": "Screen object constructor registered by the Team HQ My Team screen table: base ctor 0x14431f310, name strings screen_name and \"team_hq_flow\", vtables 0x145785b90/0x145785c20/0x145785c48, owner stored at +0x2a0, two empty VM property handles at +0x2c8 (string) and +0x2e8 (bool), mode value at +0x338. Better context needed: which Team HQ screen uses vtable 0x145785b90."
+ },
+ "signature": {
+  "id": "career.team_hq_flow_screen_construct_145785b90",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 4C 89 CB 4C 89 C7 48 89 CE 4C 8B 8C 24 80 00 00 00 C6 44 24 28 00 C7 44 24 20 02 00 00 00 49 89 D8 E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 05 ?? ?? ?? ?? 48 89 86 60 02 00 00 48 C7 44 24 38 00 00 00 00",
+  "match": "0x142326000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142326000",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqFlowScreen_Construct_145785b90"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142327c00",
+  "made_on_target": "0x142327c00",
+  "twin": "made on steam-26566308; the target 0x142327c00 is KB 0x142326000: Career_MyTeamActivities_GetSelectedSlotRecord (0x2326d70) and Vm_Bind_TeamHqHubPage (0x2327de0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142327c00",
+    "target": "0x142327c00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "68f9aa2afbf06df45e167bf0483eff5e02db7255f77eb270aa521bb52f1fb171"
+  }
+ ]
+}

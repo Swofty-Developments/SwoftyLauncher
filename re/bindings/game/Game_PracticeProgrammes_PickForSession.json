@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PracticeProgrammes_PickForSession",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140bb9100",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_PracticeProgrammes_PickForSession(void *self, void *outList, uint64_t optOverride)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bb90e0 (RacingPC lab re_groups/_decomp);xref:0x141d31c70,0x141f98af0,0x143509320,0x1437928a0",
+  "notes": "Fills outList (8 ptr slots, count at +0x38) with practice programme objects: iterates the session programme names (+0x278 -> +0x2b0 -> +0x218 list, 0x28 stride), maps them with Game_Get_PracticeProgrammeIndexByName into table (+0x310)+0x298, always takes index 4 first, skips index 6, then shuffles the rest with an RNG seeded by vfunc(+0x100)*100 + vfunc(+0xf8)*10 + int(+0x278)+0x1414 and appends until 3 entries. Deterministic per weekend/session."
+ },
+ "signature": {
+  "id": "game.practice_programmes_pick_for_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 0A 00 00 4C 89 C7",
+  "match": "0x140bb9100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bb9100",
+  "kind": "func_start",
+  "names": [
+   "Game_PracticeProgrammes_PickForSession"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140bb90e0",
+  "made_on_target": "0x140bb90e0",
+  "twin": "made on steam-26566308; the target 0x140bb90e0 is KB 0x140bb9100: Game_EntrantsManager_ResolveAndCloseDocument (0xbb3680) and Game_SeasonLength_PushCalendarEntry (0xbc9d60) on either side both sit -0x20 below their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140bb90e0",
+    "target": "0x140bb90e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "78390b64c26a1f76964219b5aa4a041836cdc38d7ff14aff0277cb20f9e39fa0"
+  }
+ ]
+}

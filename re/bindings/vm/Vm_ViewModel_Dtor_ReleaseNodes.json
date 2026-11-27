@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_ViewModel_Dtor_ReleaseNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442b0ce0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_ViewModel_Dtor_ReleaseNodes(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442b32b0 (RacingPC lab re_groups/_decomp);xref:0x1414a4140,0x141ce7680,0x141e6a260,0x144267320,0x14431fcf0",
+  "notes": "Calls Vm_ViewModel_ReleaseBindings (0x1441f3490), unregisters from g_Vm_Registry if bit 1 of +0xe0 is set, releases and frees the binding vector +0xb8..+0xc8 (allocator +0xb0), then unlinks and releases the node refs at +0x98 and +0x80."
+ },
+ "signature": {
+  "id": "vm.view_model_dtor_release_nodes",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE E8 ?? ?? ?? ?? F6 86 E0 00 00 00 01",
+  "match": "0x1442b0ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b0ce0",
+  "kind": "func_start",
+  "names": [
+   "Vm_ViewModel_Dtor_ReleaseNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442b32b0",
+  "made_on_target": "0x1442b32b0",
+  "twin": "made on steam-26566308; the target 0x1442b32b0 is KB 0x1442b0ce0: Ne_ListenerHandle_Unregister (0x42acf50) and Ui_Compare_NodeHandles (0x42b3e80) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442b32b0",
+    "target": "0x1442b32b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f411e68715cd3d88e3d74ba44aa4cb2ac312038863abc55f73ec300f02aa77d"
+  }
+ ]
+}

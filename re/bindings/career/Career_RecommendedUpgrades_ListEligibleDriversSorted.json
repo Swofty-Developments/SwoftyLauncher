@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_RecommendedUpgrades_ListEligibleDriversSorted",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14351b950",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_RecommendedUpgrades_ListEligibleDriversSorted(void *mgr, void *out_vec_u32, uint64_t team_id_packed)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14351dee0 (RacingPC lab re_groups/_decomp);xref:0x14351dac0,0x14351dcc0",
+  "notes": "Fills out_vec (allocator mgr+0x58, u32 elements) with the +0x50 ids of the team's entrant records (0x88 stride at (*mgr)+0x2e0, team id taken from bits 16+ of the third arg): first sorted with Ne_Std_IntroSort_PtrsByOptByte80, then if mgr+0x28 is set stable-sorted descending by the float at +0x24 of the matching 0x5c-byte record in (mgr+0x28)+0x460..+0x468 (insertion sort under 33 items, buffered merge 0x1435ecb40 otherwise), keeping only records with byte +0x81 == 0 or byte +0x80 < 2. Returns out_vec."
+ },
+ "signature": {
+  "id": "career.recommended_upgrades_list_eligible_drivers_sorted",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 8B 41 58",
+  "match": "0x14351b950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14351b950",
+  "kind": "func_start",
+  "names": [
+   "Career_RecommendedUpgrades_ListEligibleDriversSorted"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14351dee0",
+  "made_on_target": "0x14351dee0",
+  "twin": "made on steam-26566308; the target 0x14351dee0 is KB 0x14351b950: Career_Read_UpgradeHashnameList (0x351ce70) and Career_Is_RnDPlayerControlled (0x351e5e0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14351dee0",
+    "target": "0x14351dee0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "96dde4dd8217282d0a1897c3e08cd29bd6be207a5c35df598a44721b9df8c5f1"
+  }
+ ]
+}

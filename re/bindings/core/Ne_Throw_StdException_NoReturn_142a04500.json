@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Throw_StdException_NoReturn_142a04500",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a02140",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Throw_StdException_NoReturn_142a04500(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a04500 (RacingPC lab re_groups/_decomp);xref:0x14295e460",
+  "notes": "(lib) Calls Ne_Std_ThrowExceptionNoReturn with the message at 0x14561570e then int3. Cold-path error stub (likely vector length/bad alloc) outlined from the caller; message text not visible."
+ },
+ "signature": {
+  "id": "core.throw_std_exception_no_return_142a04500",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4D 89 CE 4D 89 C7",
+  "match": "0x142a02140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a02140",
+  "kind": "func_start",
+  "names": [
+   "Ne_Throw_StdException_NoReturn_142a04500"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a04500",
+  "made_on_target": "0x142a04500",
+  "twin": "made on steam-26566308; the target 0x142a04500 is KB 0x142a02140: Ne_HashMap_Rehash (0x2a00dc0) and Ui_CareerSelectMyTeam_SetDriverIconActive (0x2a0c9f0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a04500",
+    "target": "0x142a04500"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a3dad06b689229acb21c7467d6b585377236d42ea5aee8ba82c5cc6c294e0a4d"
+  }
+ ]
+}

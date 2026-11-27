@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_BindSequenceToSlot",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c7af00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CareerEventsSequencer_BindSequenceToSlot(void *seq, void *resource, int slot, void *unused)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c7b9c0 (RacingPC lab re_groups/_decomp);xref:0x140c7a540,0x140c7aa00,0x140c81e80",
+  "notes": "Releases the previous sequence instance in global table 0x14605c9e0[slot] (removes seq+0x5c8 from each clip listener list, decref, destroy), creates a new instance from resource (0x143665120 then 0x143662ff0 with seq+0x8), registers seq+0x5c8 on each clip, calls FUN_140c80fd0 for six globals 0x14605c9a0..c8, then binds the clips to the actors of the scene at 0x14605c9d0 (Ne_SequenceClipInstance_BindOptional) and enables its camera actors (+0x560 = 1, log CameraActor::enable)."
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_bind_sequence_to_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 85 D2 0F 84 ?? ?? ?? ?? 44 89 C6",
+  "match": "0x140c7af00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7af00",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_BindSequenceToSlot"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c7b9c0",
+  "made_on_target": "0x140c7b9c0",
+  "twin": "made on steam-26566308; the target 0x140c7b9c0 is KB 0x140c7af00: Game_CareerEventResourceManager_DeactivateExtraWorld (0xc7b720) and Game_CareerEventsSequencer_TriggerFadeOutForExit (0xc7bc40) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c7b9c0",
+    "target": "0x140c7b9c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "eb230406f38d988b879904a7467e787209a73403b56bdc14bd7d2a272730c344"
+  }
+ ]
+}

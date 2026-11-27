@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SponsorGoal_QueueIfEntrantFlagged",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14110c290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SponsorGoal_QueueIfEntrantFlagged(void *self, uint32_t entrantKey, uint32_t value, uint16_t a, uint16_t b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14110c8d0 (RacingPC lab re_groups/_decomp);xref:0x141109700",
+  "notes": "Collects the 0x88-byte entries in (+0x278) +0x2e0..+0x2e8 whose key (+0x58 byte, +0x5a short) matches entrantKey; if any has bit 0x10000000 set in flags +0x48 it appends the packed u64 value | a<<32 | b<<48 to the vector at +0x2d8..+0x2e8. Better context needed: flag 0x10000000 is probably the player/human entrant bit."
+ },
+ "signature": {
+  "id": "game.sponsor_goal_queue_if_entrant_flagged",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 66 44 89 4C 24 2A",
+  "match": "0x14110c290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14110c290",
+  "kind": "func_start",
+  "names": [
+   "Game_SponsorGoal_QueueIfEntrantFlagged"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14110c8d0",
+  "made_on_target": "0x14110c8d0",
+  "twin": "made on steam-26566308; the target 0x14110c8d0 is KB 0x14110c290: Ne_Vector_PushBack_Elem16 (0x1108ac0) and Gdb_Load_SponsorGoalDefinitions (0x1112600) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14110c8d0",
+    "target": "0x14110c8d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cee6585d13f4268e4cd72b664808dc9c45bca6ebdcef3710733f60380b42c8d2"
+  }
+ ]
+}

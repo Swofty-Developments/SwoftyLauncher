@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_CopyCtor_KeyU8_Str64Node",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d61980",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_CopyCtor_KeyU8_Str64Node(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d62500 (RacingPC lab re_groups/_decomp);xref:0x140cbb3c0,0x140cc2750,0x140d6b8e0",
+  "notes": "(lib) Copy constructor of a robin-hood hash map with pooled nodes: copies multiplier, mask, count and distance bytes, then for each occupied slot takes a node from the free list (growing via 0x140d61250) and copies key byte +0x00, the 64-char inline string (+0x08 header, chars +0x20..+0x5f) and the u32 at +0x60. Used for department event maps."
+ },
+ "signature": {
+  "id": "core.hash_map_copy_ctor_key_u8_str64_node",
+  "section": ".xtls",
+  "pattern": "4C 89 EA E8 ?? ?? ?? ?? 49 8B 4D 58",
+  "match": "0x140cba94f",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140d61980",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_CopyCtor_KeyU8_Str64Node"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cbb40f",
+  "made_on_target": "0x140d62500",
+  "twin": "made on steam-26566308; the target 0x140d62500 is KB 0x140d61980: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140cbb40f is KB 0x140cba94f: Gdb_Check_DuplicateShortId (0xcb9950) and Career_DeptEvent_RegisterMessageHandlersA (0xcbb7b0) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cbb40f",
+    "target": "0x140d62500"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "158bfa18e7d35deb70a7d01c62955e0670eaf76bd23283f1168079da7c719cf2"
+  }
+ ]
+}

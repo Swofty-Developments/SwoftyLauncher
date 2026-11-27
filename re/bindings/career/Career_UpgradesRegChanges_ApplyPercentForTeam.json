@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_UpgradesRegChanges_ApplyPercentForTeam",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143515360",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_UpgradesRegChanges_ApplyPercentForTeam(void *mgr, char team, void *upgrade_list, int percent)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435178f0 (RacingPC lab re_groups/_decomp);xref:0x1412468b0",
+  "notes": "Finds the robin-hood map entry (mgr +0x38/+0x40) whose byte list +0x140..+0x148 contains team, then for each sub-key in its map at +0x180 filters the fixed list (count at +0xc00) by upg+0x7c and upg+0x72, sorts, and for the first count*percent/100 upgrades whose def (ptr +200) has byte -7 ==1 and type byte -8 in {3,8} calls Career_Set_UpgradeFitted(upg,0x3fff0000,2). Meaning of state 2 is inferred from the caller name (regulation change reset)."
+ },
+ "signature": {
+  "id": "career.upgrades_reg_changes_apply_percent_for_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 18 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 BC 24 60 18 00 00",
+  "match": "0x143515360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143515360",
+  "kind": "func_start",
+  "names": [
+   "Career_UpgradesRegChanges_ApplyPercentForTeam"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1435178f0",
+  "made_on_target": "0x1435178f0",
+  "twin": "made on steam-26566308; the target 0x1435178f0 is KB 0x143515360: Career_Read_DepartmentSchedules (0x3514780) and site_Career_UpgradeSetFittedDeptGate (0x3517d70) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1435178f0",
+    "target": "0x1435178f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1a13ec5abdc771a9dcfb9545cf9b3c00f5ab2a90abe0cdcdfad3c1f31bc50af5"
+  }
+ ]
+}

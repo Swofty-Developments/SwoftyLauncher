@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_DriverStats_AccumulateSeasonTotals",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1413d2010",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_DriverStats_AccumulateSeasonTotals(void *out, void *career, uint32_t driverId)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1413d2650 (RacingPC lab re_groups/_decomp);xref:0x141c580a0,0x14209bd20",
+  "notes": "Zeroes a 0x1c-byte result (+0x10 = 0xffffffff). For each season 0..current: out+0 ++ if func 0x1413d2390(season+0x2a8, driver), out+4 ++ if Career_Unk_1413d1e60 is true, then for every round index (count from +0x2e8 list plus a per-format bonus table 0x1456e92a4) calls func 0x1413d20b0 to add into out and a running sum. out+0x10 = sum / rounds. Better context needed: meaning of the two per-season flags (likely titles)."
+ },
+ "signature": {
+  "id": "career.driver_stats_accumulate_season_totals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 C7 48 89 CE",
+  "match": "0x1413d2010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413d2010",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverStats_AccumulateSeasonTotals"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1413d2650",
+  "made_on_target": "0x1413d2650",
+  "twin": "made on steam-26566308; the target 0x1413d2650 is KB 0x1413d2010: Game_StoryModeObjective_Update (0x13bc200) and Sess_Get_CurrentContentSetName (0x13e2310) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1413d2650",
+    "target": "0x1413d2650"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "21eaa29f80b502bfeecfba2dc041695b4b4caf0cda2a30655083d9576e195cf5"
+  }
+ ]
+}

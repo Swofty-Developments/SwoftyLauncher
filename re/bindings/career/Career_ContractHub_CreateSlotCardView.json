@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ContractHub_CreateSlotCardView",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141af0430",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_ContractHub_CreateSlotCardView(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141af1c10 (RacingPC lab re_groups/_decomp);xref:0x141ae8490,0x141af4540",
+  "notes": "Fetches a shared data object for the current slot (func 0x1425b85c0 with vm+0x2d0 and byte *(vm+0x320)), allocates a 0x3b8-byte view object (constructed by the function labelled Ui_F1World_SetCardCanBeUpgraded) on child node hash 0xd7e36887 of view vm+0x330, stores it at view+0xda8 (allocator +0xda0, old one destroyed), calls its vfunc +8 with (data, vm+0x2d0, vm+0x2a0) and writes its node as UIDB reference into view property nodes +0xb88 and +0xbc8. Better context needed: the card view class name."
+ },
+ "signature": {
+  "id": "career.contract_hub_create_slot_card_view",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CB 48 8B 89 D0 02 00 00",
+  "match": "0x141af0430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141af0430",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractHub_CreateSlotCardView"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141af1c10",
+  "made_on_target": "0x141af1c10",
+  "twin": "made on steam-26566308; the target 0x141af1c10 is KB 0x141af0430: Ui_F1World_BuildUpgradeCardScreen (0x1aeb470) and Ui_F1World_SetLoadoutPillBackgrounds (0x1af5940) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141af1c10",
+    "target": "0x141af1c10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "06d0c14eb8948cbeb068acd76c1fe2c763cdad0249fb52e5ae8e95623e60e5d3"
+  }
+ ]
+}
