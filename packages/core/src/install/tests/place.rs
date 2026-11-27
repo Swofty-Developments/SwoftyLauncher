@@ -263,7 +263,7 @@ fn a_new_file_that_cannot_be_copied_stops_the_install_and_the_rollback_clears_th
     };
     let err = inst.apply(&plan).unwrap_err();
     assert!(
-        matches!(&err, Error::Io { path, .. } if *path == f.game.join(SECOND)),
+        matches!(&err, Error::Other(t) if t.contains(&second.display().to_string())),
         "{err}"
     );
     assert_eq!(f.read(GVDB).as_deref(), Some("db-modded"));
@@ -278,6 +278,49 @@ fn a_new_file_that_cannot_be_copied_stops_the_install_and_the_rollback_clears_th
     use crate::game_folder::journal::State::Pending;
     assert_eq!(states, [(GVDB, Pending), (FIRST, Pending), (SECOND, Pending)]);
     f.rolled_back(&game, &original);
+}
+
+#[test]
+fn a_replaced_file_whose_built_source_vanishes_names_the_source_and_the_stock_file_comes_back() {
+    let f = Fixture::new("replace-source-gone");
+    let game = f.game();
+    let original = f.snapshot();
+    let mut plan = f.plan();
+    plan.data.insert(UI.into(), f.built(UI, "ui-modded"));
+    plan.data.insert(GVDB.into(), f.built(GVDB, "db-modded"));
+    let gvdb = plan.data[GVDB].clone();
+    let progress = |done: usize, _: usize| {
+        if done == 1 {
+            std::fs::remove_file(&gvdb).ok();
+        }
+    };
+    let lines = RefCell::new(Vec::new());
+    let out = |l: &str| lines.borrow_mut().push(l.to_owned());
+    let inst = Installer {
+        progress: &progress,
+        copy_only: true,
+        ..installer(&f, &game, &out)
+    };
+    let err = inst.apply(&plan).unwrap_err();
+    let text = err.to_string();
+    assert!(matches!(err, Error::Other(_)), "{text}");
+    assert!(text.contains(&gvdb.display().to_string()), "{text}");
+    assert!(!text.contains(&f.game.join(GVDB).display().to_string()), "{text}");
+    assert!(
+        text.contains("disappeared before it could be put in the game folder"),
+        "{text}"
+    );
+    assert!(text.contains("antivirus"), "{text}");
+    assert!(
+        lines
+            .borrow()
+            .iter()
+            .any(|l| l.contains("is gone") && l.contains("route copy")),
+        "{:?}",
+        lines.borrow()
+    );
+    f.rolled_back(&game, &original);
+    assert_eq!(f.read(GVDB).as_deref(), Some("db-v1"));
 }
 
 #[test]

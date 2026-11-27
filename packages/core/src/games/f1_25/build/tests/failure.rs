@@ -325,3 +325,33 @@ fn missing_archive_warnings_count_the_files() {
          Turn Cams off if it doesn't work, and tell its author"
     );
 }
+
+#[test]
+fn a_missing_build_output_file_does_not_send_the_player_to_verify_the_game() {
+    let root = std::env::temp_dir().join(format!("swofty-named-overlay-{}", std::process::id()));
+    let store = Store::new(root.join("data"));
+    let game = root.join("game");
+    let rel = "2025_asset_groups/animation_package/scenes/pitstops/f1/pitstop_24.erp";
+    let io = |path: PathBuf| Error::Io {
+        path,
+        source: std::io::Error::from(std::io::ErrorKind::NotFound),
+    };
+    let overlay = named(&store, &game, io(store.overlay_dir("default", "abc").join(rel)));
+    let text = overlay.to_string();
+    assert!(
+        text.starts_with(
+            "pitstop_24.erp, which the launcher built for the game folder, is missing from its build output"
+        ),
+        "{text}"
+    );
+    assert!(
+        text.contains("antivirus") && !text.contains("verify the game files"),
+        "{text}"
+    );
+    let stock = named(&store, &game, io(game.join(rel))).to_string();
+    assert!(
+        stock.starts_with(&format!("{rel} is missing from the game folder; ")),
+        "{stock}"
+    );
+    assert!(stock.contains("verify the game files in Steam"), "{stock}");
+}

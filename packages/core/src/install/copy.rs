@@ -230,7 +230,7 @@ impl<'a> Installer<'a> {
                     if stashed {
                         self.unstash(before, path, hashes);
                     }
-                    return Err(crate::diagnostics::quarantine::copy_error(&e.path, path, err));
+                    return Err(self.copy_failed(&e.path, src, path, err));
                 } else {
                     crate::clear_readonly(path);
                     Put::Copied
@@ -252,8 +252,12 @@ impl<'a> Installer<'a> {
                 } else {
                     match copy_replacing(src, path) {
                         Err(err) if crate::diagnostics::quarantine::is_virus_error(&err) => Put::Refused,
-                        r => {
-                            r.map_err(io_err(path))?;
+                        Err(err) => {
+                            return Err(self
+                                .source_gone(&e.path, src, path, &err)
+                                .unwrap_or_else(|| io_err(path)(err)));
+                        }
+                        Ok(()) => {
                             crate::clear_readonly(path);
                             Put::Copied
                         }
@@ -269,6 +273,28 @@ impl<'a> Installer<'a> {
                 Put::Made
             }
         })
+    }
+
+    fn copy_failed(&self, rel: &str, src: &Path, path: &Path, err: std::io::Error) -> crate::Error {
+        self.source_gone(rel, src, path, &err)
+            .unwrap_or_else(|| crate::diagnostics::quarantine::copy_error(rel, path, err))
+    }
+
+    fn source_gone(&self, rel: &str, src: &Path, path: &Path, err: &std::io::Error) -> Option<crate::Error> {
+        if err.kind() != std::io::ErrorKind::NotFound || src.exists() {
+            return None;
+        }
+        (self.out)(&format!(
+            "install: {rel}: source {} is gone, destination {}, route copy",
+            src.display(),
+            path.display()
+        ));
+        Some(crate::Error::Other(format!(
+            "{} was built by the launcher for {rel} and disappeared before it could be put in the game folder; \
+             an antivirus most likely removed it. Allow the launcher's data folder in your antivirus (see \
+             \"If the mods don't load\" in the Windows guide), then press Play again. The game folder is unchanged.",
+            src.display()
+        )))
     }
 
     /// Loads the storage of each addon `sources` places for the plan's
