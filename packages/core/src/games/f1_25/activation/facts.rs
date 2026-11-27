@@ -64,6 +64,10 @@ pub struct TrackFacts {
     /// (`overrides.<list>.<code>`), which the core points the track's `TrackTextures` at.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ui_lists: Vec<String>,
+    /// For a track record that ships a circuit intro: the `TrackVideo` value the core writes into
+    /// the track's rows, the placed file's path below `videos/`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub video: Option<String>,
 }
 
 fn supported() -> bool {
@@ -94,6 +98,8 @@ pub struct Added {
     pub base: Option<String>,
     /// For a track record: the menu UI lists the build made its pictures for.
     pub ui_lists: Vec<String>,
+    /// For a track record: the `TrackVideo` value of the circuit intro the build placed.
+    pub video: Option<String>,
 }
 
 /// What a build hands the scan.
@@ -586,6 +592,7 @@ pub fn facts(scan: &Scan, previous: Option<&Facts>, cache: &mut WorldsCache) -> 
         stamp(&mut hasher, &a.shipped);
         stamp(&mut hasher, &a.placed);
         hasher.update(format!("{} ui {:?};", a.code, a.ui_lists));
+        hasher.update(format!("{} video {:?};", a.code, a.video));
         let placed_ai = ai_placed(&a.code, &scan.placed);
         hasher.update(format!("{} ai {placed_ai:?};", a.code));
         let row = codes
@@ -635,6 +642,11 @@ pub fn facts(scan: &Scan, previous: Option<&Facts>, cache: &mut WorldsCache) -> 
                     .find(|a| a.code == code)
                     .map(|a| a.ui_lists.clone())
                     .unwrap_or_default(),
+                video: scan
+                    .added
+                    .iter()
+                    .find(|a| a.code == code)
+                    .and_then(|a| a.video.clone()),
             };
             (code, t)
         })
@@ -862,6 +874,7 @@ mod tests {
                     placed: placed.clone(),
                     base: None,
                     ui_lists: Vec::new(),
+                    video: None,
                 },
                 Added {
                     code: "record".into(),
@@ -869,6 +882,7 @@ mod tests {
                     placed: placed.clone(),
                     base: Some("melbourne".into()),
                     ui_lists: vec!["track_select".into()],
+                    video: Some("track_map/swofty/mod.x/record.bk2".into()),
                 },
             ],
             edits: None,
@@ -905,6 +919,17 @@ mod tests {
         assert_eq!(f.tracks["record"].ai_difficulties, ["f1_2025_vehicle_package"]);
         assert_eq!(f.tracks["record"].ui_lists, ["track_select"]);
         assert!(f.tracks["added"].ui_lists.is_empty());
+        assert_eq!(
+            f.tracks["record"].video.as_deref(),
+            Some("track_map/swofty/mod.x/record.bk2")
+        );
+        assert_eq!(f.tracks["added"].video, None);
+        assert!(
+            !serde_json::to_string(&f.tracks["added"])
+                .unwrap()
+                .contains("video"),
+            "a track without a video writes no video key"
+        );
         assert!(
             f.tracks["added"].time_trial,
             "a track made for 1.5 runs Time Trial"
