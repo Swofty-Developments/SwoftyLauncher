@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Get_UnitLabel_ByKind12",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414b9140",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "const char *Ui_Get_UnitLabel_ByKind12(uint32_t kind, void *options_owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1414b9920 (RacingPC lab re_groups/_decomp);xref:0x14209bd20",
+  "notes": "Switch on kind 0..11 returning a constant string pointer (strings not visible in decompile); kind 10 reads option \"speed_unit\" from the options store at owner+0x270 and returns one of two strings depending on value index 1 (metric vs imperial). Default returns a fallback string. Better context needed: the string contents at 0x1456eadad etc. decide whether these are loc keys or format names."
+ },
+ "signature": {
+  "id": "ui.get_unit_label_by_kind12",
+  "section": ".xtls",
+  "pattern": "89 E9 E8 ?? ?? ?? ?? 48 C7 44 24 38 00 00 00 00",
+  "match": "0x14209b33a",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x2"
+  },
+  "target": "0x1414b9140",
+  "kind": "call",
+  "names": [
+   "Ui_Get_UnitLabel_ByKind12"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14209cf3a",
+  "made_on_target": "0x1414b9920",
+  "twin": "made on steam-26566308; the target 0x1414b9920 is KB 0x1414b9140: Ne_ResourceRefGroup_Destruct (0x14b5330) and Vm_CareerPlayerCard_Init (0x14c2600) on either side both sit 0x7e0 above their KB addresses; the match 0x14209cf3a is KB 0x14209b33a: Career_RenownFormVM_Init (0x209bd20) and Career_RenownFormDetails_BuildPills (0x20b9760) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14209cf3a",
+    "target": "0x1414b9920"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b095f66497b104d23130663ae9ac0ada7914d81e51236df21cf3a732130a3883"
+  }
+ ]
+}

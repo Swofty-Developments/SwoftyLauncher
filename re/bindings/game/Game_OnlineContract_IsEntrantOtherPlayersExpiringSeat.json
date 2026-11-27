@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineContract_IsEntrantOtherPlayersExpiringSeat",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140ffcc70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint32_t Game_OnlineContract_IsEntrantOtherPlayersExpiringSeat(void *self, uint32_t entrant_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140ffd930 (RacingPC lab re_groups/_decomp);xref:0x141a69860,0x141a6a660",
+  "notes": "Returns 1 when only one player participates or the player list (+0x2d0..+0x2d8) is empty; returns 0 if the lead player is not in co-op. Otherwise gets the entrant list (vfunc +0x1c8 on self+0x270), finds the record matching entrant_id (id_hi/id_lo), requires Game_OnlineContractNegotiationsV_IsOtherPlayersContractEndingThi for it and then returns whether it matches the player record chosen by mode self+0x290 (1 = first, 2 = second) via Sess_Match_EntrantIdentity_Thunk. Name is a best reading of the predicate."
+ },
+ "signature": {
+  "id": "game.online_contract_is_entrant_other_players_expiring_seat",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 89 D7 48 89 CE E8",
+  "match": "0x140ffcc70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffcc70",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineContract_IsEntrantOtherPlayersExpiringSeat"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ffd930",
+  "made_on_target": "0x140ffd930",
+  "twin": "made on steam-26566308; the target 0x140ffd930 is KB 0x140ffcc70: Career_OnlineNegotiations_IsCandidateOnContractedTeam (0xffd650) and Career_OnlineNegotiations_SortCandidatesByState (0xffe600) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ffd930",
+    "target": "0x140ffd930"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b917af7d22e3ca3ac61e1cdba53ed4744211b8a11b51db511e809a8d8d02651c"
+  }
+ ]
+}

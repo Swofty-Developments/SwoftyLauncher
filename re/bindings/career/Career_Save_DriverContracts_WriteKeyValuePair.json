@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Save_DriverContracts_WriteKeyValuePair",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d9f790",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint32_t Career_Save_DriverContracts_WriteKeyValuePair(uint8_t *rec, void *writer)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140da0310 (RacingPC lab re_groups/_decomp);xref:0x140da4d50",
+  "notes": "Save writer for a small record: writes a u16 field holding the packed key (rec[0] << 14 | u16 at rec+2) and a second u16 field from rec+4, both with reflected type 0x14612be38, appending each field object to the writer child list. Returns 0 or an error code. Field names not visible in the decompile."
+ },
+ "signature": {
+  "id": "career.save_driver_contracts_write_key_value_pair",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CF 0F B6 01 C1 E0 0E 66 0B 41 02 48 89 D6 66 89 44 24 36",
+  "match": "0x140d9f790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d9f790",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_DriverContracts_WriteKeyValuePair"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140da0310",
+  "made_on_target": "0x140da0310",
+  "twin": "made on steam-26566308; the target 0x140da0310 is KB 0x140d9f790: Career_Set_DriverContractState (0xd9e9b0) and Game_DriverContractsMyTeamComponent_OpenContractWindow (0xdae9f0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140da0310",
+    "target": "0x140da0310"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "be87b0fe3f7f0c41ece414d25c6a3a38f8dce26a96074870cfb116a8cdf28bd5"
+  }
+ ]
+}

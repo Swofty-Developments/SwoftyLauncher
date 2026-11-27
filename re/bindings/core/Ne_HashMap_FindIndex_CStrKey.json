@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindIndex_CStrKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d5f230",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_HashMap_FindIndex_CStrKey(void *map, void *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d5fdb0 (RacingPC lab re_groups/_decomp);xref:0x140cbad40",
+  "notes": "(lib) Robin-hood hash map lookup by C string: FNV-1a over the string at key+0x10, mixed with the multiplier at +0x20, probes the distance bytes at +0x30 and compares with Ne_Crt_Strcmp against node+0x10. Returns the slot index, or the end index ((info - table)/8, or 0 when the map is empty) when not found."
+ },
+ "signature": {
+  "id": "core.hash_map_find_index_c_str_key",
+  "section": ".xtls",
+  "pattern": "48 8D 8E F0 01 00 00 E8 ?? ?? ?? ?? 48 C1 E0 03",
+  "match": "0x140cb5e55",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x140d5f230",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_FindIndex_CStrKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cb6915",
+  "made_on_target": "0x140d5fdb0",
+  "twin": "made on steam-26566308; the target 0x140d5fdb0 is KB 0x140d5f230: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140cb6915 is KB 0x140cb5e55: Career_DeptEvent_SimulateOutcomeInsert (0xcb4960) and Career_TeamHqAdvance_CheckContractedDriverActivities (0xcb6c10) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cb6915",
+    "target": "0x140d5fdb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "50d3e71f3c58c2c3b334f149e838bd278ce6638bcbbd5d3c0f2c5fda4f36af9d"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindOrInsertSlot_ByteKey_B",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435e7a80",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_FindOrInsertSlot_ByteKey_B(void *map, uint64_t *out_slot_status, uint8_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435ea010 (RacingPC lab re_groups/_decomp);xref:0x143541110",
+  "notes": "(lib) Second instantiation of the robin-hood find-or-insert for a 1-byte key, identical to 0x1435e9240 except that growth goes through FUN_1435ea6d0."
+ },
+ "signature": {
+  "id": "core.hash_map_find_or_insert_slot_byte_key_b",
+  "section": ".xtls",
+  "pattern": "49 89 D8 E8 ?? ?? ?? ?? 8B 44 24 58",
+  "match": "0x14353f8ab",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1435e7a80",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_FindOrInsertSlot_ByteKey_B"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143541e3b",
+  "made_on_target": "0x1435ea010",
+  "twin": "made on steam-26566308; the target 0x1435ea010 is KB 0x1435e7a80: Ne_HashMap_U64_Grow (0x35dc140) and Career_Upgrades_FindOrCreateRecommendedState (0x35ebbd0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143541e3b",
+    "target": "0x1435ea010"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37ed25228d6b5378822576d56df946ddbbcc077eace26325fd74562819544066"
+  }
+ ]
+}

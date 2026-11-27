@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_RndPointsReportRecord_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1405851f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_RndPointsReportRecord_Ctor(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140585230 (RacingPC lab re_groups/_decomp);xref:0x14071f0b0",
+  "notes": "Constructs a protobuf-style message: allocates the type name string \"f1.proto.RnDPointsReportRecord\" from the lazily initialised global allocator, passes it to the base message ctor 0x144937b50, frees the temp string, sets vtable 0x145632970 and zeroes fields +0x48..+0x63. cxx=f1.proto.RnDPointsReportRecord"
+ },
+ "signature": {
+  "id": "career.rnd_points_report_record_ctor",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 43 14 89 47 60 48 8D 54 24 30",
+  "match": "0x14071f296",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1405851f0",
+  "kind": "call",
+  "names": [
+   "Career_RndPointsReportRecord_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14071f2d6",
+  "made_on_target": "0x140585230",
+  "twin": "made on steam-26566308; the target 0x140585230 is KB 0x1405851f0: Game_Analytics_WriteCommonHeaderFields (0x55d4d0) and Game_Analytics_WriteRndUpgradeInfo (0x5868a0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14071f2d6",
+    "target": "0x140585230"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6403ed61ee6ad65a5a0a91a668e518260932d081436e58f726a15eb3010621a2"
+  }
+ ]
+}

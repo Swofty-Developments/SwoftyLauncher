@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_IsBoundTabOutsideIdSet7",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419938e0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "bool Vm_TeamHqMyTeam_IsBoundTabOutsideIdSet7(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419950c0 (RacingPC lab re_groups/_decomp);xref:0x142330180",
+  "notes": "Same as the 5-id variant but the excluded set also contains 0x2062deb7 and 0x5c006bf2: returns false for 0xc3912f14, 0x10de9d15, 0x111c8c30, 0x123b2071, 0x2062deb7, 0x5c006bf2, 0x7a4e191b, true otherwise."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_is_bound_tab_outside_id_set7",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? 48 85 C0 74 59 48 8B 40 10",
+  "match": "0x1419938e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419938e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_IsBoundTabOutsideIdSet7"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419950c0",
+  "made_on_target": "0x1419950c0",
+  "twin": "made on steam-26566308; the target 0x1419950c0 is KB 0x1419938e0: Ui_MyTeamButtonDivider_Init (0x1994330) and Game_MyTeamHq_SpawnFoyerDrivers (0x1997450) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419950c0",
+    "target": "0x1419950c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a17bdfc7be83f7404c09a5f5cebf80cd984d79f92c9274be9d9023358ab1139f"
+  }
+ ]
+}

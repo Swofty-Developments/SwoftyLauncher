@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_BindOptionListener",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1412b8a10",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_ResourcePoints_BindOptionListener(void **binding, void *option, void **delegate)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1412b9050 (RacingPC lab re_groups/_decomp);xref:0x141226aa0",
+  "notes": "Rebinds an option watcher: unsubscribes callback FUN_1412b9170 from the previous option, stores option at +0, sets the valid byte +8 (always when +9 is 0, else only if the option has value kind 2 at +0xbc and its three value names match three expected strings), copies the 16-byte delegate to +0x10 and subscribes the callback on option+0xe0. Feeds the 3-state option read by 0x14122bc00."
+ },
+ "signature": {
+  "id": "career.resource_points_bind_option_listener",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 3D ?? ?? ?? ?? 48 85 FF 74 5F",
+  "match": "0x14122725c",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1412b8a10",
+  "kind": "call",
+  "names": [
+   "Career_ResourcePoints_BindOptionListener"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14122789c",
+  "made_on_target": "0x1412b9050",
+  "twin": "made on steam-26566308; the target 0x1412b9050 is KB 0x1412b8a10: Ne_Crt_FatalNoReturn (0x12a1830) and Ne_Bitset_ThrowInvalidPosition_C (0x12ca820) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14122789c",
+    "target": "0x1412b9050"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ddd1cbdf0d467fafe09ba79e0c4196d996a81be2c27b359175aac92402be062d"
+  }
+ ]
+}

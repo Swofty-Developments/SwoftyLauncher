@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_SetTeamPoints",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143509450",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ResourcePoints_SetTeamPoints(void *self, uint32_t team_key, int32_t points)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14350b9e0 (RacingPC lab re_groups/_decomp);xref:0x14350afb0",
+  "notes": "Looks the packed team key up in the hash map at self+0x30..+0x64; if found and the entry lock byte +8 is 0 writes max(points, 0) to entry+4, then posts bus message 0x1458504c0 with the team key. Direct write point for a team's resource point balance; good hook."
+ },
+ "signature": {
+  "id": "career.resource_points_set_team_points",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 C8 89 D1",
+  "match": "0x143509450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143509450",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_SetTeamPoints"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14350b9e0",
+  "made_on_target": "0x14350b9e0",
+  "twin": "made on steam-26566308; the target 0x14350b9e0 is KB 0x143509450: Career_Get_RpWallet (0x350ac50) and Career_Write_RegulationAdaptRange (0x350fb50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14350b9e0",
+    "target": "0x14350b9e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "56f6d798291184968f0e5f89828c69191e9e9d6f9d1fe3d8ac6ba32df0e25c30"
+  }
+ ]
+}

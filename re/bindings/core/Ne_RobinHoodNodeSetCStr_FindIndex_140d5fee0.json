@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodNodeSetCStr_FindIndex_140d5fee0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d5f360",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_RobinHoodNodeSetCStr_FindIndex_140d5fee0(void *map, void *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d5fee0 (RacingPC lab re_groups/_decomp);xref:0x140ca0fd0",
+  "notes": "(lib) Robin-hood hash lookup: FNV-1a 64 of the C string at key+0x10, multiplied by map+0x20 and mixed (>>33 xor); probes info bytes at map+0x30 (increment +0x50, shift +0x54, mask +0x40) and compares against the name at node+0x10 for the 8-byte node pointers at map+0x28. Returns the slot index, or the end index (info-slots)/8 when missing."
+ },
+ "signature": {
+  "id": "core.robin_hood_node_set_c_str_find_index_140d5fee0",
+  "section": ".xtls",
+  "pattern": "48 03 50 60 E8 ?? ?? ?? ?? 48 C1 E0 03",
+  "match": "0x140cb5e87",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4"
+  },
+  "target": "0x140d5f360",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodNodeSetCStr_FindIndex_140d5fee0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cb6947",
+  "made_on_target": "0x140d5fee0",
+  "twin": "made on steam-26566308; the target 0x140d5fee0 is KB 0x140d5f360: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140cb6947 is KB 0x140cb5e87: Career_DeptEvent_SimulateOutcomeInsert (0xcb4960) and Career_TeamHqAdvance_CheckContractedDriverActivities (0xcb6c10) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cb6947",
+    "target": "0x140d5fee0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "844db34c11477221b5bcb0bc6944c81b644b24548003b81467a3ae01d419361d"
+  }
+ ]
+}

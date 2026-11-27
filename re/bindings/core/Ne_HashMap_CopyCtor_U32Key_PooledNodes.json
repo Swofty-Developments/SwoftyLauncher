@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_CopyCtor_U32Key_PooledNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b13050",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_CopyCtor_U32Key_PooledNodes(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b130a0 (RacingPC lab re_groups/_decomp);xref:0x14123dbe0",
+  "notes": "(lib) Copy constructor of a robin-hood hash map with pooled nodes: initialises dst (hash multiplier 0xc4ceb9fe1a85ec53, info inc 0x20), and if src has elements allocates (mask+1+overflow)*9+8 bytes, copies the info bytes and for every occupied slot takes a node from the pool at dst+8 (FUN_140b132c0 grows it), copies the u32 key and copy-constructs the value with FUN_140b13410."
+ },
+ "signature": {
+  "id": "core.hash_map_copy_ctor_u32_key_pooled_nodes",
+  "section": ".xtls",
+  "pattern": "48 83 C2 08 48 89 F1 E8 ?? ?? ?? ?? 48 8B 84 24 20 01 00 00",
+  "match": "0x14123e116",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x140b13050",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_CopyCtor_U32Key_PooledNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14123e756",
+  "made_on_target": "0x140b130a0",
+  "twin": "made on steam-26566308; the target 0x140b130a0 is KB 0x140b13050: Game_TodCurveBinding_EvalAt (0xb12c60) and Game_F1os_LogLargePayload_GetCalendar (0xb1b030) on either side both sit 0x50 above their KB addresses; the match 0x14123e756 is KB 0x14123e116: Career_Save_TeamDepartmentsState (0x123dbe0) and Career_Load_UpgradeCounts (0x1241200) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14123e756",
+    "target": "0x140b130a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8ab73f9ff32b48d83a8cf3272b44ab5c69ad243a8f062ff4fe3c95066131a6d5"
+  }
+ ]
+}

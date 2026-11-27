@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Vm_Set_ResourceCostTextAndFlag",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416d5f60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Vm_Set_ResourceCostTextAndFlag(void *vm, const char *text_node, const char *flag_node, int32_t amount)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416d7550 (RacingPC lab re_groups/_decomp);xref:0x1416d69e0",
+  "notes": "Formats amount with Ui_Format_ResourcePointsAmountText (signed, forced sign), puts it into a local 8-slot token set under token key \"NUM\" (type 9), expands the localised template via Ne_String_AssignWithMode and writes the result with Vm_Set_String to child text_node of vm+0x08; then writes bool (amount != 0) to child flag_node with Vm_Set_Bool. Used for the upgrade cost adjust label and its visibility."
+ },
+ "signature": {
+  "id": "career.vm_set_resource_cost_text_and_flag",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 50 04 00 00",
+  "match": "0x1416d5f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416d5f60",
+  "kind": "func_start",
+  "names": [
+   "Career_Vm_Set_ResourceCostTextAndFlag"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416d7550",
+  "made_on_target": "0x1416d7550",
+  "twin": "made on steam-26566308; the target 0x1416d7550 is KB 0x1416d5f60: Career_Update_DepartmentMoraleStateVM (0x16d6db0) and Game_BusySpinner_StopAndFadeOutUi (0x16da590) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416d7550",
+    "target": "0x1416d7550"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1723031db96219415eae9ec4fdcfacc09e3814b9d3b0422ea11a3bbb839b701f"
+  }
+ ]
+}

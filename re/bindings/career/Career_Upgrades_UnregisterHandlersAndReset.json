@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Upgrades_UnregisterHandlersAndReset",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14352c260",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Upgrades_UnregisterHandlersAndReset(void *mgr)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14352e7f0 (RacingPC lab re_groups/_decomp);xref:0x141239730",
+  "notes": "Calls the message-bus routine 0x14398a8e0 four times with delegate {Career_Unk_14352e370, mgr} for message types 0x14565fd18, 0x14569a2ff, 0x14569a318, 0x14569a334 (sets errno 0x58 if bus not ready), then clears containers at +0x1ad0, +0x1a58, +0x1a30, the 0x58-byte array at +0x1970 (count +0x1a20) and per-owner 0xc40-byte blocks from +0xe0 (count +0x1960, each with a vector of 0xe0-byte upgrade models), and zeroes +0xc0. Unsubscribe direction is inferred from the following reset."
+ },
+ "signature": {
+  "id": "career.upgrades_unregister_handlers_and_reset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 05",
+  "match": "0x14352c260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352c260",
+  "kind": "func_start",
+  "names": [
+   "Career_Upgrades_UnregisterHandlersAndReset"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14352e7f0",
+  "made_on_target": "0x14352e7f0",
+  "twin": "made on steam-26566308; the target 0x14352e7f0 is KB 0x14352c260: site_Career_UpgradeGraphRegularNode (0x352af9b) and Career_Set_UpgradesOwner (0x3530bb0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14352e7f0",
+    "target": "0x14352e7f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "14fe8034e81ff24dc5b956f792356f96f2849daa2201966f9e85fca70424642e"
+  }
+ ]
+}

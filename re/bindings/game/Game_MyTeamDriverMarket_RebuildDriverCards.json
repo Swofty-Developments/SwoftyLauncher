@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamDriverMarket_RebuildDriverCards",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142301ef0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamDriverMarket_RebuildDriverCards(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142303af0 (RacingPC lab re_groups/_decomp);xref:0x142301ef0,0x142308150",
+  "notes": "Remembers the selected card driver key (+0xe98), releases all cards (Vm_MyTeamCorporateDriverCard_ReleaseNodes) and clears list node +0x1ea8, collects the player team driver contracts and applies the two current drivers to rows at +0xf40 and +0x20, refills the market list via FUN_14230b560 (retries with state +0x2d40 reset from 5 to 0 if empty), sets each card's \"can_negotiate\" bool from the contract renewal component and restores the list selection."
+ },
+ "signature": {
+  "id": "game.my_team_driver_market_rebuild_driver_cards",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 49 89 CF 4C 8D A1 D0 06 00 00",
+  "match": "0x142301ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142301ef0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamDriverMarket_RebuildDriverCards"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142303af0",
+  "made_on_target": "0x142303af0",
+  "twin": "made on steam-26566308; the target 0x142303af0 is KB 0x142301ef0: Game_MyTeamDriverMarket_Open (0x2301ef0) and Game_MyTeamDriverMarket_Close (0x23072e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142303af0",
+    "target": "0x142303af0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a9bbd0b961daf2bbd7427eaf7bc6f7f4257a0e7f5bb04d5a06fee6cd7bc99a73"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorsVM_EnableCorporateNavigation",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423f6020",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_SponsorsVM_EnableCorporateNavigation(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423f7c20 (RacingPC lab re_groups/_decomp);xref:0x1423f70b0,0x1423f7e30",
+  "notes": "Sends key \"enable_navigation\" with string arg \"corporate\" to the object at +0x620 (vt+0x80), then dispatches the UI event named at 0x145789c20 with an int arg 0 via Ne_UiEvent_DispatchByName."
+ },
+ "signature": {
+  "id": "career.sponsors_vm_enable_corporate_navigation",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8B B9 20 06 00 00 48 C7 44 24 38 00 00 00 00",
+  "match": "0x1423f6020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423f6020",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorsVM_EnableCorporateNavigation"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423f7c20",
+  "made_on_target": "0x1423f7c20",
+  "twin": "made on steam-26566308; the target 0x1423f7c20 is KB 0x1423f6020: Career_SponsorsVM_OnCommandRaised (0x23f70b0) and Career_SponsorsVM_Refresh (0x23f9390) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423f7c20",
+    "target": "0x1423f7c20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0995f850f8ef53ed17474683942c88f8a59a6300596a94dc795a45c33ca3d9f6"
+  }
+ ]
+}

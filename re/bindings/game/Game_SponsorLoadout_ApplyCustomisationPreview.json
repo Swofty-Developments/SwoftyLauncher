@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SponsorLoadout_ApplyCustomisationPreview",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416c8280",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_SponsorLoadout_ApplyCustomisationPreview(void *self, uint32_t key, void *arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416c9870 (RacingPC lab re_groups/_decomp);xref:0x141ff3ba0",
+  "notes": "Builds a temporary list of vehicle customisations (0x68a0 bytes each) with FUN_1416c8ce0(key, arg); if the list is non-empty takes a name string (0x1416c8700), copies the first customisation with Game_VehicleCustomisation_Copy and passes the bundle to the object at self +0x18 via 0x1428e8730, then destroys all temporaries."
+ },
+ "signature": {
+  "id": "game.sponsor_loadout_apply_customisation_preview",
+  "section": ".xtls",
+  "pattern": "56 57 53 B8 80 3A 01 00 E8 ?? ?? ?? ?? 48 29 C4 4D 89 C1 41 89 D0",
+  "match": "0x1416c8280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416c8280",
+  "kind": "func_start",
+  "names": [
+   "Game_SponsorLoadout_ApplyCustomisationPreview"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416c9870",
+  "made_on_target": "0x1416c9870",
+  "twin": "made on steam-26566308; the target 0x1416c9870 is KB 0x1416c8280: Game_MyTeamCarCustomisation_BuildPreviewState (0x16c8140) and Game_MyTeamCustomisation_SpawnScene (0x16ca160) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416c9870",
+    "target": "0x1416c9870"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "08b7f8736111d3571e857059690da759c8e5c65c3ff2b4557ea441abba5a514a"
+  }
+ ]
+}

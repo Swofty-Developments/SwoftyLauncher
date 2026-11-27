@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_IntrosortPtr_ByPackedU16At0C",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1412baf70",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_IntrosortPtr_ByPackedU16At0C(void **first, void **last, uint64_t depth_budget)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1412bb5b0 (RacingPC lab re_groups/_decomp);xref:0x14123dbe0",
+  "notes": "(lib) Introsort over an array of pointers ordered ascending by the 16-bit packed key derived from the int at elem+0xc ((v << 14) | (v >> 16), i.e. type in the top 2 bits, id below): median-of-3 or ninther pivot, three-way partition, heapsort when the depth budget is exhausted, insertion sort under 33 elements."
+ },
+ "signature": {
+  "id": "core.sort_introsort_ptr_by_packed_u16_at0_c",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 48 89 D0 48 29 C8 48 3D 08 01 00 00 0F 8D ?? ?? ?? ?? 49 89 FE 49 39 F6 0F 84 ?? ?? ?? ?? 49 8D 7E 08 48 39 F7 0F 84 ?? ?? ?? ?? 31 DB 49 89 FF EB 1B",
+  "match": "0x1412baf70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412baf70",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_IntrosortPtr_ByPackedU16At0C"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1412bb5b0",
+  "made_on_target": "0x1412bb5b0",
+  "twin": "made on steam-26566308; the target 0x1412bb5b0 is KB 0x1412baf70: Ne_Crt_FatalNoReturn (0x12a1830) and Ne_Bitset_ThrowInvalidPosition_C (0x12ca820) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1412bb5b0",
+    "target": "0x1412bb5b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0c2b4fe4fa912e3e3c286c4ae142f9e15d704dba468d2c37418df1511dffb04c"
+  }
+ ]
+}

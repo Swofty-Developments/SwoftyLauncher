@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_InsertSlot_U32Key_Elem8_1412bbf00",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1412bb8c0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t *Ne_RobinHoodMap_InsertSlot_U32Key_Elem8_1412bbf00(void *map, uint64_t *out_slot_state, uint32_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1412bbf00 (RacingPC lab re_groups/_decomp);xref:0x141241200",
+  "notes": "(lib) Robin-hood hash map find-or-reserve slot for a uint32 key with 8-byte elements (key in low 4 bytes). Returns slot index and state 0/1/2/3; first allocation 0x86 bytes, grows via FUN_1412bc4d0."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_insert_slot_u32_key_elem8_1412bbf00",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 4C E8 ?? ?? ?? ?? 8B 44 24 30",
+  "match": "0x141240f11",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1412bb8c0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_InsertSlot_U32Key_Elem8_1412bbf00"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141241551",
+  "made_on_target": "0x1412bbf00",
+  "twin": "made on steam-26566308; the target 0x1412bbf00 is KB 0x1412bb8c0: Ne_Crt_FatalNoReturn (0x12a1830) and Ne_Bitset_ThrowInvalidPosition_C (0x12ca820) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141241551",
+    "target": "0x1412bbf00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b86f262801e1ba1cbe68c5e9d3cd7f09f35081410a1fb09a19add4e7515c9992"
+  }
+ ]
+}

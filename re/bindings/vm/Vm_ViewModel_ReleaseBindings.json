@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_ViewModel_ReleaseBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441f0ec0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void Vm_ViewModel_ReleaseBindings(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441f3490 (RacingPC lab re_groups/_decomp);xref:0x14178a340,0x141ce7680,0x141d5a400,0x141e6a260,0x141fd6980,0x142084ab0,0x1437f46a0",
+  "notes": "Runs only if bit 0x10 of +0xe0 is set and clears it. Unsubscribes each 24-byte binding in vector +0xb8..+0xc0 (callback 0x1442be540), releases the nodes with Vm_Release_Node, empties the vector, then detaches the root node ref at +0x98 and re-points it at k_Vm_EmptyNodeHandle."
+ },
+ "signature": {
+  "id": "vm.view_model_release_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 0F B6 81 E0 00 00 00",
+  "match": "0x1441f0ec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441f0ec0",
+  "kind": "func_start",
+  "names": [
+   "Vm_ViewModel_ReleaseBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441f3490",
+  "made_on_target": "0x1441f3490",
+  "twin": "made on steam-26566308; the target 0x1441f3490 is KB 0x1441f0ec0: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441f3490",
+    "target": "0x1441f3490"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a41b3c78421e3d8f6efdc8c70191785d43f3871cde79c7248074da6bdf400671"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Destroy_DepartmentSummaryRowBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423ad940",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Destroy_DepartmentSummaryRowBindings(void *bindings)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423af540 (RacingPC lab re_groups/_decomp);xref:0x1422fc6c0",
+  "notes": "Destructor of a view-binding struct: releases Vm node holders at +0x00..+0x280 (step 0x20) and +0x688,+0x6a8, and destroys the embedded sub-object at +0x2d0 via FUN_1416e0500. Teardown only, no gameplay data."
+ },
+ "signature": {
+  "id": "career.destroy_department_summary_row_bindings",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 A8 06 00 00",
+  "match": "0x1423ad940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423ad940",
+  "kind": "func_start",
+  "names": [
+   "Career_Destroy_DepartmentSummaryRowBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423af540",
+  "made_on_target": "0x1423af540",
+  "twin": "made on steam-26566308; the target 0x1423af540 is KB 0x1423ad940: Vm_ContractRow_Destroy (0x23ae250) and Ne_Queue_EnqueueEventRecord (0x23bd920) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423af540",
+    "target": "0x1423af540"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "42964bcc781432154145857b67c66026bdf5b64f035ca981160be4ac68c56a8b"
+  }
+ ]
+}

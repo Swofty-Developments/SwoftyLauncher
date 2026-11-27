@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Post_MsgIfPlayerNotInTeam_14569a1d0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d8d490",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Post_MsgIfPlayerNotInTeam_14569a1d0(void *self, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d8e010 (RacingPC lab re_groups/_decomp);xref:0x140d8f160,0x1422dc1e0",
+  "notes": "Finds the local player's EntrantRecord in self+0x278 (+0x2e0..+0x2e8); if its team id (u16 at +0x52 vs low 14 bits, byte +0x50 vs top 2 bits) differs from the packed team id at self+0x3a2 it posts a bus message with vtable 0x14569a1d0 carrying flag. Better context needed: the message type name."
+ },
+ "signature": {
+  "id": "career.post_msg_if_player_not_in_team_14569a1d0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 89 D3 48 89 CE",
+  "match": "0x140d8d490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8d490",
+  "kind": "func_start",
+  "names": [
+   "Career_Post_MsgIfPlayerNotInTeam_14569a1d0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d8e010",
+  "made_on_target": "0x140d8e010",
+  "twin": "made on steam-26566308; the target 0x140d8e010 is KB 0x140d8d490: Career_ContractRenewal_Serialise (0xd8a450) and Career_Record_DriverMove (0xd8fd70) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d8e010",
+    "target": "0x140d8e010"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "690e9754acd79c2613caae51d91c6bc777473ed6c5c1f0f2df30f6b2f9455180"
+  }
+ ]
+}

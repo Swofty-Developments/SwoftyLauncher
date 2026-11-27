@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_FacilityUpgradeSlot_ReleaseNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423bb310",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_FacilityUpgradeSlot_ReleaseNodes(void *slot)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423bcf10 (RacingPC lab re_groups/_decomp);xref:0x1423e3cb0,0x1424cde70",
+  "notes": "Unlinks and releases (Vm_Release_Node) the 21 intrusive VM node handles of one facility upgrade slot at +0x00..+0x280 (0x20 apart, reverse order), resetting each vtable to the base 0x145614e48 and nulling the node pointer. Pure cleanup, no game state."
+ },
+ "signature": {
+  "id": "vm.facility_upgrade_slot_release_nodes",
+  "section": ".xtls",
+  "pattern": "49 8D 4D 20 E8 ?? ?? ?? ?? 48 8D 05",
+  "match": "0x1423e2638",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4"
+  },
+  "target": "0x1423bb310",
+  "kind": "call",
+  "names": [
+   "Vm_FacilityUpgradeSlot_ReleaseNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423e4238",
+  "made_on_target": "0x1423bcf10",
+  "twin": "made on steam-26566308; the target 0x1423bcf10 is KB 0x1423bb310: Vm_ContractRow_Destroy (0x23ae250) and Ne_Queue_EnqueueEventRecord (0x23bd920) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423e4238",
+    "target": "0x1423bcf10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37d96d6330c71c8a58075f0f8e0c70fac73ead0e22600f079b700b0bdd61e162"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Add_MyTeamUpgradePackUpsellEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f4dad0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Add_MyTeamUpgradePackUpsellEntry(void *view, const char *title, const char *desc, const char *icon_path)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f4f6d0 (RacingPC lab re_groups/_decomp);xref:0x141f4cef0",
+  "notes": "Emplaces a 0x100-byte entry in the vector at view+0x298/+0x2a0/+0x2a8 (growth 1.5x, relocating 7 Vm holders per element, old elems destroyed by FUN_142135ec0), constructing it with FUN_1421362b0 under parent node view+0x2b8 named by format \"entry_%I64u\" (index). Then sets string holders entry+0x60 and +0x80, bool node at entry+0xa8 = (icon_path[0] != 0), and icon nodes entry+0xc0 (icon_path) and +0xe0 (fixed path at 0x145760fad). Returns the new entry."
+ },
+ "signature": {
+  "id": "career.add_my_team_upgrade_pack_upsell_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 CE 4C 89 C3 49 89 D6",
+  "match": "0x141f4dad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f4dad0",
+  "kind": "func_start",
+  "names": [
+   "Career_Add_MyTeamUpgradePackUpsellEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f4f6d0",
+  "made_on_target": "0x141f4f6d0",
+  "twin": "made on steam-26566308; the target 0x141f4f6d0 is KB 0x141f4dad0: Career_Select_DeluxeUpgradeBundleLabel (0x1f4eef0) and Ui_Init_TeamHqMyTeamTabData (0x1f50420) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f4f6d0",
+    "target": "0x141f4f6d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c60168bade3e8f82dacc4fb0039ef71f467c64bc047437eb31712ad6e32c707a"
+  }
+ ]
+}

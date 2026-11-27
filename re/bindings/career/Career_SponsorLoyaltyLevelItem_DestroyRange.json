@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorLoyaltyLevelItem_DestroyRange",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424da680",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_SponsorLoyaltyLevelItem_DestroyRange(void *first, void *last)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424dc280 (RacingPC lab re_groups/_decomp);xref:0x1423f9390",
+  "notes": "Destroys a range of 0x180-byte elements, releasing the 12 intrusive VM node holders in each (qword idx 0x2c down to 0 in steps of 4) through Vm_Release_Node. Element layout matches the block built at 0x1423fbc20."
+ },
+ "signature": {
+  "id": "career.sponsor_loyalty_level_item_destroy_range",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 8D 1D ?? ?? ?? ?? C5 C8 57 F6 EB 2B 0F 1F 44 00 00 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00 48 81 C7 80 01 00 00",
+  "match": "0x1424da680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424da680",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorLoyaltyLevelItem_DestroyRange"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424dc280",
+  "made_on_target": "0x1424dc280",
+  "twin": "made on steam-26566308; the target 0x1424dc280 is KB 0x1424da680: Game_Sort_SponsorEntries_MedianPivot (0x24d91a0) and Ne_Vector_InsertGrow_Elem40 (0x24de600) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424dc280",
+    "target": "0x1424dc280"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "33f2ccbc51c424252d50d954b67c1e742ecae626ac71917ee55fcc3de1015a6a"
+  }
+ ]
+}

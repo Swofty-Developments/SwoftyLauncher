@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodNodeMapCStr_Rehash_Node104_A",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d66020",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodNodeMapCStr_Rehash_Node104_A(void *map, uint64_t new_bucket_count, char free_old)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d66ba0 (RacingPC lab re_groups/_decomp);xref:0x140ca0fd0",
+  "notes": "(lib) Rehash of a node-based robin-hood map with 8-byte slots pointing to pooled 0x68-byte nodes (key C string at node+0x10, FNV-1a 64 * map+0x20). Same layout as 0x140d65ce0 (+0x28 slots, +0x30 info, +0x40 mask, +0x48 max load 80 percent); the old slot buffer is freed if free_old or under 0x70 bytes, otherwise split into 0x68 nodes and added to the pool free list."
+ },
+ "signature": {
+  "id": "core.robin_hood_node_map_c_str_rehash_node104_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 BE B3 01 00 00 00 01 00 00 4C 8B 74 24 60",
+  "match": "0x140ca7b0f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d66020",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodNodeMapCStr_Rehash_Node104_A"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ca85cf",
+  "made_on_target": "0x140d66ba0",
+  "twin": "made on steam-26566308; the target 0x140d66ba0 is KB 0x140d66020: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140ca85cf is KB 0x140ca7b0f: Career_CostCap_ReadSaveData (0xc9e9c0) and Career_DeptEvent_GetDriverMagicOffset (0xcb0d30) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ca85cf",
+    "target": "0x140d66ba0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e366f802906b5745166102ff5e366a33e2c8b037d3bf31a34e6396b51e9d53a4"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqMyTeamVM_CountTimelineItemEvents",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423342b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int64_t Career_TeamHqMyTeamVM_CountTimelineItemEvents(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142335eb0 (RacingPC lab re_groups/_decomp);xref:0x142330180",
+  "notes": "Sums the element count of the list node at +0x68 of every 0x160-byte timeline item in vm+0x400 -> +0x328..+0x330; if the sum is nonzero it subtracts 1 when Vm_TeamHqTimeline_IsCurrentDayBoolB(first item, current day = (vm+0x360 -> +0x2b0) / 1440) is true. Returns 0 when there are no items."
+ },
+ "signature": {
+  "id": "career.team_hq_my_team_vm_count_timeline_item_events",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 81 00 04 00 00",
+  "match": "0x1423342b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423342b0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqMyTeamVM_CountTimelineItemEvents"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142335eb0",
+  "made_on_target": "0x142335eb0",
+  "twin": "made on steam-26566308; the target 0x142335eb0 is KB 0x1423342b0: Career_TeamHqMyTeamVM_OnTimer (0x2334920) and Career_TeamHqMyTeamVM_Update (0x2336ad0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142335eb0",
+    "target": "0x142335eb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0d1e367fd03083b59bc0cae90940f2fac33927b25f57fc9e65ac71890287689b"
+  }
+ ]
+}

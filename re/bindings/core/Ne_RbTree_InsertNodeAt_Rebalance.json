@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RbTree_InsertNodeAt_Rebalance",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142b57620",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RbTree_InsertNodeAt_Rebalance(void *tree, void *location, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142b59bb0 (RacingPC lab re_groups/_decomp);xref:0x142ab0d00",
+  "notes": "(lib) MSVC std::_Tree insert-node: increments size at tree[1], links node under the parent given by location (parent ptr, left/right flag), updates head min/max, then runs the red-black recolour/rotate fix-up loop and blackens the root."
+ },
+ "signature": {
+  "id": "core.rb_tree_insert_node_at_rebalance",
+  "section": ".xtls",
+  "pattern": "49 89 C0 E8 ?? ?? ?? ?? 48 8B 4E 48",
+  "match": "0x142aaf3bc",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x142b57620",
+  "kind": "call",
+  "names": [
+   "Ne_RbTree_InsertNodeAt_Rebalance"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142ab177c",
+  "made_on_target": "0x142b59bb0",
+  "twin": "made on steam-26566308; the target 0x142b59bb0 is KB 0x142b57620: Ne_HashMap_Rehash_142b52990 (0x2b54f20) and Game_OptionsStore_FindOption (0x2b60560) on either side both sit 0x2590 above their KB addresses; the match 0x142ab177c is KB 0x142aaf3bc: Game_TrackModelComponent_Initialise (0x2aa26f0) and Game_FakeOption_SetValue (0x2ac04e0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142ab177c",
+    "target": "0x142b59bb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b26e38f3eae1a7f369552b2ac7e5e0e2adafbefc4b81ba2cdb46b7f6f1cb889f"
+  }
+ ]
+}

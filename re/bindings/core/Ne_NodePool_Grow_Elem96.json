@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_NodePool_Grow_Elem96",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d5f0e0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_NodePool_Grow_Elem96(void *pool)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d5fc60 (RacingPC lab re_groups/_decomp);xref:0x140cc2750,0x140d5ee00",
+  "notes": "(lib) Node pool growth: block size doubles from 4 per existing block (cap 0x4000 nodes), allocates N*0x60+8 bytes via allocator at pool+0x10 (tag 0x34), links the block into the block list at pool+0x8, threads the 0x60-byte nodes into a free list and pushes it onto the free head at pool+0x0."
+ },
+ "signature": {
+  "id": "core.node_pool_grow_elem96",
+  "section": ".xtls",
+  "pattern": "75 12 4C 89 E1 E8 ?? ?? ?? ?? 4C 8D 0D",
+  "match": "0x140cc2e67",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x140d5f0e0",
+  "kind": "call",
+  "names": [
+   "Ne_NodePool_Grow_Elem96"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cc3927",
+  "made_on_target": "0x140d5fc60",
+  "twin": "made on steam-26566308; the target 0x140d5fc60 is KB 0x140d5f0e0: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140cc3927 is KB 0x140cc2e67: Career_DeptEvent_GetSpawnRate (0xcc2240) and Career_DeptEvent_ParseDepartment (0xcca850) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cc3927",
+    "target": "0x140d5fc60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d3ae12c9c6f2bb18b48ecf38b3654134ef84e01e4c4edcdda57bbb017af7ce5d"
+  }
+ ]
+}

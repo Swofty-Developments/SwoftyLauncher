@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqTimelineDay_AdvanceToNextEvent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422b6570",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_TeamHqTimelineDay_AdvanceToNextEvent(void *day)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422b8170 (RacingPC lab re_groups/_decomp);xref:0x142330180",
+  "notes": "day is one 0xc0-byte timeline day entry. Finds the index of the current event node (+0xa8, unwrapped through up to 0x62 proxy levels) inside the event list node +0x88 via Career_Ui_FindChildIndex; if a next element exists it rebinds the holder +0xa0 to it, otherwise it clears the reference node +0xa8 and sets the bool node +0x68 to false."
+ },
+ "signature": {
+  "id": "vm.team_hq_timeline_day_advance_to_next_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 CE 48 C7 44 24 28 00 00 00 00",
+  "match": "0x1422b6570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422b6570",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqTimelineDay_AdvanceToNextEvent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422b8170",
+  "made_on_target": "0x1422b8170",
+  "twin": "made on steam-26566308; the target 0x1422b8170 is KB 0x1422b6570: Game_SessionDirectorContainerViewModel_AddTabPitStopsScreen (0x22a28b0) and Vm_TeamHqMyTeam_FindBoundStatId (0x22b8430) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422b8170",
+    "target": "0x1422b8170"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dc19bf5e0ad360e010cef60e87d2c36c9be4418fb1ff87600dbd0a6d0089215d"
+  }
+ ]
+}

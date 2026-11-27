@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindIndex_CStrKey_Elem24",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429fbd10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_HashMap_FindIndex_CStrKey_Elem24(void *map, const char **key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429fe0d0 (RacingPC lab re_groups/_decomp);xref:0x1428dba80,0x142ab30a0",
+  "notes": "(lib) Robin-hood hash map lookup keyed by C string: FNV-1a (0xcbf29ce484222325/0x100000001b3) of *key, times +0x10 multiplier, probes info bytes at +0x20 and 0x18-byte entries at +0x18 (mask +0x30, info inc +0x40, shift +0x44), confirms with Ne_Crt_Strcmp. Returns slot index, or the end index when not found."
+ },
+ "signature": {
+  "id": "core.hash_map_find_index_c_str_key_elem24",
+  "section": ".xtls",
+  "pattern": "49 8D 4E 70 48 8D 54 24 20 E8 ?? ?? ?? ?? 48 8D 04 40",
+  "match": "0x1428b5286",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x9"
+  },
+  "target": "0x1429fbd10",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_FindIndex_CStrKey_Elem24"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428b7646",
+  "made_on_target": "0x1429fe0d0",
+  "twin": "made on steam-26566308; the target 0x1429fe0d0 is KB 0x1429fbd10: Game_SaveSlotManager_Deserialise (0x29d8bd0) and Ne_Crt_AbortNoReturn_B (0x2a00c40) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428b7646",
+    "target": "0x1429fe0d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bf1652bb32337c4bcca6d5ddf4e5661ed3911d52c38ca953dbd2db54244eb05d"
+  }
+ ]
+}

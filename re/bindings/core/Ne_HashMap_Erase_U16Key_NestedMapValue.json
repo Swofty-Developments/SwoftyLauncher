@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Erase_U16Key_NestedMapValue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1412b88f0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Erase_U16Key_NestedMapValue(void *map, uint16_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1412b8f30 (RacingPC lab re_groups/_decomp);xref:0x14123ff70",
+  "notes": "(lib) Erases a u16-keyed node from a robin-hood hash map (multiplier +0x20, slots +0x28, metadata +0x30, count +0x38, mask +0x40): clears the node's nested map at +8 and frees its free-list at +0x18, returns node to map free-list +8, then backward-shifts following slots and decrements count."
+ },
+ "signature": {
+  "id": "core.hash_map_erase_u16_key_nested_map_value",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 36 E8 ?? ?? ?? ?? 48 8B 4C 24 60",
+  "match": "0x14124003c",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1412b88f0",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_Erase_U16Key_NestedMapValue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14124067c",
+  "made_on_target": "0x1412b8f30",
+  "twin": "made on steam-26566308; the target 0x1412b8f30 is KB 0x1412b88f0: Ne_Crt_FatalNoReturn (0x12a1830) and Ne_Bitset_ThrowInvalidPosition_C (0x12ca820) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14124067c",
+    "target": "0x1412b8f30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "18cc541097a0f912dbd8dd89ba53c4612d721a89ec427184c3cd2ed21bf840f0"
+  }
+ ]
+}

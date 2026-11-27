@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_FormatArgs_AddNamedStrArg_Type9",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419a8de0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_FormatArgs_AddNamedStrArg_Type9(void *args, const char *name, void **str_ref)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419aa5c0 (RacingPC lab re_groups/_decomp);xref:0x1419a7c90,0x1441f10a0,0x1441f2300",
+  "notes": "(lib) Gets a new argument slot (func 0x1403178d0), copies name (max 63 chars) into the inline 0x40 buffer at slot+0x30 (ptr +0x28, cap +0x20), assigns the refcounted string *str_ref to slot+0x10 (addref new, release old) and sets the slot type tag to 9."
+ },
+ "signature": {
+  "id": "core.format_args_add_named_str_arg_type9",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 4C 89 C7 48 89 D3 E8",
+  "match": "0x1419a8de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419a8de0",
+  "kind": "func_start",
+  "names": [
+   "Ne_FormatArgs_AddNamedStrArg_Type9"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419aa5c0",
+  "made_on_target": "0x1419aa5c0",
+  "twin": "made on steam-26566308; the target 0x1419aa5c0 is KB 0x1419a8de0: Career_TeamHqAdvance_BuildAdvanceCards (0x19a7c90) and Career_TeamHqAdvance_IsCardActionVisible (0x19aa6e0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419aa5c0",
+    "target": "0x1419aa5c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cf21ef935135f018bea6cbe4ae4e2e68db635c9ffb5f0cb8d3a6d37a78190fc7"
+  }
+ ]
+}

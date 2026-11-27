@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCustomisation_EnsureVehicleCustomisation",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142265aa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_MyTeamCustomisation_EnsureVehicleCustomisation(void *self, bool saveProfile)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422676a0 (RacingPC lab re_groups/_decomp);xref:0x142262b10",
+  "notes": "Reads the assigned vehicle customisation key for the career/profile from the customisation info system +0x1be0. If g_Game_MyTeamSetupData key at 0x14606f428 is invalid (0x3fff) it finds the team entrant whose byte +0xce9 matches the setup byte, builds a customisation set (FUN_141406010), adds it with Ent_EntrantsSystem_AddVehicleCustomisation and uses its key +0x4a40; either way writes g_FeTile_AssignedVehicleCustomisationKey, stores key in the per-profile maps at +0xc0, optionally requests a profile save, posts a message and writes the key to save +0x264."
+ },
+ "signature": {
+  "id": "game.my_team_customisation_ensure_vehicle_customisation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 89 D3 49 89 CD",
+  "match": "0x142265aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142265aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCustomisation_EnsureVehicleCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422676a0",
+  "made_on_target": "0x1422676a0",
+  "twin": "made on steam-26566308; the target 0x1422676a0 is KB 0x142265aa0: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422676a0",
+    "target": "0x1422676a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "db20f3dbd1c8743a7a3f22f7476deb8c0ca0a11a768a2f4813f907f7a07fe911"
+  }
+ ]
+}

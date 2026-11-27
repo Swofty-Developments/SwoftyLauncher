@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_AutoContracts_SortIdsByScore_Flag0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d41780",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_AutoContracts_SortIdsByScore_Flag0(uint32_t *first, uint32_t *last, uint64_t depth_budget, void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d42300 (RacingPC lab re_groups/_decomp);xref:0x140c588b0",
+  "notes": "Twin of 0x140d41aa0: same introsort over a uint32 id array but the comparator calls FUN_140c5db10(ctx, id, 0) and the median helper is FUN_140d42aa0. Orders by descending float score."
+ },
+ "signature": {
+  "id": "career.auto_contracts_sort_ids_by_score_flag0",
+  "section": ".xtls",
+  "pattern": "49 89 F1 E8 ?? ?? ?? ?? C5 F8 28 B4 24 20 0A 00 00",
+  "match": "0x140c5909d",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140d41780",
+  "kind": "call",
+  "names": [
+   "Career_AutoContracts_SortIdsByScore_Flag0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c59b5d",
+  "made_on_target": "0x140d42300",
+  "twin": "made on steam-26566308; the target 0x140d42300 is KB 0x140d41780: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140c59b5d is KB 0x140c5909d: Career_Auction_ResolveAiOffer (0xc4b630) and Career_Load_PendingDriverContract (0xc5bae0) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c59b5d",
+    "target": "0x140d42300"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "56c43755a259a5cf3af5b415949e4d9f873e206300b4e527c85d9b79dfaa6dae"
+  }
+ ]
+}

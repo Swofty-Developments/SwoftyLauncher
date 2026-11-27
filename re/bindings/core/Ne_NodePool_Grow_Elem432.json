@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_NodePool_Grow_Elem432",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435e7290",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_NodePool_Grow_Elem432(void **pool)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435e9820 (RacingPC lab re_groups/_decomp);xref:0x143541110",
+  "notes": "(lib) Node pool growth: counts existing blocks (list at pool+8) to double the block size from 4 up to 0x4000 nodes, allocates count*0x1b0+8 bytes from the allocator at pool+0x10, links the block, threads all 0x1b0-byte nodes into a free list and prepends it to pool+0."
+ },
+ "signature": {
+  "id": "core.node_pool_grow_elem432",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8D 59 08 BA 04 00 00 00 48 89 D8 66 2E 0F 1F 84 00 00 00 00 00 48 89 D1 48 81 FA 00 20 00 00 77 0C 48 8B 00 48 8D 14 09 48 85 C0 75 E8 48 69 F9 B0 01 00 00",
+  "match": "0x1435e7290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435e7290",
+  "kind": "func_start",
+  "names": [
+   "Ne_NodePool_Grow_Elem432"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1435e9820",
+  "made_on_target": "0x1435e9820",
+  "twin": "made on steam-26566308; the target 0x1435e9820 is KB 0x1435e7290: Ne_HashMap_U64_Grow (0x35dc140) and Career_Upgrades_FindOrCreateRecommendedState (0x35ebbd0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1435e9820",
+    "target": "0x1435e9820"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4910720f77425a5c309a6c55fc4a16cce29fa24a23156c6081789a1ae09514ca"
+  }
+ ]
+}

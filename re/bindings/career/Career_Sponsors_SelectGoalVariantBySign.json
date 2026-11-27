@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_SelectGoalVariantBySign",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1411183a0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_Sponsors_SelectGoalVariantBySign(void *goal_def, void **weak_goal)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1411189e0 (RacingPC lab re_groups/_decomp);xref:0x141101bb0,0x141109700,0x14110cb90,0x141864d50",
+  "notes": "Locks the weak pointer, scans the 8-byte {u8 type, float value} list at obj +0x8..+0x10 for type 6 and returns goal_def+0x50 if value > 0.1 and the vector at +0x58..+0x60 is non-empty, goal_def+0x70 if value < -0.1 and +0x78..+0x80 non-empty, else goal_def+0x30. Consumes one weak reference on the argument. Better context needed: meaning of parameter type 6."
+ },
+ "signature": {
+  "id": "career.sponsors_select_goal_variant_by_sign",
+  "section": ".xtls",
+  "pattern": "48 89 FA E8 ?? ?? ?? ?? 48 8B 48 08",
+  "match": "0x141101206",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1411183a0",
+  "kind": "call",
+  "names": [
+   "Career_Sponsors_SelectGoalVariantBySign"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141101c46",
+  "made_on_target": "0x1411189e0",
+  "twin": "made on steam-26566308; the target 0x1411189e0 is KB 0x1411183a0: Gdb_Load_SponsorSlotDefinitions (0x1118000) and Career_Sponsors_SerialiseLoyaltyTrack (0x1119430) on either side both sit 0x640 above their KB addresses; the match 0x141101c46 is KB 0x141101206: Career_Sponsors_WriteSaveTree (0x10ff3c0) and Career_Load_SponsorDecalIncomeTiers (0x1101ce0) on either side both sit 0xa40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141101c46",
+    "target": "0x1411189e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2e8120f364bf05cb318e57d8608affa48cf7091b866dee5905c9319000d98166"
+  }
+ ]
+}

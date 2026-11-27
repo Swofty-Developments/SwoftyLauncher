@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorUpdateVM_InitAmountRowBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1420d51a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_SponsorUpdateVM_InitAmountRowBindings(void *row, void *parent_holder)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1420d6da0 (RacingPC lab re_groups/_decomp);xref:0x1420d4670",
+  "notes": "Constructor for the amount row binding block (0x100 bytes): creates a child node under the parent (func_0x144241240 with name at 0x145625e52) and registers VM properties is_positive (+0x20), show_plus_sign_prefix (+0x40), title_loctag (+0x60), amount_start_int (+0x80), amount_current_int (+0xa0), amount_target_int (+0xc0), amount_current_text (+0xe0). Returns row."
+ },
+ "signature": {
+  "id": "career.sponsor_update_vm_init_amount_row_bindings",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8D B7 20 06 00 00",
+  "match": "0x1420d2d54",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1420d51a0",
+  "kind": "call",
+  "names": [
+   "Career_SponsorUpdateVM_InitAmountRowBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1420d4954",
+  "made_on_target": "0x1420d6da0",
+  "twin": "made on steam-26566308; the target 0x1420d6da0 is KB 0x1420d51a0: Career_SponsorUpdateVM_OnAction (0x20d5dd0) and Vm_CostCapCard_Bind (0x20d7b70) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1420d4954",
+    "target": "0x1420d6da0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "44e3557c9e4cda3f693dc884257ab19f15a2cbcaf17ff09bd234c8bb881d6ac1"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractsMyTeam_CopyOfferByDriverId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140db7890",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_DriverContractsMyTeam_CopyOfferByDriverId(void *comp, void *out, uint32_t driverId, void *offerVec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140db8410 (RacingPC lab re_groups/_decomp);xref:0x140daf7c0,0x14234a030",
+  "notes": "Linear search of offer vector (+8..+0x10, stride 0x70) for record with packed id at +0x50/+0x52 equal to driverId; copy-constructs it into out (inline string + fields +0x28..+0x6d). If not found builds a default offer with ids 0x3fff0000 (invalid), byte +0x28=5, byte +0x5c=0xe and allocator from comp+0x210. Returns out."
+ },
+ "signature": {
+  "id": "career.driver_contracts_my_team_copy_offer_by_driver_id",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 49 8B 79 08",
+  "match": "0x140db7890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db7890",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractsMyTeam_CopyOfferByDriverId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140db8410",
+  "made_on_target": "0x140db8410",
+  "twin": "made on steam-26566308; the target 0x140db8410 is KB 0x140db7890: Career_DriverContractsMyTeam_PostApproachMessages (0xdb81e0) and Career_DriverContracts_BuildDriverContractQuote (0xdbc210) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140db8410",
+    "target": "0x140db8410"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6eb9e14965e214b39c40daae2304afb1cdc1a91959459868743d1416a2885af5"
+  }
+ ]
+}

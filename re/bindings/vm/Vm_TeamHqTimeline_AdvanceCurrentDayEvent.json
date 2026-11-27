@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqTimeline_AdvanceCurrentDayEvent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422b8ba0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_TeamHqTimeline_AdvanceCurrentDayEvent(void *timeline)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422ba7a0 (RacingPC lab re_groups/_decomp);xref:0x142330180",
+  "notes": "Gets the day index from Vm_TeamHqTimeline_GetCurrentDayIndex, bounds-checks it against the 0xc0-byte day vector at timeline+0x108..+0x110 and then runs the same body as Vm_TeamHqTimelineDay_AdvanceToNextEvent on that day (shared tail at 0x1422b8203)."
+ },
+ "signature": {
+  "id": "vm.team_hq_timeline_advance_current_day_event",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 48 8B 8E 08 01 00 00 48 85 C9 74 36 48 8B 96 10 01 00 00 48 29 CA 48 C1 FA 06 49 B8 AB AA AA AA AA AA AA AA 4C 0F AF C2 4C 39 C0 73 15 48 8D 04 40 48 C1 E0 06 48 01 C1 48 83 C4 20 5E E9 ?? ?? ?? ?? 90",
+  "match": "0x1422b8ba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422b8ba0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqTimeline_AdvanceCurrentDayEvent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422ba7a0",
+  "made_on_target": "0x1422ba7a0",
+  "twin": "made on steam-26566308; the target 0x1422ba7a0 is KB 0x1422b8ba0: Vm_TeamHqMyTeam_FindBoundStatId (0x22b8430) and Vm_TeamHqTimeline_GetCurrentDayIndex (0x22ba860) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422ba7a0",
+    "target": "0x1422ba7a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fd731089fe02c37da9ecdc0b3326856c55f34b85971a10bdfb7058d8927f678e"
+  }
+ ]
+}

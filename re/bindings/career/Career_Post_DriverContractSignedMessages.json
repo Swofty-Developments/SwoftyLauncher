@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Post_DriverContractSignedMessages",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d7cda0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Post_DriverContractSignedMessages(void *self, uint32_t driver_id, uint32_t team_id, uint32_t arg4, void *contract, char post_detail)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d7d920 (RacingPC lab re_groups/_decomp);xref:0x140d7ab70",
+  "notes": "Builds the local player identity (Ne_Make_RandomIdBlock, overridden from g_Game_Manager +0x140 -> +0x198 -> +0x1c0 vt+0x38) and finds the player EntrantRecord in (+0x278)->+0x2e0..+0x2e8. If its id equals driver_id: when post_detail is set posts message vt 0x14565b760 with the 0x2c-byte contract copy plus the 20-byte range record from +0x318..+0x320 whose [lo,hi] contains contract +0x18; then always posts message vt 0x145698d60 with driver_id, team_id, a same-team flag (team_id == entrant team_stat_id) and contract byte +0xe. Good hook for player contract signing."
+ },
+ "signature": {
+  "id": "career.post_driver_contract_signed_messages",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 44 89 CB",
+  "match": "0x140d7cda0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d7cda0",
+  "kind": "func_start",
+  "names": [
+   "Career_Post_DriverContractSignedMessages"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d7d920",
+  "made_on_target": "0x140d7d920",
+  "twin": "made on steam-26566308; the target 0x140d7d920 is KB 0x140d7cda0: Career_Sign_DriverContract (0xd7ab70) and Career_Sign_DriverContractIfNotTeam (0xd7df30) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d7d920",
+    "target": "0x140d7d920"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "68ec2a58dd41469fb435d2620895eec21a01f00d8efca399699de05d945707c5"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Init_FacilityBenefitItemVm",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141972050",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Init_FacilityBenefitItemVm(void *self, void *parent_vm, void **name_str)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141973830 (RacingPC lab re_groups/_decomp);xref:0x142323b80,0x142325910",
+  "notes": "VM item constructor: attaches to the child of parent_vm named by the NeStr argument, then creates and holds nodes \"visible\" (bool true, +0x20), \"benefit_description\" (+0x40), \"benefit_icon\" (+0x60), \"benefit_background\" (+0x80), \"show_arrow\" (bool false, +0xa0) and \"arrow_texture\" (+0xc0), strings initialised empty. Releases the name string it was given."
+ },
+ "signature": {
+  "id": "career.init_facility_benefit_item_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4C 89 C7 48 89 CE 49 8B 00 48 8D 48 09",
+  "match": "0x141972050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141972050",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_FacilityBenefitItemVm"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141973830",
+  "made_on_target": "0x141973830",
+  "twin": "made on steam-26566308; the target 0x141973830 is KB 0x141972050: Career_Bind_FacilityTileWidget (0x1971df0) and Ui_Bind_MyTeamActivityMenuItems (0x19747e0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141973830",
+    "target": "0x141973830"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "daae1c292cd7b85584e786cd307efd431cd599200a4d96d97095343aaa7e42c7"
+  }
+ ]
+}

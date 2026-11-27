@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamFacilities_Set_NamedStatClamped",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140f893b0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_MyTeamFacilities_Set_NamedStatClamped(void *self, float value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140f89f30 (RacingPC lab re_groups/_decomp);xref:0x140f81210,0x140f83100",
+  "notes": "Finds the team entry matching packed id self+0x18 in the list at *(self+0x20)+0x2c8 (stride 0x30), locks its weak pointer (+0x20/+0x28), searches the stat list +0x28..+0x30 for the stat whose name equals the string at self+0x88, clamps value (passed in xmm1) to the stat definition min (+0x0c if flag +0x14) and max (+0x10 if flag +0x15), writes it to stat+0x78, invokes the change callbacks at +0x90..+0x98 (stride 0x40), sets dirty byte +0xb4 on the owner and calls func 0x1409ed250. Hook point for the facility capacity value; callback condition in the decompile looks inverted, verify in asm."
+ },
+ "signature": {
+  "id": "career.my_team_facilities_set_named_stat_clamped",
+  "section": ".xtls",
+  "pattern": "48 89 F9 C5 F8 28 CE E8 ?? ?? ?? ?? E9",
+  "match": "0x1423e75d1",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x140f893b0",
+  "kind": "call",
+  "names": [
+   "Career_MyTeamFacilities_Set_NamedStatClamped"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423e91d1",
+  "made_on_target": "0x140f89f30",
+  "twin": "made on steam-26566308; the target 0x140f89f30 is KB 0x140f893b0: Career_Eval_FacilityNodeEffectCurve (0xf894b0) and Career_Read_FacilityUpgradeNodeConfig (0xf8b380) on either side both sit 0xb80 above their KB addresses; the match 0x1423e91d1 is KB 0x1423e75d1: Vm_MyTeamWorkforce_Bind (0x23e6b00) and Career_TeamHqContractsVM_OnActivate (0x23eb2e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423e91d1",
+    "target": "0x140f89f30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a2cf0b1df8d2363674596387616f59201c5e7faee417615d2c2578e7bbbe7d3a"
+  }
+ ]
+}

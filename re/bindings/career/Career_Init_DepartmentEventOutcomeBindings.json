@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Init_DepartmentEventOutcomeBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422df800",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Init_DepartmentEventOutcomeBindings(void *view, void *parent)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422e1400 (RacingPC lab re_groups/_decomp);xref:0x1422e22a0",
+  "notes": "Constructs the outcome view under the parent Vm node and creates bound properties: +0x20 bool \"gated\", +0x40 string \"narrative_icon\" (default \"#overrides.story.social_media_narrative_icons[performance]\"), +0x60 token node (key 0x14577ea1f, default -1), +0x80 string \"lock_image\" (default \"#overrides.press_interviews.lock_icons[locked]\"), +0xa0 string \"lock_level\" (default \"lng_level_requirement_0\"), +0xc0 bool \"unlocked\" (true)."
+ },
+ "signature": {
+  "id": "career.init_department_event_outcome_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 4C 8D 3D ?? ?? ?? ?? 49 0F 44 D7 E8",
+  "match": "0x1422df800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422df800",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_DepartmentEventOutcomeBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422e1400",
+  "made_on_target": "0x1422e1400",
+  "twin": "made on steam-26566308; the target 0x1422e1400 is KB 0x1422df800: Career_ContractPerksVM_OnActivate (0x22dd270) and Ui_Bind_PopupLevelRow (0x22e1910) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422e1400",
+    "target": "0x1422e1400"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "58e9e99f7d8bec7a84690bd971f88091d5143db2f32463495f9c27e250f86805"
+  }
+ ]
+}

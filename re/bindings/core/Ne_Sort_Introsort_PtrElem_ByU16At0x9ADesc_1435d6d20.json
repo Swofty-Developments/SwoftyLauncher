@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_Introsort_PtrElem_ByU16At0x9ADesc_1435d6d20",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435d4790",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_Introsort_PtrElem_ByU16At0x9ADesc_1435d6d20(void **first, void **last, int64_t depth)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435d6d20 (RacingPC lab re_groups/_decomp);xref:0x14351b760",
+  "notes": "(lib) Introsort over object pointers ordered descending by the uint16 at object +0x9a. Same skeleton as 0x1435d5f00 (insertion sort < 33 elements, ninther pivot, three-way partition, heapsort fallback). Called from Career_Pick_RandomUpgrade_B."
+ },
+ "signature": {
+  "id": "core.sort_introsort_ptr_elem_by_u16_at0x9_a_desc_1435d6d20",
+  "section": ".xtls",
+  "pattern": "48 8D 8C 24 80 0C 00 00 E8 ?? ?? ?? ?? 31 ED",
+  "match": "0x143519776",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x1435d4790",
+  "kind": "call",
+  "names": [
+   "Ne_Sort_Introsort_PtrElem_ByU16At0x9ADesc_1435d6d20"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14351bd06",
+  "made_on_target": "0x1435d6d20",
+  "twin": "made on steam-26566308; the target 0x1435d6d20 is KB 0x1435d4790: Career_Pick_RandomUpgrade_C (0x35d2c30) and Ne_Std_ThrowArraySubscript (0x35d8260) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14351bd06",
+    "target": "0x1435d6d20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "67be9c4dcc829703348de1aa323e5eac9b003236d291261dd398b1851fc16579"
+  }
+ ]
+}

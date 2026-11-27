@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Save_DepartmentMap_SortedKeys",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1434fb920",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Save_DepartmentMap_SortedKeys(void *map_owner, void *save_node, void *filter_ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1434fdeb0 (RacingPC lab re_groups/_decomp);xref:0x14123dbe0",
+  "notes": "Opens a reflected child container on save_node, walks the open-addressing hash map at owner +0x40/+0x48 (count +0x50) collecting each entry u16 key into a stack vector, sorts with Ne_Sort_IntrosortU16, then per key writes a reflected u16 field and serialises the entry body (+0x10) via FUN_1434f9b70. If filter_ctx +0x2c0 is nonzero only keys present in the 4-byte list at +0x318..+0x320 (type byte = key>>14, id u16 = key&0x3fff) are written. Returns 0 or error code (0xc on alloc fail)."
+ },
+ "signature": {
+  "id": "career.save_department_map_sorted_keys",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 78 29 84 24 B0 01 00 00 C5 F8 29 BC 24 A0 01 00 00 C5 F8 29 B4 24 90 01 00 00 4C 89 C7 48 89 D3 49 89 CF 48 8B 32",
+  "match": "0x1434fb920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434fb920",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_DepartmentMap_SortedKeys"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1434fdeb0",
+  "made_on_target": "0x1434fdeb0",
+  "twin": "made on steam-26566308; the target 0x1434fdeb0 is KB 0x1434fb920: Career_Add_TeamModifier (0x34faf90) and Career_Read_ResourcePointsStartConfig (0x34ff690) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1434fdeb0",
+    "target": "0x1434fdeb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b7646693922d09e3fdb1a3075f5297b636b99eb0c8c903dcf0367e7319635067"
+  }
+ ]
+}

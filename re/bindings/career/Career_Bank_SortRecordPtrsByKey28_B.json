@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_SortRecordPtrsByKey28_B",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d43820",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Bank_SortRecordPtrsByKey28_B(void **first, void **last, uint64_t depth_budget)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d443a0 (RacingPC lab re_groups/_decomp);xref:0x140c5f830",
+  "notes": "Byte-identical twin of 0x140d43a50 (second template instantiation): introsort over record pointers, ascending by the u16 key derived from the int at record+0x28."
+ },
+ "signature": {
+  "id": "career.bank_sort_record_ptrs_by_key28_b",
+  "section": ".xtls",
+  "pattern": "4C 89 FA E8 ?? ?? ?? ?? 48 8B 74 24 68",
+  "match": "0x140c5fefd",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140d43820",
+  "kind": "call",
+  "names": [
+   "Career_Bank_SortRecordPtrsByKey28_B"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c609bd",
+  "made_on_target": "0x140d443a0",
+  "twin": "made on steam-26566308; the target 0x140d443a0 is KB 0x140d43820: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140c609bd is KB 0x140c5fefd: Career_Bank_WriteSaveData (0xc5f830) and Career_Bank_UnregisterMessageHandlers (0xc65560) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c609bd",
+    "target": "0x140d443a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "be2d8fc8cd3a1acb8d89d4062a37762ccd0e654dde3128368cbab5bff1055254"
+  }
+ ]
+}

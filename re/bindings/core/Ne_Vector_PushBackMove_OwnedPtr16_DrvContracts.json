@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBackMove_OwnedPtr16_DrvContracts",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d83cd0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_PushBackMove_OwnedPtr16_DrvContracts(void *vec, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d84850 (RacingPC lab re_groups/_decomp);xref:0x140d73c40,0x140d80d10",
+  "notes": "(lib) Vector push_back by move for 16-byte {allocator, owned ptr} elements with 1.5x growth; old storage elements are freed through their allocator vfunc +0x38."
+ },
+ "signature": {
+  "id": "core.vector_push_back_move_owned_ptr16_drv_contracts",
+  "section": ".xtls",
+  "pattern": "4C 89 F2 E8 ?? ?? ?? ?? 49 8B 55 18",
+  "match": "0x140d803a3",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x140d83cd0",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_PushBackMove_OwnedPtr16_DrvContracts"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d80f23",
+  "made_on_target": "0x140d84850",
+  "twin": "made on steam-26566308; the target 0x140d84850 is KB 0x140d83cd0: Career_Needs_DriverContract (0xd83c10) and Career_ContractRenewal_Deserialise (0xd85470) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d80f23",
+    "target": "0x140d84850"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "69b2dbe5645dc641dcf17c7bdbbcd52bcb738e858ea86f6af66a464e8f30ff3e"
+  }
+ ]
+}

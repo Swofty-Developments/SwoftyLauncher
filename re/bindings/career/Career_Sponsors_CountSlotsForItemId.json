@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_CountSlotsForItemId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14142a460",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int64_t Career_Sponsors_CountSlotsForItemId(void *self, uint32_t *packed_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14142ac40 (RacingPC lab re_groups/_decomp);xref:0x141104bd0,0x141ffa710",
+  "notes": "Derives a u16 key from the packed id (id>>16 with type bits), scans the 0x60-byte group list at (+0x250)->+0x230..+0x238 for the group whose FNV-1a hashed set contains it, then looks the group u32 id up in the hash map at self +0xc0..+0xf4 (0x28-byte entries) and returns the element count of that entry u32 vector (+0x10..+0x18). Returns 0 when not found. Used for decal slot counting."
+ },
+ "signature": {
+  "id": "career.sponsors_count_slots_for_item_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 49 89 C8 48 8B 81 50 02 00 00",
+  "match": "0x14142a460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142a460",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_CountSlotsForItemId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14142ac40",
+  "made_on_target": "0x14142ac40",
+  "twin": "made on steam-26566308; the target 0x14142ac40 is KB 0x14142a460: Game_CustomisationDecals_DeleteFiles (0x142a500) and Game_CustomisationDecals_OpenFile (0x1434060) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14142ac40",
+    "target": "0x14142ac40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37542c60e6f20a4f1e624de778e10839a703985ca358028c66e83bb650fc07b4"
+  }
+ ]
+}

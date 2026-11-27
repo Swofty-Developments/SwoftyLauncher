@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_140d64e20",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d642a0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_140d64e20(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d64e20 (RacingPC lab re_groups/_decomp);xref:0x140ca0fd0",
+  "notes": "(thunk) Noreturn stub calling Ne_Crt_InvalidParameterAbort then int3; hash-map overflow path used by rehash 0x140d64fd0."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_140d64e20",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 49 8B B4 24 A0 00 00 00",
+  "match": "0x140cab1b3",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d642a0",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_140d64e20"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cabc73",
+  "made_on_target": "0x140d64e20",
+  "twin": "made on steam-26566308; the target 0x140d64e20 is KB 0x140d642a0: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140cabc73 is KB 0x140cab1b3: Career_CostCap_ReadSaveData (0xc9e9c0) and Career_DeptEvent_GetDriverMagicOffset (0xcb0d30) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cabc73",
+    "target": "0x140d64e20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "603e598c958c3605f932b535ba4139bb960b7de5fa26683274fcf1ac6bd5e7c9"
+  }
+ ]
+}

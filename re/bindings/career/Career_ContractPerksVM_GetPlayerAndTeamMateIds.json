@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ContractPerksVM_GetPlayerAndTeamMateIds",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422dcba0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t *Career_ContractPerksVM_GetPlayerAndTeamMateIds(void *self, uint32_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422de7a0 (RacingPC lab re_groups/_decomp);xref:0x1422dd270",
+  "notes": "Fills out[0..4] with 0x3fff0000 (invalid id) and out[5] byte 0; finds the local player EntrantRecord in the career data ((+0x6c0)->+0x88->+0x260, list +0x2e0..+0x2e8) and writes out[0]=id, out[2]=driver_customisation, out[4]=team_stat_id; then collects matching records from the table at +0x2d8 via Game_CareerEventTable_CollectMatchingRecords and from the first writes out[1]=rec+0x50, out[3]=rec+0x54 and out[5]=bit 28 of rec+0x48 (human flag)."
+ },
+ "signature": {
+  "id": "career.contract_perks_vm_get_player_and_team_mate_ids",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 D6 49 89 CE",
+  "match": "0x1422dcba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422dcba0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractPerksVM_GetPlayerAndTeamMateIds"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422de7a0",
+  "made_on_target": "0x1422de7a0",
+  "twin": "made on steam-26566308; the target 0x1422de7a0 is KB 0x1422dcba0: Career_ContractPerksVM_OnActivate (0x22dd270) and Ui_Bind_PopupLevelRow (0x22e1910) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422de7a0",
+    "target": "0x1422de7a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e866150b1048e22110d5ea8a9b3480b0066ff423fa8e2c7a8221d69ee91c6412"
+  }
+ ]
+}

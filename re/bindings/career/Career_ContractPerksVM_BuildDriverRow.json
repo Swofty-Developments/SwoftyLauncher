@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ContractPerksVM_BuildDriverRow",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422dcf30",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422deb30 (RacingPC lab re_groups/_decomp);xref:0x1422dd270",
+  "notes": "Builds one driver row for the contract perks screen: creates the row with Vm_Build_AcclaimBadgeRow using a name string, applies row data, sets Bool node team_mate_human, looks the driver id up in the entrant list (stride 0x88, id at +0x50) to fetch customisation info, requests a driver thumbnail via Game_UIThumbnailSystem_FindDriverCustomisationWill and pushes the returned handle into the u32 vector at +0x6d8..+0x6e8. Early-outs if career data (+0x6c0)->+0x88->+0x260 is missing or of an excluded type. Stack-probe frame makes arg mapping unreliable."
+ },
+ "signature": {
+  "id": "career.contract_perks_vm_build_driver_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 70 11 00 00 0F B6 84 24 F8 11 00 00",
+  "match": "0x1422dcf30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422dcf30",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractPerksVM_BuildDriverRow"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422deb30",
+  "made_on_target": "0x1422deb30",
+  "twin": "made on steam-26566308; the target 0x1422deb30 is KB 0x1422dcf30: Career_ContractPerksVM_OnActivate (0x22dd270) and Ui_Bind_PopupLevelRow (0x22e1910) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422deb30",
+    "target": "0x1422deb30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "31efebb9177f22f98be38d6a50da8aebef1c189f313a163e5a8116eb39c749b5"
+  }
+ ]
+}

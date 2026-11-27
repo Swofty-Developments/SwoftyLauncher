@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Add_EntrantMapEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140bf0bc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Add_EntrantMapEntry(void *self, uint32_t entrant_id, int16_t value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bf1670 (RacingPC lab re_groups/_decomp);xref:0x14100c3f0",
+  "notes": "If Career_Has_EntrantMapEntry(self, entrant_id, value) is false, looks up the 0x28-byte slot for the 16-bit packed entrant id (id<<14 | id>>16) in the hash map at self+0x2a0 (slots +0x2a8, info +0x2b0, mask +0x2c0) and push_backs a 4-byte entry {int16 value, uint8 0} onto the slot's vector (+0x10 begin, +0x18 end, +0x20 capacity, allocator +8, 1.5x growth). Called from Career_OwnerPerks_TryPurchasePerk, so the value is most likely an owner perk id; good hook to grant a perk entry."
+ },
+ "signature": {
+  "id": "career.add_entrant_map_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 44 89 C6 89 D7 48 89 CB E8",
+  "match": "0x140bf0bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bf0bc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Add_EntrantMapEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140bf1670",
+  "made_on_target": "0x140bf1670",
+  "twin": "made on steam-26566308; the target 0x140bf1670 is KB 0x140bf0bc0: Sess_WeekendSetup_LayoutWeekends (0xbeeeb0) and Career_Get_TeamBankBudgetCategoryValue (0xbf58b0) on either side both sit 0xab0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140bf1670",
+    "target": "0x140bf1670"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2fa5c5b532a5af869ed894e78c8c255e5ce25d45087c8dbc17760f003898de38"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_AutoContracts_CountMovesToOtherTeams",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140db8980",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int32_t Career_AutoContracts_CountMovesToOtherTeams(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140db9500 (RacingPC lab re_groups/_decomp);xref:0x140c59be0",
+  "notes": "Iterates driver-move records self+0x7d8..+0x7e0 (stride 0x70). For each record whose from-team (+0x54/+0x56) differs from to-team (+0x58/+0x5a) it resolves the player team_stat_id and counts the record if the to-team is not the player team. Returns the count."
+ },
+ "signature": {
+  "id": "career.auto_contracts_count_moves_to_other_teams",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 4C 8B A1 D8 07 00 00",
+  "match": "0x140db8980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db8980",
+  "kind": "func_start",
+  "names": [
+   "Career_AutoContracts_CountMovesToOtherTeams"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140db9500",
+  "made_on_target": "0x140db9500",
+  "twin": "made on steam-26566308; the target 0x140db9500 is KB 0x140db8980: Career_DriverContractsMyTeam_PostApproachMessages (0xdb81e0) and Career_DriverContracts_BuildDriverContractQuote (0xdbc210) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140db9500",
+    "target": "0x140db9500"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0ccbc21bbbc1da99b4011fcc17b70039dfe2dddaea9b7a0691a7e487bc90bdad"
+  }
+ ]
+}

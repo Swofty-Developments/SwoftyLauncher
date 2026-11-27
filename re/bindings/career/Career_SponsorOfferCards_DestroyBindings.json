@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorOfferCards_DestroyBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424d27d0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_SponsorOfferCards_DestroyBindings(void *bindings)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424d43d0 (RacingPC lab re_groups/_decomp);xref:0x1423d9880",
+  "notes": "Destructor of a 0x120-byte VM binding block: releases node holders at qword idx 0x20,0x1c,0x18,0x14,0x10,8,4,0 and destroys the owned-pointer vector at +0x68..+0x70 (16-byte {allocator,obj} pairs, virtual dtor then free) with allocator +0x60. Identity taken from the caller name."
+ },
+ "signature": {
+  "id": "career.sponsor_offer_cards_destroy_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 4C 8D 3D ?? ?? ?? ?? 4C 89 B9 00 01 00 00",
+  "match": "0x1424d27d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424d27d0",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorOfferCards_DestroyBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424d43d0",
+  "made_on_target": "0x1424d43d0",
+  "twin": "made on steam-26566308; the target 0x1424d43d0 is KB 0x1424d27d0: Ui_Copy_MyTeamNodeArray (0x24d08e0) and Vm_Despawn_UpgradeListNodes (0x24d58b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424d43d0",
+    "target": "0x1424d43d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4d96dd7def46194d38d1bf4963944b7799a2e6909c43cc5706651b86f75d3539"
+  }
+ ]
+}

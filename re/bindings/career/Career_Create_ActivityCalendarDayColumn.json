@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_Create_ActivityCalendarDayColumn",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14231e4d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Create_ActivityCalendarDayColumn(void *self, void *out_shared, uint32_t day, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423200d0 (RacingPC lab re_groups/_decomp);xref:0x142317600",
+  "notes": "Under the list node (self+0x400)+0x30 gets or creates child \"day_%d\", allocates a 0x1a8 view (FUN_141975640) from allocator self+0x270 wrapped in a ref-counted block, converts day*1440 minutes through Career_Calc_CalendarDayIndex on (self+0x318)+0x290 to a localtime and writes day-of-month text to view+0x130, index byte to +0xb0, day to +0x190 and the bool flag to +0x150. Appends the pair to the vector at (self+0x400)+0x130 and returns a shared ref in out_shared."
+ },
+ "signature": {
+  "id": "career.create_activity_calendar_day_column",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 49 89 D5",
+  "match": "0x14231e4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231e4d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Create_ActivityCalendarDayColumn"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423200d0",
+  "made_on_target": "0x1423200d0",
+  "twin": "made on steam-26566308; the target 0x1423200d0 is KB 0x14231e4d0: Career_MyTeamActivities_BindSelectedActivity (0x231eef0) and Ui_Dispatch_MyTeamActivitiesUiEvent (0x2320a00) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423200d0",
+    "target": "0x1423200d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "45f86fbe24c23102589237335efcf4083cde1b72156bc252cd4412cf78d84cc4"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_OwnerPerks_ResolvePerkListForSetup",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14100e390",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_OwnerPerks_ResolvePerkListForSetup(void *self, void *outVec, void *setupKey)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14100f050 (RacingPC lab re_groups/_decomp);xref:0x140c30f80,0x140c32250,0x140c63c20,0x14100eb10,0x1420557b0",
+  "notes": "If self+0x380 is null, lazily inits g_Game_MyTeamSetupData and passes its default id list (0x14606f580, count at 0x14606f5a0) to FUN_14101bd90(self,outVec,list). Otherwise looks up a setup record via FUN_14101b110 using the 0x48-byte key copied from setupKey and uses the record list at +0x140 (count +0x160); if not found returns an empty vector with allocator self+0x210."
+ },
+ "signature": {
+  "id": "career.owner_perks_resolve_perk_list_for_setup",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 48 03 00 00 48 89 D6 48 89 CF",
+  "match": "0x14100e390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14100e390",
+  "kind": "func_start",
+  "names": [
+   "Career_OwnerPerks_ResolvePerkListForSetup"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14100f050",
+  "made_on_target": "0x14100f050",
+  "twin": "made on steam-26566308; the target 0x14100f050 is KB 0x14100e390: Career_OnlineNegotiationsB_ProcessContractRecv (0x10037f0) and Career_Get_BackgroundOutcomeField (0x1016bd0) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14100f050",
+    "target": "0x14100f050"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3001ea02a0e86afda765fd8eec1b354414935426f65293a15ccba37a7de90981"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_SendChangeMultiYearContract",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14375dc30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_StatEvent_SendChangeMultiYearContract(void *evt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437601c0 (RacingPC lab re_groups/_decomp);xref:0x140d7ab70",
+  "notes": "Telemetry sender: gets the career object via (+0xb0)->+0x88->+0x260, bails if its RTTI chain fails or component lookup (key 0x146062948) is null, resolves the local player EntrantRecord in career +0x2e0..+0x2e8 by identity match, then calls Game_StatEvent_InitCommon with (+0x98)->+0x1a8, +0xa8, +0xd0, +0xe0 and Game_StatEvent_WriteChangeMultiYearContact on evt+0x48."
+ },
+ "signature": {
+  "id": "game.stat_event_send_change_multi_year_contract",
+  "section": ".xtls",
+  "pattern": "48 8B 8B 40 04 00 00 E8 ?? ?? ?? ?? 8B 4C 24 3C",
+  "match": "0x140d7af4c",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x14375dc30",
+  "kind": "call",
+  "names": [
+   "Game_StatEvent_SendChangeMultiYearContract"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d7bacc",
+  "made_on_target": "0x1437601c0",
+  "twin": "made on steam-26566308; the target 0x1437601c0 is KB 0x14375dc30: Game_SessionStatsTracker_OnPlayerDroppedIn (0x3759200) and Game_StatEvent_WriteCompleteF1WRace (0x377de00) on either side both sit 0x2590 above their KB addresses; the match 0x140d7bacc is KB 0x140d7af4c: Career_Sign_DriverContract (0xd7ab70) and Career_Sign_DriverContractIfNotTeam (0xd7df30) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d7bacc",
+    "target": "0x1437601c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7137c936f619460f02968e2f73967239e6f32ce0e7e74b312ba7bba36ad47201"
+  }
+ ]
+}

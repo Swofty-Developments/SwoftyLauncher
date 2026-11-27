@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_InsertSlot_ByteKey_Elem16_1412baa10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1412ba3d0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t *Ne_RobinHoodMap_InsertSlot_ByteKey_Elem16_1412baa10(void *map, uint64_t *out_slot_state, uint8_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1412baa10 (RacingPC lab re_groups/_decomp);xref:0x141232d20",
+  "notes": "(lib) Robin-hood hash map find-or-reserve slot for a 1-byte key, 16-byte elements (key at elem+0). Returns slot index and state 0/1/2/3 in out; grows via FUN_1412bafe0. Same layout as the other maps (+0x10 multiplier, +0x18 data, +0x20 info, +0x28 count, +0x30 mask, +0x38 max)."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_insert_slot_byte_key_elem16_1412baa10",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 27 E8 ?? ?? ?? ?? 8B 44 24 30 83 F8 02 0F 84",
+  "match": "0x141234973",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1412ba3d0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_InsertSlot_ByteKey_Elem16_1412baa10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141234fb3",
+  "made_on_target": "0x1412baa10",
+  "twin": "made on steam-26566308; the target 0x1412baa10 is KB 0x1412ba3d0: Ne_Crt_FatalNoReturn (0x12a1830) and Ne_Bitset_ThrowInvalidPosition_C (0x12ca820) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141234fb3",
+    "target": "0x1412baa10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6b79ff489d457cd890b0f9e6364791dc12549ded409fc75d2ed285b866dc3ce9"
+  }
+ ]
+}

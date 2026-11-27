@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ToString_Int32",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14107adb0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_Std_ToString_Int32(void *out_string, int value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14107ba70 (RacingPC lab re_groups/_decomp);xref:0x140fd1650,0x1416c5b00,0x142b9f900,0x144440790",
+  "notes": "(lib) std::to_string(int): formats decimal digits backwards into a 21-byte stack buffer (with minus sign), then constructs an MSVC-layout std::string (SSO cap 15, heap via the allocator global 0x14618d130) in out_string and returns it."
+ },
+ "signature": {
+  "id": "core.std_to_string_int32",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 89 CE 85 D2",
+  "match": "0x14107adb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14107adb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ToString_Int32"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14107ba70",
+  "made_on_target": "0x14107ba70",
+  "twin": "made on steam-26566308; the target 0x14107ba70 is KB 0x14107adb0: Career_Load_RndHeads (0x1072f10) and Game_F1os_Create_RemoveMember (0x10975a0) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14107ba70",
+    "target": "0x14107ba70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a780b4362f5c58e33eded65305c03513e4a6244f89fefffbdc65b8c9aa1cbeda"
+  }
+ ]
+}
