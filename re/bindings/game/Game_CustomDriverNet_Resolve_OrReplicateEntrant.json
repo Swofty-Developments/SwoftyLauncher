@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CustomDriverNet_Resolve_OrReplicateEntrant",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14257a7a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_CustomDriverNet_Resolve_OrReplicateEntrant(void *self, void *out_record, void *entrant, uint32_t arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14257c6d0 (RacingPC lab re_groups/_decomp);xref:0x14256f2b0",
+  "notes": "Scans the bitmap-indexed set at self+0x178/+0x180 (count +0x188) with Sess_Match_EntrantIdentity_Thunk; on a match it returns a plain copy of the entrant record. Otherwise it builds a replicated-driver message from the record (name block, id, driver and vehicle customisation, team and badge stat ids, vehicle ref), calls Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver and returns a record carrying the ids from the message with byte +0x82 = 0xff and the car number at +0x83."
+ },
+ "signature": {
+  "id": "game.custom_driver_net_resolve_or_replicate_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 44 89 CB",
+  "match": "0x14257a7a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14257a7a0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomDriverNet_Resolve_OrReplicateEntrant"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14257c6d0",
+  "made_on_target": "0x14257c6d0",
+  "twin": "made on steam-26566308; the target 0x14257c6d0 is KB 0x14257a7a0: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14257c6d0",
+    "target": "0x14257c6d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "02b2ed7a23a8e92a0e1742cf25277e09a21925b6c9f3a4f4dd0a28ecfc3978ef"
+  }
+ ]
+}

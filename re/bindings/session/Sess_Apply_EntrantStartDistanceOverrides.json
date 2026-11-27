@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Apply_EntrantStartDistanceOverrides",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142d1d650",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Apply_EntrantStartDistanceOverrides(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142d1fbe0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d32dc0,0x142d37240",
+  "notes": "Session = [[self+0x320]+0x88]+0x260 (skipped when its type derives from 0x14612bca8); reads track length float +0xf0 from Game_TrackData_GetTrack and the participant list (session+0x1030 vcall +0xa8, +0x20..+0x28, stride 0x88). For each override in self+0x3f8..+0x400 (stride 0x18: u8 car index +0, u8 enabled +1, float fraction +0xc > 0) it finds the participant with +0x82 == car index, takes the vehicle [[self+0x308]+0x28][index], gets component 0x146ceab00 and writes the float [[comp+0x58]+0x540]+0x100 = min(value decoded from +0x98 xor +0xa0, track_length * fraction), not below 0, and clears bit 0 of +0x10c; bit 4 of byte +0x1b in the matching entry of the 0x14605cfe0 component list +0x2d0..+0x2d8 is cleared before and set after. Callers: Sess_OvertakeRuleset_InitRollingStart, and Caller 0x142d37240: reads start_lights_duration from gamedb, calls Sess_Load_EntrantHeadStartOverrides and then this. Hook point for per-car start distance. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.apply_entrant_start_distance_overrides",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 8B 81 20 03 00 00",
+  "match": "0x142d1d650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d1d650",
+  "kind": "func_start",
+  "names": [
+   "Sess_Apply_EntrantStartDistanceOverrides"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d1fbe0",
+  "made_on_target": "0x142d1fbe0",
+  "twin": "made on steam-26566308; the target 0x142d1fbe0 is KB 0x142d1d650: Sess_Ruleset_ForceFinishAllDefault (0x2d1e900) and Sess_ElimRuleset_FinaliseResults (0x2d28470) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d1fbe0",
+    "target": "0x142d1fbe0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f0cad32cf44032e75add7025350e499e1904fade807d2323323d747778beec49"
+  }
+ ]
+}

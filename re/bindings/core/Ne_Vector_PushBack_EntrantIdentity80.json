@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_PushBack_EntrantIdentity80",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142576390",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_PushBack_EntrantIdentity80(void *vec, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425782c0 (RacingPC lab re_groups/_decomp);xref:0x142577080",
+  "notes": "(lib) Vector push_back with 1.5x growth for 0x50-byte elements carrying vtable 0x145614e20 (entrant identity: 0x40 name/id block at +8 and u32 flags at +0x48); allocator vtable +0x18 alloc, +0x38 free."
+ },
+ "signature": {
+  "id": "core.vector_push_back_entrant_identity80",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 FF C3 45 85 E4 0F 84",
+  "match": "0x142575fef",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142576390",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_PushBack_EntrantIdentity80"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142577f1f",
+  "made_on_target": "0x1425782c0",
+  "twin": "made on steam-26566308; the target 0x1425782c0 is KB 0x142576390: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142577f1f",
+    "target": "0x1425782c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "67651a2d177185882ce2a12586035f86f5d07527e84bba29481f979689e160f7"
+  }
+ ]
+}

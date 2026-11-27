@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Update_TimingPillIconNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14175f7b0",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Update_TimingPillIconNode(void *owner, void *pill, uint32_t *icon_rec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141760f30 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14175f410,0x141762a50,0x141764820",
+  "notes": "Copies the byte at [[[[owner+0x20]+0x88]+0x260]+0x2b0]+0x8a into the bool node pill+0x228; if that node then reads true, compares the first char of the string at icon_rec+0x10 (or -1 when null) with the cached byte pill+0x340 and, when different, calls Vm_Resolve_IconNodeByPath on pill+0x240 with the record path (when icon_rec[0] < 5 and +8 and +0x10 are set) or with the default at 0x146082400 / empty path, then stores the new char in pill+0x340. Callers: Team_Update_TimingPill passes the record matched in the table at +0x9bd0 (stride 0x18); 0x141762a50: refreshes one pill from the same table then calls 0x141761390; 0x141764820: timing pill slot updater. Good hook to swap the per-entry icon path. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.update_timing_pill_icon_node",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 4C 89 C7 48 89 D6 48 8B 41 20",
+  "match": "0x14175f7b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14175f7b0",
+  "kind": "func_start",
+  "names": [
+   "Team_Update_TimingPillIconNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141760f30",
+  "made_on_target": "0x141760f30",
+  "twin": "made on steam-26566308; the target 0x141760f30 is KB 0x14175f7b0: Ui_Init_CarDriverTeamSelectors (0x175a090) and site_Team_TimingPillBadgeLabel (0x1761a8b) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141760f30",
+    "target": "0x141760f30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3fd4dd16567ed6771954fd025ea8ec3e4569b0802bda6aaa742d4de8a5e18a4c"
+  }
+ ]
+}

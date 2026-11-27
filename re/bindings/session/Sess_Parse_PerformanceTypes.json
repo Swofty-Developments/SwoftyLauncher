@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Parse_PerformanceTypes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14328bd60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Parse_PerformanceTypes(void *gdb_row, void *out_list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14328e2f0 (RacingPC lab re_groups/_decomp);xref:0x142a172e0",
+  "notes": "Reads and XOR-decodes the string array field performance_types, then maps each string case-insensitively to an int: realistic = 0, equal = 1, anything else = 2. Appends each int at out_list + count*4 and increments the count stored at out_list+8."
+ },
+ "signature": {
+  "id": "session.parse_performance_types",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 8D 15 ?? ?? ?? ?? 31 FF 45 31 C0 E8 ?? ?? ?? ?? 4C 8B 20 49 8B 4C 24 10",
+  "match": "0x14328bd60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14328bd60",
+  "kind": "func_start",
+  "names": [
+   "Sess_Parse_PerformanceTypes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14328e2f0",
+  "made_on_target": "0x14328e2f0",
+  "twin": "made on steam-26566308; the target 0x14328e2f0 is KB 0x14328bd60: Game_NetPlayerSync_OnPlayerSetEntryDiscarded (0x327e500) and Game_F1os_CreateHttpRequest (0x3295a30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14328e2f0",
+    "target": "0x14328e2f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6c7064399a9c4813305f1f5e93284d0077794b73ae88377b4f54fc2d27f56c25"
+  }
+ ]
+}

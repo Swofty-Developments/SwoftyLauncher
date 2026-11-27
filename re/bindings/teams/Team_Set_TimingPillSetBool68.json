@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Set_TimingPillSetBool68",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417fc100",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Set_TimingPillSetBool68(void *block, uint8_t value, uint8_t use_alt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417fd8e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14175f410",
+  "notes": "Selects node set block+0x8 (use_alt=0) or block+0xa8 (use_alt=1), resolves the four node handles at set+0x8, +0x28, +0x48 and +0x68 into temporaries, writes value into the bool node from set+0x68 only (skipped if the node is null, the sentinel 0x146069300 or flagged +0x26 bit 0), then releases all four with Vm_Release_Node. Context from caller: Team_Update_TimingPill passes value = (previous entry byte in node pill+0x48 != new entry byte) for the primary set and again for the alt set when the primary flag is 0, so it acts as an entry-changed trigger. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.set_timing_pill_set_bool68",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CE 48 8D 81 A8 00 00 00",
+  "match": "0x1417fc100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417fc100",
+  "kind": "func_start",
+  "names": [
+   "Team_Set_TimingPillSetBool68"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1417fd8e0",
+  "made_on_target": "0x1417fd8e0",
+  "twin": "made on steam-26566308; the target 0x1417fd8e0 is KB 0x1417fc100: site_Career_UpgradeCardDeptIcon (0x17f9f8f) and Game_EventObjectives_ShowTargetPosition (0x17fdf50) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417fd8e0",
+    "target": "0x1417fd8e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "01a122d150c06fb6bd4f10701898880685fca5d372093be5262ee9fbdeb74124"
+  }
+ ]
+}

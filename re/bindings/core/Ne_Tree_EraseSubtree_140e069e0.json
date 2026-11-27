@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Tree_EraseSubtree_140e069e0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140e05e60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Tree_EraseSubtree_140e069e0(void *tree, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140e069e0 (RacingPC lab re_groups/_decomp);xref:0x140dea820",
+  "notes": "(lib) Recursive red-black tree subtree free: recurses on node[2] (right), follows node[0] (left), stops at nil flag +0x19, frees each node through the allocator at tree[0] vtbl+0x38. Values are trivially destructible."
+ },
+ "signature": {
+  "id": "core.tree_erase_subtree_140e069e0",
+  "section": ".xtls",
+  "pattern": "48 8D B4 24 70 07 00 00 48 89 F1 E8 ?? ?? ?? ?? 48 85 FF",
+  "match": "0x140ded78e",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xb"
+  },
+  "target": "0x140e05e60",
+  "kind": "call",
+  "names": [
+   "Ne_Tree_EraseSubtree_140e069e0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140dee30e",
+  "made_on_target": "0x140e069e0",
+  "twin": "made on steam-26566308; the target 0x140e069e0 is KB 0x140e05e60: Career_DriverContractEvent_Destroy (0xe05870) and Career_DriverAcademies_MapFindOrAdd (0xe09d60) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140dee30e",
+    "target": "0x140e069e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7a0e54d307deada79018de8af066e695f7faa982e6914518a5aed852e4b45c44"
+  }
+ ]
+}

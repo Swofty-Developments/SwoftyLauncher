@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualPerformance_EstimateSpeedAtLapFraction",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438a8550",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "float Sess_VirtualPerformance_EstimateSpeedAtLapFraction(void *self, void *ctx, float lap_fraction, void *a4, uint32_t a5, uint32_t a6, uint32_t a7)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438aaae0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14243e250,0x142f6ad40,0x142f6d700",
+  "notes": "Whole body read. Returns 0 when the vector +0x108..+0x110 is empty or [[self+0x48]+0x28]+0x18 is null. Wraps the fraction into 0..1, converts it to a distance with vcall +0x188(self, frac, ctx+4), takes d-3 and d+3 metres wrapped at the lap length (float at [self+0xa0] + idx*0x48, valid when vcall +0x178 is true), evaluates Sess_VirtualPerformance_EvalBlocksAtDistance at the three distances (adding the value at the last sample when a point wraps past the lap end) and returns the mean of 3/(t(d)-t(d-3)) and 3/(t(d+3)-t(d)), i.e. speed in m/s. Callers: Game_DRLSystem_Update 0x14243e250 stores it per racing line sample; 0x142f6ad40 integrates dt*speed in a loop to advance a virtual entrant's distance; Game_Network_VirtualSessionEntrantEntrant 0x142f6d700 uses it as the virtual speed trap value. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.virtual_performance_estimate_speed_at_lap_fraction",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC E0 00 00 00 C5 78 29 BC 24 D0 00 00 00 C5 78 29 B4 24 C0 00 00 00 C5 78 29 AC 24 B0 00 00 00 C5 78 29 A4 24 A0 00 00 00 C5 78 29 9C 24 90 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 8B 81 10 01 00 00",
+  "match": "0x1438a8550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438a8550",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualPerformance_EstimateSpeedAtLapFraction"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438aaae0",
+  "made_on_target": "0x1438aaae0",
+  "twin": "made on steam-26566308; the target 0x1438aaae0 is KB 0x1438a8550: site_Sess_AiRecords_NameHash (0x38a6227) and Sess_VirtualPerformance_CalcPace (0x38ac2a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438aaae0",
+    "target": "0x1438aaae0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "15043e7fbdd60a9beb520d76eecaa299464440fb828811d9d978fb8328a05315"
+  }
+ ]
+}

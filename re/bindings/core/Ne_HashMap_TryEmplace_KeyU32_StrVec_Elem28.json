@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_TryEmplace_KeyU32_StrVec_Elem28",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fbb670",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_TryEmplace_KeyU32_StrVec_Elem28(void *map, void *outResult, const uint32_t *key, void *srcStrVec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fbc1f0 (RacingPC lab re_groups/_decomp);xref:0x140f90ed0",
+  "notes": "(lib) Copies srcStrVec (vector of 0x28-byte strings) into a temp, then robin-hood probes the map for the u32 key; if absent inserts {key, moved vector} (shifting with FUN_140fbcf30, growing with FUN_140fbc8e0). outResult = {element ptr, info-byte ptr, inserted flag}; the temp is destroyed when the key already existed."
+ },
+ "signature": {
+  "id": "core.hash_map_try_emplace_key_u32_str_vec_elem28",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 4D 89 CE 48 89 D6",
+  "match": "0x140fbb670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fbb670",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_TryEmplace_KeyU32_StrVec_Elem28"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140fbc1f0",
+  "made_on_target": "0x140fbc1f0",
+  "twin": "made on steam-26566308; the target 0x140fbc1f0 is KB 0x140fbb670: Career_Format_MoraleDepartmentEffectText (0xfa0f30) and Career_Init_MyTeamRewardTypeRegistry (0xfc14c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140fbc1f0",
+    "target": "0x140fbc1f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "340e1e3d80aeafd71cca14d3c410ed9166019a870b8a51ce948397aa49daa6f6"
+  }
+ ]
+}

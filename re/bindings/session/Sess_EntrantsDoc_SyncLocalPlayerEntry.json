@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_EntrantsDoc_SyncLocalPlayerEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142577500",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_EntrantsDoc_SyncLocalPlayerEntry(void *doc, void *participants)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142579430 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142577080",
+  "notes": "Gets the local user id block via g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vfunc +0x38, builds an identity key (vtable 0x145614e20, flags 0x10000000) and scans the EntrantRecord vector at participants+0x2e0..+0x2e8 with Sess_Match_EntrantIdentity_Thunk. If found and id_lo != 0 it builds a fresh record carrying the entrant's id, customisation, team/badge stat ids and vehicle ref, passes it to 0x1425731b0(doc), then Sess_EntrantsDoc_UpdateEntryById(doc+0xd0, participants, rec, packed id) and 0x142575b50(participants). Caller Sess_Read_SelectedGamertags runs it right after Sess_Load_EntrantsDocFromPropertyBag to refresh the local player's row. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.entrants_doc_sync_local_player_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 68 01 00 00 48 89 D6 48 89 CF",
+  "match": "0x142577500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142577500",
+  "kind": "func_start",
+  "names": [
+   "Sess_EntrantsDoc_SyncLocalPlayerEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142579430",
+  "made_on_target": "0x142579430",
+  "twin": "made on steam-26566308; the target 0x142579430 is KB 0x142577500: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142579430",
+    "target": "0x142579430"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d86846f440d0d90a31bad4e3c77e1911e6cf4172ea77cfbbb7469e4c7cb6e6b0"
+  }
+ ]
+}

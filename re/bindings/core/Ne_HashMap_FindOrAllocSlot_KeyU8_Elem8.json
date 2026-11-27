@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindOrAllocSlot_KeyU8_Elem8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d46170",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_FindOrAllocSlot_KeyU8_Elem8(void *map, void *outSlotState, const uint8_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d46cf0 (RacingPC lab re_groups/_decomp);xref:0x140c69ef0,0x140c71530",
+  "notes": "(lib) Robin-hood hash table insert probe for a 1-byte key with 8-byte elements (map +0x10 hash mult, +0x18 elems, +0x20 info bytes, +0x28 count, +0x30 mask, +0x38 max load 80 pct, +0x40 info inc). Writes {slot index, state} where state 1=found, 2=new empty slot, 3=new after shifting, 0=failed after 256 tries; first use allocates 0x86 bytes, grows via FUN_140d472c0."
+ },
+ "signature": {
+  "id": "core.hash_map_find_or_alloc_slot_key_u8_elem8",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 3F E8 ?? ?? ?? ?? 8B 84 24 B8 01 00 00",
+  "match": "0x140c6c076",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x140d46170",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_FindOrAllocSlot_KeyU8_Elem8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140c6cb36",
+  "made_on_target": "0x140d46cf0",
+  "twin": "made on steam-26566308; the target 0x140d46cf0 is KB 0x140d46170: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140c6cb36 is KB 0x140c6c076: Career_Bank_CollectLedgerEntriesInRange (0xc694a0) and Career_Bank_ReadAccount (0xc6de90) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140c6cb36",
+    "target": "0x140d46cf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d0978fc06fd9e25dba51d58f4803a10c37a688f659ffa753df25885ea34701d5"
+  }
+ ]
+}

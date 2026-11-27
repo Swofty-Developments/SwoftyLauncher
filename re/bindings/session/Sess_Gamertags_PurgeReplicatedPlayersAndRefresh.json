@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Gamertags_PurgeReplicatedPlayersAndRefresh",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142576180",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_ParticipantsSetup_PurgeReplicatedPlayersAndRefresh(void *setup)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425780b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142577080,0x14257b9f0",
+  "notes": "Renamed from Sess_Gamertags_PurgeReplicatedPlayersAndRefresh: the noun Gamertags came only from the caller name; self has the ParticipantsSetup layout (+0xd0, +0xd8, +0xe8) and the caller passes the same object to Sess_ParticipantsSetup_SyncHumanEntrantCustomisations. When the hash set at +0x178/+0x180 (count +0x188) is not empty it calls Game_EntrantReplicationManager_RemovePlayerReplicatedDataInterna([[setup+0xe8]+0x438], entry+0x18, 1) for every entry and on success 0x1432135b0(mgr+0x60, entry+0x18); then 0x142576220(setup), 0x142576420(setup, 1, 1, empty list, 0), and when the u32 vector +0x118..+0x120 count differs from [setup+0xd8]+0x298 it calls 0x14257a6c0 and, if setup+0x78 < 2, sends message id 0xbb through 0x144030ad0([setup+0xe8]+0x3d0, 1, ...). Callers: Sess_Read_SelectedGamertags runs it first, before it reads the saved data; Caller 0x14257b9f0: runs it when 0x142572250 returns 0, then copies an entrant vector. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.gamertags_purge_replicated_players_and_refresh",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 CE 48 83 B9 88 01 00 00 00",
+  "match": "0x142576180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142576180",
+  "kind": "func_start",
+  "names": [
+   "Sess_Gamertags_PurgeReplicatedPlayersAndRefresh"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1425780b0",
+  "made_on_target": "0x1425780b0",
+  "twin": "made on steam-26566308; the target 0x1425780b0 is KB 0x142576180: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1425780b0",
+    "target": "0x1425780b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e521fbe9e327db6497b6b5d063b6bcc6032bae6551d2abc6b996bd8063203e65"
+  }
+ ]
+}

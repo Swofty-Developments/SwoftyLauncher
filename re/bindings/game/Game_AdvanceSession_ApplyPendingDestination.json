@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_AdvanceSession_ApplyPendingDestination",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140bf7230",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_AdvanceSession_ApplyPendingDestination(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bf7ce0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140bf9a00,0x140bf9b30,0x142d56050",
+  "notes": "Whole body read. Reads the current session entry via [self+0x278]+0x1030 vcall +0xa8 (type at +8); when type == 1 and +0x10 == 1 and the career component exists it calls 0x1407c3c60 and a vcall +0xd0 with [career+0xe50]^[+0xe58]. Then moves the pending destination: byte +0x310 -> +0x318, u32 +0x314 -> +0x31c, clears +0x310, +0x314 and +0x324. Kind 3: 0x140bf7f50(self, 2, pending id or current type, 3) (sets +0x318 = 4 when the id differs) and posts bus message vt 0x14568b6c8; kind 4 or 6 with a nonzero id: 0x140bf7f50(self, 1, id, 1) and posts vt 0x14568b6b8; other kinds return. Callers: the two SetDestination handlers 0x140bf9a00/0x140bf9b30 call it right after writing +0x310/+0x314, and Sess_StateCareerHubExit_OnStateEnter 0x142d56050 calls it on the component at state+0xdb8. Hook point for the advance destination. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.advance_session_apply_pending_destination",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CF 48 8B 89 78 02 00 00 48 8B 81 30 10 00 00 48 81 C1 30 10 00 00 FF 90 A8 00 00 00",
+  "match": "0x140bf7230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bf7230",
+  "kind": "func_start",
+  "names": [
+   "Game_AdvanceSession_ApplyPendingDestination"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140bf7ce0",
+  "made_on_target": "0x140bf7ce0",
+  "twin": "made on steam-26566308; the target 0x140bf7ce0 is KB 0x140bf7230: Career_Get_TeamBankBudgetCategoryValue (0xbf58b0) and Career_DriverNumbers_CheckExisting (0xc026e0) on either side both sit 0xab0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140bf7ce0",
+    "target": "0x140bf7ce0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d5725ad400d0f65c7c0850885523f21c128e058a2b970bfd4f07aa6ce6b93874"
+  }
+ ]
+}

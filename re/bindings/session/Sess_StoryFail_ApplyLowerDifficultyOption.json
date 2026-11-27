@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_StoryFail_ApplyLowerDifficultyOption",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14112a4e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Decrement_DifficultyOption(void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14112ab20 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d940f0",
+  "notes": "Renamed from Sess_StoryFail_ApplyLowerDifficultyOption: StoryFail comes only from the caller, the body just steps a difficulty option down by one. Reads the option object at owner+0x2a0 (vcall +0x10 = current value), maps it with Game_ChallengeCareer_FindDifficultyIndex to a byte index, takes index-1 for 1..3 (anything else becomes 3), then either uses that index directly (flag owner+0x2a8 set) or finds the option entry whose name equals the string table 0x14568f940[index] (entries 0x50 apart at option+0x80, range ints at +0xb8/+0xbc, default +0xc0) and applies it with vcall +0x18. Context from caller: Sess_StoryFail_OnRestartChoice calls it on *(this+0xdd0) right before it posts the restart_lower_difficulty bus message; good hook to change the step size. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.story_fail_apply_lower_difficulty_option",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 CF 48 8D B1 A0 02 00 00",
+  "match": "0x14112a4e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14112a4e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_StoryFail_ApplyLowerDifficultyOption"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14112ab20",
+  "made_on_target": "0x14112ab20",
+  "twin": "made on steam-26566308; the target 0x14112ab20 is KB 0x14112a4e0: Asset_Load_DevSessionWorlds (0x1125170) and Career_Get_DriverOverallRating (0x113d760) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14112ab20",
+    "target": "0x14112ab20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ef0e2dc2b997b853a16bb67dd5cd4f954b2450e08ecfd9d9b28caaa4ca07b833"
+  }
+ ]
+}

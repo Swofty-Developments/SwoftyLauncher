@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_VehicleCustomisation_Equals",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424f9da0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "bool Ent_VehicleCustomisation_Equals(const void *a, const void *b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424fb9a0 (RacingPC lab re_groups/_decomp);xref:0x142479500,0x143142300,0x143143720,0x143143ca0",
+  "notes": "Deep equality of two vehicle customisation records: optional name (+0x49a0, valid +0x4a28), optional byte (+0x4a30/+0x4a31), optional livery block at +0x18 (valid +0x38; value read elsewhere at +0x20), optional array of 0x30-byte items at +0x70 (count +0xc0, valid +0xd0), optional id +0x48 (valid +0x50), vector of 16-byte entries at +0xe8, sub-block +0x120, and an array of 0x1820-byte decal layers at +0x1940 (count +0x4980, each with up to N 0x30 items, count +0x1810)."
+ },
+ "signature": {
+  "id": "entrants.vehicle_customisation_equals",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 0F B6 81 28 4A 00 00",
+  "match": "0x1424f9da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424f9da0",
+  "kind": "func_start",
+  "names": [
+   "Ent_VehicleCustomisation_Equals"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424fb9a0",
+  "made_on_target": "0x1424fb9a0",
+  "twin": "made on steam-26566308; the target 0x1424fb9a0 is KB 0x1424f9da0: Game_EntrantsUi_BuildCharacterRef (0x24f3970) and site_Game_MyTeamVehicleBases_SaveRecord (0x2508cbf) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424fb9a0",
+    "target": "0x1424fb9a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8497d7069171df83a8dd6969cf6f8c4e1337e7ba0a66cb9bcb10078d381b32f5"
+  }
+ ]
+}

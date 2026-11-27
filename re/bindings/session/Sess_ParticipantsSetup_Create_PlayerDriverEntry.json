@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_ParticipantsSetup_Create_PlayerDriverEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142571280",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_ParticipantsSetup_Create_PlayerDriverEntry(void *self, void *slot)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425731b0 (RacingPC lab re_groups/_decomp);xref:0x14256f2b0",
+  "notes": "Requires slot+0x72 (throws bad optional access otherwise), resolves the customisation key slot+0x6e with Game_Customisation_GetPackedVec4WithKeyOverride (self+0xf0), fetches that driver from the entrants system (self+0xd0) and copies its record (name strings at +0x38, +0xd0, +0x168, +0x200, +0x298). It replaces the name strings with the local player name obtained from the profile object at (((self+0xc8)+0x140)+0x198)+0x1c0 vtable+0x30 (snprintf fallback), sets type 2, then calls Ent_EntrantsSystem_ReplaceDriver when the driver id slot+0x50 already exists or Ent_EntrantsSystem_AddDriver_2 otherwise. Writes back slot+0x50 driver id and the three ids at +0x56, +0x5c, +0x62 with their flags."
+ },
+ "signature": {
+  "id": "session.participants_setup_create_player_driver_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 08 00 00 80 7A 72 00",
+  "match": "0x142571280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142571280",
+  "kind": "func_start",
+  "names": [
+   "Sess_ParticipantsSetup_Create_PlayerDriverEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1425731b0",
+  "made_on_target": "0x1425731b0",
+  "twin": "made on steam-26566308; the target 0x1425731b0 is KB 0x142571280: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1425731b0",
+    "target": "0x1425731b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a04192c92e682c9980beb4682244b54b7e25991b20deb31fb1bb6ef012d7d249"
+  }
+ ]
+}

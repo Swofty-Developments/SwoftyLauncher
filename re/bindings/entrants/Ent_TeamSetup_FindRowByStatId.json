@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_TeamSetup_FindRowByStatId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14276f800",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "void *Ent_TeamSetup_FindRowByStatId(void *out_row, int stat_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142771b80 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142772120",
+  "notes": "Whole body read. Builds a GdbTableCursor on the stack (both 0x100 name fields preset to '0000', row_count -1, flag 1), Gdb_Init_TableCursor, then for each row Gdb_Get_RowByIndex(cursor, out_row) and Gdb_Get_FieldInt(out_row, 'stat_id'); returns out_row at the first row whose stat_id equals the argument. No match: out_row becomes the invalid row (both name strings 'Invalid' at +0x000 and +0x100, index -1 at +0x200, byte 0 at +0x204). Which table the cursor opens is not visible in this body. Context from caller: Ent_Parse_TeamSetupRow 0x142772120 calls it in every switch case with the resolved stat id, copies the 0x208-byte row and reads its metadata and fields. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "entrants.team_setup_find_row_by_stat_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 28 02 00 00 89 D7",
+  "match": "0x14276f800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14276f800",
+  "kind": "func_start",
+  "names": [
+   "Ent_TeamSetup_FindRowByStatId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142771b80",
+  "made_on_target": "0x142771b80",
+  "twin": "made on steam-26566308; the target 0x142771b80 is KB 0x14276f800: Game_F1WRankedComponent_Init (0x274a180) and site_Career_TeamDeptEnumStore (0x27765d8) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142771b80",
+    "target": "0x142771b80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7bb452d715dce9934c1fcc4c2dcb878dd4cb4c443493a9a61c43fa9bedde19b1"
+  }
+ ]
+}

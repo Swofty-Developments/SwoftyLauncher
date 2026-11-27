@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Team_Resolve_TeamIdFromRowField",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424ac880",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "uint32_t *Team_Resolve_TeamIdFromRowField(uint32_t *outId, void *row)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424ae480 (RacingPC lab re_groups/_decomp);xref:0x14022adf0",
+  "notes": "Reads the string field team from a gamedb row (XOR-deobfuscating it in place with k_Gdb_StringXorKey); if empty writes the invalid id 0x3fff0000, else finds that label in table entrants.teams (key column team) and writes byte0=0 and the u16 stat_id at out+2. Hook to remap animation team data to another team."
+ },
+ "signature": {
+  "id": "teams.resolve_team_id_from_row_field",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 0F B6 8C 24 38 13 00 00",
+  "match": "0x1424a4eda",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1424ac880",
+  "kind": "call",
+  "names": [
+   "Team_Resolve_TeamIdFromRowField"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424a6ada",
+  "made_on_target": "0x1424ae480",
+  "twin": "made on steam-26566308; the target 0x1424ae480 is KB 0x1424ac880: Game_Check_ReturnToGarageTimeLimit (0x24ae250) and Game_EntrantsUi_OnCharacterListLoaded (0x24bc8c0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424a6ada",
+    "target": "0x1424ae480"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e3b8eac4b002787fb608196a72a0a46f1e9692c338812a604b83f85fb287d9bb"
+  }
+ ]
+}

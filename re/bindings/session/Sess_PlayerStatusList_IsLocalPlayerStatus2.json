@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Sess_PlayerStatusList_IsLocalPlayerStatus2",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140c779c0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "bool Sess_PlayerStatusList_IsLocalPlayerStatus2(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140c78480 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d53340,0x142d53eb0",
+  "notes": "Builds the local user identity key (g_Game_Manager+0x140 -> +0x198 -> +0x1c0 vfunc +0x38), finds the matching EntrantRecord in (self+0x278)+0x2e0..+0x2e8 and takes its packed id (default 0x3fff0000), then scans the pointer list self+0x2d0..+0x2d8 for the entry whose first u32 has the same low byte and high word and returns entry[+4] == 2; false if none. Callers: Sess_StateCareerHub_OnStateEnter resets the status to 0 when this is true (component fetched from the registry by key 0x14605d088); 0x142d53eb0 (returns whether the hub may proceed, OR-ing several blocking flags) treats true as a blocker. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.player_status_list_is_local_player_status2",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 84 C0 74 0A 48 89 F9",
+  "match": "0x142d51050",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140c779c0",
+  "kind": "call",
+  "names": [
+   "Sess_PlayerStatusList_IsLocalPlayerStatus2"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d535e0",
+  "made_on_target": "0x140c78480",
+  "twin": "made on steam-26566308; the target 0x140c78480 is KB 0x140c779c0: site_Game_CareerEventsSequencerPlayerDriverJoin (0xc73bd9) and Game_CareerEventsSequencer_SetLoadingEnabled (0xc78990) on either side both sit 0xac0 above their KB addresses; the match 0x142d535e0 is KB 0x142d51050: Ne_SharedPtr_Release (0x2d50750) and Sess_Loader_RequestCareerHubUnload (0x2d54ad0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d535e0",
+    "target": "0x140c78480"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cd867d37241417467e61357181a6afc18f9960e961f5454b3abd9ee7a0fe83a3"
+  }
+ ]
+}

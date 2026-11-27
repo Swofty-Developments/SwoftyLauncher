@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_FreeTeamCustomisationSlot",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142473da0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "uint32_t Ent_EntrantsSystem_FreeTeamCustomisationSlot(void *table, uint16_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424759a0 (RacingPC lab re_groups/_decomp);xref:0x142475680,0x142475b80",
+  "notes": "Identical code to the team slot free, applied to the team customisation table: frees the record in the 16-byte slot at index (pop if last, else null the ptr) and returns 1, or 0 when the index is invalid or empty."
+ },
+ "signature": {
+  "id": "entrants.entrants_system_free_team_customisation_slot",
+  "section": ".xtls",
+  "pattern": "89 F2 E8 ?? ?? ?? ?? 89 C5 48 8D 05",
+  "match": "0x14247422a",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x2"
+  },
+  "target": "0x142473da0",
+  "kind": "call",
+  "names": [
+   "Ent_EntrantsSystem_FreeTeamCustomisationSlot"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142475e2a",
+  "made_on_target": "0x1424759a0",
+  "twin": "made on steam-26566308; the target 0x1424759a0 is KB 0x142473da0: site_Team_LoadInserted (0x246b3f9) and Ent_EntrantsSystem_ReplaceVehicle (0x2478370) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142475e2a",
+    "target": "0x1424759a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "63d104f4af061a883bb738543220db3f8855ea8aaccb4e6b64f9ab6b6adf807b"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Rehash_KeyU16_OwnedPtrVec_Elem28",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140e18c10",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Rehash_KeyU16_OwnedPtrVec_Elem28(void *map, uint64_t newBucketCount)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140e19790 (RacingPC lab re_groups/_decomp);xref:0x140dce680",
+  "notes": "(lib) Robin-hood hash map rehash: allocates (buckets+overflow)*0x29+8 bytes, reinserts every 0x28-byte element {u16 key, vector of 16-byte owned ptrs} by key*mult hash, shifting with FUN_140e19e10, then destroys the old elements and frees the old block. Same layout as the other maps in this batch."
+ },
+ "signature": {
+  "id": "core.hash_map_rehash_key_u16_owned_ptr_vec_elem28",
+  "section": ".xtls",
+  "pattern": "48 8B 4C 24 50 E8 ?? ?? ?? ?? FF C7",
+  "match": "0x140dcff63",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x140e18c10",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_Rehash_KeyU16_OwnedPtrVec_Elem28"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140dd0ae3",
+  "made_on_target": "0x140e19790",
+  "twin": "made on steam-26566308; the target 0x140e19790 is KB 0x140e18c10: Ne_Crt_InvalidParameterAbortStub_140e0fd20 (0xe108a0) and Career_Condition_FacilityUpgradeType_Ctor (0xe3f620) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140dd0ae3",
+    "target": "0x140e19790"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "53381529b2384676cf1b5cadc26dc7c6ba35d9b73aea5856dc64e4bedcfbf405"
+  }
+ ]
+}

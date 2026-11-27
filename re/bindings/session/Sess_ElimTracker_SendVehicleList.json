@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_ElimTracker_SendVehicleList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143193820",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_ElimTracker_SendVehicleList(void *self, char reliable_flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143195db0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143195c80",
+  "notes": "Only when self+8 < 2: builds a message (vtable 0x145824ed0, id word 0xc300000004) with a u16 count from self+0x1d0 and an array of 16-byte entries (vtable 0x1457e98c0, defaults 0xff / 0) allocated from self+0x18, copies the 8-byte payload of each entry from self+0x38 (stride 0x10) and sends it with 0x144030ad0([self+0x20]+0x3d0, flag ? 2 : 1, &msg, 0, flag), then destroys the array. Caller Sess_ElimTracker_AddVehicle calls it with 0 right after it mirrors the eliminated list into +0x30 and sets the done flag +0x390. The batch caller 0x143195f70 holds an inlined copy of the same send (mode 1) and no call. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.elim_tracker_send_vehicle_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 83 79 08 01 0F 8F ?? ?? ?? ?? 89 D3",
+  "match": "0x143193820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143193820",
+  "kind": "func_start",
+  "names": [
+   "Sess_ElimTracker_SendVehicleList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143195db0",
+  "made_on_target": "0x143195db0",
+  "twin": "made on steam-26566308; the target 0x143195db0 is KB 0x143193820: Sess_ElimTracker_AddVehicle (0x3195c80) and Game_NetMarshalZones_HandleMessage (0x3196a20) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143195db0",
+    "target": "0x143195db0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9c02eeb4995cb60c82debf1943236757208aac8fc67e4d3d1c4417dfbcdb1536"
+  }
+ ]
+}

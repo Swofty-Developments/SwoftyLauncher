@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_TryEmplace_U64_NestedMap_Node72",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143905af0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Map_TryEmplace_U64_NestedMap_Node72(void *map, void *out_iter_bool, uint64_t *key, void *alloc, uint32_t *val)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143908080 (RacingPC lab re_groups/_decomp);xref:0x1438a7690",
+  "notes": "(lib) std::map-style red-black tree try-emplace keyed by uint64 (node+0x20). If the key is missing it allocates a 0x48 node, stores key, allocator (+0x28), a fresh empty nested tree head (0x40 sentinel at +0x30) and a uint32 (+0x40), then rebalances; writes {node, inserted} to out. Throws map/set too long at 0x38e38e38e38e38e nodes."
+ },
+ "signature": {
+  "id": "core.map_try_emplace_u64_nested_map_node72",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4D 89 CE 4D 89 C7 48 89 CF 4C 8B 69 08 49 8B 4D 08 31 ED 80 79 19 00 74 0E 49 89 CC 4C 89 EB 80 7B 19 00 75 46",
+  "match": "0x143905af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143905af0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_TryEmplace_U64_NestedMap_Node72"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143908080",
+  "made_on_target": "0x143908080",
+  "twin": "made on steam-26566308; the target 0x143908080 is KB 0x143905af0: Ne_NameTable_FindByFnv1a_B (0x3907810) and Ne_Libpng_CheckIhdr (0x3912c40) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143908080",
+    "target": "0x143908080"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dec92db013e97f3ebc5cca1871ee07c404be4b48602c6c137532deff224f2aa0"
+  }
+ ]
+}

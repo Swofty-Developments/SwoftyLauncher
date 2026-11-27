@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Reset_TimingPillRow",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14175cb20",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Reset_TimingPillRow(void *pill)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14175e2a0 (RacingPC lab re_groups/_decomp);xref:0x14175f410",
+  "notes": "Resets one timing pill row view model: bool nodes at +0x28,+0x68,+0x5d0,+0x1e8,+0x208,+0x268,+0x288 to false, +0x1c8 and +0x228 to true, numeric node +0x48 to 99, string holders +0xa0,+0xc0,+0xe0,+0x1a0,+0x2a0 to empty, UIDB ref +0x248 to null, and cached state +0x340=0xff, +0x344=0, +0x4c0=0."
+ },
+ "signature": {
+  "id": "teams.reset_timing_pill_row",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE C6 44 24 20 00",
+  "match": "0x14175cb20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14175cb20",
+  "kind": "func_start",
+  "names": [
+   "Team_Reset_TimingPillRow"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14175e2a0",
+  "made_on_target": "0x14175e2a0",
+  "twin": "made on steam-26566308; the target 0x14175e2a0 is KB 0x14175cb20: Ui_Init_CarDriverTeamSelectors (0x175a090) and site_Team_TimingPillBadgeLabel (0x1761a8b) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14175e2a0",
+    "target": "0x14175e2a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e9d00dee450963177d29a0402eff206002a8b337abdf8a9961966758d0cb8c01"
+  }
+ ]
+}

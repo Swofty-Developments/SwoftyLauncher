@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_PreRace_Resolve_BaseComponents",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c758a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t Sess_PreRace_Resolve_BaseComponents(void *self, void **provider, void *system_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c77e30 (RacingPC lab re_groups/_decomp);xref:0x142d82ee0",
+  "notes": "Calls 0x142d76bc0 first, then fills self+0xc98 and +0xc88 through provider vtable+0x28 (keys 0x146050c98, 0x146108aa8) and self+0xd40..+0xd70 from system_map by type key, including k_Live_VehicleLapTimesSystemKey (+0xd50), k_Live_PitLaneSystemKey (+0xd58) and k_Live_SpectatorDirectorKey (+0xd70); +0xd78..+0xda8 come from seven typed getters. Returns 0 when every pointer resolved, otherwise 0x16 after recording it in the errno trace ring."
+ },
+ "signature": {
+  "id": "session.pre_race_resolve_base_components",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 D3 48 89 CE E8 ?? ?? ?? ?? 48 8B 03 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 86 98 0C 00 00 48 85 C0 0F 84",
+  "match": "0x142c758a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c758a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_PreRace_Resolve_BaseComponents"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c77e30",
+  "made_on_target": "0x142c77e30",
+  "twin": "made on steam-26566308; the target 0x142c77e30 is KB 0x142c758a0: Game_RewardSequence_PlayCutscene (0x2c76df0) and Sess_FreezeAllVehicles (0x2c787b0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c77e30",
+    "target": "0x142c77e30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bf2e8db41d88186eec2452c9a889030d043658d2bafadf6a2cf63662aaa8d399"
+  }
+ ]
+}

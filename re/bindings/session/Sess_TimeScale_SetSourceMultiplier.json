@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_TimeScale_SetSourceMultiplier",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f6ce10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_TimeScale_SetSourceMultiplier(void *self, uint32_t slot, float mult)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f6f3a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d6a570,0x142d6a970",
+  "notes": "For slot < 4 stores mult at self+0x1f0+slot*4, computes max(1.0, the four slots) into self+0x1d0, and pushes it to (self+0x48)+0x1f8 with bool (>1.0) at +0x1f4 and to (self+0x58)+0x370; calls 0x144536580 when the result is exactly 1.0 and global 0x146cc5ab0 is set. For slot 2 with self+0x1e0 set it also switches a state id on (self+0x1e0)+0xa0 (+0x1058) between 0x146055f68 and 0x146055fc8 and posts events through vfunc +0xd8, setting byte +0x2d6 to 1 (mult > 1) or 0. Callers: Sess_StateInGamePQ_OnStateExit resets slot 2 to 1.0; 0x142d6a570 (VM property-changed callback registered by that state; reads a numeric property and shares this body's tail) writes slot 2 on state+0x1018. Hook point for the effective time multiplier: self+0x1d0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.time_scale_set_source_multiplier",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 83 FA 03",
+  "match": "0x142f6ce10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6ce10",
+  "kind": "func_start",
+  "names": [
+   "Sess_TimeScale_SetSourceMultiplier"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f6f3a0",
+  "made_on_target": "0x142f6f3a0",
+  "twin": "made on steam-26566308; the target 0x142f6f3a0 is KB 0x142f6ce10: site_Sess_VirtualSession_EstimateTail (0x2f6f138) and Game_GarageReturn_ComputeTimeSkip (0x2f6f780) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f6f3a0",
+    "target": "0x142f6f3a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37b34e7f791141b70f490a9735e185f70b68104d35dfc6270076d651aaa3f30a"
+  }
+ ]
+}

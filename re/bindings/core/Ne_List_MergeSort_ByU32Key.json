@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_List_MergeSort_ByU32Key",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435f40a0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_List_MergeSort_ByU32Key(void **first, uint64_t count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1435f6630 (RacingPC lab re_groups/_decomp);xref:0x14358bde0",
+  "notes": "(lib) Recursive in-place merge sort of a doubly linked list segment ordered by the uint32 at node+0x10; updates *first to the new head and returns the node after the sorted range."
+ },
+ "signature": {
+  "id": "core.list_merge_sort_by_u32_key",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 44 24 50 48 FF C0",
+  "match": "0x1435898eb",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1435f40a0",
+  "kind": "call",
+  "names": [
+   "Ne_List_MergeSort_ByU32Key"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14358be7b",
+  "made_on_target": "0x1435f6630",
+  "twin": "made on steam-26566308; the target 0x1435f6630 is KB 0x1435f40a0: Career_Upgrades_FindOrCreateRecommendedState (0x35ebbd0) and Sess_Misconduct_RegisterReporter (0x35f6750) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14358be7b",
+    "target": "0x1435f6630"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ddb6dfc2cee005e4f612902c1f1e4a9cdffa05f569d52325777633dd8c752155"
+  }
+ ]
+}

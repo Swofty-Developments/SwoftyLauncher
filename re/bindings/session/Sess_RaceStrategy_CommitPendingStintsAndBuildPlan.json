@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_CommitPendingStintsAndBuildPlan",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14369aed0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_RaceStrategy_CommitPendingStintsAndBuildPlan(void *strategy)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14369d460 (RacingPC lab re_groups/_decomp);xref:0x14369e530",
+  "notes": "Resets vector at +0xd0/+0xd8/+0xe0 (elem 0x38) and appends every pending element from +0x110..+0x118, then clears the pending range, calls Sess_RaceStrategy_BuildPitPlan(strategy, strategy+0xc8) and sets state +0x1e0 = 7."
+ },
+ "signature": {
+  "id": "session.race_strategy_commit_pending_stints_and_build_plan",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 48 8D B9 C8 00 00 00",
+  "match": "0x14369aed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14369aed0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_CommitPendingStintsAndBuildPlan"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14369d460",
+  "made_on_target": "0x14369d460",
+  "twin": "made on steam-26566308; the target 0x14369d460 is KB 0x14369aed0: Sess_RaceStrategy_BuildPitPlan (0x369c6b0) and Sess_RaceStrategy_FinalisePlan (0x369e530) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14369d460",
+    "target": "0x14369d460"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4a66e1ef51121e0a9240d4f9ac579a5f3e409e9c8a9e5f7c2eac3a4dc5348cef"
+  }
+ ]
+}

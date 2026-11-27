@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_Sync_ClonedDriverRecord",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141442b80",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "uint64_t Ent_Sync_ClonedDriverRecord(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141443360 (RacingPC lab re_groups/_decomp);xref:0x14245bcd0",
+  "notes": "Reads the source driver (handle at self+0x1b0) from the entrants system at self+0x280 and copies its record (four 128 char strings at +0x38/+0xd0/+0x168/+0x200, a 12 char string at +0x298, int +0x2a8, byte +0x2ac, 0x310 byte blob at +0x2b0). If the target driver handle at self+0x26c does not resolve, it fetches three localised strings from the provider at self+0x2b0, builds a name block and calls Ent_EntrantsSystem_AddDriver, storing the new handle at +0x26c. If it resolves, the target names are kept in the copy and Ent_EntrantsSystem_ReplaceDriver is called when the copy differs from the target record."
+ },
+ "signature": {
+  "id": "entrants.sync_cloned_driver_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 90 08 00 00",
+  "match": "0x141442b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141442b80",
+  "kind": "func_start",
+  "names": [
+   "Ent_Sync_ClonedDriverRecord"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141443360",
+  "made_on_target": "0x141443360",
+  "twin": "made on steam-26566308; the target 0x141443360 is KB 0x141442b80: Game_DecalGeneration_ReadBackCompressed (0x14387c0) and Ne_FlagMaskSet_SetBit (0x144e040) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141443360",
+    "target": "0x141443360"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9866251666553d0a762417c3ed02cdbc193c8c4bed151fd6b3d4d390c5cad6fd"
+  }
+ ]
+}

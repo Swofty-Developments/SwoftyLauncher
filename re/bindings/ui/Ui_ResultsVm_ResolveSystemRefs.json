@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_ResultsVm_ResolveSystemRefs",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14183ddf0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_ResultsVm_ResolveSystemRefs(void *self, void *unused, void *system_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14183f5d0 (RacingPC lab re_groups/_decomp);xref:0x141836b70,0x141cb7710",
+  "notes": "Looks up six systems in the robin-hood service map (keys 0x14607bb70, k_Live_EntrantsSystemKey, 0x1460c0d80, 0x14607e178, 0x146108a28, 0x146082d08) and stores them at +0x1b0, +0x1b8 (entrants system), +0x1c0, +0x1c8, +0x1d0, +0x1d8. On success sets +0x1e7 from bit 11 of Ne_Get_FeatureFlags and returns 0; any missing system sets errno 0x16 and returns 0x16."
+ },
+ "signature": {
+  "id": "ui.results_vm_resolve_system_refs",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 4C 89 C1 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 47 18 48 3B 47 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 86 B0 01 00 00",
+  "match": "0x14183ddf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14183ddf0",
+  "kind": "func_start",
+  "names": [
+   "Ui_ResultsVm_ResolveSystemRefs"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14183f5d0",
+  "made_on_target": "0x14183f5d0",
+  "twin": "made on steam-26566308; the target 0x14183f5d0 is KB 0x14183ddf0: Game_SessionResults_PopulateTable (0x1836b70) and Career_Bind_SpecialistUpgradeText (0x185ad60) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14183f5d0",
+    "target": "0x14183f5d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cef95ccf8c354d78d622db0c4a642860c6e4770aca96ac7ed7777a9ab65ebfb6"
+  }
+ ]
+}

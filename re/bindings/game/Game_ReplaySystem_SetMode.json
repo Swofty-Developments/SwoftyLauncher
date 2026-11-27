@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ReplaySystem_SetMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445cafc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_ReplaySystem_SetMode(void *replay_system, uint32_t mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445cd830 (RacingPC lab re_groups/_decomp);xref:0x142da0570,0x142da3810,0x142da4770,0x142da5370,0x142da8330,0x142da92a0,0x142fe3630",
+  "notes": "Under the critical section at +0xb0: if +0x3c (current mode) differs from mode, logs \"ReplaySystem\" \"setMode %s\" (4 mode names in table 0x145bf3548), clears flags +0x41..+0x47 and playback fields +0xfd/+0x100 of the object at **(+0x98), for mode 1 sets +0x46=1, +0x48=0, +0x50=0x101 and optional +0x53/+0x58/+0x5c, writes +0x3c=mode, +0x38=2 and posts a bus message (vtable 0x145bf3490) carrying the mode. cxx=ReplaySystem::setMode. Good hook to observe replay mode changes."
+ },
+ "signature": {
+  "id": "game.replay_system_set_mode",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 89 D7 48 89 CE 48 8B 89 B0 00 00 00",
+  "match": "0x1445cafc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445cafc0",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplaySystem_SetMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445cd830",
+  "made_on_target": "0x1445cd830",
+  "twin": "made on steam-26566308; the target 0x1445cd830 is KB 0x1445cafc0: Game_ReplayFile_ReadFooter (0x45c83e0) and Sess_Recordable_Register (0x45cf6f0) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445cd830",
+    "target": "0x1445cd830"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e520e563f449fe18e9fe13594c771dc63fa6c2c4e45d412eb48237a560b9566d"
+  }
+ ]
+}

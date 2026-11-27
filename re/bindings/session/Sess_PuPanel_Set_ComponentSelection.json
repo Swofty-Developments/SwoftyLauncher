@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_PuPanel_Set_ComponentSelection",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f57840",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_PuPanel_Set_ComponentSelection(void *component, uint8_t selected, uint64_t item_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f59440 (RacingPC lab re_groups/_decomp);xref:0x141f54eb0,0x141f59730",
+  "notes": "Writes selected to the bool node at +0x230 and its inverse to the bool node at +0x250. When selected it sets the bool node at +0x1b0 of item[item_index] (0x1c8-byte items at +0x170) and takes that item's node handle (+0x10), otherwise the handle at component+0x1b0; the handle is then written as a UIDB reference to the node at +0x1f0. Returns early when selected and item_index is out of range."
+ },
+ "signature": {
+  "id": "session.pu_panel_set_component_selection",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 4C 89 C7 89 D3 48 89 CE",
+  "match": "0x141f57840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f57840",
+  "kind": "func_start",
+  "names": [
+   "Sess_PuPanel_Set_ComponentSelection"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f59440",
+  "made_on_target": "0x141f59440",
+  "twin": "made on steam-26566308; the target 0x141f59440 is KB 0x141f57840: Sess_PuPanel_FillComponent (0x1f54eb0) and Game_VehicleManagementVM_HandleCommand (0x1f59730) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f59440",
+    "target": "0x141f59440"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "10c26609f10075926c05bce6bd2c6775c27c7ec86277ce5a71525fb4ac40a8cb"
+  }
+ ]
+}

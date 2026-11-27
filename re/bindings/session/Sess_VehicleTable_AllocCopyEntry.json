@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_VehicleTable_AllocCopyEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140cdcdf0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_VehicleTable_AllocCopyEntry(void *out_owned, void *allocator, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140cdd8b0 (RacingPC lab re_groups/_decomp);xref:0x140cdd4d0",
+  "notes": "Allocates 0xd00 bytes (align 0x10) from the allocator and copy-constructs a vehicle table entry from src: header and 0x40 id block, five inline 256-char string buffers (vtables 0x145615538 at +0x58, +0x170, +0x288, +0x3a0, +0x4b8), a 0x218 block at +0x5d0, a counted array of 0x30-byte items (count +0x880, data +0x7f0), a 0x2b0 block at +0x8d0, two sub-objects with vtables 0x14563ea90 (+0xb80) and 0x14563eae0 (+0xc10) and trailing data to +0xcf6. Writes {allocator, entry} to out_owned and returns it."
+ },
+ "signature": {
+  "id": "session.vehicle_table_alloc_copy_entry",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C3 48 89 D7 48 89 CE 48 8B 02 BA 00 0D 00 00",
+  "match": "0x140cdcdf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cdcdf0",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehicleTable_AllocCopyEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140cdd8b0",
+  "made_on_target": "0x140cdd8b0",
+  "twin": "made on steam-26566308; the target 0x140cdd8b0 is KB 0x140cdcdf0: Sess_VehicleTable_EmplaceAt (0xcdd4d0) and Career_Copy_SponsorSlotRecord (0xce3b40) on either side both sit 0xac0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cdd8b0",
+    "target": "0x140cdd8b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cb6a0f70d8f65cc1c33fc40c7fa675c1398eedf3812c3be21cbbae4621787dcb"
+  }
+ ]
+}

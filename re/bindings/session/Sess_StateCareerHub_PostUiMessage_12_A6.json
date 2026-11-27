@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_StateCareerHub_PostUiMessage_12_A6",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140bf92b0",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void Sess_StateCareerHub_PostUiMessage_12_A6(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140bf9d60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d53340",
+  "notes": "Builds a 0x14-byte message (vtable 0x145680680, ids 0x12 and 0xa6, trailing -1) and calls 0x144030ad0((self+0x2a8)+0x3d0, 1, &msg, 0, 0). Context from caller: Sess_StateCareerHub_OnStateEnter calls it on state+0xdd8 right after setting state+0xec8 = 1 and subscribing its handler on the message bus, so self is a member object of the state. Stays L1: the target at +0x3d0 and the meaning of ids 0x12/0xa6 are not shown. Better context needed: 0x144030ad0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.state_career_hub_post_ui_message_12_a6",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 B8 12 00 00 00 A6 00 00 00",
+  "match": "0x140bf92b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bf92b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_StateCareerHub_PostUiMessage_12_A6"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140bf9d60",
+  "made_on_target": "0x140bf9d60",
+  "twin": "made on steam-26566308; the target 0x140bf9d60 is KB 0x140bf92b0: Career_Get_TeamBankBudgetCategoryValue (0xbf58b0) and Career_DriverNumbers_CheckExisting (0xc026e0) on either side both sit 0xab0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140bf9d60",
+    "target": "0x140bf9d60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e5cf9f80a8de268b324f443d4a81bb7d04923f8d6f6830b8d10fac02d6b7d7ef"
+  }
+ ]
+}

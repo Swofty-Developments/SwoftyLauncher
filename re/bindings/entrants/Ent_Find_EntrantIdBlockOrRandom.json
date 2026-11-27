@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_Find_EntrantIdBlockOrRandom",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1425777b0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "void *Ent_Find_EntrantIdBlockOrRandom(void *self, void *out_id_block, void *entrant_record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425796e0 (RacingPC lab re_groups/_decomp);xref:0x140bc0c00",
+  "notes": "Scans the hash set at self+0x178/+0x180 (count +0x188) for an entry whose record at +0x18 matches entrant_record (Sess_Match_EntrantIdentity_Thunk). On a hit it copies the 0x40 byte id block at entry+0xa0 and the u32 flags at +0xe0 to out; otherwise it fills out with Ne_Make_RandomIdBlock and sets flag bits 28..29 to 0x20000000."
+ },
+ "signature": {
+  "id": "entrants.find_entrant_id_block_or_random",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 48 89 D6 48 83 B9 88 01 00 00 00",
+  "match": "0x1425777b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425777b0",
+  "kind": "func_start",
+  "names": [
+   "Ent_Find_EntrantIdBlockOrRandom"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1425796e0",
+  "made_on_target": "0x1425796e0",
+  "twin": "made on steam-26566308; the target 0x1425796e0 is KB 0x1425777b0: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1425796e0",
+    "target": "0x1425796e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a80a4d126084f6dae9036d853b5a0d73e5c8fbf760f794b0f027e6470683776e"
+  }
+ ]
+}

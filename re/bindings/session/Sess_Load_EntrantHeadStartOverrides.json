@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Load_EntrantHeadStartOverrides",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142d1d130",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Load_EntrantHeadStartOverrides(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142d1f6c0 (RacingPC lab re_groups/_decomp);xref:0x142d32dc0",
+  "notes": "Rebuilds the 0x18-byte per-entrant array at self+0x3f8/+0x400/+0x408 (allocator +0x3f0) from the race entrant list (0x88-byte records at +0x20..+0x28 of the object returned by session vtable+0xa8). For entrant i it reads the gamedb row i (0x218 bytes, from (self+0x350)+0x338) fields participating (+1), head_start_time (+4), ai_difficulty_override (+8, clamped to max 1.0) and use_standard_driver (+0x10); +0 is the entrant byte +0x82, +0x12 the entrant u32 +0x50, +0xc stays -1.0. When use_standard_driver is set it writes the string standard_driver into the matching 0xa0-byte entry of the session list at +0xfb0, or appends via 0x1407a0b70."
+ },
+ "signature": {
+  "id": "session.load_entrant_head_start_overrides",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 02 00 00 C5 78 29 84 24 70 02 00 00",
+  "match": "0x142d1d130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d1d130",
+  "kind": "func_start",
+  "names": [
+   "Sess_Load_EntrantHeadStartOverrides"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d1f6c0",
+  "made_on_target": "0x142d1f6c0",
+  "twin": "made on steam-26566308; the target 0x142d1f6c0 is KB 0x142d1d130: Sess_Ruleset_ForceFinishAllDefault (0x2d1e900) and Sess_ElimRuleset_FinaliseResults (0x2d28470) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d1f6c0",
+    "target": "0x142d1f6c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6bd407f7937d9d2304b50a033539c41955b1a1de2c595e3f89669ccf7afb8913"
+  }
+ ]
+}

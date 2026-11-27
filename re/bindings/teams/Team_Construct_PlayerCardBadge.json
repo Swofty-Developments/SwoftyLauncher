@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Construct_PlayerCardBadge",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141cba740",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void *Team_Construct_PlayerCardBadge(void *badge, void *alloc, void *parent, void *ctx_a, void *ctx_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141cbc340 (RacingPC lab re_groups/_decomp);xref:0x141cb7710",
+  "notes": "Constructor of the 0x450-byte player card badge view: stores two context pointers (+0x0, +0x8), binds the parent node (+0x10) and creates VM nodes gamertag, invite_tooltip_text ('lng_add_as_ea_friend'), platform_icon, show_platform_icon, team, team_badge, a token node (-1), driver, show_invite_tooltip_icon, show_invite_button, visible, show_driver_trophy, show_constructor_trophy, another token node; inits an id vector (+0x130, allocator alloc) and a resource set (+0x210)."
+ },
+ "signature": {
+  "id": "teams.construct_player_card_badge",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 C7 48 89 54 24 48",
+  "match": "0x141cba740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141cba740",
+  "kind": "func_start",
+  "names": [
+   "Team_Construct_PlayerCardBadge"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141cbc340",
+  "made_on_target": "0x141cbc340",
+  "twin": "made on steam-26566308; the target 0x141cbc340 is KB 0x141cba740: Game_LoadingScreenVM_OnScreenActivated (0x1ca5fe0) and Game_MpSeasonCompleteVM_OnActivate (0x1cbded0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141cbc340",
+    "target": "0x141cbc340"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "da321c391ff6e01652a603a14875f4dc44090f7c7d31b9c99f696d340bca3e24"
+  }
+ ]
+}

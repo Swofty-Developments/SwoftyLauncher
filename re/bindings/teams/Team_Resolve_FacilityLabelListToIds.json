@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Resolve_FacilityLabelListToIds",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140df6480",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Resolve_FacilityLabelListToIds(const char *fieldName, void *row, void *outU16Vec, void *recordVec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140df7000 (RacingPC lab re_groups/_decomp);xref:0x140dea820",
+  "notes": "Clears outU16Vec, reads the string-list field fieldName from the row (deobfuscating each 0x28-byte string entry), then for each non-empty label strcmp-searches recordVec (16-byte entries, record ptr at +8, name at record+0x18) and appends the record u16 id at record+0x130 to the output vector. Stops at the first empty label."
+ },
+ "signature": {
+  "id": "teams.resolve_facility_label_list_to_ids",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 4C 24 28 48 89 C8",
+  "match": "0x140df6480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df6480",
+  "kind": "func_start",
+  "names": [
+   "Team_Resolve_FacilityLabelListToIds"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140df7000",
+  "made_on_target": "0x140df7000",
+  "twin": "made on steam-26566308; the target 0x140df7000 is KB 0x140df6480: Career_TeamHqFacilities_ReadFacilitiesSelectionConfig (0xdf41e0) and Career_DriverContractEvent_Destroy (0xe05870) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140df7000",
+    "target": "0x140df7000"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "72cbcf67995b791a54f55fae00a24fccc84bef9886f632a2337c808175371f95"
+  }
+ ]
+}

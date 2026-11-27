@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Append_ShowroomStatsRow_Elem20",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142e0d600",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "uint64_t Team_Append_ShowroomStatsRow_Elem20(void *vec, void *gdb_row)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e0fb90 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142e102b0",
+  "notes": "Vector push-back for 0x20-byte elements: vec+0 allocator, +8 begin, +0x10 end, +0x18 capacity; when full grows by 1.5x (alloc vfunc +0x18, memcpy old, free vfunc +0x38), then constructs the new element in place with 0x142e0f180(row), which reads the Gdb fields wins, poles, name, driver. Returns 0. Context from caller: Team_Load_ShowroomData loops the showroom.drivers_history / driver_history table rows and appends each one to the vector at showroom+0x68, so the rows are driver history stats; hook here to see every showroom driver row as it is loaded. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "teams.append_showroom_stats_row_elem20",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 49 10 48 89 C8 48 2B 46 08 48 89 D7 48 C1 F8 05",
+  "match": "0x142e0d600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e0d600",
+  "kind": "func_start",
+  "names": [
+   "Team_Append_ShowroomStatsRow_Elem20"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e0fb90",
+  "made_on_target": "0x142e0fb90",
+  "twin": "made on steam-26566308; the target 0x142e0fb90 is KB 0x142e0d600: Sess_StoryRollingStart_OnStateEnter (0x2e0a410) and Game_Handle_SpecGarageCrewEvent_Thunk (0x2e1a2f0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e0fb90",
+    "target": "0x142e0fb90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "027bae7d805359362bf7606fff9dcdbc23f403550e0a80ff5c12bc76b56bff58"
+  }
+ ]
+}

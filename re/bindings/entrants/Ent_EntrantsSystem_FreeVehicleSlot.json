@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_FreeVehicleSlot",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142476580",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "uint32_t Ent_EntrantsSystem_FreeVehicleSlot(void *table, uint16_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142478180 (RacingPC lab re_groups/_decomp);xref:0x142477da0,0x142478370",
+  "notes": "Vehicle table variant of the slot free: before freeing the record through the slot allocator it clears the qword at record+0x880 (element count of an inline array, so no element dtors run). Pops the vector if the slot is last, else nulls it. Returns 1 if a record was present. Independent re-check (lab blind verifier 2026-11-27): partial, better name Ent_SlotTable_FreeSlotByIndex_ClearBackRef: Bounds-checks ushort param_2 against a 16-byte-entry vector at param_1+8, pops the tail or nulls entry+8, clears obj+0x880 and calls vtable+0x38 on the stored pointer, returning 1 or 0; the code gives no basis for vehicle (vs team) beyond the +0x880 back-reference."
+ },
+ "signature": {
+  "id": "entrants.entrants_system_free_vehicle_slot",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 44 0F B7 CA 4C 8B 41 08 48 8B 41 10 49 89 C2 4D 29 C2 49 C1 FA 04 4D 39 CA 76 3C 4D 89 CB 49 C1 E3 04 4B 8B 54 18 08 48 85 D2 74 2B 49 FF CA 4D 39 CA 75 2F 4C 39 C0 74 53",
+  "match": "0x142476580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142476580",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_FreeVehicleSlot"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142478180",
+  "made_on_target": "0x142478180",
+  "twin": "made on steam-26566308; the target 0x142478180 is KB 0x142476580: site_Team_LoadInserted (0x246b3f9) and Ent_EntrantsSystem_ReplaceVehicle (0x2478370) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142478180",
+    "target": "0x142478180"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1a3042e481a4653368d35c17723b36116fd9ca80b7b4b81650279d302868e745"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_SimVehicle_Get_TrackData",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1407a1750",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_Lookup_OwnTrackData(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1407a1790 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142c39200,0x142f69280",
+  "notes": "Renamed from Sess_SimVehicle_Get_TrackData: both callers pass the object at +0x88/+0x260 of the session owner (the one that holds the entrant list), not a sim vehicle. Reads system self+0xf58 and track ref *(*(self+0xf40)+0x1a8)+0x30, fills a 6-byte id through own vcall +0xc8 and returns Game_TrackData_GetTrack(system, track_ref, id) in RAX (the decompile shows void). Caller 0x142c39200: copies the string at *result+0x78 into a 32-char buffer; Sess_VirtualSession_SimulateEntrantStep reads float result+0x220 or +0x224 and halves it into +0xb90. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.sim_vehicle_get_track_data",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B 81 40 0F 00 00",
+  "match": "0x1407a1750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407a1750",
+  "kind": "func_start",
+  "names": [
+   "Sess_SimVehicle_Get_TrackData"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1407a1790",
+  "made_on_target": "0x1407a1790",
+  "twin": "made on steam-26566308; the target 0x1407a1790 is KB 0x1407a1750: Game_GameModeEntity_SetSetupMode (0x79f340) and Game_BenchmarkGameMode_BuildSessionSettings (0x7a48a0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1407a1790",
+    "target": "0x1407a1790"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4619873967a72d2ce28b46ae6cf5f74f1a861d70e88d635908cced0e474fe1cc"
+  }
+ ]
+}

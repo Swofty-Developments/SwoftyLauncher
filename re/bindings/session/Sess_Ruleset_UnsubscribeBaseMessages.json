@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Sess_Ruleset_UnsubscribeBaseMessages",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142d11a40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Ruleset_UnsubscribeBaseMessages(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142d13fd0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142d13af0,0x142d1cb60,0x142d20ef0",
+  "notes": "Removes three {handler, self} delegates from the bus [g_Game_MessageBus+8] with 0x14398a8e0: handler 0x142d1e410 for message key 0x1456156a8, Sess_RollingStartCutscene_ResetReplay for 0x1457b93aa and Sess_RollingStartCutscene_OnFinished for 0x14567293e; when the bus flag +0x68 is clear it only records error 0x58 in the errno trace ring. Writes nothing in self. Callers 0x142d13af0, 0x142d1cb60 and 0x142d20ef0: derived ruleset teardown functions that remove their own delegate (key 0x1456bf2f8) and then call this as the last step. Hook point to see when a ruleset stops listening to the rolling start cutscene. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "session.ruleset_unsubscribe_base_messages",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 20 E8 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x142d31093",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xd"
+  },
+  "target": "0x142d11a40",
+  "kind": "call",
+  "names": [
+   "Sess_Ruleset_UnsubscribeBaseMessages"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d33623",
+  "made_on_target": "0x142d13fd0",
+  "twin": "made on steam-26566308; the target 0x142d13fd0 is KB 0x142d11a40: Sess_Ruleset_FinaliseResultsDefault (0x2d11320) and Sess_AutoCrossRuleset_PlaceVehicles (0x2d16bb0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d33623",
+    "target": "0x142d13fd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "13b22ae812d5f51a6629920cdbca38363c634bb66fa09752422911d1c6eabc42"
+  }
+ ]
+}

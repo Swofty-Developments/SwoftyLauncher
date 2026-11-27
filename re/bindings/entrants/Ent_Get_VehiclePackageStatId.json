@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_Get_VehiclePackageStatId",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1425049f0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "uint8_t Ent_Get_VehiclePackageStatId(const char *label)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1425065f0 (RacingPC lab re_groups/_decomp);xref:0x14022adf0,0x1413e5330,0x1424560e0",
+  "notes": "Looks up label in gamedb table entrants.vehicles.vehicle_packages (key column vehicle_package) with Gdb_Find_RowByLabel and returns the low byte of its stat_id field, 0 if the field is missing."
+ },
+ "signature": {
+  "id": "entrants.get_vehicle_package_stat_id",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 04 00 00 49 89 C8 C7 84 24 28 02 00 00 FF FF FF FF C6 84 24 2C 02 00 00 01 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 44 24 28 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 44 24 38 66 C7 44 24 48 65 73 C6 44 24 4A 00 C5 F8 28 05 ?? ?? ?? ?? C5 F8 11 84 24 28 01 00 00 31 F6 48 8D 4C 24 28",
+  "match": "0x1425049f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425049f0",
+  "kind": "func_start",
+  "names": [
+   "Ent_Get_VehiclePackageStatId"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1425065f0",
+  "made_on_target": "0x1425065f0",
+  "twin": "made on steam-26566308; the target 0x1425065f0 is KB 0x1425049f0: Game_EntrantsUi_BuildCharacterRef (0x24f3970) and site_Game_MyTeamVehicleBases_SaveRecord (0x2508cbf) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1425065f0",
+    "target": "0x1425065f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c396fac2946751e7260107ca08cb5a205edc5fb6484ae5413475f7d41b3d2ce8"
+  }
+ ]
+}

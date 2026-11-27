@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_DataArray_GetElem_AsU64",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d44d30",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "int Ne_DataArray_GetElem_AsU64(void *arr, uint64_t index, uint64_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d458b0 (RacingPC lab re_groups/_decomp);xref:0x14245ab20",
+  "notes": "(lib) Typed element read from a data-document array (ptr table +0x08, u16 count +0x10). Returns 0x22 if index out of range, 0x57 if the element is null, 0x58 if its type descriptor differs from the one at 0x14612bf18, else copies the 8-byte value (vcall +0x30) to *out and returns 0. Errors go through the TLS errno/trace ring."
+ },
+ "signature": {
+  "id": "core.data_array_get_elem_as_u64",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 0F B7 41 10 48 39 D0 76 57 48 8B 41 08 48 8B 3C D0 48 85 FF 0F 84 ?? ?? ?? ?? 4C 89 C6 48 8B 07 48 89 F9 FF 50 08 48 8B 10 48 89 C1 FF 52 10 89 C3 48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 10 39 C3 0F 85 ?? ?? ?? ?? 48 8B 07 48 89 F9 FF 50 30 48 8B 00",
+  "match": "0x140d44d30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d44d30",
+  "kind": "func_start",
+  "names": [
+   "Ne_DataArray_GetElem_AsU64"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140d458b0",
+  "made_on_target": "0x140d458b0",
+  "twin": "made on steam-26566308; the target 0x140d458b0 is KB 0x140d44d30: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140d458b0",
+    "target": "0x140d458b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "efdfdcd1375666ad06be2c864efc102c92d30ea12628c11dfac89450748bc449"
+  }
+ ]
+}

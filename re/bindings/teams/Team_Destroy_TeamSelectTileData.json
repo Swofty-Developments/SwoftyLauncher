@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Destroy_TeamSelectTileData",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141849de0",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Destroy_TeamSelectTileData(void *data)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14184b5c0 (RacingPC lab re_groups/_decomp);xref:0x141defc40",
+  "notes": "Destructor matching 0x14184a9e0: releases the VM node holder at +0x2a0 with Vm_Release_Node, then frees the heap buffers of the eleven optional strings (when their has-value byte is set) and the three mandatory strings through each string allocator vfunc +0x38 when not using the inline buffer."
+ },
+ "signature": {
+  "id": "teams.destroy_team_select_tile_data",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 81 A0 02 00 00",
+  "match": "0x141849de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141849de0",
+  "kind": "func_start",
+  "names": [
+   "Team_Destroy_TeamSelectTileData"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14184b5c0",
+  "made_on_target": "0x14184b5c0",
+  "twin": "made on steam-26566308; the target 0x14184b5c0 is KB 0x141849de0: Game_SessionResults_PopulateTable (0x1836b70) and Career_Bind_SpecialistUpgradeText (0x185ad60) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14184b5c0",
+    "target": "0x14184b5c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7d827c9aa837bf6d4771fe8bae71cb5b78dbcb9803ffb8dbc261a10430c9c6a5"
+  }
+ ]
+}

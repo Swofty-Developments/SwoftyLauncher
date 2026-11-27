@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_140fbd170",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140fbc5f0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_140fbd170(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fbd170 (RacingPC lab re_groups/_decomp);xref:0x140f90ed0",
+  "notes": "(thunk) Only calls Ne_Crt_InvalidParameterAbort then int3; overflow abort stub used by the rehash at 0x140fbd300."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_140fbd170",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC 41 57 41 56 41 54 56 57 53 48 83 EC 28 4C 89 C6 48 89 D3 48 89 CF 48 8B 41 18 4C 8D 3C 52 49 C1 E7 04 4C 8D 72 FF 42 0F B6 4C 38 D0",
+  "match": "0x140fbc5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fbc5f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_140fbd170"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140fbd170",
+  "made_on_target": "0x140fbd170",
+  "twin": "made on steam-26566308; the target 0x140fbd170 is KB 0x140fbc5f0: Career_Format_MoraleDepartmentEffectText (0xfa0f30) and Career_Init_MyTeamRewardTypeRegistry (0xfc14c0) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140fbd170",
+    "target": "0x140fbd170"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a0f14c5a6a67ac8064fcaf916b237b7a4ddc0a688fc9c42437c9ec6c34ddac77"
+  }
+ ]
+}
