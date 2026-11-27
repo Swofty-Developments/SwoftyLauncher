@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14178baa0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_Mfd_Downforce_UpdateValues(void *page)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14178d220 (RacingPC lab re_groups/_decomp);xref:0x14178c4c0",
-  "notes": "Looks for the page's vehicle id (+0xf0 byte, +0xf2 short) in the entry list of +0xc0 (+0x290) or +0xc8 (+0x260), then converts two global floats (*0x14605c578 +8 and *0x14605c428 +8) to ints and writes them to the int VM nodes page+0x148 and page+0x168. Better context needed: which of the two globals is front and which is rear wing."
+  "proto": "void Game_Mfd_Downforce_UpdateMinMaxNodes(void *entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14178d220 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141541560,0x14178c4c0",
+  "notes": "Renamed from Game_Mfd_Downforce_UpdateValues: it only rewrites the two limit nodes, not the value. Walks the pointer list +0x40..+0x48 of [entry+0xc0]+0x290 (or [entry+200]+0x260) for the item whose dword +0x20 matches the key (byte entry+0xf0, short entry+0xf2); on a match converts the floats at [*0x14605c578]+8 and [*0x14605c428]+8 to int and writes them to the int VM nodes entry+0x148 (min_value) and entry+0x168 (max_value) via 0x140971ea0 after a type check against 0x14612bf38. Game_Mfd_Downforce_BindNodes calls it after binding the nodes; caller 0x141541560: on a vehicle change copies the per-vehicle record field +0x50 into the embedded entry key (param+0x3d8) and refreshes the entry at param+0x2e8. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.mfd_downforce_update_values",

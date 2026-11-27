@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143ac1720",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "int64_t Ne_JobQueue_SubmitJobRange(void *queue, int64_t *range, void *arg, uint32_t flagA, uint8_t flagB)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac3cf0 (RacingPC lab re_groups/_decomp);xref:0x144107ab0,0x144107eb0",
-  "notes": "Submits a range of job records (range[0] begin, [1] stride, [2] end, [3] minimum size) under the critical section at queue+0x28. Returns 1 with errno 1 when queue+0x164 (shut down) is set. Pushes each record via 0x143ac00e0 (direct to a worker) or 0x143ac2340 (deferred batch) depending on queue+0x10 and the pending counter at +0x160, then kicks the scheduler. The callee names in the KB say Render_Streaming but the physics world uses the same queue."
+  "proto": "uint64_t Ne_JobQueue_SubmitJobRange(void *queue, int64_t *range, const char *name, uint8_t flag_a, uint8_t flag_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac3cf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14018cb90,0x14018cd90,0x1403c4b20",
+  "notes": "range = {begin, stride, end, item_size}. Returns 1 with thread error 1 when queue+0x164 is set; otherwise under critsec +0x28 walks begin..end by stride and submits one job {entry 0x1402aaed0, item ptr} per element: direct to a worker via Ne_JobQueue_Push_JobToWorker when +0x160 >= 0, else as a deferred job via 0x143ac2340 with owner +0x168; with +0x10 clear and more than one item all go deferred and one schedule call follows. Returns 0. The name argument is not read in the body. Caller 0x14018cb90: fills an array of 0x18-byte job items and submits it then waits on the job signal; caller 0x14018cd90: submits 0x20 and 0x10-byte item arrays per frame; caller 0x1403c4b20: submits 0x20-byte items and waits. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.job_queue_submit_job_range",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1437ac0a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_Build_RecordLapFractionTable(void *self)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437ae630 (RacingPC lab re_groups/_decomp)",
-  "notes": "Incremental builder (state +0x254: 0 init, 1 running, 2 done; budget per call +0x138, cursor +0x140). For each record index below count +0x214 it seeks the stream at +0x1d8 to the offset from table +0x208, reads a u32 whose low 18 bits / 1000 give a value, converts it to a position via 0x1437c5960, finds the track volume and lap distance (Game_TrackSpace_FindVolume / LapDistance) and stores (monotonic lap fraction, value) pairs in the 8-byte array at +0x190. Better context needed: owner class (looks like replay or ghost sample indexing)."
+  "proto": "void Game_Build_RecordLapFractionTable(void *record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437ae630 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1437af310,0x1437b49a0",
+  "notes": "Incremental builder for the vector at +0x190/+0x198/+0x1a0 of 8-byte {float lap_fraction, float time_s} entries, one per key (+0x214 keys). State +0x254: 0 = reset and reserve, 1 = building, 2 = complete; each call handles up to +0x138 keys from cursor +0x140. Per key it seeks the stream at +0x1d8 to offset table [+0x208][i], reads the 4-byte header (time = low 18 bits / 1000), samples the position (0x1437c5960), finds the track volume and takes Game_TrackSpace_LapDistance * g_Live_SectorEnds[3] clamped to 0..1 and kept monotonic (+0x258 holds the last value); entry 0 is {0,0} and the last is {1.0, +0x268}. Caller 0x1437af310: maps a lap fraction to a time by binary search and lerp over this table; caller 0x1437b49a0: steps every record with state < 2 once per update. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.build_record_lap_fraction_table",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142a397a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "int32_t Game_PropertySets_TryRead_Value16ByName(void *owner, void *name, void *out16)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a3bb60 (RacingPC lab re_groups/_decomp);xref:0x142a3b840,0x1443f6a70,0x144589b60",
-  "notes": "Looks a property up by name in three fallback property sets (owner+0xf0, then +0xe8, then +0xe0, each via vtbl+8), checks its type id against the type descriptor at 0x14612bea8 and copies 16 bytes of value into out16. Returns 0, 0x57 when not found, 0x16 on type mismatch. The 16-byte type is most likely a vec4."
+  "proto": "int32_t Game_PropertySets_TryRead_Value16ByName(void *ctx, const char *name, void *out16)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a3bb60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142a3b840,0x14366ea80,0x1443f6a70",
+  "notes": "Looks name up (vcall +8) in the three property sets ctx+0xf0, +0xe8, +0xe0 in that order; on a hit checks the property type (vcall +8 then +0x10) against the descriptor 0x14612bea8 and copies the 16-byte value from vcall +0x30 to out16, returning 0. Returns 0x57 when no set has the name and 0x16 on a type mismatch, both recorded in the TLS errno chain and trace ring. Game_Read_LeftRightCarPlacement reads the left and right car placement values into self+0x30/+0x40 with it; caller 0x14366ea80: a reader that stores the value at self+0x98 and reports the error code on failure; Prot_Unk_1443f44a0 reads one into self+0x58 and ignores the result. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.property_sets_try_read_value16_by_name",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1447cf5f0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "void Ne_FieldTable_AddFixedName_Type7_Cap1(void *table, void *dest)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447d1fb0 (RacingPC lab re_groups/_decomp);xref:0x1447d25f0",
-  "notes": "Adds one entry to a 1-slot field descriptor table (0x28 bytes per entry: +0 type, +8 name, +0x10 destination, +0x20 size): type 7, size 8, name is the constant string at 0x145ccf9e6, sets the required bit in +0x28 and bumps count +0x2c. Records error 0xc if the table is full. Better context needed: the string at 0x145ccf9e6 names the parsed attribute."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447d1fb0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1447d25f0",
+  "notes": "Appends one 0x28-byte field descriptor to a table of capacity 1 (count +0x2c, bit mask +0x28): type +0 = 7, name +8 = constant string 0x145ccf9e6, dest +0x10, size +0x20 = 8, sets the mask bit and increments the count; when full it sets errno 0xc in the TLS chain and the errno trace ring. Context from caller: Game_PhysicsDesc_ParseBodyPart registers the single attribute of one geometry type, then runs Ne_AttrSet1_Parse on the reader. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.field_table_add_fixed_name_type7_cap1",

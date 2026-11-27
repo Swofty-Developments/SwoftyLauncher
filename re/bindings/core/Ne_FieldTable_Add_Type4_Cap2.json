@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1447d3490",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
   "proto": "void Ne_FieldTable_Add_Type4_Cap2(void *table, const char *name, void *dest)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447d5e50 (RacingPC lab re_groups/_decomp);xref:0x1447d25f0",
-  "notes": "Adds a type 4, size 4 entry (name, destination) to a 2-slot field descriptor table (0x28 bytes per entry), always sets its bit in the required mask +0x50 and bumps count +0x54. Records error 0xc when both slots are used."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1447d5e50 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1447d25f0",
+  "notes": "Appends one 0x28-byte field descriptor to a table of capacity 2 (count +0x54, bit mask +0x50): type +0 = 4, name +8, dest +0x10, size +0x20 = 4, always sets the mask bit; when full it sets errno 0xc. Context from caller: Game_PhysicsDesc_ParseBodyPart registers radius and halfLength (dest buffer +0 and +4) for the capsule geometry, then runs Ne_AttrSet2_Parse. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.field_table_add_type4_cap2",

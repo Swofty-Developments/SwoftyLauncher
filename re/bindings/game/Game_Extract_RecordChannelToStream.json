@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1437ae1d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "uint64_t Game_Extract_RecordChannelToStream(void *self, void *outStream, uint32_t channelMask, uint64_t recordIndex)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437b0760 (RacingPC lab re_groups/_decomp)",
-  "notes": "Seeks the source stream at self+8 to the offset from table self+0x38[recordIndex], reads a u32 header (channel bits above bit 18, low 18 bits a value in 1/1000 units), walks channel descriptors (mask, size pairs at +0x50..+0x58) skipping present channels until channelMask matches, then writes a new header plus that channel payload to outStream and returns 1; returns 0 when the record lacks the channel."
+  "proto": "uint64_t Game_Extract_RecordChannelToStream(void *record, void *out_stream, uint32_t channel_mask, uint64_t key_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437b0760 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142440ea0,0x1437b5740,0x1437c5460",
+  "notes": "Seeks the record stream at +0x08 (pos +0x20, high-water +0x28, size +0x18) to offset table [+0x38][key_index] and reads the 4-byte key header (bits 18..31 = channels present, low 18 bits = time in ms). If the wanted channel is present it walks the channel descriptors at +0x50..+0x58 ({mask, byte size} pairs), skipping the bytes of other present channels; on the match it resets out_stream, writes a header (channel_mask << 18 | time), copies the channel bytes from the record stream, rewinds out_stream and returns 1; else 0. Caller 0x1437b5740: binary-searches the key for a time and reads a 1-byte channel; caller 0x1437c5460: reads a 12-byte vec3 channel; caller 0x142440ea0: reads a byte channel at two keys and interpolates. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.extract_record_channel_to_stream",

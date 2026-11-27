@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1441f10d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
   "proto": "void Vm_Binding_ResolveAndSubscribe(void *binding)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441f36a0 (RacingPC lab re_groups/_decomp);xref:0x14148ab00,0x1416bd1b0,0x14178a060,0x14178a340,0x141cf1300,0x141eab350,0x141eb0b30,0x142a757b0",
-  "notes": "Resolves a parsed VM path (8-byte hashed segments at binding+0, count +0x78, absolute flag +0x79, base node +0x80) to a node, stores the handle at +0x98 and updates flags at +0xe0. When resolved it subscribes handler 0x1442be5e0 through Ne_BusMessage_SubscribeHandlerUnique and fires an initial change event; when unresolved it inserts the binding into the pending robin-hood set of g_Vm_Registry (+0x98..+0xcc) and sets flag bit0."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441f36a0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14148ab00,0x1414f2540,0x14150f2d0",
+  "notes": "No-op without g_Vm_Registry. Drops the old subscription (0x1441f3490), sets flags +0xe0 = (flags & 0xeb) | 0x10, then walks the +0x78 path segments (8 bytes each: hash u32, is-index byte at +4) from the source node +0x80 or the registry root (+0x79 = absolute), following aliases up to 0x62 hops, and stores the result in the target handle +0x98 (bit 0x20 = unresolved). With a target it subscribes handler 0x1442be5e0 via Ne_BusMessage_SubscribeHandlerUnique and sends an initial change message to it; without one it inserts the binding into the registry pending hash set (+0x78..+0xcc) and sets bit 1. Context from caller: Game_Register_DriverSuitScreens uses it after parsing \"settings.current_settings.tt_weather.value\"; 0x14150f2d0 (HUD view model setup) for \"#settings.current_settings.real_time_delta.value\"; 0x1414f2540 right after Vm_Binding_SetSourceAndResolve on +0x328. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "vm.binding_resolve_and_subscribe",

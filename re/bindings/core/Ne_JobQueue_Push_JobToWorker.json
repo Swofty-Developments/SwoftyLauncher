@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143abdb10",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "uint64_t Ne_JobQueue_Push_JobToWorker(void *queue, void *jobRecord, void *arg, uint8_t flagA, uint8_t flagB)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac00e0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Increments the pending counter at queue+0x160, picks a worker from scheduler(queue+8)+0x48 using the round-robin cursor at +0x24 filtered by the affinity mask at +0x14 (worker id at worker+0xa4), inserts the job into the worker list at +0x48 under its critical section +0x18, sets priority bits at worker+0x98 and signals its event at +8 via Ne_Event_Set. Bumps scheduler+0xc0 and notifies the observer at scheduler+8."
+  "proto": "uint64_t Ne_JobQueue_Push_JobToWorker(void *queue, void **job, void *user, char flag_a, char flag_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac00e0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143abfcc0,0x143ac3cf0",
+  "notes": "Increments pending count +0x160, picks a worker from the pool [+0x08]+0x48 by round-robin index +0x24 (skipping workers whose id +0xa4 is not in affinity mask +0x14; with +0x12 set it starts from the calling worker's own id), then under the worker's critsec +0x18 inserts the job {fn, arg, owner +0x168, user, flags} into its list +0x48/+0x68, updates the worker priority word +0x98 and owner +0x90 and sets its wake event +0x08 when the list was empty. Notifies the pool observer [pool+0x08] vfn +0x28, advances the round-robin index and increments pool counter +0xc0. Caller 0x143abfcc0: single-job submit that takes the queue lock and uses this unless the queue is in deferred mode; also called per item by Ne_JobQueue_SubmitJobRange. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.job_queue_push_job_to_worker",

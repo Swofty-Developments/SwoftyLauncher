@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142e860d0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "car",
   "proto": "void Car_TyreSystem_CopyWheelParamBlocksToInstances(void *tyre_vehicle)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e88660 (RacingPC lab re_groups/_decomp);xref:0x142e93110",
-  "notes": "If +0x80 and +0x81 are set and the target at (+0x78)->+0x80 exists: for each of 4 wheels and 9 instance indices per wheel (int tables +0x88, +0xac, +0xd0, +0xf4, negative = unused) copies N 16-byte vectors (N = +0x248 & 0xfffffff) from that wheel's block (+0x250, +0x2c0, +0x330, +0x3a0) into the target buffer +0xb8 at index * stride (+0xd8) * 16, sets the dirty bit in the bitmap (+0xc0)->+8 and flag 0x10 in +0x13c, then schedules job FUN_143d3f3f0 (state +0x128 = 2) and sets flag 8 in +0x12c. Looks like per-tyre visual/shader parameter upload. Better context needed: what the 7 vectors per wheel hold."
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e88660 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1428ab9e0,0x142e93110",
+  "notes": "If +0x80 and +0x81 are set and the instance buffer object at [+0x78]+0x80 exists: for 4 groups of 9 instance indices (+0x88, +0xac, +0xd0, +0xf4; negative = unused) copies (+0x248 & 0xfffffff) 16-byte elements from the group's block (+0x250, +0x2c0, +0x330, +0x3a0) to buffer [+0xb8] at index*stride(+0xd8)*16, sets the dirty bit in bitset [+0xc0]+8 and flag +0x13c|=0x10; then sets state +0x128 to 2 (queues job 0x143d3f3f0 on the first transition) and +0x12c|=8. Context from caller: Game_TyreSystem_UpdateVehicle runs it on every 0xde0 tyre set when the car is within scale*200 of the camera; 0x1428ab9e0 (pit stop wheel pose update) runs it per set before Game_PitCrewActor_SetTyreBonesAndAttachment. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "car.tyre_system_copy_wheel_param_blocks_to_instances",

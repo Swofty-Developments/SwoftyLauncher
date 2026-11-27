@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14420ea40",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
-  "proto": "void Vm_Binding_SetSourceAndResolve(void *binding, void *arg, void **source_node, char force_full)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144211010 (RacingPC lab re_groups/_decomp);xref:0x1414f6f60,0x1416bd1b0,0x141789b20,0x14178f9f0,0x141a63e50,0x141cc7160,0x141cf1300,0x141eab350",
-  "notes": "Rebinds a VM data binding: swaps the intrusive ref-counted source node handle at +0x80, calls FUN_1442b8d10, then either resolves the target node into +0x98 directly (FUN_144292c70, following up to 0x62 reference hops when flag 2 of +0xe0 is set) or, when force_full or flag 0x10 is set, walks the path segments (count byte +0x78, 8 bytes each from +0), subscribes FUN_1442be5e0 as change handler, fires an initial change event and registers the binding in the registry hash set (+0x98..+0xcc of g_Vm_Registry). Flag byte at +0xe0."
+  "proto": "void Vm_Binding_SetSourceAndResolve(void *binding, const char *path, void **source_node, char subscribe)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144211010 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1414f2540,0x1414f6f60,0x141512d70",
+  "notes": "Swaps the source node handle at +0x80 (intrusive link +0x88/+0x90, refcount at node+0x24, Vm_Release_Node on the old one), calls 0x1442b8d10(binding, path) to set the path, then: if subscribe==0 and flag +0xe0 bit 0x10 is clear it only resolves the target into +0x98 via 0x144292c70 and follows up to 0x62 alias hops when bit 2 is set; otherwise it falls into the shared body of Vm_Binding_ResolveAndSubscribe (0x1441f36a0). All three callers pass subscribe=1. Context from caller: Hud_Bind_DynamicMfdViewModel binds +0x558 to a built path under the root node; 0x1414f2540 builds a path string and binds +0x328 with change callback 0x1414f2f50; 0x141512d70 binds an array of 0xe8-byte bindings at +0x390. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "vm.binding_set_source_and_resolve",

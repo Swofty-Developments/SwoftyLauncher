@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14491d230",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_Thrustmaster_ApiGetDeviceStatus(uint32_t device)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14491fbf0 (RacingPC lab re_groups/_decomp);xref:0x142fdb6d0,0x142fdbb70",
-  "notes": "Exported symbol, export=tm_api_get_device_status (ordinal 415). If global 0x145fba228 is zero it issues driver command 10 with no payload, otherwise command 10 with the 4-byte device id (Ne_Debug_RecordTraceEvent3/5 are the transport calls as named in the KB). Better context needed: the real role of the two transport callees."
+  "proto": "int32_t Game_Thrustmaster_ApiGetDeviceStatus(uint32_t arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14491fbf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142fdb6d0,0x142fdbb70",
+  "notes": "Exported as tm_api_get_device_status (ordinal 415). If the global 0x145fba228 is 0 it calls Ne_Debug_RecordTraceEvent3(10) only, otherwise Ne_Debug_RecordTraceEvent5(10, &arg copy, 4), which here act as the API dispatchers for call id 10; the dispatcher result is left in EAX (the decompile shows void). Game_Ffb_TmWheelDisplay_Shutdown and Game_ThrustmasterLcd_UpdateSectors call it per device in [self+0x7b0..+0x7b8] with arg = (dev+0xa00 == 0) and only push display data when the result is nonzero. cxx=tm_api_get_device_status (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.thrustmaster_api_get_device_status",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x144101ff0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "void Phys_Build_MeshSphereTree_Recursive(void *shape, void *nodes, int32_t *nodeCount, int32_t *triIndices, uint32_t triCount)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441045c0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Recursive bounding sphere tree builder over the triangle set of a mesh shape (verts shape+0x190, index triples shape+0x188). Each 0x30 node holds centroid +0, radius +0x10, child links +0x18/+0x20 and a leaf triangle pointer +0x28; a triangle whose longest edge exceeds 0.6 * radius (or the last one) is peeled off as a leaf, the rest is partitioned by 0x1441043f0 along the farthest-vertex direction and split in half. Called from 0x1440cc4a0."
+  "proto": "void Phys_Build_MeshSphereTree_Recursive(void *mesh, void *nodes, int32_t *node_count, int32_t *tri_indices, uint32_t tri_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441045c0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1440cc4a0",
+  "notes": "Whole body read. Takes the next 0x30-byte node (nodes + *node_count*0x30, count incremented): +0x00 centre = mean of all triangle vertices (index triples at mesh+0x188 stride 0xc, vertices at mesh+0x190 stride 0x10), +0x10 radius = max vertex distance, +0x28 pointer to one triangle whose longest edge squared exceeds (0.6*radius)^2 (that triangle is removed from the index list), +0x18/+0x20 child node pointers. Splits the rest with 0x1441043f0 along the farthest-vertex direction, recurses on the first half and loops on the second. Caller 0x1440cc4a0: builds the collision mesh object, fills the index list 0..n-1, calls this with node count 0 and then shrinks the buffer to count*0x30. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.phys_build_mesh_sphere_tree_recursive",

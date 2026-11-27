@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1417855e0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_Mfd_Downforce_BindChildNodes(void *binding, void *parent_holder, void *unused, const char *child_name)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141786d60 (RacingPC lab re_groups/_decomp);xref:0x14178c4c0",
-  "notes": "Resolves the VM child node named child_name (djb2 hash) under parent_holder+8, lets FUN_141787080 produce three node handles from it and move-assigns them to binding+0x10, +0x30 and +0x50, then calls 0x141787200 on binding+0x68 with the first node. UI data binding for the downforce MFD page."
+  "proto": "void Game_Mfd_Entry_BindBaseNodes(void *entry, void *node, void *arg3, const char *name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141786d60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141787670,0x1417894d0,0x14178bc50",
+  "notes": "Renamed from Game_Mfd_Downforce_BindChildNodes: the same function is the first call of the brake bias and fuel mix binders too, so it is the shared base bind, not a downforce one. Resolves the child of node (+8 handle) named by name (djb2 hash, Vm_GetOrCreate_ChildNode; skipped when name is null or holds # . [ ]), has 0x141787080 build three node handles from it and move-assigns them to entry+0x10/+0x30/+0x50, releases the temporaries and calls 0x141787200(entry+0x68, handle of entry+0x10). Caller 0x141787670: then Game_Mfd_BrakeBias_BindNodes into +0xf0; caller 0x1417894d0: then Game_Mfd_FuelMix_BindNodes into +0x338..+0x398; caller 0x14178bc50: another entry type that then reads the game mode; also called by Game_Mfd_Downforce_BindNodes (0x14178c4c0). (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.mfd_downforce_bind_child_nodes",

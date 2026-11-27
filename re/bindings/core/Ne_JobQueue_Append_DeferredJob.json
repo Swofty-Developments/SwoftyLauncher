@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x143abfd70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "int32_t Ne_JobQueue_Append_DeferredJob(void *queue, void *jobRecord)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac2340 (RacingPC lab re_groups/_decomp)",
-  "notes": "Appends a job record to the current deferred chunk: when the chunk list at queue+0xc0 is empty it takes a spare chunk from the free list at +0x70..+0x88 or allocates a 0x48 byte pooled list (reserve 0x40) and links it at +0xa0, then inserts the record into that chunk. Errors are written to the thread errno slot and returned."
+  "proto": "int Ne_JobQueue_Append_DeferredJob(void *queue, void *job_record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac2340 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143abfcc0,0x143ac3cf0",
+  "notes": "Whole body read. If the block list at queue+0xa0 is empty (count queue+0xd0) it takes a block from the free pool (queue+0x70/+0x78, count +0x88) or allocates a 0x48 block from the allocator at queue+0 and reserves 0x40 slots, then links it before queue+0xc0; otherwise it uses the tail block ([queue+0xc0]+0x10). Inserts job_record into that block list and returns the error code; non-zero is written to the TLS errno chain and the errno trace ring. Caller 0x143abfcc0: enqueues one job under the critical section and takes this path when the worker count (queue+0x160) is negative, else pushes to a worker; caller 0x143ac3cf0: enqueues a batch of jobs from a range the same way. Record = {owner cookie queue+0x168, fn, arg, 0, two flag bytes}. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.job_queue_append_deferred_job",

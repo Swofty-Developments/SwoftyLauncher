@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x142f50e70",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "game",
-  "proto": "void Game_SlowMoController_ActivateEntry(void *ctrl, int32_t index, uint8_t flag, uint32_t value)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f53400 (RacingPC lab re_groups/_decomp);xref:0x1411f3c20,0x142da4770,0x142f49a10",
-  "notes": "Takes entry = ctrl[+0xa8+index*8], locks the SRW lock at manager(+0x98)+0x270, djb2-hashes the entry name (+0x18) and, if that hash exists in the manager table (+0x60, stride 0x28, count +0x24), makes it current: clears +0x45 on the old current (+0xa0), sets +0x45=1, +0x46=flag, +0x44=0, timer +0x34=0 (or 1.0 when duration +0x3c is under 0.001), +0x38=+0x3c, +0x48=value, pushes it on the 4-deep stack at +0xe0 (count +0x100) and calls Game_TodData_SetScenario_Thunk(manager+8, hash, empty, 0). Named after its terminal-damage slow-mo and instant-replay callers; the exact controller class is not confirmed."
+  "proto": "void Game_ScenarioCtrl_ActivateEntry(void *ctrl, int32_t index, uint8_t flag, uint32_t arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f53400 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1411f3c20,0x142da4770,0x142f49a10",
+  "notes": "Renamed from Game_SlowMoController_ActivateEntry: the body selects a named scenario and calls Game_TodData_SetScenario_Thunk, and the callers use it for instant replay as well as slow-mo, so SlowMo was caller context only. Under the SRW lock at [ctrl+0x98]+0x270 it takes entry ctrl+0xa8[index], djb2-hashes its name (+0x18) and looks the hash up in the 0x28-stride table [owner+0x60] (count +0x24); on a hit it clears +0x45 of the current entry (ctrl+0xa0), makes this entry current (+0x45=1, +0x46=flag, +0x44=0, blend +0x34=0 or 1.0 when rate +0x3c is below 0.001, +0x38=+0x3c, +0x48=arg), pushes it on the stack ctrl+0xe0 (count +0x100, max 4) and calls Game_TodData_SetScenario_Thunk(owner+8, hash). Context from caller: index 0 flag 1 from Game_SessionStateViewInstantReplay_OnStateEnter, index 1 from Game_Create_TerminalDamageSlowMo (arg passed through) and from Game_ControllerSet_Update (ctrl at self+0x4a0). (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "game.slow_mo_controller_activate_entry",

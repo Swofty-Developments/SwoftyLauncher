@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x1442906a0",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "vm",
-  "proto": "void **Vm_Path_Resolve_Node(void *registry, void *path, void **baseNode)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144292c70 (RacingPC lab re_groups/_decomp)",
-  "notes": "Walks a parsed path (segment count path+0x78, absolute flag +0x79, 8-byte segments with index flag at +4) starting from baseNode or the registry root (registry+8), following reference nodes up to 0x62 hops and descending by child name hash, list index or holder lookup. Returns the resolved node handle or k_Vm_EmptyNodeHandle."
+  "proto": "void **Vm_Path_Resolve_Node(void *registry, void *path, void **start)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144292c70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140bdfe60,0x140be0110,0x140be0470",
+  "notes": "Whole body read. path+0x78 = segment count, path+0x79 = absolute flag, segments are 8 bytes (hash at +0, by-index flag at +4). Starts at start, or at the root handle ([registry+8]+8) when start is empty or the path is absolute. Per segment: follows reference nodes (vt+0x30, target via [node+0x58] vt+0x38, at most 0x62 hops), then list nodes (vt+0x10) go through Ne_Ref_GetListElementOrEmpty when the flag is set or 0x1442b3700 otherwise, and holder nodes (vt+0x28) through Game_Vm_HolderGetCStrOrEmpty. Returns the handle slot (node+8) or k_Vm_EmptyNodeHandle on any miss. Callers 0x140bdfe60/0x140be0110/0x140be0470: each builds a path from a node with 0x1442b7670, appends segment hash 0x108d5742, resolves it and reads the string via Vm_Link_RegistryNode. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "vm.path_resolve_node",

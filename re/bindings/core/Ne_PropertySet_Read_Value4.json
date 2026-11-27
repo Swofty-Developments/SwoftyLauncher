@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14445da90",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "int32_t Ne_PropertySet_Read_Value4(void *owner, void *key, uint32_t *out)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144460060 (RacingPC lab re_groups/_decomp);xref:0x144462830",
-  "notes": "Same lookup chain (owner+0xf0/+0xe8/+0xe0), type checked against the descriptor at 0x14612bd80, copies 4 bytes (float or int32, not determinable here). Returns 0, 0x57 not found, 0x16 wrong type."
+  "proto": "int Ne_PropertySet_Read_Value4(void *props, const void *key, uint32_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144460060 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14445fd10,0x144462830",
+  "notes": "Same layered lookup as Ne_PropertySet_Read_Value16 (sources +0xf0, +0xe8, +0xe0; 0x57 when missing), type id checked against descriptor 0x14612bd80, copies one 4-byte value to *out; returns 0 or 0x16 on type mismatch. Context from caller: Ne_StaticPhysicsComponent_ReadProperties reads key 0x145613fa1 into +0x34 and two more keys into +0x38 and +0x50, substituting 0x1000100 on failure; 0x14445fd10 (sibling component property loader) reads the same key into +0x40. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.property_set_read_value4",

@@ -5,11 +5,11 @@
  "author": "vogtmarcel07-cloud",
  "row": {
   "addr": "0x14440b860",
-  "level": "L1",
+  "level": "L2",
   "subsystem": "core",
-  "proto": "int32_t Ne_PropertySet_Read_Value16(void *owner, void *key, void *out16)",
-  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14440de30 (RacingPC lab re_groups/_decomp);xref:0x144462830",
-  "notes": "Same lookup chain as the bool reader (owner+0xf0/+0xe8/+0xe0) but type checked against the descriptor at 0x14612be88 and copies 16 bytes (likely a vec4 or quaternion). Returns 0, 0x57 not found, 0x16 wrong type. Better context needed: which property the static physics component reads with it."
+  "proto": "int Ne_PropertySet_Read_Value16(void *props, const void *key, void *out16)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14440de30 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14440dbb0,0x14440eae0,0x14440f3e0",
+  "notes": "Looks the key up in three layered sources in priority order +0xf0, +0xe8, +0xe0 (vfn +8); if none has it sets thread error and returns 0x57. Compares the property type id (vfn +0x10) with the type descriptor at 0x14612be88; on match copies 16 bytes from the value pointer (vfn +0x30) to out16 and returns 0, else returns 0x16. Callers 0x14440dbb0, 0x14440eae0, 0x14440f3e0: component property loaders that read 16-byte fields (e.g. key 0x145756afd into +0x90, +0x60, +0x30); also used by Ne_StaticPhysicsComponent_ReadProperties for +0x60. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "core.property_set_read_value16",
