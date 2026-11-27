@@ -327,7 +327,10 @@ inline constexpr address<"Game_CarCustomisation_ApplyLiveryPreview"> Game_CarCus
 inline constexpr address<"Game_CarCustomisation_MarkCarDirtyOff"> Game_CarCustomisation_MarkCarDirtyOff{}; // L2 experimental
 inline constexpr address<"Game_CarCustomisation_SetupWritableCamera"> Game_CarCustomisation_SetupWritableCamera{}; // L2 experimental
 inline constexpr address<"Game_CarDecals_BuildList"> Game_CarDecals_BuildList{}; // L2 experimental
+using Game_CarSetupVm_Destroy_t = void *(void *self, unsigned int flags);
+inline constexpr fn<"Game_CarSetupVm_Destroy", Game_CarSetupVm_Destroy_t> Game_CarSetupVm_Destroy{}; // L2 experimental
 inline constexpr address<"Game_CarSetupVm_Initialise"> Game_CarSetupVm_Initialise{}; // L3 stable
+inline constexpr address<"Game_CarSetupVm_OnDeactivate_Thunk"> Game_CarSetupVm_OnDeactivate_Thunk{}; // L2 experimental
 using Game_CareerActivities_AddActivity_t = void(void *calendar, const void *activity, uint32_t day);
 inline constexpr fn<"Game_CareerActivities_AddActivity", Game_CareerActivities_AddActivity_t> Game_CareerActivities_AddActivity{}; // L2 experimental
 using Game_CareerActivities_RemoveActivity_t = void(void *calendar, const void *activity, uint16_t day);
@@ -1530,6 +1533,7 @@ inline constexpr site<"site_Game_TimeTrial_SetReferenceListBoard"> site_Game_Tim
 inline constexpr site<"site_Game_TimeTrial_SetReferenceLogBoard"> site_Game_TimeTrial_SetReferenceLogBoard{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrial_SetReferenceLogDone"> site_Game_TimeTrial_SetReferenceLogDone{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrial_SetReferenceNoList"> site_Game_TimeTrial_SetReferenceNoList{}; // L2 experimental
+inline constexpr vtable<"vt_Game_CarSetupVm", 17> vt_Game_CarSetupVm{}; // L2 experimental
 inline constexpr vtable<"vt_Game_CareerContinueDriverViewModel", 28> vt_Game_CareerContinueDriverViewModel{}; // L2 experimental
 inline constexpr vtable<"vt_Game_CareerContinueMyTeamViewModel", 28> vt_Game_CareerContinueMyTeamViewModel{}; // L2 experimental
 inline constexpr vtable<"vt_Game_CareerDLCSelectViewModel", 19> vt_Game_CareerDLCSelectViewModel{}; // L2 experimental

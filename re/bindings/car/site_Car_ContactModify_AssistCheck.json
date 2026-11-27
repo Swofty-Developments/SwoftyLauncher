@@ -42,10 +42,40 @@
   "made_on_target": "0x142f06e06",
   "twin": "made on steam-26566308; the target 0x142f06e06 is KB 0x142f04876: Game_AutoResetToTrack_FireDeferred (0x2f05fc0) and Game_VehicleProgressSystem_OnVehicleRemoved (0x2f09d80) on either side both sit 0x2590 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "site_Car_ContactModify_AssistCheck",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142f065d0-0x142f073b3 Car_Contact_ModifyVehicle, 0x142f06e06 is mov rcx,[rip+0x317c29b] right after vmovss [rsi+0x64],xmm0 (mass ratio), then mov rcx,[rcx], test, je, cmp byte [rcx+8],0, bytes 48 8B 0D 9B C2 17 03 match expect and no branch targets the next 19 bytes;xref:0x142f06e13,0x142f06e1d",
+   "notes": "gh:Swofty-Developments agree at L1, Car_Contact_ModifyVehicle sits at KB 0x142f04040 plus 0x2590"
+  }
+ ],
  "proofs": [
   {
    "by": "Kizikafuka",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f06dfd",
+    "target": "0x142f06e06"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "555a682435542ee041d4ca4749e3534ea417edd3c82c2dc2275c929e6d5423df"
+  },
+  {
+   "by": "Swofty-Developments",
    "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {

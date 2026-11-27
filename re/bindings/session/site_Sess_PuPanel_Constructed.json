@@ -40,11 +40,41 @@
   "made_on_target": "0x141f50657",
   "twin": "made on steam-26566308; the target 0x141f50657 is KB 0x141f4ea57: Ui_Init_TeamHqMyTeamTabData (0x1f50420) and site_Sess_PuPanel_SlotHolder (0x1f52acc) on either side both sit 0x1c00 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "site_Sess_PuPanel_Constructed",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x141f50420-0x141f50668 target 0x141f50657 mov rax,rsi then add rsp,0x160 and the epilogue, bytes 48 89 F0 48 81 C4 60 01 00 00 match expect;xref:0x141f50621,0x141f50639,0x141f50645,0x141f5064f (every je lands on it)",
+   "notes": "gh:Swofty-Developments rsi is the constructed owner holding the primary vtable at [rsi]"
+  }
+ ],
  "proofs": [
   {
    "by": "UnorthodoxStoneND",
    "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f50647",
+    "target": "0x141f50657"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "12b8faef11c19500db4fa6130bc3ffb7463adc00775de7a9a1af7022bc38ddb7"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

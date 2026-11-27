@@ -41,11 +41,41 @@
   "made_on_target": "0x145682740",
   "twin": "made on steam-26566308; target 0x145682740 is KB 0x145680720: KB base is the common result of historical cells for slots 3,6,10,11,13 minus their slot offsets; current constructor/destructor install this table; match 0x140cd580e is KB 0x140cd4d4e: Career_DeptEvent_ReadRandomParameters (0xccbd90) and Game_Careereventresourcemanager_M_isWorldPostCreationComplete (0xcd7b70) on either side both sit 0xac0 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "vt_Game_CarSetupVm",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x140cd5800-0x140cd5c66 dtor and ctor 0x140c07c7a both store lea 0x145682740 at [self], cells 0-16 code then a null at 17, slot 2 is the dtor 0x140cd5800, slot 6 0x140c1bc60 is KB Game_CarSetupVm_Initialise (L3 traced) plus 0xac0;xref:0x140cd580e,0x140cd5815,0x140c07c7a",
+   "notes": "gh:Swofty-Developments table 0x145682740 on 1.0.145 with 17 contiguous code cells"
+  }
+ ],
  "proofs": [
   {
    "by": "UnorthodoxStoneND",
    "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140cd580e",
+    "target": "0x145682740"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d93f0b635b055993fb54cfe50dfad57cec331b2cc00252bbdb40a49f29b4bd94"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

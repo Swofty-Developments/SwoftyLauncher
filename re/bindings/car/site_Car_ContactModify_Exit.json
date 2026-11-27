@@ -42,10 +42,40 @@
   "made_on_target": "0x142f07361",
   "twin": "made on steam-26566308; the target 0x142f07361 is KB 0x142f04dd1: Game_AutoResetToTrack_FireDeferred (0x2f05fc0) and Game_VehicleProgressSystem_OnVehicleRemoved (0x2f09d80) on either side both sit 0x2590 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "site_Car_ContactModify_Exit",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142f065d0-0x142f073b3, 0x142f07361 is vmovaps xmm6,[rsp+0x40] after call 0x1440c38b0 and the xmm7/xmm8 restores then the epilogue, bytes C5 F8 28 74 24 40 match expect, the early out je at 0x142f06628 and jumps at 0x142f0699a and 0x142f069ac land on it, rsi holds the contact record from rcx;xref:0x142f0662e,0x142f06628",
+   "notes": "gh:Swofty-Developments agree at L1, common exit of Car_Contact_ModifyVehicle"
+  }
+ ],
  "proofs": [
   {
    "by": "Kizikafuka",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f07352",
+    "target": "0x142f07361"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f783b8ee4faf5ecc85695eed3217b0652b45ebc0b20bc14f7dc652e70303b457"
+  },
+  {
+   "by": "Swofty-Developments",
    "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {

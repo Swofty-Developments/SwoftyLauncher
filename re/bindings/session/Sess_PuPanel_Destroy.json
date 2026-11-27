@@ -39,11 +39,41 @@
   "made_on_target": "0x142172f70",
   "twin": "made on steam-26566308; the target 0x142172f70 is KB 0x142171370: site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) and Vm_Register_CustomisationAndMenuViewModelTypes (0x2180f80) on either side both sit 0x1c00 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "func",
+   "item": "Sess_PuPanel_Destroy",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x142172f70-0x1421732ba pdata function start, reinstalls the primary vtable and the +0x260/+0x268 tables, releases the nodes at +0x12f0 and the base node lists, no flag and no free, returns void, via vtable slot 2 wrapper 0x1420f7370 which calls it then frees when edx is set;xref:0x1420f737c,0x1420f7436,0x1420f74f6",
+   "notes": "gh:Swofty-Developments non-deleting destructor, rcx is the owner"
+  }
+ ],
  "proofs": [
   {
    "by": "UnorthodoxStoneND",
    "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142172f70",
+    "target": "0x142172f70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0e5cf87c2904e7ac042293446de730c5ba56c03e959082810ed324ed811e9091"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

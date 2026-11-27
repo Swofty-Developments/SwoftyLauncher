@@ -138,5 +138,6 @@ using Vm_WizardTitleSlice_DestroyRange_t = void(void *begin, void *end);
 inline constexpr fn<"Vm_WizardTitleSlice_DestroyRange", Vm_WizardTitleSlice_DestroyRange_t> Vm_WizardTitleSlice_DestroyRange{}; // L2 experimental
 inline constexpr data<"g_Vm_Registry", void *> g_Vm_Registry{}; // L3 stable
 inline constexpr data<"k_Vm_EmptyNodeHandle", void *> k_Vm_EmptyNodeHandle{}; // L2 experimental
+inline constexpr site<"site_Vm_SharedTabModelVtable"> site_Vm_SharedTabModelVtable{}; // L2 experimental
 
 }

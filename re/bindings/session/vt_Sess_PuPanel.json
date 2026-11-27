@@ -41,11 +41,41 @@
   "made_on_target": "0x145760ff0",
   "twin": "made on steam-26566308; the target 0x145760ff0 is KB 0x14575eec0: k_Career_RnDDeptColourTable (0x5757fa8) and vt_Game_EntrantsDocumentOpenedMsg (0x578f618) on either side both sit 0x2130 above their KB addresses; the match 0x141f5046f is KB 0x141f4e86f: Ui_Init_TeamHqMyTeamTabData (0x1f50420) and site_Sess_PuPanel_SlotHolder (0x1f52acc) on either side both sit 0x1c00 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "vt_Sess_PuPanel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x141f50420-0x141f50668 ctor stores lea 0x141f5047c to [rsi] and picks laptop_power_unit or garage_monitor_panel_power_unit by mode and 0x142172f7c stores the same table in the dtor, 28 code cells then the secondary table at +0x260, slot 19 0x141f52510 is the KB Sess_PuPanel_BuildComponents plus 0x1c00;xref:0x141f5047c,0x141f50483,0x142172f7c,0x142172f83",
+   "notes": "gh:Swofty-Developments re-derived on 1.0.145 from the ctor and dtor: table 0x145760ff0, cells 0-27 code, cell 28 the secondary table"
+  }
+ ],
  "proofs": [
   {
    "by": "UnorthodoxStoneND",
    "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f5046f",
+    "target": "0x145760ff0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b4c624e4e18f464eb264153469ee8385ef59b62a7ddc907379d7c12c311a20af"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",

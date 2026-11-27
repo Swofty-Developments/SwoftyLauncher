@@ -41,10 +41,40 @@
   "made_on_target": "0x144669530",
   "twin": "made on steam-26566308; the target 0x144669530 is KB 0x144666cc0: Car_Create_DetachablePart (0x4663cb0) and Car_DetachablePart_Update (0x466af40) on either side both sit 0x2870 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "func",
+   "item": "Car_WheelPart_Detach",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x144669530-0x14466a64f pdata function start, early out when [rcx+0x40] is set, otherwise creates the free body through 0x1440c1bf0 into part+0x40, checks the tether index at +0xe0 against -1, stores the connection at +0x100 and sets +0x10c to 1, ret. Class is the wheel part: vtable 0x145bfb5e0 is stored by the suspension damage node binder 0x144656340 that binds tyre_/wheel_/tether_ nodes, and slot 20 is this function where the generic part table 0x145bfb690 has 0x14466b960;xref:0x145bfb680",
+   "notes": "gh:Swofty-Developments agree at L1, the +0xa0 slot of the wheel part vtable, not the generic part detach"
+  }
+ ],
  "proofs": [
   {
    "by": "Kizikafuka",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14466951b",
+    "target": "0x144669530"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3812f948fa26a12088e36588d9524f0c9bc546a90e854d94c05be4ab58f4a00b"
+  },
+  {
+   "by": "Swofty-Developments",
    "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {

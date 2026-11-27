@@ -1955,6 +1955,7 @@ inline constexpr site<"site_Career_WeekendsTrackRecordLoad"> site_Career_Weekend
 inline constexpr vtable<"vt_Career_BankTransactionMessage", 2> vt_Career_BankTransactionMessage{}; // L2 experimental
 inline constexpr vtable<"vt_Career_Championship", 12> vt_Career_Championship{}; // L2 experimental
 inline constexpr vtable<"vt_Career_FacilityNode", 11> vt_Career_FacilityNode{}; // L2 experimental
+inline constexpr vtable<"vt_Career_HubLaptopTab", 28> vt_Career_HubLaptopTab{}; // L2 experimental
 inline constexpr vtable<"vt_Career_MessageDriverContractChanged", 2> vt_Career_MessageDriverContractChanged{}; // L2 experimental
 inline constexpr vtable<"vt_Career_MessageDriverMoveConfirmed", 2> vt_Career_MessageDriverMoveConfirmed{}; // L2 experimental
 inline constexpr vtable<"vt_Career_MessageDriverMovesFinalised", 2> vt_Career_MessageDriverMovesFinalised{}; // L2 experimental

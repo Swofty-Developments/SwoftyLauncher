@@ -41,11 +41,41 @@
   "made_on_target": "0x1456f9260",
   "twin": "made on steam-26566308; target 0x1456f9260 is KB 0x1456f7130: Career_Construct_HubLaptopTab explicitly names KB primary 0x1456f7130 and secondary 0x1456f7210/+0x260; current constructor has matching base call, vtable stores and header/hash fields at +0x9f8/+0xb00; match 0x141e15b80 is KB 0x141e13f80: Game_SocialHubFriendsVM_OnInviteResult (0x1dfee00) and Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) on either side both sit 0x1c00 above their KB addresses"
  },
- "verify": [],
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "Swofty-Developments",
+   "kind": "global",
+   "item": "vt_Career_HubLaptopTab",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x14ab9ee80-0x14ab9f136 ctor (Career_Construct_HubLaptopTab body, calls Vm_Construct_TabViewModel 0x1414be2a0) stores lea 0x14ab9eefb to [rsi] and the +0x260/+0x268 tables, and 0x141e15b80 is the dtor storing the same table, cells 0-27 code and cell 28 is the secondary table;xref:0x14ab9eefb,0x141e15b80,0x1414c1041",
+   "notes": "gh:Swofty-Developments table 0x1456f9260 on 1.0.145, +0x2130 from the KB table 0x1456f7130"
+  }
+ ],
  "proofs": [
   {
    "by": "UnorthodoxStoneND",
    "date": "2026-11-26",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141e15b80",
+    "target": "0x1456f9260"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "abda22950516f3a1dc6b33267b26b4236e8394869ed05dedeb05d4d6674be62a"
+  },
+  {
+   "by": "Swofty-Developments",
+   "date": "2026-11-27",
    "tool": "binding.py verify",
    "exe": {
     "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
