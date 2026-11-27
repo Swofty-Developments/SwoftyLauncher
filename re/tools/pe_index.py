@@ -2,7 +2,14 @@ import numpy as np, pefile, struct, sys, os, bisect
 EXE = os.environ.get('EXE', os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'work', 'exe', 'F1_25.exe'))
 BASE = 0x140000000
 _pe = pefile.PE(EXE, fast_load=True)
-SECS = [(s.Name.rstrip(b'\0').decode(), s.VirtualAddress, max(s.Misc_VirtualSize, s.SizeOfRawData), s.PointerToRawData, s.SizeOfRawData) for s in _pe.sections]
+FLAT = os.path.getsize(EXE) == _pe.OPTIONAL_HEADER.SizeOfImage
+_IMAGE = _pe.OPTIONAL_HEADER.SizeOfImage
+if FLAT:
+    # A flat dump of the running module (offset == RVA), as the EA builds are only ever read.
+    SECS = [(s.Name.rstrip(b'\0').decode(), s.VirtualAddress, min(max(s.Misc_VirtualSize, s.SizeOfRawData), _IMAGE - s.VirtualAddress), s.VirtualAddress,
+             min(max(s.Misc_VirtualSize, s.SizeOfRawData), _IMAGE - s.VirtualAddress)) for s in _pe.sections]
+else:
+    SECS = [(s.Name.rstrip(b'\0').decode(), s.VirtualAddress, max(s.Misc_VirtualSize, s.SizeOfRawData), s.PointerToRawData, s.SizeOfRawData) for s in _pe.sections]
 # Every section the loader maps executable: .xtls and .data1 on the KB build, .tls$ and .trace on 1.0.145, plus the
 # protector's few-byte stubs. Section names move between builds, so scans go by this flag, never by a name.
 EXEC = [s.Name.rstrip(b'\0').decode() for s in _pe.sections if s.Characteristics & 0x20000000 and s.SizeOfRawData]

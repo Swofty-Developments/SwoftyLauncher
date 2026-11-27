@@ -10,6 +10,7 @@
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
 #include "core/runtime/json.hpp"
+#include "gamelog/channel_table.hpp"
 
 extern "C" _invalid_parameter_handler __cdecl _set_thread_local_invalid_parameter_handler(_invalid_parameter_handler);
 
@@ -403,18 +404,20 @@ void open_gates(const std::wstring &dir)
 {
     std::string text = read_file(dir + L"log_channels.tsv");
     if (text.empty()) {
-        swofty::log("[gamelog] %lslog_channels.tsv missing; no game log channel is opened (route errors are still logged)",
-                    dir.c_str());
+        swofty::log("%s: %lslog_channels.tsv missing; no game log channel is opened (route errors are still logged)",
+                    gamelog::table::UNAVAILABLE, dir.c_str());
         return;
     }
-    unsigned long stamp = 0;
-    char sha[32] = {};
-    if (sscanf(text.c_str(), "# F1_25.exe %31s %lu", sha, &stamp) != 2 || stamp != exe_stamp()) {
-        swofty::log("[gamelog] log_channels.tsv is for another build (PE timestamp %lu, this exe %lu); no game log channel "
-                    "is opened (route errors are still logged)",
-                    stamp, (unsigned long)exe_stamp());
+    auto all = gamelog::table::sections(text);
+    const gamelog::table::Section *section = gamelog::table::find(all, exe_stamp());
+    if (!section) {
+        swofty::log("%s: log_channels.tsv has no section for this build (PE timestamp %lu; it covers %s); no game log "
+                    "channel is opened (route errors are still logged)",
+                    gamelog::table::UNAVAILABLE, (unsigned long)exe_stamp(), gamelog::table::covered(all).c_str());
         return;
     }
+    std::string rows(section->rows);
+    text = std::move(rows);
     std::vector<std::pair<uint32_t, std::string>> want;
     size_t pos = 0;
     while (pos < text.size()) {

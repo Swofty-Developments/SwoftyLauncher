@@ -86,6 +86,8 @@ UNITS = [
     Unit('estimate_laptime', 'Estimate lap time guard unit test'),
     Unit('fe_tile_guard', 'Front-end tile list guard unit test'),
     Unit('game_message_log', 'Stock game message log unit test'),
+    Unit('gamelog_table', 'Game log channel table sections unit test', args=['../src/gamelog/log_channels.tsv'],
+         inputs=['src/gamelog/log_channels.tsv']),
     Unit('garage_crew', 'Garage crew guard unit test'),
     Unit('garage_setup', 'Garage setup guard unit test'),
     Unit('setup_layout', 'Setup layout unit test'),

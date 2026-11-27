@@ -5,6 +5,7 @@
 #endif
 #include <windows.h>
 
+#include <atomic>
 #include <string>
 
 #include "core/diagnostics/crash/blackbox.hpp"
@@ -24,6 +25,7 @@ struct CrashLog {
 struct Recorder {
     blackbox::Ring<256> events;
     blackbox::Ring<64> warnings;
+    std::atomic<bool> game_log_unavailable{false};
 };
 
 extern CrashLog logger;
