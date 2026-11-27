@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Node_DispatchEventById_QueueOrRun",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144246a40",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Node_DispatchEventById_QueueOrRun(void *mgr, void *node, int32_t *eventId, void *ctxA, void *ctxB)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144249010 (RacingPC lab re_groups/_decomp);xref:0x141c47fc0,0x142328880,0x143831e70,0x14421ade0,0x144240b80,0x14424b9b0,0x14424fd90,0x1442a66b0",
+  "notes": "Walks node children (+0x30..+0x38) for the first child whose type does not derive from type 0x14612bca8, searches its entry list (child[-3]..child[-2]) for an entry with id (+0x28) == *eventId. If mgr+0x7d54 is 0 the (node, entry) pair is queued in a 1000-slot ring of 0x20-byte items at mgr+0x50 (write index u16 at +0x7d52); otherwise each binding in entry+0x10..+0x18 is run immediately through its handler vtable slots +400 and +0x198. Good hook point for UI event or animation triggers by id."
+ },
+ "signature": {
+  "id": "ui.node_dispatch_event_by_id_queue_or_run",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 4C 24 20 48 89 4C 24 30",
+  "match": "0x144246a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144246a40",
+  "kind": "func_start",
+  "names": [
+   "Ui_Node_DispatchEventById_QueueOrRun"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144249010",
+  "made_on_target": "0x144249010",
+  "twin": "made on steam-26566308; the target 0x144249010 is KB 0x144246a40: Ne_UINodeBase_ParentVisible (0x423c610) and Ne_UINodeBase_SetElementVisibility (0x4249e10) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144249010",
+    "target": "0x144249010"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f9d21f816b53d6700a28986a73cc217e3926f575f0e6154d41257f0343a3ce2e"
+  }
+ ]
+}

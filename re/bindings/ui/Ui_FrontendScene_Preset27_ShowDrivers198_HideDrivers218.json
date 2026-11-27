@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_FrontendScene_Preset27_ShowDrivers198_HideDrivers218",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143877dd0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_FrontendScene_Preset27_ShowDrivers198_HideDrivers218(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14387a360 (RacingPC lab re_groups/_decomp);xref:0x141a27f30",
+  "notes": "If self+0xd0 is set, calls Game_FrontendSceneManager_SwitchSceneFromPreset(self+0x30, 0x27) then walks two std::map trees in the +0xd0 object: entries of map +0x218 (enabled by byte +0x228) are hidden, entries of map +0x198 (byte +0x1a8) are shown. Per entry: name at node+0x30 is compared to the string at 0x1456728aa, id is the short at node+0x58; match calls 0x1428edbf0(mgr,id,visible), else finds the driver component in mgr+0x6fb8..+0x6fc0 (stride 0x450, id at +0xb8) and calls Game_FrontendSceneManager_SetDriverVisible. Log string FRONTEND_SCENE_MANAGER/DRIVER. Context from caller: CreateMyTeamCareer description screen."
+ },
+ "signature": {
+  "id": "ui.frontend_scene_preset27_show_drivers198_hide_drivers218",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 83 B9 D0 00 00 00 00 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 49 30 C6 44 24 28 00 4C 8D 4C 24 20 B2 27 45 31 C0 E8 ?? ?? ?? ?? 48 8B 86 D0 00 00 00 80 B8 28 02 00 00 00",
+  "match": "0x143877dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143877dd0",
+  "kind": "func_start",
+  "names": [
+   "Ui_FrontendScene_Preset27_ShowDrivers198_HideDrivers218"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14387a360",
+  "made_on_target": "0x14387a360",
+  "twin": "made on steam-26566308; the target 0x14387a360 is KB 0x143877dd0: Ui_CareerWizard_ReleaseItemWidgets (0x38775a0) and Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14387a360",
+    "target": "0x14387a360"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2570e13c44d662363fba84e39a740d6b97c898d0443c76eddfc5efadcc5553ac"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_CareerEmail_Update_TyreCountsAndCompoundRefs",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418c20d0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_CareerEmail_Update_TyreCountsAndCompoundRefs(void *self, void *track_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418c38b0 (RacingPC lab re_groups/_decomp);xref:0x1418b5970,0x1418c2be0",
+  "notes": "Gets the player identity from g_Game_Manager (+0x140,+0x198,+0x1c0 vslot 0x38), finds the matching EntrantRecord in [self+0x1f0]+0x2e0..+0x2e8, reads that entrant's int from the component (desc 0x14605cf60) vector +0x2b0 (value 3 or missing -> 1) and uses it as index into track+0x68; sums three ints over the 19 slot entries and writes them to the int nodes self+0xf0 (field[2]), self+0x150 (field[1]), self+0x1b0 (field[0]). Then picks the first record in [self+0x200]+0xf0..+0xf8 (stride 0x1f0) passing the bit filters +0x158/+0x15c/+0x160, calls Live_TyreSlots_Build_Thunk(record, out, track+0x48) and sets UIDB refs at self+0x110 (slot kind 2, fallback 1), self+0x170 (kind 1) and self+0x1d0 (kind 0, fallback 1). Callers: Vm_CareerEmail_BindTemplates 0x1418b5970 (case 5, right after 0x1418c2cd0) and 0x1418c2be0 (same pair, then builds standings tables). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.career_email_update_tyre_counts_and_compound_refs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 48 89 D3 48 89 CF",
+  "match": "0x1418c20d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418c20d0",
+  "kind": "func_start",
+  "names": [
+   "Vm_CareerEmail_Update_TyreCountsAndCompoundRefs"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418c38b0",
+  "made_on_target": "0x1418c38b0",
+  "twin": "made on steam-26566308; the target 0x1418c38b0 is KB 0x1418c20d0: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418c38b0",
+    "target": "0x1418c38b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f2e3019c23eaa5e5f57b8cafa83336c5d522cb274387fabe01d538ff6618e3ff"
+  }
+ ]
+}

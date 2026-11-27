@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Idf_Destroy_SceneHolder",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144194090",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Idf_Destroy_SceneHolder(void *allocator, void *holder)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144196660 (RacingPC lab re_groups/_decomp);xref:0x1441966f0",
+  "notes": "Deleter: if holder is non-null destroys the owned scene node at holder+0x8 (FUN_144194060, the same dtor used for 0x170-byte scene nodes) and frees it via the allocator at holder+0x10, frees the vector storage at holder+0x18..+0x28, then frees holder itself via allocator vtable +0x38."
+ },
+ "signature": {
+  "id": "ui.idf_destroy_scene_holder",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 85 D2 74 73 48 89 D6",
+  "match": "0x144194090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144194090",
+  "kind": "func_start",
+  "names": [
+   "Ui_Idf_Destroy_SceneHolder"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144196660",
+  "made_on_target": "0x144196660",
+  "twin": "made on steam-26566308; the target 0x144196660 is KB 0x144194090: Vm_Run_Route (0x418a940) and Ne_Make_StrFromCStr (0x4199ab0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144196660",
+    "target": "0x144196660"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f07c0d402ef6a4f8a30b64093da36ecb6d0aaa00d3efa2fa3cd90323de17224"
+  }
+ ]
+}

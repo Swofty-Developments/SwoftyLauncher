@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Build_HomeTile_ZenithButton",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14174bb20",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Build_HomeTile_ZenithButton(void *list, uint8_t index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14174d2a0 (RacingPC lab re_groups/_decomp);xref:0x14173f700",
+  "notes": "Tile factory: \"button_%d\" child node, 0xd8 Tile \"fe_tile_button_default\", 0x160 HomeItem id \"zenith_button\" (final vtable 0x1457076c0, 16 bytes at +0x148 zeroed, u16 at +0x158 = 0); pushed to list+0x70."
+ },
+ "signature": {
+  "id": "ui.build_home_tile_zenith_button",
+  "section": ".xtls",
+  "pattern": "40 80 C6 03 4C 89 F1 89 F2 E8 ?? ?? ?? ?? E9",
+  "match": "0x14173f350",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x9"
+  },
+  "target": "0x14174bb20",
+  "kind": "call",
+  "names": [
+   "Ui_Build_HomeTile_ZenithButton"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141740ad0",
+  "made_on_target": "0x14174d2a0",
+  "twin": "made on steam-26566308; the target 0x14174d2a0 is KB 0x14174bb20: FeHome_Add_CareerTile (0x1747e90) and site_Career_RnDUpgradeListDeptIcon (0x174f384) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141740ad0",
+    "target": "0x14174d2a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "24d4159d888d5896baa6100aa50f21ba82f828b23eab601cb19a081ba2a8b170"
+  }
+ ]
+}

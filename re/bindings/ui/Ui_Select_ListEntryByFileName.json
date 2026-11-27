@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Select_ListEntryByFileName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422372f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Select_ListEntryByFileName(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142238ef0 (RacingPC lab re_groups/_decomp);xref:0x142237230,0x142238a10",
+  "notes": "Walks the VM list at self+0x508, resolves each element's \"file_name\" string and compares it (hash bits then Ne_Crt_Strcmp) with a target string handle built at entry by 0x140970d60; on the first match writes that element as node ref into the property at self+0x4e8 via Ne_Property_SetUIDBRefIfChanged and returns. Better context needed: where the target string comes from (helper 0x140970d60 args not recovered). Context from caller: Ui_TrackListVm_Init and Game_HotLoadVm_HandleCommand."
+ },
+ "signature": {
+  "id": "ui.select_list_entry_by_file_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 49 89 CE 48 8D 74 24 78",
+  "match": "0x1422372f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422372f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Select_ListEntryByFileName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142238ef0",
+  "made_on_target": "0x142238ef0",
+  "twin": "made on steam-26566308; the target 0x142238ef0 is KB 0x1422372f0: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142238ef0",
+    "target": "0x142238ef0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "112786cec169c6561bcc59977a01239a9cb4146a547c72e850b085e5bdd0b840"
+  }
+ ]
+}

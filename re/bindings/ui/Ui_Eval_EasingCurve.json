@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Eval_EasingCurve",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14395c780",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "float Ui_Eval_EasingCurve(void *curve, float elapsed)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14395ed10 (RacingPC lab re_groups/_decomp);xref:0x144169bf0,0x144251f80",
+  "notes": "t = clamp(elapsed / duration(+0x24), 0, 1) (1 if duration is 0), then by mode +0x20 with parameter +0x28: 1 = 1-pow(1-t,p), 2 = pow(t,p), 3 = smoothstep applied floor(p) times blended with one more pass by frac(p), 4 = sin(t*pi/2), 5 = 1-cos(t*pi/2), 6 = 0.5-0.5*cos(t*pi), other = linear. Result clamped to 0..1 and returned in xmm0; elapsed arrives in xmm1. Good hook for UI animation timing."
+ },
+ "signature": {
+  "id": "ui.eval_easing_curve",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 C5 F8 29 74 24 20 C5 FA 10 41 24",
+  "match": "0x14395c780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14395c780",
+  "kind": "func_start",
+  "names": [
+   "Ui_Eval_EasingCurve"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14395ed10",
+  "made_on_target": "0x14395ed10",
+  "twin": "made on steam-26566308; the target 0x14395ed10 is KB 0x14395c780: Ne_SaveObject_ReserveChildSlot_14393a770 (0x393cd00) and Ne_Math_Mat4Invert (0x395f080) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14395ed10",
+    "target": "0x14395ed10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e0a7a0a13827a15c00a10c448c928a64d622a1ff47f5c65f7feba69cd2c271a3"
+  }
+ ]
+}

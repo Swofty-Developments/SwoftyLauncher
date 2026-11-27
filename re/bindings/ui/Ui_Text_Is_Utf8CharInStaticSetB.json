@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Is_Utf8CharInStaticSetB",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144317570",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "bool Ui_Text_Is_Utf8CharInStaticSetB(const uint8_t *utf8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144319b40 (RacingPC lab re_groups/_decomp);xref:0x144315390",
+  "notes": "Lazily (TLS guard 0x146ca72b0) builds a static hash set at 0x146ca7260 from the 110 uint32 code points at 0x145a74d0c, registers atexit FUN_144319d20. Decodes one UTF-8 char (2-4 bytes, 0xA0 special case), hashes the 4 code point bytes with FNV-1a 64, masks with 0x146ca72a0 and walks the bucket chain; returns true if found. Caller Ui_TextElement_Slot47 stores the result in a per-token flag byte while tokenising, next to a flag for private-use code points 0xE000..0xF8FF. The set contents were not read, so its meaning stays open. Better context needed: table at 0x145a74d0c. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.text_is_utf8_char_in_static_set_b",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC F8 01 00 00 48 89 CE",
+  "match": "0x144317570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144317570",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Is_Utf8CharInStaticSetB"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144319b40",
+  "made_on_target": "0x144319b40",
+  "twin": "made on steam-26566308; the target 0x144319b40 is KB 0x144317570: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144319b40",
+    "target": "0x144319b40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5f60f76b2101524e17baedf1363f4917fff2234ec5e8f2f87032a5c196ab2c1a"
+  }
+ ]
+}

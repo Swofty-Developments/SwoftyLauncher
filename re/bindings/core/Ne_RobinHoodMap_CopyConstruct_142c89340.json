@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_CopyConstruct_142c89340",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c86db0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_CopyConstruct_142c89340(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c89340 (RacingPC lab re_groups/_decomp);xref:0x142baa200",
+  "notes": "(lib) Robin-hood hash map copy constructor: initialises empty state (allocator from src+0x18, multiplier 0xc4ceb9fe1a85ec53, inline bucket ptrs, info inc 0x20) and, if src has elements, allocates buckets, copies multiplier, count, mask, max and info fields and clones nodes via FUN_142c89030."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_copy_construct_142c89340",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE C5 F8 57 C0 C5 F8 11 41 08 48 8B 4A 18 48 89 4E 18 48 B8 53 EC 85 1A FE B9 CE C4 48 89 46 20 48 8D 46 40 48 89 46 28 48 89 46 30 C5 F8 11 46 38 48 C7 46 48 00 00 00 00 48 C7 46 50 20 00 00 00 48 83 7A 38 00 0F 84 ?? ?? ?? ?? 48 89 D7 4C 8B 42 40",
+  "match": "0x142c86db0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c86db0",
+  "kind": "func_start",
+  "names": [
+   "Ne_RobinHoodMap_CopyConstruct_142c89340"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c89340",
+  "made_on_target": "0x142c89340",
+  "twin": "made on steam-26566308; the target 0x142c89340 is KB 0x142c86db0: Sess_Result_DecodeVehicleResult (0x2c7ea10) and Ne_WindowWin_BuildResolutionOptions (0x2c92d30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c89340",
+    "target": "0x142c89340"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "665ca62a6991533b304a53dd8ea42bc9310240f5ac6e2b017b177b474ab136fd"
+  }
+ ]
+}

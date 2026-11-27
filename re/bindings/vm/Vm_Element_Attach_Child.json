@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Element_Attach_Child",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441637d0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Element_Attach_Child(void *parent, void *child, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144165da0 (RacingPC lab re_groups/_decomp);xref:0x14417c370",
+  "notes": "Lazily allocates the parent child vector at parent+0x178, sets child parent pointer (+0x1a0) and inherits flag 0x400 in child+0x198 from the parent's 0xc00 bits, calls child virtuals vt+0x70, vt+0x80 (parent+0x60 when set) and vt+0x128 (parent+0xc0), marks ancestors dirty (bit 0x1000000 at +0x170 walking +0x1a0) and appends child to the vector, then FUN_144303c20 and FUN_144304830."
+ },
+ "signature": {
+  "id": "vm.element_attach_child",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 83 B9 78 01 00 00 00",
+  "match": "0x1441637d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441637d0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Element_Attach_Child"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144165da0",
+  "made_on_target": "0x144165da0",
+  "twin": "made on steam-26566308; the target 0x144165da0 is KB 0x1441637d0: site_Ne_Format_String_Entry (0x41656c0) and Ne_Ref_AssignIntrusiveRc16 (0x4167e30) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144165da0",
+    "target": "0x144165da0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f03536cf1fc229af3e39d4eb721d93915d78b7a10415df61f2ac4780d84e3993"
+  }
+ ]
+}

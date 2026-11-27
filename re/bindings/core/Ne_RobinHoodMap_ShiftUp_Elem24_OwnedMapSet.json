@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_ShiftUp_Elem24_OwnedMapSet",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429f9130",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_ShiftUp_Elem24_OwnedMapSet(void *map, uint64_t start_idx, uint64_t insert_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429fb4f0 (RacingPC lab re_groups/_decomp);xref:0x1428f7470",
+  "notes": "(lib) Robin-hood insert helper: moves the 0x18-byte slots {key, allocator, owned ptr} in [insert_idx, start_idx) one position up (keys +0x18), destroying any displaced owned value with FUN_1429e7050 plus allocator free, and bumps the info bytes (+0x20) by the info increment (+0x40); sets max-load (+0x38) to 0 on info overflow."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_shift_up_elem24_owned_map_set",
+  "section": ".xtls",
+  "pattern": "49 89 D8 E8 ?? ?? ?? ?? 49 8B 86 20 01 00 00",
+  "match": "0x1428fb893",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1429f9130",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_ShiftUp_Elem24_OwnedMapSet"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428fdc53",
+  "made_on_target": "0x1429fb4f0",
+  "twin": "made on steam-26566308; the target 0x1429fb4f0 is KB 0x1429f9130: Game_SaveSlotManager_Deserialise (0x29d8bd0) and Ne_Crt_AbortNoReturn_B (0x2a00c40) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428fdc53",
+    "target": "0x1429fb4f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fb9200c80bd6db1d4663e97ff6f061313a013122569bd4354d6827701762450d"
+  }
+ ]
+}

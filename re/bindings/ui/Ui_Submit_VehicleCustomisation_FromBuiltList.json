@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Submit_VehicleCustomisation_FromBuiltList",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416c84a0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_Submit_VehicleCustomisation_FromBuiltList(void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416c9a90 (RacingPC lab re_groups/_decomp);xref:0x141ff64f0",
+  "notes": "Large stack frame (Ne_Crt_Chkstk). FUN_1416c8ce0 builds a local list of vehicle customisations (elements of 0x68a0 bytes), passing the flag (global 0x146068be8 != -1). If the list is not empty: func 0x1416c8700 builds a small ref-counted header, the first customisation is copied with Game_VehicleCustomisation_Copy into a request struct (flag byte set to 1), and the request is passed to func 0x1428e8730(*(ctx+0x18), request); then the temporaries and every list element are destroyed with Game_VehicleCustomisation_Destroy. Callers: Ui_MyTeamDecalEditor_Page (self+0x428) and 0x141fed950, a car customisation page init (param+0x568); both call it right after Game_MyTeamCarCustomisation_GetVideoWallContext on the same object. Context from caller: ctx is the video-wall context, so this pushes the current car look to the garage preview. Stays L1: the stack offsets are chkstk-relative and the receiver 0x1428e8730 is unknown. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.submit_vehicle_customisation_from_built_list",
+  "section": ".xtls",
+  "pattern": "56 57 53 B8 80 3A 01 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 CE 4C 8B 0D",
+  "match": "0x1416c84a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416c84a0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Submit_VehicleCustomisation_FromBuiltList"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416c9a90",
+  "made_on_target": "0x1416c9a90",
+  "twin": "made on steam-26566308; the target 0x1416c9a90 is KB 0x1416c84a0: Game_MyTeamCarCustomisation_BuildPreviewState (0x16c8140) and Game_MyTeamCustomisation_SpawnScene (0x16ca160) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416c9a90",
+    "target": "0x1416c9a90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dba169dfe56f834a582bcccdd293e6bfc9feebd236e3d9f7dc431d25c44ccb46"
+  }
+ ]
+}

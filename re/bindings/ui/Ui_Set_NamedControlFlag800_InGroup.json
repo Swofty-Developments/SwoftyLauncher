@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_NamedControlFlag800_InGroup",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442667e0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_NamedControlFlag800_InGroup(void *control, uint8_t on)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144268db0 (RacingPC lab re_groups/_decomp);xref:0x144267320,0x1442685c0",
+  "notes": "Whole body read. Returns if the name string at control+0xa8 is NULL or empty. Takes the int at +0x40 of the component with type 0x146ca5498 on the control (+0x30..+0x38) or, if absent, on the nearest ancestor (+0x20 chain) that has one; builds hash = (id*33 + '.') then x33 over the name; looks that up in the swiss-table registry of g_Vm_UiSystem vt+0x68 (+0xa8 seed, +0xb0 slots, +0xb8 ctrl, +0xc8 mask). If a target is found and its flag 0x800 (u32 at +0x198) differs from on: sets the flag, mirrors it to bit 0x08 of [target+0x1a8]+8; when clearing also clears bit 0 of +0x170 and bit 0x04 of the mirror and calls vt+0x140; finally tail-calls vt+0x70. Callers: Vm_UiTabs_OnMessage (calls with 0 when its vt+0xf8 check is false, result fed to Ne_BusMessage_SubscribeHandlerUnique) and 0x1442685c0 (pin handler: pin 0x146ca4f84 -> 0, pin 0x146ca4f88 -> 1). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.set_named_control_flag800_in_group",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 8B 81 A8 00 00 00",
+  "match": "0x1442667e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442667e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_NamedControlFlag800_InGroup"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144268db0",
+  "made_on_target": "0x144268db0",
+  "twin": "made on steam-26566308; the target 0x144268db0 is KB 0x1442667e0: Ne_Property_ResolveBindingChain (0x4255480) and Game_ProfanityFilter_FilterText (0x426f500) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144268db0",
+    "target": "0x144268db0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "35f8fd198e565a42da5496b14dbb678c2890ae5a2f1c9f9ccf35c88da6d0846a"
+  }
+ ]
+}

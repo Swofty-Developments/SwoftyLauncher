@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Construct_AccoladesTab_Vt14575c180",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141ee3150",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Construct_AccoladesTab_Vt14575c180(void *tab, void *owner_vm, void *arg3, void *arg4)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141ee4d50 (RacingPC lab re_groups/_decomp);xref:0x1422d13a0",
+  "notes": "Whole body read. Calls Vm_Construct_TabViewModel(tab, arg3, arg4, owner_vm, *0x145f95cb0, \"lng_accolades\", ..., 2, 1), then de-obfuscates up to 255 bytes from owner_vm+0x148 (length at +0x248, each byte XOR ((i+1) mod 127)) into a temp string, builds a \"team_hq_flow\" string (both released again), and installs vtables 0x14575c180 at +0, 0x14575c260 at +0x260, 0x14575c290 at +0x268, 0x14575c2c0 at +0x630; zeroes +0x678..+0x6f0 and sets u16 +0x6b0 = 0xffff. Returns tab. Caller Vm_TeamHq_BuildTabs allocates 0x6f8 bytes from the tab list allocator (+0x668) and passes (obj, vm, vm+0x28), then appends the object to the 24-byte tab vector; good hook to see the accolades tab being created. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.construct_accolades_tab_vt14575c180",
+  "section": ".xtls",
+  "pattern": "4D 89 F9 E8 ?? ?? ?? ?? 48 8B 8B 80 06 00 00",
+  "match": "0x1422d1268",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x141ee3150",
+  "kind": "call",
+  "names": [
+   "Vm_Construct_AccoladesTab_Vt14575c180"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422d2e68",
+  "made_on_target": "0x141ee4d50",
+  "twin": "made on steam-26566308; the target 0x141ee4d50 is KB 0x141ee3150: Game_StoryHubCall_HangUp (0x1ede340) and Career_TeamHqDriverContractsView_BindWidgets (0x1eeef30) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422d2e68",
+    "target": "0x141ee4d50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "103b3fe7bd7efe9750b7b15668defc3e85ffc8795ddca32659106f8b9ef4657e"
+  }
+ ]
+}

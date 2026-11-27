@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_Pool64",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144381720",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_Pool64(void *map, uint64_t newBuckets, char freeOld)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144383cf0 (RacingPC lab re_groups/_decomp);xref:0x144220620",
+  "notes": "(lib) Rehash of a robin-hood hash map with pointer slots: recomputes mask (+0x40) and 80 percent load limit (+0x48), allocates buckets*9+8 bytes, resets info increment (+0x50=0x20), reinserts every old node pointer by key hash (int at node+0, multiplier at +0x20) with shift-up insertion, then either frees the old block or recycles it as 0x40-byte nodes into the free list at +8."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_pool64",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 64 24 60 FF C7",
+  "match": "0x14422155d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144381720",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_Pool64"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144223b2d",
+  "made_on_target": "0x144383cf0",
+  "twin": "made on steam-26566308; the target 0x144383cf0 is KB 0x144381720: Ne_StringMap_EmplaceNode (0x434aff0) and Ne_Crt_ThrowOverflow_B (0x4385690) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144223b2d",
+    "target": "0x144383cf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8986e4dd82c2b0345c1fa576c6db950a09a5c31a67a02f5750db244769be1c69"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Apply_StyleToLayoutState",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14430f390",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Text_Apply_StyleToLayoutState(void *text_elem, void *style, uint32_t face_idx, void *state)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144311960 (RacingPC lab re_groups/_decomp);xref:0x144313230",
+  "notes": "Sets state[1] to the face instance text_elem+0x320[face_idx], resolves the style font (style+0x108) and copies style fields into the state: name buffer +0x120..+0x138, +0x1a4, size +0x16c divided by font scale, +0x170, +0x150, +0x160, case mode (+0x144 or override from text_elem+0x290), outline +0x174/+0x178; sets dirty byte state+0x44."
+ },
+ "signature": {
+  "id": "ui.text_apply_style_to_layout_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 CE 48 89 D7 48 89 CB 80 BA 5C 01 00 00 00",
+  "match": "0x14430f390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14430f390",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Apply_StyleToLayoutState"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144311960",
+  "made_on_target": "0x144311960",
+  "twin": "made on steam-26566308; the target 0x144311960 is KB 0x14430f390: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144311960",
+    "target": "0x144311960"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0ac6d0b0e12eb39c2ffd10b614798418034ab2723ad0fdb80b2e107cdbed4576"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_CapSlider_Bind",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1423e8de0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_CapSlider_Bind(void *self, void *parentHolder)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1423ea9e0 (RacingPC lab re_groups/_decomp);xref:0x1423e6b00",
+  "notes": "Initialises the base holder from the parent node with the name at 0x1457891e5 (func 0x144241240), then creates bool \"can_move_left\" into holder +0x20, bool \"can_move_right\" into holder +0x40 (both false) and node ref \"cap_slider_value_ref\" into holder +0x60 (empty). Returns self."
+ },
+ "signature": {
+  "id": "vm.cap_slider_bind",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 48 8D 3D ?? ?? ?? ?? 48 0F 44 D7 4C 8D 05",
+  "match": "0x1423e8de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423e8de0",
+  "kind": "func_start",
+  "names": [
+   "Vm_CapSlider_Bind"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1423ea9e0",
+  "made_on_target": "0x1423ea9e0",
+  "twin": "made on steam-26566308; the target 0x1423ea9e0 is KB 0x1423e8de0: Vm_MyTeamWorkforce_Bind (0x23e6b00) and Career_TeamHqContractsVM_OnActivate (0x23eb2e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1423ea9e0",
+    "target": "0x1423ea9e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "719bd5e96be14a7e257e8b1cc49c95809691fa98f85090c745270b7e2132bbe4"
+  }
+ ]
+}

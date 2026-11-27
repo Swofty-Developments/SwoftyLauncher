@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_FrontendFlowViewModel_Construct_145778d80",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422560b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_FrontendFlowViewModel_Construct_145778d80(void *self, void *registry, void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142257cb0 (RacingPC lab re_groups/_decomp);xref:0x14164b570",
+  "notes": "Constructor: base vt_Vm_ViewModelHelper, handle +0x08, registry +0x28, fixed strings '0000' (+0x38) and '' (+0x148), +0x140 = 0x7c783445, +0x250 = 0x1505, +0x258 = 2, Vm_Register_ViewModel(registry, id 2, self), flag +0x25c bit1; intermediate vtables 0x1456eb640/0x1456eb6c0 with temp strings '0000' and 'frontend_flow'; final vtables 0x145778d80 (+0), 0x145778e00 (+0x260), 0x145778e28 (+0x268); owner stored at +0x270, +0x578 = 0, sub-object +0x580 built by 0x1422409f0(owner), +0x608..+0x628 zeroed. Returns self. Caller Ui_CareerContinueMyTeam_Flow allocates 0x630 bytes and pushes the result into its view-model pointer vector. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.frontend_flow_view_model_construct_145778d80",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 CE C7 44 24 20 02 00 00 00 48 8D 05 ?? ?? ?? ?? 48 89 01 C5 F8 57 C0 C5 F8 11 41 10 48 C7 41 20 00 00 00 00 48 8D 05 ?? ?? ?? ?? 48 89 41 08 48 89 51 28 48 C7 41 30 00 00 00 00",
+  "match": "0x1422560b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422560b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_FrontendFlowViewModel_Construct_145778d80"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142257cb0",
+  "made_on_target": "0x142257cb0",
+  "twin": "made on steam-26566308; the target 0x142257cb0 is KB 0x1422560b0: Game_DataGathererPlayers_Update (0x21f3000) and Career_MyTeamSetupVM_ResetStepSelection (0x22684b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142257cb0",
+    "target": "0x142257cb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c1db210121ab17de8cc10b3fc4a44849fbd0d31d33cbab337198eaaa4b115619"
+  }
+ ]
+}

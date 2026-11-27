@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Control_DispatchInputToTree",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144204370",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Control_DispatchInputToTree(void *control, void *ctx, int32_t *state_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144206940 (RacingPC lab re_groups/_decomp);xref:0x14380eab0,0x143823700,0x14383f800",
+  "notes": "Whole body read. Normalises state_pair (if [1] < 2 then {5,0}); when control flag 0x20 (+8) is set, raises [1] by mode (+0xc & 0xf: 0->3, 5->2, 1->5). Then: first child (vector at [+0x18]+8..+0x10) with flag 0x08 gets vt+0x60(child, pair) test, its +0x28 value pushed on the ctx stack (+0x30, list +0x48..+0x60), vt+0x68(child, ctx, pair), pop; then own components (+0x30..+0x38) get vt+0x50(comp, control, ctx, pair) while vt+0x60 stays true; then the remaining children the same way, skipping those with flag 0x400 unless control flag 0x08 and those with 0x20000000 unless byte +0xb bit 0x10. On exit clamps pair from tables 0x145a873b0/0x145a873c8 by mode and resets to {5,0} if [1] < 1. Context from caller: all callers are per-class overrides with the same (this, ctx, int *pair) signature that call this first as the base step; 0x143823700 then reads analog value pairs from ctx (ids 0x14-0x13 and 0x11-0x12 via 0x144206ef0) to build scroll velocity at +0x6c/+0x70, 0x14380eab0 continues only if +0x8a is set, 0x14383f800 skips it when (+0x119 & 0x48) == 8. The \"input\" reading rests on those callers. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.control_dispatch_input_to_tree",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C6 48 89 D3 48 89 CF 41 8B 40 04",
+  "match": "0x144204370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144204370",
+  "kind": "func_start",
+  "names": [
+   "Ui_Control_DispatchInputToTree"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144206940",
+  "made_on_target": "0x144206940",
+  "twin": "made on steam-26566308; the target 0x144206940 is KB 0x144204370: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144206940",
+    "target": "0x144206940"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "45af14ca9e7e5e5fc60b92757b1e5c6cdc6ba4f0759a95f34fb9f0d6d816867f"
+  }
+ ]
+}

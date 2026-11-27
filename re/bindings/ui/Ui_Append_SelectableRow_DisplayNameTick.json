@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Append_SelectableRow_DisplayNameTick",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f76ad0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Append_SelectableRow_DisplayNameTick(void *self, uint32_t token, const char *display_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f79060 (RacingPC lab re_groups/_decomp);xref:0x142f798b0",
+  "notes": "Appends a row to the Vm list at self+0xa8 (creates it via FUN_142f7a390/FUN_142f786e0 if missing, resets when it already has more than 9 rows): child key is djb2 hash of the decimal index, then sets selected=false, a token field = index+1 (name at 0x14571d07a), a token field = param_2 (name at 0x145614dac), display_name=param_3 and show_tick=false. Context from caller: Ui_PitStint_BuildTyreStintRows."
+ },
+ "signature": {
+  "id": "ui.append_selectable_row_display_name_tick",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 4C 89 C6 49 89 CE",
+  "match": "0x142f76ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f76ad0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Append_SelectableRow_DisplayNameTick"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f79060",
+  "made_on_target": "0x142f79060",
+  "twin": "made on steam-26566308; the target 0x142f79060 is KB 0x142f76ad0: Sess_VirtualSession_FinishVirtualising (0x2f76d60) and site_Ne_HwBool_GodRaysPost (0x2f83738) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f79060",
+    "target": "0x142f79060"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "697edd2a8683aef4cecafe6a8258d0ba986a0810210bc3f067762682555e4b4b"
+  }
+ ]
+}

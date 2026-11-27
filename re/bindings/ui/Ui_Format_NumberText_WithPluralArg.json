@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Format_NumberText_WithPluralArg",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441e6ee0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Format_NumberText_WithPluralArg(void *out_str, uint32_t value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441e94b0 (RacingPC lab re_groups/_decomp);xref:0x1441ee1a0,0x1441eeb10,0x1441ef450",
+  "notes": "Zeroes *out_str, builds a format-args block with one argument named 'NUMBER' (type 7) = value, selects a plural-form string: per-language function table 0x145a87038[lang 0x145f9aa50 < 0x12](value) returns a category < 6 indexing table 0x145a870c8 (default 0x146ca7590), adds it via 0x1441e9700(args, 0x145a6483c, form), then Ne_InternedString_ManageB(args, 0x146ca3758, out_str, 0) produces the localised text; temp strings released. Returns out_str. All callers (Ui_Format_ResourcePointsAmountText, Ui_Format_NumberText_KMSuffix, Vm_Unk_1441ece80) call it only when their style/decimals argument == 6 and replace the result string with it. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.format_number_text_with_plural_arg",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 60 01 00 00 48 89 CE 48 C7 01 00 00 00 00",
+  "match": "0x1441e6ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441e6ee0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Format_NumberText_WithPluralArg"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441e94b0",
+  "made_on_target": "0x1441e94b0",
+  "twin": "made on steam-26566308; the target 0x1441e94b0 is KB 0x1441e6ee0: Game_ProfanityFilter_MatchList (0x41e3a80) and Ui_Format_ResourcePointsAmountText (0x41ee1a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441e94b0",
+    "target": "0x1441e94b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "39fc2595dbf0e9dce424fbd9ea4f1afd3f7b98136bdb067f15557a7fafbece23"
+  }
+ ]
+}

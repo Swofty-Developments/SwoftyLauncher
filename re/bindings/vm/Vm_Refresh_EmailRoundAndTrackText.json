@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Refresh_EmailRoundAndTrackText",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418c14f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_Refresh_EmailRoundAndTrackText(void *self, void *track_id)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418c2cd0 (RacingPC lab re_groups/_decomp);xref:0x1418b5970,0x1418c2be0",
+  "notes": "Looks up a localised format string (key 0x1456f951c) through the text table at [self+0x1f8]+0x28+[+0x160]*0x10 (vslot 0x18), formats it with arg 'round' = ([self+0x1f0]+0x1030 vslot 0x100)+1 and writes the result with Vm_Holder_SetCStr to self+0x28; then Game_TrackData_GetTrack(career[0x1eb], track_id), resolves two properties of the track node (0x145672a76, 0x14570e820) to loc keys, looks them up and sets the string nodes at self+0x50 and self+0x70. Context from caller: Vm_CareerEmail_BindTemplates 0x1418b5970 calls it in switch case 5 on a stack email VM with the track id of the current calendar entry; caller 0x1418c2be0: stores the career object in self+0x1f0, calls this and 0x1418c38b0, then builds the standings tables. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.refresh_email_round_and_track_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 04 00 00 48 89 D7 48 89 CE",
+  "match": "0x1418c14f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418c14f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Refresh_EmailRoundAndTrackText"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418c2cd0",
+  "made_on_target": "0x1418c2cd0",
+  "twin": "made on steam-26566308; the target 0x1418c2cd0 is KB 0x1418c14f0: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418c2cd0",
+    "target": "0x1418c2cd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ece5d95c78b8e685e9e8d76ea0125f2e79d67fa4c6367968fa979be686a7141c"
+  }
+ ]
+}

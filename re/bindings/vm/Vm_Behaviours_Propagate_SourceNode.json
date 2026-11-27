@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Behaviours_Propagate_SourceNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144246650",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Behaviours_Propagate_SourceNode(void *owner, void *source, uint32_t arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144248c20 (RacingPC lab re_groups/_decomp);xref:0x1442875a0",
+  "notes": "Scans the behaviour list owner+0x30..+0x38 by runtime type: the first of type 0x146ca59b0 gets FUN_14420bfc0(source,arg), the first of type 0x146ca5978 gets FUN_14424b130(source,arg), and for the first of type 0x146ca5658 its inner object (+0x20) swaps its subscription (callback FUN_1442b31e0) from the old source +0x18 to the new one, then calls Vm_Binding_SetSourceAndResolve with the path string at +0x128 and the source's node handle (+0xb0)."
+ },
+ "signature": {
+  "id": "vm.behaviours_propagate_source_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 89 C3 48 89 54 24 20",
+  "match": "0x144246650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144246650",
+  "kind": "func_start",
+  "names": [
+   "Vm_Behaviours_Propagate_SourceNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144248c20",
+  "made_on_target": "0x144248c20",
+  "twin": "made on steam-26566308; the target 0x144248c20 is KB 0x144246650: Ne_UINodeBase_ParentVisible (0x423c610) and Ne_UINodeBase_SetElementVisibility (0x4249e10) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144248c20",
+    "target": "0x144248c20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "52a690ee0920acfb7b066275ec34972c708a4af7e954592d2f7d67f3c9673adf"
+  }
+ ]
+}

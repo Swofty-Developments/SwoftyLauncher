@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_Vec4Params_MaskedDirty",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d3d480",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_Vec4Params_MaskedDirty(void *inst, const float *values, uint32_t index, uint32_t count, uint32_t mask)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d3fa50 (RacingPC lab re_groups/_decomp);xref:0x144169bf0,0x1442fb9e0,0x144305250",
+  "notes": "Writes into the vec4 array at inst+0xb0 (16 bytes per slot, slot = index). mask 0xf: bounds check index+count <= byte +0xd8, compare then copy count whole vec4s. Other masks: only the components whose bit (1,2,4,8) is set are taken, packed in order from values, and written if different; when +0xc0 is set and +0x13c bit 0x10, the write is repeated over [[inst+0xd0]+0x48] u16 copies in the array at +0xb8 with stride byte +0xd8. On any change sets +0x128 state to 2 (scheduling job 0x143d3f3f0 through 0x146c641e0 vt+0x68 when it was 0) and +0x12c bit 8. Callers: Ui_LayoutTree_Walk writes per-node shader values (indices and masks cached in globals 0x146ca6df8..0x146ca6ee0) on [node+0x180]+0x60; 0x1442fb9e0 forwards a stored param record (index +0x20, mask +0x24) and uses Ne_ModelInstance_SetNodeMatrices on the same object for mask 0xf; 0x144305250 pushes element values to [elem+0x180]+0x60. Context from caller: the object looks like a Ne model instance material parameter block. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.set_vec4_params_masked_dirty",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 8B 44 24 60",
+  "match": "0x143d3d480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3d480",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_Vec4Params_MaskedDirty"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d3fa50",
+  "made_on_target": "0x143d3fa50",
+  "twin": "made on steam-26566308; the target 0x143d3fa50 is KB 0x143d3d480: Ne_MipTailGeneratorFactory_ObtainGeneratorResource (0x3d3c280) and Ne_ModelInstance_SetNodeMatrices (0x3d3feb0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d3fa50",
+    "target": "0x143d3fa50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ceb3230326baa6f976108c99d91033ce22ee08e6b3257348583995c7af3aecbc"
+  }
+ ]
+}

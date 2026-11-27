@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_144384340",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144381d70",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_144384340(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144384340 (RacingPC lab re_groups/_decomp);xref:0x144220620",
+  "notes": "(thunk) Only calls Ne_Crt_InvalidParameterAbort and then int3; no-return overflow handler used by the hash-map rehash at 0x144384490."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_144384340",
+  "section": ".xtls",
+  "pattern": "EB 87 49 8B 06 48 89 07 49 89 3E E8 ?? ?? ?? ?? E8",
+  "match": "0x144222857",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xb"
+  },
+  "target": "0x144381d70",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_144384340"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144224e27",
+  "made_on_target": "0x144384340",
+  "twin": "made on steam-26566308; the target 0x144384340 is KB 0x144381d70: Ne_StringMap_EmplaceNode (0x434aff0) and Ne_Crt_ThrowOverflow_B (0x4385690) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144224e27",
+    "target": "0x144384340"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c5e340d4f5cf63f4e81b30a1c40937e9f79aa37fa751f4f7577c119201023d2e"
+  }
+ ]
+}

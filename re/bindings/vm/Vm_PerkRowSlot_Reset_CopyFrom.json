@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_PerkRowSlot_Reset_CopyFrom",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141b52cb0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_PerkRowSlot_Reset_CopyFrom(void *dstSlot, void *srcElem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141b54880 (RacingPC lab re_groups/_decomp);xref:0x141b53220",
+  "notes": "dstSlot is an inline array of 0x70-byte elements with its count at +0x70. Runs Vm_Release_PerkRowNodes on each existing element, sets count 0, then copy-constructs element 0 from srcElem: node handle (vtable 0x1456904f8, bound to src handle +0x08 via func 0x1442bd9f0), allocator +0x20, a vector of 0x230-byte items at +0x28/+0x30/+0x38 (allocated with the allocator, copied by FUN_1417b7d80) and six qwords +0x40..+0x68; count becomes 1. Returns dstSlot. Vm_PropertyBlock_CopyCtor_141b51650 calls it for the optional member at +0x720 (count at +0x790) when the source has one. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.perk_row_slot_reset_copy_from",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 41 70",
+  "match": "0x141b52cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b52cb0",
+  "kind": "func_start",
+  "names": [
+   "Vm_PerkRowSlot_Reset_CopyFrom"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141b54880",
+  "made_on_target": "0x141b54880",
+  "twin": "made on steam-26566308; the target 0x141b54880 is KB 0x141b52cb0: Game_F1WorldScreen_RefreshAndNavigate (0x1b208f0) and Ne_Map_FindOrInsertSlot_StringKey (0x1b55950) on either side both sit 0x1bd0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141b54880",
+    "target": "0x141b54880"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9a2962d2dad586074e63fa097a9232eebf13e2ead947070088ed17f1de80c679"
+  }
+ ]
+}

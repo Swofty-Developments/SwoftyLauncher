@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Resolve_BindingPathAndQueueMessage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442c05f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int32_t Vm_Resolve_BindingPathAndQueueMessage(void *self, void *binding)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442c2bc0 (RacingPC lab re_groups/_decomp);xref:0x1442c2ab0,0x14431fcf0",
+  "notes": "Returns 2 if binding[0] or binding[1] is null. Otherwise decodes the index-XOR obfuscated path at binding+0x30 (length +0x130, max 255), resolves it from the VM registry root, reassigns the handle at binding+0x10 and the target handle at binding[1]+8, clears byte +0x144, then builds a string (1-char prefix from 0x145670000 plus the decoded path) and enqueues a 0x28-byte message (type 0x42, two ids from binding[0] vtable+0x10) on the locked queue at self+0x30, signalling its event. Returns 0."
+ },
+ "signature": {
+  "id": "vm.resolve_binding_path_and_queue_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 B8 02 00 00 00",
+  "match": "0x1442c05f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442c05f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Resolve_BindingPathAndQueueMessage"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442c2bc0",
+  "made_on_target": "0x1442c2bc0",
+  "twin": "made on steam-26566308; the target 0x1442c2bc0 is KB 0x1442c05f0: Ne_UICrashDumpInfo_OnScreenEvent (0x42bfda0) and Vm_Fire_Route (0x42c33f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442c2bc0",
+    "target": "0x1442c2bc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ced27a93b9687dd9d803e79753cdc4415b5aeb73f34929f0cef23e5acc88358d"
+  }
+ ]
+}

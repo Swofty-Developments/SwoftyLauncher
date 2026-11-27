@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_CStrKey_OwnedMapSet",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429f92c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_CStrKey_OwnedMapSet(void *map, uint64_t new_bucket_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429fb680 (RacingPC lab re_groups/_decomp);xref:0x1428f7470",
+  "notes": "(lib) Rehash of a robin-hood map with C-string keys (FNV-1a 64 times multiplier at +0x10) and 0x18-byte slots {key, allocator, owned ptr}. Allocates new_count*0x19+8 bytes through the allocator at +0x8, sets mask +0x30, max load 80 percent +0x38, info inc 0x20, re-inserts every old slot (moving the owned ptr; leftovers destroyed with FUN_1429e7050) and frees the old table."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_c_str_key_owned_map_set",
+  "section": ".xtls",
+  "pattern": "48 8B 8C 24 88 00 00 00 E8 ?? ?? ?? ?? 48 BF B3 01 00 00 00 01 00 00",
+  "match": "0x1428fb419",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x1429f92c0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_CStrKey_OwnedMapSet"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428fd7d9",
+  "made_on_target": "0x1429fb680",
+  "twin": "made on steam-26566308; the target 0x1429fb680 is KB 0x1429f92c0: Game_SaveSlotManager_Deserialise (0x29d8bd0) and Ne_Crt_AbortNoReturn_B (0x2a00c40) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428fd7d9",
+    "target": "0x1429fb680"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4a5d2637dc2ee8fe1099e2d7b5d0d2e790f89303886caa14774689fa3a743418"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Apply_PendingVehicleCustomisation_ByMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143875580",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_Apply_PendingVehicleCustomisation_ByMode(void *wizard)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143877b10 (RacingPC lab re_groups/_decomp);xref:0x1438775a0",
+  "notes": "Runs only when wizard+0xd0 is set and byte +0x1e4 (pending) is nonzero; calls 0x143878d30, reads [[wizard+0x28]+0x88]+0x260 +0xe68 == 1 as a flag, then switches on byte +0x1e6: 1 walks the map at [+0xd0]+0x20 with ids from +0x50, 2 walks +0x98 with ids from +0xb0 (entry via 0x14246f790, handle at +0x15e), 3 walks +0xe0 with ids from +0xf8 (entity from table [wizard+0x38]+0x230). Per item: Sess_ResolveEntityHandle(wizard+0x40), Game_SceneSpawnParams_CopyConstruct, Game_VehicleSpawnDesc_Ctor, Game_VehicleCustomisation_Copy, name string from table 0x14588eb30[idx < 3], then 0x1428ec610([wizard+0x30], u16 id). Clears +0x1e4 and +0x1e7 at the end; throws via Ne_Std_ThrowExceptionNoReturn when an id is missing. Caller Ui_CareerWizard_ReleaseItemWidgets calls it first, before releasing the pooled widget ids. Better context needed: what 0x1428ec610 does with the built desc (apply customisation vs request a vehicle spawn). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.apply_pending_vehicle_customisation_by_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 49 03 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F9 7F BC 24 F0 48 03 00 C5 F8 29 B4 24 E0 48 03 00 48 83 B9 D0 00 00 00 00",
+  "match": "0x143875580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143875580",
+  "kind": "func_start",
+  "names": [
+   "Ui_Apply_PendingVehicleCustomisation_ByMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143877b10",
+  "made_on_target": "0x143877b10",
+  "twin": "made on steam-26566308; the target 0x143877b10 is KB 0x143875580: Ui_CareerWizard_ReleaseItemWidgets (0x38775a0) and Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143877b10",
+    "target": "0x143877b10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "78acdd0d58e8d35258aad2977997f19f609551df1e2b839e7b135018308f3634"
+  }
+ ]
+}

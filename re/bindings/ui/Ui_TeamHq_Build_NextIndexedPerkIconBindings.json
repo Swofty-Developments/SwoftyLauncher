@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TeamHq_Build_NextIndexedPerkIconBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1416e26a0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TeamHq_Build_NextIndexedPerkIconBindings(void *self, void *name_gen)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416e3c90 (RacingPC lab re_groups/_decomp);xref:0x1416e2140,0x1416e2400",
+  "notes": "name_gen = {fmt at +0, char buf[0x20] at +8, int counter at +0x28}. Snprintf(buf, 0x20, fmt, counter), counter++, then Ui_TeamHq_BuildPerkIconBindings(self, buf). A preceding search of the 0x5c stride array at (self+0x18)->+0x460..+0x468 for the id at self+0x28 (when self+0x2e set) has no used result."
+ },
+ "signature": {
+  "id": "ui.team_hq_build_next_indexed_perk_icon_bindings",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 89 D7 48 89 CE 80 79 2E 00",
+  "match": "0x1416e26a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416e26a0",
+  "kind": "func_start",
+  "names": [
+   "Ui_TeamHq_Build_NextIndexedPerkIconBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416e3c90",
+  "made_on_target": "0x1416e3c90",
+  "twin": "made on steam-26566308; the target 0x1416e3c90 is KB 0x1416e26a0: Ui_Bind_ContractHubDriverRow (0x16e2da0) and Ui_Rnd_SetSecretSimultaneousUpgradeN (0x16e3d70) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416e3c90",
+    "target": "0x1416e3c90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "970f9384e1e3c1e911f4801d604c904e69f296505dfc0057a281a4a2c6fcfac6"
+  }
+ ]
+}

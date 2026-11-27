@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Reset_OptionalHandleBlock_13",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419e7720",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Reset_OptionalHandleBlock_13(void *opt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419e8f00 (RacingPC lab re_groups/_decomp);xref:0x1419deb90",
+  "notes": "If the engaged flag at +0x1a0 is set, releases 13 Vm node handles at +0x00..+0x180 (stride 0x20, unlink from node +0x28 list then Vm_Release_Node) in reverse order and clears the flag. Optional<struct of 13 handles>::reset."
+ },
+ "signature": {
+  "id": "vm.reset_optional_handle_block_13",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 79 0F 00 00 00",
+  "match": "0x1419e82da",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1419e7720",
+  "kind": "call",
+  "names": [
+   "Vm_Reset_OptionalHandleBlock_13"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419e9aba",
+  "made_on_target": "0x1419e8f00",
+  "twin": "made on steam-26566308; the target 0x1419e8f00 is KB 0x1419e7720: Ui_PurchaseMessage_ApplySelectedTier (0x19e61f0) and Game_BroadcastViewVehicleVM_OnActivate (0x19fe850) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419e9aba",
+    "target": "0x1419e8f00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2b3cdf7ea34e6ea2541c87aefe4c1745b1312734be80225c6ac7721c9142bc9f"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Update_SelectedSlotPreview_AndFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1420452f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Update_SelectedSlotPreview_AndFlags(void *screen)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142046ef0 (RacingPC lab re_groups/_decomp);xref:0x142045a00,0x142047e60",
+  "notes": "Resolves the selected node at +0x2b0 (follows reference nodes up to 0x62 hops), finds its index in the list node +0x290, and takes the matching entry in the array at +0x270 (stride 0x148). Unless the entry bool node at +0xc8 is true, it gets the driver customisation for the key at entry +0x140 (Wear_Get_DriverCustomisation_Thunk on +0x3b0), copies three blocks (+0x18, +0x48, +0x78) and id +0xc540 into a setup struct with anim name CustomisationIdle, calls FUN_1416cd110(+0x4c0), Ui_Setup_DriverFrontendForPerkAcclaim(+0x3d8, setup) and FUN_1416c5080(+0x3e8, key, key == (+0x478)+0x1b4, ...). Then writes bool node +0x2f0 = (Ui_Get_CustomisationContext() == 1 ? !entry bool +0xc8 : 0) and bool node +0x2d0 = func 0x14204a1e0(screen, index). Callers: Ui_LiveryCustomisation_InitSponsorToggle calls it at the end of screen init; 0x142047e60 is a handler that calls it and then requests a profile save. Context from caller: the screen binds slot_list, selected_slot, can_delete, assignable; which of those +0x2d0 and +0x2f0 are is not shown here. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.update_selected_slot_preview_and_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 07 00 00 48 89 CE 48 8D B9 B0 02 00 00",
+  "match": "0x1420452f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420452f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Update_SelectedSlotPreview_AndFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142046ef0",
+  "made_on_target": "0x142046ef0",
+  "twin": "made on steam-26566308; the target 0x142046ef0 is KB 0x1420452f0: Game_CarCustomisation_ApplyAllCustomisation (0x2013fb0) and Career_MyTeamSetup_AdvanceFadeOut (0x20557b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142046ef0",
+    "target": "0x142046ef0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dbc63cf712424ad6bf8c440e8ab47772dc765b0801b27303557c29e840fa1ad0"
+  }
+ ]
+}

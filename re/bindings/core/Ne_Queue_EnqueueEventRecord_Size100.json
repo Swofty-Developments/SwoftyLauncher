@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Queue_EnqueueEventRecord_Size100",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438f6780",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Queue_EnqueueEventRecord_Size100(void *queue, void *record, uint8_t signal)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438f8d10 (RacingPC lab re_groups/_decomp);xref:0x144225090",
+  "notes": "Event queue push: if enabled flag +0x68 is clear sets errno 0x58 and returns 0x58; else under the critical section at +0xd8 allocates 0x100 bytes from allocator +0x70 (0xc on failure), copy-constructs the record via 0x1442c77c0, appends to the singly linked list (head +0x58, tail +0x60), ORs signal into +0x6b and sets the event at +200 on first signal. Returns 0 on success."
+ },
+ "signature": {
+  "id": "core.queue_enqueue_event_record_size100",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 80 79 68 00 0F 84 ?? ?? ?? ?? 44 89 C3 48 89 D7 48 89 CE 48 8B 89 D8 00 00 00 FF 15 ?? ?? ?? ?? 48 8B 4E 70 48 8B 01 BA 00 01 00 00",
+  "match": "0x1438f6780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438f6780",
+  "kind": "func_start",
+  "names": [
+   "Ne_Queue_EnqueueEventRecord_Size100"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438f8d10",
+  "made_on_target": "0x1438f8d10",
+  "twin": "made on steam-26566308; the target 0x1438f8d10 is KB 0x1438f6780: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438f8d10",
+    "target": "0x1438f8d10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b517f7c2b36984cc9dd99346b4ed16c8068a5111469538f41d98134b11f407e6"
+  }
+ ]
+}

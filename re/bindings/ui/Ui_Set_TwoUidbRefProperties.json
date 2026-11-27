@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_TwoUidbRefProperties",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141af3c80",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_TwoUidbRefProperties(void *screen, void **node_handle)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141af5460 (RacingPC lab re_groups/_decomp);xref:0x141af0790,0x141af4540",
+  "notes": "Takes a temporary reference on *node_handle and, on the sub-object screen+0x330 (only when screen+0x11c0 is non-null), writes it to the two properties at +0xc28 and +0xb48 with Ne_Property_SetUIDBRefIfChanged, each only if valid, not flagged at +0x26 bit 1 and of the UIDB ref type (0x146ca7550). Releases the temporary reference afterwards."
+ },
+ "signature": {
+  "id": "ui.set_two_uidb_ref_properties",
+  "section": ".xtls",
+  "pattern": "48 89 C2 E8 ?? ?? ?? ?? 49 8B 46 10",
+  "match": "0x141af362f",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x141af3c80",
+  "kind": "call",
+  "names": [
+   "Ui_Set_TwoUidbRefProperties"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141af4e0f",
+  "made_on_target": "0x141af5460",
+  "twin": "made on steam-26566308; the target 0x141af5460 is KB 0x141af3c80: Ui_F1World_BuildUpgradeCardScreen (0x1aeb470) and Ui_F1World_SetLoadoutPillBackgrounds (0x1af5940) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141af4e0f",
+    "target": "0x141af5460"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2b357d37b725bcb1c76443b286f2a3fa191833952e775f13353ea737016bfa3c"
+  }
+ ]
+}

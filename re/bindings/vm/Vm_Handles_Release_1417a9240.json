@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Handles_Release_1417a9240",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417a7ac0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Handles_Release_1417a9240(void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417a9240 (RacingPC lab re_groups/_decomp);xref:0x1416a16e0",
+  "notes": "Destructor for a block of 14 VM node handles (+0x00..+0x1a0, stride 0x20, base vtable 0x145614e48): unlinks each from the node handle list (node+0x28) and calls Vm_Release_Node(g_Vm_Registry, node). Context from caller: RnD slot nodes."
+ },
+ "signature": {
+  "id": "vm.handles_release_1417a9240",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 00 05 00 00 00",
+  "match": "0x14167db09",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1417a7ac0",
+  "kind": "call",
+  "names": [
+   "Vm_Handles_Release_1417a9240"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14167f0f9",
+  "made_on_target": "0x1417a9240",
+  "twin": "made on steam-26566308; the target 0x1417a9240 is KB 0x1417a7ac0: Game_FrontendSceneScreenF_Destructor (0x17a2ae0) and Ui_Rnd_SetDepartmentPipColourA (0x17acca0) on either side both sit 0x1780 above their KB addresses; the match 0x14167f0f9 is KB 0x14167db09: Vm_FinanceTransactionRow_SetIcon (0x167d5b0) and Vm_SponsorInvoice_Bind (0x1683d40) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14167f0f9",
+    "target": "0x1417a9240"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e4562544fa4833c0725b66cac38b879dd786795b16f8fc9220c0ee384c6b09e3"
+  }
+ ]
+}

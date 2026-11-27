@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_List_MergeSort_ByByteAt0xD",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144345ff0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_List_MergeSort_ByByteAt0xD(void **first, uint64_t count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1443485c0 (RacingPC lab re_groups/_decomp);xref:0x1441834c0",
+  "notes": "(lib) Recursive in-place merge sort of count nodes of a doubly linked list starting at *first; the sort key is the byte at +0xd of the object stored at node+0x10, ascending and stable. Updates *first to the new first node and returns the node after the sorted range. Context from caller: orders registered uidf flows by a priority byte."
+ },
+ "signature": {
+  "id": "core.list_merge_sort_by_byte_at0x_d",
+  "section": ".xtls",
+  "pattern": "48 8B 4C 24 50 E8 ?? ?? ?? ?? 49 8B 45 00",
+  "match": "0x14418105f",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x144345ff0",
+  "kind": "call",
+  "names": [
+   "Ne_List_MergeSort_ByByteAt0xD"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14418362f",
+  "made_on_target": "0x1443485c0",
+  "twin": "made on steam-26566308; the target 0x1443485c0 is KB 0x144345ff0: Ne_Make_StrFromBuffer (0x4339fc0) and Ne_StringMap_EmplaceNode (0x434aff0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14418362f",
+    "target": "0x1443485c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "866ae89475ff853ccbd04930c3879161bf43880901fc5ffc805a54867cac2393"
+  }
+ ]
+}

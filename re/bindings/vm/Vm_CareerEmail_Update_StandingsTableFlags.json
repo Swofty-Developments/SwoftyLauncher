@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_CareerEmail_Update_StandingsTableFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418c2b70",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_CareerEmail_Update_StandingsTableFlags(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418c4350 (RacingPC lab re_groups/_decomp);xref:0x1418b5970",
+  "notes": "Calls Sess_Build_StandingsTablesVM_DriversConstructors with self+8 and self+0x1e8/+0x1f0/+0x1f8, then reads the int count node of each built table (+0x70 of first, +0x68 of second) and writes bool (count > 2) to nodes self+0x90 and self+0xb0. Temp builder is destroyed by FUN_1418c4590."
+ },
+ "signature": {
+  "id": "vm.career_email_update_standings_table_flags",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC B0 00 00 00 48 89 CE C6 44 24 48 01",
+  "match": "0x1418c2b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418c2b70",
+  "kind": "func_start",
+  "names": [
+   "Vm_CareerEmail_Update_StandingsTableFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418c4350",
+  "made_on_target": "0x1418c4350",
+  "twin": "made on steam-26566308; the target 0x1418c4350 is KB 0x1418c2b70: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418c4350",
+    "target": "0x1418c4350"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0d3e61e0b3fbd5f0743f7d68028bce6bff39d0a05520daa4839f42ca04b076a2"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_TripleHandleEntry_Free",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424cdd00",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_TripleHandleEntry_Free(void *allocator, void *entry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1424cf900 (RacingPC lab re_groups/_decomp);xref:0x142405660",
+  "notes": "Destroys an entry object: releases the Vm node handles at +0x68, +0x20 and +0x00 (unlink from node +0x28 watcher list, Vm_Release_Node), runs virtual dtors over the vector at +0x48..+0x50 (element 0x108, storage freed via allocator +0x40), then frees the entry with allocator vtbl+0x38."
+ },
+ "signature": {
+  "id": "vm.destroy_triple_handle_entry_free",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 4C 8D 35",
+  "match": "0x1424cdd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424cdd00",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_TripleHandleEntry_Free"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1424cf900",
+  "made_on_target": "0x1424cf900",
+  "twin": "made on steam-26566308; the target 0x1424cf900 is KB 0x1424cdd00: Ui_Release_FacilityUpgradeSlotsNodes (0x24cde70) and Ui_Copy_MyTeamNodeArray (0x24d08e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1424cf900",
+    "target": "0x1424cf900"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c00bd4a9ca80ee7eba9c61c76d0854bc0d99aec54562caa77cfc93693c348673"
+  }
+ ]
+}

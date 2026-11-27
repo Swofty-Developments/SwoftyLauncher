@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_TwoStrRecord_CopyCtor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432ae3a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_TwoStrRecord_CopyCtor(void *self, const void *other)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432b0930 (RacingPC lab re_groups/_decomp);xref:0x1408225f0",
+  "notes": "(lib) Copy-constructs a 0x60-byte object with vtable 0x145833e20: two growable Ne strings at +0x08 and +0x30 (Ne_String_Reserve to the source length, then bounded char copy, allocator copied from other+0x20 and other+0x48) and a qword at +0x58. Context from caller: busy spinner popup request payload."
+ },
+ "signature": {
+  "id": "core.two_str_record_copy_ctor",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 38 E8 ?? ?? ?? ?? C7 84 24 D0 01 00 00 06 00 00 00",
+  "match": "0x1406aabd8",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1432ae3a0",
+  "kind": "call",
+  "names": [
+   "Ne_TwoStrRecord_CopyCtor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1406aac18",
+  "made_on_target": "0x1432b0930",
+  "twin": "made on steam-26566308; the target 0x1432b0930 is KB 0x1432ae3a0: Game_F1os_LogF (0x3296fa0) and Game_F1osTask_SpawnChild_Vt1458323b0 (0x32b3f80) on either side both sit 0x2590 above their KB addresses; the match 0x1406aac18 is KB 0x1406aabd8: Game_ModelProxyList_Resolve (0x69c5b0) and Ai_Handle_PitStateChanged_Thunk (0x6b3150) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1406aac18",
+    "target": "0x1432b0930"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "68abf2cb5be42c0fb856cf505fb059814375d138a5d71ed9c25ebaf740b1caca"
+  }
+ ]
+}

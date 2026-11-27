@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Resolve_SystemDeps_EntrantsGameModePlus5",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417515e0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Resolve_SystemDeps_EntrantsGameModePlus5(void *self, void *unused, void *system_map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141752d60 (RacingPC lab re_groups/_decomp);xref:0x14175a090",
+  "notes": "Looks systems up in a U64 robin-hood map (Ne_RobinHoodMap_U64_FindIndex, 16-byte slots at +0x18) and caches the pointers: k_Live_EntrantsSystemKey -> self+0x100, key 0x146066e98 -> +0x110, key 0x146082d08 -> +0x108, key 0x146082c68 -> +0x118, optional keys 0x14607e178 -> +0x120 and 0x14607df70 -> +0x128, k_Live_GameModeSystemKey -> +0x130. Returns 0, or 0x16 (EINVAL, also pushed to the TLS error chain) when a required system is missing."
+ },
+ "signature": {
+  "id": "ui.resolve_system_deps_entrants_game_mode_plus5",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 4C 89 C1 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 47 18 48 3B 47 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 86 00 01 00 00",
+  "match": "0x1417515e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417515e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Resolve_SystemDeps_EntrantsGameModePlus5"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141752d60",
+  "made_on_target": "0x141752d60",
+  "twin": "made on steam-26566308; the target 0x141752d60 is KB 0x1417515e0: site_Career_RnDListRowDeptIcon (0x1750625) and Ui_Init_CarDriverTeamSelectors (0x175a090) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141752d60",
+    "target": "0x141752d60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b3c8bfe096f2ecc30bb3d129a856ab0c1e54617b0b1dd63ff77faa70d19c713f"
+  }
+ ]
+}

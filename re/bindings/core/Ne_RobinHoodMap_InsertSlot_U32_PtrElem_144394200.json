@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_InsertSlot_U32_PtrElem_144394200",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144391c30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_InsertSlot_U32_PtrElem_144394200(void *owner, void *outSlot, uint32_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144394200 (RacingPC lab re_groups/_decomp);xref:0x1442870c0,0x1442c1a20",
+  "notes": "(lib) Robin-hood find-or-make-slot for a map embedded at owner+0x18: entries are 8-byte pointers whose first u32 is the key (+0x20 multiplier, +0x28 entries, +0x30 distance bytes, +0x38 count, +0x40 mask, +0x48 limit, +0x50 step, +0x54 shift). Writes {index, status} to outSlot (1 exists, 2/3 slot opened, 0 failed); first use allocates 7 slots (0x86 bytes), otherwise rehashes with FUN_144394950."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_insert_slot_u32_ptr_elem_144394200",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 44 24 38 48 83 F8 03",
+  "match": "0x144284dbb",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x144391c30",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_InsertSlot_U32_PtrElem_144394200"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14428738b",
+  "made_on_target": "0x144394200",
+  "twin": "made on steam-26566308; the target 0x144394200 is KB 0x144391c30: Ne_HashMap_Rehash_1443908e0 (0x4392eb0) and Ne_AnimClipResourceFactory_CreateResource (0x43b7e50) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14428738b",
+    "target": "0x144394200"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "faa0bfc29b20294891f9cd7703f8fd18e8202f941996994e1dcae17176c7f3a8"
+  }
+ ]
+}

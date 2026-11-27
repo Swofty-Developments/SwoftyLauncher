@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TextElement_Layout_ProcessToken",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144312970",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TextElement_Layout_ProcessToken(void *elem, void **token_iter, void *line, float *state, void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144314f40 (RacingPC lab re_groups/_decomp);xref:0x144315390",
+  "notes": "Dispatches on token kind (low 4 bits of token[0], 0x58-byte tokens): 1/4 -> FUN_144312620; 3 -> FUN_144311af0; 2 -> measures width with FUN_1442c7fd0(ctx+0x98, tok+0x10, tok+0x18, ctx+0x50), adds it to ctx+0x34, sums following kind-2 tokens when tok byte+4 != 0, wraps via FUN_1443114d0 (state[2]==3) or FUN_144310e40 (state[2]==4) against max width elem+0x200, subtracts width from remaining state[4], appends a run record to line+0x30 (FUN_1443a4b60), adds width to state[8], updates max height state[9]. Finally advances *token_iter by +0x58 or -0x58 depending on the direction flag from global 0x146ca6de0 vtable +0x90. Caller Ui_TextElement_Slot47 calls it in a loop until the iterator reaches the end token (elem+0x2a8 or elem+0x2a0-0x58). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.text_element_layout_process_token",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 48 89 D6 48 8B 12",
+  "match": "0x144312970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144312970",
+  "kind": "func_start",
+  "names": [
+   "Ui_TextElement_Layout_ProcessToken"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144314f40",
+  "made_on_target": "0x144314f40",
+  "twin": "made on steam-26566308; the target 0x144314f40 is KB 0x144312970: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144314f40",
+    "target": "0x144314f40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "50bb9951177c907f1d24af847b0b800298a818aa60f77104ebc179393ba41796"
+  }
+ ]
+}

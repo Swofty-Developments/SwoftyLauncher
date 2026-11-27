@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_Tile_TextIconHighlight",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141813370",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_Tile_TextIconHighlight(void *self, void *parent, void *name, const char *path)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141814b50 (RacingPC lab re_groups/_decomp);xref:0x14180fcc0,0x14180fee0",
+  "notes": "Calls FeTile_Construct_Tile(self, parent, name, path, 0xff), sets vtable 0x145712a18 and binds three Vm nodes under the tile node (+0x10): string text (handle at +0x20), node ref icon_tex (+0x40) and bool highlight=false (+0x60). Context from caller: RnD notification cards."
+ },
+ "signature": {
+  "id": "ui.construct_tile_text_icon_highlight",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 CE C6 44 24 20 FF",
+  "match": "0x141813370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141813370",
+  "kind": "func_start",
+  "names": [
+   "Ui_Construct_Tile_TextIconHighlight"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141814b50",
+  "made_on_target": "0x141814b50",
+  "twin": "made on steam-26566308; the target 0x141814b50 is KB 0x141813370: Ui_Update_RnDDeptPropertyNodes (0x1814110) and Ui_Rnd_SetDepartmentColourIconName (0x1814e50) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141814b50",
+    "target": "0x141814b50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bb4d0592b2df198bb39fb03e4b60bdca7518470c81d5c3a14ed78a5e2147b05d"
+  }
+ ]
+}

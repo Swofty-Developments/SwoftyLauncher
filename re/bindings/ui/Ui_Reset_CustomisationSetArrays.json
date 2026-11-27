@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Reset_CustomisationSetArrays",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f29940",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Reset_CustomisationSetArrays(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f2b540 (RacingPC lab re_groups/_decomp);xref:0x141f2a4b0",
+  "notes": "Destroys the inline array of customisation sets at +0x11d0 (stride 0x4a50, count +0x5c20) with Game_CustomisationSet_Dtor, then for each 0x4c0-byte entry at +0xd00 (count +0x11c0) runs the virtual dtor of its 0x28-byte sub-objects at +0x170 (count +0x490). Zeroes the three counts and +0x880. Context from caller: FeTrackScene refresh of current track."
+ },
+ "signature": {
+  "id": "ui.reset_customisation_set_arrays",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 81 20 5C 00 00",
+  "match": "0x141f29940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f29940",
+  "kind": "func_start",
+  "names": [
+   "Ui_Reset_CustomisationSetArrays"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f2b540",
+  "made_on_target": "0x141f2b540",
+  "twin": "made on steam-26566308; the target 0x141f2b540 is KB 0x141f29940: Trk_TimeTrialTrackSelectVm_OnCommandRaised (0x1f2a010) and Game_DriverSelectGridVM_OnActivate (0x1f2e820) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f2b540",
+    "target": "0x141f2b540"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d131ea9d96c325f607eae024fb020343b6dbb91b3fb05ea1dfe8af3d246739d6"
+  }
+ ]
+}

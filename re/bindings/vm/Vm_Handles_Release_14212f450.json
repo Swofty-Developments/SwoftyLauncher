@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Handles_Release_14212f450",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14212d850",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Handles_Release_14212f450(void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14212f450 (RacingPC lab re_groups/_decomp);xref:0x141f05720",
+  "notes": "Destructor for a large view-model block: releases 31 VM node handles at +0x278..+0x638 (stride 0x20), frees the owned object at +0x270 through the allocator at +0x268 (after 0x1441e3c60), calls Vm_SponsorsList_DestroyBindings(block+0x28) and releases the base handle at +0x00. Context from caller: sponsor contract offer bindings. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "vm.handles_release_14212f450",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 4C 8D 35 ?? ?? ?? ?? 4C 89 B1 38 06 00 00",
+  "match": "0x14212d850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14212d850",
+  "kind": "func_start",
+  "names": [
+   "Vm_Handles_Release_14212f450"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14212f450",
+  "made_on_target": "0x14212f450",
+  "twin": "made on steam-26566308; the target 0x14212f450 is KB 0x14212d850: Vm_FinancePeriod_Bind (0x212df10) and site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14212f450",
+    "target": "0x14212f450"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e11be4627aae65728e9264f24147679aab39f37705af0b9eeb3fae420b094c8a"
+  }
+ ]
+}

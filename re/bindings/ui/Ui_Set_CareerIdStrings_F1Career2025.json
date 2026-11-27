@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_CareerIdStrings_F1Career2025",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438784b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Set_CareerIdStrings_F1Career2025(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14387aa40 (RacingPC lab re_groups/_decomp);xref:0x14172ca50",
+  "notes": "Writes the literal \"f1_career_2025\" into the fixed string at self+0x118 (capacity +0x120, buffer +0x128, reserved to 0xf) and \"25\" into the string at self+0x140 (capacity +0x148, buffer +0x150). No other side effects. Context from caller: online career item action."
+ },
+ "signature": {
+  "id": "ui.set_career_id_strings_f1_career2025",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 89 20 01 00 00",
+  "match": "0x1438784b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438784b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_CareerIdStrings_F1Career2025"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14387aa40",
+  "made_on_target": "0x14387aa40",
+  "twin": "made on steam-26566308; the target 0x14387aa40 is KB 0x1438784b0: Ui_CareerWizard_ReleaseItemWidgets (0x38775a0) and Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14387aa40",
+    "target": "0x14387aa40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0eb7ee4334d4bcad9f640d9b22df3cc5cc61e86da6fafb415d54fe7c86ba9e4"
+  }
+ ]
+}

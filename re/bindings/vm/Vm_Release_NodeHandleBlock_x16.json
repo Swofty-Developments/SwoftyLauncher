@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Release_NodeHandleBlock_x16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142161e10",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Release_NodeHandleBlock_x16(void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142163a10 (RacingPC lab re_groups/_decomp);xref:0x142087420",
+  "notes": "Destructor-style: for each of 16 node handles at +0x1e0 down to +0x00 (stride 0x20) resets the vtable to the base handle vtable, unlinks the handle from the node watcher list (node+0x28 head, prev/next at handle+0x10/+0x18), calls Vm_Release_Node(g_Vm_Registry,node) and nulls the pointer. No other state touched."
+ },
+ "signature": {
+  "id": "vm.release_node_handle_block_x16",
+  "section": ".xtls",
+  "pattern": "48 8D 8E 80 03 00 00 E8 ?? ?? ?? ?? C6 86 80 05 00 00 00",
+  "match": "0x1420867f8",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x142161e10",
+  "kind": "call",
+  "names": [
+   "Vm_Release_NodeHandleBlock_x16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1420883f8",
+  "made_on_target": "0x142163a10",
+  "twin": "made on steam-26566308; the target 0x142163a10 is KB 0x142161e10: Vm_FinancePeriod_Bind (0x212df10) and site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1420883f8",
+    "target": "0x142163a10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8978cdbc68e60bee6f7498cc52964713731f5db54cca3ded00536a722be5b857"
+  }
+ ]
+}

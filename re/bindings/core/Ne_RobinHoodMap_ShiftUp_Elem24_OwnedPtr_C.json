@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_ShiftUp_Elem24_OwnedPtr_C",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429fd1d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_ShiftUp_Elem24_OwnedPtr_C(void *map, uint64_t start_idx, uint64_t insert_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1429ff590 (RacingPC lab re_groups/_decomp);xref:0x1428f7470",
+  "notes": "(lib) Identical template body to 0x1429fe8b0 for another map instantiation: shifts 0x18-byte {key, allocator, owned ptr} slots up by one and bumps info bytes."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_shift_up_elem24_owned_ptr_c",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 85 80 01 00 00",
+  "match": "0x1428f9e43",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1429fd1d0",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_ShiftUp_Elem24_OwnedPtr_C"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1428fc203",
+  "made_on_target": "0x1429ff590",
+  "twin": "made on steam-26566308; the target 0x1429ff590 is KB 0x1429fd1d0: Game_SaveSlotManager_Deserialise (0x29d8bd0) and Ne_Crt_AbortNoReturn_B (0x2a00c40) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1428fc203",
+    "target": "0x1429ff590"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f251b344a42d5dc7771166c4b25f6b0a8ea2e6eb521b15c022d75a446f3af733"
+  }
+ ]
+}

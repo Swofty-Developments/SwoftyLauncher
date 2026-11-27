@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Get_NumberMagnitudeSuffix_ByLanguage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441ea640",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Get_NumberMagnitudeSuffix_ByLanguage(void *out_str, uint32_t digits)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441ecc10 (RacingPC lab re_groups/_decomp);xref:0x1441ee1a0,0x1441eeb10,0x1441ef450",
+  "notes": "Returns a ref-counted string by low byte of digits and language id 0x145f9aa50: language 6 maps 3 -> 0x146ca3bc8, 4..7 -> 0x146ca3bd0, 8..9 -> 0x146ca3be0; other languages map 3..5 -> 0x146ca3bc8, 6..8 -> 0x146ca3bd8, 9 -> 0x146ca3be8; anything else builds a 7-char literal from 0x145a64e33. Increments the refcount (+4) and stores the pointer in *out_str. The three number formatters call it right after formatting the scaled value (0x1441f0f60 with 0x1456f95b4) and pass the result to Ne_InternedString_Manage as the magnitude suffix argument. Swap the globals to change K/M style suffix text. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.get_number_magnitude_suffix_by_language",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 48 89 CE 83 3D ?? ?? ?? ?? 06",
+  "match": "0x1441ea640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441ea640",
+  "kind": "func_start",
+  "names": [
+   "Ui_Get_NumberMagnitudeSuffix_ByLanguage"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441ecc10",
+  "made_on_target": "0x1441ecc10",
+  "twin": "made on steam-26566308; the target 0x1441ecc10 is KB 0x1441ea640: Game_ProfanityFilter_MatchList (0x41e3a80) and Ui_Format_ResourcePointsAmountText (0x41ee1a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441ecc10",
+    "target": "0x1441ecc10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "315bb8aca047eddba0d77574121a765092c667c7bee50a6ceb1f8d3455105dff"
+  }
+ ]
+}

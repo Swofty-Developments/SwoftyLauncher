@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Commit_TransitionProgress",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14422cfd0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Commit_TransitionProgress(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14422f5a0 (RacingPC lab re_groups/_decomp);xref:0x144230280",
+  "notes": "Reads state +0x78 and progress +0x9c: in state 0 (with +0xa9 set) or 2, progress below 0.0001 sets +0x98=0 and switches to state 0; in state 1, progress within 0.0001 of 1.0 sets +0x98=1.0 and switches to state 3 (both via 0x14422f930); otherwise copies progress to +0x98 and calls the caller's update. Then copies +0x98 to +0xa0 and pushes the float to the bound node with binding hash 0xbe7beda9 on the component of type 146ca5978, pruning dead bindings."
+ },
+ "signature": {
+  "id": "ui.commit_transition_progress",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 0F B6 41 78",
+  "match": "0x14422cfd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14422cfd0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Commit_TransitionProgress"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14422f5a0",
+  "made_on_target": "0x14422f5a0",
+  "twin": "made on steam-26566308; the target 0x14422f5a0 is KB 0x14422cfd0: Ne_VideoPlayer_OpenFile (0x421ed20) and Ne_UIInterrupt_HandleSignal (0x4230cd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14422f5a0",
+    "target": "0x14422f5a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5481c838e5ebab9a55e9e11cbf629be530380e133b644357b2e186db46cc54ba"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_MoveConstruct_HeaderContentNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14433d0d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_MoveConstruct_HeaderContentNodes(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14433f6a0 (RacingPC lab re_groups/_decomp);xref:0x144254510",
+  "notes": "Move-constructs the 0x70 struct built by 0x144254000: three intrusive node handles at +0, +0x20, +0x40 (pointer, next, prev are copied, the neighbours and owner node+0x28 are repointed to dst, src is zeroed), then moves allocator +0x60 and owned pointer +0x68 (src+0x68 cleared)."
+ },
+ "signature": {
+  "id": "ui.move_construct_header_content_nodes",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 83 C6 70 49 83 C4 70",
+  "match": "0x1442522f6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14433d0d0",
+  "kind": "call",
+  "names": [
+   "Ui_MoveConstruct_HeaderContentNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442548c6",
+  "made_on_target": "0x14433f6a0",
+  "twin": "made on steam-26566308; the target 0x14433f6a0 is KB 0x14433d0d0: Ne_Make_StrFromBuffer (0x4339fc0) and Ne_StringMap_EmplaceNode (0x434aff0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442548c6",
+    "target": "0x14433f6a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6cdf2160cb2a81a46f03ba9230d088de048012ae080e1d1991c462a0926af071"
+  }
+ ]
+}

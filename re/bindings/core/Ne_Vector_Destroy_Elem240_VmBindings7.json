@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_Destroy_Elem240_VmBindings7",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141b6d150",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_Destroy_Elem240_VmBindings7(void *vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141b6ed20 (RacingPC lab re_groups/_decomp);xref:0x141a63e50",
+  "notes": "(lib) Destroys a vector {alloc, begin, end, cap} of 0xf0 byte elements: for each element unlinks the 7 VM bindings (+0xd0 down to +0x10) and calls Vm_Release_Node, then frees the buffer via allocator vfn +0x38 and zeroes begin/end/cap."
+ },
+ "signature": {
+  "id": "core.vector_destroy_elem240_vm_bindings7",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 C6 84 24 D8 03 00 00 00",
+  "match": "0x141a629da",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141b6d150",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_Destroy_Elem240_VmBindings7"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141a641ba",
+  "made_on_target": "0x141b6ed20",
+  "twin": "made on steam-26566308; the target 0x141b6ed20 is KB 0x141b6d150: Ui_Release_TopLevelFacilityNodes (0x1b6e8c0) and Ne_HashMap_Find_141b732f0 (0x1b74ec0) on either side both sit 0x1bd0 above their KB addresses; the match 0x141a641ba is KB 0x141a629da: site_Game_DriverSelect_BackRoute (0x1a600cb) and Career_ContractNegotiationsView_BindStatRows (0x1a668d0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a641ba",
+    "target": "0x141b6ed20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cfb401e01e29e579be411354dab6666f3f044f63f983273c91d19e48111f5d45"
+  }
+ ]
+}

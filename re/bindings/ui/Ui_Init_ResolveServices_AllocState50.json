@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Init_ResolveServices_AllocState50",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418d2670",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "int32_t Ui_Init_ResolveServices_AllocState50(void *self, void *service_locator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418d3e50 (RacingPC lab re_groups/_decomp);xref:0x142405660",
+  "notes": "Whole body read. Resolves service key 0x146cba258 through locator vcall +0x28, takes a value from vcall +0xd0 on service+0x10, allocates a 0x50-byte state with the allocator at self+0 (three empty vectors sharing that allocator), stores it at self+0x110 (old one freed through the allocator saved at self+0x108), then resolves service key 0x146cba218 into self+0x118. Returns 0 on success, otherwise sets errno 0x16 (EINVAL) with the errno trace ring and returns 0x16. Context from caller: Ui_MyTeam_MainMenu calls it on the freshly built object it stores at screen+0x2a0 (markdown_elements list per the KB note), passing screen+0x370 as locator. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.init_resolve_services_alloc_state50",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 F9 FF 50 28 48 85 C0",
+  "match": "0x1418d2670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418d2670",
+  "kind": "func_start",
+  "names": [
+   "Ui_Init_ResolveServices_AllocState50"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418d3e50",
+  "made_on_target": "0x1418d3e50",
+  "twin": "made on steam-26566308; the target 0x1418d3e50 is KB 0x1418d2670: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418d3e50",
+    "target": "0x1418d3e50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "90a34e0d0ece1d130fee95b54118dc629981ae693bbfbedf44e1c72850f1e948"
+  }
+ ]
+}

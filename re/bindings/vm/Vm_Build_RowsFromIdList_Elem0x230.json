@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Build_RowsFromIdList_Elem0x230",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14169e020",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Build_RowsFromIdList_Elem0x230(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14169f610 (RacingPC lab re_groups/_decomp);xref:0x14169f310",
+  "notes": "When self+0x60 and self+0x68 are set, iterates the 8-byte entries of the list at (self+0x68)+0x10..+0x18; for each it takes the node name from the table at 0x14565c0d0 indexed by the entry's first byte, gets or creates that child node under self+8 and emplaces a 0x230-byte row into the vector at self+0x20 with (node handle, entry, self+0x4d). Context from caller: perk resource points boost rows."
+ },
+ "signature": {
+  "id": "vm.build_rows_from_id_list_elem0x230",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 83 79 60 00",
+  "match": "0x14169e020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14169e020",
+  "kind": "func_start",
+  "names": [
+   "Vm_Build_RowsFromIdList_Elem0x230"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14169f610",
+  "made_on_target": "0x14169f610",
+  "twin": "made on steam-26566308; the target 0x14169f610 is KB 0x14169e020: Vm_Build_PerkResourcePointsBoostRow (0x169f310) and Career_Build_PerkResourcePointsBoostDescription (0x169f840) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14169f610",
+    "target": "0x14169f610"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8bfd617378a9fd9808a5ae49f127c59219c957a8f7265e218a11ccfa36c0488c"
+  }
+ ]
+}

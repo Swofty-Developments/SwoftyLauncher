@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_SharedPtr_Release_AtOffset8_1419ce870",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1419cd090",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_SharedPtr_Release_AtOffset8_1419ce870(void *sp)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1419ce870 (RacingPC lab re_groups/_decomp);xref:0x1419e4350",
+  "notes": "(lib) shared_ptr destructor: decrements strong count at ctrl+8 (ctrl = sp+8), calls dispose vtbl[0] at zero, then decrements weak count +0xc and calls vtbl[1] at zero."
+ },
+ "signature": {
+  "id": "core.shared_ptr_release_at_offset8_1419ce870",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC 41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 48 8B 41 08",
+  "match": "0x1419cd090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419cd090",
+  "kind": "func_start",
+  "names": [
+   "Ne_SharedPtr_Release_AtOffset8_1419ce870"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1419ce870",
+  "made_on_target": "0x1419ce870",
+  "twin": "made on steam-26566308; the target 0x1419ce870 is KB 0x1419cd090: Ui_Copy_ListElementOrEmpty (0x19cd7e0) and Ui_Get_UiRegistryEntry_A (0x19cfa10) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1419ce870",
+    "target": "0x1419ce870"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0bebe970ab44b2bedba61ecc5ca791e1d6e04f10d562f7c4228db9ea3b9ea38a"
+  }
+ ]
+}

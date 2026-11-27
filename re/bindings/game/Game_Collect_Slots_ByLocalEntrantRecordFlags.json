@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Collect_Slots_ByLocalEntrantRecordFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1429689e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Collect_Slots_ByLocalEntrantRecordFlags(void *owner, void *out_list, uint64_t unused, int32_t mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14296ada0 (RacingPC lab re_groups/_decomp);xref:0x140984410,0x14121a030,0x14121b190",
+  "notes": "Whole body read. Clears out_list count (+0xa8), then walks 21 slots at owner+0x9f8..+0xb48 (16 bytes each, object pointer at +8). For each non-NULL slot it derives the local entrant id: via slot+0x28 -> +0x1e0 -> +0x88 -> +0x260, fetches the local identity block from g_Game_Manager (+0x140 -> +0x198 -> +0x1c0 vt+0x38), finds the matching EntrantRecord in +0x2e0..+0x2e8 with Sess_Match_EntrantIdentity_Thunk and packs its id bytes (default 0x3fff0000); then 0x1429bd780(slot, id) returns a 2-byte record. Slot is kept when byte0 != 0 and (mode 1: byte1 == 0; mode 0: byte1 != 0; other modes: no byte1 test); kept slot pointers are appended to out_list[0..] and the count stored at +0xa8. Returns out_list. Meaning of the two record bytes is not shown here. Caller 0x140984410: bool check that passes obj+0x1b0 owner with mode 2 after a vt+0x48 <= 5 test; caller 0x14121a030: large update that collects from [+0x50]+0x1b0 into a stack list before a per-slot loop over ids < 0x15; caller 0x14121b190: per-entry loop that collects with mode 1 and then indexes owner+0xa00 + id*0x10. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.collect_slots_by_local_entrant_record_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 44 89 CE 48 89 CB",
+  "match": "0x1429689e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429689e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Collect_Slots_ByLocalEntrantRecordFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14296ada0",
+  "made_on_target": "0x14296ada0",
+  "twin": "made on steam-26566308; the target 0x14296ada0 is KB 0x1429689e0: Career_Pick_RandomUpgrade_A (0x2969520) and Game_Build_PassiveObjectiveKeyName (0x297e150) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14296ada0",
+    "target": "0x14296ada0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a1c72cb45938aaa459754306ffbd4abb941d7586ef0ed7c6503b8bc4b7d949db"
+  }
+ ]
+}

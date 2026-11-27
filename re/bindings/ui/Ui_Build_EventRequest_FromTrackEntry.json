@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Build_EventRequest_FromTrackEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140ad6520",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Build_EventRequest_FromTrackEntry(void *mode, void *setup_component, void *event, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140ad6570 (RacingPC lab re_groups/_decomp);xref:0x14173bbd0,0x141fc1610",
+  "notes": "Picks a variant byte from event+0x4ac4 (2 -> 1; 1 -> byte +0xfd of the track of the mode's current record via vslot +0x90 and Game_TrackData_GetTrack; else 0), reads the current round index (component bus mode+0x1030 vslot +0x108, clamped to the list event+0x58..+0x60), takes the track id byte at round+1, resolves the track through mode[0x1eb], selects the 0x88-byte entry with byte +0x80 == variant in (mode+0x2b0)+0x198..+0x1a0 and fills a request with FUN_140ad6830(req, event+0x30, entry copy, ...). Then sets req.id = event+0x4ab4 and req.variant, applies it with setup_component vslot +0x268(req, 1), copies event+0x4ac4 to component 0x14605d388 +0x490 and frees the request vector. Callers FeTile_ChallengeCareerItem_GetAction and 0x141fc1610 (challenge career screen start-event handler) pass the Sess WeekendSetup component as setup_component; 0x140c90cc0 tail-jumps into this body with the same arguments. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.build_event_request_from_track_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC F0 00 00 00 4C 89 C6 48 89 D7 48 89 CB C7 44 24 30 00 00 00 00",
+  "match": "0x140ad6520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ad6520",
+  "kind": "func_start",
+  "names": [
+   "Ui_Build_EventRequest_FromTrackEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ad6570",
+  "made_on_target": "0x140ad6570",
+  "twin": "made on steam-26566308; the target 0x140ad6570 is KB 0x140ad6520: Game_TalkingPoints_UpdateBroadcastFades (0xac7840) and Career_Create_SeasonWeekend (0xae60a0) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ad6570",
+    "target": "0x140ad6570"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4dfaabb0be4197ff846dbb88532fa2f0a2f5a7735f2a11bf5c563ddd4fad6b46"
+  }
+ ]
+}

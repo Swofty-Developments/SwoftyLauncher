@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Font_Find_GlyphByKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442c6250",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Font_Find_GlyphByKey(void *font_faces, const uint32_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442c8820 (RacingPC lab re_groups/_decomp);xref:0x144313230,0x14431ad00,0x14431cf40",
+  "notes": "Two-level robin-hood lookup: map at [0x105] keyed by byte key[1] gives a sub-map, which is keyed by codepoint key[0] and yields the glyph pointer (+8 of the 16-byte slot). On a miss it retries with the key of the default codepoint (*font_faces+8) through Ui_Font_Find_CodepointKey_OrDefault, looping until found."
+ },
+ "signature": {
+  "id": "ui.font_find_glyph_by_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D0 48 89 CE EB 21",
+  "match": "0x1442c6250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442c6250",
+  "kind": "func_start",
+  "names": [
+   "Ui_Font_Find_GlyphByKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442c8820",
+  "made_on_target": "0x1442c8820",
+  "twin": "made on steam-26566308; the target 0x1442c8820 is KB 0x1442c6250: Vm_Fire_Route (0x42c33f0) and Ne_UIMessageSystem_OnMetadataAssetCleanup (0x42dbe90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442c8820",
+    "target": "0x1442c8820"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f2a4fec13cf5ce73f2a4a4412792a1325caff207e87205c8c0e69f9379951e3a"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Time_Compute_NextBoundary_ByMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432d54a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Time_Compute_NextBoundary_ByMode(int32_t *mode, void *out_0x38, int64_t arg3, void *arg4)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432d7a20 (RacingPC lab re_groups/_decomp);xref:0x141f5c700",
+  "notes": "Fills a 0x38-byte result (broken-down time 0x24 bytes at +0, time64 at +0x28, valid byte at +0x30). Mode 0: takes Ne_Crt_Time64 now, converts to broken-down time, sets seconds to 0 and minutes+1, converts back to time64 (func_0x00014534d1f4) and stores both forms, i.e. the start of the next minute; mode 1 forwards to FUN_1432d7b50(1,out,now,arg3,arg4); any other mode or arg3==0 zeroes the result. Caller Ui_WeeklyGpMatching_BindNodes passes its schedule object +0xd8 as mode and copies the result into that object at +0xf0..+0x127 (next refresh time). The CRT helpers at 0x14534c318 and 0x14534d1f4 are identified by usage only (localtime/gmtime and mktime-like). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.time_compute_next_boundary_by_mode",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 48 89 D6 4D 85 C0 74 34",
+  "match": "0x1432d54a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432d54a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Time_Compute_NextBoundary_ByMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1432d7a20",
+  "made_on_target": "0x1432d7a20",
+  "twin": "made on steam-26566308; the target 0x1432d7a20 is KB 0x1432d54a0: Sess_PersistStream_LoadFromFile (0x32d6ab0) and Game_F1osTask_SpawnChild_Vt145835c00 (0x32d7fe0) on either side both sit 0x2580 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1432d7a20",
+    "target": "0x1432d7a20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "eb16a3d84fcdad7531ec97acfc696abbfd9f725cc2b7a38961bf18157144a6a0"
+  }
+ ]
+}

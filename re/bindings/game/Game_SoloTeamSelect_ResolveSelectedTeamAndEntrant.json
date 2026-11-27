@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SoloTeamSelect_ResolveSelectedTeamAndEntrant",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141bff130",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void **Game_SoloTeamSelect_ResolveSelectedTeamAndEntrant(void *self, void **out_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141c00d30 (RacingPC lab re_groups/_decomp);xref:0x141bfef90,0x141c01730,0x141c02d10",
+  "notes": "Reads the selected node from the property at +0x9a8, finds its index in the Vm list at +0x948, stores the index at +0xc18 and takes the packed team handle from the array at +0x868. Writes team handle and entrant handle into the global EntrantsUi selection state (0x146050ac0, per-player slot stride 0xc0, fields +0x68/+0x6e) and returns out[0]=team object from (+0x680)+0x2c8 tables, out[1]=Sess_ResolveEntityHandle of the entrant handle (taken from Game_F1WorldHub_CollectTileIdsForModeB or the map at +0xc48). Good hook to see which team/driver the menu picked."
+ },
+ "signature": {
+  "id": "game.solo_team_select_resolve_selected_team_and_entrant",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D6 48 89 CF C5 F8 57 C0 C5 F8 11 02",
+  "match": "0x141bff130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bff130",
+  "kind": "func_start",
+  "names": [
+   "Game_SoloTeamSelect_ResolveSelectedTeamAndEntrant"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c00d30",
+  "made_on_target": "0x141c00d30",
+  "twin": "made on steam-26566308; the target 0x141c00d30 is KB 0x141bff130: Ui_NoyearCustomMyTeam_FlowState (0x1bfef90) and Trk_GrandPrixTrackSelectVm_RefreshTrackList (0x1c07200) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c00d30",
+    "target": "0x141c00d30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cbc48d7d7428acb6a9dec6f164e02e5674acc688271b86887c512a859f34ea43"
+  }
+ ]
+}

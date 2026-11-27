@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_InsertKeyPrepareSlot_U32",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142cad850",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_InsertKeyPrepareSlot_U32(void *map, uint64_t *out, uint32_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142cafde0 (RacingPC lab re_groups/_decomp);xref:0x142baa200",
+  "notes": "(lib) Robin-hood insertKeyPrepareEmptySpot for a uint32 key: hashes key * map+0x20, probes info bytes (+0x30); returns out={slot index, state} with state 1=key found, 2=new empty slot, 3=slot freed by shifting, 0=overflow after 256 tries. Allocates the initial 8-bucket table, halves info increment or rehashes/grows (FUN_142cb03c0) when full."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_insert_key_prepare_slot_u32",
+  "section": ".xtls",
+  "pattern": "49 89 D8 E8 ?? ?? ?? ?? 8B 44 24 68",
+  "match": "0x142ba02fb",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x142cad850",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_InsertKeyPrepareSlot_U32"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142ba288b",
+  "made_on_target": "0x142cafde0",
+  "twin": "made on steam-26566308; the target 0x142cafde0 is KB 0x142cad850: Ne_UIPCOptions_PopulateOutputMonitors (0x2c99650) and Ne_Post_BusMessageQueued_FlashbackUsed (0x2cb96c0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142ba288b",
+    "target": "0x142cafde0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "86193f018a71bf2cd900694391a8977477bff1185318202eaaf8e77e3f904d07"
+  }
+ ]
+}

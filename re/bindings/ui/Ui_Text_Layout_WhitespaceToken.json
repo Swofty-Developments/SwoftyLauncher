@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Text_Layout_WhitespaceToken",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144310510",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Text_Layout_WhitespaceToken(void *layout, void **token, void *line, float *cursor, void *style_state, void *style_table)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144312ae0 (RacingPC lab re_groups/_decomp);xref:0x144313230",
+  "notes": "Counts UTF-8 chars from layout+0x1e0 to token+0x10 into token+0x48, looks up the 0x68-stride style record for that char index (falls back to the font named \"default\"), measures the width of a 0x20 space, then for each tab(9)/space(0x20) byte in token+0x10..+0x18 subtracts it from the remaining width cursor[4] and adds it to cursor[8] and style_state+0x34; a '-' (0x2d) or an exhausted width with wrap mode cursor[2]==3 calls FUN_1443114d0 to start a new line using layout+0x200 as line width. Finally appends a run record (x, width, token, style index, kind 2) to line+0x30 and pushes or overwrites the style in layout+0x2d8. Caller 0x144313230 (Ui_Unk_144310c60) is the per-token layout dispatcher and calls this for token type nibble 1 and 4, so it is the place to hook whitespace width or wrapping. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.text_layout_whitespace_token",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 78 29 8C 24 D0 00 00 00 C5 78 29 84 24 C0 00 00 00 C5 F8 29 BC 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 4D 89 CF",
+  "match": "0x144310510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144310510",
+  "kind": "func_start",
+  "names": [
+   "Ui_Text_Layout_WhitespaceToken"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144312ae0",
+  "made_on_target": "0x144312ae0",
+  "twin": "made on steam-26566308; the target 0x144312ae0 is KB 0x144310510: Ne_UITextElement_SetText (0x430e310) and Ne_UITextElement_UpdateDocument (0x431ad00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144312ae0",
+    "target": "0x144312ae0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b89df871c6ae67ccdc12e4da7d2e13ae1f9a9b50d1e54d022b73b97fa1cdab52"
+  }
+ ]
+}

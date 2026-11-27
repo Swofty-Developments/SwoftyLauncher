@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_NodeHandleBlock_14Handles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14194ea80",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_NodeHandleBlock_14Handles(void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141950260 (RacingPC lab re_groups/_decomp);xref:0x1418b5970",
+  "notes": "Destructor for a block of 14 VM node handles (0x20 bytes each, +0x00..+0x1a0): resets vtable to base handle 0x145614e48, unlinks each from the node's intrusive handle list (node+0x28) and calls Vm_Release_Node. Context from caller: career email template handles."
+ },
+ "signature": {
+  "id": "vm.destroy_node_handle_block_14_handles",
+  "section": ".xtls",
+  "pattern": "48 89 44 24 70 48 89 F9 E8 ?? ?? ?? ?? E9",
+  "match": "0x1418b5ad9",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x14194ea80",
+  "kind": "call",
+  "names": [
+   "Vm_Destroy_NodeHandleBlock_14Handles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418b72b9",
+  "made_on_target": "0x141950260",
+  "twin": "made on steam-26566308; the target 0x141950260 is KB 0x14194ea80: Ne_Map_DestroySubtree (0x1924350) and Ne_Std_ThrowVectorSubscriptError (0x1952cb0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418b72b9",
+    "target": "0x141950260"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9b8f8544ce423f7cc14af7a9e20d5ea99a3f2d7a3c36dfda77caf67243eaaedb"
+  }
+ ]
+}

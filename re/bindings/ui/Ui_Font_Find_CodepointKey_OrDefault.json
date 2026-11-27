@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Font_Find_CodepointKey_OrDefault",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443407c0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Font_Find_CodepointKey_OrDefault(void *font_faces, uint32_t codepoint)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144342d90 (RacingPC lab re_groups/_decomp);xref:0x144313230,0x14431ad00,0x14431cf40",
+  "notes": "Robin-hood lookup of codepoint in the map at [0x106] (12-byte entries); on a miss it retries with the default codepoint at *font_faces+8 and traps (Ne_Crt_FatalTrapC) if that is missing too. Returns entry+4, the 8-byte key later passed to Ui_Font_Find_GlyphByKey."
+ },
+ "signature": {
+  "id": "ui.font_find_codepoint_key_or_default",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 4C 24 30 48 8B 81 30 08 00 00",
+  "match": "0x1443407c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443407c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Font_Find_CodepointKey_OrDefault"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144342d90",
+  "made_on_target": "0x144342d90",
+  "twin": "made on steam-26566308; the target 0x144342d90 is KB 0x1443407c0: Ne_Make_StrFromBuffer (0x4339fc0) and Ne_StringMap_EmplaceNode (0x434aff0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144342d90",
+    "target": "0x144342d90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f1a383867584fdc3d702c1c98f96f16c77317cc6fdde8a184e65111449186e60"
+  }
+ ]
+}

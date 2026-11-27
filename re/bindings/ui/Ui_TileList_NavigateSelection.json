@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TileList_NavigateSelection",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14383c650",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_TileList_NavigateSelection(void *self, int *io_range, uint8_t dir_a_prev, uint8_t dir_a_next, uint8_t dir_b_prev, uint8_t dir_b_next)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14383ebe0 (RacingPC lab re_groups/_decomp);xref:0x143832480,0x14383f800",
+  "notes": "Returns 0 if bit 0x40 at self+0x119 is clear. Finds the index of the selection self+0x108 in the list self+0x150..+0x158 and, depending on which of the four direction flags is set and on the axis bit 1 at self+0x119, searches backward or forward for the next item whose vt+0xf8 and vt+0xf0 both return true (wrapping to the last or first item with bit 0x40 at +0x11a; nested rows are handled through 0x143840630 when the selection is a grandchild). On success it stores the old selection in self+0x110 and the new one in self+0x108 (or calls item vt+0x98(1) when bit 0x20 at +0x11a), dispatches event 0x519 with code 5 through vt+0x158/+0x160 and returns 1; on failure it raises one of the edge node events 0x1461055b0..0x1461055bc, dispatches code 6 and returns 0. In both cases io_range[0]/[1] are clamped with the tables at 0x14588ea30/0x14588ea48. Callers: the input handler 0x14383f800 passes four pressed-action bits; the node event handler 0x143832480 passes fixed prev/next flags for event ids 0x146105574..0x146105580 and then increments self+0xa0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.tile_list_navigate_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 48 89 CF 0F B6 89 19 01 00 00",
+  "match": "0x14383c650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14383c650",
+  "kind": "func_start",
+  "names": [
+   "Ui_TileList_NavigateSelection"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14383ebe0",
+  "made_on_target": "0x14383ebe0",
+  "twin": "made on steam-26566308; the target 0x14383ebe0 is KB 0x14383c650: Game_TileList_PushChildSelection_Thunk (0x383d920) and Game_UITrack_Select_DefaultTrack (0x3854680) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14383ebe0",
+    "target": "0x14383ebe0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0bf6699d10e93e5d7bda08fa70c67257836fa82c4756c6ac9554a52302362ce4"
+  }
+ ]
+}

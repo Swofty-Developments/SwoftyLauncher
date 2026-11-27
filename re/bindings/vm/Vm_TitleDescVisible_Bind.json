@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_TitleDescVisible_Bind",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14205dd00",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_TitleDescVisible_Bind(void *self, void *parentHolder)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14205f900 (RacingPC lab re_groups/_decomp);xref:0x14205c4e0",
+  "notes": "Initialises the base holder from the parent node (func 0x144241240), then creates three child nodes under self +0x8: string \"title\" into holder +0x20, string \"description\" into holder +0x40 (both default empty) and bool \"visible\" (default false) into holder +0x60. Returns self. Context from caller: used by the MyTeam upgrade screen."
+ },
+ "signature": {
+  "id": "vm.title_desc_visible_bind",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8D 8E 80 01 00 00",
+  "match": "0x14205a96e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14205dd00",
+  "kind": "call",
+  "names": [
+   "Vm_TitleDescVisible_Bind"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14205c56e",
+  "made_on_target": "0x14205f900",
+  "twin": "made on steam-26566308; the target 0x14205f900 is KB 0x14205dd00: Career_Init_UpgradesWorkforceStatRow (0x205f510) and Game_CustomisationOptionsVM_OnActivate (0x2060140) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14205c56e",
+    "target": "0x14205f900"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a712d64f95e4fccdd88456f5083dcef4bd5b87ce24d2dda2bffa028415d9b245"
+  }
+ ]
+}

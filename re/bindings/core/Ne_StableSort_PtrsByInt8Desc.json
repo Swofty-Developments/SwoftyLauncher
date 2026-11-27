@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_StableSort_PtrsByInt8Desc",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142b59120",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_StableSort_PtrsByInt8Desc(void **first, void **last, uint64_t count, void *buf, int64_t buf_cap)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142b5b6b0 (RacingPC lab re_groups/_decomp);xref:0x142abdd80",
+  "notes": "(lib) std::stable_sort body for an array of pointers ordered descending by the int at elem+0x08: insertion sort when count <= 32, otherwise recursive halves (buffered variant 0x142b5b800 when the half fits buf_cap) followed by merge 0x142b5c630."
+ },
+ "signature": {
+  "id": "core.stable_sort_ptrs_by_int8_desc",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 81 7C 24 70 01 02 00 00",
+  "match": "0x142abbbd9",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142b59120",
+  "kind": "call",
+  "names": [
+   "Ne_StableSort_PtrsByInt8Desc"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142abdf99",
+  "made_on_target": "0x142b5b6b0",
+  "twin": "made on steam-26566308; the target 0x142b5b6b0 is KB 0x142b59120: Ne_HashMap_Rehash_142b52990 (0x2b54f20) and Game_OptionsStore_FindOption (0x2b60560) on either side both sit 0x2590 above their KB addresses; the match 0x142abdf99 is KB 0x142abbbd9: Game_TrackModelComponent_Initialise (0x2aa26f0) and Game_FakeOption_SetValue (0x2ac04e0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142abdf99",
+    "target": "0x142b5b6b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2723cbb55392085ff30cf9a176cec9aec754d90b7e59c9b07b105840dd0396be"
+  }
+ ]
+}

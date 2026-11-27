@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Init_NodeHandleSlots3_Size540",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141b5a330",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Init_NodeHandleSlots3_Size540(void *slots)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141b5bf00 (RacingPC lab re_groups/_decomp);xref:0x14164b570",
+  "notes": "Default-constructs an array of 3 records of 0x540 bytes (loop to 0xfc0): u16 +0 = 0, u64 +8 = -1, then 24 empty node-handle members from +0x10 to +0x2f0 (stride 0x20, vtables 0x145661670 / 0x1456613d8 / 0x1456616e0 / 0x1456611f0 / 0x1456fa440 / 0x1456904f8 / 0x1456624b8 / 0x145672ca8, links zeroed), byte +0x530 = 0, u32 +0x538 = 0x3fff0000 (null entity handle), byte +0x53c = 2. No calls. Context from caller: Ui_CareerContinueMyTeam_Flow calls it on obj+0x328 while constructing its view-model objects (call sites). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.init_node_handle_slots3_size540",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 89 C8 31 C9 C5 F8 57 C0",
+  "match": "0x141b5a330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b5a330",
+  "kind": "func_start",
+  "names": [
+   "Ui_Init_NodeHandleSlots3_Size540"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141b5bf00",
+  "made_on_target": "0x141b5bf00",
+  "twin": "made on steam-26566308; the target 0x141b5bf00 is KB 0x141b5a330: Ne_Map_FindOrInsertSlot_StringKey (0x1b55950) and Ne_RichText_BuildLocalisedFragmentList (0x1b639e0) on either side both sit 0x1bd0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141b5bf00",
+    "target": "0x141b5bf00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8cb76e568223b86db1d6000b12f9648f02c5cb6fffb91e522a2924b8271f034d"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Get_ContextDriver_ByMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1420886e0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Get_ContextDriver_ByMode(void *screen)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14208a2e0 (RacingPC lab re_groups/_decomp);xref:0x142087420,0x14208ae00,0x14208c920",
+  "notes": "Switch on mode byte +0x378. Mode 2: key = *(uint32_t *)((+0x2a8)+0x1b0). Mode 0: career object from ((+0x270)+0x88)+0x260 (type-checked); mode 1: Career_Find_CareerSaveByPredicate(+0x270, pred); for both it walks career[0x1e1] (type-checked, list +0x238) and builds the key with func 0x141443df0((+0x2a8), &key, (int)career[0x55], id from +0x280 or -1). Other modes return NULL. Returns Ent_Get_Driver_Thunk(+0x280, &key). Callers: Ui_LiveryCustomisation_RefreshSponsorToggle stores the driver for the screen refresh; 0x14208ae00 is an event handler that in customisation context 3 copies the driver id (first dword) into g_Game_MyTeamSetupData; 0x14208c920 is an input-result handler that copies driver +0x8..+0x18 and calls Ent_EntrantsSystem_ReplaceDriver with the driver id. Good hook point to see which driver the customisation screen edits. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.get_context_driver_by_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 48 89 CE 0F B6 81 78 03 00 00 85 C0 74 34 83 F8 01 0F 84 ?? ?? ?? ?? 83 F8 02 0F 85 ?? ?? ?? ?? 48 8B 86 A8 02 00 00 8B 80 B0 01 00 00",
+  "match": "0x1420886e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420886e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Get_ContextDriver_ByMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14208a2e0",
+  "made_on_target": "0x14208a2e0",
+  "twin": "made on steam-26566308; the target 0x14208a2e0 is KB 0x1420886e0: Game_CarCustomisation_ApplyDriverNumbers (0x2080590) and Game_MyTeamCarCustomisation_Enter (0x20951e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14208a2e0",
+    "target": "0x14208a2e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b2429182c44ee289a20d6296df91e1cf09c0a055bb1a65355464f21d4cc2100a"
+  }
+ ]
+}

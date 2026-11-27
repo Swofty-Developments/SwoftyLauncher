@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TutorialPopup_Start_HighlightStep",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14384a5d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TutorialPopup_Start_HighlightStep(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14384cb60 (RacingPC lab re_groups/_decomp);xref:0x1438499a0",
+  "notes": "Switch on byte self+0x281 (target kind 0..3): kinds 0/3 look up the entry for key 0x62a877ec in the UI-system map (g_Vm_UiSystem vt+0x68, map at +0xa8..+0xdc), kinds 1/2 resolve the asset path at self+0x1d8 via Vm_Link_RegistryNode + Game_Eaid_LookupAssetByPath; the kind picks a hash (1=0xd2749b24, 2=0xa6df423d, 3=0x53f72d10, 0=none) and a flag. Calls Game_Read_HighlightAssetsConfig(self); when the target has bit 2 at +0x170 and self+0x270 is set it copies target+0x194 to self+0x27c, inserts (id -> self+0x240) in the UI-system u32 map and posts two UI messages (type 0x11 vt 0x14588dd80 with element ids, target id, hash, flag; type 0x12 vt 0x14588dd50); otherwise it falls through to FePopup_Tutorial_OnMaskMoveDone(self). Context from caller: Game_Onboarding_UpdateStep calls it on message c_newStepReady after setting step state self+0x280 from 5 to 2 (log channel ONBOARDING). The calls from 0x14384add0 and 0x14384ae80 are not visible in their decompiles. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.tutorial_popup_start_highlight_step",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 CE 0F B6 81 81 02 00 00",
+  "match": "0x14384a5d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14384a5d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_TutorialPopup_Start_HighlightStep"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14384cb60",
+  "made_on_target": "0x14384cb60",
+  "twin": "made on steam-26566308; the target 0x14384cb60 is KB 0x14384a5d0: Game_TileList_PushChildSelection_Thunk (0x383d920) and Game_UITrack_Select_DefaultTrack (0x3854680) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14384cb60",
+    "target": "0x14384cb60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a1406f9b8d9da98143dafe2388476d2f5414234861dd611f83ffa6487b5d00d5"
+  }
+ ]
+}

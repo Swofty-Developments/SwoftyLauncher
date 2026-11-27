@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ui_TutorialStepVm_ReleaseBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142132cb0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TutorialStepVm_ReleaseBindings(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1421348b0 (RacingPC lab re_groups/_decomp);xref:0x14384bd70",
+  "notes": "Dtor counterpart of 0x141f31090: unlinks and Vm_Release_Node for the 16 node handles at self+0x1e0 down to self+0x00 (step 0x20), resetting each vtable to the base handle vtable 0x145614e48."
+ },
+ "signature": {
+  "id": "ui.tutorial_step_vm_release_bindings",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 30 02 00 00 00 E9",
+  "match": "0x143849be7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x142132cb0",
+  "kind": "call",
+  "names": [
+   "Ui_TutorialStepVm_ReleaseBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14384c177",
+  "made_on_target": "0x1421348b0",
+  "twin": "made on steam-26566308; the target 0x1421348b0 is KB 0x142132cb0: Vm_FinancePeriod_Bind (0x212df10) and site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) on either side both sit 0x1c00 above their KB addresses; the match 0x14384c177 is KB 0x143849be7: Game_TileList_PushChildSelection_Thunk (0x383d920) and Game_UITrack_Select_DefaultTrack (0x3854680) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14384c177",
+    "target": "0x1421348b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "16cb2f39c0b5738f9da6f5fc6313f345dff4641dfd6740f999d4267802e23e79"
+  }
+ ]
+}

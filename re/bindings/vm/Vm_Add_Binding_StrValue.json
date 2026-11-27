@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_Add_Binding_StrValue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438ec2f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Add_Binding_StrValue(void *owner, const char *path, uint32_t id, void **str, void *delegate_a, void *delegate_b, char flag, uint8_t opt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438ee880 (RacingPC lab re_groups/_decomp);xref:0x14428d890",
+  "notes": "Allocates a 0x130-byte binding (vtable 14588e3c0) holding path string +0xf8, id +0xf4, owner +0x100, two 16-byte delegates +0x108/+0x118 and a refcounted string +0x128; removes any existing binding in owner's vector (+0x20..+0x28) with the same id and delegates, appends it, sets bit 3 of +0xe8 from flag, resolves it against the owner's source node (+0x38 ->+0xb0) and subscribes when owner +0x40 is set. Returns the id."
+ },
+ "signature": {
+  "id": "vm.add_binding_str_value",
+  "section": ".xtls",
+  "pattern": "4C 8D 4C 24 58 E8 ?? ?? ?? ?? 48 8B 44 24 50",
+  "match": "0x14428bd5a",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1438ec2f0",
+  "kind": "call",
+  "names": [
+   "Vm_Add_Binding_StrValue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14428e32a",
+  "made_on_target": "0x1438ee880",
+  "twin": "made on steam-26566308; the target 0x1438ee880 is KB 0x1438ec2f0: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses; the match 0x14428e32a is KB 0x14428bd5a: Game_ProfanityFilter_FilterText (0x426f500) and Ui_DataDrivenMessage_Init (0x42a5640) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14428e32a",
+    "target": "0x1438ee880"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "99bf4500df405687eb1854c837340b4a32c54d564492843dc642aff4b51005e4"
+  }
+ ]
+}

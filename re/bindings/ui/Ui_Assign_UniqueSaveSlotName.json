@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Assign_UniqueSaveSlotName",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143858b90",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint8_t Ui_Assign_UniqueSaveSlotName(void *career, void *loc_key, void *loc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14385b120 (RacingPC lab re_groups/_decomp);xref:0x141ea58e0,0x14385ad80,0x14385ae60",
+  "notes": "Takes the slot manager at career+0xf08 (or a child from its +0x238 list by type check); returns 0 if 10 or more slots in +0x268..+0x270 have +0x171 bit0 clear. Resolves loc_key to text through loc (+0x28 + [loc+0x160]*0x10, vt+0x18), formats it with a counter 1..10 (format 0x1457b9a75) into a 128-char buffer until no slot name (+0x20) matches (0x1429d4d90 used for 5..10). Then for the current slot (id from [mgr+0x280]): if slot+0xd2 is set calls Game_SaveSlotManager_CreateSlot(mgr, name, &id) and returns (rc == 0); otherwise copies the name into the slot inline string (+0x28, ptr +0x20, cap 0x80 at +0x18) and returns 1. Caller 0x141ea58e0: finds the career save by predicate, names the slot with key 0x14576d418, then sets the current game mode. Caller 0x14385ad80: same lookup by driver-career predicate, then flags the save manager (+0x1b0 bit0). Caller Ui_CareerWizard_InvokeStepCallback does the same in the career wizard. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.assign_unique_save_slot_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 4C 89 C3",
+  "match": "0x143858b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143858b90",
+  "kind": "func_start",
+  "names": [
+   "Ui_Assign_UniqueSaveSlotName"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14385b120",
+  "made_on_target": "0x14385b120",
+  "twin": "made on steam-26566308; the target 0x14385b120 is KB 0x143858b90: Game_UITrack_Apply_DevContractTrack (0x3856480) and Career_Get_RnDRecognitionDescription (0x385d290) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14385b120",
+    "target": "0x14385b120"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4b0eaf47a79bdfcf0d7a39b8ee24a88aca8f0d490ac672ca4698051dc08fac58"
+  }
+ ]
+}

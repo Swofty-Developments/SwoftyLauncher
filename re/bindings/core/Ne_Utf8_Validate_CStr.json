@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Utf8_Validate_CStr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14392aa20",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "char Ne_Utf8_Validate_CStr(const uint8_t *str, char stop_on_error)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14392cfb0 (RacingPC lab re_groups/_decomp);xref:0x1420674b0,0x14426f500,0x14430e310",
+  "notes": "(lib) Walks a NUL terminated byte string and checks UTF-8 lead and continuation bytes; rejects surrogates (ED A0..BF), EF BF BE/BF and bad continuation bytes. Returns 1 when the terminator is reached without an error, 0 for null input or invalid data."
+ },
+ "signature": {
+  "id": "core.utf8_validate_c_str",
+  "section": ".xtls",
+  "pattern": "53 48 85 C9 0F 84 ?? ?? ?? ?? B0 01",
+  "match": "0x14392aa20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14392aa20",
+  "kind": "func_start",
+  "names": [
+   "Ne_Utf8_Validate_CStr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14392cfb0",
+  "made_on_target": "0x14392cfb0",
+  "twin": "made on steam-26566308; the target 0x14392cfb0 is KB 0x14392aa20: Ne_StringTable_Lookup (0x392ce40) and Ne_Timer_ConstructQpcDeadline (0x392f930) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14392cfb0",
+    "target": "0x14392cfb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "525092c13c3e7189d4e1dc2e1a3db6695fef71211d9b46c0c416a962ab9f6c10"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Release_NodeHandles_Elem230",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14169ce20",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Release_NodeHandles_Elem230(void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14169e410 (RacingPC lab re_groups/_decomp);xref:0x14169f240,0x1416a04c0,0x1416a16e0",
+  "notes": "Destructor body of a 0x230-byte view-model element: if flag byte +0x228 is set it unlinks and releases the 6 node handles at +0x168..+0x208 and clears the flag; then releases the 11 node handles at +0x148 down to +0x8 (stride 0x20). Each handle is unlinked from the node watcher list (node+0x28) and passed to Vm_Release_Node."
+ },
+ "signature": {
+  "id": "vm.release_node_handles_elem230",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 B9 28 02 00 00 00",
+  "match": "0x14169ce20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14169ce20",
+  "kind": "func_start",
+  "names": [
+   "Vm_Release_NodeHandles_Elem230"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14169e410",
+  "made_on_target": "0x14169e410",
+  "twin": "made on steam-26566308; the target 0x14169e410 is KB 0x14169ce20: Career_Build_PerkResourcePointsBoostEntry (0x169d650) and Vm_Release_PerkRowNodes (0x169f240) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14169e410",
+    "target": "0x14169e410"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c3ee553ba356427c5445fca343f0dac18ede4d598c8607cd51e8e13db3114fdb"
+  }
+ ]
+}

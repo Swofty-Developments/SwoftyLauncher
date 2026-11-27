@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodNodeMap_U32_Rehash_14438f120",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14438cb50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodNodeMap_U32_Rehash_14438f120(void *map, uint64_t new_bucket_count, char free_old)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14438f120 (RacingPC lab re_groups/_decomp);xref:0x14428d890",
+  "notes": "(lib) Rehash of a node-based robin-hood map: allocates new slot (8-byte node pointers, +0x28) and info (+0x30) arrays for new_bucket_count, resets count +0x38, mask +0x40, max load +0x48 (80 percent) and info inc +0x50, reinserts every old node by hashing its u32 key with multiplier +0x20, then frees the old block or recycles it into the node free list (+8, block list +0x10) when free_old is 0."
+ },
+ "signature": {
+  "id": "core.robin_hood_node_map_u32_rehash_14438f120",
+  "section": ".xtls",
+  "pattern": "48 89 D9 45 31 C0 E8 ?? ?? ?? ?? 48 89 D9",
+  "match": "0x14428b4a0",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x6"
+  },
+  "target": "0x14438cb50",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodNodeMap_U32_Rehash_14438f120"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14428da70",
+  "made_on_target": "0x14438f120",
+  "twin": "made on steam-26566308; the target 0x14438f120 is KB 0x14438cb50: Ne_Crt_ThrowOverflow_B (0x4385690) and Ne_Container_AbortNoReturn_1443908d0 (0x4392ea0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14428da70",
+    "target": "0x14438f120"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ee0f74010907fc29e3428ad52a6b6a8abda45e02c2789a7b44ba521b5c40eb92"
+  }
+ ]
+}

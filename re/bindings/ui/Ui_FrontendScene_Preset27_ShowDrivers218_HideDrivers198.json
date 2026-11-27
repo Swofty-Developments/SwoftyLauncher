@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_FrontendScene_Preset27_ShowDrivers218_HideDrivers198",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143878140",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_FrontendScene_Preset27_ShowDrivers218_HideDrivers198(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14387a6d0 (RacingPC lab re_groups/_decomp);xref:0x141a27f30",
+  "notes": "Mirror of 0x14387a360: after SwitchSceneFromPreset(self+0x30, 0x27) it hides the entries of map +0x198 (flag +0x1a8) and shows the entries of map +0x218 (flag +0x228) of the object at self+0xd0, using the same name test (0x1456728aa), 0x1428edbf0 and Game_FrontendSceneManager_SetDriverVisible path. Good hook point to see which driver component ids a menu page toggles."
+ },
+ "signature": {
+  "id": "ui.frontend_scene_preset27_show_drivers218_hide_drivers198",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 83 B9 D0 00 00 00 00 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 49 30 C6 44 24 28 00 4C 8D 4C 24 20 B2 27 45 31 C0 E8 ?? ?? ?? ?? 48 8B 86 D0 00 00 00 80 B8 A8 01 00 00 00",
+  "match": "0x143878140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143878140",
+  "kind": "func_start",
+  "names": [
+   "Ui_FrontendScene_Preset27_ShowDrivers218_HideDrivers198"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14387a6d0",
+  "made_on_target": "0x14387a6d0",
+  "twin": "made on steam-26566308; the target 0x14387a6d0 is KB 0x143878140: Ui_CareerWizard_ReleaseItemWidgets (0x38775a0) and Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14387a6d0",
+    "target": "0x14387a6d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a580c40d4a927004218915a2a2322447a23a9d7e78f3501fc6aa1a590be241bc"
+  }
+ ]
+}

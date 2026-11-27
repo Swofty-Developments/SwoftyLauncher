@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_HbSyllabic_InsertDottedCircles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14489d260",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_HbSyllabic_InsertDottedCircles(void *font, void *buffer, uint32_t broken_syllable_type, uint8_t dottedcircle_category, uint32_t repha_category, int32_t dottedcircle_position)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14489fc20 (RacingPC lab re_groups/_decomp);xref:0x1448c8c30,0x1448cbae0",
+  "notes": "cxx=hb_syllabic_insert_dotted_circles (HarfBuzz). Returns unless buffer flag 0x10 at +0x18 is clear and scratch flag 0x40 at +0xb4 (broken syllable) is set. Asks the font funcs (font+0x70, slot +0x30) for the glyph of U+25CC, then rebuilds the buffer: at the first glyph of each syllable (byte +0xf of the 0x14-byte info) whose low nibble equals the broken type it skips leading repha glyphs (category byte +0x12 == repha_category) and outputs a dotted-circle info (FUN_14489fdc0); other glyphs are copied (func 0x14488a1a0). Ends with a buffer sync (FUN_1448762d0). Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "ui.hb_syllabic_insert_dotted_circles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 F6 42 18 10",
+  "match": "0x14489d260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14489d260",
+  "kind": "func_start",
+  "names": [
+   "Ui_HbSyllabic_InsertDottedCircles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14489fc20",
+  "made_on_target": "0x14489fc20",
+  "twin": "made on steam-26566308; the target 0x14489fc20 is KB 0x14489d260: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14489fc20",
+    "target": "0x14489fc20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c0f6ae9328b200a8076136f3777d816ab5c2b69fad5ea9b7c72e64dad43a3541"
+  }
+ ]
+}

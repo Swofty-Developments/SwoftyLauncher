@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Build_EmailDeptUpgradeList_State3",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418bbd10",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Build_EmailDeptUpgradeList_State3(void *email_vm, void *email)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418bd4f0 (RacingPC lab re_groups/_decomp);xref:0x1418b5970",
+  "notes": "Same lookup as 0x1418b1320: Career upgrades component from email+0xe8 -> +0x88 -> +0x260, department key email+8 mapped to a team id and checked against comp+0x298. Then collects one list with Career_Collect_DeptUpgradesInState3, passes its count (and 0 for the second list) to FUN_1418b16b0 and fills the card list with Ui_Rnd_SetUpgradeCardText after touching the node at email_vm+0x78. Caller Vm_CareerEmail_BindTemplates runs it for template case 0xf (the one that sets up \"lng_completed\" and \"lng_currently_fitted\"). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.build_email_dept_upgrade_list_state3",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 B8 40 18 00 00 E8",
+  "match": "0x1418bbd10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418bbd10",
+  "kind": "func_start",
+  "names": [
+   "Vm_Build_EmailDeptUpgradeList_State3"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418bd4f0",
+  "made_on_target": "0x1418bd4f0",
+  "twin": "made on steam-26566308; the target 0x1418bd4f0 is KB 0x1418bbd10: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418bd4f0",
+    "target": "0x1418bd4f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "57e0d6663ba22ad63c0c40248a37e45cb7ddea0b975dcf8c928ad521fc8d4eec"
+  }
+ ]
+}

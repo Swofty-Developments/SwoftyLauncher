@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Select_CurrentTabNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14431f590",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Select_CurrentTabNode(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144321b60 (RacingPC lab re_groups/_decomp);xref:0x14233b090",
+  "notes": "Scans the 16-byte tab entries at +0x270..+0x278 for the one whose id (vcall +0x18 on entry obj+0x20) equals the wanted id at +0x4d8; if its state-flag node (type 0x14612bda0) has no bits 0x3 set it writes the tab node into \"current_tab\" under the node at +0x10 via Vm_Set_NodeRef, stores the handle at +0x398 and returns 1. If no id matches it walks the list node at +0x378 calling Ui_Resolve_MyTeamTabNode on each element until one succeeds. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "ui.select_current_tab_node",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B B9 70 02 00 00 48 8B 99 78 02 00 00",
+  "match": "0x14431f590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14431f590",
+  "kind": "func_start",
+  "names": [
+   "Ui_Select_CurrentTabNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144321b60",
+  "made_on_target": "0x144321b60",
+  "twin": "made on steam-26566308; the target 0x144321b60 is KB 0x14431f590: Vm_Set_TabEnabled (0x4321a40) and Ui_Resolve_MyTeamTabNode (0x4321c80) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144321b60",
+    "target": "0x144321b60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4e7fda4eb1d42b22afa65a0e2e04ca542d2c208d766275c8509c4bb19d6b4f8f"
+  }
+ ]
+}

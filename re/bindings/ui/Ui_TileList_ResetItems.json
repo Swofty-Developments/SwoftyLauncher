@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_TileList_ResetItems",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143832b60",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_TileList_ResetItems(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438350f0 (RacingPC lab re_groups/_decomp);xref:0x143832480",
+  "notes": "If the busy bits 6 at self+0x11b are clear it clears bit 8 of self+0x11b, zeroes the batch cursor self+0xa8, calls Ui_TileList_ClearItemsBatched(self,0) and then self vt+0x1e8 with pointers to 0.0f, 1.0f, 1.0f. With bit 8 cleared the batched clear only drops items whose map state is 1 or 3. Caller 0x143832480 (node event handler) reaches this body by tail jump when the event id equals the value at 0x146105540; the full-clear path in the same caller sets bit 8 instead. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.tile_list_reset_items",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 0F B6 81 1B 01 00 00",
+  "match": "0x143832b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143832b60",
+  "kind": "func_start",
+  "names": [
+   "Ui_TileList_ResetItems"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438350f0",
+  "made_on_target": "0x1438350f0",
+  "twin": "made on steam-26566308; the target 0x1438350f0 is KB 0x143832b60: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438350f0",
+    "target": "0x1438350f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a55a317c7f6e507d8a3ce27d3a584820cb464d9cae1afdf0b97c937837d13cf7"
+  }
+ ]
+}

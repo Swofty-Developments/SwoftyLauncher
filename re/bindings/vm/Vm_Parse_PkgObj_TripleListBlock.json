@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Parse_PkgObj_TripleListBlock",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441f5340",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_Parse_PkgObj_TripleListBlock(void **ctx, void *pkg_obj, void **out, void *registry)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441f7910 (RacingPC lab re_groups/_decomp);xref:0x1441dcd50",
+  "notes": "Whole body read. ctx = {allocator, package base}. Reads u32 key 0x3eeb76a4 into out+0x18 and u32 key 0x5ceee40d into out+0x1c (Ne_PackedTable_ReadValueById). List key 0xac7b5e21 -> out[0]: vector of 0x38-byte objects (vtable 0x145a755a0, id from key 0xeea54615 at +0x30, children from list key 0x971550f3 parsed by 0x1441f9330); an id already present in this list or in any list of registry (+0x18..+0x28) reads key 0x7b868569 and returns 1. List key 0xce5daa66 -> out[1]: 0x20-byte records with u32 keys 0x56e8eb60 (+0x10) and 0x4ed36594 (+0x1c), an 8-byte-item array from list 0x87947f (count +0x14, items via 0x1441fa8d0) and a 12-byte-item array from list 0x79f877e3 (count +0x18; item keys 0xc64b2826, 0x9925adb9, 0x64cec188). List key 0xe9c87e64 -> out[2]: 0x10-byte records with u32 key 0xfe07306 and a 0x18-byte-item array from list 0x9cc8a531 (items via 0x1441faae0). Returns 0 on success, 3 for a missing key, or the sub-parser error. Caller Vm_Unk_1441da780 allocates the 0x20-byte out object, calls this, then uses out+0x1c as the key to insert it into the registry table (frees it and returns 9 on failure). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.parse_pkg_obj_triple_list_block",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 4D 89 CE",
+  "match": "0x1441f5340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441f5340",
+  "kind": "func_start",
+  "names": [
+   "Vm_Parse_PkgObj_TripleListBlock"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441f7910",
+  "made_on_target": "0x1441f7910",
+  "twin": "made on steam-26566308; the target 0x1441f7910 is KB 0x1441f5340: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441f7910",
+    "target": "0x1441f7910"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3ed395d2cf720a155224d921b685712143a4d17ad20442da5876863a396b32c7"
+  }
+ ]
+}
