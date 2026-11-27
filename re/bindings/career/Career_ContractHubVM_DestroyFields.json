@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_ContractHubVM_DestroyFields",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422f2ff0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ContractHubVM_DestroyFields(void *vm_fields)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422f4bf0 (RacingPC lab re_groups/_decomp);xref:0x1422f6040",
+  "notes": "Teardown of the contract hub view-model data: destroys and frees the owned-object vector at +0x48/+0x50 (16-byte {allocator, object} pairs, allocator +0x40), releases 16 VM properties at qword indices 0x121..0x15d and 12 more at 0x0c..0x40 plus 0x00 and 0x04 via Vm_Release_Node, and calls sub-destructors FUN_1416e0500 on +0x550 and FUN_14166fd10 on +0x220. Called from Career_ContractHubVM_OnActivate to reset state before rebuilding; no gameplay values touched. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "career.contract_hub_vm_destroy_fields",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CE 4C 8B 61 48",
+  "match": "0x1422f2ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422f2ff0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractHubVM_DestroyFields"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422f4bf0",
+  "made_on_target": "0x1422f4bf0",
+  "twin": "made on steam-26566308; the target 0x1422f4bf0 is KB 0x1422f2ff0: Career_TeamHqContractsVM_ClearRows (0x22f3760) and Career_ContractHubVM_OnActivate (0x22f6040) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422f4bf0",
+    "target": "0x1422f4bf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0e18674eaa3f4584785e880a487acca10e84c3176717a44bedaca690215c8fb2"
+  }
+ ]
+}

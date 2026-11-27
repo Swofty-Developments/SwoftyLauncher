@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Parse_GameSetupMode_BoolFlagBlock",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a1a9f0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_Parse_GameSetupMode_BoolFlagBlock(void *out_flags, const char *key_path)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a1cdb0 (RacingPC lab re_groups/_decomp);xref:0x1407caec0,0x142a172e0",
+  "notes": "Fills a 0x20-byte flag block from 27 gamedb bool keys and returns out_flags. Init: +0x00..0x0f zero, +0x10 u32 = 0x0ffffff0, +0x14 u16 = 0x000c, +0x16 u8 = 0, +0x18 u32 = 0. For each key it XOR-decrypts a static name in place, builds '<key_path+0x000>.<key_path+0x100>.<name>' in a 255-char stack buffer (two 256-byte strings in arg2), calls Gdb_Lookup_Key, reads the bool at (*entry)+8, then re-encrypts the name. Bit map in order of the name buffers: 0x145f963a8/3c8/3e8/400 -> +0x10 bits 4..7; 0x145f96418/430/450/468/480/498/4b0/4c8 -> +0x11 bits 0..7; 0x145f964e0/4f8/518/530/548/560/578/598 -> +0x12 bits 0..7; 0x145f965b0/5c8/5e0 -> +0x13 bits 1..3 (bit 0 of +0x13 is never parsed and stays 1); 0x145f96600 -> +0x14 bit 1; 0x145f96618 -> +0x14 bit 2; 0x145f96630 -> +0x14 bit 4; 0x145f96648 true -> u32 +0x0c = 1. Missing key (lookup returns NULL) means bit SET for all +0x10..+0x13 bits and +0x14 bit 2, and bit CLEAR for +0x14 bits 1 and 4 and for +0x0c; entry present with null value means clear. Name cipher: byte[i] ^= (seed + i) % 127, length is the u64 stored right after each buffer (e.g. 0x145f963c0 for 0x145f963a8), seeds in buffer order: f957e7c0 1680db95 6f1181c8 845dd10a e6822f7a d01979c9 8456b250 0ea1a7a2 36acaf8d 428bae14 6876c83c 5337d054 99512bd0 0ac806f7 b6b1d4a6 4243df50 602d5b0c eac550fa d02875f8 fd0fa958 e66a60f2 ff572e57 a5040497 bc6f4485 e5df4f49 7f7fd7ba d6cd9c17. Flag names are not readable statically; decrypt the buffers with those seeds to get them. Good hook point: patch the returned block at exit to force per-mode feature flags; semantic meaning of each bit is not shown here. Better context needed: the decrypted key names or how Game_GameModes_BuildMode consumes +0x10..+0x14. Decrypted key names (lab decrypt_keys.py, cipher byte^=(seed+i)%127, in buffer order): collisionWithVehicles, collisionWithWorld, dynamicsEnabled, (4th unreadable), engineDamage, engineTemperature, engineKERS, engineBoost, engineBlowing, engineSeizing, gearBoxWear, gearBoxLocking, gearBoxJamming, gearBoxExploding, fuelUsage, aeroSlipStream, aeroDamageLoss, brakeFade, brakeTemperature, tyreWear, tyrePunctures, tyreTemperature, tyreCarcassTemperature, infiniteERS, drsFailures, casualSurfaces, defa(ult?). So the block is the per-game-mode simulation feature flags (damage, wear, failures, collisions)."
+ },
+ "signature": {
+  "id": "session.parse_game_setup_mode_bool_flag_block",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 D7 48 89 CE 41 BE 50 B2 56 84",
+  "match": "0x142a1a9f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a1a9f0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Parse_GameSetupMode_BoolFlagBlock"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a1cdb0",
+  "made_on_target": "0x142a1cdb0",
+  "twin": "made on steam-26566308; the target 0x142a1cdb0 is KB 0x142a1a9f0: Sess_Load_GameSetupBranding (0x2a15340) and Game_Garage_FadeOutForExit (0x2a3c920) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a1cdb0",
+    "target": "0x142a1cdb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "649ace73855f1bd33b0c3eac536288a8caafb74d2efa37003ab2263ddd8fec75"
+  }
+ ]
+}

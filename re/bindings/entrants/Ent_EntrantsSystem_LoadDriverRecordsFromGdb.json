@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_LoadDriverRecordsFromGdb",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142463b40",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "void Ent_EntrantsSystem_LoadDriverRecordsFromGdb(void *entrantsSys, uint8_t tableSlot)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142465740 (RacingPC lab re_groups/_decomp);xref:0x142462790,0x14247db60",
+  "notes": "Allocates a fresh 0x20 driver-record vector with the allocator at sys+0x10 and stores it at sys+0x260+slot*0x10 (allocator) / +0x268 (vector), freeing the old one; for slot 0 it walks gamedb table entrants.drivers and for every row with available!=0 reads first_name, last_name, full_name, last_name_standard, initials, is_name_reversed (XOR-decoded with k_Gdb_StringXorKey, localised through the language object at sys+0x228 index +0x160), nationality and audio_name (stat_id from entrants.nationality / entrants.audio_names), car_number, garage_slot_preference, f1_seasons_completed, head (entrants.animation.driver_heads), expression_label (entrants.expression_label), green/red/purple_rev_lights_configuration (sub-row rev_lights_configuration), chance_to_use_number_1, is_using_number_1_in_first_season, date_of_birth and ai_driver_config (Ai_Parse_DriverConfig), then calls Ent_EntrantsSystem_InsertDriverRecord with record id = stat_id<<16. Ends by posting a table-loaded message (vtable 0x14578f718, slot, vector) on g_Game_MessageBus; hook InsertDriverRecord or this loop to add or edit drivers at load."
+ },
+ "signature": {
+  "id": "entrants.entrants_system_load_driver_records_from_gdb",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 1D 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 B4 24 20 1D 00 00",
+  "match": "0x142463b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142463b40",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_LoadDriverRecordsFromGdb"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142465740",
+  "made_on_target": "0x142465740",
+  "twin": "made on steam-26566308; the target 0x142465740 is KB 0x142463b40: Ent_Fill_EntrantsFromList (0x2461e30) and Sess_Load_Teams (0x246b040) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142465740",
+    "target": "0x142465740"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "71a8eb9f55783925149d74715787ed6ea653ea09d264a0bf9ee0b66d3001b103"
+  }
+ ]
+}

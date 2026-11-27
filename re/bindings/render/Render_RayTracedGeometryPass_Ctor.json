@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_RayTracedGeometryPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143da87c0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_RayTracedGeometryPass_Ctor(void *self, void *alloc, void *renderer, void *propBag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143daad90 (RacingPC lab re_groups/_decomp)",
+  "notes": "Constructor of a pass derived from Render_GeometryPass_Ctor with 0x18 (24) input slots, vtable 0x1459b86b0. Binds slots by index through the binder at self+0x20: 4 target, 5 target_alpha, 6 targetNRD, 7 target_alphaNRD, 8 depth, 9 normal, 10 surface, 11 surface2, 12 albedo, 13 a name formatted from the scene property, 14 heatmap, 19 vrsImage, 21 hit_distance, 22 guide_albedo, 23 guide_specular, and several MD5-hashed fixed names (slots 1-3, 15-18, 20). On first instance (counter 0x146c3b930) it creates a shared material stored at 0x146c3b928. Allocates a 0x470-byte worker stored at self+0x550 with float defaults (500.0, 0.01, 400.0, 0.067, 1.0, 2.0, 8000.0) and registers callback FUN_143da7090 in the scene object's list at +0x3c8. NRD/hit_distance/guide names suggest a ray-traced pass feeding a denoiser; the exact effect is not named in the body."
+ },
+ "signature": {
+  "id": "render.ray_traced_geometry_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 04 00 00 C5 F8 29 B4 24 A0 04 00 00",
+  "match": "0x143da87c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143da87c0",
+  "kind": "func_start",
+  "names": [
+   "Render_RayTracedGeometryPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143daad90",
+  "made_on_target": "0x143daad90",
+  "twin": "made on steam-26566308; the target 0x143daad90 is KB 0x143da87c0: Ne_Gfx2Renderer_EnqueueJobLocked (0x3d918c0) and Ne_Gfx2Renderer_DestroyDeferredEntryB (0x3db4490) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143daad90",
+    "target": "0x143daad90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c4d4e7fec49ed569d2ab26afe52801f617daf8a87f748470001a2619fff72dd6"
+  }
+ ]
+}

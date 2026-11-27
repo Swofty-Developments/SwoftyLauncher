@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_ParticipantsSetup_SyncHumanEntrantCustomisations",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142571b80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_ParticipantsSetup_SyncHumanEntrantCustomisations(void *setup, void *entrantsDoc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142573ab0 (RacingPC lab re_groups/_decomp);xref:0x14256f2b0,0x142577080",
+  "notes": "Iterates the participant hash set at setup+0x178/+0x180/+0x188; for each participant (0x44-byte user id at +0x20) finds the matching EntrantRecord in doc+0x2e0..+0x2e8 via Sess_Match_EntrantIdentity_Thunk, looks up the player profile in setup+0xd8 (0x50-byte buckets from +0xa0, count +0x230), then via the entrants system at setup+0xd0 replaces the driver (Ent_EntrantsSystem_ReplaceDriver, names built by FUN_14257e100) and adds/replaces/removes driver customisation, vehicle customisation (livery set from setup+0x100, MyTeam sync via setup+0x108) and badge. Finally packs 6 stat ids (0x3fff0000 = none) as u16 into participant +0x88..+0x92 and calls Sess_EntrantsDoc_UpdateEntryById; good hook point to override a human player's driver name, livery or badge before the session starts. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "session.participants_setup_sync_human_entrant_customisations",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 E8 E5 00 00",
+  "match": "0x142571b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142571b80",
+  "kind": "func_start",
+  "names": [
+   "Sess_ParticipantsSetup_SyncHumanEntrantCustomisations"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142573ab0",
+  "made_on_target": "0x142573ab0",
+  "twin": "made on steam-26566308; the target 0x142573ab0 is KB 0x142571b80: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142573ab0",
+    "target": "0x142573ab0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "94a36046c7f6cb1d3e388aed1523cbb714762da3a199facc68df65639604fff9"
+  }
+ ]
+}

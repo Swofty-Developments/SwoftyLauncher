@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Material_BuildPackedBindlessSlotTable",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c0bb60",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Material_BuildPackedBindlessSlotTable(void *material, void *stageList)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c0e130 (RacingPC lab re_groups/_decomp);xref:0x143c0c6d0",
+  "notes": "For each stage in stageList (+8..+0x10 ptr array) walks its 0x28-byte binding entries (+0x678..+0x680), resolves each by hash in the material map (+0xA8..+0xDC) or via Render_Material_FindParamIndexByHash into the resource array at material+0x38, de-duplicates resource pointers into a unique list (max 64), run-length encodes slot ids per stage, merges stages (FUN_143c0fcd0), then allocates and bit-packs a table (1/2/4/8 bits per slot by unique count) with a header and the unique pointer list appended. Result stored at material+0x198, per-stage offsets written into stage records (+0x28) held in vector material+0x138..+0x150, change counter material+0x1B0 incremented; uses default static table 0x1464d3c60 when nothing is bound."
+ },
+ "signature": {
+  "id": "render.material_build_packed_bindless_slot_table",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 B8 38 70 00 00",
+  "match": "0x143c0bb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c0bb60",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_BuildPackedBindlessSlotTable"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c0e130",
+  "made_on_target": "0x143c0e130",
+  "twin": "made on steam-26566308; the target 0x143c0e130 is KB 0x143c0bb60: Render_Material_CountResourceSlots (0x3c09e60) and Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c0e130",
+    "target": "0x143c0e130"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d7c1e63c0790cb8e8d44dfb3b0595e97da1e2b3f39b9829d7bd878c993fe172c"
+  }
+ ]
+}

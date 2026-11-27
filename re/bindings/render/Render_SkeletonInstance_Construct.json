@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_SkeletonInstance_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d3ba00",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_SkeletonInstance_Construct(void *self, uint16_t *skeleton, uint16_t *boneRemap)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d3dfd0 (RacingPC lab re_groups/_decomp);xref:0x143d3ed40",
+  "notes": "Ctor (vtable 0x1459b5748) for a per-model-instance skeleton pose. Reads skeleton: +0 u16 boneCount, +0x10 u16 parent table, +0x18 local transforms (0x30 each), +0x20 bind transforms, +0x28 per-bone type bytes (type 2 bones are counted), +0x58/+0x60 128-bit skeleton id. Allocates one block: local (+0x10), composed (+0x18), two history copies (+0x20,+0x28), 3 bitsets of (boneCount+63)/64 words (+0x30..+0x40), identity matrices for type-2 bones; copies local pose, calls Ne_AnimPose_ComposeParentMatrices, and looks up/creates a refcounted shared table for type-2 bones in global map 0x146545d28 keyed by skeleton id (under CS 0x146545d30). +0x60 flag = all parents zero (flat hierarchy), +0x7c boneCount. Ends by queueing job FUN_143d6da10 on allocator/job iface 0x146c641e0. Hook point for bone data of a spawned model."
+ },
+ "signature": {
+  "id": "render.skeleton_instance_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 79 7F 8C 24 D0 00 00 00 C5 79 7F 84 24 C0 00 00 00",
+  "match": "0x143d3ba00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3ba00",
+  "kind": "func_start",
+  "names": [
+   "Render_SkeletonInstance_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d3dfd0",
+  "made_on_target": "0x143d3dfd0",
+  "twin": "made on steam-26566308; the target 0x143d3dfd0 is KB 0x143d3ba00: Ne_MipTailGeneratorFactory_ObtainGeneratorResource (0x3d3c280) and Ne_ModelInstance_SetNodeMatrices (0x3d3feb0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d3dfd0",
+    "target": "0x143d3dfd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "529012c138a0bf23cb1ca8328baf3d755c204e6555e48e46b10088f039b2556c"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_Populate_UpgradeCardEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141803ab0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Rnd_Populate_UpgradeCardEntry(void *screen, void *ctx, uint64_t slot_index, void *career, void *team, void *upgrade, int32_t prior_discount_pct, int32_t discount_pct)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141805290 (RacingPC lab re_groups/_decomp)",
+  "notes": "Builds one R&D upgrade card for the UI: creates VM child node \"entry_%u\" under the list node at screen+0xAF8, runs Ui_Rnd_BuildUpgradeCardBinding, then Career_Update_RnDUpgradeCardText (MyTeam, also sets a bool node true) or Career_Update_RnDProgressPausedText. Cost = Career_Get_EffectiveUpgradeCost(career, upgrade_id, team, 1); writes cost - cost*discount_pct/100 and -discount_pct into two s32 card nodes and VM ints \"prior_cost\", \"prior_discount_percent\", \"display_cost\", \"display_discount\" (from prior_discount_pct). If slot_index < 15 it copies the 37 node handles into screen+0xB10+slot*0x4A0 and 21 detail handles into screen+0x5090+slot*0x2A0 (Career_Bind_UpgradeCard with k_Career_UpgradesComponentDesc from screen+0x7828). Called from 0x141800ff0. Hook here to change displayed R&D prices/discounts."
+ },
+ "signature": {
+  "id": "ui.rnd_populate_upgrade_card_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 07 00 00 C5 F8 29 B4 24 D0 07 00 00 4D 89 CF 49 89 D5",
+  "match": "0x141803ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141803ab0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_Populate_UpgradeCardEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141805290",
+  "made_on_target": "0x141805290",
+  "twin": "made on steam-26566308; the target 0x141805290 is KB 0x141803ab0: Career_Init_RnDUpgradeRewardPanel (0x1800d50) and Career_Apply_RnDChallengerIconsLayout (0x180bc20) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141805290",
+    "target": "0x141805290"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0867085f623b033daceb5522d632bd764675ac31d298a1f752ec494ab891e73e"
+  }
+ ]
+}

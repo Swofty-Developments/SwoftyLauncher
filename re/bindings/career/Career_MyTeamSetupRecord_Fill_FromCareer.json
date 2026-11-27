@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetupRecord_Fill_FromCareer",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14227a0a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_MyTeamSetupRecord_Fill_FromCareer(void *rec, void *career, void *arg3)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14227bca0 (RacingPC lab re_groups/_decomp);xref:0x141a1f4b0,0x143702070",
+  "notes": "Calls Career_MyTeamSetupRecord_InitDefault(rec) then fills it from the live career: finds the player's entrant in career+0x2e0..0x2e8 by local player id, copies the team name string (team record +0xb8, 0x80 bytes) to rec+0x58/+0x60 and team colours/ids (team +0x564..+0x578) to rec+0x14..+0x34, sets rec+0xe0 entrant id, +0xe8 vehicle customisation id, +0xf0/+0xf8 driver ids, +0xfc sponsor slot from CareerSponsorsComponent, +0xe4/+0xec player customisation and assigned badge, and from OwnerSetupComponent the owner name strings at rec+0x108 and rec+0x1a0 plus +0x230..+0x260. Validity flags at rec+0x38..+0x3f. Good hook to read or override MyTeam identity when continuing a save or entering Team HQ."
+ },
+ "signature": {
+  "id": "career.my_team_setup_record_fill_from_career",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 08 00 00 C5 F8 29 BC 24 F0 07 00 00",
+  "match": "0x14227a0a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14227a0a0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetupRecord_Fill_FromCareer"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14227bca0",
+  "made_on_target": "0x14227bca0",
+  "twin": "made on steam-26566308; the target 0x14227bca0 is KB 0x14227a0a0: Career_MyTeamSetup_IsSelectionComplete (0x2278f00) and Career_MyTeamSetupVM_RefreshSelection (0x227d420) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14227bca0",
+    "target": "0x14227bca0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d5c2bfc3b9c28a8b77e1e4eafe829b5ab1d6a904b28406730ab7f12e17ddc393"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_TeamRenownAndForm_Construct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140f97c20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_TeamRenownAndForm_Construct(void *self, int32_t team_id, void *config, void *attr_dispatch, void *a5, void *a6, void *a7, void *a8, void *a9, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140f987a0 (RacingPC lab re_groups/_decomp);xref:0x140f96590",
+  "notes": "Constructor of the team renown/form object: stores team_id at +0x00 and +0xF8, config at +0x18/+0x100, inits two robin-hood hash maps at +0x20 and +0x78 (seed 0xC4CEB9FE1A85EC53) and a vector of 0x78-byte records at +0xD8 filled from config+0x110 (each source item list split by its flag at item+0x28 into two sub-lists). Subscribes Career_TeamRenown_ApplyRenownDelta to bus message \"MessageRAwarded\" on g_Game_MessageBus, then walks config maps at +0x80 and +0xC8 (0x28-byte entries holding name-string lists), resolves each through Game_MyTeamTeamAttributeSet_MessageDispatch(attr_dispatch,...,team_id) and inserts the result into map +0x20 resp. +0x78 via FUN_140fbe0f0. Good hook point to see which attribute sets feed renown/form per team."
+ },
+ "signature": {
+  "id": "career.team_renown_and_form_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 4C 89 8C 24 E8 00 00 00",
+  "match": "0x140f97c20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f97c20",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamRenownAndForm_Construct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140f987a0",
+  "made_on_target": "0x140f987a0",
+  "twin": "made on steam-26566308; the target 0x140f987a0 is KB 0x140f97c20: Career_TeamRenownAndForm_Deserialise (0xf96590) and Career_RenownData_ComputeFormLevel (0xf99c00) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140f987a0",
+    "target": "0x140f987a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "aa99d6887100572676221af2498197aec59ca1c53338e89dcbc4a847294fa58d"
+  }
+ ]
+}

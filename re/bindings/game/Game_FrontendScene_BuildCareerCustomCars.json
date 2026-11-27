@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendScene_BuildCareerCustomCars",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143879900",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_FrontendScene_BuildCareerCustomCars(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14387be90 (RacingPC lab re_groups/_decomp);xref:0x141a28bf0,0x141a2a500",
+  "notes": "Frontend scene setup that needs a 0x4ee00+ byte stack. For the scene description at self+0xd0 it walks std::map slot tables (+0x50, +0xb0, +0xf8, and feature-flag gated +0x180 / +0x200) and replaces each u16 car id with Game_FrontendSceneManager_FindOrCreateNewCustomCar(self+0x30). Then for each entry of the source maps (+0xe0 team via self+0x38 table, +0x20 entrants, +0x98 drivers, +0x150, +0x1d0) it resolves the entity (Sess_ResolveEntityHandle on self+0x40), builds spawn params and a vehicle customisation (FUN_1428c1530, Game_VehicleCustomisation_Copy, variant name table 0x14588eb30 with 3 entries) and applies it to the custom car with 0x1428ec610 unless 0x1428ed9a0 says it is already set. Missing map key throws (0x1456bf461). Ends with FUN_14387ac00 on +0x130 / +0x1b0. Better context needed: names of the +0x150 and +0x1d0 car groups."
+ },
+ "signature": {
+  "id": "game.frontend_scene_build_career_custom_cars",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 EE 04 00",
+  "match": "0x143879900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143879900",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendScene_BuildCareerCustomCars"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14387be90",
+  "made_on_target": "0x14387be90",
+  "twin": "made on steam-26566308; the target 0x14387be90 is KB 0x143879900: Ui_CareerWizard_ReleaseItemWidgets (0x38775a0) and Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14387be90",
+    "target": "0x14387be90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "786a0d5f5aa5c09ee9719871c735100c143b361ad590f612a96d6f2457c2f354"
+  }
+ ]
+}

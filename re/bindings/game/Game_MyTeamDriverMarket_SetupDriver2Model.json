@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamDriverMarket_SetupDriver2Model",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142303b40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_MyTeamDriverMarket_SetupDriver2Model(void *screen)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142305740 (RacingPC lab re_groups/_decomp);xref:0x142301ef0,0x142308150,0x14230b380",
+  "notes": "Builds the second 3D driver model of the MyTeam driver market / contract comparison screen. Returns early if +0x2a80 is null; resolves the selected VM list node (+0x6d8), finds the matching market entry in the vector at +0x2558..+0x2560 (stride 0xf20, node at entry+8), reads driver ids entry+0xe98/+0xe9c and looks up the entrant in (entry+0xe90)+0x2e0 (stride 0x88) for the team id at +0x58, picks a random name string via LCG 0x343fd/0x269ec3 on (+0x2d70)+0x188, then Game_FrontendSceneManager_FindOrCreateNewCustomDriver(+0x2d58, slot +0x2d44) and Game_FrontendSceneManager_SetupCustomDriver. If +0x2dc0==0 uses scene node Driver2 with pose_08_idle (kind 4); else DriverMarketDriver2 with pose_08_idle (kind 3/7) when the bool VM var at +0x2a00 is true, otherwise DriverRatings with pose_07_idle (kind 3). Good hook to swap pose or scene node."
+ },
+ "signature": {
+  "id": "game.my_team_driver_market_setup_driver2_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 B8 20 12 00 00",
+  "match": "0x142303b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142303b40",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamDriverMarket_SetupDriver2Model"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142305740",
+  "made_on_target": "0x142305740",
+  "twin": "made on steam-26566308; the target 0x142305740 is KB 0x142303b40: Game_MyTeamDriverMarket_Open (0x2301ef0) and Game_MyTeamDriverMarket_Close (0x23072e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142305740",
+    "target": "0x142305740"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8bb603f36e4f9d3f129e91702bc5ab3819aa6ba0795c4c4a935b47ff2cca1008"
+  }
+ ]
+}

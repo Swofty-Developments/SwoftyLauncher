@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_SixSliceTargetSet_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140102560",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx_SixSliceTargetSet_Ctor(void *self, void *gfxCtx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140102560 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
+  "notes": "Constructor of a render-config helper that builds 6 slices (loop count 6) of GPU resources from printf-formatted names: per slice i it stores a hashed name at +0x58+i*0x60 and 5 owned resources at +0x08..+0x50+i*0x60 (one via FUN_140100be0, four via Render_Gfx_InitResourceDescBuilder with size flags 0x10000/0x40000), plus shared resources at +0x268/+0x278 and hashed names at +0x248/+0x258; also pushes 6 small 0x28-byte objects into the vector at +0x2b0. desc+0x58 (bool) switches a param between 2 and 4 and selects alternate string lists, desc+0x70 is an int passed to every resource. All name strings are unresolved UNK data, so what the 6 slices are (cube faces, cascades, mips) is not shown. Better context needed: the format strings at 0x1455db814..0x1455db85e."
+ },
+ "signature": {
+  "id": "render.gfx_six_slice_target_set_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 09 00 00 C5 F8 29 B4 24 A0 09 00 00 4C 89 84 24 20 01 00 00",
+  "match": "0x140102560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140102560",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_SixSliceTargetSet_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140102560",
+  "made_on_target": "0x140102560",
+  "twin": "made on steam-26566308; the target 0x140102560 is KB 0x140102560: Ne_StrBuf_Printf (0x1009f0) and Ne_Math_Mat4Multiply (0x136690) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140102560",
+    "target": "0x140102560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fef482cd8214a7c824cd9793aea0f595969394656d48760a12ee45cb1533096f"
+  }
+ ]
+}

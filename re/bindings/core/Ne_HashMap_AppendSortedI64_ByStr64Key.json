@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_AppendSortedI64_ByStr64Key",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1435102d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_AppendSortedI64_ByStr64Key(void *map, void *key_holder, int64_t value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143512860 (RacingPC lab re_groups/_decomp);xref:0x141221100,0x143540af0",
+  "notes": "(lib) Find-or-insert in a robin-hood hash map keyed by a 64-char inline string (key copied from key_holder+0x18, FNV-1a hash, node 0x78 bytes taken from freelist map+8 or FUN_1435e6fd0/FUN_1435e6fe0, buckets +0x28, meta +0x30, count +0x38, mask +0x40), then pushes value onto the node's int64 vector (+0x60 begin, +0x68 end, +0x70 cap, allocator +0x58) and re-sorts that vector ascending with an inlined introsort (FUN_1435e7900). Used by Career_RndConfig_LoadEngineSupplierDeliverySchedules to build per-name sorted delivery schedule lists, so hooking it shows every (schedule name, value) pair as config loads."
+ },
+ "signature": {
+  "id": "core.hash_map_append_sorted_i64_by_str64_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4C 89 44 24 48",
+  "match": "0x1435102d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435102d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_AppendSortedI64_ByStr64Key"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143512860",
+  "made_on_target": "0x143512860",
+  "twin": "made on steam-26566308; the target 0x143512860 is KB 0x1435102d0: Career_Read_RegulationAdaptRange_Alt (0x3511fd0) and Career_Write_DepartmentSchedules (0x3514250) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143512860",
+    "target": "0x143512860"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "954a2633856f5c07e15e35a7c58c854f3c05f184ba67d6bc073d99c52782640e"
+  }
+ ]
+}

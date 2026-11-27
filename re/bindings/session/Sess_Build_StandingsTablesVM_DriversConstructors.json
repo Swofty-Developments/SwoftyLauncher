@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Build_StandingsTablesVM_DriversConstructors",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14181f990",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void *Sess_Build_StandingsTablesVM_DriversConstructors(void *self, void *parentNode, void *allocator, void *session, void *arg5, void *config, void *arg7)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141821170 (RacingPC lab re_groups/_decomp);xref:0x141cbded0",
+  "notes": "Constructor-style builder for the championship standings view-model (drivers + constructors tables) used by the MP season complete screen; returns self. Allocates the drivers sub-VM (0xf8 bytes, stored self+0x28, allocator +0x20) with VM props local_player, player_pos_idx, teammate_pos_idx, show_side_car_texture, show_team_name, and the constructors sub-VM (0x80 bytes, self+0x38) with local_player_team, player_team_pos; optional tile-list holders at self+0x48 (0x88 bytes) when config+8 / +0x15 / +0x17 flags are set. If session (param_4) is non-null it finds the local entrant in session+0x2e0..0x2e8 (EntrantRecord array), fills driver rows via FUN_141825f30 for standings groups 0/1/2 (session+0x1030 vtable+0x1a0), pads empty rows with a team node ref, then loops the constructors standings (vtable+400 result, +0x150 history) creating tiles session_standings_constructors_table_header_gp_race_f1 / session_standings_constructors_table_pill_gp_race_f1 with index, position, points and points-gap text (Ui_Format_ResourcePointsAmountText) and marks the player team row (team id = entrant team_stat_id >> 16, 0x3fff = none). Good hook point to alter standings rows shown at season end."
+ },
+ "signature": {
+  "id": "session.build_standings_tables_vm_drivers_constructors",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 05 00 00 C5 F8 29 B4 24 00 05 00 00 4C 89 CD 4C 89 C3",
+  "match": "0x14181f990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14181f990",
+  "kind": "func_start",
+  "names": [
+   "Sess_Build_StandingsTablesVM_DriversConstructors"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141821170",
+  "made_on_target": "0x141821170",
+  "twin": "made on steam-26566308; the target 0x141821170 is KB 0x14181f990: site_Career_StandingsWeekendTrackDone (0x181fcbc) and Vm_Resolve_PrefixedNodeByIndex (0x182e7a0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141821170",
+    "target": "0x141821170"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b07dd2062930367e76735b2b8c5ca2573d82d13b3ed1c00cff161979d3b9a558"
+  }
+ ]
+}

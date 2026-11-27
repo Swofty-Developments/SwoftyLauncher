@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Sess_DrChaRuleset_Subscribe_RollingStartResetReplay",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142dda8c0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_DrChaRuleset_Subscribe_RollingStartResetReplay(void *bus, void *listener)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ddce50 (RacingPC lab re_groups/_decomp);xref:0x142d273a0",
+  "notes": "Message-bus subscribe template instance: allocs a 16-byte delegate {fn=Sess_RollingStartCutscene_ResetReplay, obj=listener} from allocator bus+0x78, locks critsec bus+0xC8, finds or inserts the message-name key (static string 0x1457b93aa, FNV-1a robin-hood map at bus+0x80) and pushes the delegate into that key's handler vector. If bus+0x6B is set it first cancels a matching pending-unsubscribe triple (name,fn,obj) in vector bus+0x100..0x108; bus+0x68==0 means bus not ready (errno 0x58), alloc fail sets errno 0xC. Hook the handler, not this, to intercept the message."
+ },
+ "signature": {
+  "id": "session.dr_cha_ruleset_subscribe_rolling_start_reset_replay",
+  "section": ".xtls",
+  "pattern": "48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 89 F2 48 83 C4 20 5E E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC",
+  "match": "0x142d11536",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x142dda8c0",
+  "kind": "call",
+  "names": [
+   "Sess_DrChaRuleset_Subscribe_RollingStartResetReplay"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142d13ac6",
+  "made_on_target": "0x142ddce50",
+  "twin": "made on steam-26566308; the target 0x142ddce50 is KB 0x142dda8c0: Sess_StartLightsSync_MustAdvance (0x2daf140) and Ne_Sort_Elem24 (0x2df08a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d13ac6",
+    "target": "0x142ddce50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8ccf79df95664d77410b4161058fc12b29cf62f2e592fa8d169637e1ea8488ce"
+  }
+ ]
+}

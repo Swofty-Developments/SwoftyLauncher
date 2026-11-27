@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Refresh_DriverInfoPanel",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14167c850",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Refresh_DriverInfoPanel(int64_t *panel)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14167de40 (RacingPC lab re_groups/_decomp);xref:0x14167d910,0x14167dd70,0x1419b20e0,0x141a13c10,0x141a5e960,0x141a67cd0,0x14234ca30",
+  "notes": "Refreshes the whole driver info/contract card VM for driver id at +0xd78 (0x3fff = none) in career world +0xd70. Caches components at +0xda0..+0xdd8 (CareerBank, DriverMarket +0xdb8, DriverStatistics +0xdc0, PlayerDriverStatistics +0xdc8, DriverContractsMyTeam +0xdd8) and MyTeam flag +0xdec. Writes driver/team UIDB refs, team name strings, is-player bool, overall rating (Career_Get_DriverOverallRating -> float at +0x290, text via Ui_Format_RenownText, fraction node), market status icon (switch on market entry +0xce, case 4 uses \"#overrides.team_hq.add_on_driver_icons.dlc_%s\"). Option bytes +0xd82..+0xd91 gate sections: +0xd82 contract block (nodes salary, salary_with_dollarsign, salary_raw, is_reserve_driver, buyout_costs_valid, buyout_cost, contract_cost, perk_fund, previous_contract_cost(_valid), contract_cancellation_cost, recruitment_bonus, percent_of_salary; values from Career_DriverContracts_BuildDriverContractQuote and Ui_Format_ResourcePointsAmountText), +0xd84 per-stat rows with rating delta vs compare driver +0xd98 or season-on-season stats (FUN_14113dda0/FUN_14113ec50), +0xd88 perk boost row, +0xd8b leverage, +0xd8d \"signing_information\" counter-offer block, +0xd91 offer expiry date string. Central hook for anything shown on driver cards (salary, rating, stats)."
+ },
+ "signature": {
+  "id": "vm.refresh_driver_info_panel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 04 00 00 C5 78 29 8C 24 E0 04 00 00",
+  "match": "0x14167c850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14167c850",
+  "kind": "func_start",
+  "names": [
+   "Vm_Refresh_DriverInfoPanel"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14167de40",
+  "made_on_target": "0x14167de40",
+  "twin": "made on steam-26566308; the target 0x14167de40 is KB 0x14167c850: Vm_FinanceTransactionRow_SetIcon (0x167d5b0) and Vm_SponsorInvoice_Bind (0x1683d40) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14167de40",
+    "target": "0x14167de40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "de5ff81cb747eb291709a6fd81c5df278bf9ee42be1f234aed92878c7d2d9e95"
+  }
+ ]
+}

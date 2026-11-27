@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_AddUniqueUsersWithNames",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432c49e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1os_AddUniqueUsersWithNames(void *self, void *user_id_vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432c6f70 (RacingPC lab re_groups/_decomp);xref:0x141cb7710,0x1432d9bf0",
+  "notes": "Merges a vector of 0x40-byte user ids (src+8..+0x10) into the 0x80-byte-element vector at self+0x120/0x128/0x130 (allocator self+0x118), reserving first. Skips ids already present (type byte 7 compares +0x18^+0x20, type 3 compares +0x8^+0x10 with flags +0x38/+0x39, else Ne_UserId_Equals). New element = 0x40 id copy + inline 32-char string at +0x40 (data +0x58) + bool at +0x78; when the id's formatted text is empty/placeholder it fills the string from Ne_UserId_ToDisplayString and sets +0x78=1. Feeds player-card badge and F1os result collection."
+ },
+ "signature": {
+  "id": "game.f1os_add_unique_users_with_names",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 48 89 D3 48 89 CE",
+  "match": "0x1432c49e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c49e0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_AddUniqueUsersWithNames"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1432c6f70",
+  "made_on_target": "0x1432c6f70",
+  "twin": "made on steam-26566308; the target 0x1432c6f70 is KB 0x1432c49e0: Game_F1osTasksystem_CreateTask_Vt145834f90 (0x32c6bd0) and Game_F1osTasksystem_CreateTask_Vt145835090 (0x32c7a60) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1432c6f70",
+    "target": "0x1432c6f70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f79204cd32f8e11c3141f4b7ba1d85a749283d4c4dd0f06e46268e1465933434"
+  }
+ ]
+}

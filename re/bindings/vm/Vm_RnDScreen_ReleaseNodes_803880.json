@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_RnDScreen_ReleaseNodes_803880",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418020a0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_RnDScreen_ReleaseNodes_803880(void *bindings)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141803880 (RacingPC lab re_groups/_decomp);xref:0x141bc8880",
+  "notes": "Destructor of the R&D screen view-model binding block (the block at screen+8 used by 0x141805290): unlinks and Vm_Release_Node's every 0x20-byte node handle {vtbl 0x145614e48, node, prev, next}. Layout: 27 handles at +0x000..+0x368, 10 rows of 6 handles (0xC0 each) at +0x368, handle at +0xAE8 (card list node), 15 upgrade-card blocks of 0x4A0 at +0xB08 (FUN_1419230b0), handle at +0x5068, 15 detail blocks of 0x2A0 at +0x5088 (FUN_141922ff0), handle at +0x77E8. No game state is changed, only UI node refs dropped. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "vm.rn_d_screen_release_nodes_803880",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 E8 77 00 00",
+  "match": "0x1418020a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418020a0",
+  "kind": "func_start",
+  "names": [
+   "Vm_RnDScreen_ReleaseNodes_803880"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141803880",
+  "made_on_target": "0x141803880",
+  "twin": "made on steam-26566308; the target 0x141803880 is KB 0x1418020a0: Career_Init_RnDUpgradeRewardPanel (0x1800d50) and Career_Apply_RnDChallengerIconsLayout (0x180bc20) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141803880",
+    "target": "0x141803880"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "21250e9d7e52de0aa70e723eed0ab4ff8661586e5812ea1417fc9ac76c8b8263"
+  }
+ ]
+}

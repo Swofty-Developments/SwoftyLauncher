@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamTeamIcons_Setup_SceneCarAndDrivers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143878670",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_MyTeamTeamIcons_Setup_SceneCarAndDrivers(void *self, void *sel)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14387ac00 (RacingPC lab re_groups/_decomp);xref:0x141a2dc70",
+  "notes": "Walks the name->slot map at sel+0x68 and allocates frontend scene slots (FindOrCreateNewCustomCar for one key, FindOrCreateNewCustomDriver otherwise, slot id stored at node+0x58). Then resolves the team entity (self+0x40 via Sess_ResolveEntityHandle), builds a VehicleCustomisation from scene spawn params plus Ent_Get_VehicleCustomisation livery and places it in slot \"car\" at spawn point \"VehicleSpawn1\"; for each driver handle in the set at sel+8 it finds the entrant record (stride 0x88, id at +0x50) and calls Game_FrontendSceneManager_SetupCustomDriver for slot \"driver_1\"/\"driver_2\" at \"DriverSpawn1\"/\"DriverSpawn2\" with anim \"CustomisationIdle\". Throws if a slot key is missing. Good hook to change showroom spawn names or idle anim."
+ },
+ "signature": {
+  "id": "ui.my_team_team_icons_setup_scene_car_and_drivers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 A9 01 00",
+  "match": "0x143878670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143878670",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamTeamIcons_Setup_SceneCarAndDrivers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14387ac00",
+  "made_on_target": "0x14387ac00",
+  "twin": "made on steam-26566308; the target 0x14387ac00 is KB 0x143878670: Ui_CareerWizard_ReleaseItemWidgets (0x38775a0) and Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14387ac00",
+    "target": "0x14387ac00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8183a083f36b987a5c077f1b54422ed00cb32098b4d29b922688ea8d40fb6186"
+  }
+ ]
+}

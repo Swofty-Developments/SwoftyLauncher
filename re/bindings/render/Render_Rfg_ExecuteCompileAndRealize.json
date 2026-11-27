@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Rfg_ExecuteCompileAndRealize",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143bd2df0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Rfg_ExecuteCompileAndRealize(void *rfg, void **queues, uint32_t queueCount)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143bd53c0 (RacingPC lab re_groups/_decomp);xref:0x143b82070",
+  "notes": "Per-frame render-frame-graph (RFG) build step. If pass list +0x90..+0x98 is empty it only ages the 12 transient resource pools +0x2b0..+0x308 (FUN_143bdb150(pool,3,0); the +0x308 cache is walked inline and entries idle >=3 frames go to Gfx2Device deferred release). Otherwise sorts the queue objects by type (*q+0x20: 0,1,2) into a 4-slot array, runs the compiler FUN_143bd6ac0(rfg+0x160, flags{1,1,1,0}, rfg+0xe8), calls vtbl+0x20 on every pool, then for each access (+0x70, elem 0x28) creates/reuses a view by kind (view elem 0x160 at +0x50: 0=FUN_1439d9760, 1=CreateTrackedObject, 2=NewDeferredCommand, 3=CreateResourceObject) via an FNV-1a keyed cache, and finally replays the command list +0xf0 (type,index pairs) into the queues (FUN_143b5af50 for passes, marker push for type 2). Resource elem is 0x180 at +0x30; good hook to observe the compiled pass order."
+ },
+ "signature": {
+  "id": "render.rfg_execute_compile_and_realize",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 48 89 CE 48 8B 81 90 00 00 00",
+  "match": "0x143bd2df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bd2df0",
+  "kind": "func_start",
+  "names": [
+   "Render_Rfg_ExecuteCompileAndRealize"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143bd53c0",
+  "made_on_target": "0x143bd53c0",
+  "twin": "made on steam-26566308; the target 0x143bd53c0 is KB 0x143bd2df0: Ne_RenderGraph_ResolveHandleFlag (0x3bc7890) and Ne_RenderGraph_BuildPassFlagsDesc (0x3bde9b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143bd53c0",
+    "target": "0x143bd53c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c54025fc341014c2471422df9d890c129b30fc6d4ad2fdbd5de163bb299f45a1"
+  }
+ ]
+}

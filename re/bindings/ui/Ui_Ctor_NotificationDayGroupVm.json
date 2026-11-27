@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Ctor_NotificationDayGroupVm",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1422b69f0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void *Ui_Ctor_NotificationDayGroupVm(void *self, void *owner, void *parentNode, uint32_t dayIndex, void *tmDate, void *notifTypeTable, void *notifList, void *statNodeList)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1422b85f0 (RacingPC lab re_groups/_decomp)",
+  "notes": "Constructor of a view-model for one day of grouped notifications: binds VM nodes day_str (+0x40), show_minor_header (+0x88), show_major_header (+0xa8), show_critical_header (+0xc8), current_notification_set (+0x120), visible (+0x148) plus two child lists (+0x60, +0xe0); formats the date via localtime into day_str. Loops notifList (+8..+0x10), matches each entry id against child nodes by \"statId\", files it into sets of max 5 or into a header set for kinds 3/0xc/0xd/0xe, then picks critical/major/minor header from byte tables 0x145786bf8/0x145786c1b indexed by notification type (<0x23). Caller not identified. Better context needed: the owning screen (career inbox/calendar vs. stats) would fix the exact feature."
+ },
+ "signature": {
+  "id": "ui.ctor_notification_day_group_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 44 89 CB 49 89 D6",
+  "match": "0x1422b69f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422b69f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Ctor_NotificationDayGroupVm"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1422b85f0",
+  "made_on_target": "0x1422b85f0",
+  "twin": "made on steam-26566308; the target 0x1422b85f0 is KB 0x1422b69f0: Vm_TeamHqMyTeam_FindBoundStatId (0x22b8430) and Vm_TeamHqTimeline_GetCurrentDayIndex (0x22ba860) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1422b85f0",
+    "target": "0x1422b85f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "13981a9eb5232c3091f342acdab30ca2c00f330e421f62d9fd4a0ce5e7b7ec91"
+  }
+ ]
+}

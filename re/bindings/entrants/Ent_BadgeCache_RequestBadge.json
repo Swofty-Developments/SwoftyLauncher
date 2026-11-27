@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_BadgeCache_RequestBadge",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141854190",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "void Ent_BadgeCache_RequestBadge(void *cache, void *request, void *badgeDesc, void *callback)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141855970 (RacingPC lab re_groups/_decomp)",
+  "notes": "Async badge (emblem) texture request with dedupe. cache: +0 entrants system, +8 job queue (+0x58 next request id), +0x20/+0x28/+0x30 vector of 0x188-byte entries, +0x40 map requestId->entry index. Searches entries equal to badgeDesc (func 0x142473240) and switches on entry state +0x164: 0 failed -> callback with error 0x16 and handle 0x3fff0000; 1 pending -> append callback (FUN_141856aa0) to list +0x168; 2 -> set pending and re-queue; 3 ready -> callback with handle at +0x160. Otherwise appends a new entry (defaults 'none' strings, handle 0x3fff0000), copies desc fields, calls Ent_EntrantsSystem_AddBadge_2(cache[0], desc, 3) and queues job via FUN_14388e780 with completion FUN_141857060. No KB caller; Better context needed: owning class (MyTeam/livery UI)."
+ },
+ "signature": {
+  "id": "entrants.badge_cache_request_badge",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 4C 89 CF 4D 89 C6",
+  "match": "0x141854190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141854190",
+  "kind": "func_start",
+  "names": [
+   "Ent_BadgeCache_RequestBadge"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141855970",
+  "made_on_target": "0x141855970",
+  "twin": "made on steam-26566308; the target 0x141855970 is KB 0x141854190: Game_SessionResults_PopulateTable (0x1836b70) and Career_Bind_SpecialistUpgradeText (0x185ad60) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141855970",
+    "target": "0x141855970"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0faff58c8b70b3ad69f28fdd3ed6ec060dcbfb274737f9c9e118372258369f53"
+  }
+ ]
+}
