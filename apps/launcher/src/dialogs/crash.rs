@@ -32,6 +32,31 @@ use crate::ui::theme::Palette;
 /// in the play bar.
 pub(crate) const FRESH_SECS: f64 = 15. * 60.;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Kicker {
+    Crashed,
+    Stuck,
+    Found,
+}
+
+impl Kicker {
+    fn of(crashed: bool, diagnosis: Option<&Diagnosis>) -> Self {
+        match diagnosis {
+            _ if crashed => Self::Crashed,
+            Some(d) if !matches!(d.id, "boot_stall" | "stalled_save" | "stuck_weekend") => Self::Found,
+            _ => Self::Stuck,
+        }
+    }
+
+    fn text(self) -> &'static str {
+        match self {
+            Self::Crashed => tr("F1 25 crashed"),
+            Self::Stuck => tr("F1 25 got stuck"),
+            Self::Found => tr("Found in your last session"),
+        }
+    }
+}
+
 /// What the crash modal shows for one crashed session, or one that ended stuck.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct CrashView {
@@ -439,6 +464,7 @@ impl Shell {
     pub(crate) fn crash_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
         let view = self.crashes.shown()?;
         let known = view.diagnosis.is_some();
+        let kicker = Kicker::of(view.crashed, view.diagnosis.as_ref());
         let auto = view.auto_shown(self.account.allowed());
         let covered = auto.is_some_and(AutoSend::covers);
         let (title, what, steps) = match &view.diagnosis {
@@ -528,12 +554,11 @@ impl Shell {
                         div()
                             .text_size(px(13.))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .text_color(p.error)
-                            .child(if view.crashed {
-                                tr("F1 25 crashed")
-                            } else {
-                                tr("F1 25 got stuck")
-                            }),
+                            .text_color(match kicker {
+                                Kicker::Crashed | Kicker::Stuck => p.error,
+                                Kicker::Found => p.warning,
+                            })
+                            .child(kicker.text()),
                     )
                     .child(
                         div()
@@ -606,7 +631,9 @@ mod tests {
     use swofty_core::diagnostics::send_logs::{Outcome, RoomRun, Sent, Stage};
     use swofty_core::session::SessionRecord;
 
-    use super::{AutoSend, CrashView, Crashes, Diagnosed, Plan};
+    use swofty_core::diagnostics::known_problems::Diagnosis;
+
+    use super::{AutoSend, CrashView, Crashes, Diagnosed, Kicker, Plan};
 
     fn found(dir: &str, summary: Result<String, StartFailure>, crashed: bool, fresh: bool) -> Diagnosed {
         Diagnosed {
@@ -855,5 +882,38 @@ mod tests {
         );
         assert_eq!(send, None);
         assert!(crashes.view.is_none());
+    }
+
+    fn diagnosis(id: &'static str) -> Diagnosis {
+        Diagnosis {
+            id,
+            title: String::new(),
+            what: String::new(),
+            steps: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn a_crash_keeps_its_crashed_kicker() {
+        assert_eq!(Kicker::of(true, None), Kicker::Crashed);
+        assert_eq!(
+            Kicker::of(true, Some(&diagnosis("tyres_not_placed"))),
+            Kicker::Crashed
+        );
+    }
+
+    #[test]
+    fn a_stall_or_stuck_clean_exit_keeps_its_stuck_kicker() {
+        for id in ["boot_stall", "stalled_save", "stuck_weekend"] {
+            assert_eq!(Kicker::of(false, Some(&diagnosis(id))), Kicker::Stuck, "{id}");
+        }
+        assert_eq!(Kicker::of(false, None), Kicker::Stuck);
+    }
+
+    #[test]
+    fn any_other_clean_exit_finding_gets_the_neutral_kicker() {
+        for id in ["tyres_not_placed", "logos_not_built", "profile_not_saved"] {
+            assert_eq!(Kicker::of(false, Some(&diagnosis(id))), Kicker::Found, "{id}");
+        }
     }
 }
