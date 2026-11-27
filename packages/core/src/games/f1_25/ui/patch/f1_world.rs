@@ -56,8 +56,6 @@ pub(super) const F1_WORLD_HUB: &str = "fe_f1_world";
 
 pub(super) const SHOWROOM_SCREEN: &str = "fe_showroom";
 
-pub(super) const HOME_BACKGROUND: &str = "fe_planes";
-
 /// routes_f1_world.uir with the routes that leave the pickers for the main menu without the F1 World hub:
 /// `swofty_back_home` in the activity container's group, a copy of the container's own `home` route (a wipe,
 /// `Migrate frontend_flow enter_fe_home`, then fe_home with its slices and scene) that runs the standard
@@ -157,71 +155,64 @@ pub(super) fn container_home_route(stock: &Node) -> Result<Node> {
     Ok(r)
 }
 
-/// The main menu's Showroom route: a copy of the F1 World hub's own `showroom` (routes_f1_world.uir) with the hub
-/// swapped for the home screen. It closes the home screen and its video background `fe_planes` but not
-/// `slice_bg_content_underlay` or the player card, which the series picks close, and switches the front-end scene
-/// to the hub's before fe_showroom opens: the state the game's own way in (`f1_world`: fe_home's `close` to the hub,
-/// then the hub's `open_no_input`) leaves behind. It runs fe_showroom's view model callback before input and closes
-/// the theming overlay itself.
-pub(super) fn showroom_route(f1_world: &[Node]) -> Result<Node> {
-    let mut r = group_route(f1_world, F1_WORLD_HUB, "showroom")?;
-    set_str(r.o_mut()?, "Id", SHOWROOM_ROUTE)?;
-    replace_strings(&mut r, &|v| (v == F1_WORLD_HUB).then(|| "fe_home".to_owned()));
-    let cmds = r.o_mut()?.at_mut("Commands")?.a_mut()?;
-    let has = |kind: &str, target: &str| {
-        cmds.iter()
-            .any(|c| cmd_type(c) == Some(kind) && attr_value(c, "Target").as_deref() == Some(target))
+/// The main menu's Showroom route: fe_home's own `f1_world` route (the wipe, fe_home's `close` to the hub, the hub's
+/// `open_no_input` with its scene switch and slices) followed by the hub's own `showroom` route, fired as a sub-route
+/// once the hub is open: the sequence the game's way in through F1 World runs, so the hub screen's open and close
+/// commands run as in Vanilla. It takes the hub's `showroom` destination so the router knows where it ends.
+pub(super) fn showroom_route(home: &[Node], f1_world: &[Node]) -> Result<Node> {
+    let hub = group_route(f1_world, F1_WORLD_HUB, "showroom")?;
+    let hub_cmds = hub.o()?.at("Commands")?.a()?;
+    let has = |kind: &str| {
+        hub_cmds
+            .iter()
+            .any(|c| cmd_type(c) == Some(kind) && attr_value(c, "Target").as_deref() == Some(SHOWROOM_SCREEN))
     };
-    if !has("CloseScreen", "fe_home")
-        || !has("OpenScreen", SHOWROOM_SCREEN)
-        || !has("ViewModelCallback", SHOWROOM_SCREEN)
-    {
+    if !has("OpenScreen") || !has("ViewModelCallback") {
         return Err(err(format!(
-            "{F1_WORLD_HUB}'s showroom route does not close the hub and open {SHOWROOM_SCREEN} with its view model callback"
+            "{F1_WORLD_HUB}'s showroom route does not open {SHOWROOM_SCREEN} with its view model callback"
         )));
     }
-    let next = cmds
+    let mut r = group_route(home, "fe_home", "f1_world")?;
+    let cmds = r.o()?.at("Commands")?.a()?;
+    let opens = cmds.iter().find(|c| {
+        cmd_type(c) == Some("TriggerSubRoute")
+            && attr_value(c, "SubRoute").as_deref() == Some("open_no_input")
+            && attr_value(c, "Target").as_deref() == Some(F1_WORLD_HUB)
+    });
+    let opens = opens.and_then(cmd_id).ok_or_else(|| {
+        err(format!(
+            "fe_home's f1_world route does not open {F1_WORLD_HUB} with open_no_input"
+        ))
+    })?;
+    let last = cmds
         .iter()
         .filter_map(|c| cmd_id(c)?.parse::<u32>().ok())
         .max()
         .unwrap_or(0)
         + 1;
-    let (fade, close, scene) = (next, next + 1, next + 2);
-    let open = cmds
-        .iter_mut()
-        .find(|c| {
-            cmd_type(c) == Some("OpenScreen") && attr_value(c, "Target").as_deref() == Some(SHOWROOM_SCREEN)
+    let deps = r.o()?.str_at("Dependencies")?.to_owned();
+    let deps = deps
+        .split(',')
+        .map(|d| {
+            if d == opens {
+                last.to_string()
+            } else {
+                d.to_owned()
+            }
         })
-        .ok_or_else(|| {
-            err(format!(
-                "{F1_WORLD_HUB}'s showroom route does not open {SHOWROOM_SCREEN}"
-            ))
-        })?;
-    let after = open
-        .as_obj()
-        .and_then(|o| o.str_at("Dependencies").ok())
-        .map(str::to_owned)
-        .ok_or_else(|| {
-            err(format!(
-                "{F1_WORLD_HUB}'s showroom route opens {SHOWROOM_SCREEN} at once"
-            ))
-        })?;
-    set_str(open.o_mut()?, "Dependencies", &format!("{after},{close},{scene}"))?;
-    cmds.extend([
-        route_cmd(
-            "TransitionScreen",
-            fade,
-            &[("Direction", "out"), ("Target", HOME_BACKGROUND)],
-            None,
-        ),
-        route_cmd(
-            "CloseScreen",
-            close,
-            &[("Target", HOME_BACKGROUND)],
-            Some(&fade.to_string()),
-        ),
-        route_cmd("FrontendSceneSwitch", scene, &[("Target", F1_WORLD_HUB)], None),
-    ]);
+        .collect::<Vec<_>>()
+        .join(",");
+    set_str(r.o_mut()?, "Id", SHOWROOM_ROUTE)?;
+    set_str(r.o_mut()?, "Dependencies", &deps)?;
+    if let Some(attrs) = hub.o()?.get("Attributes") {
+        r.o_mut()?.set("Attributes", attrs.clone());
+    }
+    r.o_mut()?.at_mut("Commands")?.a_mut()?.push(route_cmd(
+        "TriggerSubRoute",
+        last,
+        &[("SubRoute", "showroom"), ("Target", F1_WORLD_HUB)],
+        Some(&opens),
+    ));
     Ok(r)
 }
 

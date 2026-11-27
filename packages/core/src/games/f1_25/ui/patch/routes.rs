@@ -392,12 +392,13 @@ pub(super) fn nav_routes(groupings: &[Node]) -> Result<Vec<Node>> {
 /// Adds ADDON SETTINGS' route groups, which must be new, and each of `optional` whose group the
 /// routes don't have yet. `f1_world` is the stock routes_f1_world.uir, the source of the main menu's Showroom route.
 pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>, f1_world: &[u8]) -> Result<Vec<u8>> {
-    let showroom = swofty_formats::pkg::Pkg::parse(f1_world)
-        .ok()
-        .and_then(|p| showroom_route(p.root.o().ok()?.at("RouteGroupings").ok()?.a().ok()?).ok());
+    let stock = swofty_formats::pkg::Pkg::parse(f1_world).ok();
     edit(data, |p| {
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
         let replace = mod_menu_route(gs)?;
+        let showroom = stock
+            .as_ref()
+            .and_then(|s| showroom_route(gs, s.root.o().ok()?.at("RouteGroupings").ok()?.a().ok()?).ok());
         let customisation = customisation_route(gs).ok();
         let nav = nav_routes(gs).ok();
         for g in optional {

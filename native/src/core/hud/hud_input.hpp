@@ -22,6 +22,27 @@ struct Event {
     float x, y;
 };
 
+constexpr int KEY_LOG_LINES = 20;
+
+struct KeyLog {
+    std::atomic<int> left{0};
+    std::atomic<bool> opened{false};
+
+    bool open()
+    {
+        if (opened.exchange(true, std::memory_order_relaxed))
+            return false;
+        left.store(KEY_LOG_LINES, std::memory_order_relaxed);
+        return true;
+    }
+    bool take()
+    {
+        if (left.load(std::memory_order_relaxed) <= 0)
+            return false;
+        return left.fetch_sub(1, std::memory_order_relaxed) > 0;
+    }
+};
+
 struct PadRaw {
     bool connected = false;
     uint16_t buttons = 0;

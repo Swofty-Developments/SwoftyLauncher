@@ -1356,6 +1356,19 @@ static void test_text_entry()
     CHECK(bit(out.keys_pressed, 'B'), "addons see keys when no text box has focus");
 }
 
+static void test_key_log()
+{
+    hud::input::KeyLog log;
+    CHECK(!log.take(), "the Showroom key log is off until the Showroom opens");
+    CHECK(log.open() && !log.open(), "opening arms it once; routes fired while it is open do not re-arm it");
+    int taken = 0;
+    for (int i = 0; i < 100; i++)
+        taken += log.take();
+    CHECK(taken == hud::input::KEY_LOG_LINES, "at most 20 messages are logged per open");
+    log.opened = false;
+    CHECK(log.open() && log.take(), "a later open logs again");
+}
+
 int main(int argc, char **argv)
 {
     test_font();
@@ -1383,6 +1396,7 @@ int main(int argc, char **argv)
     test_fg_gate();
     test_fg_barriers();
     test_exec_plan();
+    test_key_log();
     test_png(argc > 1 ? argv[1] : nullptr);
     test_scene(argc > 2 ? argv[2] : nullptr);
     if (failures)

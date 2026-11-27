@@ -7,6 +7,7 @@
 #include "core/frontend/main_menu/context.hpp"
 #include "core/frontend/main_menu_logic.hpp"
 #include "core/frontend/tt_blocked.hpp"
+#include "core/hud/overlay/overlay.hpp"
 #include <safetyhook.hpp>
 
 #include <swofty/game.hpp>
@@ -251,6 +252,13 @@ void Navigation::route_fired(void *router, void *vm, NeStr **name, uint64_t a4)
         menu.home_open = false;
         swofty::log("[main-menu] panel hidden: route %s fired from the home screen", text);
     }
+    if (gid == djb2("fe_f1_world") && !std::strcmp(text, "showroom"))
+        hud::overlay::overlay.input.showroom_opened("the F1 World hub's showroom route");
+    else if (gid == djb2("fe_home"))
+        hud::overlay::overlay.input.showroom_closed();
+    else if (gid == djb2("fe_showroom"))
+        std::strcmp(text, "back_1") ? hud::overlay::overlay.input.showroom_opened("a route fired in fe_showroom")
+                                    : hud::overlay::overlay.input.showroom_closed();
     if (menu.patched.load()) {
         if (gid == djb2("f1_world_activity_container") || gid == djb2("fe_showroom") || gid == djb2("grand_prix_continue") ||
             gid == djb2(CUSTOMISATION_GROUP))

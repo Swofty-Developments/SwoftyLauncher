@@ -26,6 +26,8 @@ public:
     void view(const std::string &owner, SwoftyInput &full);
     bool take_focus(const std::string &who, bool on, std::string &before);
     bool window_hooked() const { return game_wnd.load() != nullptr; }
+    void showroom_opened(const char *why);
+    void showroom_closed() { key_log.opened.store(false, std::memory_order_relaxed); }
 
 private:
     static LRESULT CALLBACK proc(HWND w, UINT msg, WPARAM wp, LPARAM lp);
@@ -39,6 +41,7 @@ private:
     std::atomic<WNDPROC> game_proc{nullptr};
     std::atomic<HWND> game_wnd{nullptr};
     std::atomic<uint32_t> client_size{0};
+    hud::input::KeyLog key_log;
     std::atomic<unsigned> blocked_msgs{0}, blocked_raw{0};
     ULONGLONG blocked_reported = 0;
     hud::input::Utf16 utf16;

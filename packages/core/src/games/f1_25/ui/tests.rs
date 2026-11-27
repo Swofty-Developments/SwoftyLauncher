@@ -476,20 +476,18 @@ fn the_main_menu_navigation_routes_and_entries_are_added_within_the_loader_rules
         "fe_home",
         patch::SHOWROOM_ROUTE,
     );
-    let hub = route_text(&routes, "fe_f1_world", "showroom").replace("=fe_f1_world", "=fe_home");
-    let open = "OpenScreen [Id=4, Target=fe_showroom] after 3";
-    assert!(hub.contains(open), "{hub}");
-    let expected = format!(
-        "{}\nTransitionScreen [Id=9, Direction=out, Target=fe_planes] after -\nCloseScreen [Id=10, Target=fe_planes] \
-         after 9\nFrontendSceneSwitch [Id=11, Target=fe_f1_world] after -",
-        hub.replace(open, &format!("{open},10,11"))
+    let stock = route_text(&home_routes, "fe_home", "f1_world");
+    let hub = route_text(&routes, "fe_f1_world", "showroom");
+    assert!(
+        hub.contains("OpenScreen [Id=4, Target=fe_showroom] after 3"),
+        "{hub}"
     );
+    let expected = format!("{stock}\nTriggerSubRoute [Id=7, SubRoute=showroom, Target=fe_f1_world] after 6");
     assert_eq!(
         ours, expected,
-        "the main menu's Showroom route is the hub's own showroom route from the home screen, with fe_planes closed \
-         and the hub's scene switched to before fe_showroom opens"
+        "the main menu's Showroom route is fe_home's own f1_world route, then the hub's own showroom route"
     );
-    assert!(!ours.contains("slice_bg_content_underlay") && !ours.contains("theatre_container"));
+    assert!(stock.contains("open_no_input"), "{stock}");
     std::fs::remove_dir_all(&dir).ok();
 }
 
