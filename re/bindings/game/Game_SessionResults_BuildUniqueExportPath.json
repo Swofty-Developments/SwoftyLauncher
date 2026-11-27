@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SessionResults_BuildUniqueExportPath",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c48860",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Build_UniqueTimestampedFilePath(void *self, void *out_wpath)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c4adf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141d2f6d0,0x141d30220,0x141d93e30",
+  "notes": "Renamed from Game_SessionResults_BuildUniqueExportPath: the body shows only a file path builder, \"SessionResults\" and \"Export\" come from the callers. Gets the directory from the provider at self+0x20 (vfunc +8) and CreateDirectoryW's it, builds a wide name \"<g_Game_Manager+0x1a8 -> +0x30 -> +0x78 string>_<entrant team/vehicle name>_<string at mode+0xe80 or +0x220>_<day month year hour minute from localtime>\" (mode object = *(*(self+0x28)+0x88)+0x260), replaces characters via FUN_142c4e6e0 and maps each char, then joins dir + name + extension (vfunc +0x10); if GetFileAttributesW shows the file exists it appends a counter 1..99999 until free. Result is an inline wide string (vtable 0x1457d90b8, cap 0x100, buffer at out+0x18), empty on failure. Callers (0x141d2f6d0 on event hash 0x74b6c0c, 0x141d30220 same hash, SetupNextState on 0x505aa8b2) check self+0x6e1 and pass the path to Game_Unk_142c48e10, which stores it at self+0x498 and queues an async job. Context from caller: triggered from session results container view models. Hook point to change the output file name. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.session_results_build_unique_export_path",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 05 00 00 48 89 D6",
+  "match": "0x142c48860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c48860",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionResults_BuildUniqueExportPath"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c4adf0",
+  "made_on_target": "0x142c4adf0",
+  "twin": "made on steam-26566308; the target 0x142c4adf0 is KB 0x142c48860: Game_Replay_LoadSavedReplayJob (0x2c48670) and Game_TrackCameraShots_StopShot (0x2c50170) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c4adf0",
+    "target": "0x142c4adf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "407683d7b88f48d62bcf0770bff72d84b4d9ce7cb6435d119d766fffb31415f8"
+  }
+ ]
+}

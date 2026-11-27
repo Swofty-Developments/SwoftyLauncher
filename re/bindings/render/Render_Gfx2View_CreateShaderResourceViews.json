@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2View_CreateShaderResourceViews",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439dd6d0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx2View_CreateShaderResourceViews(void *view)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439dfca0 (RacingPC lab re_groups/_decomp);xref:0x1439df740,0x143a10910",
+  "notes": "For each GPU node of global device 0x14618eaa8: view type +0x44==2 creates constant buffer views (device vtbl +0x88) with size (count*stride+0xff)&~0xff into descriptor handles +0xc0 and +0xe8 (step 0x50); otherwise fills a 0x28-byte SRV desc at +0x60+gpu*0x28 (format from byte +0x40, component mapping 0x1688, dimension per type 1..9, first/num from +0x50..+0x5c, buffer stride from resource +0x28) and calls device vtbl +0x90 twice for the two descriptor heaps. Resource is view+0x48."
+ },
+ "signature": {
+  "id": "render.gfx2_view_create_shader_resource_views",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 83 79 44 02",
+  "match": "0x1439dd6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439dd6d0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2View_CreateShaderResourceViews"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439dfca0",
+  "made_on_target": "0x1439dfca0",
+  "twin": "made on steam-26566308; the target 0x1439dfca0 is KB 0x1439dd6d0: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439dfca0",
+    "target": "0x1439dfca0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "821e886ee1c73f5e90a07cfdf8ca853c9eba762c93be83929b62df30f9c6c8e4"
+  }
+ ]
+}

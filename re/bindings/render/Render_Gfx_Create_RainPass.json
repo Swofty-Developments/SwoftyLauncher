@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_Create_RainPass",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14012ba00",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void **Render_Gfx_Create_RainPass(void **builder, void **outPair, void *paramList, void **a4, void **a5, void **a6, uint8_t *a7, uint8_t *a8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012ba00 (RacingPC lab re_groups/_decomp);xref:0x140104f70",
+  "notes": "Clones paramList into a stack resource-desc, allocs 0x580 bytes from builder[0], calls Render_RainPass_Ctor(pass, allocator, builder[1], &desc, *a4, *a5, *a6, *a7, *a8), writes {allocator, pass} to outPair and releases the temp desc. Returns outPair."
+ },
+ "signature": {
+  "id": "render.gfx_create_rain_pass",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 60 01 00 00 4C 89 CF",
+  "match": "0x14012ba00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14012ba00",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_Create_RainPass"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14012ba00",
+  "made_on_target": "0x14012ba00",
+  "twin": "made on steam-26566308; the target 0x14012ba00 is KB 0x14012ba00: Ne_StrBuf_Printf (0x1009f0) and Ne_Math_Mat4Multiply (0x136690) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14012ba00",
+    "target": "0x14012ba00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "837f300deae3987792fd59d123581ae7a22f06add9e772c281ce5e8ebf6bac1c"
+  }
+ ]
+}

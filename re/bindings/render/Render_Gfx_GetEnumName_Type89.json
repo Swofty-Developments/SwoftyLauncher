@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_GetEnumName_Type89",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439e8f90",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "const char *Render_Gfx_GetEnumName_Type89(uint8_t value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439eb560 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143a03c40",
+  "notes": "Whole body read: pure switch from a byte enum (0..0x58, cases 0x35 and 0x38 missing, 0xc and 0xd share a string) to a static string in 0x14589d4a6..0x14589db59; the default case records error 0x16 (Ne_ErrorTrace_PushRing) and returns the string at 0x14589db88. Context from caller: Render_Gfx_ResolveDrawPipelineState passes the format byte at +0x20 of each bound render-target and depth view and prints the result in the 'DX12: RTV%i FORMAT:%s' / 'DSV%i FORMAT:%s' logs when a PSO is missing, so this is the Gfx2 surface format name table. Read-only, good place to dump format ids. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx_get_enum_name_type89",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 F9 58 0F 87 ?? ?? ?? ?? 0F B6 C1",
+  "match": "0x1439e8f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439e8f90",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_GetEnumName_Type89"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439eb560",
+  "made_on_target": "0x1439eb560",
+  "twin": "made on steam-26566308; the target 0x1439eb560 is KB 0x1439e8f90: Ne_Tga_ConvertToRgba8Buffer (0x39ea580) and Ne_Delegate_InvokeAll (0x39f19f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439eb560",
+    "target": "0x1439eb560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2fc879544e4fd08f6d2e0429c7035d5917b7a6c0d391653f59197949d3dc0ed5"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ModelInstance_Reinit",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d3b560",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_ModelInstance_Reinit(void *instance)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d3db30 (RacingPC lab re_groups/_decomp);xref:0x143d4ab80,0x143d4c800",
+  "notes": "Rebinds an instance to its (re)loaded model resource at +0x1e8: clears ready flag +0x2b9, looks up key +0x200 in global robin-hood map DAT_146545d60 and stores the value at +0x168, bumps global dirty cache counter DAT_1464d4320 when +0x84 != -1 and +0x8e bit0 (log \"set global dirty cache due to reinit of %s\"), re-resolves the +0x178 lookup table (0x18 stride) through FUN_143d3de90, picks +0x80 from resource +0x58 by matching material hash, copies LOD/flag fields from +0x1f0 (+0x98, +0x9c, +0xaa, +0xab) and sets +0x2b9=1."
+ },
+ "signature": {
+  "id": "render.model_instance_reinit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE C6 81 B9 02 00 00 00",
+  "match": "0x143d3b560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3b560",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelInstance_Reinit"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d3db30",
+  "made_on_target": "0x143d3db30",
+  "twin": "made on steam-26566308; the target 0x143d3db30 is KB 0x143d3b560: Ne_MipTailGeneratorFactory_ObtainGeneratorResource (0x3d3c280) and Ne_ModelInstance_SetNodeMatrices (0x3d3feb0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d3db30",
+    "target": "0x143d3db30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4fec47ff92ee642532cb8fa6653616a4f483eb9b1c8bb67b002fe9971735d21d"
+  }
+ ]
+}

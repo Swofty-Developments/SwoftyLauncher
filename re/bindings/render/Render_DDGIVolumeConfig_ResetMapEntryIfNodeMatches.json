@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_DDGIVolumeConfig_ResetMapEntryIfNodeMatches",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143be6a10",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void Render_DDGIVolumeConfig_ResetMapEntryIfNodeMatches(void *node, void *map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143be8fe0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143be94d0",
+  "notes": "If node is non-null, gets a child/attribute via node vt+0x90 (name 0x1458c2db6) and tests it with vt+0xe0 against 0x145614ae4; on result 0 it finds or inserts key 0 in the robin-hood hash map (entries +0x18 of {int key, int value}, distance bytes +0x20, count +0x28, mask +0x30, max load +0x38, step +0x40; first alloc 0x34 bytes tag 0x145614f08, grow via 0x143ed3df0) and sets its value to 0. Caller Render_DDGIVolumeConfig_Parse calls it three times on a new 0xd8-byte object holding three such maps (+0x00, +0x48, +0x90) with the XML node and its children 0x1458c2e72 / 0x1458c2e80. Better context needed: the two string constants would say which attribute is tested and what key 0 means. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.ddgi_volume_config_reset_map_entry_if_node_matches",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 85 C9",
+  "match": "0x143be6a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143be6a10",
+  "kind": "func_start",
+  "names": [
+   "Render_DDGIVolumeConfig_ResetMapEntryIfNodeMatches"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143be8fe0",
+  "made_on_target": "0x143be8fe0",
+  "twin": "made on steam-26566308; the target 0x143be8fe0 is KB 0x143be6a10: Ne_CrowdPlugin_LoadXml (0x3be50d0) and Render_Texture_CreateFromResource (0x3bf0140) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143be8fe0",
+    "target": "0x143be8fe0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "49b38ce188074cbe73996ba242e6a5cfdf2fac062475ae26b93f8faa969a51ef"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Release_NamedHandleSet8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d0e910",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Release_NamedHandleSet8(void *set)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d10ee0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143cf7960,0x143cf9c20,0x143cf9fe0",
+  "notes": "For each of the 8 owned objects at set+0x70, +0x60, +0x30, +0x40, +0x10, +0x20, +0x50, +0x80 (allocator at the slot 8 bytes before): reads the 16-byte name at obj+0x10, unregisters it from the registry at set+0x90 with Render_Gfx2_LookupEntryOrDefault(reg, name, 0), nulls the slot, calls the object's deleting dtor and frees it with allocator vfunc +0x38. A second pass repeats the null-checked destroy for the slots. Callers 0x143cf9fe0 and 0x143cf9c20 (pass resource release and teardown) call it on the object owned at their +0x10 and free that object right after, so it acts as the destructor body of that handle set. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.release_named_handle_set8",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 41 70",
+  "match": "0x143d0e910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d0e910",
+  "kind": "func_start",
+  "names": [
+   "Render_Release_NamedHandleSet8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d10ee0",
+  "made_on_target": "0x143d10ee0",
+  "twin": "made on steam-26566308; the target 0x143d10ee0 is KB 0x143d0e910: Ne_NodeTable_FindIndexByHash (0x3cfeec0) and Ne_IBLCubeProbe_FreeInterpolatedArrays (0x3d1bcd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d10ee0",
+    "target": "0x143d10ee0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8cf9012d26dc8fed43d370f5863924d89b28bf784820e9fbd0c25e100fb74d7f"
+  }
+ ]
+}

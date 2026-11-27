@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Cast_Field10_ToType146064ec8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1412ce120",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Cast_Field10_ToType146064ec8(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1412ce760 (RacingPC lab re_groups/_decomp);xref:0x1422c5140,0x142330180",
+  "notes": "Dynamic cast: gets the type node of the object at self+0x10 (vfunc 0), walks parent links (+0x10) until type 0x146064ec8 or the root 0x14612bca8. Returns the self+0x10 pointer if it derives from 0x146064ec8, else 0."
+ },
+ "signature": {
+  "id": "game.cast_field10_to_type146064ec8",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 49 10 48 8B 01 FF 10",
+  "match": "0x1412ce120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412ce120",
+  "kind": "func_start",
+  "names": [
+   "Game_Cast_Field10_ToType146064ec8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1412ce760",
+  "made_on_target": "0x1412ce760",
+  "twin": "made on steam-26566308; the target 0x1412ce760 is KB 0x1412ce120: Ne_Bitset_ThrowInvalidPosition_C (0x12ca820) and Career_ScheduleEntry_TryStart (0x12ce7e0) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1412ce760",
+    "target": "0x1412ce760"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ba2c53688b467b69eed677bb3e66e6ba966b38942232ab36b765451092b19bae"
+  }
+ ]
+}

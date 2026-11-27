@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Create_NamedResourceNotifyHandle",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c74e20",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_Create_NamedResourceNotifyHandle(void *self, void *out_owned_pair, void *hashed_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c773f0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143c697b0",
+  "notes": "Allocates a 0x28-byte object from the allocator at self+0x2e8 (vtable 0x1456119b0, +0x8/+0x10 = 16-byte hashed name copied from arg3, +0x18 = 0, +0x20 = -1), writes {allocator, object} to the out pair and registers the object under the name with Render_Gfx2_RegisterResourceNotify (registry from self+0x2f0). Returns the out pair. Caller 0x143c697b0: renderer init; builds two names from strings, calls this for each and moves the returned pairs into self+0x2b8 and self+0x2c8. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.create_named_resource_notify_handle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C7 48 89 D6 49 89 CE",
+  "match": "0x143c74e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c74e20",
+  "kind": "func_start",
+  "names": [
+   "Render_Create_NamedResourceNotifyHandle"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c773f0",
+  "made_on_target": "0x143c773f0",
+  "twin": "made on steam-26566308; the target 0x143c773f0 is KB 0x143c74e20: Ne_CustomisationDecalRenderer_BakePasses (0x3c73230) and Ne_DecalsProjectionAreaProxy_Ctor (0x3c77b20) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c773f0",
+    "target": "0x143c773f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f5523e027c0c88bccf75c74bd31a7bd2d48cd5028d5b2ef8640afcfc093b2327"
+  }
+ ]
+}

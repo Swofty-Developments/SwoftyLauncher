@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_Apply_SetupMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140ba2550",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_InstantRace_Apply_SetupMode(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140ba2530 (RacingPC lab re_groups/_decomp);xref:0x140ba7fc0,0x141d915f0,0x141d93e30",
+  "notes": "If the cached vector self+0x448 is empty, resolves each 0x28-byte request at self+0x468..0x470 (name at +0x10) against the setup-mode list *(self+0x4d0)+0x48 by strcmp on mode->+0xd8->+0x10 and pushes the pointers. Then reseeds the global Mersenne Twister (0x1460576b8) from QueryPerformanceCounter and either uses the fixed mode at self+0x438 (after Ent_EntrantsSystem_RemoveAll) or picks a random entry from vcall +0x1d0 on the mode entity self+0x278, and calls Game_GameModeEntity_SetSetupMode."
+ },
+ "signature": {
+  "id": "game.instant_race_apply_setup_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8B 99 48 04 00 00",
+  "match": "0x140ba2550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba2550",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_Apply_SetupMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140ba2530",
+  "made_on_target": "0x140ba2530",
+  "twin": "made on steam-26566308; the target 0x140ba2530 is KB 0x140ba2550: Game_EventListGridSetupComponent_SetupStartingGrid (0xb9cd50) and Game_InstantRace_SetupTrackList (0xba28b0) on either side both sit -0x20 below their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140ba2530",
+    "target": "0x140ba2530"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4d3167665059f0502dd802104c21c6e75ce079f54f2f8f693020a64985eb49aa"
+  }
+ ]
+}

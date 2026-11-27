@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Frustum_ComputeCornersFromPlanes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c2c590",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Frustum_ComputeCornersFromPlanes(float *out_corners8x4, const float *planes6x4)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c2eb60 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143ca7860",
+  "notes": "Reads six vec4 planes and writes eight vec4 points, each the intersection of three planes solved with cross products and -1/det: (0,2,4) (1,2,4) (0,3,4) (1,3,4) (0,2,5) (1,2,5) (0,3,5) (1,3,5). Pure math, no globals. Caller 0x143ca7860: builds the six planes on the stack from sums and differences of basis rows, calls this and averages four of the corners (x0.25) to get a centre point. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.frustum_compute_corners_from_planes",
+  "section": ".xtls",
+  "pattern": "48 83 EC 58 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 F8 28 0A",
+  "match": "0x143c2c590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c2c590",
+  "kind": "func_start",
+  "names": [
+   "Render_Frustum_ComputeCornersFromPlanes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c2eb60",
+  "made_on_target": "0x143c2eb60",
+  "twin": "made on steam-26566308; the target 0x143c2eb60 is KB 0x143c2c590: Ne_TerrainResource_GetMaterialResourcel (0x3c265a0) and Render_CloudGenerator_Update (0x3c3cef0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c2eb60",
+    "target": "0x143c2eb60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6efc5016d9d8d6a089b4c43a36634533b917b513de870f49eb8e96b721fb6dfe"
+  }
+ ]
+}

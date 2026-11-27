@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_PtrSet_InsertLocked_143a16600",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a14030",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx2_PtrSet_InsertLocked_143a16600(void *lock, void *ptr, void *set)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a16600 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439d6c60",
+  "notes": "If ptr is non-null: takes the lock (0x1449e4c50), probes the pointer hash set (0x143a16690) for the entry {ptr, 1}; status 0 goes to the grow/insert path 0x143a16cc0, status 2 or 3 writes the 16-byte entry at set+0x18[slot]; increments counters set+0x108 and set+0x110; unlocks (0x1449e4c74). Caller 0x1439d6c60: device method that registers each newly built 0x8a48-byte command context in the tracking set at device+0x3ab8 with lock device+0x3ab0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx2_ptr_set_insert_locked_143a16600",
+  "section": ".xtls",
+  "pattern": "4C 8D 86 B8 3A 00 00 48 89 FA E8 ?? ?? ?? ?? 48 8B 8E 68 26 00 00",
+  "match": "0x1439d47a3",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xa"
+  },
+  "target": "0x143a14030",
+  "kind": "call",
+  "names": [
+   "Render_Gfx2_PtrSet_InsertLocked_143a16600"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439d6d73",
+  "made_on_target": "0x143a16600",
+  "twin": "made on steam-26566308; the target 0x143a16600 is KB 0x143a14030: Render_Gfx2Buffer_Destroy (0x3a11340) and Ne_Gfx2_TrackResourceInsert_A (0x3a19a80) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439d6d73",
+    "target": "0x143a16600"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "631f848d17f1ef72ef436795baa8afd64e45fea3cec0c1e361806c1c6426d149"
+  }
+ ]
+}

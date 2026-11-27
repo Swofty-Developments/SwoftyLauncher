@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_MulKey_Elem16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a2c430",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_MulKey_Elem16(void *map, uint64_t newBucketCount)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a2ea00 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) Robin-hood hash map rehash like 0x143a1e270 but the hash is key * multiplier(+0x10) xor-shifted by 33. 16-byte POD entries at +0x18, info bytes at +0x20, count +0x28, mask +0x30, max-load +0x38; frees the old block via allocator +0x08. Matches the map embedded at device +0x3238 used by Render_Gfx2Device_GetOrCreateDescriptorTable."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_mul_key_elem16",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 FF C5 41 81 FD 00 01 00 00 0F 84 ?? ?? ?? ?? 4C 8B 9E 48 25 00 00",
+  "match": "0x1439d7cdb",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143a2c430",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_MulKey_Elem16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439da2ab",
+  "made_on_target": "0x143a2ea00",
+  "twin": "made on steam-26566308; the target 0x143a2ea00 is KB 0x143a2c430: Ne_UnorderedMap_FindOrEmplace_Fnv8_D (0x3a2d5f0) and Ne_HashMap_FindOrInsert_Float (0x3a34300) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439da2ab",
+    "target": "0x143a2ea00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d6aed84d4e2d86502e03bf3b71b856df168d8897e3c6cfb98519be23204278e5"
+  }
+ ]
+}

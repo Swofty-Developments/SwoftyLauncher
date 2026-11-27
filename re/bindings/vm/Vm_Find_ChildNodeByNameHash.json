@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Find_ChildNodeByNameHash",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442b1130",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void **Vm_Find_ChildNodeByNameHash(void *ctx, void **node_handle, int name_hash)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1442b3700 (RacingPC lab re_groups/_decomp);xref:0x14083c2c0,0x1408462c0,0x1409745a0,0x140975e00,0x140d38a90,0x140d38d90,0x140d39b50,0x141572df0",
+  "notes": "Resolves a view-model node handle through up to 0x62 reference hops (vtable +0x30 is-ref, target via +0x58), then if the node is a container (vtable +0x10) linearly scans its child pointer array +0x40..+0x48 for a child whose name hash at +0x20 equals name_hash. Returns pointer to child handle (child+8) or k_Vm_EmptyNodeHandle. Read-only lookup used by all Vm_Set_* helpers."
+ },
+ "signature": {
+  "id": "vm.find_child_node_by_name_hash",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 8B 0A 48 8D 35 ?? ?? ?? ?? 48 85 C9 0F 84 ?? ?? ?? ?? 44 89 C7 48 89 D3",
+  "match": "0x1442b1130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b1130",
+  "kind": "func_start",
+  "names": [
+   "Vm_Find_ChildNodeByNameHash"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1442b3700",
+  "made_on_target": "0x1442b3700",
+  "twin": "made on steam-26566308; the target 0x1442b3700 is KB 0x1442b1130: Ne_ListenerHandle_Unregister (0x42acf50) and Ui_Compare_NodeHandles (0x42b3e80) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1442b3700",
+    "target": "0x1442b3700"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "50ce6ac04567e88cd6f36c6448cb9c012334bf94a38de61b2487b9951f023f69"
+  }
+ ]
+}

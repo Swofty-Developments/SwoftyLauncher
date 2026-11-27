@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_FileSystem_FindDeviceForPath",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143f41bc0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_FileSystem_FindDeviceForPath(void *fs, void *parentDev, void *arg3, void *pathBuf, uint8_t flag, char wantKind)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143f44190 (RacingPC lab re_groups/_decomp);xref:0x143f36ed0,0x143f37ff0,0x143f3b970,0x143f3f280,0x143f40bb0",
+  "notes": "After 0x143f43e50 normalises the path, walks device list (fs+0xf8 or parent+0x140, next at +0x140) and returns the first device whose prefix string (+0x18) matches the start of pathBuf (+0x10) and whose vtbl +0xb0/+0xa8 kind check passes; strips the prefix in place. Sets errno 0x22 if prefix longer than path; on no match clears pathBuf to inline storage and returns 0. Good hook to observe path to mount resolution."
+ },
+ "signature": {
+  "id": "core.file_system_find_device_for_path",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 30 01 00 00 4C 89 CF",
+  "match": "0x143f41bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f41bc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_FileSystem_FindDeviceForPath"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143f44190",
+  "made_on_target": "0x143f44190",
+  "twin": "made on steam-26566308; the target 0x143f44190 is KB 0x143f41bc0: Ne_FileSystem_OpenStream (0x3f3b970) and Ne_PathBuf_Construct (0x3f446e0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143f44190",
+    "target": "0x143f44190"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ed87afde25839a3c2f04e5993f649abb46f97b204cb48ef363e1b4e187a6a9fb"
+  }
+ ]
+}

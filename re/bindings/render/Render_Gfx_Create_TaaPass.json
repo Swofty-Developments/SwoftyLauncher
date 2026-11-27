@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_Create_TaaPass",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14012a330",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx_Create_TaaPass(void **factory, void **out, void *a3, void *a4, void *a5, void *a6, void *a7, void *a8)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012a330 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Builds its own param list (3 scratch buffers 0x400/0x1000/0x200 from factory[0]): name formatted with the int at factory+0x1b8, about 30 key/value pairs (6 from arguments a3..a8, one from factory[0x1a], the rest constants) plus a kind-3 entry with the int at factory+0x1b0; clones it into a resource desc, allocates 0x560 bytes and constructs with 0x143def400(obj, allocator, factory[1], desc, factory[0x85]); writes {allocator, object} to out and frees the scratch buffers. Only caller Render_Gfx_BuildConfigObject 0x140104f70 failed to decompile (timeout). Better context needed: the key strings and ctor 0x143def400 decide the pass class. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx_create_taa_pass",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 02 00 00 C5 F8 29 B4 24 60 02 00 00 4C 89 CB 4C 89 C5",
+  "match": "0x14012a330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14012a330",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_Create_TaaPass"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14012a330",
+  "made_on_target": "0x14012a330",
+  "twin": "made on steam-26566308; the target 0x14012a330 is KB 0x14012a330: Ne_StrBuf_Printf (0x1009f0) and Ne_Math_Mat4Multiply (0x136690) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14012a330",
+    "target": "0x14012a330"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0ce80e2f9255a54765f6660708209382a83ddade706e0843ceb5e0c64a31ce97"
+  }
+ ]
+}

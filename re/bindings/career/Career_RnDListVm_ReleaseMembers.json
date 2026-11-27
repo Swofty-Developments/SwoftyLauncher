@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Career_RnDListVm_ReleaseMembers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141929bf0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_RnDListVm_ReleaseMembers(void *members)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14192b3d0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1419004d0,0x141900b20",
+  "notes": "Member teardown in reverse order: unlinks and Vm_Release_Node for the node holders at +0x120, +0xe0, +0xc0, +0xa0, +0x60, +0x20 and +0x00; runs Vm_RnDViewModel_ReleaseMembers over the 0x3f0-stride array +0x108..+0x110 and frees it via allocator +0x100; destroys and frees the two {allocator, object} pair vectors at +0x88 (allocator +0x80) and +0x48 (allocator +0x40). Caller 0x1419004d0: teardown, calls it on self+0x68 when the built flag self+0x1a8 is set and clears the flag; caller 0x141900b20: list populate, does the same before rebuilding. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "career.rn_d_list_vm_release_members",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 A8 01 00 00 00 48 8D 05",
+  "match": "0x1418fed32",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141929bf0",
+  "kind": "call",
+  "names": [
+   "Career_RnDListVm_ReleaseMembers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141900512",
+  "made_on_target": "0x14192b3d0",
+  "twin": "made on steam-26566308; the target 0x14192b3d0 is KB 0x141929bf0: Ne_Map_DestroySubtree (0x1924350) and Ne_Std_ThrowVectorSubscriptError (0x1952cb0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141900512",
+    "target": "0x14192b3d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9de3c75c9c09f547c8e313f3d0a6924cb0c85872556ff1239f02943ead7397a7"
+  }
+ ]
+}

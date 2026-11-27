@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_CustomisationDecals_DestroyOwnedObjects",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ee3530",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_CustomisationDecals_DestroyOwnedObjects(void **self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ee5b00 (RacingPC lab re_groups/_decomp);xref:0x143c67e40",
+  "notes": "Member teardown: destroys target block [0x16] (0x143ebff70) and pass resources [0x14] (Render_Gfx_DestroyPassResources), tears down sub-object at [6] (0x143d35b30), defers release of GPU handles [5] and [4] via Render_Gfx2Device_DeferRelease_A, then deletes owned objects [3] and [1] through their allocators [2] and [0]."
+ },
+ "signature": {
+  "id": "render.customisation_decals_destroy_owned_objects",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B B9 B0 00 00 00 48 85 FF",
+  "match": "0x143ee3530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ee3530",
+  "kind": "func_start",
+  "names": [
+   "Render_CustomisationDecals_DestroyOwnedObjects"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ee5b00",
+  "made_on_target": "0x143ee5b00",
+  "twin": "made on steam-26566308; the target 0x143ee5b00 is KB 0x143ee3530: Ne_HashMap_FatalStub_Particles (0x3ee5200) and Ne_Sort_Introsort_Elem48 (0x3ee9cf0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ee5b00",
+    "target": "0x143ee5b00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e2e6ecfa2b17aea4b46d2e7fdb5cf06a960fcaa7447bf5b2cfe6eb5e26654207"
+  }
+ ]
+}

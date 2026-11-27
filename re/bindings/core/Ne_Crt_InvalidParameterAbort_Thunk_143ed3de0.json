@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_143ed3de0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ed1810",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_143ed3de0(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ed3de0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(thunk) Noreturn stub: calls Ne_Crt_InvalidParameterAbort then int3. Called from the rehash at 0x143ed3df0 when the info increment drops below 3."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_143ed3de0",
+  "section": ".xtls",
+  "pattern": "48 C7 46 38 00 00 00 00 EB 9F E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC",
+  "match": "0x143be6edf",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xa"
+  },
+  "target": "0x143ed1810",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_143ed3de0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143be94af",
+  "made_on_target": "0x143ed3de0",
+  "twin": "made on steam-26566308; the target 0x143ed3de0 is KB 0x143ed1810: Ne_Vector_GrowEmplace_Elem384 (0x3ecf690) and Ne_PoolList_Resize_B (0x3ed46c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143be94af",
+    "target": "0x143ed3de0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9c3ba1fb5dd2ff7fb27daf7e2dfc18cc8f3174f95ed097d1a1e29e34904dc9fd"
+  }
+ ]
+}

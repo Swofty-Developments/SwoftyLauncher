@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_SourceTargetPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143dd8700",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_SourceTargetPass_Ctor(void *self, void *owner, void *gfx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ddacd0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140129830,0x1442effa0",
+  "notes": "Reads the count of prop 0x145614b06 from the prop bag and calls Render_GeometryPass_Ctor with count*2+3 slots; sets vtable 0x1459b9ca0; on first instance (counter 0x146c3ce98) builds the shared 0x210-byte material (hash 0x434978fa937f5176, global 0x146c3ce90) and registers the notify 0x1459b9cc8; binds slot 0 = 0x1459b9cc8, slot 1 = prop \"target\", slot 2 = prop \"source\" through self[4] vt+0x30; stores a formatted hashed name at +0x558/+0x560; +0x568 = 1 when prop \"mode\" equals the string at 0x14560fd88; allocates a 0x160-byte helper with a critical section into +0x550. Callers: Render_Gfx_BuildConfigEntry and 0x1442effa0 (builds a pass from a param list) both allocate 0x570 bytes and construct with it. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.source_target_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC E0 00 00 00 C5 F8 29 B4 24 D0 00 00 00 4C 89 CF",
+  "match": "0x143dd8700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143dd8700",
+  "kind": "func_start",
+  "names": [
+   "Render_SourceTargetPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ddacd0",
+  "made_on_target": "0x143ddacd0",
+  "twin": "made on steam-26566308; the target 0x143ddacd0 is KB 0x143dd8700: site_Ne_HwInt_SpotShadowSampling (0x3dc6326) and Render_TerrainPlugin_Render (0x3df2800) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ddacd0",
+    "target": "0x143ddacd0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8dd2a588fad30d16c420b70ecac8de3a503979f4da775d521796a99be8fca4b3"
+  }
+ ]
+}

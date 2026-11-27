@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsCategoryTileVM_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141dd7a20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_SettingsCategoryTileVM_Ctor(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141dd9620 (RacingPC lab re_groups/_decomp);xref:0x141dd36f0",
+  "notes": "Calls base ctor 0x141daa060, sets vtable 0x145750df0, and binds child nodes under self+0x10: strings \"name\" (+0x130), \"title\" (+0x150), \"subtitle\" (+0x170), bool \"new_tile\" (+0x190, false), string \"icon_tex\" (+0x1b0), bool \"icon_visible\" (+0x1d0, true)."
+ },
+ "signature": {
+  "id": "game.settings_category_tile_vm_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE C6 44 24 20 FF E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 06 48 8B 46 10",
+  "match": "0x141dd7a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dd7a20",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsCategoryTileVM_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141dd9620",
+  "made_on_target": "0x141dd9620",
+  "twin": "made on steam-26566308; the target 0x141dd9620 is KB 0x141dd7a20: Game_SettingsTabbingBaseViewModel_ApplyFilterRebuildCategories (0x1dd36f0) and Trk_SettingsSelectTrackTabVm_RefreshTrackList (0x1de81e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141dd9620",
+    "target": "0x141dd9620"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6782ded17e7c9d21f94b6e39cd32e1026eb379fa3dd7d4f83e4fbf0122187dad"
+  }
+ ]
+}

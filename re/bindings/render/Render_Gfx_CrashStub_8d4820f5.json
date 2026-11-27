@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_CrashStub_8d4820f5",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439b8810",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Gfx_CrashStub_8d4820f5(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439bada0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439baaa0",
+  "notes": "Whole body writes the constant 0x8d4820f5 to address 1, a deliberate access violation with a marker value. Context from caller: Render_Check_GfxResult calls it at the end of the fatal path when the HRESULT is 0x8007000e (E_OUTOFMEMORY). Good breakpoint to catch GPU out-of-memory crashes. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx_crash_stub_8d4820f5",
+  "section": ".xtls",
+  "pattern": "48 83 EC 10 48 89 4C 24 08 B8 01 00 00 00 48 89 04 24 48 8B 04 24 C7 00 F5 20 48 8D",
+  "match": "0x1439b8810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439b8810",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_CrashStub_8d4820f5"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439bada0",
+  "made_on_target": "0x1439bada0",
+  "twin": "made on steam-26566308; the target 0x1439bada0 is KB 0x1439b8810: Ne_Tls_GetSlotB5f0Value (0x39afea0) and Render_Gfx2Device_Initialise (0x39be870) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439bada0",
+    "target": "0x1439bada0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3b81214907aaa2ee505e51e7d1918cb8301438e3b514164d0c1aaa3221c0c0fb"
+  }
+ ]
+}

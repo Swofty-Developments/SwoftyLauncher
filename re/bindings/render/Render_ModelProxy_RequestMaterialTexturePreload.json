@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ModelProxy_RequestMaterialTexturePreload",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d402c0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_ModelProxy_RequestMaterialTexturePreload(void *instance, uint64_t arg2, float scale, void *weak_id_list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d42890 (RacingPC lab re_groups/_decomp);xref:0x143d42b80",
+  "notes": "Locks the weak pointer to a list of u32 ids (list+8..+0x10), finds the material set of the instance resource (+0x1e8 -> +0x28 -> entry 1 -> +0x28 -> +0x30), looks each id up in its robin-hood set and for every texture of the material (vector +0x160, priorities +0x180) calls Render_TextureStreaming_AddPreloadRequest on streamer DAT_146c641e8 with texture+0x1c8 and hint 0x800. Releases the weak/shared refs afterwards."
+ },
+ "signature": {
+  "id": "render.model_proxy_request_material_texture_preload",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 4C 89 CE 48 8B 81 E8 01 00 00",
+  "match": "0x143d402c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d402c0",
+  "kind": "func_start",
+  "names": [
+   "Render_ModelProxy_RequestMaterialTexturePreload"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d42890",
+  "made_on_target": "0x143d42890",
+  "twin": "made on steam-26566308; the target 0x143d42890 is KB 0x143d402c0: Ne_Gfx2Renderer_ReleaseDeferredObjects (0x3d41bb0) and Render_Draw_ComputeInstanceLodScale (0x3d43d40) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d42890",
+    "target": "0x143d42890"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5abd8bc51c8ecf2667be44b03b2618ab57cc7af551fe97facdcb40b1c41c6251"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_Abort",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1449d4dc8",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Jpeg_Abort(void *cinfo)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1449d7788 (RacingPC lab re_groups/_decomp);xref:0x1449d7160",
+  "notes": "libjpeg jpeg_abort: if cinfo+8 (mem mgr) is set calls mem->free_pool(cinfo, JPOOL_IMAGE=1) at +0x48, then resets global_state at +0x24 to 200 (DSTATE_START, and clears marker_list +0x170) when is_decompressor +0x20 else 100 (CSTATE_START)."
+ },
+ "signature": {
+  "id": "render.jpeg_abort",
+  "section": ".xtls",
+  "pattern": "40 53 48 83 EC 20 48 8B 41 08 48 8B D9 48 85 C0 74 26 BA 01 00 00 00",
+  "match": "0x1449d4dc8",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d4dc8",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_Abort"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1449d7788",
+  "made_on_target": "0x1449d7788",
+  "twin": "made on steam-26566308; the target 0x1449d7788 is KB 0x1449d4dc8: Ne_Format_HresultUnknownFacility (0x49349e0) and Ne_Crt_InitThreadHeader (0x49e2fbc) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1449d7788",
+    "target": "0x1449d7788"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9d0755a3e6323e9300bbbdcef625f5dd675460446d62d95c61c43b10bea420fe"
+  }
+ ]
+}

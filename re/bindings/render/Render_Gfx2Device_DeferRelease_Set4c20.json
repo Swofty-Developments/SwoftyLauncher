@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_DeferRelease_Set4c20",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439e39a0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint64_t Render_Gfx2Device_DeferRelease_Set4c20(void *device, void **handle)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439e5f70 (RacingPC lab re_groups/_decomp);xref:0x143db4490,0x143e95ee0",
+  "notes": "Under device CS (+0x2668): if *handle non-null, erases it from the robin-hood pointer set at +0x4c20 (FNV-1a of the 8 pointer bytes, backshift delete) and bumps counter +0x4d20; then takes a new global serial (0x14618e160), stores it at (*(device+0x528))+0x140 and pushes {serial, handle} onto the deferred-destroy vector +0xdc8/+0xdd0/+0xdd8, finally nulls *handle. Returns 0."
+ },
+ "signature": {
+  "id": "render.gfx2_device_defer_release_set4c20",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 4E 38 48 83 C4 28",
+  "match": "0x143e93bca",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1439e39a0",
+  "kind": "call",
+  "names": [
+   "Render_Gfx2Device_DeferRelease_Set4c20"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143e9619a",
+  "made_on_target": "0x1439e5f70",
+  "twin": "made on steam-26566308; the target 0x1439e5f70 is KB 0x1439e39a0: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143e9619a",
+    "target": "0x1439e5f70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "82edf6348ecba178a76c81aff68742c56cac063ada478ac6d4f904efb57e2e15"
+  }
+ ]
+}

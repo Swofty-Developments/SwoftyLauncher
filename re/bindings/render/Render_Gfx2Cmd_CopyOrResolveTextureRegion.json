@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Cmd_CopyOrResolveTextureRegion",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143a05810",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint64_t Render_Gfx2Cmd_CopyOrResolveTextureRegion(void *cmd_list, uint32_t ctx_id, void *dst_tex, int32_t dst_mip, int32_t dst_slice, uint32_t dst_x, uint32_t dst_y, int32_t dst_z, void *src_tex, int32_t src_mip, int32_t src_slice, uint32_t src_x, uint32_t src_y, int32_t src_z, uint32_t w, uint32_t h, uint32_t d)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143a07de0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143a083f0",
+  "notes": "Returns 0x16 when w/h/d is zero or block-compressed formats (tex+0x38) are not 4-aligned. Resolves native resources (tex+0x1c0 per device index, or per-context table +0x200), computes subresource = mipCount*slice+mip. Equal sample counts (+0x3c): whole-resource match calls cmd vfunc +0x88 (full copy), otherwise vfunc +0x80 with a source box built from src offset and size; different sample counts calls vfunc +0x98 (resolve) with the dst format. Returns 0. Caller 0x143a083f0: command-context wrapper that checks both native resources, records them in the context usage map, flushes via vfunc +0x188 and then calls this with the native list at +0x78 and context id +0x16f0. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx2_cmd_copy_or_resolve_texture_region",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 48 89 4C 24 50",
+  "match": "0x143a05810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a05810",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Cmd_CopyOrResolveTextureRegion"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143a07de0",
+  "made_on_target": "0x143a07de0",
+  "twin": "made on steam-26566308; the target 0x143a07de0 is KB 0x143a05810: Ne_WindowWin_SetOnMinimised (0x39ffe20) and Ne_Gfx2CommandQueue_PushProfileMarker (0x3a0a2c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143a07de0",
+    "target": "0x143a07de0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "13a67c98c8133c712d5de69d961f0ba942729e09c5f7f850803a8f239697ae06"
+  }
+ ]
+}

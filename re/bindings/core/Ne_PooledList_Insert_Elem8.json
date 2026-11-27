@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_PooledList_Insert_Elem8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143acba50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_PooledList_Insert_Elem8(void *list, void *before_node, void **value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ace020 (RacingPC lab re_groups/_decomp);xref:0x143ac05b0",
+  "notes": "(lib) Doubly linked list with pooled nodes: inserts an 8-byte value before a node; when count +0x30 equals capacity +0x38 grows by 1.5x up to max +0x40 through FUN_143accee0 and re-finds the insert position by index, pushes error 0xc if already at max. Free list head at +0x18, sentinel at +0x20."
+ },
+ "signature": {
+  "id": "core.pooled_list_insert_elem8",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 28 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 90 48 83 C4 30",
+  "match": "0x143abe0b9",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xb"
+  },
+  "target": "0x143acba50",
+  "kind": "call",
+  "names": [
+   "Ne_PooledList_Insert_Elem8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ac0689",
+  "made_on_target": "0x143ace020",
+  "twin": "made on steam-26566308; the target 0x143ace020 is KB 0x143acba50: Ne_Loader_RegisterRequest (0x3acb2b0) and Loc_LangSet_Find (0x3ad1dd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ac0689",
+    "target": "0x143ace020"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8f8afd5a5de752f19976af953d521dbe12d11dd37e79447a2a11690744b687bb"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_StdString_ReallocAssign",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14043fc70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_StdString_ReallocAssign(void *str, uint64_t new_len, void *unused, const char *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14043fcb0 (RacingPC lab re_groups/_decomp);xref:0x140614250,0x143be94d0",
+  "notes": "(lib) MSVC std::string reallocate-and-assign path using the engine allocator singleton (DAT_14618d130, vcall +0x10 alloc, +0x38 free). Grows capacity 1.5x (min new_len|0xf), memcpy src, writes NUL, frees old heap buffer if old cap > 0xf; sets +0x10 size, +0x18 capacity, +0 ptr."
+ },
+ "signature": {
+  "id": "core.std_string_realloc_assign",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 85 D2 0F 88 ?? ?? ?? ?? 4C 89 CB",
+  "match": "0x14043fc70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14043fc70",
+  "kind": "func_start",
+  "names": [
+   "Ne_StdString_ReallocAssign"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14043fcb0",
+  "made_on_target": "0x14043fcb0",
+  "twin": "made on steam-26566308; the target 0x14043fcb0 is KB 0x14043fc70: Game_Analytics_BakedLiverySponsor_WriteJson (0x4201d0) and Ne_RbTree_EraseSubtree (0x557390) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14043fcb0",
+    "target": "0x14043fcb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0b6db1de338ba2789d8d4330496191e5efc7e52a78bd55ab3e60e3c863324567"
+  }
+ ]
+}

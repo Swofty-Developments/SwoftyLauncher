@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_RttGenerator_Destruct",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143e8a830",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void Render_RttGenerator_Destruct(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143e8ce00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143e95ee0",
+  "notes": "Destructor body: sets vtable 0x1459bff10, calls Ne_LinkResolver_RegisterLinkable(+0x18, +0x20), Render_Gfx2_LookupEntryOrDefault(dev, self+0x30, 0), frees vectors/lists at +0x818, +0x7f8..+0x800, +0x190, +0x138, +0x120, +0x108 through their allocators, releases device objects +0xf8 (deferred), +0xf0, +0xe8, +0x70, +0x68, +0x60 on 0x14618eaa8, then returns the id at +0x58 to a TLS-cached id pool (0x14618e690 bitmap). Caller 0x143eb7530: scalar deleting destructor (calls this, frees self when flag != 0). Context from caller: Render_Rtt_ReleaseGeneratorBuffers destroys it as the member at +0x2c0 of a generator entry, so the class is a sub-object of the RTT generator entry and the class noun is not confirmed by this body. Better context needed: the vtable 0x1459bff10 RTTI or name string. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.rtt_generator_destruct",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 49 18",
+  "match": "0x143e8a830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e8a830",
+  "kind": "func_start",
+  "names": [
+   "Render_RttGenerator_Destruct"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143e8ce00",
+  "made_on_target": "0x143e8ce00",
+  "twin": "made on steam-26566308; the target 0x143e8ce00 is KB 0x143e8a830: Ne_Gfx2_BeginTripleBufferedScope (0x3e86c40) and Game_ShaderPackage_RegisterSponsorScreenEffects (0x3e8d350) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143e8ce00",
+    "target": "0x143e8ce00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "17dbc2db6f6629786bb26a411ab0a86edd90f4b8aa053f982b171dd7ff455e4f"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_MoveAssign_PtrElem8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1431fe880",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Vector_MoveAssign_PtrElem8(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143200e10 (RacingPC lab re_groups/_decomp);xref:0x143071a60,0x14307e590,0x1430836f0,0x143165ca0",
+  "notes": "(lib) Move-assignment of an allocator-aware vector of 8-byte elements (+0 allocator, +8 begin, +0x10 end, +0x18 cap). Same allocator: frees dst buffer and steals src pointers; different allocator: reallocates (1.5x growth, vcall +0x18) and memcpy copies elements."
+ },
+ "signature": {
+  "id": "core.vector_move_assign_ptr_elem8",
+  "section": ".xtls",
+  "pattern": "4C 89 F1 E8 ?? ?? ?? ?? 48 8B 94 24 80 01 00 00",
+  "match": "0x14308249f",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x1431fe880",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_MoveAssign_PtrElem8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143084a2f",
+  "made_on_target": "0x143200e10",
+  "twin": "made on steam-26566308; the target 0x143200e10 is KB 0x1431fe880: Game_F1os_LogLargePayload_SessionBrowserGetSessionByID (0x31eaf70) and Game_NetworkReady_OnUnreadyMessage (0x3228a20) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143084a2f",
+    "target": "0x143200e10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e1e1786f91bddf5cf54707cca5e483eef298bb4223ca5ddffdf91cbf59bb8c6e"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_ScreenSpaceReflectionPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c989a0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_ScreenSpaceReflectionPass_Ctor(void *self, void *allocator, void *gfx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c9af70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14012a1a0",
+  "notes": "Calls Render_GeometryPass_Ctor with (count of \"target\" entries * 2 + 0x14) bind slots, sets vtable 0x1459ab210, creates a shared 0x210-byte material on first instance (refcount 0x1464d4818), then binds \"depth\", \"normal\", \"surface\", \"albedo\", \"velocity\", \"target\", \"source\", \"tile_metadata\", \"depth_hierarchy\", \"ray_list\" and optional \"target_alpha\", \"target2\", \"target_alpha2\", \"prev_output\", \"temporal_variance\", \"light_index_buffer\"; slots 0x11-0x13 get MD5 hashes of lower-cased static names. \"mode\" maps to 0/1/2 and is stored at +0x1a8 of a new 0x1b0-byte state object (critical section, float defaults) kept at self+0x550. The SSR identity is inferred from the binding keys (ray_list, depth_hierarchy, temporal_variance). Caller 0x14012a1a0: factory that clones the desc arrays, allocates 0x560 bytes and returns an {allocator, pass} pair. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.screen_space_reflection_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 04 00 00 C5 F8 29 B4 24 90 04 00 00",
+  "match": "0x143c989a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c989a0",
+  "kind": "func_start",
+  "names": [
+   "Render_ScreenSpaceReflectionPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c9af70",
+  "made_on_target": "0x143c9af70",
+  "twin": "made on steam-26566308; the target 0x143c9af70 is KB 0x143c989a0: Render_DDGISystem_Render (0x3c7b760) and Ne_RenderViewParams_InitDefaults (0x3c9c930) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c9af70",
+    "target": "0x143c9af70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ef429a167b3bb58f1a955fe107451a0057c82701361a1bf24d2399ececaf8f1f"
+  }
+ ]
+}

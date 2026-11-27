@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_SwapTextureContents",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439dffa0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint64_t Render_Gfx2Device_SwapTextureContents(void *device, void *tex_a, void *tex_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439e2570 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143bff9e0,0x143c00760",
+  "notes": "Collects dependent view lists of both textures (0x1439e1410), swaps the core resource (0x1439d64c0) and field-swaps the view sub-objects at +0x1a0, +0x1a8 (handles +0x90..+0xd8, +0xe0..+0x128), +0x1b0, +0x1b8 and +0x298->+0x80; writes the new descriptor indices into the device table +0x1d28 and sets dirty byte +0x1ca8. Then copies the new view desc into every dependent view and re-creates it via Render_Gfx2Device_AllocViewDescriptor_A/B; returns 0. Callers 0x143bff9e0 and 0x143c00760: texture streaming state machines (TEXTURE_STREAMING logs) that swap the live texture (+0x8) with the staged one holding the new mip set, then copy the staged desc +0xd8.. to +0x28... (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx2_device_swap_texture_contents",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 F8 29 B4 24 B0 01 00 00 4C 89 C6 48 89 D7 48 89 CB",
+  "match": "0x1439dffa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439dffa0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_SwapTextureContents"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439e2570",
+  "made_on_target": "0x1439e2570",
+  "twin": "made on steam-26566308; the target 0x1439e2570 is KB 0x1439dffa0: Render_Gfx2Buffer_Construct (0x39d7ce0) and Ne_Load_SlUpgradeInterface (0x39e6f90) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439e2570",
+    "target": "0x1439e2570"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "755e151b7024d34bf28c29a64c413da226b5a4fcca04bbf586344148763bc830"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_TemporalAAPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143dece30",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_TemporalAAPass_Ctor(void *self, void *allocator, void *gfx, void *desc, void *owner)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143def400 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14012a330",
+  "notes": "Calls Render_GeometryPass_Ctor with 0x1a bind slots, sets vtable 0x1459ba530, stores arg5 at self+0x550 and binds desc keys \"history1\", \"history2\", \"input\", \"depth\", \"velocity\", \"velocity2\", \"stencil\", \"reflectionDepth\", \"output\", \"heatmap\", \"outputDLISP\", \"crossFade\", \"dilated_depth\", \"dilated_velocity\", \"history_depth\", \"history_weight\", \"history_rejection\", \"colourbox_y\", \"colourbox_cgco\", \"aces_lut\", optional \"aces_sdr_lut\", \"dispatchIndirectArgs\", \"dispatchIndirectGroupIDs\". On first instance (refcount 0x146c3d0c8) it creates a shared 0x440-byte buffer kept in the global at 0x146c3d0d8. Caller 0x14012a330: factory that builds the desc, allocates 0x560 bytes, passes one extra pointer through as arg5 and returns an {allocator, pass} pair. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.temporal_aa_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 4C 89 CF 48 89 CE",
+  "match": "0x143dece30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143dece30",
+  "kind": "func_start",
+  "names": [
+   "Render_TemporalAAPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143def400",
+  "made_on_target": "0x143def400",
+  "twin": "made on steam-26566308; the target 0x143def400 is KB 0x143dece30: site_Ne_HwInt_SpotShadowSampling (0x3dc6326) and Render_TerrainPlugin_Render (0x3df2800) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143def400",
+    "target": "0x143def400"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7cddcc7d3100321a9c099ebd1a5689a59332269e2ec9ff7201337c7e996c3ea6"
+  }
+ ]
+}

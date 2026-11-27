@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_LiveryModel_Build_ForEntrantIndex",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1413305b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_LiveryModel_Build_ForEntrantIndex(void *self, void *out_list)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141330bf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x142a9faf0",
+  "notes": "Whole body read. Walks the 16-byte entries of the vector at [self+0x278]+0x1040/+0x1048 (object pointer at +8, interface at object+0x208), adds up the sizes of the vectors at +0x288/+0x290 returned by vt+0xd8(0) and stops at the entry whose running total exceeds the index self+0x514 (entries with vt+0xd0 == 0 end the search). For that entry it fills out_list with 0x142459210(out, obj+0x18, self+0x210) when vt+0xa0 or vt+0xb0 returns an object, else from the entrant list of vt+0x1c8 through 0x142459390. Context from caller: Game_LiveryModel_Init gets self as the component 0x146065fb0 of another object and then picks the team by garage_id from the list. Better context needed: self is not the LiveryModel and the meaning of index +0x514 is open, so the name stays unproven. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.livery_model_build_for_entrant_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 48 89 D6 48 89 CF 48 8B 81 78 02 00 00",
+  "match": "0x1413305b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413305b0",
+  "kind": "func_start",
+  "names": [
+   "Game_LiveryModel_Build_ForEntrantIndex"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141330bf0",
+  "made_on_target": "0x141330bf0",
+  "twin": "made on steam-26566308; the target 0x141330bf0 is KB 0x1413305b0: Game_Objective_CheckFinishPosition (0x12f9080) and Sess_Garage_HasPendingName (0x1331a90) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141330bf0",
+    "target": "0x141330bf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "455350e90715a2b5dba9d83ae155cad8b5124768b6c7749e8671e6e077939433"
+  }
+ ]
+}

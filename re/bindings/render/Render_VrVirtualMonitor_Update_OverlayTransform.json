@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_VrVirtualMonitor_Update_OverlayTransform",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439eed10",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_VrVirtualMonitor_Update_OverlayTransform(void *gfx_device, uint32_t monitor_idx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1439f12e0 (RacingPC lab re_groups/_decomp);xref:0x141c12410,0x1438af940,0x1438afa90,0x1439be870",
+  "notes": "Per virtual monitor record at dev+0x2980+idx*0x78: reads height scale +0, offset +4 and +8, relative flag +0xc, builds a 3x4 matrix at +0x18 (m00 = scale*1.7777778 for 16:9, m11 = scale, m22 = 1, translation y = +8, z = -(+4)) and pushes it to the OpenVR overlay interface (lazy VR_GetGenericInterface, vtable slot 0x21 absolute or 0x23 device-relative) with overlay handle +0x48. Active only when dev+0x2ae9 matches the index or dev+0x164 is set. Hook here to move or resize the VR virtual screen."
+ },
+ "signature": {
+  "id": "render.vr_virtual_monitor_update_overlay_transform",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 89 D7 48 89 CE 85 D2",
+  "match": "0x1439eed10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439eed10",
+  "kind": "func_start",
+  "names": [
+   "Render_VrVirtualMonitor_Update_OverlayTransform"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1439f12e0",
+  "made_on_target": "0x1439f12e0",
+  "twin": "made on steam-26566308; the target 0x1439f12e0 is KB 0x1439eed10: Ne_Tga_ConvertToRgba8Buffer (0x39ea580) and Ne_Delegate_InvokeAll (0x39f19f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1439f12e0",
+    "target": "0x1439f12e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5932eaa6cb0b356b20c57449cb3ab3d730a38c64741ca6ee83d09effad61dffb"
+  }
+ ]
+}

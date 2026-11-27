@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Init_RandomIdBlockArray32",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142bb52c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint8_t *Game_Init_RandomIdBlockArray32(uint8_t *blocks)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142bb7850 (RacingPC lab re_groups/_decomp);xref:0x142bc3680",
+  "notes": "Calls Ne_Make_RandomIdBlock on 32 consecutive 0x40-byte blocks (total 0x800 bytes) and returns the base pointer. Array constructor for a fixed table of 32 id slots."
+ },
+ "signature": {
+  "id": "game.init_random_id_block_array32",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 48 8D 4E 40",
+  "match": "0x142bb52c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bb52c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Init_RandomIdBlockArray32"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142bb7850",
+  "made_on_target": "0x142bb7850",
+  "twin": "made on steam-26566308; the target 0x142bb7850 is KB 0x142bb52c0: Game_Currency_ShowReceivedPopup (0x2b9f900) and Game_PauseAvailabilityVM_OnActivate (0x2bb9a40) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142bb7850",
+    "target": "0x142bb7850"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "adda42b950210a126d329e2c1366bb62d7bec6f0a7f547e7cda9b4541768a848"
+  }
+ ]
+}

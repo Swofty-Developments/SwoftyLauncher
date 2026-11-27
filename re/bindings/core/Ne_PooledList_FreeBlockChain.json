@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_PooledList_FreeBlockChain",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143aca330",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_PooledList_FreeBlockChain(void **allocator_ref, void *block)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143acc900 (RacingPC lab re_groups/_decomp);xref:0x143abf1a0",
+  "notes": "(lib) Recursively frees a chain of pool blocks: frees the block payload at block+0x10 with the allocator at block+0x20, recurses into the next block at block+8, then frees the block itself via the allocator in allocator_ref (vtable +0x38). No-op when the allocator is null."
+ },
+ "signature": {
+  "id": "core.pooled_list_free_block_chain",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 4F 18 41 FF D5",
+  "match": "0x143ac33ed",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x143aca330",
+  "kind": "call",
+  "names": [
+   "Ne_PooledList_FreeBlockChain"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ac59bd",
+  "made_on_target": "0x143acc900",
+  "twin": "made on steam-26566308; the target 0x143acc900 is KB 0x143aca330: Ne_Loader_RegisterRequest (0x3acb2b0) and Loc_LangSet_Find (0x3ad1dd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ac59bd",
+    "target": "0x143acc900"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "db34b3c18cd335aa381a1317d3199d89c9053bcea719407c67f80d954e92e053"
+  }
+ ]
+}

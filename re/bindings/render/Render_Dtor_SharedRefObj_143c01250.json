@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Dtor_SharedRefObj_143c01250",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143bfec80",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void Render_Dtor_SharedRefObj_143c01250(void *obj)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c01250 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143bff8b0,0x143bff9e0",
+  "notes": "Destructor body: frees the buffer at obj+0x30 (allocator +0x18) and clears +0x30/+0x38; under global CS 0x146046868 decrements the refcount (+0x8) of the object at obj+0x1e0 and calls its vfunc +0x8 at zero; frees the vector at obj+0x180..+0x190 (allocator +0x178). Callers 0x143bff8b0 and 0x143bff9e0: texture streaming state code that swaps the data buffer +0x30/+0x38 out of the request, calls this and then frees the request with its allocator; Context from caller: obj is a streaming load request. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.dtor_shared_ref_obj_143c01250",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 51 30",
+  "match": "0x143bfec80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfec80",
+  "kind": "func_start",
+  "names": [
+   "Render_Dtor_SharedRefObj_143c01250"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c01250",
+  "made_on_target": "0x143c01250",
+  "twin": "made on steam-26566308; the target 0x143c01250 is KB 0x143bfec80: Ne_PoolList_DestroyNodes (0x3bff4a0) and Render_Write_PngFile (0x3c01d00) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c01250",
+    "target": "0x143c01250"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "48542cbdd2223c5f865c1ea59f1f006386aba690c2c9a84c9b2cd55dc0ab5e22"
+  }
+ ]
+}

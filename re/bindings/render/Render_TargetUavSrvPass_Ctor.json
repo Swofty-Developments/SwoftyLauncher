@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_TargetUavSrvPass_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143c418a0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_TargetUavSrvPass_Ctor(void *self, void *allocator, void *ctx, void *props)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143c43e70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140101230",
+  "notes": "Calls Render_GeometryPass_Ctor(self, allocator, ctx, props, 4), sets vtable 0x1458e8880. On first instance (counter 0x1464d44d0) it builds a shared 0x210-byte material at 0x1464d44c8 (Render_Material_FillMeTextureSlots, Render_Material_CountResourceSlots) and registers resource notify 0x1458e88a8. Binds resource slots through self+0x20: slot 0 = 0x1458e88a8, slot 1 = property 'target', slot 2 = 'targetUAV' (empty if absent), slot 3 = 'targetSRV'; allocates a 0xe8-byte helper with a critical section into self+0x550. Caller 0x140101230: factory that clones the resource desc arrays, allocates 0x560 bytes, runs this ctor and returns {allocator, object}. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.target_uav_srv_pass_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 4C 89 CF 4C 89 C3 48 89 CE C7 44 24 20 04 00 00 00",
+  "match": "0x143c418a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c418a0",
+  "kind": "func_start",
+  "names": [
+   "Render_TargetUavSrvPass_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143c43e70",
+  "made_on_target": "0x143c43e70",
+  "twin": "made on steam-26566308; the target 0x143c43e70 is KB 0x143c418a0: Render_CloudGenerator_Update (0x3c3cef0) and Ne_CrowdAnimationLoader_LoadBehavioursInStage (0x3c455d0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143c43e70",
+    "target": "0x143c43e70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ff42b98d7d530f8e297ca92e15e6ee0c81f8c2ad0280c48a62da31f149354f69"
+  }
+ ]
+}

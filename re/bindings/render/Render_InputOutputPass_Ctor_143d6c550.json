@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_InputOutputPass_Ctor_143d6c550",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143d69f80",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "void *Render_InputOutputPass_Ctor_143d6c550(void *self, void *allocator, void *gfx, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143d6c550 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14012a9a0",
+  "notes": "Calls Render_GeometryPass_Ctor with 3 bind slots and sets vtable 0x1459b5690. Slot 0 is bound to the MD5 hash of a lower-cased 0x31-char static name at 0x1459b56b8, slot 1 to the desc key \"input\" and slot 2 to \"output\"; no other state is added. Caller 0x14012a9a0: factory that clones the desc arrays, allocates 0x550 bytes and returns an {allocator, pass} pair. Better context needed: the static name string at 0x1459b56b8 would give the real pass name. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.input_output_pass_ctor_143d6c550",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 04 00 00 4C 89 CF 48 89 CE C7 44 24 20 03 00 00 00",
+  "match": "0x143d69f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d69f80",
+  "kind": "func_start",
+  "names": [
+   "Render_InputOutputPass_Ctor_143d6c550"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143d6c550",
+  "made_on_target": "0x143d6c550",
+  "twin": "made on steam-26566308; the target 0x143d6c550 is KB 0x143d69f80: Render_Batch_Submit (0x3d4de90) and Render_RainFile_ParseMaterials (0x3d6f4f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143d6c550",
+    "target": "0x143d6c550"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6bd40f77090e9b4dd44074d894cfbec84368cbefed13d9bc6928f3e3d781a64a"
+  }
+ ]
+}

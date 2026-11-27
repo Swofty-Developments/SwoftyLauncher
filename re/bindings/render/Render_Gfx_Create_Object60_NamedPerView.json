@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_Create_Object60_NamedPerView",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14012af00",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "void *Render_Gfx_Create_Object60_NamedPerView(void **factory, void **out, void *name, uint8_t flag, uint32_t a5, void *a6, void *a7, void *a8, void *a9, void *a10, void *a11, void *a12, void *a13, void *a14, void *a15)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14012af00 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140104f70",
+  "notes": "Formats a name from argument 3 and the int at factory+0x1b8 (FNV-1a 64 hash, interned in g_Ne_StringTable), formats 3 more names with the same int, fills a desc struct with the 10 pointer arguments a6..a15, constants, flag ^ 1, a5, flag, the reflection handle of *(factory[2]+0x58) (+0x48, lazily registered) and *(factory[2]+0x60); allocates 0x60 bytes (align 0x10) and constructs with 0x143cdae90; writes {allocator, object} to out. Only caller Render_Gfx_BuildConfigObject 0x140104f70 failed to decompile (timeout). Better context needed: the ctor 0x143cdae90 decides the class. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.gfx_create_object60_named_per_view",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 44 89 CB",
+  "match": "0x14012af00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14012af00",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_Create_Object60_NamedPerView"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14012af00",
+  "made_on_target": "0x14012af00",
+  "twin": "made on steam-26566308; the target 0x14012af00 is KB 0x14012af00: Ne_StrBuf_Printf (0x1009f0) and Ne_Math_Mat4Multiply (0x136690) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14012af00",
+    "target": "0x14012af00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "907b0f1215dffdb84c14c45a553ebcbb1d35ce408e4b8ea4cfc9eb202abd439f"
+  }
+ ]
+}

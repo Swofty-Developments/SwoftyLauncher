@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Render_NvApi_Call_Afd1b02c",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140002720",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "uint32_t Render_NvApi_Call_Afd1b02c(void *gpuHandle, void *info)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140002720 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1439be870,0x144023dc0",
+  "notes": "NvAPI-style stub: increments the call counter 0x145fba734, ensures the library via Ne_Import_ResolveSlotWithRetry, resolves interface id 0xafd1b02c through the query pointer 0x145fba758 (cached at 0x145fbaa58, returns 0xfffffffd when missing), calls optional pre/post hooks 0x145fba768/0x145fba770 and returns the function's status. Callers: Render_Gfx2Device_Initialise calls it for each handle enumerated by 0x1400023c0 with info version 0x20050 and uses info+0x10 (non-zero clears device+0x399e) and info+0x14 (non-zero sets device+0x39a0); Game_Options_Apply does the same scan and sets a flag when info+0x14 is non-zero. The NvAPI function name for this id is not resolved here. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "render.nv_api_call_afd1b02c",
+  "section": ".xtls",
+  "pattern": "48 89 74 24 10 57 48 83 EC 20 48 8B FA 48 8B F1 F0 83 05 ?? ?? ?? ?? 01 33 D2 33 C9 E8 ?? ?? ?? ?? 85 C0 0F 85 ?? ?? ?? ?? 48 89 5C 24 30 48 8B 1D ?? ?? ?? ?? 48 85 DB 75 29 48 8B 05 ?? ?? ?? ?? 48 85 C0 74 16 B9 2C B0 D1 AF",
+  "match": "0x140002720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140002720",
+  "kind": "func_start",
+  "names": [
+   "Render_NvApi_Call_Afd1b02c"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140002720",
+  "made_on_target": "0x140002720",
+  "twin": "made on steam-26566308; the target 0x140002720 is KB 0x140002720: Ne_Import_ResolveSlotWithRetry (0x2190) and Ne_Thunk_ExternalCall (0x2f90) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140002720",
+    "target": "0x140002720"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "65bdbc57cd74e6dccbd8d7f5fc7140019c6518ca328b3d98107370004180c270"
+  }
+ ]
+}

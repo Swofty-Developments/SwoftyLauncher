@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_InsertKeySlot_U64_Elem24",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ed0c10",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_InsertKeySlot_U64_Elem24(void *map, void *outIdxState, int64_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ed31e0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) robin_hood flat-map insert helper for 64-bit keys and 0x18-byte elements: probes with info bytes, returns {slot index, state} in out (state 1 = key found, 2/3 = new slot opened after shifting elements up, 0 = gave up after 256 tries). Grows or rehashes through FUN_143ed37f0 when count reaches the limit at +0x38; first use allocates an 8-bucket table (0x166 bytes)."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_insert_key_slot_u64_elem24",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 58 E8 ?? ?? ?? ?? 8B 44 24 50",
+  "match": "0x143bd3cbe",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x143ed0c10",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_InsertKeySlot_U64_Elem24"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143bd628e",
+  "made_on_target": "0x143ed31e0",
+  "twin": "made on steam-26566308; the target 0x143ed31e0 is KB 0x143ed0c10: Ne_Vector_GrowEmplace_Elem384 (0x3ecf690) and Ne_PoolList_Resize_B (0x3ed46c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143bd628e",
+    "target": "0x143ed31e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2e29dfb496b5466d11e2f1941dd0a60ad06ce1c9d2bb7e81779c108304fdf813"
+  }
+ ]
+}

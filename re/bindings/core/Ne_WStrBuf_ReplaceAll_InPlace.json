@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_WStrBuf_ReplaceAll_InPlace",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c4c150",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_WStrBuf_ReplaceAll_InPlace(void *wbuf, const wchar_t *find, const wchar_t *replace)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c4e6e0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) Replaces every occurrence of find with replace inside a fixed wide buffer (capacity +0x08, data +0x10) using wcsstr-like 0x14532d7c8: first counts the resulting length, returns errno 0x22 (TLS + trace ring) if it would not fit, else shifts the tail through a stack temp and copies replace over each hit. Returns 0 on success."
+ },
+ "signature": {
+  "id": "core.w_str_buf_replace_all_in_place",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 58 48 8D 6C 24 50 C5 F8 29 7D F0",
+  "match": "0x142c4c150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c4c150",
+  "kind": "func_start",
+  "names": [
+   "Ne_WStrBuf_ReplaceAll_InPlace"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c4e6e0",
+  "made_on_target": "0x142c4e6e0",
+  "twin": "made on steam-26566308; the target 0x142c4e6e0 is KB 0x142c4c150: Game_Replay_LoadSavedReplayJob (0x2c48670) and Game_TrackCameraShots_StopShot (0x2c50170) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c4e6e0",
+    "target": "0x142c4e6e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "af24d10552f18afdac7f9a08ede0a56b3e2839e0a234ae1b67bc3d8d50df8819"
+  }
+ ]
+}

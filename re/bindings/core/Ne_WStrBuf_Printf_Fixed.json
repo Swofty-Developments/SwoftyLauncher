@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_WStrBuf_Printf_Fixed",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1406cbf30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_WStrBuf_Printf_Fixed(void *wbuf, const wchar_t *fmt, ...)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1406cbf70 (RacingPC lab re_groups/_decomp);xref:0x142af42f0,0x1437d66c0,0x143890550,0x14401ecd0,0x1440211a0,0x144147c20",
+  "notes": "(lib) Variadic wide printf into a fixed buffer object (capacity in wchar at +0x08, data at +0x10) using CRT vswprintf-style 0x145330954; forces a terminator at the last element, returns chars written (or -1) and sets engine errno 0x54 (TLS chain + trace ring) when output >= capacity. Used to build save/config paths."
+ },
+ "signature": {
+  "id": "core.w_str_buf_printf_fixed",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 C4 30 48 63 05",
+  "match": "0x143ad6621",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1406cbf30",
+  "kind": "call",
+  "names": [
+   "Ne_WStrBuf_Printf_Fixed"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ad8bf1",
+  "made_on_target": "0x1406cbf70",
+  "twin": "made on steam-26566308; the target 0x1406cbf70 is KB 0x1406cbf30: Game_CinematicDirector_SendCinematicData (0x6c1fb0) and Ne_Heap_OnCorruptionNotification (0x6cd780) on either side both sit 0x40 above their KB addresses; the match 0x143ad8bf1 is KB 0x143ad6621: Loc_LangSet_Find (0x3ad1dd0) and Ne_ModuleSystem_CheckPlatform (0x3adf0c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ad8bf1",
+    "target": "0x1406cbf70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7bbcdd7b3f71e402c353eebf749038e5222ed16e155c28ee8c1739d2e04c8eca"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Rehash_IntKey_Elem8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ed1820",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_Rehash_IntKey_Elem8(void *map, uint64_t newBuckets)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ed3df0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) robin_hood flat-map rehash for 8-byte elements keyed by the low int32 of the element (sign-extended, times multiplier at +0x10). Allocs new table of 9 bytes per slot plus 8, reinserts all old entries with robin-hood shifting, frees the old table through allocator vfn +0x38 unless it was the inline sentinel at map+0x30."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_rehash_int_key_elem8",
+  "section": ".xtls",
+  "pattern": "48 89 F1 E8 ?? ?? ?? ?? FF C3 81 FB 00 01 00 00",
+  "match": "0x143be6aa2",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x143ed1820",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Rehash_IntKey_Elem8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143be9072",
+  "made_on_target": "0x143ed3df0",
+  "twin": "made on steam-26566308; the target 0x143ed3df0 is KB 0x143ed1820: Ne_Vector_GrowEmplace_Elem384 (0x3ecf690) and Ne_PoolList_Resize_B (0x3ed46c0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143be9072",
+    "target": "0x143ed3df0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3a3dc1ea9352173e3f072bf58d2890b0eda6debde1b1f82d8cf4aaf4cceaf000"
+  }
+ ]
+}

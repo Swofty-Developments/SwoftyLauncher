@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Str_Concat",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441978f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Str_Concat(void *out_str, void **a, void **b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144199ec0 (RacingPC lab re_groups/_decomp);xref:0x140c1d9f0,0x140c1e210,0x140c1e9b0,0x1414c84b0,0x141a43e10,0x141a85de0,0x141dd36f0,0x1441ee1a0",
+  "notes": "(lib) Concatenates two refcounted NeStr values: allocates a new NeStr (hash +0, refcount +4, 20-bit length and flags at +6, chars at +9) from g_Ne_DefaultAllocator, copies a then b, recomputes the djb2-style hash (seed 0x1505, x33) and stores it in *out_str after releasing any previous value."
+ },
+ "signature": {
+  "id": "core.str_concat",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 4D 89 C6 49 89 D7",
+  "match": "0x1441978f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441978f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Str_Concat"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144199ec0",
+  "made_on_target": "0x144199ec0",
+  "twin": "made on steam-26566308; the target 0x144199ec0 is KB 0x1441978f0: Ne_Make_StrFromCStr (0x4199ab0) and Ne_String_CloneAppendCStr (0x419a120) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144199ec0",
+    "target": "0x144199ec0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c1d1b3a78a10566b020ba5a48fe6aa40e7e85a9fa2421f50db6d858f1eef4cfe"
+  }
+ ]
+}
