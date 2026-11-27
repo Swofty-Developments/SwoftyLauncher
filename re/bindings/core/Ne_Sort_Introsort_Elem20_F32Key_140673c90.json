@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_Introsort_Elem20_F32Key_140673c90",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140673c50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_Introsort_Elem20_F32Key_140673c90(void *first, void *last, uint64_t depth_budget)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140673c90 (RacingPC lab re_groups/_decomp);xref:0x1406602e0",
+  "notes": "(lib) std::sort style introsort over 20-byte elements ordered ascending by the float at +0: insertion sort below 33 elements, median-of-3/ninther pivot with three-way partition, recursion on the smaller side, heapsort when the depth budget hits 0. Context from caller: Ai_Lateral_ResolveCorridors."
+ },
+ "signature": {
+  "id": "core.sort_introsort_elem20_f32_key_140673c90",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 D7 48 89 CE 48 89 D0 48 29 C8",
+  "match": "0x140673c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140673c50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_Introsort_Elem20_F32Key_140673c90"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140673c90",
+  "made_on_target": "0x140673c90",
+  "twin": "made on steam-26566308; the target 0x140673c90 is KB 0x140673c50: Ai_TrackLine_FindSideMarkerInCorner (0x66ef00) and Game_AiRoute_CompileMarkerChannel (0x677b20) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140673c90",
+    "target": "0x140673c90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9ba3ddbd0aa3a88fe3a40e16334eb73b9e5839b118cfd8f8e8d596a97ea2af31"
+  }
+ ]
+}

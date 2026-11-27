@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeedStream_ReadPackedCarFrame",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c319e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_F1DataFeedStream_ReadPackedCarFrame(void *stream, void *outFrame, uint64_t pos, int64_t *outNextPos)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c33f70 (RacingPC lab re_groups/_decomp);xref:0x142c2b720,0x142c317e0",
+  "notes": "Sets stream position, wraps the buffer at +0x98/+0xa0 in a memory reader, reads a u64 nanosecond timestamp (split into sec and nsec at outFrame+0) and then 20 packed 0x1e-byte car records into 0xc0-byte slots. Each record is unpacked: smallest-three 10-bit quaternion (/511 - 1, sqrt for missing component) to +0x80..+0x8c, position vec to +0x90, signed 10-bit speed to +0x1c and scaled (/0.001/3600) to +0x40, s8/127 to +0x20, two u8/255 to +0x24/+0x28, flag bit to +0x30, valid=1 at +0xcc. Returns 1 if all 20 records read; outNextPos = read offset + stream +0xb0 + 600. Independent re-check (lab blind verifier 2026-11-27): agree."
+ },
+ "signature": {
+  "id": "game.f1_data_feed_stream_read_packed_car_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 18 01 00 00 C5 78 29 BC 24 00 01 00 00",
+  "match": "0x142c319e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c319e0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeedStream_ReadPackedCarFrame"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c33f70",
+  "made_on_target": "0x142c33f70",
+  "twin": "made on steam-26566308; the target 0x142c33f70 is KB 0x142c319e0: Sess_Result_RequestStatus (0x2c25130) and Game_FullRaceReplaySystem_Init (0x2c47600) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c33f70",
+    "target": "0x142c33f70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4862e2f58124b017dfed2671a932df7fd8d9bbf4523157e53f3ff63d0ef670ef"
+  }
+ ]
+}

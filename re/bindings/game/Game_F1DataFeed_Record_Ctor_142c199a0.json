@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeed_Record_Ctor_142c199a0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c17410",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_F1DataFeed_Record_Ctor_142c199a0(void *self, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c199a0 (RacingPC lab re_groups/_decomp);xref:0x142c2b720",
+  "notes": "Default-constructs the same 0x16a8-byte record as the copy ctor at 0x141ca4f10: sets inline string vtables and empty contents, +0x208 = 1, +0x288 = 0x100, 24 entries of 200 bytes with int +0x448 = 0xffffffff, and three allocator-bound members at +0x1660, +0x1680 (empty vectors) and +0x16a0."
+ },
+ "signature": {
+  "id": "game.f1_data_feed_record_ctor_142c199a0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F8 29 B4 24 60 01 00 00 48 89 CE 48 8D 41 18",
+  "match": "0x142c17410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c17410",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeed_Record_Ctor_142c199a0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c199a0",
+  "made_on_target": "0x142c199a0",
+  "twin": "made on steam-26566308; the target 0x142c199a0 is KB 0x142c17410: Game_ReplaySystem_LoadSnapshotFile (0x2c16510) and Game_F1DataFeedSystem_Init (0x2c1a130) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c199a0",
+    "target": "0x142c199a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6b950bcad12819b3abfbaedef96f711cb9c544c4d460807be2cb962509621ee3"
+  }
+ ]
+}

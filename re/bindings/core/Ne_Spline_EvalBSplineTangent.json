@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Spline_EvalBSplineTangent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144503f60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Spline_EvalBSplineTangent(void *spline, float *outVec, float t, int segIndex)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144506530 (RacingPC lab re_groups/_decomp);xref:0x144506440",
+  "notes": "Evaluates the first derivative of a uniform cubic B-spline segment from 4 consecutive 16-byte control points at (+0x10)[segIndex..segIndex+3] using weights (-3t^2+6t-3)/6, (9t^2-12t)/6, (-9t^2+6t+3)/6, 3t^2/6. Handles degenerate repeated points: first three equal and t < 0.05 uses normalized P3-P2, last three equal and t > 0.95 uses normalized P1-P0, all four equal returns constant 0x145be8360. With fewer than 4 points or index out of range returns (1,0,0,0). Result is not normalized in the general case."
+ },
+ "signature": {
+  "id": "core.spline_eval_b_spline_tangent",
+  "section": ".xtls",
+  "pattern": "48 83 EC 58 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 89 D0",
+  "match": "0x144503f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144503f60",
+  "kind": "func_start",
+  "names": [
+   "Ne_Spline_EvalBSplineTangent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144506530",
+  "made_on_target": "0x144506530",
+  "twin": "made on steam-26566308; the target 0x144506530 is KB 0x144503f60: Ne_StrBuf_CopyConstruct (0x44f4e70) and Career_SaveBlobCurve_CopyConstruct (0x4509240) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144506530",
+    "target": "0x144506530"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "054993d8360cd17d349ba602a2a384e32e95a1e2f505973f256302d21b224abc"
+  }
+ ]
+}

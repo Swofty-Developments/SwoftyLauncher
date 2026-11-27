@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_SplineComponent_ResolveSplineResource",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144503680",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_SplineComponent_ResolveSplineResource(void *self, void *propOwner, void *services, void *propKey)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144505c50 (RacingPC lab re_groups/_decomp);xref:0x144505b90",
+  "notes": "Resolves a string property through Ne_Component_ResolveProviderChain2(propOwner+0xe0, key); returns 0x16 if missing or empty. Hashes the name into self+0x28/+0x30, queries the provider from services vcall +8 for the resource; if absent sets error code 2 (traced) and returns 2. On success stores resource->+0x28 at self+0x18, stores the manager from services vcall +0x10 at self+0x20 and registers callback 0x144505ed0 with self for that name; releases the temporary ref (+0x18 refcount) and returns 0. Independent re-check (lab blind verifier 2026-11-27): partial, better name Ne_Component_ResolveNamedResourceFromProviderChain: It resolves a name string via Ne_Component_ResolveProviderChain2, hashes it, looks it up in a resource map and stores the pointer at +0x18, returning errno 2 or 22; there is no spline-specific string or data in the code."
+ },
+ "signature": {
+  "id": "core.spline_component_resolve_spline_resource",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 4C 89 C3 48 89 CF",
+  "match": "0x144503680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144503680",
+  "kind": "func_start",
+  "names": [
+   "Ne_SplineComponent_ResolveSplineResource"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144505c50",
+  "made_on_target": "0x144505c50",
+  "twin": "made on steam-26566308; the target 0x144505c50 is KB 0x144503680: Ne_StrBuf_CopyConstruct (0x44f4e70) and Career_SaveBlobCurve_CopyConstruct (0x4509240) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144505c50",
+    "target": "0x144505c50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d5091cca6b4eda702955b64f7dbfeb4f3341e1452dd04ee403aa173f42e7fa42"
+  }
+ ]
+}

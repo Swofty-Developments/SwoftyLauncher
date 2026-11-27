@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_Insert_U16Key_Elem40_140d36d90",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d36210",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_RobinHoodMap_Insert_U16Key_Elem40_140d36d90(void *map, void *out_idx_status, uint16_t *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d36d90 (RacingPC lab re_groups/_decomp);xref:0x140bfe040",
+  "notes": "(lib) Robin-hood hash map find-or-insert slot for a uint16 key with 40-byte elements. Same layout as the U32 variant: +0x10 multiplier, +0x18 elems, +0x20 info bytes, +0x28 count, +0x30 mask, +0x38 max load, +0x40/+0x44 info inc/shift. Writes out {slot index, status 0 fail, 1 found, 2/3 inserted}; grows via FUN_140d373e0. Context from caller: Ai_CannedEvents_UpsertRaceRecord."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_insert_u16_key_elem40_140d36d90",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 84 24 A0 00 00 00 85 C0 74 18",
+  "match": "0x140bff428",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d36210",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_Insert_U16Key_Elem40_140d36d90"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140bffed8",
+  "made_on_target": "0x140d36d90",
+  "twin": "made on steam-26566308; the target 0x140d36d90 is KB 0x140d36210: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140bffed8 is KB 0x140bff428: Career_Get_TeamBankBudgetCategoryValue (0xbf58b0) and Career_DriverNumbers_CheckExisting (0xc026e0) on either side both sit 0xab0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140bffed8",
+    "target": "0x140d36d90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "356bffeed26694ab2722531c8900d51a7a6856c376ff89b260aed2d9b7185bf6"
+  }
+ ]
+}

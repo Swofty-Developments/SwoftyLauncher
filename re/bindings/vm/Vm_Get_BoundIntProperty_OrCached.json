@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Get_BoundIntProperty_OrCached",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141782e10",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "int64_t Vm_Get_BoundIntProperty_OrCached(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141784590 (RacingPC lab re_groups/_decomp);xref:0x141c355a0",
+  "notes": "If flag +0x88 is clear returns the cached value at +0x90. Otherwise follows the node handle at +0x30 through up to 0x62 redirect links (vcall +0x30 / +0x38), takes a temporary intrusive node ref, resolves a property binding by name (string at 0x1456603b6, not readable here), checks the value type id equals the int type descriptor 0x14612bd40 and returns the int value, else 0; releases the node. Context from caller: used by invitational event setup to read the difficulty value."
+ },
+ "signature": {
+  "id": "vm.get_bound_int_property_or_cached",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE 80 B9 88 00 00 00 00",
+  "match": "0x141782e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141782e10",
+  "kind": "func_start",
+  "names": [
+   "Vm_Get_BoundIntProperty_OrCached"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141784590",
+  "made_on_target": "0x141784590",
+  "twin": "made on steam-26566308; the target 0x141784590 is KB 0x141782e10: Career_InvitationalAcclaimReward_BuildText (0x1781000) and site_Game_Mfd_FuelMixMaxRaceGate (0x178a420) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141784590",
+    "target": "0x141784590"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fab0c78909b156f53462cac85213802df6cc2673e852652a833048a524cdf9e8"
+  }
+ ]
+}
