@@ -59,6 +59,7 @@ void on_reset(ResetFn fn);
 void on_render_targets(RenderTargetsFn fn);
 void on_create_rtv(RtvFn fn);
 void on_unread_queue(UnreadQueueFn fn);
+void list_observer_setup();
 
 // Whether a swapchain whose present queue cannot be read waits for a direct queue to execute command lists.
 bool learning(void *sc);

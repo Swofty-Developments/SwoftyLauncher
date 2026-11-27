@@ -4,6 +4,7 @@
 #include "core/diagnostics/crash/crash.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/view_state.hpp"
+#include "core/render/d3d12_hooks.hpp"
 #include "core/runtime/lifecycle.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
@@ -35,6 +36,7 @@ constexpr Subsystem SUBSYSTEMS[] = {
     {"hud", Start::ready, hud_setup},
     {"focus", Start::ready, focus_setup},
     {"hud arm", Start::ready, hud_arm, Probe::open},
+    {"D3D12 list observer", Start::ready, render::d3d12::list_observer_setup},
     {"postfx", Start::ready, postfx_setup},
     {"grade", Start::ready, grade_setup},
     {"srv clamp", Start::ready, srv_clamp_setup},
