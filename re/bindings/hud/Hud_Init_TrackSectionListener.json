@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Init_TrackSectionListener",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418d0df0",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_Init_TrackSectionListener(void *self, void *parentNodeHandle, void *a3, void *a4, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418d25d0 (RacingPC lab re_groups/_decomp);xref:0x141c22a60",
+  "notes": "Stores a3/a4/flag at +0x50/+0x58/+0x60, subscribes self on g_Game_MessageBus to VehicleEnteredTrackSection (handler 0x1418d2710) and VehicleLeftTrackSection (handler 0x1418d30a0). If +0x48 already set, releases VM handles at +0x28 and +0x08; then FUN_1418d2410(self+8, parentNodeHandle) rebuilds the bindings and sets +0x48=1. Better context needed: FUN_1418d2410 names the bound VM fields."
+ },
+ "signature": {
+  "id": "hud.init_track_section_listener",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 0F B6 44 24 70",
+  "match": "0x1418d0df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418d0df0",
+  "kind": "func_start",
+  "names": [
+   "Hud_Init_TrackSectionListener"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418d25d0",
+  "made_on_target": "0x1418d25d0",
+  "twin": "made on steam-26566308; the target 0x1418d25d0 is KB 0x1418d0df0: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418d25d0",
+    "target": "0x1418d25d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "121c2a4959e91be54fe5027862f998b8365419b49dcf4bfa34db27b6d10a0c51"
+  }
+ ]
+}

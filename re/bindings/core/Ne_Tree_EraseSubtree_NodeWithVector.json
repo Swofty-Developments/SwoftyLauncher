@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Tree_EraseSubtree_NodeWithVector",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142cc4610",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Tree_EraseSubtree_NodeWithVector(void *tree, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142cc6ba0 (RacingPC lab re_groups/_decomp);xref:0x142c03cd0",
+  "notes": "(lib) Recursive rb-tree subtree erase (std::_Tree::_Erase pattern, nil flag at node +0x19): recurses right, frees the node value's vector buffer (+0x28 allocator, +0x30..+0x40), frees the node through the tree allocator vfunc +0x38, continues left."
+ },
+ "signature": {
+  "id": "core.tree_erase_subtree_node_with_vector",
+  "section": ".xtls",
+  "pattern": "48 8D 4E 50 48 8B 46 58 48 8B 50 08 E8 ?? ?? ?? ?? 48 8B 56 58",
+  "match": "0x142c83937",
+  "anchor": "0xd",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xc"
+  },
+  "target": "0x142cc4610",
+  "kind": "call",
+  "names": [
+   "Ne_Tree_EraseSubtree_NodeWithVector"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c85ec7",
+  "made_on_target": "0x142cc6ba0",
+  "twin": "made on steam-26566308; the target 0x142cc6ba0 is KB 0x142cc4610: Ne_Post_BusMessageQueued_FlashbackUsed (0x2cb96c0) and Ne_Container_AbortNoReturn_142cc4e50 (0x2cc73e0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c85ec7",
+    "target": "0x142cc6ba0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2a697b73f6b8499a8b9bceb37e30532c0547d2239fff5745cd7f63a71435a3ce"
+  }
+ ]
+}

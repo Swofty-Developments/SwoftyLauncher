@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Subscribe_NodeChangedByPath",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1418d0800",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "bool Vm_Subscribe_NodeChangedByPath(const char *path, void *delegate)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1418d1fe0 (RacingPC lab re_groups/_decomp);xref:0x1414a8430,0x141c22a60",
+  "notes": "Returns false for a null/empty path. Otherwise resolves the VM node under the registry root via Game_UiBinding_ResolveA(g_Vm_Registry, root, path, tmp, 0), and if found and the 16-byte delegate is non-null calls Ne_BusMessage_SubscribeHandlerUnique(delegate target, &node, delegate, 0); releases the temporary handles and returns whether the node was found."
+ },
+ "signature": {
+  "id": "vm.subscribe_node_changed_by_path",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 85 C9 0F 84 ?? ?? ?? ?? 49 89 C8 80 39 00 0F 84 ?? ?? ?? ?? 48 89 D7",
+  "match": "0x1418d0800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418d0800",
+  "kind": "func_start",
+  "names": [
+   "Vm_Subscribe_NodeChangedByPath"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1418d1fe0",
+  "made_on_target": "0x1418d1fe0",
+  "twin": "made on steam-26566308; the target 0x1418d1fe0 is KB 0x1418d0800: Career_PressOutcome_BuildRewardLines (0x18bbf50) and Ui_Purchase_SelectTierButton (0x18e10c0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1418d1fe0",
+    "target": "0x1418d1fe0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "300f7500e128eddc47a6b009b6a2f27565900d1b0911a14d211be5560149ce05"
+  }
+ ]
+}

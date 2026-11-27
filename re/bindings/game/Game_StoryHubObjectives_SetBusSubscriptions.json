@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_StoryHubObjectives_SetBusSubscriptions",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14157a290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_StoryHubObjectives_SetBusSubscriptions(void *self, uint8_t subscribe)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14157b880 (RacingPC lab re_groups/_decomp);xref:0x1414c84b0",
+  "notes": "With subscribe != 0 allocates {handler,self} delegates and calls Ne_Subscribe_BusMessage on g_Game_MessageBus for story_objective_activated, story_bonus_objective_passed, story_bonus_objective_failed, story_cinematic_watched, story_cinematic_completed, tutorial_popup_message_displayed (handler Game_StoryHubObjectives_PlayCloseAnim) and tutorial_animation_closed_message (handler Game_StoryHubObjectives_PlayOpenAnim); with 0 removes the same seven handlers via func_0x14398a8e0. The rest is inlined errno trace code (0x58 when the bus is disabled, 0xc on alloc failure)."
+ },
+ "signature": {
+  "id": "game.story_hub_objectives_set_bus_subscriptions",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 BE E8 07 00 00 00",
+  "match": "0x14157c084",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14157a290",
+  "kind": "call",
+  "names": [
+   "Game_StoryHubObjectives_SetBusSubscriptions"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14157d674",
+  "made_on_target": "0x14157b880",
+  "twin": "made on steam-26566308; the target 0x14157b880 is KB 0x14157a290: Game_LeaderboardRowVM_Populate (0x156ed60) and Game_StoryHubObjectives_Refresh (0x157d850) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14157d674",
+    "target": "0x14157b880"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d0c823fa7936d8a1ec11ae774dcb29c4429cedf9b0c3f3db9b19abcb60c3cb7a"
+  }
+ ]
+}

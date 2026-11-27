@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Load_ElementLayoutFile",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14388d2c0",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "bool Hud_Load_ElementLayoutFile(void *self, void *allocator, const char *fileName, void *outData)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14388f850 (RacingPC lab re_groups/_decomp);xref:0x1437d66c0,0x143810790",
+  "notes": "Opens path L\"%s/%s\" (self+0x18 dir, fileName) and parses nested sections with a schema reader: header fields go to outData+0x48 (u32), +0x4c (u32), +0x50 (bool); then for each element record it reads id, two u32/float values, a bool and two floats, inserts by id (func_0x1438137e0) and writes +4, +8, +0xc, +0x10 clamped to [0,1] and +0x14 clamped to [0.5,2.0]. Returns true if the file opened. Context from caller: Game_HudCustomisation_CopyUiData, likely HUD element position, opacity and scale; good hook for custom HUD layouts."
+ },
+ "signature": {
+  "id": "hud.load_element_layout_file",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 05 00 00 C5 78 29 9C 24 70 05 00 00",
+  "match": "0x14388d2c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14388d2c0",
+  "kind": "func_start",
+  "names": [
+   "Hud_Load_ElementLayoutFile"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14388f850",
+  "made_on_target": "0x14388f850",
+  "twin": "made on steam-26566308; the target 0x14388f850 is KB 0x14388d2c0: Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) and Sess_HumanController_Update (0x3897f50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14388f850",
+    "target": "0x14388f850"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a9b681d24cecee9b66fd39dd085a77244dd329600ab6e5d54aefba884423eff0"
+  }
+ ]
+}

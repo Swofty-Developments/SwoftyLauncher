@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Hud_Mfd_Step_SetupParam_Arg18_B",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141533a30",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "uint64_t Hud_Mfd_Step_SetupParam_Arg18_B(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141535020 (RacingPC lab re_groups/_decomp);xref:0x142a90430",
+  "notes": "Same body as 0x141534d60: gates on bool nodes +0x6c0/+0x6e0, reads int node +0x780, finds setup param by id +0xb40/+0xb42, calls Car_Setup_ResetParamToZeroStep(param, 0x12), publishes UNK_1456f8760, sets bool node +0xb68 true and state +0xb80 = 2. Better context needed: the call site in Game_GameMfdSystem_Update would say which input (up/down) maps to A vs B."
+ },
+ "signature": {
+  "id": "hud.mfd_step_setup_param_arg18_b",
+  "section": ".xtls",
+  "pattern": "B3 01 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 74 1A 4B 8B 8C F5 00 01 00 00 E8 ?? ?? ?? ?? 4C 89 E9 44 89 F2 E8 ?? ?? ?? ?? B3 01 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 75 16",
+  "match": "0x142a8ec5c",
+  "anchor": "0x21",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x20"
+  },
+  "target": "0x141533a30",
+  "kind": "call",
+  "names": [
+   "Hud_Mfd_Step_SetupParam_Arg18_B"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a9101c",
+  "made_on_target": "0x141535020",
+  "twin": "made on steam-26566308; the target 0x141535020 is KB 0x141533a30: Game_Mfd_FuelMixUp (0x1534960) and Game_LeaderboardRowVM_Populate (0x156ed60) on either side both sit 0x15f0 above their KB addresses; the match 0x142a9101c is KB 0x142a8ec5c: Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap (0x2a7d950) and Game_CustomisationDecals_DestroySetProxy (0x2a949a0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a9101c",
+    "target": "0x141535020"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a29a5dc8fcd16cbca24c52faa1bedba70bf0da0462bdaec327fa6f30d0605fac"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_MoveAssign_HandleRow_24Handles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fa4780",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_MoveAssign_HandleRow_24Handles(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fa6380 (RacingPC lab re_groups/_decomp);xref:0x141fa26e0",
+  "notes": "Move-assigns a 0x308-byte row: Vm_MoveAssign_NodeHandle on 19 handles at +8..+0x248 (0x20 apart), copies int +0x260, then 5 handles at +0x270..+0x2f0; returns dst. Same row layout destroyed by 0x141fa6560."
+ },
+ "signature": {
+  "id": "vm.move_assign_handle_row_24_handles",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 81 C6 08 03 00 00",
+  "match": "0x141fa1926",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141fa4780",
+  "kind": "call",
+  "names": [
+   "Vm_MoveAssign_HandleRow_24Handles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fa3526",
+  "made_on_target": "0x141fa6380",
+  "twin": "made on steam-26566308; the target 0x141fa6380 is KB 0x141fa4780: Game_GarageMonitorTvFeedVM_OnActivate (0x1fa26e0) and Game_GarageMonitorTvFeedVM_OnDeactivate (0x1fa6f20) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fa3526",
+    "target": "0x141fa6380"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1bb87db2ad11cdcc35265e5ed9b4a7c913bb894ade8a1d00cefd3f54c26b3bf6"
+  }
+ ]
+}

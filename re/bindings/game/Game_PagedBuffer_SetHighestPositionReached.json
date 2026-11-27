@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_PagedBuffer_SetHighestPositionReached",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c4ad40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_PagedBuffer_SetHighestPositionReached(void *buf, uint64_t pos)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c4d2d0 (RacingPC lab re_groups/_decomp);xref:0x142c4d370",
+  "notes": "Logs NEPAGEDBUFFER m_highestPositionReached = %u (old value) then writes pos to +0x2b8. cxx field m_highestPositionReached."
+ },
+ "signature": {
+  "id": "game.paged_buffer_set_highest_position_reached",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 74",
+  "match": "0x142c4ad40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c4ad40",
+  "kind": "func_start",
+  "names": [
+   "Game_PagedBuffer_SetHighestPositionReached"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c4d2d0",
+  "made_on_target": "0x142c4d2d0",
+  "twin": "made on steam-26566308; the target 0x142c4d2d0 is KB 0x142c4ad40: Game_Replay_LoadSavedReplayJob (0x2c48670) and Game_TrackCameraShots_StopShot (0x2c50170) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c4d2d0",
+    "target": "0x142c4d2d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "004bbe9c389f3331d8ed0ff007aad1b4159efd522ae90e03d1d2cb27c0f7e103"
+  }
+ ]
+}

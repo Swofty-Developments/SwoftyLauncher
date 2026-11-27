@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_GarageMonitorTvFeedVM_RestoreCameraAndScreen",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fa5500",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_GarageMonitorTvFeedVM_RestoreCameraAndScreen(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fa7100 (RacingPC lab re_groups/_decomp);xref:0x141fa6f20",
+  "notes": "If active flag +0x6170: clears it and (+0x6f8)->+0x222, undoes override block +0x644..+0x660 (0x144541e90 call and clears a bit in (+0x668)->+0x54), restores the saved camera (+0x61b8 entity, +0x61c0, viewport +0x61c8) through Game_RacingCameraArbitrator_RequiresCrossfade(arbitrator +0x61b0, mode 2, blend 2) using components 0x146cc40a8/0x146cc59d8, then resets the screen object ((+0x6e8)->+0xa0): clears +399, restores default values, and calls vfunc +0x68 on sub-items 1 and 3."
+ },
+ "signature": {
+  "id": "game.garage_monitor_tv_feed_vm_restore_camera_and_screen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 98 00 00 00 80 B9 70 61 00 00 00",
+  "match": "0x141fa5500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fa5500",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageMonitorTvFeedVM_RestoreCameraAndScreen"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fa7100",
+  "made_on_target": "0x141fa7100",
+  "twin": "made on steam-26566308; the target 0x141fa7100 is KB 0x141fa5500: Game_GarageMonitorTvFeedVM_OnDeactivate (0x1fa6f20) and Game_ChallengeCareer_BuildTrackTiles (0x1fc2340) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fa7100",
+    "target": "0x141fa7100"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "952840df8288e0d69db044f0aad5f2457ec3af72c0ceed39ba9bb14d7f03cb96"
+  }
+ ]
+}

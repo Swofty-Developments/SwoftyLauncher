@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CoordinationPoint_CollectTasksAndStart",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1432b1010",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CoordinationPoint_CollectTasksAndStart(void *self, void *arg, void *callback_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432b35a0 (RacingPC lab re_groups/_decomp);xref:0x1432b3490",
+  "notes": "Releases and clears the shared-pointer vector +0x38..+0x48, then for each provider in (+0x58)->+8..+0x10 calls vfunc +8 (provider, &out_shared, arg) and appends every non-null result; stores callback (fn +0x20, ctx +0x28) and calls fn(ctx, id +0x60, 0); if no tasks were collected immediately calls fn(ctx, id, 1), clears the callback and vector and zeroes id +0x60."
+ },
+ "signature": {
+  "id": "game.coordination_point_collect_tasks_and_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 4C 89 44 24 30",
+  "match": "0x1432b1010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b1010",
+  "kind": "func_start",
+  "names": [
+   "Game_CoordinationPoint_CollectTasksAndStart"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1432b35a0",
+  "made_on_target": "0x1432b35a0",
+  "twin": "made on steam-26566308; the target 0x1432b35a0 is KB 0x1432b1010: Game_F1os_LogF (0x3296fa0) and Game_F1osTask_SpawnChild_Vt1458323b0 (0x32b3f80) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1432b35a0",
+    "target": "0x1432b35a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9ff1cb00378a00719936c6668dc169aa994f47f5ae28408d365e0ee5c2fba67e"
+  }
+ ]
+}

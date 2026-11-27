@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Gdb_Resolve_TextureOverride_Recursive",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142a129f0",
+  "level": "L1",
+  "subsystem": "gamedb",
+  "proto": "const char *Gdb_Resolve_TextureOverride_Recursive(void *self, const char *texture_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142a14db0 (RacingPC lab re_groups/_decomp);xref:0x141fa26e0",
+  "notes": "Builds \"<str +0x160>.<str +0x260>\" then appends \".textures\", calls Gdb_Find_RowByLabel with column \"texture_override\" and the input name; if a row is found returns its decoded \"texture\" string field, otherwise recurses into parent object +0x368 or returns the input unchanged (null input returns empty string). Good hook for texture swaps."
+ },
+ "signature": {
+  "id": "gamedb.resolve_texture_override_recursive",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 48 06 00 00 48 85 D2",
+  "match": "0x142a129f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a129f0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Resolve_TextureOverride_Recursive"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a14db0",
+  "made_on_target": "0x142a14db0",
+  "twin": "made on steam-26566308; the target 0x142a14db0 is KB 0x142a129f0: Ui_CareerSelectMyTeam_SetDriverIconActive (0x2a0c9f0) and Sess_Load_GameSetupBranding (0x2a15340) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a14db0",
+    "target": "0x142a14db0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "10578ff5fcce38bf63a631a1f679829a5620bf06ec9af148976488a3388ec6b8"
+  }
+ ]
+}

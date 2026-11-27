@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Replay_SetState_Locked",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445c74b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Replay_SetState_Locked(void *replay, uint32_t state, uint32_t arg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445c9d20 (RacingPC lab re_groups/_decomp);xref:0x142da0570,0x142da28f0,0x142da5370,0x142da6a40,0x142da92a0,0x142fe3630",
+  "notes": "EnterCriticalSection on +0xb0, calls Ne_Replay_SetState(replay,state,arg), LeaveCriticalSection. Thread-safe wrapper; good hook point to observe replay state changes from session state views."
+ },
+ "signature": {
+  "id": "core.replay_set_state_locked",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 44 89 C3 89 D6 48 89 CF 48 8B 89 B0 00 00 00",
+  "match": "0x1445c74b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445c74b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Replay_SetState_Locked"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445c9d20",
+  "made_on_target": "0x1445c9d20",
+  "twin": "made on steam-26566308; the target 0x1445c9d20 is KB 0x1445c74b0: Game_ReplayFile_ReadFooter (0x45c83e0) and Sess_Recordable_Register (0x45cf6f0) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445c9d20",
+    "target": "0x1445c9d20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4fdfa5550293021110f2590217a0736a7f11973c1e04a651704817071f835a5b"
+  }
+ ]
+}

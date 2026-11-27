@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_HudCust_Change_Filter",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14380f420",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "void Hud_HudCust_Change_Filter(void *self, int32_t filter_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438119b0 (RacingPC lab re_groups/_decomp);xref:0x143810790",
+  "notes": "Stores filter_index at +0x90, looks up old and new filter entries (0x28 stride) of layout +0x94 in data (+0x68)+0x2e0. For every element (0xf0 stride) of the layout that belongs to it, looks up its saved entry in the map at data+0x640 and re-sends events 0x1d (float +0x10), 0x21 (position +4) and 0x24 (u32 +0x14), or the element callback +0xa8 with the new filter, depending on visibility byte +0xc and FUN_14380fa60. Then picks the first selectable element index into +0x8c, signals behaviour hash 0xe867d70b, calls 0x143811410(data, data+0x590) and FUN_14380fbf0, and sets dirty byte +0x9c = 1."
+ },
+ "signature": {
+  "id": "hud.hud_cust_change_filter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 79 7F 84 24 D0 00 00 00",
+  "match": "0x14380f420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14380f420",
+  "kind": "func_start",
+  "names": [
+   "Hud_HudCust_Change_Filter"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438119b0",
+  "made_on_target": "0x1438119b0",
+  "twin": "made on steam-26566308; the target 0x1438119b0 is KB 0x14380f420: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438119b0",
+    "target": "0x1438119b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a13597228b67b9e6aa8157fc2efc5287519219aab56ecb4574c38418de000d47"
+  }
+ ]
+}

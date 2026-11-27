@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Resolve_RequiredInterface_Slot238",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c44090",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "int32_t Game_Resolve_RequiredInterface_Slot238(void *self, void *provider)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c46620 (RacingPC lab re_groups/_decomp);xref:0x142c47600",
+  "notes": "Calls provider vfunc +0x28 with type key 0x146108aa8, stores the result in +0x238 and returns 0, or sets errno 0x16 in the error trace ring and returns 0x16 when null. Context from caller: FullRaceReplaySystem_Init dependency binding. Better context needed: which interface 0x146108aa8 identifies."
+ },
+ "signature": {
+  "id": "game.resolve_required_interface_slot238",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D0 48 89 CE 4C 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 C1 41 FF 50 28 48 89 86 38 02 00 00",
+  "match": "0x142c44090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c44090",
+  "kind": "func_start",
+  "names": [
+   "Game_Resolve_RequiredInterface_Slot238"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c46620",
+  "made_on_target": "0x142c46620",
+  "twin": "made on steam-26566308; the target 0x142c46620 is KB 0x142c44090: Sess_Result_RequestStatus (0x2c25130) and Game_FullRaceReplaySystem_Init (0x2c47600) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c46620",
+    "target": "0x142c46620"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3aa7594731eec423c7c3472b11b3e5e207a5f5ba11b2fa011051653942138648"
+  }
+ ]
+}

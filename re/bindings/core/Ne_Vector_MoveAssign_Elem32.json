@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_MoveAssign_Elem32",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c89b50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Vector_MoveAssign_Elem32(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c8c0e0 (RacingPC lab re_groups/_decomp);xref:0x142c4d370",
+  "notes": "(lib) Move assignment for vector of 32-byte elements: same allocator -> free dst storage and swap begin/end/capacity; different allocator -> reallocate to src capacity, copy elements, then free and zero src."
+ },
+ "signature": {
+  "id": "core.vector_move_assign_elem32",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D7 48 8B 0E 48 8B 5E 08 4C 8D 76 08 48 3B 0A 48 89 5E 10 0F 84 ?? ?? ?? ?? 48 8B 57 18 48 39 56 18 74 3C 48 85 D2 74 18 48 C1 E2 05",
+  "match": "0x142c89b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c89b50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_MoveAssign_Elem32"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c8c0e0",
+  "made_on_target": "0x142c8c0e0",
+  "twin": "made on steam-26566308; the target 0x142c8c0e0 is KB 0x142c89b50: Sess_Result_DecodeVehicleResult (0x2c7ea10) and Ne_WindowWin_BuildResolutionOptions (0x2c92d30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c8c0e0",
+    "target": "0x142c8c0e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "deb941b88bbfae1b7f18b9576121763c20a6f7818118e7043880e6bc57f3ce03"
+  }
+ ]
+}

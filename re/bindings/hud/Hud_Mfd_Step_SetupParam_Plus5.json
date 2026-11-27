@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Hud_Mfd_Step_SetupParam_Plus5",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141533cf0",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "uint64_t Hud_Mfd_Step_SetupParam_Plus5(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1415352e0 (RacingPC lab re_groups/_decomp);xref:0x142a90430",
+  "notes": "Requires bool nodes +0x7c8 and +0x7e8 true; publishes UNK_1456f8760 with id +0xb40; target = (float)int node +0x888 + 5.0 (default 5.0), clamped between globals *DAT_14605c588 (+8) and *DAT_14605c438 (+8); finds setup param by id +0xb40/+0xb42 and calls Car_Setup_ResetParamToZeroStep(param, 2) (float arg lost in decompile); sets bool node +0xb68 true and state +0xb80 = 3. Which car setting this is, is not shown."
+ },
+ "signature": {
+  "id": "hud.mfd_step_setup_param_plus5",
+  "section": ".xtls",
+  "pattern": "75 16 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 74 1A 4B 8B 8C F5 00 01 00 00 E8 ?? ?? ?? ?? 4C 89 E9 44 89 F2 E8 ?? ?? ?? ?? B3 01 48 89 F9 48 8D 15 ?? ?? ?? ?? 41 B0 01 E8 ?? ?? ?? ?? 84 C0 75 16",
+  "match": "0x142a8eca2",
+  "anchor": "0x21",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x20"
+  },
+  "target": "0x141533cf0",
+  "kind": "call",
+  "names": [
+   "Hud_Mfd_Step_SetupParam_Plus5"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a91062",
+  "made_on_target": "0x1415352e0",
+  "twin": "made on steam-26566308; the target 0x1415352e0 is KB 0x141533cf0: Game_Mfd_FuelMixUp (0x1534960) and Game_LeaderboardRowVM_Populate (0x156ed60) on either side both sit 0x15f0 above their KB addresses; the match 0x142a91062 is KB 0x142a8eca2: Game_GameInputModule_ApplyRebindableGameplayActionsToActionMap (0x2a7d950) and Game_CustomisationDecals_DestroySetProxy (0x2a949a0) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a91062",
+    "target": "0x1415352e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fc40d0fbee94e1987b888ebc70dc681a08c3f0206f5121b839b3355ac085a8f3"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Cnd_Broadcast",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144c6c56c",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Crt_Cnd_Broadcast(void *cnd)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144c6ef2c (RacingPC lab re_groups/_decomp);xref:0x144db180c",
+  "notes": "(lib) MSVC CRT _Cnd_broadcast: calls WakeAllConditionVariable on the CONDITION_VARIABLE at cnd+0x8 and returns 0 (success). Called from the at-thread-exit broadcast helper."
+ },
+ "signature": {
+  "id": "core.crt_cnd_broadcast",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 83 C1 08 FF 15 ?? ?? ?? ?? 33 C0",
+  "match": "0x144c6c56c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c6c56c",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Cnd_Broadcast"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144c6ef2c",
+  "made_on_target": "0x144c6ef2c",
+  "twin": "made on steam-26566308; the target 0x144c6ef2c is KB 0x144c6c56c: Ne_Std_ThrowBadFunctionCall (0x49e4194) and Ne_Crt_Chkstk (0x4c8c190) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144c6ef2c",
+    "target": "0x144c6ef2c"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e8b41c07acbf2aa4ccb287d052a620a2e0ca372a8986bf373c4cfdb3debeba6e"
+  }
+ ]
+}

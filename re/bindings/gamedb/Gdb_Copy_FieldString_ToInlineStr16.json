@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Gdb_Copy_FieldString_ToInlineStr16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445db660",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void Gdb_Copy_FieldString_ToInlineStr16(void *self, char *out16)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445dded0 (RacingPC lab re_groups/_decomp);xref:0x142c50e50",
+  "notes": "Takes the gamedb string cell at **(+0x38), XOR-decodes it with k_Gdb_StringXorKey into its +0x48 buffer when not yet decoded, and copies up to 15 chars plus terminator into the zeroed 16-byte output."
+ },
+ "signature": {
+  "id": "gamedb.copy_field_string_to_inline_str16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 89 D0 48 8B 49 38",
+  "match": "0x1445db660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445db660",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Copy_FieldString_ToInlineStr16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445dded0",
+  "made_on_target": "0x1445dded0",
+  "twin": "made on steam-26566308; the target 0x1445dded0 is KB 0x1445db660: Game_PagedBuffer_Transfer (0x45da410) and Game_TrackSpaceDataResource_Load (0x45ed530) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445dded0",
+    "target": "0x1445dded0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "eb283dff9ea8b41843cb5af8fd5fc44d6d0b617ff101bc28e0bbbf8ffc29ee0d"
+  }
+ ]
+}

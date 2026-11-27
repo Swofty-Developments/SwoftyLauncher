@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Collect_UniqueNamedChildren_ForKeys",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144165f20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_Collect_UniqueNamedChildren_ForKeys(void *self, void *outVec, void *keys)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441684f0 (RacingPC lab re_groups/_decomp);xref:0x1414c84b0",
+  "notes": "Initialises outVec {allocator=self+8, begin, end, cap}. For each of keys+0x30 interned-string keys at keys+0x10 it fetches a table (func_0x144167970), finds the item whose name matches (20-bit hash at +6 then pointer/strcmp), and appends pointers to that item's 0x60-byte children (+0x10..+0x18) whose name is not already present in outVec. Finally erases entries whose +0x10 string equals the constant at 145a634d2. Better context needed: the table type and the excluded name."
+ },
+ "signature": {
+  "id": "game.collect_unique_named_children_for_keys",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 49 89 D5 48 89 4C 24 40",
+  "match": "0x144165f20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144165f20",
+  "kind": "func_start",
+  "names": [
+   "Game_Collect_UniqueNamedChildren_ForKeys"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441684f0",
+  "made_on_target": "0x1441684f0",
+  "twin": "made on steam-26566308; the target 0x1441684f0 is KB 0x144165f20: Ne_Ref_AssignIntrusiveRc16 (0x4167e30) and Ne_IntrusivePtr_Assign (0x416d7f0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441684f0",
+    "target": "0x1441684f0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c446a7f6a99f4d296b1a2caa9db9b8f7cf3938d1fa7412c1e942b60dc6f1939e"
+  }
+ ]
+}

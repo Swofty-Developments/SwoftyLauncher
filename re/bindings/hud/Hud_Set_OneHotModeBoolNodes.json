@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Set_OneHotModeBoolNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14176c640",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_Set_OneHotModeBoolNodes(void *self, int32_t mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14176ddc0 (RacingPC lab re_groups/_decomp);xref:0x14176d820,0x141d6a1f0",
+  "notes": "Early-outs if self+0xe8 already equals mode, else stores it and drives three bool VM nodes one-hot via Vm_NodeSet_Bool: mode 0 sets node +0xd0 true, mode 1 sets node +0x90 true, mode 2 sets node +0xb0 true, the other two false. Other mode values only update +0xe8. Context from caller: Mfd FuelLaps text update and WheelLcdVm."
+ },
+ "signature": {
+  "id": "hud.set_one_hot_mode_bool_nodes",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 39 91 E8 00 00 00",
+  "match": "0x14176c640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14176c640",
+  "kind": "func_start",
+  "names": [
+   "Hud_Set_OneHotModeBoolNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14176ddc0",
+  "made_on_target": "0x14176ddc0",
+  "twin": "made on steam-26566308; the target 0x14176ddc0 is KB 0x14176c640: site_Team_TimingPillBadgeLabel (0x1761a8b) and site_Team_SessionCarBadgeLabel (0x177663e) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14176ddc0",
+    "target": "0x14176ddc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e923cee8fd7266e5923ee2582af7799cab98f32f05bef2f097273492b588b404"
+  }
+ ]
+}

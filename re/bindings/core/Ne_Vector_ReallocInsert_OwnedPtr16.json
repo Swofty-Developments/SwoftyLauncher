@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_ReallocInsert_OwnedPtr16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141b59540",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_ReallocInsert_OwnedPtr16(void *vec, void *pos, void *elem)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141b5b110 (RacingPC lab re_groups/_decomp);xref:0x1419ff900,0x141a04650",
+  "notes": "(lib) Grow-and-insert for a vector of 16-byte owning pairs (allocator, object): allocates 1.5x capacity, move-constructs the new element at pos (nulling source +8), moves elements before and after, destroys the old range (object vfunc +0x10 then allocator vfunc +0x38), frees the old buffer and updates begin/end/cap (+8/+0x10/+0x18)."
+ },
+ "signature": {
+  "id": "core.vector_realloc_insert_owned_ptr16",
+  "section": ".xtls",
+  "pattern": "4C 8D 44 24 30 E8 ?? ?? ?? ?? 48 8B 7C 24 38 48 85 FF 74 A8",
+  "match": "0x1419fec39",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x141b59540",
+  "kind": "call",
+  "names": [
+   "Ne_Vector_ReallocInsert_OwnedPtr16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141a00419",
+  "made_on_target": "0x141b5b110",
+  "twin": "made on steam-26566308; the target 0x141b5b110 is KB 0x141b59540: Ne_Map_FindOrInsertSlot_StringKey (0x1b55950) and Ne_RichText_BuildLocalisedFragmentList (0x1b639e0) on either side both sit 0x1bd0 above their KB addresses; the match 0x141a00419 is KB 0x1419fec39: Game_BroadcastViewVehicleVM_OnDeactivate (0x19ff3c0) and site_Game_CareerContinue_DriverSlotTitle (0x1a10f8c) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a00419",
+    "target": "0x141b5b110"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1c7aa23b4a35e2f0f9e54462733567fb78542ea44895d281b9c32054cd28a1bd"
+  }
+ ]
+}

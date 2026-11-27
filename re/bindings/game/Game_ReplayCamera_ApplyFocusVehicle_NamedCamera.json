@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayCamera_ApplyFocusVehicle_NamedCamera",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1406af3d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_ReplayCamera_ApplyFocusVehicle_NamedCamera(void *cam, uint8_t vehicleIdx, void *cameraName)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1406af410 (RacingPC lab re_groups/_decomp);xref:0x1406ae690",
+  "notes": "Same per-vehicle bit marking as 0x1406af100 for old (+0x14) and new index; clears +0x30->+0x50 flag or bit +0xe in +0x30->+0x54; then Game_RacingCameraArbitrator_SelectNamedCamera(+0x38, cameraName, vehiclePtr, +0x2c). Stores +0x14=vehicleIdx, +0x29=0 and notifies listener +0x78."
+ },
+ "signature": {
+  "id": "game.replay_camera_apply_focus_vehicle_named_camera",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 C0 89 D3",
+  "match": "0x1406af3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406af3d0",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayCamera_ApplyFocusVehicle_NamedCamera"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1406af410",
+  "made_on_target": "0x1406af410",
+  "twin": "made on steam-26566308; the target 0x1406af410 is KB 0x1406af3d0: Game_ModelProxyList_Resolve (0x69c5b0) and Ai_Handle_PitStateChanged_Thunk (0x6b3150) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1406af410",
+    "target": "0x1406af410"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "77fbe2956212e70519e9a843eecfba3a81fbf8abb402644787cf1a6058b2e840"
+  }
+ ]
+}

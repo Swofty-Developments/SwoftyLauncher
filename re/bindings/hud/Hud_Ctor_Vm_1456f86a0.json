@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Ctor_Vm_1456f86a0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141786e40",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "void *Hud_Ctor_Vm_1456f86a0(void *self, void **playerInfo)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417885c0 (RacingPC lab re_groups/_decomp);xref:0x1414c84b0",
+  "notes": "Constructor: base vtable 1456f8680 then derived 1456f86a0; reads (*playerInfo)+0xe flag and +8 index into self+0xa8 and selects one of two constant strings into +0xb0 (index 0 or flag clear picks 14570a2ad, else 14570a2d0); default-initialises about 20 typed VM node holders, Ne_ResourceHandle_Init at +0x238, and stores delegate {FUN_141788f20, self} at +0x308/+0x310. Context from caller: Game_Read_MfdConfig, so an MFD-related view-model, probably per player/split-screen index."
+ },
+ "signature": {
+  "id": "hud.ctor_vm_1456f86a0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 89 CE 48 8D 05",
+  "match": "0x141786e40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141786e40",
+  "kind": "func_start",
+  "names": [
+   "Hud_Ctor_Vm_1456f86a0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1417885c0",
+  "made_on_target": "0x1417885c0",
+  "twin": "made on steam-26566308; the target 0x1417885c0 is KB 0x141786e40: Career_InvitationalAcclaimReward_BuildText (0x1781000) and site_Game_Mfd_FuelMixMaxRaceGate (0x178a420) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417885c0",
+    "target": "0x1417885c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ca40c3fac863619a9a9022fa820b339f5da5a2e65e3ff5d95c94d2e614cec8a0"
+  }
+ ]
+}

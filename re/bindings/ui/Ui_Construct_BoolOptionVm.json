@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_BoolOptionVm",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e58f50",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_BoolOptionVm(void *self, void *parent, void *a3, const char *display_text, uint8_t value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e5ab50 (RacingPC lab re_groups/_decomp);xref:0x141c10250",
+  "notes": "Constructor: base ctor 0x144241240 on parent node, creates string node display_text (handle +0x20) from the C string and bool node value (handle +0x40) with the given initial value, links both handles into their nodes' handle lists and returns self."
+ },
+ "signature": {
+  "id": "ui.construct_bool_option_vm",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 4C 89 CF 48 89 CE 0F B6 84 24 90 00 00 00",
+  "match": "0x141e58f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e58f50",
+  "kind": "func_start",
+  "names": [
+   "Ui_Construct_BoolOptionVm"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141e5ab50",
+  "made_on_target": "0x141e5ab50",
+  "twin": "made on steam-26566308; the target 0x141e5ab50 is KB 0x141e58f50: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141e5ab50",
+    "target": "0x141e5ab50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7e3d90ffd073f13fbefaeff0a98fd58a9a7d6657f7150d2f2095fe0cd71b8397"
+  }
+ ]
+}

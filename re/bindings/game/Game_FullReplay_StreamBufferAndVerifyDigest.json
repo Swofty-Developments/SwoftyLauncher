@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_FullReplay_StreamBufferAndVerifyDigest",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c4a1e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_FullReplay_StreamBufferAndVerifyDigest(void *replayBuf, void *chunk, void *file, uint32_t *sizes, void *progress, uint64_t total)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c4c770 (RacingPC lab re_groups/_decomp);xref:0x142c4d370",
+  "notes": "Sets replayBuf m_highestPositionReached (+0x2b8)=sizes[0] and +0x2f8=sizes[1]; reads sizes[0] bytes from file in chunk-sized pieces, feeds a 32-byte EVP digest and writes each piece to page store (+0x2b0 vtbl+0x20), reporting 0..100 to progress (vtbl+0x20, cancel vtbl+0x30). Then reads 0x20 MAC + 0x10 IV + 0x30 ciphertext trailer, checks MAC with fixed key 0d877cbe0c077809.., decrypts, validates padding and compares to the digest; on match finalises buffer (page loop, Game_Replaybuffer_EndCompression). Returns 1 ok. Log: NEPAGEDBUFFER m_highestPositionReached."
+ },
+ "signature": {
+  "id": "game.full_replay_stream_buffer_and_verify_digest",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 C5 78 29 8C 24 30 02 00 00",
+  "match": "0x142c4a1e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c4a1e0",
+  "kind": "func_start",
+  "names": [
+   "Game_FullReplay_StreamBufferAndVerifyDigest"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c4c770",
+  "made_on_target": "0x142c4c770",
+  "twin": "made on steam-26566308; the target 0x142c4c770 is KB 0x142c4a1e0: Game_Replay_LoadSavedReplayJob (0x2c48670) and Game_TrackCameraShots_StopShot (0x2c50170) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c4c770",
+    "target": "0x142c4c770"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "540a0a57d9720263919cb5174ade1cf844b4c7bcb9859157c9fd118148dcf148"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_HudCust_Apply_ElementData",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143810c70",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_HudCust_Apply_ElementData(void *self, void *element, const void *data, uint32_t flags)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143813200 (RacingPC lab re_groups/_decomp);xref:0x1438123b0",
+  "notes": "Temporarily sets +0xc0 to the element name, resolves target node ids with 0x143812f00 (element +0x10 name and optional +0x20 override). flags&1: sends event type 0x21 with 8 bytes from data+4 (position pair); flags&8: event 0x24 with byte-shuffled u32 data+0x14; flags&2: visibility byte data+0xc through element callback +0xe8 (or, in edit mode +0x8a, filter-aware path using layout index +0x94, filter +0x90 and callback +0xa8); flags&4: event 0x1d carrying float data+0x10. Events go to the Vm UI system queue or Game_Ui_NotifyAllListeners. Good hook for moving or hiding HUD elements."
+ },
+ "signature": {
+  "id": "hud.hud_cust_apply_element_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F9 7F B4 24 90 00 00 00",
+  "match": "0x143810c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143810c70",
+  "kind": "func_start",
+  "names": [
+   "Hud_HudCust_Apply_ElementData"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143813200",
+  "made_on_target": "0x143813200",
+  "twin": "made on steam-26566308; the target 0x143813200 is KB 0x143810c70: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143813200",
+    "target": "0x143813200"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "03c6c484c1e521e83122be2c1efda80834f768dd176f8ff9da95a345d731acb6"
+  }
+ ]
+}

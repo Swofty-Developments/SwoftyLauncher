@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CinematicSafetyCar_RestoreCameraAndHudFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143610da0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_CinematicSafetyCar_RestoreCameraAndHudFlags(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143613330 (RacingPC lab re_groups/_decomp);xref:0x1436131e0",
+  "notes": "Looks up camera entry index +0xf8 in list (+0x98)->+0x28, writes it to camera slot +200 of manager +0x20 (slot table +0x80) and calls Game_RacingCameraArbitrator_RequiresCrossfade mode 2; then Game_CinematicSafetyCar_HideHud, ORs bit 2 into global 0x146070c30 +0x144/+0x148, sets option-store bit for hash 0x2b94ebf8 and rebuilds merged bitset +0x650..+0x668, finally calls 0x144541d50(global,0x15). Class prefix from caller (EndSequence)."
+ },
+ "signature": {
+  "id": "game.cinematic_safety_car_restore_camera_and_hud_flags",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 48 89 CE 48 8B 49 20",
+  "match": "0x143610da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143610da0",
+  "kind": "func_start",
+  "names": [
+   "Game_CinematicSafetyCar_RestoreCameraAndHudFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143613330",
+  "made_on_target": "0x143613330",
+  "twin": "made on steam-26566308; the target 0x143613330 is KB 0x143610da0: Sess_SafetyCarTether_IsVehicleAttached (0x360e1c0) and Game_CinematicSafetyCar_HideHud (0x3613520) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143613330",
+    "target": "0x143613330"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "21491a20b87eb943cdacc4fbd570367d3783843ace15de25c46b222e86f6131a"
+  }
+ ]
+}

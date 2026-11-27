@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Read_PropListToVector_IntU64Pair",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445d0740",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint32_t Game_Read_PropListToVector_IntU64Pair(void *self, void *bag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445d2fb0 (RacingPC lab re_groups/_decomp);xref:0x1429232c0",
+  "notes": "Finds a list property in bag (type 0x14612bcf0), clears vector +0x160..+0x170 (allocator +0x158, 0x20-byte elements) and for each list bag reads one int field (type 0x14612bbe0) and two 8-byte fields (type 0x14612bf18), pushing {int, u64, u64, 0}. Returns 0 or 0x57/0x58 (and clears the vector when the list itself is missing). Context from caller: replay header read. Better context needed: field name strings at 0x145bf286a/0x145bf287c/0x145bf2893."
+ },
+ "signature": {
+  "id": "game.read_prop_list_to_vector_int_u64_pair",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 D0 48 89 CE 48 8D 15",
+  "match": "0x1445d0740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445d0740",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_PropListToVector_IntU64Pair"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445d2fb0",
+  "made_on_target": "0x1445d2fb0",
+  "twin": "made on steam-26566308; the target 0x1445d2fb0 is KB 0x1445d0740: Ne_ReplayRecordable_ReadFrom (0x45d0240) and site_Ne_ReplayAfterRecord (0x45d3f82) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445d2fb0",
+    "target": "0x1445d2fb0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "31885d15f2a4a64d064b75e69038c82530b5f7ef94df3712733d2704bc4bb8fd"
+  }
+ ]
+}
