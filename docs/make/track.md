@@ -293,7 +293,7 @@ Before a session the game plays a circuit intro, the track's map with its corner
 { "track": { "hockenheim": { "code": "hockenheim", "base": "game/austria", "files": "track/", "video": "videos/hockenheim.bk2" } } }
 ```
 
-In the C++ version, set `extra["video"] = "videos/hockenheim.bk2"` on the record. The build places the file at `videos/track_map/swofty/mod.hockenheim/hockenheim.bk2`, and the core points the track's `TrackVideo_N` row at it when it clones the rows at boot.
+In the C++ version, set `extra["video"] = "videos/hockenheim.bk2"` on the record. The build places the file at `videos/track_map/swofty/mod.hockenheim/hockenheim.bk2` and a copy in `videos/track_map/26/swofty/mod.hockenheim/` for the F1 2026 box, and the core points the track's `TrackVideo_N` row at it when it clones the rows at boot.
 
 - The file is Bink 2 (it starts with `KB2`) and at most 256 MB. The game's own are 1920x1080, 30 fps, about 16 s, with no audio. Encode yours as [Make a startup video](/make/startup-video#_3-encode-bink-2) does: `radvideo64 binkc`.
 - Without `video`, Hockenheim plays Austria's intro, as before.
