@@ -9,7 +9,7 @@
   "subsystem": "session",
   "proto": "void *Sess_Registry_GetComponent_ByTypeKey146082ce8(void *registry)",
   "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f29270 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141f28e10,0x14356a7f0",
-  "notes": "Renamed from Sess_RuleManager_FindSubsystem_ByTypeKey146082ce8: the argument is the shared component registry map, not the rule manager, and one caller is not a RuleManager method. Calls Ne_RobinHoodMap_U64_FindIndex(registry, &0x146082ce8), indexes the 0x10-byte slot array at registry+0x18 and returns slot+8, or 0 when the slot equals the end pointer at registry+0x20. Context from caller: Sess_RuleManager_ResolveSubsystems stores the result at its +0xa8; caller 0x141f28e10 resolves a chain of registry components into its own fields and stores this one at +0x88, aborting if null. (lab L1 re-check with caller context 2026-11-27)"
+  "notes": "Renamed from Sess_RuleManager_FindSubsystem_ByTypeKey146082ce8: the argument is the shared component registry map, not the rule manager, and a caller is not a RuleManager method. Calls Ne_RobinHoodMap_U64_FindIndex(registry, &0x146082ce8), indexes the 0x10-byte slot array at registry+0x18 and returns slot+8, or 0 when the slot equals the end pointer at registry+0x20. Context from caller: Sess_RuleManager_ResolveSubsystems stores the result at its +0xa8; caller 0x141f28e10 resolves a chain of registry components into its own fields and stores this one at +0x88, aborting if null. (lab L1 re-check with caller context 2026-11-27)"
  },
  "signature": {
   "id": "session.rule_manager_find_subsystem_by_type_key146082ce8",
