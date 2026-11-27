@@ -354,17 +354,16 @@ void f1_world_list_end(swofty::Context &c)
                         added, found.tiles.size(), *items, found.gated_out, found.refused, found.capped, n.tail ? n.tail : "");
 }
 
-swofty_core::guards::SiteGuard world_guard{
-    runtime::loader::CoreSetId::f1_world_tiles,
-    {
-        .set = "swofty_core.dll (f1_world tiles)",
-        .name = "[ui.tile] f1_world",
-        .env = "SWOFTY_F1_WORLD_TILES",
-        .needs = {"site_FeTile_F1WorldListEnd"},
-        .mixins = {{"site_FeTile_F1WorldListEnd", SWOFTY_MIXIN_SITE, 0,
-                    (void *)+[](SwoftyContext *c) { f1_world_list_end(*c); }, nullptr}},
-        .armed = "ui.tile records for the f1_world list are added after its stock tiles",
-    }};
+swofty_core::guards::SiteGuard world_guard{runtime::loader::CoreSetId::f1_world_tiles,
+                                           {
+                                               .set = "swofty_core.dll (f1_world tiles)",
+                                               .name = "[ui.tile] f1_world",
+                                               .env = "SWOFTY_F1_WORLD_TILES",
+                                               .needs = {"site_FeTile_F1WorldListEnd"},
+                                               .mixins = {{"site_FeTile_F1WorldListEnd", SWOFTY_MIXIN_SITE, 0,
+                                                           (void *)+[](SwoftyContext *c) { f1_world_list_end(*c); }, nullptr}},
+                                               .armed = "ui.tile records for the f1_world list are added after its stock tiles",
+                                           }};
 
 #endif
 
