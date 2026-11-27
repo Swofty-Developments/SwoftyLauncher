@@ -1,4 +1,33 @@
 use std::io::{IsTerminal, Write};
+use std::sync::Mutex;
+
+struct Tee {
+    file: std::fs::File,
+    left: u64,
+}
+
+static TEE: Mutex<Option<Tee>> = Mutex::new(None);
+
+/// Also append every line said from now on to `file`, up to `budget` bytes.
+pub(crate) fn tee_to(file: std::fs::File, budget: u64) {
+    if let Ok(mut tee) = TEE.lock() {
+        *tee = Some(Tee { file, left: budget });
+    }
+}
+
+/// A line for the tee file only; the console has it already.
+pub(crate) fn tee_line(kind: &str, text: &str) {
+    let Ok(mut guard) = TEE.lock() else { return };
+    let Some(tee) = guard.as_mut() else { return };
+    let mut line = Vec::new();
+    write_line(&mut line, kind, text, false);
+    let len = line.len() as u64;
+    if len <= tee.left && tee.file.write_all(&line).is_ok() {
+        tee.left -= len;
+    } else {
+        tee.left = 0;
+    }
+}
 
 pub(crate) fn info(line: &str) {
     say("info", line);
@@ -8,6 +37,7 @@ pub(crate) fn say(kind: &str, text: &str) {
     let out = std::io::stdout();
     let colour = out.is_terminal();
     write_line(&mut out.lock(), kind, text, colour);
+    tee_line(kind, text);
 }
 
 pub(crate) fn blank() {

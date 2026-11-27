@@ -27,6 +27,41 @@ pub(crate) fn start(c: &mut Command) -> Result<Child> {
         })
 }
 
+/// Every error the wrapper stops with is kept for Send Logs, in the wrapper
+/// log and as the launch's failure unless this run already recorded a more
+/// specific one (`since` is when the run began).
+pub(crate) fn note_failed(store: &Store, e: &anyhow::Error, since: f64) {
+    let chain = causes(e);
+    crate::console::output::tee_line("error", &chain.join(": "));
+    if matches!(e.downcast_ref(), Some(swofty_core::Error::Blocked(_))) {
+        return note_blocked(store, e);
+    }
+    if launch::Failure::read(&store.root).is_some_and(|f| f.at >= since) {
+        return;
+    }
+    let reason: String = chain[0]
+        .lines()
+        .next()
+        .unwrap_or_default()
+        .chars()
+        .take(120)
+        .collect();
+    let failure = launch::Failure::new(launch::Cause::Failed { reason, chain });
+    if let Err(e) = failure.write(&store.root) {
+        info(&format!("could not record it for the launcher: {e}"));
+    }
+}
+
+fn causes(e: &anyhow::Error) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for c in e.chain().map(|c| c.to_string()) {
+        if !out.iter().any(|o| o.contains(&c)) {
+            out.push(c);
+        }
+    }
+    out
+}
+
 /// A program Windows refused to start: the log names it and the code, and
 /// the launcher and Send Logs get it as the launch's failure.
 pub(crate) fn note_blocked(store: &Store, e: &anyhow::Error) {
@@ -66,6 +101,45 @@ mod tests {
             launch::Failure::read(&root).map(|f| f.cause),
             Some(launch::Cause::Blocked(block))
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn any_wrapper_error_is_recorded_with_its_chain() {
+        let root = std::env::temp_dir().join(format!("swofty-run-{}-failed", std::process::id()));
+        let store = Store::new(&root);
+        let e = anyhow::anyhow!("access denied").context("staging offline play");
+        note_failed(&store, &e, 0.0);
+        let f = launch::Failure::read(&root).unwrap();
+        assert_eq!(
+            f.cause,
+            launch::Cause::Failed {
+                reason: "staging offline play".into(),
+                chain: vec!["staging offline play".into(), "access denied".into()],
+            }
+        );
+        assert_eq!(
+            f.headline(),
+            "the last launch through Steam failed: staging offline play"
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_failure_this_run_already_recorded_is_kept() {
+        let root = std::env::temp_dir().join(format!("swofty-run-{}-kept", std::process::id()));
+        let store = Store::new(&root);
+        let running = already_running(&store, 77, "close it");
+        note_failed(&store, &running, 0.0);
+        assert_eq!(
+            launch::Failure::read(&root).map(|f| f.cause),
+            Some(launch::Cause::AlreadyRunning { pid: 77 })
+        );
+        note_failed(&store, &anyhow::anyhow!("later"), crate::time::now_secs() + 60.0);
+        assert!(matches!(
+            launch::Failure::read(&root).map(|f| f.cause),
+            Some(launch::Cause::Failed { .. })
+        ));
         std::fs::remove_dir_all(&root).ok();
     }
 }

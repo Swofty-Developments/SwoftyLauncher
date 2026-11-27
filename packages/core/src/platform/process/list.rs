@@ -73,6 +73,24 @@ pub fn descends_from(_: u32, _: u32) -> bool {
     false
 }
 
+/// The exe name of the process that started this one, when it can be read.
+#[cfg(target_os = "linux")]
+pub fn parent_name() -> Option<String> {
+    let parent = parent(std::process::id())?;
+    let comm = std::fs::read_to_string(format!("/proc/{parent}/comm")).ok()?;
+    Some(comm.trim_end().to_owned())
+}
+
+#[cfg(windows)]
+pub fn parent_name() -> Option<String> {
+    win32::parent_name(std::process::id())
+}
+
+#[cfg(not(any(target_os = "linux", windows)))]
+pub fn parent_name() -> Option<String> {
+    None
+}
+
 #[cfg(target_os = "linux")]
 pub(super) fn parent(pid: u32) -> Option<u32> {
     let stat = std::fs::read_to_string(format!("/proc/{pid}/stat")).ok()?;
@@ -169,6 +187,36 @@ pub(super) mod win32 {
             let ok = QueryFullProcessImageNameW(handle, 0, buf.as_mut_ptr(), &mut size) != 0;
             CloseHandle(handle);
             ok.then(|| std::path::PathBuf::from(String::from_utf16_lossy(&buf[..size as usize])))
+        }
+    }
+
+    /// The exe file name of the process that started `pid`, from the process list.
+    pub fn parent_name(pid: u32) -> Option<String> {
+        // SAFETY: as in process_ids; the entry is zeroed with its size set and exe_file is read only up to its
+        // NUL inside the array.
+        unsafe {
+            let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+            if snapshot == INVALID_HANDLE_VALUE || snapshot.is_null() {
+                return None;
+            }
+            let mut entry: ProcessEntry32W = std::mem::zeroed();
+            entry.size = std::mem::size_of::<ProcessEntry32W>() as u32;
+            let mut all = Vec::new();
+            let mut more = Process32FirstW(snapshot, &mut entry) != 0;
+            while more {
+                let len = entry.exe_file.iter().position(|&c| c == 0).unwrap_or(MAX_PATH);
+                all.push((
+                    entry.process_id,
+                    entry.parent_process_id,
+                    String::from_utf16_lossy(&entry.exe_file[..len]),
+                ));
+                more = Process32NextW(snapshot, &mut entry) != 0;
+            }
+            CloseHandle(snapshot);
+            let parent = all.iter().find(|(id, _, _)| *id == pid)?.1;
+            all.into_iter()
+                .find(|(id, _, _)| *id == parent)
+                .map(|(_, _, name)| name)
         }
     }
 

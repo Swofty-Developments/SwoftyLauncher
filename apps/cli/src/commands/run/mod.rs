@@ -2,6 +2,7 @@ mod failure;
 mod follow;
 mod launch;
 mod wrapper;
+mod wrapper_log;
 mod wrapper_process;
 
 #[cfg(all(test, unix))]
@@ -89,6 +90,8 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
         .or_else(|| wrapped.then(|| std::env::current_dir().ok()).flatten());
     let g = crate::commands::build::game(store, explicit.clone())?;
     if wrapped {
+        wrapper_log::start(store);
+        let since = crate::time::now_secs();
         return wrapper::run(store, profile, &args, &g)
             .or_else(|e| {
                 again_if_updated(store, e, || {
@@ -96,7 +99,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
                     wrapper::run(store, profile, &args, &g)
                 })
             })
-            .inspect_err(|e| failure::note_blocked(store, e));
+            .inspect_err(|e| failure::note_failed(store, e, since));
     }
     launch::run(store, profile, &args, &g)
 }
