@@ -1,0 +1,67 @@
+{
+ "schema": 1,
+ "name": "site_Car_ContactModify_AssistCheck",
+ "table": "globals",
+ "author": "Kizikafuka",
+ "row": {
+  "addr": "0x142f04876",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "car",
+  "evidence": "decomp:own capstone disasm of Car_Contact_ModifyVehicle (KB 0x142f04040, this site KB 0x142f04876);xref:0x142f06e13,0x142f06e1d;kb:Car_Contact_ModifyVehicle",
+  "notes": "In Car_Contact_ModifyVehicle, rsi = contact record, rdi/rbx = the two cars: mov rcx,[rip+slot] (contact-assist setting holder), mov rcx,[rcx], test rcx,rcx, je far, then cmp byte [rcx+8],0. Right after the contact's mass ratio is written (contact+0x64). No branch lands inside the first 19 bytes. Contact Physics (kizi.ai-tweaks) hooks here to read each car-to-car contact before the solver."
+ },
+ "signature": {
+  "id": "car.contact_modify_assist_check",
+  "section": ".xtls",
+  "pattern": "C5 FA 5E C1 C5 FA 11 46 64 48 8B 0D",
+  "match": "0x142f0486d",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f04876",
+  "kind": "mid",
+  "expect": "48 8B 0D 9B C2 17 03",
+  "names": [
+   "site_Car_ContactModify_AssistCheck"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "Kizikafuka",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "kizi.ai-tweaks native/src/ai_tweaks.cpp"
+  ],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f06dfd",
+  "made_on_target": "0x142f06e06",
+  "twin": "made on steam-26566308; the target 0x142f06e06 is KB 0x142f04876: Game_AutoResetToTrack_FireDeferred (0x2f05fc0) and Game_VehicleProgressSystem_OnVehicleRemoved (0x2f09d80) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "Kizikafuka",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f06dfd",
+    "target": "0x142f06e06"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "555a682435542ee041d4ca4749e3534ea417edd3c82c2dc2275c929e6d5423df"
+  }
+ ]
+}

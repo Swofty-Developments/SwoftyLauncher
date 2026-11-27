@@ -1,0 +1,66 @@
+{
+ "schema": 1,
+ "name": "Car_WheelPart_Detach",
+ "table": "functions",
+ "author": "Kizikafuka",
+ "row": {
+  "addr": "0x144666cc0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "uint64_t Car_WheelPart_Detach(void *part, uint64_t notify)",
+  "evidence": "decomp:own capstone disasm of 0x144669530 (saves r15..rbx and xmm6-xmm15, 0x338 frame, cmp qword [rcx+40h],0 then je);xref:0x145bfb680",
+  "notes": "Wheel part vtable (rva 0x5bfb5e0) slot +0xa0: detaches a wheel from its car and makes the free wheel. part+0x10 car, +0x40 the new wheel's body holder (body at holder+0x18, set during the call), +0xe0 tether node (-1 = no tether path), +0x100 connection, +0x10c active. The game calls it again on already detached parts. Hooked by Contact Physics (kizi.ai-tweaks) for loose wheels without tethers."
+ },
+ "signature": {
+  "id": "car.wheel_part_detach",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? CC CC CC CC 41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 03 00 00",
+  "match": "0x144666cab",
+  "anchor": "0x15",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144666cc0",
+  "kind": "func_start",
+  "names": [
+   "Car_WheelPart_Detach"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "Kizikafuka",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "kizi.ai-tweaks native/src/ai_tweaks.cpp"
+  ],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14466951b",
+  "made_on_target": "0x144669530",
+  "twin": "made on steam-26566308; the target 0x144669530 is KB 0x144666cc0: Car_Create_DetachablePart (0x4663cb0) and Car_DetachablePart_Update (0x466af40) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "Kizikafuka",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14466951b",
+    "target": "0x144669530"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3812f948fa26a12088e36588d9524f0c9bc546a90e854d94c05be4ab58f4a00b"
+  }
+ ]
+}
