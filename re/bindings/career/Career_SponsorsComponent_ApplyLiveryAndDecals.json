@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorsComponent_ApplyLiveryAndDecals",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141111a50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_SponsorsComponent_ApplyLiveryAndDecals(void *sponsors_component)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141112090 (RacingPC lab re_groups/_decomp);xref:0x142013fb0,0x1420589d0",
+  "notes": "Renamed from Game_CarCustomisation_ApplyPlayerLiveryAndDecals: both callers pass the object they fetched with k_Career_CareerSponsorsComponentDesc, so this is a sponsors-component method. Scans the entries at +0x298..+0x2a0 (stride 0x88) for one whose key matches a game-mode entrant (mode+0x2e0, stride 0x88) with flag 0x10000000 at +0x48 and takes its first sub-item (stride 0x160) with +0xd8==0 and +0x158!=0, else falls back to the +0x500 list entry whose id +0x28 equals the MyTeam setup global 0x14606f43c. For that item it resolves the vehicle customisation key (0x141401e00 on +0x380); if the customisation sponsor id +0x78 differs from item+0xdc it calls 0x141107e60(this, item), else it re-adds the flagged decals (+0xe8 list) with 0x14144aa50; then Game_FrontendSceneComponentCar_SetCarDecals, Career_MyTeam_ApplyLiveryDriverCustomisations, Career_OwnerSetup_ApplySuit and driver UpdateDecals. Game_CarCustomisation_ApplyAllCustomisation calls it in customisation context 2/3 after replacing the vehicle customisation; caller 0x1420589d0 calls it after assigning g_FeTile_AssignedVehicleCustomisationKey. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "career.sponsors_component_apply_livery_and_decals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 8B B9 98 02 00 00",
+  "match": "0x141111a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141111a50",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorsComponent_ApplyLiveryAndDecals"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141112090",
+  "made_on_target": "0x141112090",
+  "twin": "made on steam-26566308; the target 0x141112090 is KB 0x141111a50: Ne_Vector_PushBack_Elem16 (0x1108ac0) and Gdb_Load_SponsorGoalDefinitions (0x1112600) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141112090",
+    "target": "0x141112090"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b5cb720698ea387265cd54b1facb07a8235115b7a14678a334c946cf3a27de0d"
+  }
+ ]
+}

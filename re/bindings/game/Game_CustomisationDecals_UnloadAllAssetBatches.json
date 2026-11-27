@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_UnloadAllAssetBatches",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141427ac0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CustomisationDecals_UnloadAllAssetBatches(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1414282a0 (RacingPC lab re_groups/_decomp);xref:0x141ff7550",
+  "notes": "Resets selection +0x1b0 to -1, releases the shared_ptr vector +0x178..+0x180, clears +0x168, +0x1a8=0x3fff0000, +0x1ac=0xff, +0x1f0=0; then collects every uint16 key of the std::map at +0x1c0 into a temp array and calls Game_CustomisationDecals_UnloadAssetBatch for each."
+ },
+ "signature": {
+  "id": "game.customisation_decals_unload_all_asset_batches",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 83 B9 B0 01 00 00 FF",
+  "match": "0x141427ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141427ac0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_UnloadAllAssetBatches"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1414282a0",
+  "made_on_target": "0x1414282a0",
+  "twin": "made on steam-26566308; the target 0x1414282a0 is KB 0x141427ac0: Game_CustomisationDecals_LoadConfig (0x141f7c0) and Game_CustomisationDecals_UnloadAssetBatch (0x14284c0) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1414282a0",
+    "target": "0x1414282a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e1569e43536501f1ec081032d27dd26ac6eaadd4e51e72837bec86fa50a30fec"
+  }
+ ]
+}

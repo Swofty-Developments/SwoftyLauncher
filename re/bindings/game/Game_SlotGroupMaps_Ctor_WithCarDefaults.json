@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SlotGroupMaps_Ctor_WithCarDefaults",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14387d1e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_SlotGroupMaps_Ctor_WithCarDefaults(void *self, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14387f770 (RacingPC lab re_groups/_decomp);xref:0x143872b40",
+  "notes": "Constructs a 0x78-byte struct of 5 rb-tree maps (allocator ptr, head, size; stride 0x18) at +0x00,+0x18,+0x30,+0x48,+0x60 with sentinel heads from allocator vfn +0x18 (0x20 bytes, last 0x60), inserts u8 key 0 -> u16 0xffff into the map at +0x48 (FUN_143903710) and string keys \"car\" plus 0x1456faffb and 0x1456fb004 -> 0xffff into the string-keyed map at +0x60; returns self. Context from caller: Game_Read_CustomisationVehicleSlots emplaces it into the two optional members of its stack record (stack +0x5f8 and +0x678, each followed by an engaged-flag byte at +0x78) right after Gdb_Get_RowByIndex and before reading field car_1, destroying a previous value with 0x1438dbf20 first. The 0xffff values look like unset-id defaults; hook after return to see or change the default key set. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.slot_group_maps_ctor_with_car_defaults",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 D7 48 89 CE 48 89 11",
+  "match": "0x14387d1e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14387d1e0",
+  "kind": "func_start",
+  "names": [
+   "Game_SlotGroupMaps_Ctor_WithCarDefaults"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14387f770",
+  "made_on_target": "0x14387f770",
+  "twin": "made on steam-26566308; the target 0x14387f770 is KB 0x14387d1e0: Ui_CareerWizard_ReleaseItemWidgets (0x38775a0) and Game_UIConnectionManager_ShowConnectionLostPopup (0x3885760) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14387f770",
+    "target": "0x14387f770"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "3a65502db5c34eb393cc56898ca36fdbfc5865c1cbe5649f26f6d01622b78aec"
+  }
+ ]
+}

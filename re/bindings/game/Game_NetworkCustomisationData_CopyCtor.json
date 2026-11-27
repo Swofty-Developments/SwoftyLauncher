@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkCustomisationData_CopyCtor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14252c7d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_NetworkCustomisationData_CopyCtor(void *self, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14252e700 (RacingPC lab re_groups/_decomp);xref:0x143186dd0,0x14318afd0,0x14318ee50",
+  "notes": "Field-by-field copy of the 0x17d0-byte replicated customisation object (vtable 0x14571d0e0): u32 +8, all 0x30-byte item slots (+0x18..+0x498), block +0x498 (FUN_14252ca20), key +0x690, inline strings +0x698..+0x9d4, 0x310 blob +0x9d8, 8 vehicle state blocks via 0x14096e900 (+0xd00,+0xe20,+0xf60,+0x1080,+0x11a0,+0x12d0,+0x13f0,+0x1510), ids +0x1630..+0x1668, optional 128-char string +0x1670 (flag +0x1708) and the two trailing colour/name records +0x1718/+0x1778."
+ },
+ "signature": {
+  "id": "game.network_customisation_data_copy_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 8B 42 08 89 41 08",
+  "match": "0x14252c7d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14252c7d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkCustomisationData_CopyCtor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14252e700",
+  "made_on_target": "0x14252e700",
+  "twin": "made on steam-26566308; the target 0x14252e700 is KB 0x14252c7d0: Game_VoPlaySoundEffectNode_Execute (0x25289b0) and Game_FrontendSceneObject_RespawnAll (0x2549cb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14252e700",
+    "target": "0x14252e700"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a291c1317160daa20e7f1b786c2cb89cae97b3e33eedac49db9b3da9b92614c3"
+  }
+ ]
+}

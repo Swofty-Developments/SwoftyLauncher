@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_MoveConstruct_Elem240_Str4_Func3",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143901dc0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_MoveConstruct_Elem240_Str4_Func3(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143904350 (RacingPC lab re_groups/_decomp);xref:0x1437d66c0",
+  "notes": "Move constructor of a 0xf0-byte record: copies int +0x00 and byte +0x04, steals four string pointers at +0x08/+0x10/+0x18/+0x20 (source nulled), copies qword +0x28, and moves three std::function-like members (inline buffers at +0x30/+0x70/+0xb0, impl pointers at +0x68/+0xa8/+0xe8) via impl vfunc +8 (move) and +0x20 (destroy). Context from caller: used by 0x143891a20 when the vector of HUD component entries grows."
+ },
+ "signature": {
+  "id": "core.move_construct_elem240_str4_func3",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D7 48 89 CE 0F B6 42 04",
+  "match": "0x143901dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143901dc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_MoveConstruct_Elem240_Str4_Func3"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143904350",
+  "made_on_target": "0x143904350",
+  "twin": "made on steam-26566308; the target 0x143904350 is KB 0x143901dc0: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143904350",
+    "target": "0x143904350"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "40168708f7bce458f8e79438204a77c78b81f8b53241a3c0aadd12306528a3bb"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_CustomisationStoreScreens",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14164dac0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Construct_CustomisationStoreScreens(void *self, void *ui_ctx, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14164f0b0 (RacingPC lab re_groups/_decomp);xref:0x14148ab00",
+  "notes": "Constructor of a 0x580-byte flow object: base ctor func 0x14431f310(self, ui_ctx, name 0x14570edd1, 0, 4, 1), vtables 0x1456fd0d0/+0x260 0x1456fd150/+0x298 0x1456fd170, three empty hash maps at +0x328/+0x370/+0x3b8, shared state at +0x308 and +0x450, then allocates about 40 child screen objects (sizes 0x7f8, 0x2150, 0x590, 0x810, 0x390, 0x8b0, 0x780, 0x7c0 and helpers FUN_1416519e0/141651b40/141651ca0/141651e50/141652000/141652160) and pushes each on the child vector at +0x278/+0x280/+0x288. The 0x2150 children (FUN_1419dd8c0) are purchase-message handlers for brand_item_shop_container, unified_store_container promo_store (\"lng_store_promoshop\"), clothing_select_screen, race_wear_select_screen, personal_stickers_select_screen, helmets_select_screen and, only when Ne_Get_FeatureFlags bit 33 is set, driver_number_select_screen; one 0x390 child is gated by flag byte +4 bit 1. Caller Game_Register_DriverSuitScreens allocates 0x580 bytes when registry key 0x14607e0d8 resolves, constructs it here and pushes it on the flow vector at this+0x188. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.construct_customisation_store_screens",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4C 89 C7 48 89 D3 48 89 CE",
+  "match": "0x14164dac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14164dac0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Construct_CustomisationStoreScreens"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14164f0b0",
+  "made_on_target": "0x14164f0b0",
+  "twin": "made on steam-26566308; the target 0x14164f0b0 is KB 0x14164dac0: Ui_CareerContinueMyTeam_Flow (0x164b570) and Ui_PaddockPass_OnShow_CloseTransactionQueue (0x1655990) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14164f0b0",
+    "target": "0x14164f0b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d5ae64e9e57d69ead53f4f0f652120a40e4c171e15510c59048d5fcdd4fdd7d2"
+  }
+ ]
+}

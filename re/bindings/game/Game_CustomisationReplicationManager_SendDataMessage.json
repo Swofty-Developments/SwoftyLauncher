@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationReplicationManager_SendDataMessage",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1431872e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CustomisationReplicationManager_SendDataMessage(void *self, uint32_t *peer, void *identity, void *data_pair, uint8_t reliable, int32_t *kind)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143189870 (RacingPC lab re_groups/_decomp);xref:0x143186dd0,0x14318afd0,0x14318ee50",
+  "notes": "Copies two optional customisation blocks from data_pair (+0x20.. and +0x140.., each with optional slot, optional u32, optional 0x30-slot array and a shared-ptr vector) into locals, then builds a network message with header {7,0xbd} (vtable 0x145827240) when *kind==0 or {7,0xbe} (0x1458272a0) when *kind==1, embedding the 0x44-byte identity from identity+8 and both blocks, and sends it with 0x144030ad0(self+0x38, *peer, msg, 0, reliable). Other kind values send nothing. Good hook to observe outgoing customisation replication."
+ },
+ "signature": {
+  "id": "game.customisation_replication_manager_send_data_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 05 00 00 4C 89 CB 4D 89 C6",
+  "match": "0x1431872e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431872e0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationReplicationManager_SendDataMessage"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143189870",
+  "made_on_target": "0x143189870",
+  "twin": "made on steam-26566308; the target 0x143189870 is KB 0x1431872e0: Game_PlayerSetSubsystem_OnNewConnection (0x3171dc0) and Sess_ElimTracker_AddVehicle (0x3195c80) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143189870",
+    "target": "0x143189870"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "40253565c389cdcf0e4f6ffb2665ce076addf36c009c958c4223c9feef774f8b"
+  }
+ ]
+}

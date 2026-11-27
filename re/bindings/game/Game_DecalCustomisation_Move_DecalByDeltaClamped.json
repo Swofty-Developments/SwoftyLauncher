@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCustomisation_Move_DecalByDeltaClamped",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14142d290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DecalCustomisation_Move_DecalByDeltaClamped(void *self, uint64_t *decalId, float *delta)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14142da70 (RacingPC lab re_groups/_decomp);xref:0x141ff1c70",
+  "notes": "Finds the decal entry (list +0x178/+0x180, 16-byte shared ptr entries) whose +0x20 equals *decalId and its area record (list +0x98/+0xa0, stride 0x108, id +0xc == decal +0x28). Projects the decal position (+0x30) onto the area plane using normalised axes from area +0x80 and +0x88 and origin +0x58, adds the 2D delta, clamps to the bounds from area +0x90 and +0x98, rebuilds the 3D position and writes it to decal +0x30. Then calls Game_DecalCustomisation_SyncLinkedDecalNode, sets dirty byte self+0x168 and posts an update message (0x142b54b40) to the editor car object +0x188, also for the linked decal (+0x68) when feature flag 0x146066623 bit 0x80 is set. Good hook point for free decal movement (skip the clamp)."
+ },
+ "signature": {
+  "id": "game.decal_customisation_move_decal_by_delta_clamped",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 8B 99 78 01 00 00",
+  "match": "0x14142d290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142d290",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalCustomisation_Move_DecalByDeltaClamped"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14142da70",
+  "made_on_target": "0x14142da70",
+  "twin": "made on steam-26566308; the target 0x14142da70 is KB 0x14142d290: Game_CustomisationDecals_DeleteFiles (0x142a500) and Game_CustomisationDecals_OpenFile (0x1434060) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14142da70",
+    "target": "0x14142da70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8ae40bb41c1110ef0f6761b83d7b6ee3cdb42f6116e124a692271877a40dd215"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Post_VehicleCustomisationMessage_1456e7a50",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414005f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Post_VehicleCustomisationMessage_1456e7a50(void *self, uint32_t key, char keep_flag, uint8_t flag)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141400c30 (RacingPC lab re_groups/_decomp);xref:0x141fdc8b0",
+  "notes": "If keep_flag is 0 it stores flag in self+0; resolves the packed key (Game_Customisation_GetPackedVec4WithKeyOverride on self+0x20), gets the vehicle customisation from the entrants system at self+0x10 and returns if none. Builds a vector of 16-byte items (0x141400870) and an optional record with a string (0x141400130); when both are valid it copies them plus the flag byte into a message with vtable 0x1456e7a50 and posts it with Ne_Post_BusMessage on g_Game_MessageBus, then frees the temporaries. Game_CustomisationCarAreaVM_HandleCommand calls it on command 0x493fe92b with vm+0x4f0 and the +0x11c key of the customisation assigned to g_FeTile_AssignedVehicleCustomisationKey (only 2 arguments visible there, so the last two are uncertain). (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.post_vehicle_customisation_message_1456e7a50",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 89 D0",
+  "match": "0x1414005f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414005f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Post_VehicleCustomisationMessage_1456e7a50"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141400c30",
+  "made_on_target": "0x141400c30",
+  "twin": "made on steam-26566308; the target 0x141400c30 is KB 0x1414005f0: Ne_CrowdPlugin_FindZoneIndex (0x13f3f30) and Ne_StdMap_At_141403b30 (0x1404170) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141400c30",
+    "target": "0x141400c30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "079a81b329ff551e00615387ef2ce8d89683f90cff5ae68ee27896004b36eb5e"
+  }
+ ]
+}

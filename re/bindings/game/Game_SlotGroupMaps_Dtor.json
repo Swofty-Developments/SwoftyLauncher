@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SlotGroupMaps_Dtor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1438d9990",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SlotGroupMaps_Dtor(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1438dbf20 (RacingPC lab re_groups/_decomp);xref:0x143872b40,0x1438773b0",
+  "notes": "Destroys the 0x78-byte 5-map struct built by 0x14387f770: for the maps at +0x60,+0x48,+0x30,+0x18,+0x00 in that order it erases the subtree from head->parent (FUN_1438dc010/060/0b0/100/150) and frees the head node through the map allocator vfn +0x38 (last one is a tail call). No return value. Callers: Game_Read_CustomisationVehicleSlots resets an engaged optional (stack +0x5f8 / +0x678) before re-constructing it; 0x1438773b0 (dtor of the 0x230 record) calls it for the optional members at +0x1b0 and +0x130 when their flags +0x228/+0x1a8 are set. (lab L1 re-check with caller context 2026-11-27) Independent re-check (lab blind verifier 2026-11-27): partial, better name Game_FiveTreeMaps_Dtor: Only erases five tree containers (recursive node-erase helpers then frees each head node); nothing in the code indicates slot groups. Independent re-check of the L1->L2 raise (lab blind verifier 2026-11-27): partial, better name Game_FiveTreeMaps_Dtor: Only erases five tree containers (recursive node-erase helpers then frees each head node); nothing in the code indicates slot groups."
+ },
+ "signature": {
+  "id": "game.slot_group_maps_dtor",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 83 C1 60",
+  "match": "0x1438d9990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438d9990",
+  "kind": "func_start",
+  "names": [
+   "Game_SlotGroupMaps_Dtor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438dbf20",
+  "made_on_target": "0x1438dbf20",
+  "twin": "made on steam-26566308; the target 0x1438dbf20 is KB 0x1438d9990: Sess_GameWeatherSystem_UpdateRandomSeed (0x38ca670) and Ne_NameTable_FindByFnv1a_B (0x3907810) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438dbf20",
+    "target": "0x1438dbf20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e0da2fe5d8f0c85163cfd9c4bcc85d56741a17d14fd5335859ed55c7b8390bfc"
+  }
+ ]
+}

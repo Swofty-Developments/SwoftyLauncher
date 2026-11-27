@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_RebuildAllAreaSlotViews",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141ffd5e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DecalEditor_RebuildAllAreaSlotViews(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fff1e0 (RacingPC lab re_groups/_decomp);xref:0x141ffa390,0x141fffaf0,0x142000620",
+  "notes": "For every area (+0x408..+0x410, stride 0x128): unsubscribes handler 0x141ff7340, clears property +0x48 and node +0x28, destroys slot items (+0x110, stride 0x260), finds the matching descriptor in (+0x290)+0x98 by id +0x80 and calls Game_DecalEditor_BuildAreaSlotView, resubscribes, and sets localized label strings on non-empty slots; finally refreshes the selected area (+0x550) via FUN_141ffcc60."
+ },
+ "signature": {
+  "id": "game.decal_editor_rebuild_all_area_slot_views",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 48 8B B9 08 04 00 00",
+  "match": "0x141ffd5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ffd5e0",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_RebuildAllAreaSlotViews"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fff1e0",
+  "made_on_target": "0x141fff1e0",
+  "twin": "made on steam-26566308; the target 0x141fff1e0 is KB 0x141ffd5e0: Ui_MyTeamDecalEditor_Page (0x1ff64f0) and Game_CarDecals_BuildList (0x2001470) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fff1e0",
+    "target": "0x141fff1e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "42ec3d548982837749603443da14fcf55fcbd0f2ff3d095470659abd429f847e"
+  }
+ ]
+}

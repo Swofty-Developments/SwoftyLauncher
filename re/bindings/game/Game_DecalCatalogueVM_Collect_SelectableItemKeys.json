@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_DecalCatalogueVM_Collect_SelectableItemKeys",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fea3a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_DecalCatalogueVM_Collect_SelectableItemKeys(void *filter)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141febfa0 (RacingPC lab re_groups/_decomp);xref:0x141fe7610",
+  "notes": "Clears the tree set at filter+0x50/+0x58, then walks the item pointer vector of *(filter[1]+0x340) and sorts each item key (128-char inline string plus type bytes) into temp sets: unlock type == DAT_146082c48 direct, Game_Find_EntryIdByChildField28(store+0x68, item+0xa4) nonzero keyed by that id, key type 7 keyed by byte at item[0x19]+0x40, rest plain. The sets are deduplicated and merged, each merged key is looked up again (vtable +0x10) and inserted into filter+0x50 when it has no unlock object or the unlock state flag (+8 of *unlock[3] or *unlock[4]) is clear (second branch also needs type DAT_146082c48 or k_Game_UnlockMethodMyTeamSponsorRewardType). Returns filter+0x50. Context from caller: Game_DecalCatalogueVM_BuildTiles passes vm+0x340 and iterates the returned set (head at +8, key at node+0x28) to build tiles per decal group; Caller 0x141fdaad0: builds the catalogue screen bindings and then walks the same set. Meaning of the state flag (owned vs locked) not shown, so kept L1. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.decal_catalogue_vm_collect_selectable_item_keys",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 78 08 4D 8B 2F",
+  "match": "0x141fe6074",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141fea3a0",
+  "kind": "call",
+  "names": [
+   "Game_DecalCatalogueVM_Collect_SelectableItemKeys"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fe7c74",
+  "made_on_target": "0x141febfa0",
+  "twin": "made on steam-26566308; the target 0x141febfa0 is KB 0x141fea3a0: Ui_SponsorLogoBinding_Build (0x1fe42f0) and Game_SponsorLoadout_BuildList (0x1ff3ba0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fe7c74",
+    "target": "0x141febfa0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "91a9fa2fbdbf1c5c68a71a48e573f5d3e6946ee9621816a68bb644431029e97b"
+  }
+ ]
+}

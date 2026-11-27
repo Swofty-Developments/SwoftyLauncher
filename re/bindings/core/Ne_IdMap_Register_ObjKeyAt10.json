@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_IdMap_Register_ObjKeyAt10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14418cff0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_IdMap_Register_ObjKeyAt10(void *map, void *obj)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14418f5c0 (RacingPC lab re_groups/_decomp);xref:0x1437d66c0",
+  "notes": "Same pattern as 0x144163790 but keyed by the uint32 at obj+0x10 and with the map+0x58 lock held for the whole lookup. Returns 0x16 if obj is null, 0x25 if the id already exists, 0xc if the insert (0x14434c500) fails, 0 on success."
+ },
+ "signature": {
+  "id": "core.id_map_register_obj_key_at10",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 48 89 54 24 28 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D3",
+  "match": "0x14418cff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14418cff0",
+  "kind": "func_start",
+  "names": [
+   "Ne_IdMap_Register_ObjKeyAt10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14418f5c0",
+  "made_on_target": "0x14418f5c0",
+  "twin": "made on steam-26566308; the target 0x14418f5c0 is KB 0x14418cff0: Vm_Run_Route (0x418a940) and Ne_Make_StrFromCStr (0x4199ab0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14418f5c0",
+    "target": "0x14418f5c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d9a8cf3e7fef6247b4e943009b5da70b4b3333982b815546d41331f77ea2ef15"
+  }
+ ]
+}

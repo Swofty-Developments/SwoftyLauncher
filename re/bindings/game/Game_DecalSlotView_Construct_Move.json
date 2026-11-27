@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_DecalSlotView_Construct_Move",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14214ce30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_DecalSlotView_Construct_Move(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14214ea30 (RacingPC lab re_groups/_decomp);xref:0x141ffd450,0x141fff050",
+  "notes": "Move constructor of a 0x260-byte element (vtable 0x1456fa7a8 then 0x145766970): six typed node handles at +0x08..+0xa8 are re-bound to the source's nodes, twelve intrusive handles at +0xc8..+0x228 are moved with their owner/prev/next links patched and the source zeroed, the pointer at +0x248 is moved, and the weak ref at +0x250/+0x258 is copied with the weak count (+0xc) incremented. Context from caller: Game_DecalEditor_BuildAreaSlotView (vector at view+0x110, on reserve and on growth) and Game_DecalEditor_AddVirtualTitleSlot use it to relocate elements before Game_DecalEditor_AddSlotRow constructs the new one, then run the virtual destructor on the old storage. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "game.decal_slot_view_construct_move",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 81 C7 60 02 00 00",
+  "match": "0x141ffb966",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14214ce30",
+  "kind": "call",
+  "names": [
+   "Game_DecalSlotView_Construct_Move"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141ffd566",
+  "made_on_target": "0x14214ea30",
+  "twin": "made on steam-26566308; the target 0x14214ea30 is KB 0x14214ce30: Vm_FinancePeriod_Bind (0x212df10) and site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141ffd566",
+    "target": "0x14214ea30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "93ebef1f7bf15c81104293583ffdc31528d96e0583f586002572adfd940a7942"
+  }
+ ]
+}

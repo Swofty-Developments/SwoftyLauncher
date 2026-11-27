@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_OwnedNodeHolderBlock_x8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142157810",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_OwnedNodeHolderBlock_x8(void **owner_pair)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142159410 (RacingPC lab re_groups/_decomp);xref:0x142060140,0x142062150",
+  "notes": "owner_pair is (allocator at +0, object at +8); returns if either is null. Otherwise unlinks and Vm_Release_Node's the eight node holders of the object at +0xe0 down to +0x00 in steps of 0x20 (vt 0x145614e48) and tail-calls allocator vt+0x38 to free the object; the pair itself is not cleared. Callers: Game_CustomisationOptionsVM_OnActivate runs it over the moved-from entries when the option vector at state+0x68 grows, and 0x142062150 (the option list state destructor) runs it over every entry of that vector. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.destroy_owned_node_holder_block_x8",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 71 08 48 85 F6 0F 84 ?? ?? ?? ?? 48 8B 39 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 1D ?? ?? ?? ?? 48 89 9E E0 00 00 00",
+  "match": "0x142157810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142157810",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_OwnedNodeHolderBlock_x8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142159410",
+  "made_on_target": "0x142159410",
+  "twin": "made on steam-26566308; the target 0x142159410 is KB 0x142157810: Vm_FinancePeriod_Bind (0x212df10) and site_Career_RnDPerfViewModelSlotDtor (0x2172bd1) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142159410",
+    "target": "0x142159410"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "dbb6217589cc14e88305d6f1a94ef38344be8275235b2a0993f4ece76a20d6ba"
+  }
+ ]
+}

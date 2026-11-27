@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Ctor_CustomisationCarVM",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14200e0f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Ctor_CustomisationCarVM(void *self, void *services, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14200fcf0 (RacingPC lab re_groups/_decomp);xref:0x14148ab00",
+  "notes": "Read in full: calls base ctor 0x141fd3a80 (args lost in decompile), builds and releases NeStr \"customisation_car\" plus an empty NeStr (temporaries, most likely the base ctor name args), then sets vtables +0x0 = 0x145766f90, +0x260, +0x268, +0xc98, +0xca0, +0xca8; byte +0xcb0 = 0, u16 +0xcb2 = 0xffff, 16 bytes at +0xcb8 = -1, +0xcc8..+0xce7 = 0; installs callbacks 0x14200fe80 at +0x960 and 0x14200feb0 at +0xa18, both with self as context. Caller Game_Register_DriverSuitScreens allocs 0xce8 bytes, calls this as (obj, services, allocator), pushes the object into its view-model vector and runs init vfn+8 of the +0x260 sub-object. Good anchor for the car customisation screen VM; the two callbacks are the hook points. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.ctor_customisation_car_vm",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 8D 3D",
+  "match": "0x14200e0f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14200e0f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Ctor_CustomisationCarVM"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14200fcf0",
+  "made_on_target": "0x14200fcf0",
+  "twin": "made on steam-26566308; the target 0x14200fcf0 is KB 0x14200e0f0: Game_CarCustomisation_MarkCarDirtyOff (0x20075c0) and Game_CarCustomisation_ApplyLiveryPreview (0x20107b0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14200fcf0",
+    "target": "0x14200fcf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2c36548e57b5124f075d8379fc116128832fae38fa654ae01b82a55bd966a8a4"
+  }
+ ]
+}

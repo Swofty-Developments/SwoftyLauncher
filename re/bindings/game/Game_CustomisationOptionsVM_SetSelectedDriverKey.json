@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationOptionsVM_SetSelectedDriverKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142060050",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CustomisationOptionsVM_SetSelectedDriverKey(void *self, uint32_t driver_key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142061c50 (RacingPC lab re_groups/_decomp);xref:0x142060140",
+  "notes": "Stores driver_key per Ui_Get_CustomisationContext(): context 2 writes it to +0x130 of the object found via 0x14101b110(self+0x290, id block); context 3 writes g_Game_MyTeamSetupData key (0x14606f570). Then finds the driver head in self+0x288, compares the string of its table entry (+0x490[+0x4a]*0x40+0x30 ->+0x10) against 0x145625949 (->1) and 0x14578d198 (->2), else 0, and passes that kind to 0x144439020(self+0x268, kind)."
+ },
+ "signature": {
+  "id": "game.customisation_options_vm_set_selected_driver_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC B0 00 00 00 89 D7",
+  "match": "0x142060050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142060050",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationOptionsVM_SetSelectedDriverKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142061c50",
+  "made_on_target": "0x142061c50",
+  "twin": "made on steam-26566308; the target 0x142061c50 is KB 0x142060050: Game_CustomisationOptionsVM_OnDeactivate (0x2061570) and Ui_MyTeamSetupGeneric_OutputFirstName (0x2065380) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142061c50",
+    "target": "0x142061c50"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a68d5fd47d6c8988b4e621e61917501fc1e48b497f328ff0cee90fbc0fecb8f8"
+  }
+ ]
+}

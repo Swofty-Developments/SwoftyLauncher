@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Get_FocusedListEntry_Elem838",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417eea00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_Get_FocusedListEntry_Elem838(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417f01e0 (RacingPC lab re_groups/_decomp);xref:0x141fd7500,0x141fd78d0,0x142004870,0x1420075c0,0x1420107b0,0x142013fb0,0x14202e500,0x142032a80",
+  "notes": "Descends the focus chain from node self+0xb8 to the leaf handle, finds its index in VM list self+0x98 (Ne_Ref_GetListElementOrEmpty), and returns *(self+0x10) + index*0x838, or 0 if not found. Returns the data entry of the currently focused customisation item; good hook to read the selected item in all customisation screens (car, gloves, livery preview callers)."
+ },
+ "signature": {
+  "id": "game.get_focused_list_entry_elem838",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CE 48 8B 89 B8 00 00 00",
+  "match": "0x1417eea00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417eea00",
+  "kind": "func_start",
+  "names": [
+   "Game_Get_FocusedListEntry_Elem838"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1417f01e0",
+  "made_on_target": "0x1417f01e0",
+  "twin": "made on steam-26566308; the target 0x1417f01e0 is KB 0x1417eea00: Game_FrontendScenePreview_UpdateTick (0x17e8520) and site_Career_UpgradeCardTypeLabel (0x17f9afd) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417f01e0",
+    "target": "0x1417f01e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "865cb6099366066621da8109749e137a33eb19f2e00f30b776e00b25f627c8cb"
+  }
+ ]
+}

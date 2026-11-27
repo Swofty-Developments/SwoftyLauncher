@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Gdb_Get_DecodedCStr_FieldA0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414397b0",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "const char *Gdb_Get_DecodedCStr_FieldA0(void *rec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141439f90 (RacingPC lab re_groups/_decomp);xref:0x141fee5a0,0x141ff7550",
+  "notes": "Reads the string cell at **(rec+0xa0); returns the empty string 0x145614762 when null. If cell +0x40 is not 1 and source +0x18 with length +0x10 exist, XOR-decodes the bytes with k_Gdb_StringXorKey (4-byte rolling key) into the buffer at cell +0x48 and null-terminates it. Returns cell +0x48. Context from caller: used by the decal editor commit and dirty paths to read a record name."
+ },
+ "signature": {
+  "id": "gamedb.get_decoded_c_str_field_a0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 8B 81 A0 00 00 00",
+  "match": "0x1414397b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414397b0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Get_DecodedCStr_FieldA0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141439f90",
+  "made_on_target": "0x141439f90",
+  "twin": "made on steam-26566308; the target 0x141439f90 is KB 0x1414397b0: Game_DecalGeneration_ReadBackCompressed (0x14387c0) and Ne_FlagMaskSet_SetBit (0x144e040) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141439f90",
+    "target": "0x141439f90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "c07ffcbb667bc00401e260df8764ffc9ecbad12eb97b0d2731a1ec7554eabd06"
+  }
+ ]
+}

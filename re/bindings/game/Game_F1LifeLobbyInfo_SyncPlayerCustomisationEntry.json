@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_F1LifeLobbyInfo_SyncPlayerCustomisationEntry",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14254b990",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1LifeLobbyInfo_SyncPlayerCustomisationEntry(void *self, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14254d8c0 (RacingPC lab re_groups/_decomp);xref:0x142541790,0x142541910,0x142541a90",
+  "notes": "Finds the player entry (vector +0xb8..+0xc0, stride 0x1820, user id at +0x17d0) matching the user id in msg+8; default-constructs life data (FUN_14252cda0) and queries the replication manager (+0x78) via FUN_14318d4a0. If no data: erases the entry (releases scene handle uint16 +0x1818). If data and no entry: picks a free spawn slot from +0x1a30 and adds one (0x14254df60). Else copies data into the entry and, if +0x1b09, refreshes it. Finally posts a bus message (vtable 0x1457963b8)."
+ },
+ "signature": {
+  "id": "game.f1_life_lobby_info_sync_player_customisation_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 30 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 D7",
+  "match": "0x14254b990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14254b990",
+  "kind": "func_start",
+  "names": [
+   "Game_F1LifeLobbyInfo_SyncPlayerCustomisationEntry"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14254d8c0",
+  "made_on_target": "0x14254d8c0",
+  "twin": "made on steam-26566308; the target 0x14254d8c0 is KB 0x14254b990: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14254d8c0",
+    "target": "0x14254d8c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d0b6a3c01f9575bb64a7e5874293b4d5e68aa7df5a3d9cc5e6b2e84e87d9b60c"
+  }
+ ]
+}

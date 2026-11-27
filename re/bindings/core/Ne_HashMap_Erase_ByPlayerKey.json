@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Erase_ByPlayerKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143211340",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_HashMap_Erase_ByPlayerKey(void *map, void *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1432138d0 (RacingPC lab re_groups/_decomp);xref:0x14312c050,0x14312d6c0,0x14313e590,0x14313eda0",
+  "notes": "(lib) Hashes the key (uint at +0x48 or user-id xor when flag 0x10000000), finds the matching node in the bucket range (buckets at map+0x28, mask +0x40), fixes bucket first/last pointers, unlinks the node from the list, decrements size at +0x18 and frees the node through allocator map+0x8."
+ },
+ "signature": {
+  "id": "core.hash_map_erase_by_player_key",
+  "section": ".xtls",
+  "pattern": "4C 89 FA E8 ?? ?? ?? ?? 84 DB 75 19",
+  "match": "0x14313cd4b",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x3"
+  },
+  "target": "0x143211340",
+  "kind": "call",
+  "names": [
+   "Ne_HashMap_Erase_ByPlayerKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14313f2db",
+  "made_on_target": "0x1432138d0",
+  "twin": "made on steam-26566308; the target 0x1432138d0 is KB 0x143211340: Game_F1os_LogLargePayload_SessionBrowserGetSessionByID (0x31eaf70) and Game_NetworkReady_OnUnreadyMessage (0x3228a20) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14313f2db",
+    "target": "0x1432138d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ce1d94e95a8d44307925d30701c5a2ec9d808576236003314c6d1634091146c8"
+  }
+ ]
+}

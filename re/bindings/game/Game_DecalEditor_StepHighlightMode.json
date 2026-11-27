@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DecalEditor_StepHighlightMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fed540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_DecalEditor_StepHighlightMode(void *self, int delta)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fef140 (RacingPC lab re_groups/_decomp);xref:0x141fee5a0",
+  "notes": "Reads the current mode index byte at +0x378, maps it through the table at +0x2c0 (stride 0x128, byte +0x120), adds delta; if result < 3 selects list element of +0x280 into +0x298, stores the new mode byte (table 0x145766600) at +0x378 and dispatches UI event \"highlight_mode_%s\" with the mode name. Good hook to force a decal highlight mode."
+ },
+ "signature": {
+  "id": "game.decal_editor_step_highlight_mode",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 CE 0F B6 81 78 03 00 00",
+  "match": "0x141fed540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fed540",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalEditor_StepHighlightMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fef140",
+  "made_on_target": "0x141fef140",
+  "twin": "made on steam-26566308; the target 0x141fef140 is KB 0x141fed540: Ui_SponsorLogoBinding_Build (0x1fe42f0) and Game_SponsorLoadout_BuildList (0x1ff3ba0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fef140",
+    "target": "0x141fef140"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "ffd753a185f76c4dc2dff850a435c1c77400541692adf6df3f94bf581b246b77"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_ServiceMap_Find_Key1460c6d10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14141ee50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_ServiceMap_Find_Key1460c6d10(void *map)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14141f630 (RacingPC lab re_groups/_decomp);xref:0x14141ee30,0x141b12c60,0x141fd44b0,0x14206e2f0",
+  "notes": "Looks up the constant key 0x1460c6d10 with Ne_RobinHoodMap_U64_FindIndex, indexes the 16-byte slot array at map+0x18 and returns slot+8 (the stored pointer), or 0 when the slot equals the end pointer at map+0x20. All callers are dependency-resolve functions that store the result in a member and abort when it is 0: caller 0x14141ee30 -> +0x2a0, caller 0x141b12c60 -> +0x480, caller 0x141fd44b0 -> +0xa0, Game_BadgeEditor_ResolveDeps (0x14206e2f0) -> +0x1448. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.service_map_find_key1460c6d10",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 86 48 14 00 00",
+  "match": "0x14206cc79",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14141ee50",
+  "kind": "call",
+  "names": [
+   "Ne_ServiceMap_Find_Key1460c6d10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14206e879",
+  "made_on_target": "0x14141f630",
+  "twin": "made on steam-26566308; the target 0x14141f630 is KB 0x14141ee50: Game_Build_CustomisationCatalogue (0x14061a0) and Game_CustomisationDecals_LoadConfig (0x141f7c0) on either side both sit 0x7e0 above their KB addresses; the match 0x14206e879 is KB 0x14206cc79: Ui_MyTeamSetupGeneric_Option (0x2066b90) and Game_CarCustomisation_ApplyDriverNumbers (0x2080590) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14206e879",
+    "target": "0x14141f630"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e1fe84192d27593a22562ed91a9d68acc23599f7dcd3f4094dee13ba66f4e732"
+  }
+ ]
+}

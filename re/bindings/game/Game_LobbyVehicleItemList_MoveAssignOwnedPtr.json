@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_LobbyVehicleItemList_MoveAssignOwnedPtr",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14237cdb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_LobbyVehicleItemList_MoveAssignOwnedPtr(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14237e9b0 (RacingPC lab re_groups/_decomp);xref:0x14220df60,0x142212830",
+  "notes": "unique_ptr-style move assignment {allocator, ptr}: takes src ptr, destroys the previous object (releases node refs at qwords 0x218,0x214,0, runs Game_LobbyVehicleItemNodes_Dtor on six items) and frees it through the old allocator, then copies the allocator from src."
+ },
+ "signature": {
+  "id": "game.lobby_vehicle_item_list_move_assign_owned_ptr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 42 08 48 C7 42 08 00 00 00 00 48 8B 59 08 48 89 41 08 48 85 DB 0F 84 ?? ?? ?? ?? 4C 8B 36 4D 85 F6 0F 84 ?? ?? ?? ?? 4C 8D 25",
+  "match": "0x14237cdb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14237cdb0",
+  "kind": "func_start",
+  "names": [
+   "Game_LobbyVehicleItemList_MoveAssignOwnedPtr"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14237e9b0",
+  "made_on_target": "0x14237e9b0",
+  "twin": "made on steam-26566308; the target 0x14237e9b0 is KB 0x14237cdb0: Ui_TeamHqOwnerPerks_Slice (0x2356a20) and Vm_MyTeamSetupCard_ReleaseNodes_37fc80 (0x2381880) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14237e9b0",
+    "target": "0x14237e9b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1434ef2cdf054a80a74f31b63b1c53e1787a3addf0d7013af920b4232bffe9d5"
+  }
+ ]
+}
