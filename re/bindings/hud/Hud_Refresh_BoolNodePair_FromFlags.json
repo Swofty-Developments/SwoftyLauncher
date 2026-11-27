@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Refresh_BoolNodePair_FromFlags",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141a39960",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_Refresh_BoolNodePair_FromFlags(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141a3b140 (RacingPC lab re_groups/_decomp);xref:0x141a3b3a0",
+  "notes": "No-op unless byte +0x498 is set. If (flags +0xb50 & 3)==0 writes false to bool VM nodes +0x300 and +0x320; otherwise reads bool node +0x2e0, writes it to +0x300 and its inverse to +0x320. Context from caller: Sess_Hud_SetVisibilityBit, so +0xb50 is the visibility bitmask."
+ },
+ "signature": {
+  "id": "hud.refresh_bool_node_pair_from_flags",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 80 B9 98 04 00 00 00",
+  "match": "0x141a39960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a39960",
+  "kind": "func_start",
+  "names": [
+   "Hud_Refresh_BoolNodePair_FromFlags"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141a3b140",
+  "made_on_target": "0x141a3b140",
+  "twin": "made on steam-26566308; the target 0x141a3b140 is KB 0x141a39960: Trk_CareerWizardTrackSelectVm_OnCommandRaised (0x1a33dc0) and Game_CreateSessionDlcSelectTab_HandleCommand (0x1a40fd0) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141a3b140",
+    "target": "0x141a3b140"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "027589c144d0dc549af6bfd38ce9cc95fac3eec0135dcc41e26a5bb743f0d987"
+  }
+ ]
+}

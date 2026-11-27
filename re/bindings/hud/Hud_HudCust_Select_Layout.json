@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_HudCust_Select_Layout",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141c11670",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "uint64_t Hud_HudCust_Select_Layout(void *vm, int32_t layout_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141c13270 (RacingPC lab re_groups/_decomp);xref:0x141c10250,0x141c12410",
+  "notes": "Writes layout_index to int node +0x678; fetches layout entry from (+0x290)+0x2e0[index] (returns 0 if out of range); builds key path hud_layouts / entry name / default and calls Game_Read_MfdConfig(vm+0x2b0, path, 0, 1); localises a label (UNK_14573e1fc) with named slot LAYOUT = entry display name and sets string node +0x5f8; then reselects the filter: 0x141c13e60(vm, int node +0x658) if that index is valid for the new layout, else 0x141c13130. Returns 1. Hook to force a HUD layout."
+ },
+ "signature": {
+  "id": "hud.hud_cust_select_layout",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 58 04 00 00",
+  "match": "0x141c11670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c11670",
+  "kind": "func_start",
+  "names": [
+   "Hud_HudCust_Select_Layout"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c13270",
+  "made_on_target": "0x141c13270",
+  "twin": "made on steam-26566308; the target 0x141c13270 is KB 0x141c11670: Career_Calendar_MoveTrackData (0x1c0c070) and Sess_SpectatorHud_Hide (0x1c253e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c13270",
+    "target": "0x141c13270"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b39f16eab2fe8d61b2bf276a5a37a9fe122c5b698708409522921153e6ecbaa3"
+  }
+ ]
+}

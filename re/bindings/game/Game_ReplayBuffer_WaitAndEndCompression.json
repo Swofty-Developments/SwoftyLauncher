@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayBuffer_WaitAndEndCompression",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445c0350",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_ReplayBuffer_WaitAndEndCompression(void *replayBuf)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445c2bc0 (RacingPC lab re_groups/_decomp);xref:0x142c4d370",
+  "notes": "If compression enabled (+0x329) and a job is pending (+0x359): Ne_Sync_WaitObject(+0x388), clear +0x359, then the endCompression tail: +0x350=compressed size from +0x398, writes 8-byte size and compressed data (+0x338) through +0x2d8 vtbl+0x68, sets +0x2ed, vtbl+0x80. Logs REPLAYBUFFER_VERBOSE endCompression / Compressed frame from %zu bytes to %zu bytes. Tail is shared with existing Game_Replaybuffer_EndCompression."
+ },
+ "signature": {
+  "id": "game.replay_buffer_wait_and_end_compression",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 80 B9 29 03 00 00 00",
+  "match": "0x1445c0350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445c0350",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayBuffer_WaitAndEndCompression"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445c2bc0",
+  "made_on_target": "0x1445c2bc0",
+  "twin": "made on steam-26566308; the target 0x1445c2bc0 is KB 0x1445c0350: Ne_HashMap_Grow_Hbcn (0x45bfed0) and Game_PagedBuffer_UsePageAt (0x45c67a0) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445c2bc0",
+    "target": "0x1445c2bc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "30f19656014c62296fb80af860be939b79814e8cfd0b5fefcd1f5928c51618ca"
+  }
+ ]
+}

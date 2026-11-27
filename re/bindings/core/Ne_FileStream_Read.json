@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_FileStream_Read",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143999f50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_FileStream_Read(void *self, void *buf, uint64_t size, int64_t *outRead)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14399c4e0 (RacingPC lab re_groups/_decomp);xref:0x14415d390,0x1447c8580",
+  "notes": "Stream read: if vcall +0xb8 (is open) is false it writes 0 to *outRead, pushes error 5 into the TLS errno chain and trace ring and returns 5. Otherwise calls func 0x145358808(buf, 1, size, handle at +0x8) (fread pattern), stores the count in *outRead, adds it to the position at +0x18 and returns 0. Not weather code; used by UGC installed item reader and cloud uploader."
+ },
+ "signature": {
+  "id": "core.file_stream_read",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 CE 4C 89 C3 49 89 D6",
+  "match": "0x143999f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143999f50",
+  "kind": "func_start",
+  "names": [
+   "Ne_FileStream_Read"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14399c4e0",
+  "made_on_target": "0x14399c4e0",
+  "twin": "made on steam-26566308; the target 0x14399c4e0 is KB 0x143999f50: Ne_ActorManager_InsertEntryNode (0x3999ef0) and Ne_DataReader_DetectFormat (0x39a1d30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14399c4e0",
+    "target": "0x14399c4e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "654e5b7a2202fff4fd7d49ea6a2b1fe9a28dfbb0689b095f6e2da8289c9de526"
+  }
+ ]
+}

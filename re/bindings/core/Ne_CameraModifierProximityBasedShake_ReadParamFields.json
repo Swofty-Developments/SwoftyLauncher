@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_CameraModifierProximityBasedShake_ReadParamFields",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445573b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_CameraModifierProximityBasedShake_ReadParamFields(void *fields, void *propCtx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144559c20 (RacingPC lab re_groups/_decomp);xref:0x14456ab80",
+  "notes": "For each of the 8 property names (0x145bedcf8..0x145bedd75) looks the property up in three sources at propCtx +0xf0, +0xe8, +0xe0 (first hit wins, vtable +8), compares its type id to the expected descriptor (16-byte type 0x14612be88, 4-byte type 0x14612bbe0, bool g_Vm_BoolTypeDesc) and copies the value into fields +0x00, +0x10, +0x20, +0x24, +0x28, +0x2c, +0x30 (bool), +0x34. On type mismatch it sets errno 0x16 (EINVAL) and logs to the errno trace ring. Good hook point to override the shake parameters after load."
+ },
+ "signature": {
+  "id": "core.camera_modifier_proximity_based_shake_read_param_fields",
+  "section": ".xtls",
+  "pattern": "48 83 C7 70 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 31 C0",
+  "match": "0x144568db5",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xa"
+  },
+  "target": "0x1445573b0",
+  "kind": "call",
+  "names": [
+   "Ne_CameraModifierProximityBasedShake_ReadParamFields"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14456b625",
+  "made_on_target": "0x144559c20",
+  "twin": "made on steam-26566308; the target 0x144559c20 is KB 0x1445573b0: Game_CameraCollection_FindByUid (0x453b860) and Game_CollisionBasedShakeCameraModifier_OnEnable (0x455aec0) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14456b625",
+    "target": "0x144559c20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "40dd7a105b9864bbc16f95a64e8d0989ce8a8c6a998274b3f8586d69df179f6b"
+  }
+ ]
+}

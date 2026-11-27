@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_SessionHud_UnsubscribeBusHandlers",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1414b3080",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SessionHud_UnsubscribeBusHandlers(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1414b3860 (RacingPC lab re_groups/_decomp);xref:0x1414b4670",
+  "notes": "Removes five {handler,self} delegates from g_Game_MessageBus via func_0x14398a8e0 (same remove routine other code pairs with Ne_Subscribe_BusMessage): UNK_1414b1bb0, Game_SessionHud_OnPlayerDroppedIn, Game_DataGatherer_BuildHumanStatusMessage, Game_DataGatherer_SetCarHumanNodes and FUN_1414b3630 (message name constants 145660a1e, 1456156a8, 145660ad5, 1456136b4, 1456d2924), then calls func_0x14453ca50(self+0x48, self+0x20). The rest is inlined errno trace code for a disabled bus."
+ },
+ "signature": {
+  "id": "game.session_hud_unsubscribe_bus_handlers",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 06 48 89 F1 FF 50 58",
+  "match": "0x1414b3cf2",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1414b3080",
+  "kind": "call",
+  "names": [
+   "Game_SessionHud_UnsubscribeBusHandlers"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1414b44d2",
+  "made_on_target": "0x1414b3860",
+  "twin": "made on steam-26566308; the target 0x1414b3860 is KB 0x1414b3080: Game_SessionHud_OnPlayerDroppedIn (0x14b1be0) and Game_SessionHud_OnSessionExit (0x14b4670) on either side both sit 0x7e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1414b44d2",
+    "target": "0x1414b3860"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "262ef362222e751e6d3cda65634848651b185c6395545cdb962ff28190bcf923"
+  }
+ ]
+}

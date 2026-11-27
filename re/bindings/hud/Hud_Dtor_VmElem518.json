@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_Dtor_VmElem518",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14160f2e0",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "void Hud_Dtor_VmElem518(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1416108d0 (RacingPC lab re_groups/_decomp);xref:0x1414a8430",
+  "notes": "Destructor body for a 0x518-byte HUD VM element: if flag +0x4f8 is set releases node handles +0x4d8, +0x4b8, +0x498; calls FUN_141611290(self+0x318); drops the intrusive shared pointer at +0x310 (strong +8, weak +0xc); then unlinks and Vm_Release_Node()s the handles at +0x2a0, +0x288, +0x270, +0x258, +0x240 and the holders from +0x220 down to +0x58. Called per element of the 0x518-stride vector at owner+0x3d8."
+ },
+ "signature": {
+  "id": "hud.dtor_vm_elem518",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 B9 F8 04 00 00 00 0F 84",
+  "match": "0x14160f2e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14160f2e0",
+  "kind": "func_start",
+  "names": [
+   "Hud_Dtor_VmElem518"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1416108d0",
+  "made_on_target": "0x1416108d0",
+  "twin": "made on steam-26566308; the target 0x1416108d0 is KB 0x14160f2e0: Ne_Set_FixedString (0x1602370) and Vm_Set_ShortProperty_WithUnknownName (0x16209c0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1416108d0",
+    "target": "0x1416108d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1670c826565fb34e26c558372fe18de042212497088f5c149d3ea681fcb5aae0"
+  }
+ ]
+}

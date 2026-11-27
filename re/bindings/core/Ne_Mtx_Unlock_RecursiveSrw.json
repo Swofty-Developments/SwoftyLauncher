@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Mtx_Unlock_RecursiveSrw",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1449e213c",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "int Ne_Mtx_Unlock_RecursiveSrw(void *mtx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1449e4afc (RacingPC lab re_groups/_decomp);xref:0x143ad1dd0,0x144db180c,0x144f55d50",
+  "notes": "(lib) Decrements recursion count +0x4c; when it reaches 0 sets owner thread id +0x48=-1 and ReleaseSRWLockExclusive(+0x10). Returns 0. MSVC CRT _Mtx_unlock pattern."
+ },
+ "signature": {
+  "id": "core.mtx_unlock_recursive_srw",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 83 69 4C 01 75 0E 83 49 48 FF",
+  "match": "0x1449e213c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449e213c",
+  "kind": "func_start",
+  "names": [
+   "Ne_Mtx_Unlock_RecursiveSrw"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1449e4afc",
+  "made_on_target": "0x1449e4afc",
+  "twin": "made on steam-26566308; the target 0x1449e4afc is KB 0x1449e213c: Ne_Std_ThrowBadFunctionCall (0x49e4194) and Ne_Crt_Chkstk (0x4c8c190) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1449e4afc",
+    "target": "0x1449e4afc"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "eb4323191af484a4e40aaf7a7f6a4e77c8b32de96170782ff4c76f4c8c50cea1"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ThreadedWorker_DestroyAndFree",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142c89ab0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_ThreadedWorker_DestroyAndFree(void *allocator, void *worker)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142c8c040 (RacingPC lab re_groups/_decomp);xref:0x142c47600",
+  "notes": "Tears down a worker object: CloseHandle(+0x228), Ne_Thread_Destroy(+0x150) and (+0x78), DeleteCriticalSection(+0x30), destroys container +0x10 (frees buffer +0x18, zeroes +0x18..+0x28) and tail-calls allocator vfunc +0x38 to free the object. Context from caller: FullRaceReplaySystem_Init (failure/cleanup path)."
+ },
+ "signature": {
+  "id": "game.threaded_worker_destroy_and_free",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 8B 8A 28 02 00 00",
+  "match": "0x142c89ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c89ab0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThreadedWorker_DestroyAndFree"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142c8c040",
+  "made_on_target": "0x142c8c040",
+  "twin": "made on steam-26566308; the target 0x142c8c040 is KB 0x142c89ab0: Sess_Result_DecodeVehicleResult (0x2c7ea10) and Ne_WindowWin_BuildResolutionOptions (0x2c92d30) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142c8c040",
+    "target": "0x142c8c040"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "38a0e786db0a793c0d7da32e8be4c5250c491d81bcdd58bb43df1b3494b55392"
+  }
+ ]
+}

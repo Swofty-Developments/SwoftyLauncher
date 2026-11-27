@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Destroy_HandleTable_26Rows10Handles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141fa41b0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Destroy_HandleTable_26Rows10Handles(void *table)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141fa5db0 (RacingPC lab re_groups/_decomp);xref:0x141fa26e0",
+  "notes": "Destructor of a view-model block: unlinks and Vm_Release_Node for 10 node handles at qword index 0x9de..0xa02 (0x20 apart), calls 0x141fa6560 on 26 rows of 0x308 bytes starting at +0x20, then releases the base handle at +0. Context from caller: GarageMonitorTvFeedVM (temporary of this layout)."
+ },
+ "signature": {
+  "id": "vm.destroy_handle_table_26_rows10_handles",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 1D ?? ?? ?? ?? 48 89 99 10 50 00 00",
+  "match": "0x141fa41b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fa41b0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Destroy_HandleTable_26Rows10Handles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141fa5db0",
+  "made_on_target": "0x141fa5db0",
+  "twin": "made on steam-26566308; the target 0x141fa5db0 is KB 0x141fa41b0: Game_GarageMonitorTvFeedVM_OnActivate (0x1fa26e0) and Game_GarageMonitorTvFeedVM_OnDeactivate (0x1fa6f20) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141fa5db0",
+    "target": "0x141fa5db0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "6e458d72c926a7e11a3d4d03ae318b3e3cd3c89da03ea6f4a32402ba67c0a1e2"
+  }
+ ]
+}

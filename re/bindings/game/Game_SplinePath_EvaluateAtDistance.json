@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SplinePath_EvaluateAtDistance",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1406d1740",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint8_t Game_SplinePath_EvaluateAtDistance(void *self, float dist, void *out_a, void *out_b, void *out_c, int32_t *out_segment)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1406d1780 (RacingPC lab re_groups/_decomp);xref:0x140ad2ec0",
+  "notes": "Distance (xmm1) must be <= total length +0x40; walks segment table +0x28 (8 bytes each: float length, float step count) subtracting lengths to find the segment, then steps the cached cursor (+0x50 pos, +0x60 t, +0x64 arc length, +0x68 segment) forward or backward by 1/steps using 0x1406d0d30 until the arc length brackets the target, lerps t and evaluates the segment; writes segment index to out_segment. Context from caller: DebugCam_BuildInputBindings."
+ },
+ "signature": {
+  "id": "game.spline_path_evaluate_at_distance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 00 00 00 C5 78 29 A4 24 B0 00 00 00",
+  "match": "0x1406d1740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d1740",
+  "kind": "func_start",
+  "names": [
+   "Game_SplinePath_EvaluateAtDistance"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1406d1780",
+  "made_on_target": "0x1406d1780",
+  "twin": "made on steam-26566308; the target 0x1406d1780 is KB 0x1406d1740: Ne_Heap_OnCorruptionNotification (0x6cd780) and Ne_JsonObject_FindMember (0x6d4bc0) on either side both sit 0x40 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1406d1780",
+    "target": "0x1406d1780"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "69fba5248714e9bf8047459199f2ab597477a42d861a9d3ea7d0d222a48b72b1"
+  }
+ ]
+}

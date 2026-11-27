@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_HudCust_Cycle_NextFilter",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141c11530",
+  "level": "L1",
+  "subsystem": "hud",
+  "proto": "uint64_t Hud_HudCust_Cycle_NextFilter(void *vm)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141c13130 (RacingPC lab re_groups/_decomp);xref:0x141c12410",
+  "notes": "Reads current layout (int node +0x678) and filter (int node +0x658), computes (filter + 1) mod filter count of that layout (0x28-byte entries at layout +0x28..+0x30), then falls into the shared tail of 0x141c13e60: writes the new index to int node +0x658 and sets the FILTER label string node +0x5d8. Body range overlaps 0x141c13e60 (tail merge), hence L1."
+ },
+ "signature": {
+  "id": "hud.hud_cust_cycle_next_filter",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 CE 4C 8B B1 90 02 00 00",
+  "match": "0x141c11530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c11530",
+  "kind": "func_start",
+  "names": [
+   "Hud_HudCust_Cycle_NextFilter"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c13130",
+  "made_on_target": "0x141c13130",
+  "twin": "made on steam-26566308; the target 0x141c13130 is KB 0x141c11530: Career_Calendar_MoveTrackData (0x1c0c070) and Sess_SpectatorHud_Hide (0x1c253e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c13130",
+    "target": "0x141c13130"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9e8f1d7071bf9f6185c2bd8ba7c903a5012e2f88e37ca5830766935eb84bcfa7"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Hud_HudCust_Select_Filter",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141c12260",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "uint64_t Hud_HudCust_Select_Filter(void *vm, int32_t filter_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141c13e60 (RacingPC lab re_groups/_decomp);xref:0x141c10250",
+  "notes": "Uses current layout (int node +0x678 into (+0x290)+0x2e0); bails if filter_index >= count of 0x28-byte entries at layout +0x28..+0x30. Writes filter_index to int node +0x658, localises UNK_14573e1d9 with named slot FILTER = entry name string and sets string node +0x5d8 (filter label)."
+ },
+ "signature": {
+  "id": "hud.hud_cust_select_filter",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 20 04 00 00 89 D7 48 89 CE",
+  "match": "0x141c12260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c12260",
+  "kind": "func_start",
+  "names": [
+   "Hud_HudCust_Select_Filter"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141c13e60",
+  "made_on_target": "0x141c13e60",
+  "twin": "made on steam-26566308; the target 0x141c13e60 is KB 0x141c12260: Career_Calendar_MoveTrackData (0x1c0c070) and Sess_SpectatorHud_Hide (0x1c253e0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c13e60",
+    "target": "0x141c13e60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5f2f9f4ab27a78be706eab5657d16999f654bc79bbb6e2875c39a5159af5676d"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Registry_FindSharedByKey",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14101a450",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void *Game_Registry_FindSharedByKey(void *self, void *out_shared, void *key)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14101b110 (RacingPC lab re_groups/_decomp);xref:0x140264b90,0x1420656d0",
+  "notes": "Resolves key through index 0x1410d18c0(+0x348) into pointer vector +0x370, reads the entry u16 id at +0x50, probes the open-addressing hash map (+0x3c0 seed, +0x3c8 slots, +0x3d0 control bytes, +0x3e0 mask) for that id and returns a ref-counted pointer pair (object +8, control block +0x10 with refcount incremented) or null pair. Context from caller: MyTeam cinematic assets."
+ },
+ "signature": {
+  "id": "game.registry_find_shared_by_key",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 D6 48 89 CF 48 81 C1 48 03 00 00",
+  "match": "0x14101a450",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14101a450",
+  "kind": "func_start",
+  "names": [
+   "Game_Registry_FindSharedByKey"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14101b110",
+  "made_on_target": "0x14101b110",
+  "twin": "made on steam-26566308; the target 0x14101b110 is KB 0x14101a450: Career_Get_BackgroundOutcomeField (0x1016bd0) and Career_Get_OwnerPerkByIndex (0x101ba20) on either side both sit 0xcc0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14101b110",
+    "target": "0x14101b110"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "901d51a28640ce9db08d3ae62c8ef45955763eec0012f30bfcbcc24b8a21f790"
+  }
+ ]
+}

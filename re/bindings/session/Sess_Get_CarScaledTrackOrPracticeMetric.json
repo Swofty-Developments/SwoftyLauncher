@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Get_CarScaledTrackOrPracticeMetric",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1436ae650",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "float Sess_Get_CarScaledTrackOrPracticeMetric(void *self, uint8_t carIdx, void *trackKey)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436b0be0 (RacingPC lab re_groups/_decomp);xref:0x14176d820,0x141d6af00,0x142fdbb70",
+  "notes": "Gets track data via Game_TrackData_GetTrack(self+0x118,...) and multiplies its float +0xf0 by a per-car scale read XOR-decoded from car[carIdx] (+0x158 table +0xb0, ->+0x58->+0x548, +0x38 ^ +0x40; default 1.0). If the car has a strategy object of type 0x1461035c8 in vector self+0x38, uses scale * Sess_Strategy_GetLowestAvgPracticeMetric_ByTyreClass when that is > 0. Context from caller: Mfd fuel laps and race strategy VM, so probably fuel used per lap."
+ },
+ "signature": {
+  "id": "session.get_car_scaled_track_or_practice_metric",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 C7",
+  "match": "0x1436ae650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436ae650",
+  "kind": "func_start",
+  "names": [
+   "Sess_Get_CarScaledTrackOrPracticeMetric"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1436b0be0",
+  "made_on_target": "0x1436b0be0",
+  "twin": "made on steam-26566308; the target 0x1436b0be0 is KB 0x1436ae650: Sess_Get_VehicleTrackFactor (0x36b0a00) and Sess_RaceStrategy_SortCandidatesA (0x36bc9a0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1436b0be0",
+    "target": "0x1436b0be0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b366ce78586786ef05d539245a4d3d7823b981e16f0697c9e53aed26bfce0f20"
+  }
+ ]
+}

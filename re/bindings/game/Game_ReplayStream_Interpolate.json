@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayStream_Interpolate",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1445d4150",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_ReplayStream_Interpolate(void *stream, float dt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1445d69c0 (RacingPC lab re_groups/_decomp);xref:0x1445d88b0",
+  "notes": "dt arrives in xmm1. If secondary buffer +0xd0 and keyframe table (+0x160 vector, 0x20 each: float time +0, u64 position +8) exist, seeks to nearest keyframe; if |dt| >= dt-to-time jump calls RewindToStart. dt<0 runs inlined interpolateBackwards (logs REPLAY rewind(%f) m_time, sets +0xdc blend, +0xf0/+0xf8 last time/delta, fast rewind flag +0xfc), else forward path as 0x1445d5c60. cxx=ReplayStream::interpolateBackwards"
+ },
+ "signature": {
+  "id": "game.replay_stream_interpolate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F1 48 89 CE 48 8B 89 D0 00 00 00",
+  "match": "0x1445d4150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445d4150",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayStream_Interpolate"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1445d69c0",
+  "made_on_target": "0x1445d69c0",
+  "twin": "made on steam-26566308; the target 0x1445d69c0 is KB 0x1445d4150: site_Ne_ReplayAfterRecord (0x45d3f82) and Game_ReplaySystem_ReadDbSettings (0x45d7d50) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1445d69c0",
+    "target": "0x1445d69c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "5971a454e0da053773013d0660284e0495673e8a21d1dfe8e655eac6b08cfafc"
+  }
+ ]
+}

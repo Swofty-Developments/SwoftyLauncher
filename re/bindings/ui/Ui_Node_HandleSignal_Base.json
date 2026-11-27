@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Node_HandleSignal_Base",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441fc940",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Node_HandleSignal_Base(void *node, void *signal, void *a3, void *a4, void *a5)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441fef10 (RacingPC lab re_groups/_decomp);xref:0x143804420,0x143810790,0x143825190,0x143832480,0x143845630,0x144230cd0,0x1442514f0,0x144259df0",
+  "notes": "Base signal dispatcher: first offers the signal to each behaviour in +0x30..+0x38 (vfunc 0x78, stop if handled), then compares pin hash signal+8 against a table of global hashes (146ca47b4..146ca4848) and calls own vfuncs 0x98/0xa0/0xa8/0xc0/0xc8/0xd0/0xd8/0xe0 with 0/1, sets or clears flag bits at +8 (0x20) and +9 (0x40), reads string/int args to set properties (+0x48, +0x4c on a sub-object), and forwards g_Vm_RaiseCommandPinHash to parent +0x20 vfunc 400. Derived HandleSignal functions fall back to this. Decompile has a merged tail, so details are partial."
+ },
+ "signature": {
+  "id": "ui.node_handle_signal_base",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 4C 89 CB",
+  "match": "0x1441fc940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441fc940",
+  "kind": "func_start",
+  "names": [
+   "Ui_Node_HandleSignal_Base"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441fef10",
+  "made_on_target": "0x1441fef10",
+  "twin": "made on steam-26566308; the target 0x1441fef10 is KB 0x1441fc940: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441fef10",
+    "target": "0x1441fef10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "94760aa7523dd8a3022463c61b6b3de9b686a61ea06ffac423a167db1ae5a22e"
+  }
+ ]
+}

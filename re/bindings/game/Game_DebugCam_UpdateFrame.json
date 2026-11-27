@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_DebugCam_UpdateFrame",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443fde80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "uint64_t Game_DebugCam_UpdateFrame(void *self, float dt)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144400450 (RacingPC lab re_groups/_decomp);xref:0x140ad2ec0",
+  "notes": "Per-frame update: calls three helpers, if state +0x3a8==4 tries 0x14440ace0, else dispatches on input mode +400 (2 = Game_DebugCam_UpdateKeyboardMode, 1 = Game_DebugCam_UpdatePadMode) and Game_DebugCam_ToggleInputControlMode; then when +0x2a8 is set raycasts 300 units along -forward (+0x130) from position +0x140 with Ne_PhysWorld_RaycastClosest (mask 0x1f) and stores ray start +0x2b0, end +0x2c0, hit point +0x2d0, normal +0x2e0, fraction +0x2f0, hit body +0x300, hit flag +0x2aa."
+ },
+ "signature": {
+  "id": "game.debug_cam_update_frame",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 C5 F8 28 F1",
+  "match": "0x1443fde80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443fde80",
+  "kind": "func_start",
+  "names": [
+   "Game_DebugCam_UpdateFrame"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144400450",
+  "made_on_target": "0x144400450",
+  "twin": "made on steam-26566308; the target 0x144400450 is KB 0x1443fde80: Game_AudioAutodetect_Initialise (0x43f1370) and Ne_TextRingBuffer_FlushPending (0x4414dd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144400450",
+    "target": "0x144400450"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "beb146db0aee9314bfd922c27eb7b09e510e658fd878293ab2cb563a7d0f6576"
+  }
+ ]
+}
