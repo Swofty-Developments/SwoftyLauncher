@@ -9,7 +9,7 @@
   "subsystem": "core",
   "proto": "void Ne_Sort_Introsort_PtrByWeightedScore(void **first, void **last, int64_t depth_budget, void *ctx)",
   "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140fbae00 (RacingPC lab re_groups/_decomp)",
-  "notes": "(lib) std::sort style introsort (median-of-3/ninther via FUN_140fbbea0, heapsort fallback via FUN_140fbbbb0 when depth budget hits 0, insertion sort below 33 elements, recursion on the smaller half) over an array of pointers. Comparator is inlined: score = w * elem.f32[+4] * weighted_mean where weighted_mean = sum((elem.f32[+8] + e.value) * e.weight) / sum(e.weight) over 16-byte entries in elem vector +0x18..+0x20, and w = ctx.f32[+0x24] if elem.byte[0] <= 10 else 1 - ctx.f32[+0x24]; sorted by descending score. Better context needed: no known caller, so the element type (likely a rated item with category id > 10 split) is unidentified."
+  "notes": "(lib) std::sort style introsort (median-of-3/ninther via FUN_140fbbea0, heapsort fallback via FUN_140fbbbb0 when depth budget hits 0, insertion sort below 33 elements, recursion on the smaller half) over an array of pointers. Comparator is inlined: score = w * elem.f32[+4] * weighted_mean where weighted_mean = sum((elem.f32[+8] + e.value) * e.weight) / sum(e.weight) over 16-byte entries in elem vector +0x18..+0x20, and w = ctx.f32[+0x24] if elem.byte[0] <= 10 else 1 - ctx.f32[+0x24]; sorted by descending score. Better context needed: caller not identified, so the element type (likely a rated item with category id > 10 split) is unidentified."
  },
  "signature": {
   "id": "core.sort_introsort_ptr_by_weighted_score",

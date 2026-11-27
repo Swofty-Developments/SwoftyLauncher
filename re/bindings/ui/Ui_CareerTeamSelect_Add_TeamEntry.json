@@ -9,7 +9,7 @@
   "subsystem": "ui",
   "proto": "void *Ui_CareerTeamSelect_Add_TeamEntry(void *self, uint32_t *team_key, uint32_t *driver_key, char *count)",
   "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14187aaf0 (RacingPC lab re_groups/_decomp)",
-  "notes": "Appends one 0x170-byte team row to the vector at self+0x28/+0x30 (grow x1.5), creating a VM child node named by printf(k_Team_BadgeSourceNames[team&0xff], team>>16), and increments *count. Binds the logo path \"#overrides.team_logos.driver_career_2024_team_select.%s\" (default \".no_team\") from the team name at teamdb+0x18, flags whether the driver (Career_Calc_DriverOverallRating_Cached, contract list) already belongs to that team, then if self+0xc69 is set builds the team's VehicleCustomisation and shows it in a frontend custom-car slot at \"VehicleSpawn\" (slot id kept at row+0x16c). Returns pointer to the new row. Better context needed: no known caller, VM class name not confirmed."
+  "notes": "Appends one 0x170-byte team row to the vector at self+0x28/+0x30 (grow x1.5), creating a VM child node named by printf(k_Team_BadgeSourceNames[team&0xff], team>>16), and increments *count. Binds the logo path \"#overrides.team_logos.driver_career_2024_team_select.%s\" (default \".no_team\") from the team name at teamdb+0x18, flags whether the driver (Career_Calc_DriverOverallRating_Cached, contract list) already belongs to that team, then if self+0xc69 is set builds the team's VehicleCustomisation and shows it in a frontend custom-car slot at \"VehicleSpawn\" (slot id kept at row+0x16c). Returns pointer to the new row. Better context needed: caller not identified, VM class name not confirmed."
  },
  "signature": {
   "id": "ui.career_team_select_add_team_entry",
