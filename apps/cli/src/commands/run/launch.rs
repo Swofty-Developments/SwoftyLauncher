@@ -1,7 +1,7 @@
 use std::io::IsTerminal;
 use std::path::PathBuf;
 use std::process::{Command, ExitCode, Stdio};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 use anyhow::{Result, bail};
 use swofty_core::GAME_EXE;
@@ -11,7 +11,7 @@ use swofty_core::game_folder::recovery::{Recovered, Scope, SessionLock};
 use swofty_core::install::{Game, Source};
 use swofty_core::online::multiplayer::client::LAUNCH_ENV as NETPLAY_ENV;
 use swofty_core::platform::process::{game_processes, game_running_in, stop_game_in};
-use swofty_core::session::{LOADER_LOG, LaunchMode, LaunchRequest, LogMark, request_stop};
+use swofty_core::session::{LOADER_LOG, LaunchMode, LaunchRequest, LoaderLog, LogMark, request_stop};
 use swofty_core::store::Store;
 
 use super::RunArgs;
@@ -99,8 +99,13 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
     if mode.is_vr() && !cfg!(windows) {
         ensure_steamvr();
     }
-    let loader = game.join(LOADER_LOG);
-    let before = LogMark::read(&loader);
+    let loader = LoaderLog::new(
+        &game,
+        LogMark::read(&game.join(LOADER_LOG)),
+        &store.root,
+        Some(id.clone()),
+        SystemTime::now(),
+    );
     let asked = now_secs();
     let _home_menu = swofty_core::ui::home_menu::publish(
         &store.root,
@@ -149,7 +154,7 @@ pub(crate) fn run(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Res
         .child
         .as_ref()
         .map(|_| Follower::from_end(wrapper.log.clone()));
-    let mut follow = Follow::new(&dir, Some((loader, before)), symbols(&game, args.exe.as_deref()));
+    let mut follow = Follow::new(&dir, Some(loader), symbols(&game, args.exe.as_deref()));
     install_ctrl_c();
     let mut quiet = false;
     let mut opened: Option<Instant> = None;

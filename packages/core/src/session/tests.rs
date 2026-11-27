@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use super::record::*;
 use super::*;
@@ -597,4 +598,35 @@ fn old_update_settings_still_load() {
         saved.get("updates").is_none() && saved.get("managed").is_none(),
         "{saved}"
     );
+}
+
+#[test]
+fn takes_the_fallback_loader_log_only_for_this_session() {
+    let dir = std::env::temp_dir().join(format!("swofty-loader-log-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    let (game, data) = (dir.join("game"), dir.join("data"));
+    std::fs::create_dir_all(game.join("swofty")).unwrap();
+    std::fs::create_dir_all(data.join("state")).unwrap();
+    let fallback = data.join(LOADER_FALLBACK);
+    let launched = SystemTime::now();
+    let log = |request: &str| LoaderLog::new(&game, None, &data, Some(request.into()), launched);
+    assert_eq!(log("abc").current(), None);
+
+    std::fs::write(&fallback, "attached\nsession env: (launch request abc); ok\n").unwrap();
+    assert_eq!(log("abc").current(), Some(fallback.clone()));
+    assert_eq!(log("ab").current(), None);
+    assert_eq!(log("abcd").current(), None);
+
+    std::fs::File::options()
+        .write(true)
+        .open(&fallback)
+        .unwrap()
+        .set_modified(launched - Duration::from_secs(600))
+        .unwrap();
+    assert_eq!(log("abc").current(), None);
+
+    let live = game.join(LOADER_LOG);
+    std::fs::write(&live, "attached in the game folder\n").unwrap();
+    assert_eq!(log("abc").current(), Some(live));
+    std::fs::remove_dir_all(&dir).ok();
 }
