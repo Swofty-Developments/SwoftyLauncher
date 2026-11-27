@@ -22,6 +22,14 @@ impl Opener {
 
 pub(super) enum View {}
 
+pub(super) enum Closing {}
+
+impl Closing {
+    pub(super) fn finish(self) {
+        match self {}
+    }
+}
+
 pub(super) struct Backend {
     child: Child,
     stdin: Option<ChildStdin>,
@@ -103,10 +111,11 @@ impl Backend {
         });
     }
 
-    pub(super) fn close(&mut self, unit: Unit) {
+    pub(super) fn close(&mut self, unit: Unit) -> Option<Closing> {
         self.send(&Line::Close {
             slot: unit.key().into(),
         });
+        None
     }
 
     pub(super) fn adopt(&mut self, _: Unit, view: Option<View>) {

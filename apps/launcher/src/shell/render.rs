@@ -35,12 +35,19 @@ impl Render for Shell {
                 cx.background_executor()
                     .timer(crate::features::ads::RELEASE_AFTER)
                     .await;
-                this.update(cx, |this, cx| {
-                    if this.ads.release_for_game() {
-                        cx.notify();
-                    }
-                })
-                .ok();
+                let released = this
+                    .update(cx, |this, cx| {
+                        let released = this.ads.release_for_game();
+                        if released.is_some() {
+                            cx.notify();
+                        }
+                        released
+                    })
+                    .ok()
+                    .flatten();
+                if let Some(released) = released {
+                    released.finish();
+                }
             })
             .detach();
         }

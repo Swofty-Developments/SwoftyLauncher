@@ -70,6 +70,18 @@ pub(super) struct View {
     visible: bool,
 }
 
+pub(super) struct Closing(View);
+
+impl Closing {
+    pub(super) fn finish(self) {
+        let popup = self.0.popup;
+        drop(self.0);
+        unsafe {
+            let _ = DestroyWindow(hwnd(popup));
+        }
+    }
+}
+
 impl Backend {
     pub(super) fn start(window: &Window, data: &Path) -> Result<Self, Skip> {
         let handle = HasWindowHandle::window_handle(window).map_err(|_| Skip::Quiet)?;
@@ -131,14 +143,8 @@ impl Backend {
         }
     }
 
-    pub(super) fn close(&mut self, unit: Unit) {
-        if let Some(view) = self.views.remove(&unit) {
-            let popup = view.popup;
-            drop(view);
-            unsafe {
-                let _ = DestroyWindow(hwnd(popup));
-            }
-        }
+    pub(super) fn close(&mut self, unit: Unit) -> Option<Closing> {
+        self.views.remove(&unit).map(Closing)
     }
 
     pub(super) fn adopt(&mut self, unit: Unit, view: Option<View>) {
