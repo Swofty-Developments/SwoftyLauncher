@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_JobQueue_SubmitJobRange",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143ac1720",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_JobQueue_SubmitJobRange(void *queue, int64_t *range, const char *name, uint8_t flag_a, uint8_t flag_b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac3cf0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14018cb90,0x14018cd90,0x1403c4b20",
+  "notes": "range = {begin, stride, end, item_size}. Returns 1 with thread error 1 when queue+0x164 is set; otherwise under critsec +0x28 walks begin..end by stride and submits one job {entry 0x1402aaed0, item ptr} per element: direct to a worker via Ne_JobQueue_Push_JobToWorker when +0x160 >= 0, else as a deferred job via 0x143ac2340 with owner +0x168; with +0x10 clear and more than one item all go deferred and one schedule call follows. Returns 0. The name argument is not read in the body. Caller 0x14018cb90: fills an array of 0x18-byte job items and submits it then waits on the job signal; caller 0x14018cd90: submits 0x20 and 0x10-byte item arrays per frame; caller 0x1403c4b20: submits 0x20-byte items and waits. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.job_queue_submit_job_range",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 80 B9 64 01 00 00 00",
+  "match": "0x143ac1720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ac1720",
+  "kind": "func_start",
+  "names": [
+   "Ne_JobQueue_SubmitJobRange"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ac3cf0",
+  "made_on_target": "0x143ac3cf0",
+  "twin": "made on steam-26566308; the target 0x143ac3cf0 is KB 0x143ac1720: Ne_JobQueue_RunPendingJobs (0x3ac3360) and Ne_JobSystem_CreateJobGroup (0x3ac5bf0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ac3cf0",
+    "target": "0x143ac3cf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "58c5c81426f2f5c22e8a27429d8acb54365544b4075cb5bae5f1d48e77c9a80e"
+  }
+ ]
+}

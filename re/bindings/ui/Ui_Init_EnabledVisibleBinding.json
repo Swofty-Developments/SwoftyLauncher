@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Init_EnabledVisibleBinding",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141785900",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Init_EnabledVisibleBinding(void *self, void *parent_handle)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141787080 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141786d60",
+  "notes": "Constructor of a 0x60-byte triple of VM node handles: +0x00 (vtable 0x1456613d8) is linked to the node held by parent_handle+8 via Ne_IntrusiveNode_Reassign; then Vm_Set_Bool creates bool children \"enabled\" and \"visible\" (both false) under it and stores their handles at +0x20 and +0x40 (vtable 0x145661670, intrusive link plus refcount at node+0x24). Returns self. Caller 0x141786d60: gets or creates a child VM node by the djb2 hash of a name, calls this on a temporary and moves the three handles into its object at +0x10, +0x30, +0x50. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.init_enabled_visible_binding",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 48 8D 3D ?? ?? ?? ?? 48 0F 44 D7 C5 C8 57 F6 C5 F8 11 71 08 48 C7 41 18 00 00 00 00 48 8D 05 ?? ?? ?? ?? 48 89 01 E8 ?? ?? ?? ?? C6 44 24 2F 00",
+  "match": "0x141785900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141785900",
+  "kind": "func_start",
+  "names": [
+   "Ui_Init_EnabledVisibleBinding"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141787080",
+  "made_on_target": "0x141787080",
+  "twin": "made on steam-26566308; the target 0x141787080 is KB 0x141785900: Career_InvitationalAcclaimReward_BuildText (0x1781000) and site_Game_Mfd_FuelMixMaxRaceGate (0x178a420) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141787080",
+    "target": "0x141787080"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cd7f347cd9f6b70d124d9a2d3173cccab625be434fe1478b894be3eaaece28fc"
+  }
+ ]
+}

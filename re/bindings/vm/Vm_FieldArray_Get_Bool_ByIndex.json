@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Vm_FieldArray_Get_Bool_ByIndex",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140d36e80",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint32_t Vm_FieldArray_Get_Bool_ByIndex(void *fields, uint64_t index, uint8_t *out)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140d37a00 (RacingPC lab re_groups/_decomp);xref:0x140cc2750,0x142e8d6f0",
+  "notes": "Bounds-checks index against the u16 count at +0x10, takes the field object at *(fields+8)+index*8, compares its type id with g_Vm_BoolTypeDesc and copies the 1-byte value (vtable +0x30) to out. Returns 0, 0x22 index out of range, 0x57 null slot, 0x58 type mismatch."
+ },
+ "signature": {
+  "id": "vm.field_array_get_bool_by_index",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 89 C5 49 FF C4 B3 07",
+  "match": "0x140bff1bd",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x140d36e80",
+  "kind": "call",
+  "names": [
+   "Vm_FieldArray_Get_Bool_ByIndex"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140bffc6d",
+  "made_on_target": "0x140d37a00",
+  "twin": "made on steam-26566308; the target 0x140d37a00 is KB 0x140d36e80: Ne_Vector24_PushBackMove (0xd34330) and Career_DeptEvent_CheckStoredUpgradeForDriver (0xd6d5c0) on either side both sit 0xb80 above their KB addresses; the match 0x140bffc6d is KB 0x140bff1bd: Career_Get_TeamBankBudgetCategoryValue (0xbf58b0) and Career_DriverNumbers_CheckExisting (0xc026e0) on either side both sit 0xab0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140bffc6d",
+    "target": "0x140d37a00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b8432957a165725b2312707b82a2400468ae925fe23c41f1b44bec788acd8f6d"
+  }
+ ]
+}

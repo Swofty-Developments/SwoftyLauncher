@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Path_Resolve_Node",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1442906a0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void **Vm_Path_Resolve_Node(void *registry, void *path, void **start)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144292c70 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x140bdfe60,0x140be0110,0x140be0470",
+  "notes": "Whole body read. path+0x78 = segment count, path+0x79 = absolute flag, segments are 8 bytes (hash at +0, by-index flag at +4). Starts at start, or at the root handle ([registry+8]+8) when start is empty or the path is absolute. Per segment: follows reference nodes (vt+0x30, target via [node+0x58] vt+0x38, at most 0x62 hops), then list nodes (vt+0x10) go through Ne_Ref_GetListElementOrEmpty when the flag is set or 0x1442b3700 otherwise, and holder nodes (vt+0x28) through Game_Vm_HolderGetCStrOrEmpty. Returns the handle slot (node+8) or k_Vm_EmptyNodeHandle on any miss. Callers 0x140bdfe60/0x140be0110/0x140be0470: each builds a path from a node with 0x1442b7670, appends segment hash 0x108d5742, resolves it and reads the string via Vm_Link_RegistryNode. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "vm.path_resolve_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 4C 89 C3 48 89 D7 44 0F B6 72 78",
+  "match": "0x1442906a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442906a0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Path_Resolve_Node"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144292c70",
+  "made_on_target": "0x144292c70",
+  "twin": "made on steam-26566308; the target 0x144292c70 is KB 0x1442906a0: Game_ProfanityFilter_FilterText (0x426f500) and Ui_DataDrivenMessage_Init (0x42a5640) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144292c70",
+    "target": "0x144292c70"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4f4fb13d59701d5c824fc273170b9618613fb5bf2ec3e38078216fd8f9293850"
+  }
+ ]
+}

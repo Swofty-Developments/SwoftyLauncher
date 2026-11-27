@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_PropertySet_Read_Value16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14440b860",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_PropertySet_Read_Value16(void *props, const void *key, void *out16)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14440de30 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14440dbb0,0x14440eae0,0x14440f3e0",
+  "notes": "Looks the key up in three layered sources in priority order +0xf0, +0xe8, +0xe0 (vfn +8); if none has it sets thread error and returns 0x57. Compares the property type id (vfn +0x10) with the type descriptor at 0x14612be88; on match copies 16 bytes from the value pointer (vfn +0x30) to out16 and returns 0, else returns 0x16. Callers 0x14440dbb0, 0x14440eae0, 0x14440f3e0: component property loaders that read 16-byte fields (e.g. key 0x145756afd into +0x90, +0x60, +0x30); also used by Ne_StaticPhysicsComponent_ReadProperties for +0x60. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.property_set_read_value16",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 89 C6 4C 8D 46 78",
+  "match": "0x14440b6af",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14440b860",
+  "kind": "call",
+  "names": [
+   "Ne_PropertySet_Read_Value16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14440dc7f",
+  "made_on_target": "0x14440de30",
+  "twin": "made on steam-26566308; the target 0x14440de30 is KB 0x14440b860: Game_AudioAutodetect_Initialise (0x43f1370) and Ne_TextRingBuffer_FlushPending (0x4414dd0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14440dc7f",
+    "target": "0x14440de30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "def29a7e4f24cd5f5ca9a0762a46a5870284242cc0cb820484288542014ca6bf"
+  }
+ ]
+}

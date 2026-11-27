@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_World_RemoveHook_ListB0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144458e40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t Phys_World_RemoveHook_ListB0(void *world, const uint64_t *delegate16)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14445b410 (RacingPC lab re_groups/_decomp);xref:0x144646240",
+  "notes": "Searches the delegate vector at *(world+0xb0) (+0x8 begin, +0x10 end, 16-byte {fn, ctx} entries) for an exact match of both qwords, erases it by shifting the tail down and returns 0; returns 2 (not found, errno trace) otherwise. Counterpart of the hook registration used by Car_Physics_UnregisterHooks."
+ },
+ "signature": {
+  "id": "core.phys_world_remove_hook_list_b0",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B 81 B0 00 00 00",
+  "match": "0x144458e40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144458e40",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_World_RemoveHook_ListB0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14445b410",
+  "made_on_target": "0x14445b410",
+  "twin": "made on steam-26566308; the target 0x14445b410 is KB 0x144458e40: site_Game_PhysicsWorldConfigOverrides (0x4459f0b) and Ne_WorldInstance_PreWarmTextures (0x447b2b0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14445b410",
+    "target": "0x14445b410"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7bf0b82d5b5256ed1677474148ed4415c6d01c4a2ad4601c56f100003ea8f476"
+  }
+ ]
+}

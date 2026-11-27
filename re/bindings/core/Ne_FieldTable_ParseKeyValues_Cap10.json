@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_FieldTable_ParseKeyValues_Cap10",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14023c280",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_FieldTable_ParseKeyValues_Cap10(void *table, void *reader, uint32_t *out_seen_mask)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14023c280 (RacingPC lab re_groups/_decomp);xref:0x14023b9a0,0x1447d25f0",
+  "notes": "(lib) Same generic key/value attribute parser as 0x143667080 but for the smaller table layout: descriptor count at +0x194 and required-field mask at +400 (0x190). Matches keys by strcmp against 0x28-byte descriptors and converts by type (ints, u64, float, double, bool, cstr pointer, bounded string copy). Returns 0, 5 on parse error, 0x57 if a required field is missing."
+ },
+ "signature": {
+  "id": "core.field_table_parse_key_values_cap10",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 44 24 38 48 89 D3 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 48 89 44 24 28 48 8B 02 48 8D 54 24 20 48 89 D9 FF 50 58 45 31 FF 85 C0 0F 84 ?? ?? ?? ?? 48 8B 44 24 38 48 85 C0 74 03 44 89 38 41 F7 D7 BF 57 00 00 00 31 C0 44 85 BE 90 01 00 00",
+  "match": "0x14023c280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14023c280",
+  "kind": "func_start",
+  "names": [
+   "Ne_FieldTable_ParseKeyValues_Cap10"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14023c280",
+  "made_on_target": "0x14023c280",
+  "twin": "made on steam-26566308; the target 0x14023c280 is KB 0x14023c280: Game_CutsceneContext_ParseSceneContext (0x23b9a0) and Game_CutSceneScript_RunCommand (0x23c600) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14023c280",
+    "target": "0x14023c280"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "2b5de2f7d31265c57501a30797dfa0789f7ff1f1df7fa7746a0668ffa366afa9"
+  }
+ ]
+}

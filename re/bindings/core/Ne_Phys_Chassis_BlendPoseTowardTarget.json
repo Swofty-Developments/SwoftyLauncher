@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_Chassis_BlendPoseTowardTarget",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14467af40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Phys_Chassis_BlendPoseTowardTarget(void *chassis)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14467d7b0 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x14467ab70,0x14467aed0",
+  "notes": "Calls the callback at +0x3d0 (ctx +0x3d8) with (chassis, chassis+0x350) to fill a target block, stores its bool at +0x350 and copies +0x353 to +0x3e0; if active and +0x354 is clear it blends the two velocity vectors +0x170/+0x180 toward +0x380/+0x390 (factors +0x3bc/+0x3b8), slerps the 3x3 orientation rows +0x190/+0x1a0/+0x1b0 toward quaternion +0x370 (factor +0x3c4) and decays position +0x1c0 toward +0x360 by exp2(-(+0x3c0)); with +0x355 set and 3 or more of the four [[chassis+8]+0x580]+0x70..+0x88 entries having +0x200 non-null only single axes are blended. Both xrefs reach it by a jump, not a call (their decompiles contain this body and label 0x14467dfef): Car_Chassis_UpdateMassInertia runs it after Car_Chassis_PlacePlankShape when +0x3e0 is 0, and caller 0x14467aed0 (pushes +0x170/+0x180 to the phys body, updates state flags +0x140) runs it when +0x3e0 is set. Hook point for an external pose override via the +0x3d0 callback. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.phys_chassis_blend_pose_toward_target",
+  "section": ".xtls",
+  "pattern": "56 53 48 81 EC C8 00 00 00 C5 78 29 BC 24 B0 00 00 00",
+  "match": "0x14467af40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14467af40",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_Chassis_BlendPoseTowardTarget"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14467d7b0",
+  "made_on_target": "0x14467d7b0",
+  "twin": "made on steam-26566308; the target 0x14467d7b0 is KB 0x14467af40: Car_Tuning_SetChassisZCom (0x46795b0) and Car_Write_Differential (0x4680310) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14467d7b0",
+    "target": "0x14467d7b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7081f969cbbfa9a50a7f0aaacc01dcce9e7c294ef769447ed9cced32af2a239c"
+  }
+ ]
+}

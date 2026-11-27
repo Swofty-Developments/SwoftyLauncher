@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_Integrate_BodyTransform",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1440f60d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Phys_Integrate_BodyTransform(void *body, float dt, void *axisOwner, uint8_t updateShapes)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1440f86a0 (lab re_groups/_decomp);xref:0x144107ab0",
+  "notes": "Saves the previous transform (+0x150..+0x1cf to +0x270..+0x2ef), advances position *(body+0x378) by dt * linear velocity +0x220, and rotates the basis rows +0x150/+0x160/+0x170 by the axis-angle of angular velocity +0x210 * dt (polynomial sin/cos, skipped when speed <= 1e-17). When axisOwner == body it re-orthonormalises the axis vectors behind +0x380/+0x388/+0x390. Rebuilds the world transform +0x190..+0x1cf (translation minus rotated COM offset +0x230), optionally updates attached shapes (list +0x360, next +0x118, world xform shape+0x50 from local +0x10 when flag +0x171 bit0), and recomputes world inertia tensors +0x90 and +0xd0 from local +0x50 and +0x110. Prime hook for reading or overriding body pose per step."
+ },
+ "signature": {
+  "id": "core.phys_integrate_body_transform",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE",
+  "match": "0x1440f60d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440f60d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_Integrate_BodyTransform"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1440f86a0",
+  "made_on_target": "0x1440f86a0",
+  "twin": "made on steam-26566308; the target 0x1440f86a0 is KB 0x1440f60d0: Ne_Phys_SolveRowsIterate (0x40f73b0) and Ne_PhysWorld_ResizeWorkerContexts (0x4106ee0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1440f86a0",
+    "target": "0x1440f86a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "55b2bdf2d88b449e3d29b49f3f451cc14241aa48d0294ed74e937ffa202b31c2"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Atan_Double",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1453523d0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "double Ne_Crt_Atan_Double(double x)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x145354d90 (RacingPC lab re_groups/_decomp);xref:0x145310300",
+  "notes": "(lib) CRT double atan: range reduction at 7/16, 11/16, 19/16, 39/16 with atan(0.5)=0.4636, pi/4, atan(1.5)=0.9828, pi/2 constants and a rational polynomial; returns +-pi/2 for huge inputs and quiets NaN. Used to convert a force vector to a direction angle."
+ },
+ "signature": {
+  "id": "core.crt_atan_double",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 48 BA FF FF FF FF FF FF FF 7F",
+  "match": "0x1453523d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1453523d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Atan_Double"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x145354d90",
+  "made_on_target": "0x145354d90",
+  "twin": "made on steam-26566308; the target 0x145354d90 is KB 0x1453523d0: Ne_Crt_AsinfImpl (0x5354ba4) and Ne_Crt_Atan2f (0x53556ac) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x145354d90",
+    "target": "0x145354d90"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0eb3d62a8d8a3b6ef7006205ffda3f66eea1a3da07e5058b56f71115012180a6"
+  }
+ ]
+}

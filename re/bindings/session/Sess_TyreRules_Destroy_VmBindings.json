@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_TyreRules_Destroy_VmBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141618020",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_TyreRules_Destroy_VmBindings(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141619610 (RacingPC lab re_groups/_decomp);xref:0x14152adc0",
+  "notes": "Destructor-style teardown: destroys the sub-object at +0x168, the NeStr set vector at +0x178 when flag +0x1d8 is set, then unlinks and releases ten VM node handles (vtable 0x145614e48) at +0x148 down to +0x8 in 0x20 steps via Vm_Release_Node."
+ },
+ "signature": {
+  "id": "session.tyre_rules_destroy_vm_bindings",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 81 C1 68 01 00 00",
+  "match": "0x141618020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141618020",
+  "kind": "func_start",
+  "names": [
+   "Sess_TyreRules_Destroy_VmBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141619610",
+  "made_on_target": "0x141619610",
+  "twin": "made on steam-26566308; the target 0x141619610 is KB 0x141618020: Ne_Set_FixedString (0x1602370) and Vm_Set_ShortProperty_WithUnknownName (0x16209c0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141619610",
+    "target": "0x141619610"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "da311239f155d01d8d92749d017a20476ea9ec498d466135254aa9f17137a70e"
+  }
+ ]
+}

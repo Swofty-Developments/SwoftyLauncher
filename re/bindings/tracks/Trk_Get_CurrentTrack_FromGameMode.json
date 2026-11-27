@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Trk_Get_CurrentTrack_FromGameMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141f37030",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "void *Trk_Get_CurrentTrack_FromGameMode(void *ctx)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141f38c30 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141f322f0,0x141f34100",
+  "notes": "Takes the game mode object at [[ctx+0x648]+0x88]+0x260 (type-checked against 0x14612bca8), gets an object through its component interface at +0x1030 (vcall +0x80, 0x140af1160) whose byte +0x278 is the track index, fills a 6-byte key (4 bytes from game mode vcall +200 plus a ushort that is 0x100, 0x101 when the Sess_WeekendSetupComponent mode byte [+0x2a0]+0x490 is 2, or track byte +0xfd|0x100 when it is 1) and returns Game_TrackData_GetTrack(gameMode+0xf58, table[+0x28][index*0x10+8], key), or null. Career_ResultsTableVM_BuildHeadersAndFlags tests result+0xb0 != 0 for a VM flag; Game_TyreAllocationVM_BuildPresetsAndSlots calls it 6 times while building the slots. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "tracks.get_current_track_from_game_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 CF 48 8B 81 48 06 00 00",
+  "match": "0x141f37030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f37030",
+  "kind": "func_start",
+  "names": [
+   "Trk_Get_CurrentTrack_FromGameMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141f38c30",
+  "made_on_target": "0x141f38c30",
+  "twin": "made on steam-26566308; the target 0x141f38c30 is KB 0x141f37030: Game_DriverSelectGridVM_OnDeactivate (0x1f2eb50) and Career_Build_RnDDriverUpgradeLists (0x1f3bd50) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141f38c30",
+    "target": "0x141f38c30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "1b0064c04d538f0ab08a579bb8a5c67eb68dfb9e262993fdb0295cded4272433"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Car_SuspDamage_PackWheelStates",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1446568e0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "uint32_t Car_SuspDamage_PackWheelStates(void *susp_damage)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144659150 (RacingPC lab re_groups/_decomp);xref:0x14324bb70,0x1446592f0",
+  "notes": "Under global lock 0x146cea6a8, turns the four wheel damage floats +0x130..+0x13c into a 3-bit state per wheel (shifts 0, 3, 6, 9) and returns the OR. Thresholds are XOR-obfuscated floats: T1 = +0x58 ^ +0x60, T2 = +0x68 ^ +0x70. State 5 if damage >= 2*T2, 4 if >= T2, 3 if >= T1, else 2 or 1 from bits 0/1 of the wheel flag byte (car +8 -> +0x580 -> +0x70/+0x78/+0x80/+0x88 -> +0x20), else 0. Good read point for suspension damage levels; the thresholds are the tuning values."
+ },
+ "signature": {
+  "id": "car.susp_damage_pack_wheel_states",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 0D ?? ?? ?? ?? FF 15",
+  "match": "0x1446568e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446568e0",
+  "kind": "func_start",
+  "names": [
+   "Car_SuspDamage_PackWheelStates"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144659150",
+  "made_on_target": "0x144659150",
+  "twin": "made on steam-26566308; the target 0x144659150 is KB 0x1446568e0: Car_SuspensionDamage_OnCollision (0x4657580) and Ne_VectorOfFloatVec_Assign (0x465dc90) on either side both sit 0x2870 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144659150",
+    "target": "0x144659150"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "0c2fd9d3cd6adc5bdb3b7e2d63793384a0558984529e2a6018855a51dabe2e7b"
+  }
+ ]
+}

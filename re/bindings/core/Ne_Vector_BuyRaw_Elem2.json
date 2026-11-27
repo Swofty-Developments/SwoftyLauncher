@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_BuyRaw_Elem2",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14530e430",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Vector_BuyRaw_Elem2(void *vec, uint64_t count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x145310df0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) MSVC std::vector<uint16> raw buy: allocates count*2 bytes (32-byte aligned path for >= 0x1000 bytes) and sets begin, end = begin, cap = begin + count*2. Throws bad_array_new_length on overflow. Called by 0x14531b8f0."
+ },
+ "signature": {
+  "id": "core.vector_buy_raw_elem2",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 57 48 83 EC 20 48 B8 FF FF FF FF FF FF FF 7F",
+  "match": "0x14530e430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14530e430",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_BuyRaw_Elem2"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x145310df0",
+  "made_on_target": "0x145310df0",
+  "twin": "made on steam-26566308; the target 0x145310df0 is KB 0x14530e430: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x145310df0",
+    "target": "0x145310df0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "59611160a49898b4ecc1c00622cc4d501ea4366b95bb781a5a271e39d38bde98"
+  }
+ ]
+}

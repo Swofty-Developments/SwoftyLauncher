@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_RegexReplace_Char",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140322e60",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void **Ne_Std_RegexReplace_Char(void **out_result, void *out_string, const char *first, const char *last, void *regex, const void *fmt_string, uint32_t flags)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140322e60 (RacingPC lab re_groups/_decomp);xref:0x1401cb030,0x14060f5f0,0x140614250",
+  "notes": "(lib) MSVC std::regex_replace body for char: loops regex search (0x1403231c0), appends the unmatched prefix unless flag 0x800 (format_no_copy), formats the match with sed (0x400) or ECMAScript rules, stops after one match on 0x1000 (format_first_only), then appends the tail and frees the match_results buffer."
+ },
+ "signature": {
+  "id": "core.std_regex_replace_char",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4C 89 CF 4D 89 C5",
+  "match": "0x140322e60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140322e60",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_RegexReplace_Char"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140322e60",
+  "made_on_target": "0x140322e60",
+  "twin": "made on steam-26566308; the target 0x140322e60 is KB 0x140322e60: Ne_Std_ThrowVectorTooLongC (0x31c450) and Ne_HashMap_ThrowLengthError_MaterialActorId (0x32c930) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140322e60",
+    "target": "0x140322e60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4b7b6ec4eb4b8f7730dcb5b056abaa4219e4abfc57d752c50a8abb96853e64c6"
+  }
+ ]
+}

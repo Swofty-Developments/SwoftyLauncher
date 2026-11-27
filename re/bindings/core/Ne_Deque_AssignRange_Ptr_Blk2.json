@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Deque_AssignRange_Ptr_Blk2",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14530cb60",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Deque_AssignRange_Ptr_Blk2(void *deque, void *src_iter, void *src_end_iter)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14530f520 (RacingPC lab re_groups/_decomp);xref:0x14530edc0",
+  "notes": "(lib) MSVC std::deque<T*> range assign with 2 elements per block: overwrites existing elements from the source iterator, pops the surplus from the back, then push_backs the remainder (grows map via FUN_14530f260, allocs 0x10-byte blocks). Fields +8 map, +0x10 map size, +0x18 offset, +0x20 size."
+ },
+ "signature": {
+  "id": "core.deque_assign_range_ptr_blk2",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 18 48 89 6C 24 20 56 57 41 55 41 56",
+  "match": "0x14530cb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14530cb60",
+  "kind": "func_start",
+  "names": [
+   "Ne_Deque_AssignRange_Ptr_Blk2"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14530f520",
+  "made_on_target": "0x14530f520",
+  "twin": "made on steam-26566308; the target 0x14530f520 is KB 0x14530cb60: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14530f520",
+    "target": "0x14530f520"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9299c2cd8bd36bba4c165cad18fbc99c171b31003e104189886338e45f79e34c"
+  }
+ ]
+}

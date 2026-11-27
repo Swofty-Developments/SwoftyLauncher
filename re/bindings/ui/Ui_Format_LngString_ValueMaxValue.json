@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ui_Format_LngString_ValueMaxValue",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14166cf50",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void **Ui_Format_LngString_ValueMaxValue(void *fmt_str, void **out_str, int32_t value, int32_t max_value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14166e540 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x141f34100,0x141fafc20",
+  "notes": "Builds an 8-slot format-argument set on the stack (0x380 bytes), adds two type-7 integer args keyed \"VALUE\" (param_3) and \"MAX_VALUE\" (param_4), clears *out_str and expands the template via Ne_String_AssignWithMode; releases the arg strings and returns out_str. Context from caller: Game_TyreAllocationVM_BuildPresetsAndSlots passes slot index+1 and the per-session count; 0x141fafc20 (builds a tyre set VM row) fetches a localised template first and stores the result as VM string \"set_number_string\". Good hook point for \"x / y\" style UI text. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "ui.format_lng_string_value_max_value",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 04 00 00 44 89 CB",
+  "match": "0x14166cf50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14166cf50",
+  "kind": "func_start",
+  "names": [
+   "Ui_Format_LngString_ValueMaxValue"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14166e540",
+  "made_on_target": "0x14166e540",
+  "twin": "made on steam-26566308; the target 0x14166e540 is KB 0x14166cf50: Ne_InternedString_ManageB (0x16689d0) and Career_Bind_FacilityUpgradeNameStrings (0x16752d0) on either side both sit 0x15f0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14166e540",
+    "target": "0x14166e540"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fb3262e13960aa7e9b2b3d9aca3a47fda94612bc16231291996ecbe4836e1e9a"
+  }
+ ]
+}

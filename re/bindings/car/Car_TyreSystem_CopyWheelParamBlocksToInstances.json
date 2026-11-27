@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Car_TyreSystem_CopyWheelParamBlocksToInstances",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142e860d0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_TyreSystem_CopyWheelParamBlocksToInstances(void *tyre_vehicle)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142e88660 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x1428ab9e0,0x142e93110",
+  "notes": "If +0x80 and +0x81 are set and the instance buffer object at [+0x78]+0x80 exists: for 4 groups of 9 instance indices (+0x88, +0xac, +0xd0, +0xf4; negative = unused) copies (+0x248 & 0xfffffff) 16-byte elements from the group's block (+0x250, +0x2c0, +0x330, +0x3a0) to buffer [+0xb8] at index*stride(+0xd8)*16, sets the dirty bit in bitset [+0xc0]+8 and flag +0x13c|=0x10; then sets state +0x128 to 2 (queues job 0x143d3f3f0 on the first transition) and +0x12c|=8. Context from caller: Game_TyreSystem_UpdateVehicle runs it on every 0xde0 tyre set when the car is within scale*200 of the camera; 0x1428ab9e0 (pit stop wheel pose update) runs it per set before Game_PitCrewActor_SetTyreBonesAndAttachment. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "car.tyre_system_copy_wheel_param_blocks_to_instances",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 B9 80 00 00 00 00",
+  "match": "0x142e860d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e860d0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreSystem_CopyWheelParamBlocksToInstances"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e88660",
+  "made_on_target": "0x142e88660",
+  "twin": "made on steam-26566308; the target 0x142e88660 is KB 0x142e860d0: Car_Tyre_CurveMap_FindBracketA (0x2e7e750) and Car_Tyre_IsCompoundAllowed (0x2e8abc0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e88660",
+    "target": "0x142e88660"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e707e90ad5f44264ca631746b563197488acfee2fe379366f4437d000a80a2a7"
+  }
+ ]
+}

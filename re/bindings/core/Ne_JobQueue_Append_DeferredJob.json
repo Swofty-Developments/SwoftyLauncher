@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_JobQueue_Append_DeferredJob",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143abfd70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_JobQueue_Append_DeferredJob(void *queue, void *job_record)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143ac2340 (RacingPC lab re_groups/_decomp, L1 re-check with callers);xref:0x143abfcc0,0x143ac3cf0",
+  "notes": "Whole body read. If the block list at queue+0xa0 is empty (count queue+0xd0) it takes a block from the free pool (queue+0x70/+0x78, count +0x88) or allocates a 0x48 block from the allocator at queue+0 and reserves 0x40 slots, then links it before queue+0xc0; otherwise it uses the tail block ([queue+0xc0]+0x10). Inserts job_record into that block list and returns the error code; non-zero is written to the TLS errno chain and the errno trace ring. Caller 0x143abfcc0: enqueues one job under the critical section and takes this path when the worker count (queue+0x160) is negative, else pushes to a worker; caller 0x143ac3cf0: enqueues a batch of jobs from a range the same way. Record = {owner cookie queue+0x168, fn, arg, 0, two flag bytes}. (lab L1 re-check with caller context 2026-11-27)"
+ },
+ "signature": {
+  "id": "core.job_queue_append_deferred_job",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D6 48 89 CF 48 83 B9 D0 00 00 00 00",
+  "match": "0x143abfd70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143abfd70",
+  "kind": "func_start",
+  "names": [
+   "Ne_JobQueue_Append_DeferredJob"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143ac2340",
+  "made_on_target": "0x143ac2340",
+  "twin": "made on steam-26566308; the target 0x143ac2340 is KB 0x143abfd70: Ne_Tls_GetThreadContext (0x3ac21d0) and Ne_JobSignal_WaitWithTimeout (0x3ac26d0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143ac2340",
+    "target": "0x143ac2340"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bbb78f9b01577e3b02f11d7cdfb3b6787afe83e8a2a88fe1bcad2ed4e19791fe"
+  }
+ ]
+}
