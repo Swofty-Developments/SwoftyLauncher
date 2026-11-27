@@ -28,7 +28,7 @@ const NAV_SOUND: &str = "trigger_nav_on_up_down";
 const STACKER: &str = "stacker_items_contextual";
 const STACKER_PATH: &str = "transition_anim_items.transition_fade_items.stacker_items_contextual";
 const STOCK_SLOT: &str = "spawner_stacker_items";
-const ADDON_SLOT: &str = "addon_stacker_items";
+pub(super) const ADDON_SLOT: &str = "addon_stacker_items";
 const STOCK_TEMPLATE: &str = "fe_tile_button_default";
 const LABELS: [(&str, &str); 2] = [("label_builtin", "Built In"), ("label_addons", "Addons")];
 const LABEL_SCALE: f64 = 0.8;
@@ -68,7 +68,7 @@ fn event_mut<'a>(n: &'a mut Node, name: &str) -> Result<&'a mut Obj> {
         .ok_or_else(|| err(format!("{owner}: no {name} event")))
 }
 
-fn set_layout(n: &mut Node, slot: &str) -> Result<()> {
+pub(super) fn set_layout(n: &mut Node, slot: &str) -> Result<()> {
     let group = n
         .slot_mut(LAYOUT)?
         .first_mut()

@@ -69,6 +69,7 @@ inline constexpr address<"Vm_RenownIncreasedPopup_SetLevelNodes"> Vm_RenownIncre
 inline constexpr address<"Vm_Resolve_PrefixedNodeByIndex"> Vm_Resolve_PrefixedNodeByIndex{}; // L2 experimental
 using Vm_Resolve_RegistryNode_t = void *(void *registry, const char *path, const void *base, void *create);
 inline constexpr fn<"Vm_Resolve_RegistryNode", Vm_Resolve_RegistryNode_t> Vm_Resolve_RegistryNode{}; // L2 experimental
+inline constexpr address<"Vm_Run_Route"> Vm_Run_Route{}; // L2 experimental
 using Vm_Set_Bool_t = void *(void *registry, void *parent, const char *name, uint8_t *value, int overwrite);
 inline constexpr fn<"Vm_Set_Bool", Vm_Set_Bool_t> Vm_Set_Bool{}; // L2 experimental
 using Vm_Set_NodeRef_t = void **(void *registry, void *parent, const char *name, void *value, int overwrite);

@@ -16,6 +16,7 @@ pub mod node;
 pub mod pages;
 pub mod patch;
 pub mod rows;
+pub mod tile_image;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -36,6 +37,7 @@ mod menu_rows;
 mod picker_rows;
 mod toggles;
 
+pub use addon_screens::named_root;
 use addon_screens::{
     Routing, Targets, career_setups, options_pages, resume_screen, screen_problems, ui_state,
 };
@@ -144,7 +146,7 @@ pub fn build(
     let generated = options_pages(settings, &src, &flow, &mut built)?;
     let (setups, setup_lines) = career_setups(input, &src, &flow, &mut built)?;
     let resume = resume_screen(settings, input, &src, &mut built)?;
-    let routing = Routing::of(settings, &built, &generated, &setups);
+    let routing = Routing::of(settings, &built, &generated, &setups)?;
     let mut problems = screen_problems(&built)?;
     let targets = Targets::of(&flow, &setups, resume.as_ref());
     let mfd_rows = mfd_rows(settings);
@@ -181,7 +183,14 @@ pub fn build(
 
     write_databases(&erp("databases.erp"), state, archives)?;
     write_flow_persistent(&erp("flow_persistent.erp"), lang, archives)?;
-    let frontend = write_frontend(&erp("flow_frontend.erp"), writer, show_panel, archives)?;
+    let frontend = write_frontend(
+        &erp("flow_frontend.erp"),
+        input,
+        writer,
+        show_panel,
+        &settings.tile_images,
+        archives,
+    )?;
     write_leaderboard(&erp(LEADERBOARD_ARCHIVE), archives)?;
     write_playercard(&erp(home_rows::PLAYERCARD_ARCHIVE), archives)?;
 
@@ -195,7 +204,13 @@ pub fn build(
     }
     build.lines.extend(frontend.lines);
     build.warnings.extend(frontend.warnings);
-    write_flags(out, &mut build, persistent, frontend.rows_built)?;
+    write_flags(
+        out,
+        &mut build,
+        persistent,
+        frontend.rows_built,
+        frontend.tile_images_built,
+    )?;
     if !mfd_rows.is_empty() {
         write_mfd_templates(input, out, &mfd_rows, &mut build, archives)?;
     }

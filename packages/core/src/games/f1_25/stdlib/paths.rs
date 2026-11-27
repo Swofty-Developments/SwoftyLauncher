@@ -109,7 +109,11 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "hud.element",
-        include_str!("../../../../../sdk/std/registries/hud.element/1.6.json"),
+        include_str!("../../../../../sdk/std/registries/hud.element/1.7.json"),
+    ),
+    (
+        "hud.widget",
+        include_str!("../../../../../sdk/std/registries/hud.widget/1.0.json"),
     ),
     (
         "hub.tab",
@@ -184,8 +188,28 @@ const SCHEMAS: &[(&str, &str)] = &[
         include_str!("../../../../../sdk/std/registries/track.venue/1.0.json"),
     ),
     (
+        "ui.option",
+        include_str!("../../../../../sdk/std/registries/ui.option/1.0.json"),
+    ),
+    (
         "ui.per_package",
         include_str!("../../../../../sdk/std/registries/ui.per_package/1.0.json"),
+    ),
+    (
+        "ui.route",
+        include_str!("../../../../../sdk/std/registries/ui.route/1.0.json"),
+    ),
+    (
+        "ui.screen",
+        include_str!("../../../../../sdk/std/registries/ui.screen/1.0.json"),
+    ),
+    (
+        "ui.texture_slice",
+        include_str!("../../../../../sdk/std/registries/ui.texture_slice/1.0.json"),
+    ),
+    (
+        "ui.tile",
+        include_str!("../../../../../sdk/std/registries/ui.tile/1.0.json"),
     ),
     (
         "vehicle",

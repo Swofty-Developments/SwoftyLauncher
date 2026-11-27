@@ -238,7 +238,7 @@ The core checks each pattern against the running exe at load, the same way it ch
 - [Selector layers](/std/layers#selectors), [protected fields](/std/layers#protected-fields) and [option-bound layers](/std/layers#option-bound-layers).
 - [Copies as variants](/std/bases#copies-are-variants).
 - Tracks with slots, venues and pinned ids ([Dependencies](/std/dependencies#tracks-have-stable-identities)).
-- `ui::screens` and `ui::texture_slices`, which end whole-resource UI replacements.
+- `ui::screens` and `ui::texture_slices`, which end whole-resource UI replacements (both apply from 1.10.54, experimental).
 - Driving events: `session.player.control`, `session.pit_lane.control` and `car.parts.register`.
 - Live career operations for Career Editor.
 - Bindings an addon brings, above.

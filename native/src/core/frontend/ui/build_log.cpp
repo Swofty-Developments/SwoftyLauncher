@@ -8,6 +8,7 @@
 
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/ui/screen_loader.hpp"
+#include "core/hooks/ui_points.hpp"
 
 namespace frontend::ui {
 
@@ -155,6 +156,8 @@ void ScreenLoader::screen_built(safetyhook::Context &c)
                     rc == 0      ? "ok, the engine inserts it into the screen table next"
                     : rc == 0x55 ? "skipped: a same-name screen is already registered"
                                  : "failed: the engine drops it and ends this build job");
+        if (rc == 0)
+            swofty_core::hooks::ui_points::screen_built(cur_screen, s->name.c_str());
     } else if (rc && rc != 0x55 && (strict || ++engine_failures <= MAX_ENGINE_FAILURES)) {
         swofty::log("[ui] engine screen '%s' failed to build, result 0x%x; the engine drops it", cur_screen, rc);
     }

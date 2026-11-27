@@ -90,7 +90,7 @@ Each release goes through the usual flow: a prep commit on main, the main CI, th
 
 - `tracks::tracks`, `tracks::venues`, `tracks::data` and `tracks::per_package`;
 - every track in the base offered in every box where it fits: garages for the box's team count, grid size, AI data for the box's cars, and Time Trial support. A box lists the season's real calendar first, then every other fitting track under "More tracks";
-- the track select list hook (`ui.track_select.build`), which still needs reverse engineering. Until then, a guard covers a track that doesn't fit.
+- the track select hook (`ui.track_select.build`), which counts the rows of the Grand Prix and championship settings lists and cannot yet read or change them. A guard covers a track that doesn't fit.
 
 **Done when:**
 

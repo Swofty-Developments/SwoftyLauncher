@@ -995,6 +995,40 @@ fn addon_screens_get_route_groups_and_an_open_route_on_their_anchor() {
 }
 
 #[test]
+fn a_cloned_route_group_opens_the_screen_it_is_given() {
+    let screens = [("ai".to_owned(), "settings_container".to_owned())];
+    let d = routes(
+        &routes_file(),
+        route_groups(&[], &[]),
+        screen_route_groups(&screens),
+        &[],
+    )
+    .unwrap();
+    let clone = |id: &str, of: &str, opens: &str| RouteClone {
+        id: id.into(),
+        clone_of: of.into(),
+        opens: opens.into(),
+    };
+    let known = ["mine".to_owned()];
+    let d = clone_route_groups(&d, &[clone("mine", "ai", "mine")], &known).unwrap();
+    let p = Pkg::parse(&d).unwrap();
+    let mine = group(&p, "mine").expect("cloned group");
+    let base = group(&p, "ai").unwrap();
+    assert_eq!(route_ids(mine), route_ids(base));
+    let text = canonical(mine);
+    assert!(!text.contains("\"ai\"") && text.contains("\"mine\""), "{text}");
+    let err = clone_route_groups(&d, &[clone("x", "no_such_group", "mine")], &known)
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("no_such_group") && err.contains("ai"), "{err}");
+    let err = clone_route_groups(&d, &[clone("x", "ai", "unknown_screen")], &known)
+        .unwrap_err()
+        .to_string();
+    assert!(err.contains("unknown_screen"), "{err}");
+    assert!(clone_route_groups(&d, &[clone("mine", "ai", "mine")], &known).is_err());
+}
+
+#[test]
 fn a_long_addon_settings_list_gets_a_route_group_per_home_screen() {
     let homes = crate::ui::pages::home_plan(70);
     let pages: Vec<(String, String, String)> = (0..70)

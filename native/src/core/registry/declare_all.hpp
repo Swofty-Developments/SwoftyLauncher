@@ -10,6 +10,7 @@
 #include <swofty/systems/sounds.hpp>
 #include <swofty/systems/teams.hpp>
 #include <swofty/systems/tracks.hpp>
+#include <swofty/systems/ui.hpp>
 #include <swofty/systems/wearables.hpp>
 
 #include <cstddef>
@@ -65,6 +66,12 @@ template <class Declare> std::size_t declare_system_registries(Declare &&declare
     one(tracks::sponsors);
     one(tracks::per_package);
     one(sessions::points);
+    one(ui::texture_slices);
+    one(ui::tiles);
+    one(ui::screens);
+    one(ui::routes);
+    one(ui::options);
+    one(ui::hud_widgets);
     return count;
 }
 

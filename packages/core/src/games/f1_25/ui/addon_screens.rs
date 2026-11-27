@@ -6,14 +6,35 @@ use std::path::PathBuf;
 use swofty_formats::pkg::Node;
 
 use super::career_row;
-use super::node::{boolv, err, s, uidb_var};
+use super::node::{NodeExt, ObjExt, boolv, err, s, uidb_var};
 use super::pages::{self, Entry, HomePage, Screens, Sources};
 use super::{
-    ANCHOR, FLOW, MfdRow, SETUP_BACK_ERP, SETUP_FLOW_ERP, catalog, check, patch, screen_flow, ui_file,
+    ANCHOR, FLOW, MfdRow, ROUTES, SETUP_BACK_ERP, SETUP_FLOW_ERP, catalog, check, patch, screen_flow, ui_file,
 };
 use crate::addons::settings::SessionSettings;
 use crate::manifest::CAREER_SETUP_BACK;
 use crate::{Error, Result};
+
+/// The addon's `.ui` with its one root screen named `name`, the key of its `ui.screen` record: the game opens a screen
+/// by the name of its root node, and the build lists the screen under the record key, so a copy of a stock page builds
+/// without the creator renaming it by hand. `None` when the root already has that name, or the file does not hold
+/// exactly one screen (it is then left as written).
+pub fn named_root(data: &[u8], name: &str) -> Result<Option<Vec<u8>>> {
+    let mut old = String::new();
+    let renamed = super::node::edit(data, |p| {
+        let screens = super::node::root_obj(p)?.at_mut("Screens")?.a_mut()?;
+        let [root] = screens.as_mut_slice() else {
+            return Ok(());
+        };
+        if root.name() == name {
+            return Ok(());
+        }
+        old = root.name().to_owned();
+        super::node::rename_refs(root, &old, name);
+        super::node::rename(root, name)
+    })?;
+    Ok((!old.is_empty()).then_some(renamed))
+}
 
 /// Builds the options page of each addon screen with `page: options` and adds it to `built`, named
 /// swofty_addon_<name>_<addon index>, since the view model reads the index after the last '_'. Returns
@@ -146,6 +167,8 @@ pub(super) struct Routing {
     pub(super) addon_groups: Vec<(String, String)>,
     /// The route groups of the career setups.
     pub(super) setup_groups: Vec<Node>,
+    /// The route groups the addons' `ui.route` records clone.
+    pub(super) clones: Vec<patch::RouteClone>,
 }
 
 impl Routing {
@@ -156,7 +179,7 @@ impl Routing {
         built: &Screens,
         generated: &[(String, String, String)],
         setups: &[patch::SetupRoutes],
-    ) -> Self {
+    ) -> Result<Self> {
         let names: Vec<String> = built.order.iter().map(|(n, _)| n.clone()).collect();
         let addon_routes: Vec<(String, String)> = settings
             .ui
@@ -180,13 +203,58 @@ impl Routing {
         addon_groups.extend(generated.iter().map(|(_, a, s)| (s.clone(), a.clone())));
         let setup_groups: Vec<Node> = setups.iter().flat_map(patch::setup_route_groups).collect();
         let listed: Vec<String> = names.iter().chain(&addon_screens).cloned().collect();
-        Self {
+        let clones = route_clones(settings, &listed)?;
+        Ok(Self {
             listed,
             opened,
             addon_groups,
             setup_groups,
-        }
+            clones,
+        })
     }
+}
+
+pub(super) fn route_clones(settings: &SessionSettings, listed: &[String]) -> Result<Vec<patch::RouteClone>> {
+    let routes: Vec<_> = settings.ui.iter().flat_map(|u| &u.routes).collect();
+    let mut out: Vec<patch::RouteClone> = Vec::new();
+    for (i, r) in routes.iter().enumerate() {
+        let bad = |why: String| err(format!("{}: ui.route {}: {why}", r.addon, r.id));
+        if let Some(first) = routes[..i].iter().find(|o| o.id == r.id) {
+            return Err(bad(format!(
+                "the route is declared by {} and {}",
+                first.addon, r.addon
+            )));
+        }
+        if !ROUTES.ends_with(&format!("/{}", r.file)) {
+            return Err(bad(format!(
+                "file {} is not a route file the build clones groups in; only routes_frontend_general.uir",
+                r.file
+            )));
+        }
+        let screen = settings
+            .ui
+            .iter()
+            .flat_map(|u| &u.screens)
+            .find(|s| s.page.is_none() && s.name == r.opens)
+            .ok_or_else(|| {
+                bad(format!(
+                    "opens {}, which is not a ui.screen of an enabled addon",
+                    r.opens
+                ))
+            })?;
+        if screen.flow != FLOW || !listed.contains(&screen.name) {
+            return Err(bad(format!(
+                "opens {}, a ui.screen in {} with no flow entry: the build writes flow entries only for {FLOW}",
+                r.opens, screen.flow
+            )));
+        }
+        out.push(patch::RouteClone {
+            id: r.id.clone(),
+            clone_of: r.clone_of.clone(),
+            opens: r.opens.clone(),
+        });
+    }
+    Ok(out)
 }
 
 /// What the checks find wrong in each built screen.
@@ -277,4 +345,57 @@ pub(super) fn ui_state(flow: &[Entry], mfd_rows: &[MfdRow]) -> Result<Vec<(Strin
         }
     }
     Ok(state)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ui::node::{arr, first_screen_of, obj, ui_bytes};
+    use swofty_formats::pkg::Node;
+
+    fn screen(name: &str) -> Node {
+        let mut items = vec![obj(vec![
+            ("name", s(name)),
+            ("target", s(&format!("{name}.Action"))),
+            ("other", s("someone_else.Action")),
+        ])];
+        items.extend((0..7).map(|_| arr(vec![])));
+        arr(items)
+    }
+
+    #[test]
+    fn a_copied_stock_page_is_renamed_to_its_record_key() {
+        let data = ui_bytes(vec![screen("swofty_addon_1")]).unwrap();
+        let renamed = named_root(&data, "my_screen").unwrap().expect("renamed");
+        let root = first_screen_of(&renamed).unwrap();
+        assert_eq!(root.name(), "my_screen");
+        let target = root
+            .props()
+            .unwrap()
+            .get("target")
+            .unwrap()
+            .v()
+            .unwrap()
+            .as_str()
+            .unwrap();
+        assert_eq!(target, "my_screen.Action");
+        let other = root
+            .props()
+            .unwrap()
+            .get("other")
+            .unwrap()
+            .v()
+            .unwrap()
+            .as_str()
+            .unwrap();
+        assert_eq!(other, "someone_else.Action");
+    }
+
+    #[test]
+    fn a_root_that_already_has_the_key_or_a_file_of_two_screens_is_left_alone() {
+        let same = ui_bytes(vec![screen("my_screen")]).unwrap();
+        assert!(named_root(&same, "my_screen").unwrap().is_none());
+        let two = ui_bytes(vec![screen("a"), screen("b")]).unwrap();
+        assert!(named_root(&two, "my_screen").unwrap().is_none());
+    }
 }

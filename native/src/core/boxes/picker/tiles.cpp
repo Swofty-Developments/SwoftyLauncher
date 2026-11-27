@@ -1,4 +1,6 @@
 #include "core/boxes/picker/picker.hpp"
+#include "core/boxes/era/box_table.hpp"
+#include "core/hooks/ui_points.hpp"
 
 #include <algorithm>
 #include <cstdio>
@@ -79,8 +81,21 @@ void site_entry(SwoftyContext *c)
     auto *vm = reinterpret_cast<uint8_t *>(c->rsi);
     if (!vm || !picker.live || picker.off)
         return;
-    restore_lists();
     void *mode = at<void *>(vm, VM_MODE);
+    bool tt = time_trial(mode);
+    std::vector<logic::Box> order;
+    {
+        std::lock_guard<std::mutex> g(picker.lock);
+        order = logic::ordered(picker.boxes);
+    }
+    bool none = order.empty();
+    {
+        logic::BoxTable table(order, tt);
+        swofty_core::hooks::ui_points::era_tiles(vm + VM_TILE_BEGIN, table.table());
+    }
+    if (none)
+        return;
+    restore_lists();
     void *alloc = at<void *>(vm, VM_ALLOCATOR);
     auto *begin = at<uint8_t *>(vm, VM_TILE_BEGIN);
     auto *end = at<uint8_t *>(vm, VM_TILE_END);
@@ -92,15 +107,9 @@ void site_entry(SwoftyContext *c)
         swofty::log("[era] the view model's addon_tiles or selected_addon_tile node could not be made; no addon row");
         return;
     }
-    std::vector<logic::Box> order;
-    {
-        std::lock_guard<std::mutex> g(picker.lock);
-        order = logic::ordered(picker.boxes);
-    }
     auto available = reinterpret_cast<FeTile_Is_EraScenarioAvailable_Thunk_t *>(b.available);
     auto add = reinterpret_cast<FeTile_Add_EraTile_t *>(b.add);
     uint8_t *tiles_node = at<uint8_t *>(vm, VM_TILES_NODE);
-    bool tt = time_trial(mode);
     picker.built = {vm, stock, 0, {}};
     ref<uint8_t *>(vm, VM_TILES_NODE) = list;
     for (const auto &box : order) {

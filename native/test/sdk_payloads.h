@@ -291,6 +291,54 @@ typedef struct SwoftyEvHeadResolve {
     void *user;
 } SwoftyEvHeadResolve;
 
+typedef struct SwoftyEvUiList {
+    uint32_t size, payload_version;
+    void *list;
+    const SwoftyTileList *tiles_table;
+} SwoftyEvUiList;
+
+typedef struct SwoftyEvTrackSelect {
+    uint32_t size, payload_version;
+    void *list;
+    const SwoftyTrackList *tracks_table;
+} SwoftyEvTrackSelect;
+
+typedef struct SwoftyEvVmResolve {
+    uint32_t size, payload_version;
+    const char *path_str;
+    void *node;
+    int32_t (*node_of_fn)(void *user, const char *path, void **node);
+    void *user;
+} SwoftyEvVmResolve;
+
+typedef struct SwoftyEvLangLookup {
+    uint32_t size, payload_version;
+    const char *key_str;
+    const char *language_str;
+    const char *text_str;
+    int32_t (*set_text_fn)(void *user, const char *text);
+    void *user;
+} SwoftyEvLangLookup;
+
+typedef struct SwoftyEvScreenBuilt {
+    uint32_t size, payload_version;
+    const char *screen_str;
+    void *view;
+} SwoftyEvScreenBuilt;
+
+typedef struct SwoftyEvRouteOpen {
+    uint32_t size, payload_version;
+    const char *route_str;
+    const char *screen_str;
+} SwoftyEvRouteOpen;
+
+typedef struct SwoftyEvMfdPages {
+    uint32_t size, payload_version;
+    void *pages;
+    int32_t count;
+    int32_t capacity;
+} SwoftyEvMfdPages;
+
 typedef struct SwoftyEvCatalogueBuild {
     uint32_t size, payload_version;
     int32_t (*add_fn)(void *user, const char *registry, const char *id);
@@ -374,6 +422,16 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvRatingsRead, drivers, RatingsRead, 24)                                                                             \
     X(SwoftyEvNumberAssign, drivers, NumberAssign, 24)                                                                           \
     X(SwoftyEvHeadResolve, drivers, HeadResolve, 40)                                                                             \
+    X(SwoftyEvUiList, ui, EraTiles, 24)                                                                                          \
+    X(SwoftyEvUiList, ui, HomeTiles, 24)                                                                                         \
+    X(SwoftyEvUiList, ui, CareerContentTiles, 24)                                                                                \
+    X(SwoftyEvUiList, ui, CarCategoryTiles, 24)                                                                                  \
+    X(SwoftyEvTrackSelect, ui, TrackSelectBuild, 24)                                                                             \
+    X(SwoftyEvVmResolve, ui, VmResolve, 40)                                                                                      \
+    X(SwoftyEvLangLookup, ui, LangLookup, 48)                                                                                    \
+    X(SwoftyEvScreenBuilt, ui, ScreenBuilt, 24)                                                                                  \
+    X(SwoftyEvRouteOpen, ui, RouteOpen, 24)                                                                                      \
+    X(SwoftyEvMfdPages, ui, MfdPages, 24)                                                                                        \
     X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, 24)                                                                     \
     X(SwoftyEvWeatherSetup, weather, Setup, 800)                                                                                 \
     X(SwoftyEvTyreDamage, tyre_damage, Damage, 24)                                                                               \
@@ -523,6 +581,32 @@ typedef struct SwoftyEvPitStopTyres {
     X(SwoftyEvHeadResolve, drivers, HeadResolve, head_id, 16)                                                                    \
     X(SwoftyEvHeadResolve, drivers, HeadResolve, set_head_fn, 24)                                                                \
     X(SwoftyEvHeadResolve, drivers, HeadResolve, user, 32)                                                                       \
+    X(SwoftyEvUiList, ui, EraTiles, list, 8)                                                                                     \
+    X(SwoftyEvUiList, ui, EraTiles, tiles_table, 16)                                                                             \
+    X(SwoftyEvUiList, ui, HomeTiles, list, 8)                                                                                    \
+    X(SwoftyEvUiList, ui, HomeTiles, tiles_table, 16)                                                                            \
+    X(SwoftyEvUiList, ui, CareerContentTiles, list, 8)                                                                           \
+    X(SwoftyEvUiList, ui, CareerContentTiles, tiles_table, 16)                                                                   \
+    X(SwoftyEvUiList, ui, CarCategoryTiles, list, 8)                                                                             \
+    X(SwoftyEvUiList, ui, CarCategoryTiles, tiles_table, 16)                                                                     \
+    X(SwoftyEvTrackSelect, ui, TrackSelectBuild, list, 8)                                                                        \
+    X(SwoftyEvTrackSelect, ui, TrackSelectBuild, tracks_table, 16)                                                               \
+    X(SwoftyEvVmResolve, ui, VmResolve, path_str, 8)                                                                             \
+    X(SwoftyEvVmResolve, ui, VmResolve, node, 16)                                                                                \
+    X(SwoftyEvVmResolve, ui, VmResolve, node_of_fn, 24)                                                                          \
+    X(SwoftyEvVmResolve, ui, VmResolve, user, 32)                                                                                \
+    X(SwoftyEvLangLookup, ui, LangLookup, key_str, 8)                                                                            \
+    X(SwoftyEvLangLookup, ui, LangLookup, language_str, 16)                                                                      \
+    X(SwoftyEvLangLookup, ui, LangLookup, text_str, 24)                                                                          \
+    X(SwoftyEvLangLookup, ui, LangLookup, set_text_fn, 32)                                                                       \
+    X(SwoftyEvLangLookup, ui, LangLookup, user, 40)                                                                              \
+    X(SwoftyEvScreenBuilt, ui, ScreenBuilt, screen_str, 8)                                                                       \
+    X(SwoftyEvScreenBuilt, ui, ScreenBuilt, view, 16)                                                                            \
+    X(SwoftyEvRouteOpen, ui, RouteOpen, route_str, 8)                                                                            \
+    X(SwoftyEvRouteOpen, ui, RouteOpen, screen_str, 16)                                                                          \
+    X(SwoftyEvMfdPages, ui, MfdPages, pages, 8)                                                                                  \
+    X(SwoftyEvMfdPages, ui, MfdPages, count, 16)                                                                                 \
+    X(SwoftyEvMfdPages, ui, MfdPages, capacity, 20)                                                                              \
     X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, add_fn, 8)                                                              \
     X(SwoftyEvCatalogueBuild, wearables, CatalogueBuild, user, 16)                                                               \
     X(SwoftyEvWeatherSetup, weather, Setup, session_type, 8)                                                                     \

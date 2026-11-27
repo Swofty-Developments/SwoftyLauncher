@@ -14,4 +14,7 @@ pub mod paths;
 pub mod range;
 pub mod reports;
 pub mod room;
+pub mod routes;
+pub mod screens;
 pub mod state;
+pub mod tiles;

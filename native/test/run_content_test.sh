@@ -14,6 +14,7 @@ LOGO_SLICE_DIR="$OUT/logo_slices" "$OUT/logo_build_test" content/bc7 "$OUT/logo_
 LOGO_SLICE_DIR="$OUT/logo_slices" LOGO_SLICE_WARM=1 "$OUT/logo_build_test" content/bc7 "$OUT/logo_out_warm" | grep 'slice cache\(:\| in\) .*\(LOGO_SLICE_DIR\|second run\)'
 python3 content/check_logo_slices.py content/bc7/expect/logo_out.md5 "$OUT/logo_out" "$OUT/logo_out_cold" "$OUT/logo_out_warm"
 "$OUT/logo_deliver_test" content/bc7
+"$OUT/slices_test" ../../packages/sdk/std/registries
 "$OUT/garage_test"
 "$OUT/box_ui_test"
 python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
@@ -22,6 +23,7 @@ python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
 "$OUT/package_id_test"
 "$OUT/id_pool_test"
 "$OUT/box_world_test"
+"$OUT/option_tags_test"
 "$OUT/gvdb_file_test"
 "$OUT/wear_test" ../../packages/sdk/std/registries
 python3 content/check_lowering.py "$OUT/lower_tool"
@@ -30,6 +32,7 @@ python3 content/check_wide_default.py "$OUT/lower_tool"
 if GAMEDB=$(python3 content/stock_gamedb.py 2>"$OUT/stock_gamedb.why"); then
     echo "game database steps on $GAMEDB"
     "$OUT/gvdb_file_test" "$GAMEDB"
+    "$OUT/option_tags_test" "$GAMEDB"
     "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --out "$OUT/f2012_edits.json" --summary "$OUT/f2012_summary.json" \
         swofty.f2012 content/wear/f2012.json
     "$OUT/rows_tool" --registries ../../packages/sdk/std/registries --db "$GAMEDB" --out "$OUT/drs_edits.json" --summary "$OUT/drs_summary.json" \

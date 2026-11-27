@@ -1,0 +1,8 @@
+{
+  "hud.element": {
+    "bad": {
+      "dial": "f1_26",
+      "template": { "file": "ui/tyre_letter.ui", "view_model": "hud.f1990.tyre_letter" }
+    }
+  }
+}

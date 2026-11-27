@@ -1,0 +1,21 @@
+{
+  "order": ["mod.a", "mod.b", "mod.c"],
+  "ui.tile": {
+    "mod.a/settings": { "place": "home", "title": "lng_mod_settings", "image": "mod.a/tile", "route": "mod.a/open" },
+    "mod.a/career_only": { "place": "home", "title": { "literal": "Career only" }, "route": "mod.a/c", "gate": { "mode": "career" } },
+    "mod.b/season": { "place": "home", "title": "lng_season", "route": "mod.b/s", "gate": [{ "mode": "career" }, { "content": "mod.b/sw_2013" }] },
+    "mod.b/no_route": { "place": "home", "title": { "literal": "No route" } },
+    "mod.b/world": { "place": "f1_world", "title": "lng_world", "route": "mod.b/w" },
+    "mod.b/bad_place": { "place": "nowhere", "title": "lng_x" },
+    "mod.c/settings": { "place": "home", "title": { "literal": "Second" }, "route": "mod.c/open" },
+    "mod.c/no_title": { "place": "home", "route": "mod.c/t" },
+    "mod.c/bad_gate": { "place": "home", "title": "lng_g", "route": "mod.c/g", "gate": { "no_such_fact": 1 } },
+    "mod.a/career_tile": { "place": "career", "title": { "literal": "Career extra" }, "route": "mod.a/career" },
+    "mod.b/career_gated": { "place": "career", "title": "lng_cg", "route": "mod.b/cg", "gate": { "content": "mod.b/sw_2013" } },
+    "mod.c/career_no_route": { "place": "career", "title": "lng_nr" },
+    "mod.a/cat_one": { "place": "car_category", "title": "lng_cat1", "route": "mod.a/cat", "image": "#overrides.home_screen.tiles_multiplayer_6x12[cat_one]" },
+    "mod.b/cat_two": { "place": "car_category", "title": { "literal": "Two" }, "route": "mod.b/cat" },
+    "mod.c/cat_three": { "place": "car_category", "title": "lng_cat3", "route": "mod.c/cat" },
+    "mod.c/hash_image": { "place": "home", "title": "lng_h", "route": "mod.c/h", "image": "#overrides.home_screen.tiles_solo_6x6[cs_x]" }
+  }
+}

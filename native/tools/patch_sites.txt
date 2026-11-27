@@ -59,6 +59,12 @@ core/assets/lang_override.cpp: void refresh_keys(const KeySet &keys) { install(g
 core/assets/lang_override.cpp: size_t s = install(gather(nullptr), nullptr); => none
 core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(g_find_at), reinterpret_cast<void *>(&find_hook)); => inline sig S_SET_FIND
 core/assets/lang_override.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(&init_hook)); => inline sig S_MODULE_INIT
+core/assets/lang_override.cpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/mfd_pages_point.cpp: g_point = std::make_unique<GamePoint>(mfd_point::POINT, "Hud_MfdVm_RefreshPanelAvailability", => inline binding Hud_MfdVm_RefreshPanelAvailability
+core/hooks/track_select_point.cpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/track_select_point.cpp: g_gp = std::make_unique<GamePoint>(ui_points::TRACK_SELECT_POINT, GP, reinterpret_cast<void *>(&d_gp), game_ops()); => inline binding Trk_GrandPrixTrackSelectVm_RefreshTrackList
+core/hooks/track_select_point.cpp: g_cs = std::make_unique<GamePoint>(ui_points::TRACK_SELECT_POINT, CS, reinterpret_cast<void *>(&d_cs), game_ops()); => inline binding Trk_SettingsSelectTrackTabVm_RefreshTrackList
+core/hooks/ui_hot_points.cpp: g_point = std::make_unique<GamePoint>(ui_hot::VM_POINT, "Vm_Resolve_RegistryNode", reinterpret_cast<void *>(&d_resolve), => inline binding Vm_Resolve_RegistryNode
 core/assets/overlay.cpp: auto r = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(fn)); => via
 core/assets/overlay.cpp: return hook(h_resolve, at, &resolve_hook, "overlay: Fs_Resolve_Mount"); => inline sig S_RESOLVE
 core/assets/overlay.cpp: hook(h_lang, at, &load_lang_hook, "lang: Loc_Load_LanguageFile"); => inline sig S_LOAD_LNG
@@ -198,6 +204,7 @@ core/hooks/session_points.hpp: make(rules_init, RULES_INIT, reinterpret_cast<voi
 core/hooks/session_points.hpp: make(director_update, DIRECTOR_UPDATE, reinterpret_cast<void *>(&d_director_update)); => inline spec DIRECTOR_UPDATE
 core/hooks/session_points.hpp: make(director_set_active, DIRECTOR_SET_ACTIVE, reinterpret_cast<void *>(&d_director_set_active)); => inline spec DIRECTOR_SET_ACTIVE
 core/hooks/vtable_point.hpp: bool install(bool late, const std::string &subscribers) override => none
+core/hooks/ui_points.hpp: bool install(bool late, const std::string &subscribers) override => none
 core/loading/game_settings.cpp: list.push_back({Getter<K>::target, SWOFTY_MIXIN_WRAP, 100, (void *)&get<K>, (void **)&orig<K>}); => inline binding-consts target
 core/render/d3d12/arm_gate.cpp: if (!install(*e.hook, targets[i], detours[i], e.name)) => outside d3d12
 core/render/d3d12/device_hooks.cpp: ok = install(hooks.setname, (*reinterpret_cast<void ***>(buffer))[SETNAME_SLOT], => outside d3d12

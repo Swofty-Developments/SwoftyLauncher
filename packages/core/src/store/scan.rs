@@ -166,7 +166,13 @@ impl Store {
             if !dir.join(MANIFEST_FILE).is_file() {
                 continue;
             }
-            let m = match AddonManifest::load(&dir) {
+            let loaded = AddonManifest::load(&dir).and_then(|mut m| {
+                if let Some(build) = crate::games::by_id(&m.compat.game).and_then(|g| g.build) {
+                    build.lower_manifest(&dir, &mut m)?;
+                }
+                Ok(m)
+            });
+            let m = match loaded {
                 Ok(m) => m,
                 Err(e) => {
                     let u = Unreadable::of(&dir, &e, &crate::updates::release::current_version());

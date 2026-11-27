@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ui.tile 1.0",
+  "x-registry": "ui.tile",
+  "x-version": "1.0",
+  "x-applies": "read",
+  "x-snapshot": false,
+  "description": "ui::Tile (experimental): one tile on the home screen, the career content picker, the F1 World screen or a car category picker. A press opens route; gate limits where it shows.",
+  "type": "object",
+  "properties": {
+    "place": {
+      "description": "The screen the tile is on.",
+      "type": "string",
+      "enum": [
+        "home",
+        "career",
+        "f1_world",
+        "car_category"
+      ]
+    },
+    "title": {
+      "description": "The tile's text: a lang key or { \"literal\" }.",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "literal": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "literal"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "image": {
+      "description": "The slice the tile shows: a ui.texture_slice record id (<addon>/<key>) or a #array[name] string. A slice no enabled record provides is logged, and the tile shows without an image.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "route": {
+      "description": "The route a press opens: a ui.route record id (<addon>/<key>) or bare key, or a stock route name. The core passes the game the record's key, the name of the route group the build cloned; a bare key or a stock name passes unchanged. An id no enabled record has is logged and passed as written.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gate": {
+      "description": "Where the record applies: one selector (an object) or a list of selectors that must all match (docs/std/layers.md); empty or null: everywhere.",
+      "type": [
+        "object",
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object"
+      }
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "ui.tile",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "place",
+    "title"
+  ],
+  "additionalProperties": true
+}

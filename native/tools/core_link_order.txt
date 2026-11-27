@@ -208,6 +208,9 @@ src/core/apply/files.cpp
 src/core/testing/save_sandbox.cpp
 src/core/career/ops/track_fuel.cpp
 src/core/hooks/game_points.cpp
+src/core/hooks/ui_hot_points.cpp
+src/core/hooks/mfd_pages_point.cpp
+src/core/hooks/track_select_point.cpp
 src/core/hooks/session_points.cpp
 src/core/hooks/car_live.cpp
 src/core/hooks/setup_layout_hooks.cpp

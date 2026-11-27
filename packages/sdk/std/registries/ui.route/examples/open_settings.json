@@ -1,0 +1,9 @@
+{
+  "ui.route": {
+    "open_settings": {
+      "file": "routes_frontend_general.uir",
+      "clone_of": "mail_container",
+      "opens": "mod.settings/settings"
+    }
+  }
+}

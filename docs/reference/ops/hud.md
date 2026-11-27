@@ -482,6 +482,22 @@ fbo_y_after: stock_nodes broadcast_persistent.ui broadcast_persistent.no_such_no
 
 `ui` refuses the files the composer writes itself (`templates/hud_dynamic_templates.ui`, `screens/hud_spectator_2.ui`, `screens/replays_and_highlights.ui`); their parts are yield parts or a screen record's `stock_nodes`. An entry with `ui` on any other record is refused.
 
+## A template-only record
+
+A record with `template` in place of `dial`, `scene`, `screen` or `yield` adds the templates of one `.ui` file of your addon to the game's HUD templates and draws nothing else. The record takes `template` and `prefix` only.
+
+```json [registry/hud.json]
+{
+  "hud.element": {
+    "tyre_letters": {
+      "template": { "file": "ui/tyre_letter.ui", "view_model": "hud.f1990.tyre_letter" }
+    }
+  }
+}
+```
+
+Each template of the file keeps its own name. A name the HUD templates already have stops the build, and so does a missing file. A `hud.widget` record is this form under another name: `{ "view_model": "...", "tmpl": "ui/tyre_letter.ui" }` builds the same record, and a widget and an element of one id are refused. The build log names each one: `hud: hud.widget tyre_letters -> hud.element swofty.f1-1990/tyre_letters`.
+
 ## An editor entry of your own
 
 A `hud.slot` record in the same files adds an entry to the HUD editor with its own selection box, which the player moves, resizes and switches off. Native code reads the placement with `swofty/hud_slot.hpp` and draws there with the overlay: [HUD slots](/reference/std/hud-slots).

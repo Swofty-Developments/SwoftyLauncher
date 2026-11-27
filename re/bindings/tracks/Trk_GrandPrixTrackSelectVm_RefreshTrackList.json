@@ -1,0 +1,92 @@
+{
+ "schema": 1,
+ "name": "Trk_GrandPrixTrackSelectVm_RefreshTrackList",
+ "table": "functions",
+ "author": "Swofty",
+ "row": {
+  "addr": "0x141c05600",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "void Trk_GrandPrixTrackSelectVm_RefreshTrackList(void *vm)",
+  "evidence": "decomp:re/decomp/141c05600.c;xref:0x141c05489,0x141c0737a",
+  "notes": "Track-list refresh of the Grand Prix / championship track select VM (called from OnTabActivated 0x141c03e90 and from 0x141c06dc0). Walks the rounds of the selected calendar via the track table at +0x668; per round calls 0x141c08eb0(vm,idx) and 0x141c09f70(vm,idx,name,state); state 2 counted in +0x928. If +0x939: fetches '#track_data.track_list' (0x14570a81b), count in +0x930; else posts 'track_set_name'. Ends with route 'tracks_deserialised'."
+ },
+ "signature": {
+  "id": "tracks.grand_prix_track_select_vm_refresh_track_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 89 CB 48 C7 81 28 09 00 00 01 00 00 00",
+  "match": "0x141c05600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c05600",
+  "kind": "func_start",
+  "names": [
+   "Trk_GrandPrixTrackSelectVm_RefreshTrackList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-27",
+    "by": "Swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/track_select_point.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "std-ui-m6v",
+   "kind": "func",
+   "item": "Trk_GrandPrixTrackSelectVm_RefreshTrackList",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:capstone disasm of pdata 0x141c05600-0x141c06646 (no Ghidra on this host);xref:0x141c05488,0x141c07379;str:0x14570a81b,0x1456f8a0d,0x14573bb30",
+   "notes": "gh:std-ui-m6v re-derived from capstone: pdata start and 8-push prologue, callers re-listed by rel32 scan of every exec section (E8 at 0x141c05488 and 0x141de61e3, E9 at 0x141c07379 and 0x141de9da4; the recorded 0x141c05489/0x141c0737a are the rel32 operand bytes), role matches"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "Swofty",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c05600",
+    "target": "0x141c05600"
+   },
+   "sigcheck": "passed",
+   "digest": "40c69fe89fcbe1f11f32231c7a6fd29805525323403a5514b5d5137e5980d058"
+  },
+  {
+   "by": "std-ui-m6v",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141c05600",
+    "target": "0x141c05600"
+   },
+   "sigcheck": "passed",
+   "digest": "40c69fe89fcbe1f11f32231c7a6fd29805525323403a5514b5d5137e5980d058"
+  }
+ ]
+}

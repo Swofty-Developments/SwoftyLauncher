@@ -1,4 +1,8 @@
 #include "core/career/content_state.hpp"
+#include "core/frontend/chosen_tiles.hpp"
+#include "core/frontend/tile_image.hpp"
+#include "core/frontend/tile_records_read.hpp"
+#include "core/hooks/ui_points.hpp"
 #include "core/guards/skips.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -10,7 +14,9 @@
 #include <cstddef>
 #include <cstring>
 #include <mutex>
+#include <set>
 #include <string>
+#include <unordered_map>
 
 // The career contents' tiles (career_content.cpp registers the contents and places the hooks).
 //
@@ -63,7 +69,32 @@ struct Row {
 std::atomic<TileList *> last_list{nullptr};
 std::mutex row_lock;
 Row row;
-constinit swofty_core::guards::LogFirst<LOG_FIRST> row_lines, rowless_lines, refused_lines, other_lines;
+constinit swofty_core::guards::LogFirst<LOG_FIRST> row_lines, rowless_lines, refused_lines, other_lines, record_lines,
+    image_lines, image_miss_lines;
+
+struct RecordTile {
+    std::string title, route;
+    bool localised = true, in_row = false;
+    uint32_t model = content::MODEL_2026;
+    frontend::tile_image::Plan image;
+};
+
+std::mutex record_lock;
+std::set<std::string> told_slices;
+std::unordered_map<const HomeItem *, RecordTile> record_items;
+void **record_vt = nullptr;
+
+bool record_of(const HomeItem *item, RecordTile &out)
+{
+    std::lock_guard<std::mutex> g(record_lock);
+    auto it = record_items.find(item);
+    if (it == record_items.end())
+        return false;
+    out = it->second;
+    return true;
+}
+
+void *registry() { return *reinterpret_cast<void **>(b.vm_registry); }
 
 void set_field(void *field, const char *text)
 {
@@ -161,37 +192,123 @@ Action *press(HomeItem *item, Action *out)
     return reinterpret_cast<Route *>(b.route)(item, out);
 }
 
-HomeItem *build_item(NeAllocator *alloc, HomeItem *model, Slot &s)
+struct ItemSpec {
+    const char *id, *route, *data_group, *suffix, *entitlement;
+};
+
+HomeItem *make_item(NeAllocator *alloc, bool y25, const ItemSpec &spec)
 {
-    bool y25 = s.desc.model == content::MODEL_2025;
     auto alloc_fn = reinterpret_cast<void *(*)(NeAllocator *, size_t, size_t)>(alloc->vtable->alloc);
     auto *item = static_cast<HomeItem *>(alloc_fn(alloc, y25 ? content::ITEM_SIZE_2025 : content::ITEM_SIZE_2026, 0x10));
     if (!item)
         return nullptr;
-    const char *id = nestr(model->id);
-    reinterpret_cast<Construct *>(b.construct)(item, alloc, id ? id : (y25 ? "career_default_content" : "career_dlc_content"));
+    reinterpret_cast<Construct *>(b.construct)(item, alloc, spec.id);
     auto *raw = reinterpret_cast<uint8_t *>(item);
-    const char *route = nestr(content::at<const NeStr *>(model, content::ITEM_ROUTE));
-    set_field(raw + content::ITEM_ROUTE, route && *route ? route : "driver_career");
+    set_field(raw + content::ITEM_ROUTE, spec.route);
     if (!y25) {
-        const char *ent = nestr(content::at<const NeStr *>(model, content::ITEM_ENTITLEMENT_NAME));
         std::memset(raw + content::ITEM_ENTITLEMENT, 0, 0x10);
-        set_field(raw + content::ITEM_ENTITLEMENT_NAME, !s.desc.entitlement.empty() ? s.desc.entitlement.c_str()
-                                                        : ent && *ent               ? ent
-                                                                                    : "f1_2026");
+        set_field(raw + content::ITEM_ENTITLEMENT_NAME, spec.entitlement);
     }
-    set_field(raw + content::ITEM_DATA_GROUP, s.desc.data_group.c_str());
-    set_field(raw + content::ITEM_SUFFIX, s.desc.suffix.c_str());
+    set_field(raw + content::ITEM_DATA_GROUP, spec.data_group);
+    set_field(raw + content::ITEM_SUFFIX, spec.suffix);
     raw[content::ITEM_IS_DLC] = 0;
-    if (!s.vt) {
-        auto **src = *reinterpret_cast<void ***>(model);
-        auto **copy = new void *[content::ITEM_VTABLE_SLOTS + 1];
-        std::memcpy(copy, src - 1, (content::ITEM_VTABLE_SLOTS + 1) * sizeof(void *));
-        copy[1 + content::ITEM_POPULATE_SLOT] = reinterpret_cast<void *>(&populate);
-        copy[1 + content::ITEM_PRESS_SLOT] = reinterpret_cast<void *>(&press);
-        s.vt = copy + 1;
-    }
+    return item;
+}
+
+void **copy_vtable(HomeItem *model, void *populate_fn, void *press_fn)
+{
+    auto **src = *reinterpret_cast<void ***>(model);
+    auto **copy = new void *[content::ITEM_VTABLE_SLOTS + 1];
+    std::memcpy(copy, src - 1, (content::ITEM_VTABLE_SLOTS + 1) * sizeof(void *));
+    copy[1 + content::ITEM_POPULATE_SLOT] = populate_fn;
+    copy[1 + content::ITEM_PRESS_SLOT] = press_fn;
+    return copy + 1;
+}
+
+HomeItem *build_item(NeAllocator *alloc, HomeItem *model, Slot &s)
+{
+    bool y25 = s.desc.model == content::MODEL_2025;
+    const char *id = nestr(model->id);
+    const char *route = nestr(content::at<const NeStr *>(model, content::ITEM_ROUTE));
+    const char *ent = y25 ? nullptr : nestr(content::at<const NeStr *>(model, content::ITEM_ENTITLEMENT_NAME));
+    HomeItem *item = make_item(alloc, y25,
+                               {id ? id : (y25 ? "career_default_content" : "career_dlc_content"),
+                                route && *route ? route : "driver_career", s.desc.data_group.c_str(), s.desc.suffix.c_str(),
+                                !s.desc.entitlement.empty() ? s.desc.entitlement.c_str()
+                                : ent && *ent               ? ent
+                                                            : "f1_2026"});
+    if (!item)
+        return nullptr;
+    if (!s.vt)
+        s.vt = copy_vtable(model, reinterpret_cast<void *>(&populate), reinterpret_cast<void *>(&press));
     *reinterpret_cast<void ***>(item) = s.vt;
+    return item;
+}
+
+void record_populate(HomeItem *item, void *node, uint32_t a7)
+{
+    RecordTile rec;
+    bool known = record_of(item, rec);
+    reinterpret_cast<Populate *>(model_populate(known ? rec.model : content::MODEL_2026))(item, node, a7);
+    auto *vm = static_cast<uint8_t *>(item->button_node.node);
+    if (!known || !vm)
+        return;
+    uint8_t localised = rec.localised, no = 0;
+    bool image = rec.image.step == frontend::tile_image::Step::set;
+    if (image)
+        set_text(vm + 8, "type", rec.image.template_name);
+    else if (rec.in_row)
+        set_text(vm + 8, "type", content::ADDON_TEMPLATE);
+    set_text(vm + 8, "title", rec.title.c_str());
+    set_text(vm + 8, "description", "");
+    if (image && !frontend::tile_image::set(vm, rec.image.path))
+        if (auto n = image_miss_lines.note())
+            swofty::log("[ui.tile] career: image %s resolves to no node in the game; the tile shows without it%s",
+                        rec.image.path.c_str(), n.tail ? n.tail : "");
+    if (b.set_bool) {
+        auto *set = reinterpret_cast<swofty::game::Vm_Set_Bool_t *>(b.set_bool);
+        set(registry(), vm + 8, "title_localised", &localised, 1);
+        set(registry(), vm + 8, "description_localised", &no, 1);
+    }
+}
+
+Action *record_press(HomeItem *item, Action *out)
+{
+    RecordTile rec;
+    if (!record_of(item, rec)) {
+        out->type = 1;
+        out->str = nullptr;
+        return out;
+    }
+    swofty::log("[ui.tile] career: tile %s pressed: route %s", nestr(item->id), rec.route.c_str());
+    return reinterpret_cast<Route *>(b.route)(item, out);
+}
+
+template <class Build> HomeItem *place_item(TileList *list, uint8_t index, bool in_row, const char *who, Build build)
+{
+    size_t before = size_t(list->items_end - list->items_begin);
+    reinterpret_cast<AddTile *>(b.add_tile)(list, index);
+    size_t after = list->items_begin ? size_t(list->items_end - list->items_begin) : 0;
+    Tile *tile = after == before + 1 ? list->items_end[-1].tile : nullptr;
+    auto *tile_alloc = tile ? content::at<NeAllocator *>(tile, content::TILE_ALLOCATOR) : nullptr;
+    if (!tile || !tile->item || !tile_alloc) {
+        swofty::log("[career] content '%s': the tile adder gave %zu -> %zu items; no tile", who, before, after);
+        return nullptr;
+    }
+    if (auto *node = static_cast<uint8_t *>(tile->item->button_node.node); in_row && node)
+        set_text(node + 8, "type", content::ADDON_TEMPLATE);
+    auto *alloc = content::at<NeAllocator *>(list, content::LIST_ALLOCATOR);
+    HomeItem *item = alloc ? build(alloc) : nullptr;
+    if (!item) {
+        swofty::log("[career] content '%s': could not build its content item; button_%u stays a Career tile", who,
+                    unsigned(index));
+        return nullptr;
+    }
+    HomeItem *old = tile->item;
+    tile->item = item;
+    std::memcpy(reinterpret_cast<uint8_t *>(tile) + content::TILE_ALLOCATOR, &alloc, sizeof alloc);
+    reinterpret_cast<void (*)(HomeItem *, int)>(reinterpret_cast<void *const *>(old->vtable)[0])(old, 0);
+    reinterpret_cast<void (*)(NeAllocator *, void *)>(tile_alloc->vtable->free)(tile_alloc, old);
     return item;
 }
 
@@ -204,35 +321,115 @@ void add_tile(TileList *list, Slot &s, uint8_t index, bool in_row)
         return;
     }
     size_t before = size_t(list->items_end - list->items_begin);
-    reinterpret_cast<AddTile *>(b.add_tile)(list, index);
-    size_t after = list->items_begin ? size_t(list->items_end - list->items_begin) : 0;
-    Tile *tile = after == before + 1 ? list->items_end[-1].tile : nullptr;
-    auto *tile_alloc = tile ? content::at<NeAllocator *>(tile, content::TILE_ALLOCATOR) : nullptr;
-    if (!tile || !tile->item || !tile_alloc) {
-        swofty::log("[career] content '%s': the tile adder gave %zu -> %zu items; no tile", s.desc.id.c_str(), before, after);
-        return;
-    }
     s.in_row = in_row;
-    if (auto *node = static_cast<uint8_t *>(tile->item->button_node.node); in_row && node)
-        set_text(node + 8, "type", content::ADDON_TEMPLATE);
-    auto *alloc = content::at<NeAllocator *>(list, content::LIST_ALLOCATOR);
-    HomeItem *item = alloc ? build_item(alloc, model, s) : nullptr;
-    if (!item) {
-        swofty::log("[career] content '%s': could not build its content item; button_%u stays a Career tile", s.desc.id.c_str(),
-                    unsigned(index));
-        return;
-    }
-    HomeItem *old = tile->item;
-    tile->item = item;
-    std::memcpy(reinterpret_cast<uint8_t *>(tile) + content::TILE_ALLOCATOR, &alloc, sizeof alloc);
-    reinterpret_cast<void (*)(HomeItem *, int)>(reinterpret_cast<void *const *>(old->vtable)[0])(old, 0);
-    reinterpret_cast<void (*)(NeAllocator *, void *)>(tile_alloc->vtable->free)(tile_alloc, old);
-    if (s.tiles++ < LOG_FIRST)
+    if (place_item(list, index, in_row, s.desc.id.c_str(), [&](NeAllocator *a) { return build_item(a, model, s); }) &&
+        s.tiles++ < LOG_FIRST)
         swofty::log("[career] content '%s': tile added as button_%u (items %zu -> %zu)", s.desc.id.c_str(), unsigned(index),
-                    before, after);
+                    before, before + 1);
 }
 
-void *registry() { return *reinterpret_cast<void **>(b.vm_registry); }
+size_t add_record_tiles(TileList *list, uint8_t stock_index, size_t content_tiles, bool in_row)
+{
+    {
+        std::lock_guard<std::mutex> g(record_lock);
+        record_items.clear();
+    }
+    namespace tr = frontend::tile_records;
+    tr::Options opt;
+    opt.need_route = true;
+    opt.cap = content::record_room(content_tiles);
+    auto found = tr::read(tr::Place::career, opt);
+    for (auto &line : found.lines)
+        if (auto n = record_lines.note())
+            swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+    {
+        frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap, tr::Place::career};
+        swofty_core::hooks::ui_points::career_content_tiles(&chosen);
+        std::vector<std::string> told;
+        size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap, tr::store_route_exists(), &told);
+        for (auto &line : told)
+            if (auto n = record_lines.note())
+                swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+        if (dropped)
+            swofty::log("[ui.tile] career: %zu tile(s) a ui.career_content.tiles handler left over the %zu slot(s) or repeated "
+                        "are dropped",
+                        dropped, opt.cap);
+    }
+    if (found.tiles.empty()) {
+        if (found.capped || found.refused)
+            swofty::log("[ui.tile] career: no tile record added (%zu refused, %zu over the %zu slot(s) the %zu content tile(s) "
+                        "leave of %zu)",
+                        found.refused, found.capped, opt.cap, content_tiles, content::MAX_CONTENTS);
+        return 0;
+    }
+    uint32_t model_kind = content::MODEL_2026;
+    HomeItem *model = find_in(list, model_kind, nullptr, nullptr);
+    if (!model)
+        model = find_in(list, model_kind = content::MODEL_2025, nullptr, nullptr);
+    if (!model) {
+        swofty::log("[ui.tile] career: %zu tile record(s) not shown: the content list has no stock tile to model them on",
+                    found.tiles.size());
+        return 0;
+    }
+    size_t added = 0;
+    frontend::tile_image::Counts counts;
+    auto provided = tr::store_provided();
+    for (auto &t : found.tiles) {
+        bool y25 = model_kind == content::MODEL_2025;
+        HomeItem *item = place_item(list, uint8_t(stock_index + added), in_row, t.id.c_str(), [&](NeAllocator *a) {
+            const char *ent = y25 ? nullptr : nestr(content::at<const NeStr *>(model, content::ITEM_ENTITLEMENT_NAME));
+            HomeItem *made = make_item(a, y25, {t.route.c_str(), "", "", "", ent && *ent ? ent : "f1_2026"});
+            if (made) {
+                if (!record_vt)
+                    record_vt =
+                        copy_vtable(model, reinterpret_cast<void *>(&record_populate), reinterpret_cast<void *>(&record_press));
+                *reinterpret_cast<void ***>(made) = record_vt;
+            }
+            return made;
+        });
+        if (!item)
+            break;
+        {
+            std::lock_guard<std::mutex> g(record_lock);
+            auto title = tr::title_text(t);
+            auto image = frontend::tile_image::plan(t, tr::store_slices(), frontend::tile_image::template_built(), in_row);
+            if (std::string warn = tr::missing_slice_warning(t, image.image, provided, told_slices); !warn.empty())
+                swofty::log("[ui.tile] career: %s", warn.c_str());
+            switch (image.step) {
+            case frontend::tile_image::Step::set:
+                counts.set++;
+                break;
+            case frontend::tile_image::Step::template_missing:
+                counts.template_missing++;
+                break;
+            case frontend::tile_image::Step::unresolved:
+                counts.unresolved++;
+                if (auto n = image_lines.note())
+                    swofty::log("[ui.tile] career: %s: %s; the tile shows without an image%s", t.id.c_str(), image.why.c_str(),
+                                n.tail ? n.tail : "");
+                break;
+            case frontend::tile_image::Step::none:
+                break;
+            }
+            record_items[item] = RecordTile{title.text, t.route, title.localised, in_row, model_kind, std::move(image)};
+        }
+        added++;
+        swofty::log("[ui.tile] career: tile %s added as button_%u (route %s)", t.id.c_str(), unsigned(stock_index + added - 1),
+                    t.route.c_str());
+    }
+    if (counts.template_missing)
+        if (auto n = image_lines.note())
+            swofty::log("[ui.tile] career: %zu tile(s) name an image but this build has no tile image template (the UI build "
+                        "has not written %s); they show without it%s",
+                        counts.template_missing, frontend::tile_image::FLAG, n.tail ? n.tail : "");
+    if (counts.set || counts.template_missing || counts.unresolved)
+        swofty::log("%s", frontend::tile_image::summary("career", counts).c_str());
+    swofty::log(
+        "[ui.tile] career: %zu of %zu tile record(s) added after %zu content tile(s) (%zu gated out, %zu refused, %zu over "
+        "the %zu slot(s) left of %zu)",
+        added, found.tiles.size(), content_tiles, found.gated_out, found.refused, found.capped, opt.cap, content::MAX_CONTENTS);
+    return added;
+}
 
 void *buttons_of(const TileList *list) { return content::at<void *>(list, content::LIST_BUTTONS); }
 
@@ -325,6 +522,10 @@ void site_entry(SwoftyContext *c)
         set_buttons(list, buttons);
         tiles++;
     }
+    if (addon)
+        set_buttons(list, addon);
+    tiles += add_record_tiles(list, uint8_t(stock + tiles + 1), tiles, addon != nullptr);
+    set_buttons(list, buttons);
     if (root && b.set_bool) {
         uint8_t visible = tiles > 0;
         reinterpret_cast<swofty::game::Vm_Set_Bool_t *>(b.set_bool)(registry(), root + 8, content::ADDON_BUTTONS_VISIBLE,

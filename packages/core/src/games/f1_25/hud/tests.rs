@@ -1922,3 +1922,171 @@ fn two_yield_records_hide_nodes_of_one_screen_each_on_its_own_leaf() {
         out.lines
     );
 }
+
+fn widget_doc(id: &str, widget: serde_json::Value) -> swofty_addon::ops::HudFile {
+    swofty_addon::ops::HudFile::parse(&serde_json::json!({ "hud.widget": { id: widget } }).to_string())
+        .unwrap()
+}
+
+fn element_doc(id: &str, record: serde_json::Value) -> swofty_addon::ops::HudFile {
+    swofty_addon::ops::HudFile::parse(&serde_json::json!({ "hud.element": { id: record } }).to_string())
+        .unwrap()
+}
+
+const WIDGET_VM: &str = "hud.f1990.tyre_letter";
+
+fn widget_input(dir: &Path) -> Input {
+    let doc = widget_doc(
+        "tyre_letters",
+        serde_json::json!({ "view_model": WIDGET_VM, "tmpl": "ui/tyre_letter.ui" }),
+    );
+    let mut inputs = inputs_of("swofty.f1-1990", dir, "registry/hud.json", doc).unwrap();
+    assert_eq!(inputs.len(), 1);
+    inputs.remove(0)
+}
+
+fn element_input(dir: &Path) -> Input {
+    let doc = element_doc(
+        "tyre_letters",
+        serde_json::json!({ "template": { "file": "ui/tyre_letter.ui", "view_model": WIDGET_VM } }),
+    );
+    let mut inputs = inputs_of("swofty.f1-1990", dir, "registry/hud.json", doc).unwrap();
+    assert_eq!(inputs.len(), 1);
+    inputs.remove(0)
+}
+
+#[test]
+fn a_widget_lowers_to_the_template_only_element() {
+    let dir = std::env::temp_dir();
+    let (w, e) = (widget_input(&dir), element_input(&dir));
+    assert_eq!(w.record, e.record);
+    assert_eq!((w.addon, w.key), (e.addon, e.key));
+    assert!(w.record.is_template_only());
+}
+
+#[test]
+fn a_widget_without_a_template_is_refused_by_name() {
+    let dir = std::env::temp_dir();
+    for (w, what) in [
+        (serde_json::json!({ "view_model": WIDGET_VM }), "missing tmpl"),
+        (
+            serde_json::json!({ "view_model": WIDGET_VM, "tmpl": null }),
+            "missing tmpl",
+        ),
+        (serde_json::json!({ "tmpl": "ui/a.ui" }), "view_model"),
+        (
+            serde_json::json!({ "view_model": WIDGET_VM, "tmpl": { "stock": "ui/a.ui" } }),
+            "tmpl is a .ui file in the addon's folder",
+        ),
+        (
+            serde_json::json!({ "view_model": WIDGET_VM, "tmpl": "ui/a.txt" }),
+            ".ui file",
+        ),
+    ] {
+        let e = inputs_of("a.b", &dir, "registry/hud.json", widget_doc("w1", w)).unwrap_err();
+        let text = e.to_string();
+        assert!(text.contains("hud.widget w1") && text.contains(what), "{text}");
+    }
+}
+
+#[test]
+fn a_widget_that_shares_an_id_with_an_element_is_refused() {
+    let doc = swofty_addon::ops::HudFile::parse(
+        &serde_json::json!({
+            "hud.widget": { "w1": { "view_model": WIDGET_VM, "tmpl": "ui/a.ui" } },
+            "hud.element": { "w1": { "template": { "file": "ui/b.ui", "view_model": WIDGET_VM } } }
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let e = inputs_of("a.b", &std::env::temp_dir(), "registry/hud.json", doc).unwrap_err();
+    assert!(e.to_string().contains("share an id"), "{e}");
+}
+
+#[test]
+fn a_template_record_draws_nothing_and_has_one_target() {
+    let t = serde_json::json!({ "file": "ui/a.ui", "view_model": WIDGET_VM });
+    for rec in [
+        serde_json::json!({ "template": t, "dial": "f1_26" }),
+        serde_json::json!({ "template": t, "elements": [] , "sprites": { "a": { "png": "a.png", "bounds": [0, 0, 1, 1] } } }),
+        serde_json::json!({ "template": { "file": "/etc/a.ui", "view_model": "x" } }),
+        serde_json::json!({ "template": { "file": "ui/a.ui", "view_model": "" } }),
+    ] {
+        assert!(HudElement::parse(&rec).is_err(), "{rec}");
+    }
+    assert!(HudElement::parse(&serde_json::json!({ "template": t })).is_ok());
+}
+
+fn template_fixture(stock: &GameStock, dir: &Path, name: &str) {
+    let stock_pkg = Pkg::parse(&template_of(stock, dials::TEMPLATE)).unwrap();
+    let mut pkg = stock_pkg.clone();
+    let list = crate::ui::node::root_obj(&mut pkg)
+        .unwrap()
+        .at_mut("Templates")
+        .unwrap()
+        .a_mut()
+        .unwrap();
+    let mut t = list
+        .iter()
+        .find(|t| t.is_node() && t.name() == "hud_mfd_dynamic")
+        .unwrap()
+        .clone();
+    crate::ui::node::rename(&mut t, name).unwrap();
+    crate::ui::node::fix_ids(&mut t, None);
+    *list = vec![t];
+    std::fs::create_dir_all(dir.join("ui")).unwrap();
+    std::fs::write(dir.join("ui/tyre_letter.ui"), pkg.to_bytes().unwrap()).unwrap();
+}
+
+fn template_names(bytes: &[u8]) -> Vec<String> {
+    let mut p = Pkg::parse(bytes).unwrap();
+    crate::ui::node::root_obj(&mut p)
+        .unwrap()
+        .at_mut("Templates")
+        .unwrap()
+        .a_mut()
+        .unwrap()
+        .iter()
+        .filter(|t| t.is_node())
+        .map(|t| t.name().to_owned())
+        .collect()
+}
+
+#[test]
+fn a_widget_composes_the_same_hud_as_the_template_only_element() {
+    let Some(stock) = game() else { return };
+    let dir = addon_dir("widget");
+    template_fixture(&stock, &dir, "swofty_tyre_letter");
+    let from_widget = compose(&stock, &[widget_input(&dir)]).unwrap();
+    let from_element = compose(&stock, &[element_input(&dir)]).unwrap();
+    assert_eq!(from_widget.lines, from_element.lines);
+    assert_eq!(from_widget.archives.len(), from_element.archives.len());
+    for (a, b) in from_widget.archives.iter().zip(&from_element.archives) {
+        assert_eq!((&a.file, &a.erps, &a.bytes), (&b.file, &b.erps, &b.bytes));
+    }
+    let composed = one_copy(&from_widget, dials::TEMPLATE);
+    let mut expected = template_names(&template_of(&stock, dials::TEMPLATE));
+    expected.push("swofty_tyre_letter".to_owned());
+    assert_eq!(template_names(&composed), expected);
+    assert!(
+        from_widget
+            .lines
+            .iter()
+            .any(|l| l.contains("swofty.f1-1990/tyre_letters")
+                && l.contains("1 template added")
+                && l.contains(WIDGET_VM))
+    );
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn a_widget_template_the_hud_already_has_or_a_missing_file_stops_the_build() {
+    let Some(stock) = game() else { return };
+    let dir = addon_dir("widget-bad");
+    let e = compose(&stock, &[widget_input(&dir)]).unwrap_err().to_string();
+    assert!(e.contains("template ui/tyre_letter.ui"), "{e}");
+    template_fixture(&stock, &dir, "hud_mfd_dynamic");
+    let e = compose(&stock, &[widget_input(&dir)]).unwrap_err().to_string();
+    assert!(e.contains("already have a template named hud_mfd_dynamic"), "{e}");
+    std::fs::remove_dir_all(&dir).ok();
+}

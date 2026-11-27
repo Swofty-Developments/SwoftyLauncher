@@ -1,0 +1,8 @@
+{
+  "ui.tile": {
+    "bad": {
+      "place": "homescreen",
+      "title": "lng_x"
+    }
+  }
+}

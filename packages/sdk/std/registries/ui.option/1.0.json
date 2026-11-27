@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ui.option 1.0",
+  "x-registry": "ui.option",
+  "x-version": "1.0",
+  "x-applies": "boot",
+  "x-snapshot": false,
+  "description": "ui::Option (experimental): one option of the game's options_system and the restriction tags that say where it shows. Layers add tags to a stock option.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The options_system option.",
+      "type": "string",
+      "minLength": 1
+    },
+    "restriction_tags": {
+      "description": "Where it shows: the option's tags, one list over the kinds of options_system.context (gamesetup_f1, PreSession, Unranked, ...). The stock record game/<option> holds the game's own list; a layer's additions and removals are written into the option's tag rows at boot.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "ui.option",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "additionalProperties": true
+}

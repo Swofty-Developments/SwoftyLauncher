@@ -30,6 +30,8 @@ The 1.5 libraries store what addons give them in six more: `career.content` (car
 
 Launcher 1.10.30 adds `setup.layout` (experimental, `"feature": "registry_setup_layout"`): the car setup screen of one scope (docs/reference/std/setup-layout.md).
 
+Launcher 1.10.54 adds `ui.texture_slice`, `ui.tile`, `ui.screen`, `ui.route`, `ui.option` and `hud.widget` (all experimental, `"feature": "registry_ui_*"` / `registry_hud_widget`): the core or the launcher's build applies each, with the limits listed in docs/std/systems/ui.md.
+
 ## A schema file
 
 A schema describes one record's value: the JSON form of the record struct, as data files write it and as the core's validation reads it. It uses a subset of JSON Schema:

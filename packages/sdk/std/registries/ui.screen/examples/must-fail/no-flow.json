@@ -1,0 +1,7 @@
+{
+  "ui.screen": {
+    "bad": {
+      "file": "ui/settings.ui"
+    }
+  }
+}

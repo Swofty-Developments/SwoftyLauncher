@@ -122,7 +122,9 @@ team.logo.resolve                the logo key lookups                   Progress
 
 `career.season.process` covers a function at L0 in the KB. It needs reverse engineering to L2 before it ships.
 
-The core installs a game hook point's mixin only once an addon subscribes to it. With no subscriber, the game's code is untouched.
+The UI points are game hook points too: `ui.era.tiles`, `ui.home.tiles`, `ui.career_content.tiles`, `ui.car_category.tiles` and `ui.track_select.build` (payload version 2), `ui.screen.built`, `ui.route.open`, `hud.mfd.pages`, and the hot `ui.vm.resolve` (version 2) and `lang.lookup` (version 1). All are `Fired::game`. The table of payloads is in [Events](/std/events#the-lifecycle), and what each one covers and does not is in [UI and strings](/std/systems/ui).
+
+The core installs a game hook point's mixin only once an addon subscribes to it. With no subscriber, the game's code is untouched. A point whose binding does not resolve on a build logs `[hooks] <point> unavailable: ...` and its handlers do not run.
 
 ## Hook points the game calls every frame
 

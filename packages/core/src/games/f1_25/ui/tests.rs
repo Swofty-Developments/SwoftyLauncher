@@ -1587,6 +1587,63 @@ fn with_no_careers_the_list_holds_the_new_career_row_alone() {
     std::fs::remove_dir_all(&out).ok();
 }
 
+fn addon_screens_settings(names: &[(&str, &str)]) -> SessionSettings {
+    let mut s = setup_settings_without();
+    let screens: Vec<serde_json::Value> = names
+        .iter()
+        .map(|(name, anchor)| {
+            serde_json::json!({ "name": name, "file": format!("ui/{name}.ui"), "flow": "flow_options",
+                                "anchor": anchor, "view_model": true })
+        })
+        .collect();
+    s.ui = serde_json::from_value(serde_json::json!({
+        "register": true, "strict": false, "recover": true, "screens": screens
+    }))
+    .unwrap();
+    s
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn addon_screens_of_two_addons_join_the_options_flow_with_their_routes() {
+    let input = stock_input();
+    let settings = addon_screens_settings(&[
+        ("l2a_first", "settings_container"),
+        ("l2a_second", "settings_container"),
+    ]);
+    let out = std::env::temp_dir().join(format!("swofty-addon-screens-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    build(
+        &settings,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    let persistent = ui_file("persistent.erp");
+    let after = groupings(&out.join(&persistent), ROUTES);
+    for name in ["l2a_first", "l2a_second"] {
+        assert!(after.contains_key(name), "{name} has no route group");
+    }
+    let stock = groupings(&input(&persistent), ROUTES);
+    for (gid, routes) in &stock {
+        for (rid, r) in routes {
+            assert_eq!(after[gid].get(rid), Some(r), "{gid}.{rid} changed");
+        }
+    }
+    let report = check::archive_files(&[(
+        persistent.as_str(),
+        input(&persistent).as_path(),
+        out.join(&persistent).as_path(),
+    )])
+    .unwrap();
+    let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    assert!(hard.is_empty(), "{hard:?}");
+    std::fs::remove_dir_all(&out).ok();
+}
+
 fn setup_settings_without() -> SessionSettings {
     let mut s = setup_settings();
     s.addons[0].career_setup = None;
@@ -1937,4 +1994,515 @@ fn a_missing_era_picker_resource_stays_an_error() {
     assert!(e.to_string().contains(era::SCENE), "{e}");
     assert_eq!(warnings.len(), 1, "{warnings:?}");
     std::fs::remove_dir_all(&root).ok();
+}
+
+fn routes_settings(screens: &[(&str, &str)], routes: &[(&str, &str, &str, &str)]) -> SessionSettings {
+    let mut s = addon_screens_settings(&[]);
+    let screens: Vec<serde_json::Value> = screens
+        .iter()
+        .map(|(name, flow)| {
+            serde_json::json!({ "name": name, "file": format!("ui/{name}.ui"), "flow": flow,
+                                "anchor": "settings_container", "view_model": true })
+        })
+        .collect();
+    let routes: Vec<serde_json::Value> = routes
+        .iter()
+        .map(|(addon, id, clone_of, opens)| {
+            serde_json::json!({ "id": id, "addon": addon, "file": "routes_frontend_general.uir",
+                                "clone_of": clone_of, "opens": opens })
+        })
+        .collect();
+    s.ui = serde_json::from_value(serde_json::json!({
+        "register": true, "strict": false, "recover": true, "screens": screens, "routes": routes
+    }))
+    .unwrap();
+    s
+}
+
+#[test]
+fn a_ui_route_is_refused_when_it_opens_nothing_the_build_lists() {
+    let listed = ["page".to_owned()];
+    let clones = |settings: &SessionSettings| addon_screens::route_clones(settings, &listed);
+    let ok = routes_settings(
+        &[("page", "flow_options")],
+        &[("t.a", "open_page", "mail_container", "page")],
+    );
+    assert_eq!(clones(&ok).unwrap()[0].opens, "page");
+    let e = clones(&routes_settings(
+        &[("page", "flow_options")],
+        &[("t.a", "open_x", "mail_container", "ghost")],
+    ))
+    .err()
+    .unwrap()
+    .to_string();
+    assert!(
+        e.contains("ghost") && e.contains("not a ui.screen of an enabled addon"),
+        "{e}"
+    );
+    let e = clones(&routes_settings(
+        &[("page", "flow_frontend")],
+        &[("t.a", "open_x", "mail_container", "page")],
+    ))
+    .err()
+    .unwrap()
+    .to_string();
+    assert!(e.contains("no flow entry") && e.contains("flow_frontend"), "{e}");
+    let e = clones(&routes_settings(
+        &[("page", "flow_options")],
+        &[
+            ("t.a", "open_x", "mail_container", "page"),
+            ("t.b", "open_x", "credits", "page"),
+        ],
+    ))
+    .err()
+    .unwrap()
+    .to_string();
+    assert!(
+        e.contains("t.a") && e.contains("t.b") && e.contains("open_x"),
+        "{e}"
+    );
+}
+
+fn id_of(n: &Node) -> Option<&str> {
+    n.as_obj()?.get("Id")?.as_val()?.as_str()
+}
+
+fn stock_uir_groups(input: &dyn Fn(&str) -> PathBuf) -> Vec<(String, String, Node)> {
+    let data = PathBuf::from(std::env::var_os("SWOFTY_STOCK_DATA").expect("set"));
+    let baseline = std::fs::read_dir(data.join("baseline"))
+        .unwrap()
+        .flatten()
+        .map(|e| e.path().join("baseline.json"))
+        .find(|p| p.is_file())
+        .unwrap();
+    let b: crate::game_folder::baseline::Baseline =
+        serde_json::from_slice(&std::fs::read(baseline).unwrap()).unwrap();
+    let mut out = Vec::new();
+    for rel in b
+        .files
+        .keys()
+        .filter(|k| k.ends_with(".erp") && k.contains("ui_package"))
+    {
+        let path = input(rel);
+        let file = ErpFile::open(&path).unwrap();
+        let names: Vec<String> = file
+            .erp
+            .resources
+            .iter()
+            .filter(|r| r.name.ends_with(".uir"))
+            .map(|r| r.name.clone())
+            .collect();
+        for name in names {
+            let p = Pkg::parse(&read_frag(&path, &name, 0).unwrap()).unwrap();
+            for g in p.root.o().unwrap().at("RouteGroupings").unwrap().a().unwrap() {
+                out.push((rel.clone(), name.clone(), g.clone()));
+            }
+        }
+    }
+    out
+}
+
+fn positions_of(n: &Node, text: &str, at: &str, out: &mut BTreeSet<String>) {
+    match n {
+        Node::Val(v) if v.as_str() == Some(text) => {
+            out.insert(at.to_owned());
+        }
+        Node::Obj(o) => {
+            let attr = (
+                o.get("Id").and_then(|i| i.as_val()).and_then(|v| v.as_str()),
+                o.get("Value"),
+            );
+            if let (Some(name), Some(Node::Val(v))) = attr
+                && v.as_str() == Some(text)
+            {
+                out.insert(format!("attr {name}"));
+            }
+            for (k, v) in &o.items {
+                let key = k.as_str().unwrap_or_default();
+                if matches!(v, Node::Val(_)) && key == "Value" && attr.0.is_some() {
+                    continue;
+                }
+                positions_of(v, text, key, out);
+            }
+        }
+        Node::Arr(a) => a.items.iter().for_each(|v| positions_of(v, text, at, out)),
+        _ => {}
+    }
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn the_stock_route_groups_retarget_by_the_screen_name_they_carry() {
+    let input = stock_input();
+    let groups = stock_uir_groups(&input);
+    assert!(groups.len() > 150, "{}", groups.len());
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    let mut safe: Vec<String> = Vec::new();
+    let mut files: BTreeSet<String> = BTreeSet::new();
+    for (_, file, g) in &groups {
+        files.insert(file.clone());
+        let id = id_of(g).unwrap().to_owned();
+        let source = g
+            .o()
+            .unwrap()
+            .at("Attributes")
+            .unwrap()
+            .a()
+            .unwrap()
+            .iter()
+            .find(|a| id_of(a) == Some("Source"))
+            .map(|a| a.o().unwrap().str_at("Value").unwrap().to_owned());
+        assert_eq!(
+            source.as_deref(),
+            Some(id.as_str()),
+            "{file}: group {id} is not its own Source"
+        );
+        let mut at = BTreeSet::new();
+        positions_of(g, &id, "", &mut at);
+        seen.extend(at.iter().cloned());
+        let routes = g.o().unwrap().at("Routes").unwrap().a().unwrap();
+        let only_screen_routes = routes
+            .iter()
+            .all(|r| matches!(id_of(r), Some("open" | "open_no_input" | "close")));
+        let mut targets = BTreeSet::new();
+        for r in routes {
+            for c in r.o().unwrap().at("Commands").unwrap().a().unwrap() {
+                for a in c.o().unwrap().at("Attributes").unwrap().a().unwrap() {
+                    if id_of(a) == Some("Target") {
+                        targets.insert(a.o().unwrap().str_at("Value").unwrap().to_owned());
+                    }
+                }
+            }
+        }
+        if only_screen_routes && targets == BTreeSet::from([id.clone()]) {
+            safe.push(id);
+        }
+    }
+    eprintln!("route files: {files:?}");
+    eprintln!("positions of a group's own name: {seen:?}");
+    eprintln!(
+        "{} groups, {} screen-only groups: {safe:?}",
+        groups.len(),
+        safe.len()
+    );
+    let allowed: BTreeSet<String> = [
+        "Id",
+        "attr Source",
+        "attr Target",
+        "attr From",
+        "attr To",
+        "attr OverrideTarget",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect();
+    assert_eq!(
+        seen, allowed,
+        "a group's own name sits only in these places, never in a Destination"
+    );
+    for name in [
+        "mail_container",
+        "social_hub_container",
+        "player_profile_container",
+        "credits",
+    ] {
+        assert!(safe.iter().any(|s| s == name) || name == "credits", "{name}");
+    }
+    assert!(safe.len() > 30, "{}", safe.len());
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_DATA, the launcher data folder that holds the game's baseline"]
+fn a_ui_route_clones_a_stock_group_onto_an_addon_screen() {
+    let input = stock_input();
+    let settings = routes_settings(
+        &[("l2b_page", "flow_options")],
+        &[
+            ("t.a", "open_l2b_page", "mail_container", "l2b_page"),
+            ("t.a", "open_l2b_credits", "credits", "l2b_page"),
+        ],
+    );
+    let out = std::env::temp_dir().join(format!("swofty-ui-route-{}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    build(
+        &settings,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    let persistent = ui_file("persistent.erp");
+    let after = groupings(&out.join(&persistent), ROUTES);
+    let stock = groupings(&input(&persistent), ROUTES);
+    for (clone, base) in [
+        ("open_l2b_page", "mail_container"),
+        ("open_l2b_credits", "credits"),
+    ] {
+        let g = &after[clone];
+        assert_eq!(
+            g.keys().collect::<Vec<_>>(),
+            stock[base].keys().collect::<Vec<_>>()
+        );
+        for (rid, text) in g {
+            assert!(
+                !text.contains(&format!("\"{base}\"")),
+                "{clone}.{rid} still names {base}"
+            );
+        }
+        assert!(
+            g["open"].contains("\"l2b_page\""),
+            "{clone}.open does not open the screen"
+        );
+        assert!(g["close"].contains("\"l2b_page\""));
+    }
+    for (gid, routes) in &stock {
+        for (rid, r) in routes {
+            assert_eq!(after[gid].get(rid), Some(r), "{gid}.{rid} changed");
+        }
+    }
+    let report = check::archive_files(&[(
+        persistent.as_str(),
+        input(&persistent).as_path(),
+        out.join(&persistent).as_path(),
+    )])
+    .unwrap();
+    let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+    assert!(hard.is_empty(), "{hard:?}");
+    let missing = routes_settings(
+        &[("l2b_page", "flow_options")],
+        &[("t.a", "open_x", "no_such_group", "l2b_page")],
+    );
+    let e = build(
+        &missing,
+        &input,
+        &|_, _| None,
+        &out,
+        false,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap_err()
+    .to_string();
+    assert!(e.contains("no_such_group") && e.contains("mail_container"), "{e}");
+    std::fs::remove_dir_all(&out).ok();
+}
+
+fn tile_image_stock() -> impl Fn(&str) -> PathBuf {
+    let stock = PathBuf::from(std::env::var_os("SWOFTY_STOCK_GAME").expect("set"));
+    move |rel: &str| stock.join(rel)
+}
+
+fn write_stock_frontend(
+    tag: &str,
+    places: &[&str],
+    writer: &Writer,
+) -> (PathBuf, PathBuf, archive_writes::Frontend) {
+    let input = tile_image_stock();
+    let out = std::env::temp_dir().join(format!("swofty-tile-images-{}-{tag}", std::process::id()));
+    std::fs::remove_dir_all(&out).ok();
+    let src = input(&ui_file("flow_frontend.erp"));
+    let dst = out.join(ui_file("flow_frontend.erp"));
+    let places: Vec<String> = places.iter().map(|p| (*p).to_owned()).collect();
+    let frontend = write_frontend(
+        &(src.clone(), dst.clone()),
+        &input,
+        writer,
+        true,
+        &places,
+        &ArchiveWriter::new(&Packer::default()),
+    )
+    .unwrap();
+    (src, dst, frontend)
+}
+
+fn template_names(path: &Path) -> Vec<String> {
+    let doc = swofty_formats::pkg::Pkg::parse(
+        &read_frag(path, career_select::TEMPLATES, career_select::TEMPLATES_FRAGMENT).unwrap(),
+    )
+    .unwrap();
+    doc.root
+        .o()
+        .unwrap()
+        .at("Templates")
+        .unwrap()
+        .a()
+        .unwrap()
+        .iter()
+        .filter(|t| t.is_node())
+        .map(|t| t.name().to_owned())
+        .collect()
+}
+
+fn resource_names(path: &Path) -> Vec<String> {
+    ErpFile::open(path)
+        .unwrap()
+        .erp
+        .resources
+        .iter()
+        .map(|r| r.name.clone())
+        .collect()
+}
+
+#[test]
+fn the_tile_images_flag_is_written_only_when_the_templates_are() {
+    let dir = std::env::temp_dir().join(format!("swofty-tile-flag-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    let flag = format!("{UI_DIR}/{}", tile_image::FLAG);
+    let mut off = MenuBuild::default();
+    write_flags(&dir.join("off"), &mut off, Default::default(), false, false).unwrap();
+    assert!(!off.screens.contains_key(&flag));
+    assert!(!dir.join("off").join(&flag).exists());
+    let mut on = MenuBuild::default();
+    write_flags(&dir.join("on"), &mut on, Default::default(), false, true).unwrap();
+    assert!(on.screens.contains_key(&flag));
+    assert_eq!(std::fs::read(dir.join("on").join(&flag)).unwrap(), b"1");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn only_home_and_career_images_call_for_the_templates() {
+    let places = |p: &[&str]| p.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
+    assert!(!tile_image::wanted(&[]));
+    assert!(!tile_image::wanted(&places(&["f1_world", "car_category"])));
+    assert!(tile_image::wanted(&places(&["home"])));
+    assert!(tile_image::wanted(&places(&["career"])));
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_GAME, a folder with the stock 2025_asset_groups/ui_package archives"]
+fn a_tile_with_an_image_gets_the_era_tile_templates_and_their_component() {
+    let (src, dst, frontend) = write_stock_frontend("on", &["home", "career"], &|_, _| None);
+    assert!(frontend.tile_images_built, "{:?}", frontend.warnings);
+    assert!(frontend.warnings.is_empty(), "{:?}", frontend.warnings);
+    let names = template_names(&dst);
+    for t in [tile_image::HOME_TEMPLATE, tile_image::ROW_TEMPLATE] {
+        assert!(names.contains(&t.to_owned()), "{t} in {names:?}");
+    }
+    assert!(names.contains(&career_select::ADDON_TEMPLATE.to_owned()));
+    let doc = swofty_formats::pkg::Pkg::parse(
+        &read_frag(&dst, career_select::TEMPLATES, career_select::TEMPLATES_FRAGMENT).unwrap(),
+    )
+    .unwrap();
+    let list = doc.root.o().unwrap().at("Templates").unwrap().a().unwrap();
+    for (t, slot) in [
+        (tile_image::HOME_TEMPLATE, "spawner_stacker_items"),
+        (tile_image::ROW_TEMPLATE, career_select::ADDON_SLOT),
+    ] {
+        let tpl = list.iter().find(|n| n.is_node() && n.name() == t).unwrap();
+        let image = tpl.child("image").unwrap();
+        let bound = image
+            .props()
+            .unwrap()
+            .get("textureOverride")
+            .and_then(|n| n.o().ok())
+            .and_then(|o| o.str_at("dbentry").ok());
+        assert_eq!(bound, Some("image"));
+        for kid in ["title", "enabled"] {
+            tpl.child(kid).unwrap();
+        }
+        let title = tpl.child("title").unwrap().props().unwrap();
+        let localised = title
+            .get("localise")
+            .and_then(|n| n.o().ok())
+            .and_then(|o| o.str_at("dbentry").ok());
+        assert_eq!(localised, Some("title_localised"));
+        let layout = tpl.slot(node::LAYOUT).unwrap()[0].a().unwrap();
+        assert_eq!(layout.len(), 1);
+        assert_eq!(layout[0].o().unwrap().str_at("debugName").unwrap(), slot);
+        let component = tpl.slot(node::COMPONENT).unwrap();
+        assert_eq!(
+            component[0].o().unwrap().str_at("debugName").unwrap(),
+            tile_image::COMPONENT.trim_end_matches(".idf")
+        );
+        let (_, _, bad) = check::integrity(&doc.to_bytes().unwrap()).unwrap();
+        assert!(bad.is_empty(), "{bad:?}");
+    }
+    let before = resource_names(&src);
+    let after = resource_names(&dst);
+    let added: Vec<&String> = after.iter().filter(|n| !before.contains(n)).collect();
+    assert!(
+        added.iter().any(|n| n.as_str() == tile_image::COMPONENT),
+        "{added:?}"
+    );
+    assert!(
+        added
+            .iter()
+            .all(|n| n.starts_with("eaid://ui_package/art/") && !n.contains("/fe_buttons/")),
+        "{added:?}"
+    );
+    let unique: std::collections::BTreeSet<&String> = after.iter().collect();
+    assert_eq!(unique.len(), after.len(), "a resource name is written twice");
+    let from = ErpFile::open(&tile_image_stock()(&ui_file(tile_image::SOURCE_ARCHIVE))).unwrap();
+    let written = ErpFile::open(&dst).unwrap();
+    for name in added {
+        let a = from.load(from.erp.find(name).unwrap()).unwrap();
+        let b = written.load(written.erp.find(name).unwrap()).unwrap();
+        assert_eq!(a.fragments.len(), b.fragments.len(), "{name}");
+        for (x, y) in a.fragments.iter().zip(&b.fragments) {
+            assert_eq!(x.data().unwrap(), y.data().unwrap(), "{name}");
+        }
+    }
+    std::fs::remove_dir_all(dst.parent().unwrap().ancestors().nth(2).unwrap()).ok();
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_GAME, a folder with the stock 2025_asset_groups/ui_package archives"]
+fn no_image_leaves_the_frontend_archive_as_it_was() {
+    let (src, none, a) = write_stock_frontend("none", &[], &|_, _| None);
+    let (_, other, b) = write_stock_frontend("other", &["f1_world", "car_category"], &|_, _| None);
+    for f in [&a, &b] {
+        assert!(!f.tile_images_built && f.warnings.is_empty(), "{:?}", f.warnings);
+    }
+    assert_eq!(std::fs::read(&none).unwrap(), std::fs::read(&other).unwrap());
+    let names = template_names(&none);
+    assert!(
+        !names.iter().any(|n| n.starts_with("addon_tile_image")),
+        "{names:?}"
+    );
+    let before = resource_names(&src);
+    assert!(resource_names(&none).iter().all(|n| before.contains(n)));
+    assert!(
+        !resource_names(&none)
+            .iter()
+            .any(|n| n.contains("4x12_era_select"))
+    );
+    let stock_templates = swofty_formats::pkg::Pkg::parse(
+        &read_frag(&src, career_select::TEMPLATES, career_select::TEMPLATES_FRAGMENT).unwrap(),
+    )
+    .unwrap();
+    assert!(
+        !stock_templates
+            .root
+            .o()
+            .unwrap()
+            .at("Templates")
+            .unwrap()
+            .a()
+            .unwrap()
+            .iter()
+            .any(|n| n.is_node() && n.name().starts_with("addon_tile_image"))
+    );
+    std::fs::remove_dir_all(none.parent().unwrap().ancestors().nth(2).unwrap()).ok();
+    std::fs::remove_dir_all(other.parent().unwrap().ancestors().nth(2).unwrap()).ok();
+}
+
+#[test]
+#[ignore = "needs SWOFTY_STOCK_GAME, a folder with the stock 2025_asset_groups/ui_package archives"]
+fn an_addons_own_home_templates_keep_the_image_templates_off() {
+    let (_, dst, f) = write_stock_frontend("own", &["home"], &|_, res| {
+        (res == tile_image::TEMPLATES).then(|| "other.addon".to_owned())
+    });
+    assert!(!f.tile_images_built);
+    assert!(
+        f.warnings.iter().any(|w| w.contains("other.addon")),
+        "{:?}",
+        f.warnings
+    );
+    assert!(
+        !template_names(&dst)
+            .iter()
+            .any(|n| n.starts_with("addon_tile_image"))
+    );
+    std::fs::remove_dir_all(dst.parent().unwrap().ancestors().nth(2).unwrap()).ok();
 }

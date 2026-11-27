@@ -23,7 +23,7 @@ struct Set {
 struct RaceHud {
     explicit RaceHud(std::mutex &queue_lock) : queue_lock(queue_lock) {}
 
-    int set_enqueue(std::string path, int type, std::string text, int32_t number, const std::string &by);
+    int set_enqueue(std::string path, int type, std::string text, int32_t number, const std::string &by, bool any = false);
     void read_switches();
     void tick();
 

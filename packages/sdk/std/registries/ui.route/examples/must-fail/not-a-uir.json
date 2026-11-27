@@ -1,0 +1,8 @@
+{
+  "ui.route": {
+    "bad": {
+      "file": "routes_frontend_general.json",
+      "opens": "mod.settings/settings"
+    }
+  }
+}

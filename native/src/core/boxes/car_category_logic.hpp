@@ -30,6 +30,15 @@ inline uint32_t button_hash(size_t n)
     return djb2(s.c_str());
 }
 
+// How many ui.tile records the screen can still show once `used` addon slots hold era boxes: era boxes come first.
+inline size_t records_room(size_t used) { return used >= MAX_ADDED ? 0 : MAX_ADDED - used; }
+
+// A slice as the string FillTile resolves into the tile's image node.
+inline std::string slice_path(const std::string &array, const std::string &name)
+{
+    return "#overrides." + array + "[" + name + "]";
+}
+
 // The added box a press command names: button_<stock + 1 + i> is added box i. -1 for anything else.
 inline int added_box_of(uint32_t hash, size_t added)
 {
@@ -87,26 +96,6 @@ inline int scenario_of(const std::vector<Scenario> &scenarios, const std::string
 // session role below 2 (offline or host); a client (2) takes the host's.
 inline bool decides_scenario(int role) { return role >= 0 && role < 2; }
 
-// Unlinks a handle from its node's holder list and drops its reference, as the game's tile set clear does
-// (prev.next = next, next.prev = prev, the node's head moves on when it was this handle). release is
-// Vm_Release_Node. A handle the game already cleared (node null) is left alone.
-template <class Release> bool unlink(Handle &h, Release release)
-{
-    uint8_t *node = h.node;
-    if (!node)
-        return false;
-    auto *next = static_cast<uint8_t *>(h.next), *prev = static_cast<uint8_t *>(h.prev);
-    if (prev)
-        *reinterpret_cast<void **>(prev + 8) = next;
-    if (next)
-        *reinterpret_cast<void **>(next + era::HOLDER_PREV) = prev;
-    h.next = h.prev = nullptr;
-    auto **head = reinterpret_cast<void **>(node + era::NODE_HOLDERS);
-    if (*head == &h)
-        *head = next;
-    release(node);
-    h.node = nullptr;
-    return true;
-}
+using era::unlink;
 
 }

@@ -10,6 +10,7 @@
 #include <swofty/systems/speech.hpp>
 #include <swofty/systems/tracks.hpp>
 #include <swofty/systems/tyre_damage.hpp>
+#include <swofty/systems/ui.hpp>
 #include <swofty/systems/weather.hpp>
 
 #include "core/hooks/core_events.hpp"
@@ -89,6 +90,16 @@ static_assert(declared<swofty::weather::events::Setup>(SWOFTY_POINT_MODIFY));
 static_assert(declared<swofty::laps::events::Recorded>(SWOFTY_POINT_NOTIFY));
 static_assert(declared<swofty::spectator::events::HudVisible>(SWOFTY_POINT_MODIFY));
 static_assert(declared<so::BundleResolve>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::ui::events::EraTiles>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::ui::events::HomeTiles>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::ui::events::CareerContentTiles>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::ui::events::CarCategoryTiles>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::ui::events::TrackSelectBuild>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::ui::events::ScreenBuilt>(SWOFTY_POINT_NOTIFY));
+static_assert(declared<swofty::ui::events::RouteOpen>(SWOFTY_POINT_CANCEL));
+static_assert(declared<swofty::ui::events::VmResolve>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::ui::events::LangLookup>(SWOFTY_POINT_MODIFY));
+static_assert(declared<swofty::ui::events::MfdPages>(SWOFTY_POINT_MODIFY));
 static_assert(sizeof(ce::Loaded) == sizeof(Shell) && sizeof(ce::Created) == sizeof(Shell));
 
 constexpr auto fire_core = [](auto &e) { return fire(e); };

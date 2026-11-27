@@ -75,6 +75,7 @@ src/core/career/characters.cpp: static loader::FunctionSet characters_core_set{l
 src/core/career/save_splice.cpp: static loader::FunctionSet save_splice_core_set{loader::CoreSetId::save_splice, save_splice_mixins, save_splice_commit};
 src/core/diagnostics/tyre_models.cpp: static loader::FunctionSet tyre_models_core_set{loader::CoreSetId::tyre_models, tyre_models_mixins, tyre_models_commit};
 src/core/garage/garage_placement.cpp: static loader::FunctionSet garage_placement_core_set{loader::CoreSetId::garage_placement, garage_placement_mixins};
+src/core/frontend/home_tiles.cpp: swofty_core::guards::SiteGuard world_guard{runtime::loader::CoreSetId::f1_world_tiles,
 src/core/guards/ai/ai_corner_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::ai_corner_guard,
 src/core/guards/ai/ai_line_set_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::ai_line_set,
 src/core/guards/ai/ai_marker_cap_guard.cpp: guards::SiteGuard guard{guards::CoreSetId::ai_marker_cap,

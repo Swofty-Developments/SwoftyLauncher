@@ -17,17 +17,32 @@ use crate::store::Store;
 use crate::{Error, Result, io_err};
 
 // Page screens have no file: the ui build generates them.
-pub fn screen_files(order: &[&AddonManifest], addons_dir: &Path) -> Result<BTreeMap<String, PathBuf>> {
-    Ok(screens(order.iter().copied())?
+// An addon screen whose root node has another name than its record key is placed as a renamed copy under `overlay`.
+pub fn screen_files(
+    order: &[&AddonManifest],
+    addons_dir: &Path,
+    overlay: &Path,
+) -> Result<BTreeMap<String, PathBuf>> {
+    let mut out = BTreeMap::new();
+    for (m, s) in screens(order.iter().copied())?
         .into_iter()
         .filter(|(_, s)| s.page.is_none())
-        .map(|(m, s)| {
-            (
-                format!("{LOADER_DIR}/{}", screen_file(&s.name)),
-                addons_dir.join(&m.id).join(&s.file),
-            )
-        })
-        .collect())
+    {
+        let mut src = addons_dir.join(&m.id).join(&s.file);
+        if let Ok(data) = std::fs::read(&src)
+            && swofty_formats::pkg::is_pkg(&data)
+            && let Some(renamed) = crate::ui::named_root(&data, &s.name)?
+        {
+            let copy = overlay.join(screen_file(&s.name));
+            if let Some(dir) = copy.parent() {
+                std::fs::create_dir_all(dir).map_err(io_err(dir))?;
+            }
+            std::fs::write(&copy, renamed).map_err(io_err(&copy))?;
+            src = copy;
+        }
+        out.insert(format!("{LOADER_DIR}/{}", screen_file(&s.name)), src);
+    }
+    Ok(out)
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -154,6 +169,7 @@ pub fn build_menus(
         strict: false,
         recover: true,
         screens: Vec::new(),
+        routes: Vec::new(),
     });
     if let Some(s) = ui
         .screens
@@ -304,7 +320,7 @@ impl Pipeline<'_, '_> {
                         });
                     }
                 }
-                let files = screen_files(&order, &store.addons_dir())?;
+                let files = screen_files(&order, &store.addons_dir(), &built.overlay)?;
                 if !files.is_empty() {
                     built.lines.push(format!("ui: {} screen(s) under {LOADER_DIR}/ui", files.len()));
                 }

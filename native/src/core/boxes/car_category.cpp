@@ -12,11 +12,15 @@
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "core/boxes/car_category_logic.hpp"
 #include "core/boxes/options_store.hpp"
+#include "core/frontend/chosen_tiles.hpp"
+#include "core/frontend/tile_records_read.hpp"
+#include "core/hooks/ui_points.hpp"
 
 // LAN Car Category addon boxes. The host's Car Category screen after the LAN Game dialog is the F1 World
 // container's tab session_create_dlc_select_tab (CreateSessionDLCSelectTabViewModel). Its tile build
@@ -78,6 +82,10 @@ constexpr size_t VM_SPAN = 0x7a8;
 constexpr size_t TILE_BYTES = 0x80;
 constexpr size_t TILE_HANDLES = 4;
 constexpr size_t HANDLE_WRAPPER = 0x20;
+constexpr size_t VM_ROUTER = 0x620;
+constexpr size_t ROUTER_FIRE_SLOT = 16;
+constexpr uint32_t ROUTE_ARG_KIND = 4;
+constexpr const char *STOCK_IMAGE = "#overrides.home_screen.tiles_multiplayer_6x12[create_dlc]";
 
 constexpr size_t SELF_NETWORK = 0x10;
 constexpr size_t NETWORK_SESSION = 0x418;
@@ -96,11 +104,11 @@ constexpr uint32_t DEFAULT_SPEC = 0x3fff0000;
 constexpr size_t MAX_CHILDREN = 4096;
 
 struct Bound {
-    uintptr_t build, press, fill, append, release, setup, find, store, key, registry, set_scenario, scenarios;
+    uintptr_t make_str, build, press, fill, append, release, setup, find, store, key, registry, set_scenario, scenarios;
 } b;
 
 struct Added {
-    std::string list, value;
+    std::string list, value, route;
     uint8_t *node;
 };
 
@@ -125,6 +133,8 @@ std::string chosen;
 Forced forced;
 constinit swofty_core::guards::LogFirst<LOG_FIRST> build_lines, value_lines, refused_lines, setup_lines, scenario_lines;
 constinit swofty_core::guards::LogFirst<16> unknown_lines;
+constinit swofty_core::guards::LogFirst<LOG_FIRST> record_lines, image_lines, route_lines;
+std::set<std::string> told_slices;
 thread_local bool applying;
 
 template <class T> T at(const void *base, size_t off)
@@ -214,6 +224,87 @@ std::string hex_hash(uint32_t h)
     return s;
 }
 
+void add_record_tiles(uint8_t *v, Vm_List_AppendChild_t *append, Game_CreateSessionDlcSelectTab_FillTile_t *fill)
+{
+    namespace tr = frontend::tile_records;
+    tr::Options opt;
+    opt.need_route = true;
+    opt.cap = logic::records_room(tiles_used);
+    auto found = tr::read(tr::Place::car_category, opt);
+    for (auto &line : found.lines)
+        if (auto n = record_lines.note())
+            swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+    {
+        frontend::chosen_tiles::Chosen chosen{found.tiles, opt.cap, tr::Place::car_category};
+        swofty_core::hooks::ui_points::car_category_tiles(&chosen);
+        std::vector<std::string> told;
+        size_t dropped = frontend::chosen_tiles::settle(found.tiles, opt.cap, tr::store_route_exists(), &told);
+        for (auto &line : told)
+            if (auto n = record_lines.note())
+                swofty::log("[ui.tile] %s%s", line.c_str(), n.tail ? n.tail : "");
+        if (dropped)
+            swofty::log(
+                "[ui.tile] car_category: %zu tile(s) a ui.car_category.tiles handler left over the %zu slot(s) or repeated "
+                "are dropped",
+                dropped, opt.cap);
+    }
+    size_t images = 0, shown = 0;
+    for (auto &t : found.tiles) {
+        void **node = append(v + VM_TILE_SET);
+        if (!node || !mem::readable(node, 8)) {
+            swofty::log("[ui.tile] car_category: appending a child to buttons gave %p; %s and the tiles after it are not shown",
+                        static_cast<void *>(node), t.id.c_str());
+            break;
+        }
+        auto image = tr::resolve_image(t, tr::store_slices());
+        if (std::string warn = tr::missing_slice_warning(t, image, tr::store_provided(), told_slices); !warn.empty())
+            swofty::log("[ui.tile] car_category: %s", warn.c_str());
+        std::string path = STOCK_IMAGE;
+        if (image.kind == tr::Image::Kind::slice)
+            path = logic::slice_path(image.array, image.name), images++;
+        else if (image.kind == tr::Image::Kind::unresolved)
+            if (auto n = image_lines.note())
+                swofty::log("[ui.tile] car_category: %s: %s; the tile shows the F1 2026 tile's image%s", t.id.c_str(),
+                            image.why.c_str(), n.tail ? n.tail : "");
+        auto title = tr::title_text(t);
+        std::string command = "goto_" + t.id;
+        memset(tiles[tiles_used], 0, TILE_BYTES);
+        fill(tiles[tiles_used], node, title.text, command.c_str(), path.c_str());
+        added.push_back({t.id, {}, t.route, at<uint8_t *>(tiles[tiles_used], 8)});
+        tiles_used++;
+        shown++;
+        swofty::log("[ui.tile] car_category: tile %s added (press command button_%zu = %s, route %s, image %s)", t.id.c_str(),
+                    logic::STOCK_BOXES + added.size(), hex_hash(logic::button_hash(logic::STOCK_BOXES + added.size())).c_str(),
+                    t.route.c_str(), path.c_str());
+    }
+    if (found.tiles.size() || found.capped || found.refused)
+        swofty::log("[ui.tile] car_category: %zu of %zu tile record(s) added after F1 2026 and the era boxes (%zu gated out, "
+                    "%zu refused, %zu over the %zu slot(s) left of %zu)",
+                    shown, found.tiles.size(), found.gated_out, found.refused, found.capped, opt.cap, logic::MAX_ADDED);
+    if (shown && shown > images)
+        if (auto n = route_lines.note())
+            swofty::log("[ui.tile] car_category: %zu tile(s) have no usable image and show the F1 2026 tile's image%s",
+                        shown - images, n.tail ? n.tail : "");
+}
+
+void open_route(void *vm, const std::string &route)
+{
+    auto *router = mem::readable(vm, VM_ROUTER + 8) ? at<void *>(vm, VM_ROUTER) : nullptr;
+    auto *fire = router && mem::readable(router, 8) ? vfunc<void(void *, void *, void *)>(router, ROUTER_FIRE_SLOT) : nullptr;
+    if (!fire) {
+        swofty::log("[ui.tile] car_category: route %s not opened: the screen's router is not readable", route.c_str());
+        return;
+    }
+    swofty::game::NeStr *name = nullptr;
+    reinterpret_cast<swofty::game::Ne_Make_StrFromCStr_t *>(b.make_str)(&name, route.c_str(), 0, 0);
+    struct {
+        uint32_t kind = ROUTE_ARG_KIND;
+        uint32_t pad = 0;
+        uint64_t holder = 0;
+    } arg;
+    fire(router, &name, &arg);
+}
+
 void build_entry(void *vm)
 {
     auto *v = static_cast<uint8_t *>(vm);
@@ -269,7 +360,7 @@ void build_entry(void *vm)
         memset(tiles[tiles_used], 0, TILE_BYTES);
         fill(tiles[tiles_used], node, box.title.c_str(), command.c_str(), image.c_str());
         auto *child = at<uint8_t *>(tiles[tiles_used], 8);
-        added.push_back({box.entrant_list, values[size_t(value)].name, child});
+        added.push_back({box.entrant_list, values[size_t(value)].name, {}, child});
         tiles_used++;
         swofty::log("[car-category] added box %zu (press command button_%zu = %s): %s from %s, value %d, title %s, "
                     "image %s, child node %p",
@@ -277,6 +368,7 @@ void build_entry(void *vm)
                     hex_hash(logic::button_hash(logic::STOCK_BOXES + added.size())).c_str(), box.entrant_list.c_str(),
                     box.owner.c_str(), value, box.title.c_str(), image.c_str(), child);
     }
+    add_record_tiles(v, append, fill);
     built_vm = added.empty() ? nullptr : v;
     size_t after = children(list);
     if (build_lines.note())
@@ -315,6 +407,15 @@ char *press_entry(void *vm, void *command)
                         "built for");
         g.unlock();
         return hooks.handle_command(vm, command);
+    }
+    if (!added[size_t(box)].route.empty()) {
+        std::string route = added[size_t(box)].route;
+        chosen.clear();
+        restore_forced("a tile record was pressed");
+        g.unlock();
+        swofty::log("[ui.tile] car_category: tile %s pressed: opening route %s", added[size_t(box)].list.c_str(), route.c_str());
+        open_route(vm, route);
+        return nullptr;
     }
     chosen = added[size_t(box)].value;
     swofty::log("[car-category] addon box %d pressed: category %s; running the F1 2025 path (button_1)", box, chosen.c_str());
@@ -439,6 +540,7 @@ bool bind_all(std::string &why)
                                 {"Game_CreateSessionDlcSelectTab_HandleCommand", &b.press},
                                 {"Game_CreateSessionDlcSelectTab_FillTile", &b.fill},
                                 {"Vm_List_AppendChild", &b.append},
+                                {"Ne_Make_StrFromCStr", &b.make_str},
                                 {"Vm_Release_Node", &b.release},
                                 {"Game_Network_CategoryOptionUsing", &b.setup},
                                 {"Game_OptionsStore_FindOption", &b.find},
@@ -488,7 +590,8 @@ bool car_category_choose(const std::string &value, std::string &why)
 static std::vector<CoreMixins> car_category_mixins()
 {
     std::vector<CoreMixins> out;
-    if (hooks.gate.offered() || hooks.off() || !code_ready() || era_boxes().empty())
+    if (hooks.gate.offered() || hooks.off() || !code_ready() ||
+        (era_boxes().empty() && !frontend::tile_records::has_place(frontend::tile_records::Place::car_category)))
         return out;
     hooks.gate.offer();
     std::string why;

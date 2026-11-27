@@ -102,6 +102,18 @@ game
 ├─ mode.select                     cancel    the player picks a mode
 ├─ content.select                  notify    a GP/TT box or a career tile is pressed
 │
+├─ ui
+│  ├─ ui.era.tiles                 modify    the Grand Prix / Time Trial picker is about to add the addon boxes (payload v2)
+│  ├─ ui.home.tiles                modify    the home screen is about to add the tile records (payload v2)
+│  ├─ ui.career_content.tiles      modify    the career content row is about to add the tile records (payload v2)
+│  ├─ ui.car_category.tiles        modify    the car category tab is about to add the tile records (payload v2)
+│  ├─ ui.track_select.build        modify    a track list was rebuilt; the row count (payload v2)
+│  ├─ ui.screen.built              notify    a screen was built
+│  ├─ ui.route.open                cancel    a route is about to run; replace = it doesn't
+│  ├─ ui.vm.resolve                modify    hot: a view-model path is looked up
+│  ├─ lang.lookup                  modify    hot: a text key is looked up
+│  └─ hud.mfd.pages                modify    the race HUD's MFD pages; hide only
+│
 ├─ career
 │  ├─ career.starting              cancel    a career route; replace = career::block
 │  ├─ career.created               notify    a new career exists; the core gives it an id and records each season's box
@@ -197,6 +209,21 @@ wearable.catalogue.build         swofty/systems/wearables.hpp wearables::events:
 session.weather.setup            swofty/systems/weather.hpp  weather::events::Setup
 car.tyre.damage                  swofty/systems/tyre_damage.hpp tyre_damage::events::Damage
 ```
+
+The UI points, all in `swofty/systems/ui.hpp` and all `Fired::game` (the core installs the hook once an addon subscribes; see [UI and strings](/std/systems/ui)):
+
+| Point | Payload | Version | Kind | Hot |
+|---|---|---|---|---|
+| `ui.era.tiles` | `ui::events::EraTiles` | 2 | modify | no |
+| `ui.home.tiles` | `ui::events::HomeTiles` | 2 | modify | no |
+| `ui.career_content.tiles` | `ui::events::CareerContentTiles` | 2 | modify | no |
+| `ui.car_category.tiles` | `ui::events::CarCategoryTiles` | 2 | modify | no |
+| `ui.track_select.build` | `ui::events::TrackSelectBuild` | 2 | modify | no |
+| `ui.screen.built` | `ui::events::ScreenBuilt` | 1 | notify | no |
+| `ui.route.open` | `ui::events::RouteOpen` | 1 | cancel | no |
+| `ui.vm.resolve` | `ui::events::VmResolve` | 2 | modify | yes |
+| `lang.lookup` | `ui::events::LangLookup` | 1 | modify | yes |
+| `hud.mfd.pages` | `ui::events::MfdPages` | 1 | modify | no |
 
 `ai.controller.update` and `car.controllers.rebuilt` need the in-game checks T145 and T144. `session.lap` fires from the core's ERS new-lap site (see [Sessions](/std/systems/sessions#a-cars-lap)). `session.flag`, `session.safety_car.deploy`, `session.red_flag`, `session.sector`, `session.car.status` and the race control messages (`session.penalty`, `session.penalty.served`, `session.drs`, `session.start_lights`, `session.safety_car.phase`, `session.fastest_lap`, `session.classification`, `session.start_reaction`) fire from the live state's frame tick while the `telemetry` feature is on (see [Race control](/reference/std/race-control)). `car.tyre.damage` fires from the same tick (see [Tyre damage](/reference/std/tyre-damage)). `car.built` and `car.reset` fire once per built or re-read car on the next frame (see [Car physics](/std/systems/car-physics#changing-a-car-live)); `car.vtf.read` and `car.upgrades.fit` are not fired yet. `car.parts.register`, `car.damage`, `session.pit`, `session.pit_stop` and `session.pit_stop.tyres` fire from the game ([Car physics](/std/systems/car-physics#events)). `session.end` and `session.unload` fire from the flow hook: `session.end` when the session state exits (or on a restart), `session.unload` when unloading begins (see [Events reference](/reference/std/events)). `game.pause` and `game.resume` fire when the game's pause reason mask goes from 0 to non-zero and back to 0 (see [Events reference](/reference/std/events#pause-and-resume)), and `on_frame` keeps running in the pause menu ([Pausing](/std/systems/failures#pausing)). `session.weather.setup` fires from the core's weather setup wrap with `SWOFTY_WEATHER_CHAIN=1` on the KB build and Steam 1.0.145 (see [Weather](/std/systems/weather#the-setup-event)). The other points in the tree (`session.state.enter`, `session.results.finalise`, `career.season.process` and the rest of the session group) are the design for later headers; addons made for 1.5 and earlier subscribe to some of these moments by shorter names, which still work: see [Compatibility](/std/compatibility#events).
 
@@ -418,6 +445,7 @@ SWOFTY_ON_LOAD
 ```
 
 - **Versions** follow the same rules as hook payloads: append fields and raise `version`, never remove (see [Versioning](/std/versioning)).
+- **Payload v2 of the five list events** (`ui.era.tiles`, `ui.home.tiles`, `ui.career_content.tiles`, `ui.car_category.tiles`, `ui.track_select.build`) appends a pointer to a C table (`SwoftyTileList`, `SwoftyTrackList`) after the v1 `list`; read it only when `payload_version >= 2`. Which functions each table fills is in [UI](/std/systems/ui#editing-the-tile-lists-payload-version-2).
 - **When a second addon needs the same moment,** the core adopts it into its own catalogue under a core name, and your name keeps working as an alias.
 - **Subscribers by name** don't need your header: `on("swofty.progressive.seat_change").after(...)` gets the payload as bytes plus the full context.
 

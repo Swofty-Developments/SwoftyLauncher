@@ -7,6 +7,7 @@
 #include "core/apply/content/logo_cache.hpp"
 #include "core/apply/content/logo_deliver.hpp"
 #include "core/apply/content/png_straight.hpp"
+#include "core/apply/content/svg_raster.hpp"
 #include "core/diagnostics/steps.hpp"
 #include "core/runtime/cache_dir.hpp"
 #include "core/runtime/files.hpp"
@@ -447,7 +448,11 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             std::string rel = "addons/" + l.addon + "/" + l.file;
             std::string bytes = runtime::read_file(runtime::under_swofty(rel), size_t(64) << 20), why;
             logo_build::PngInfo info;
-            if (!bytes.empty()) {
+            if (!bytes.empty() && svg::is_svg(l.file, bytes)) {
+                w.source = logo_build::source_of(bytes);
+                info.ok = svg::decode(bytes, w.rgba, info.width, info.height, info.why);
+                why = info.why;
+            } else if (!bytes.empty()) {
                 w.source = logo_build::source_of(bytes);
                 info = logo_build::look_at_png(slices, bytes, w.source, w.rgba);
                 why = info.why;
@@ -709,6 +714,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     logo_deliver::Outcome done = logo_deliver::deliver(std::move(first), make, sink);
     step(steps.lap_ms(), done.last.cached ? "deliver (cached archives)" : "build and deliver");
     routes = done.last.routes;
+    report.archives = routes.size();
+    report.overlay = layered;
     if (done.last.cached) {
         report.built = cached_built;
         report.lines.push_back("team.logo: " + std::to_string(routes.size()) + " cached archive(s) of " + id + " reused");

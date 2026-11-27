@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ui.route 1.0",
+  "x-registry": "ui.route",
+  "x-version": "1.0",
+  "x-applies": "boot",
+  "x-snapshot": false,
+  "description": "ui::Route (experimental): one front-end route, the game's link from a press to the screen it opens. clone_of names the route group the new one copies. The group is named by the record key alone (open_settings, not <addon>/open_settings), and that is the route name the game runs; a ui.tile route names the record by id or key.",
+  "type": "object",
+  "properties": {
+    "file": {
+      "description": "The route file of the game it is added to: routes_frontend_general.uir.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_]+\\.uir$"
+    },
+    "clone_of": {
+      "description": "The route group of the route file it copies. Required: a record without one is refused.",
+      "type": "string"
+    },
+    "opens": {
+      "description": "The ui.screen the route opens, by record id (<addon>/<key>) or bare key.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "extends": {
+      "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
+      "type": "string",
+      "x-ref": "ui.route",
+      "x-missing": {
+        "default": "required",
+        "allow": [
+          "required"
+        ]
+      }
+    }
+  },
+  "required": [
+    "file",
+    "opens"
+  ],
+  "additionalProperties": true
+}

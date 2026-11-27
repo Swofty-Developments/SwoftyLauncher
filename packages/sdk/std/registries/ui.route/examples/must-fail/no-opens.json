@@ -1,0 +1,7 @@
+{
+  "ui.route": {
+    "bad": {
+      "file": "routes_frontend_general.uir"
+    }
+  }
+}

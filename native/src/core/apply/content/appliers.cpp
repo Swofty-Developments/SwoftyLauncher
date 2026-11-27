@@ -13,7 +13,9 @@
 #include "core/apply/content/grid_rules.hpp"
 #include "core/apply/content/gvdb.hpp"
 #include "core/apply/content/logos.hpp"
+#include "core/apply/content/option_tags.hpp"
 #include "core/apply/content/race_fuel.hpp"
+#include "core/apply/content/slices.hpp"
 #include "core/apply/content/rev_lights.hpp"
 #include "core/apply/content/quali_tyres.hpp"
 #include "core/apply/content/teams.hpp"
@@ -666,21 +668,58 @@ void apply_texts(Expansion &x, const char *registry, Report &report)
                                ")");
 }
 
-void apply_logos(Expansion &x, Report &report)
-{
-    Live &live_teams = live();
-    live_teams.manifest = x.logos;
-    if (x.logos.empty())
-        return;
+struct SliceBoot {
+    bool delivered = false;
     LogoReport made;
-    deliver_logos(x.logos, made);
-    for (auto &l : made.lines) {
+};
+
+SliceBoot &slice_boot()
+{
+    static SliceBoot s;
+    return s;
+}
+
+slices::Lowering lower_slices(Store &st)
+{
+    std::map<std::string, Value> keep;
+    Lookup lookup = own_lookup(st, keep);
+    std::vector<slices::Input> in;
+    for (auto &id : in_load_order(st, slices::REGISTRY))
+        in.push_back({id, lookup(slices::REGISTRY, id)});
+    return slices::lower(in, [](const std::string &addon, const std::string &file) {
+        uint64_t size = 0;
+        return runtime::file_size(runtime::under_swofty("addons/" + addon + "/" + file), &size) && size;
+    });
+}
+
+void deliver_with_slices(const std::vector<LogoImage> &team_logos, Report &report, const slices::Lowering &sl)
+{
+    std::vector<LogoImage> all = team_logos;
+    all.insert(all.end(), sl.images.begin(), sl.images.end());
+    SliceBoot &b = slice_boot();
+    b.made = {};
+    if (all.empty())
+        return;
+    deliver_logos(all, b.made);
+    b.delivered = true;
+    for (auto &l : b.made.lines) {
         report.lines.push_back(l);
         swofty::log("[apply] %s", l.c_str());
     }
-    report.refused += made.refused;
+    report.refused += b.made.refused;
+}
+
+void apply_logos(Store &st, Expansion &x, Report &report)
+{
+    Live &live_teams = live();
+    live_teams.manifest = x.logos;
+    slices::Lowering sl = lower_slices(st);
+    if (x.logos.empty() && sl.images.empty())
+        return;
+    deliver_with_slices(x.logos, report, sl);
     report.lines.push_back("team.logo: " + std::to_string(x.logos.size()) + " logo slot(s) planned, " +
-                           std::to_string(made.built) + " slice(s) built, " + std::to_string(made.refused) + " refused");
+                           std::to_string(slice_boot().made.built) + " slice(s) built, " +
+                           std::to_string(slice_boot().made.refused) + " refused");
 }
 
 // The per-box archive routes: team.garage, track.sponsors and content.box_assets. Each has its own env fence, cache
@@ -1042,7 +1081,7 @@ public:
             apply_liveries(x, report, registry_);
         apply_texts(x, registry_, report);
         if (std::string_view(registry_) == "team.identity")
-            apply_logos(x, report);
+            apply_logos(st, x, report);
         if (box_route(registry_))
             apply_garages(x, report, registry_);
         if (std::string_view(registry_) == "rules.drs")
@@ -1059,6 +1098,103 @@ public:
 
 private:
     const char *registry_;
+};
+
+// ui.option: the stock options' tag lists seeded as "game/<option>" records, and at boot every record's tags turned into
+// `set` operations on the option's tag rows in the game database (option_tags.hpp), staged like the content rows.
+class Options : public Applier {
+public:
+    const char *registry() const override { return "ui.option"; }
+    Applies applies() const override { return Applies::boot; }
+
+    void prepare(Store &st) override
+    {
+        std::lock_guard g(mu);
+        if (seeded_)
+            return;
+        Database &d = database();
+        if (!d.ok)
+            return;
+        seeded_ = true;
+        rows::Base base = base_of(d);
+        option_tags::Read read = [&base](const std::string &path) -> std::optional<std::string> {
+            auto r = base(gvdb::fnv64(path));
+            if (!r)
+                return std::nullopt;
+            return r->text;
+        };
+        std::size_t n = 0;
+        for (auto &o : option_tags::stock_options(read)) {
+            st.add_base("ui.option", o.name, option_tags::stock_record(o));
+            n++;
+        }
+        st.stock_loaded("ui.option", true);
+        swofty::log("[apply] ui.option: %zu stock option record(s) declared from the game database", n);
+    }
+
+    void boot(Store &st, Report &report) override
+    {
+        std::lock_guard g(mu);
+        std::vector<option_tags::Want> wants;
+        std::vector<std::string> order = st.order();
+        auto rank = [&order](const std::string &addon) {
+            auto it = std::find(order.begin(), order.end(), addon);
+            return it == order.end() ? std::size_t(0) : std::size_t(it - order.begin()) + 1;
+        };
+        for (auto &id : st.list("ui.option", "")) {
+            registry::Record rec = st.get("ui.option", id);
+            if (rec.status != registry::Status::ok || !rec.value["id"].is_string())
+                continue;
+            option_tags::Want w;
+            w.record = id;
+            w.option = std::string(rec.value["id"].as_string());
+            w.exact = id.rfind("game/", 0) == 0;
+            if (w.exact && rec.origins.empty())
+                continue;
+            const Value &tags = rec.value["restriction_tags"];
+            for (std::size_t i = 0; i < tags.size(); i++)
+                if (tags[i].is_string())
+                    w.tags.emplace_back(tags[i].as_string());
+            w.owner = w.exact ? std::string() : addon_of(id);
+            if (w.exact)
+                for (auto &[pointer, addon] : rec.origins)
+                    if (rank(addon) >= rank(w.owner))
+                        w.owner = addon;
+            if (w.owner.empty())
+                continue;
+            wants.push_back(std::move(w));
+        }
+        if (wants.empty())
+            return;
+        Database &d = database();
+        if (!d.ok || !db::staging().available()) {
+            report.lines.push_back("the game database is not reachable at this boot; no option tags applied");
+            report.refused = int(wants.size());
+            return;
+        }
+        read_edits(d);
+        rows::Engine engine(base_of(d));
+        option_tags::Result res = option_tags::apply_wants(engine, wants);
+        std::size_t staged = 0;
+        for (auto &w : engine.writes()) {
+            const char *type = tag_name(w.tag);
+            if (*type)
+                staged += db::staging().set(w.owner, w.registry, w.path, type, w.text);
+        }
+        report.applied = res.options;
+        report.refused = res.refused;
+        for (auto &l : res.lines)
+            report.lines.push_back(l);
+        report.lines.push_back(std::to_string(res.options) + " option(s): " + std::to_string(res.added) + " tag(s) added, " +
+                               std::to_string(res.removed) + " removed; " + std::to_string(staged) +
+                               " database record(s) staged");
+        if (res.options)
+            report.summary = std::to_string(res.added) + " tag" + (res.added == 1 ? "" : "s") + " added" +
+                             (res.removed ? ", " + std::to_string(res.removed) + " removed" : "");
+    }
+
+private:
+    bool seeded_ = false;
 };
 
 class Constructors : public Applier {
@@ -1128,6 +1264,45 @@ public:
     }
 };
 
+class Slices : public Applier {
+public:
+    const char *registry() const override { return slices::REGISTRY; }
+    Applies applies() const override { return Applies::boot; }
+
+    void boot(Store &st, Report &report) override
+    {
+        std::lock_guard g(mu);
+        SliceBoot &b = slice_boot();
+        bool delivered = b.delivered;
+        LogoReport made = b.made;
+        b = {};
+        slices::Lowering sl = lower_slices(st);
+        if (sl.images.empty() && !sl.refused)
+            return;
+        if (!delivered) {
+            Report own;
+            deliver_with_slices({}, own, sl);
+            for (auto &l : own.lines)
+                report.lines.push_back(l);
+            made = slice_boot().made;
+            slice_boot() = {};
+        }
+        report.applied = sl.applied;
+        report.refused += sl.refused + made.refused;
+        for (auto &l : sl.lines)
+            if (l.find(": not applied: ") != std::string::npos || l.find(": contested") != std::string::npos)
+                report.lines.push_back(l);
+            else
+                swofty::log("[registry] %s", l.c_str());
+        if (made.archives)
+            report.summary = std::to_string(sl.arrays.size()) + (sl.arrays.size() == 1 ? " array" : " arrays") + " grown in " +
+                             std::to_string(made.archives) + (made.archives == 1 ? " archive" : " archives") +
+                             (made.overlay ? ", as overlay archives" : "");
+        else if (sl.applied)
+            report.summary = "no archive built";
+    }
+};
+
 class Boxes : public Applier {
 public:
     const char *registry() const override { return "era.box"; }
@@ -1143,7 +1318,14 @@ public:
                 lower_box(id, *rec, lookup, plan, base_image);
         const SwoftyEra *era = runtime::era_table();
         const SwoftyLang *lang = runtime::lang_table();
+        slices::Lowering provided = lower_slices(st);
+        std::set<std::string> stock;
+        for (auto &id : in_load_order(st, "content.package"))
+            if (const Value *rec = lookup("content.package", id); rec && (*rec)["entrant_list"].is_string())
+                stock.insert(std::string((*rec)["entrant_list"].as_string()));
         for (auto &b : plan.boxes) {
+            if (std::string why = slices::missing_slice(b.image, provided.provided, b.entrant_list, stock); !why.empty())
+                swofty::log("[era] box %s: %s", b.entrant_list.c_str(), why.c_str());
             if (!b.literal.empty() && lang)
                 lang->override_set("*", b.title.c_str(), b.literal.c_str());
             SwoftyEraBox d{sizeof d, b.entrant_list.c_str(), b.title.c_str(), b.image.c_str(),
@@ -1388,8 +1570,10 @@ void register_appliers()
         for (const char *reg : ROW_REGISTRIES)
             make<Rows>(reg);
         make<Boxes>();
+        make<Options>();
         make<Constructors>();
         make<Logos>();
+        make<Slices>();
         register_box_ui();
         tracks::register_appliers();
         tracks::register_box_appliers();

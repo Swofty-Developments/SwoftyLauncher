@@ -63,6 +63,10 @@ impl Gather<'_, '_, '_> {
             self.addon(id, &mut gathered)?;
         }
         for input in &gathered.hud_inputs {
+            if let Some(t) = &input.record.template {
+                let path = input.dir.join(&t.file);
+                self.hash.update(std::fs::read(&path).map_err(io_err(&path))?);
+            }
             for sprite in input.record.sprites.values() {
                 let path = input.dir.join(&sprite.png);
                 self.hash.update(std::fs::read(&path).map_err(io_err(&path))?);
@@ -278,13 +282,15 @@ impl Gather<'_, '_, '_> {
             let path = dir.join(&s.file);
             let data = std::fs::read(&path).map_err(io_err(&path))?;
             if swofty_formats::pkg::is_pkg(&data) {
+                let named = crate::ui::named_root(&data, &s.name)?;
+                let checked = named.as_deref().unwrap_or(&data);
                 let (cat, engine) = (crate::ui::catalog::stock(), crate::ui::catalog::engine());
                 let none = crate::ui::catalog::Scenes::default();
                 let resource = format!("{id}/{}", s.file);
                 let input = crate::ui::check::UiInput {
                     resource: &resource,
                     frag: "temp",
-                    data: &data,
+                    data: checked,
                     stock: None,
                 };
                 let report = crate::ui::check::ui_edit(&input, &none, cat, engine)?;
@@ -301,6 +307,12 @@ impl Gather<'_, '_, '_> {
                     .extend(report.warnings.iter().map(|w| format!("{id}: ui: {w}")));
             }
             self.hash.update(&data);
+            self.built.lines.push(format!(
+                "{id}: ui screen {} joins {} at {}",
+                s.name,
+                s.flow,
+                s.anchor.as_deref().unwrap_or("the flow's default anchor")
+            ));
         }
         Ok(())
     }
@@ -331,6 +343,11 @@ impl Gather<'_, '_, '_> {
             gathered
                 .hud_slots
                 .extend(crate::hud::slots::inputs_of(id, f, &doc.slots)?);
+            for w in doc.widgets.keys() {
+                self.built
+                    .lines
+                    .push(format!("hud: hud.widget {w} -> hud.element {id}/{w}"));
+            }
             gathered
                 .hud_inputs
                 .extend(crate::hud::inputs_of(id, &dir, f, doc)?);

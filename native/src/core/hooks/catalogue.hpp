@@ -124,6 +124,17 @@ inline constexpr Event EVENTS[] = {
     {"ai.controller.update", C, "swofty::ai::events::ControllerUpdate", 1, true, Fired::game, nullptr},
     {"hud.spectator.visible", M, "swofty::spectator::events::HudVisible", 1, false, Fired::game, nullptr},
 
+    {"ui.era.tiles", M, "swofty::ui::events::EraTiles", 2, false, Fired::game, nullptr},
+    {"ui.home.tiles", M, "swofty::ui::events::HomeTiles", 2, false, Fired::game, nullptr},
+    {"ui.career_content.tiles", M, "swofty::ui::events::CareerContentTiles", 2, false, Fired::game, nullptr},
+    {"ui.car_category.tiles", M, "swofty::ui::events::CarCategoryTiles", 2, false, Fired::game, nullptr},
+    {"ui.track_select.build", M, "swofty::ui::events::TrackSelectBuild", 2, false, Fired::game, nullptr},
+    {"ui.screen.built", N, "swofty::ui::events::ScreenBuilt", 1, false, Fired::game, nullptr},
+    {"ui.route.open", C, "swofty::ui::events::RouteOpen", 1, false, Fired::game, nullptr},
+    {"ui.vm.resolve", M, "swofty::ui::events::VmResolve", 2, true, Fired::game, nullptr},
+    {"lang.lookup", M, "swofty::ui::events::LangLookup", 1, true, Fired::game, nullptr},
+    {"hud.mfd.pages", M, "swofty::ui::events::MfdPages", 1, false, Fired::game, nullptr},
+
     {"audio.bundle.resolve", M, "swofty::sounds::events::BundleResolve", 1, false, Fired::no, nullptr},
     {"team.logo.resolve", M, "swofty::teams::events::LogoResolve", 1, false, Fired::game, nullptr},
 

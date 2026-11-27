@@ -4768,6 +4768,9 @@ pub type Gdb_HashMap_Rehash_t = unsafe extern "C" fn(map: *mut GdbValueMap, num_
 pub type Gdb_Load_GameDatabase_t =
     unsafe extern "C" fn(db: *mut GdbDatabase, cfg: *mut c_void) -> *mut GdbDatabase;
 pub type Gdb_Lookup_Key_t = unsafe extern "C" fn(path: *const c_char) -> *mut *mut c_void;
+pub type Hud_MfdVm_RefreshPanelAvailability_t = unsafe extern "C" fn(vm: *mut c_void);
+pub type Loc_LangSet_Find_t =
+    unsafe extern "C" fn(set: *mut c_void, key: *const c_char, mode: i32) -> *const c_char;
 pub type Ne_AnimClipPlayer_Sample_Thunk_t = unsafe extern "C" fn(player: *mut c_void, time: f32);
 pub type Ne_AnimPacketB1_Sample_t =
     unsafe extern "C" fn(packet: *mut c_void, binding: *mut c_void, time: f32, out: *mut c_void);
@@ -5006,6 +5009,7 @@ pub type Trk_CareerWizardTrackSelectVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut c_int;
 pub type Trk_GrandPrixTrackSelectVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut *mut c_void;
+pub type Trk_GrandPrixTrackSelectVm_RefreshTrackList_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Trk_SettingsSelectTrackTabVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut c_char;
 pub type Trk_TimeTrialTrackSelectVm_OnCommandRaised_t =
@@ -13862,6 +13866,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Hud_MfdVm_RefreshPanelAvailability: Binding = Binding {
+        id: "Hud_MfdVm_RefreshPanelAvailability",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Hud_PitStartClutchPrompt_Update: Binding = Binding {
         id: "Hud_PitStartClutchPrompt_Update",
         kind: "func",
@@ -13889,6 +13898,11 @@ pub mod bindings {
     };
     pub const Hud_StoryRaceEvent_Begin: Binding = Binding {
         id: "Hud_StoryRaceEvent_Begin",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Loc_LangSet_Find: Binding = Binding {
+        id: "Loc_LangSet_Find",
         kind: "func",
         status: Status::Experimental,
     };
@@ -20277,8 +20291,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Trk_GrandPrixTrackSelectVm_RefreshTrackList: Binding = Binding {
+        id: "Trk_GrandPrixTrackSelectVm_RefreshTrackList",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Trk_SettingsSelectTrackTabVm_OnCommandRaised: Binding = Binding {
         id: "Trk_SettingsSelectTrackTabVm_OnCommandRaised",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Trk_SettingsSelectTrackTabVm_RefreshTrackList: Binding = Binding {
+        id: "Trk_SettingsSelectTrackTabVm_RefreshTrackList",
         kind: "func",
         status: Status::Experimental,
     };
@@ -21174,6 +21198,11 @@ pub mod bindings {
     };
     pub const Vm_Resolve_RegistryNode: Binding = Binding {
         id: "Vm_Resolve_RegistryNode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Vm_Run_Route: Binding = Binding {
+        id: "Vm_Run_Route",
         kind: "func",
         status: Status::Experimental,
     };
@@ -22799,6 +22828,11 @@ pub mod bindings {
     };
     pub const site_FeTile_EraTilesBuilt: Binding = Binding {
         id: "site_FeTile_EraTilesBuilt",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_FeTile_F1WorldListEnd: Binding = Binding {
+        id: "site_FeTile_F1WorldListEnd",
         kind: "site",
         status: Status::Experimental,
     };

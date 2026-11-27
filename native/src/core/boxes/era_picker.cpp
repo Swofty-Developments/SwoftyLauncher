@@ -1,5 +1,6 @@
 #include "core/boxes/picker/picker.hpp"
 
+#include "core/hooks/ui_points.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/resolve.hpp"
 #include "core/runtime/runtime.hpp"
@@ -390,7 +391,7 @@ static std::vector<CoreMixins> era_mixins()
         return out;
     {
         std::lock_guard<std::mutex> g(picker.lock);
-        if (picker.boxes.empty())
+        if (picker.boxes.empty() && !swofty_core::hooks::ui_points::wants(swofty_core::hooks::ui_points::ERA_POINT))
             return out;
     }
     picker.gate.offer();
@@ -427,3 +428,5 @@ static void era_commit()
 static loader::FunctionSet era_core_set{loader::CoreSetId::era, era_mixins, era_commit};
 
 }
+
+bool runtime::era_picker_live() { return era_picker::picker.live && !era_picker::picker.off; }

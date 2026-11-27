@@ -1,0 +1,92 @@
+{
+ "schema": 1,
+ "name": "Trk_SettingsSelectTrackTabVm_RefreshTrackList",
+ "table": "functions",
+ "author": "Swofty",
+ "row": {
+  "addr": "0x141de65e0",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "void f(void *vm)",
+  "evidence": "decomp:re/decomp/141de65e0.c;xref:0x141de61e3,0x141de9da4",
+  "notes": "Called by Trk_SettingsSelectTrackTabVm_BuildRounds (0x141de57c0, call at 0x141de61e3) and by 0x141de93b0 (jmp 0x141de9da4). Sets [vm+0xb04]=1, resets the round list, iterates the entries of the track list node, per entry reads node stat_id, vehicle state [+0x23c]==2 counts into [vm+0xb04], and rebuilds the per-entry rows with 0x141de74b0 / 0x141de8850. Then fires the UI messages tracks_deserialised (0x14573bb30) and selected_track_changed (0x1457346a4), calls 0x141debc30/0x141debe00/0x141dea930, reads node track_data.track_list and refreshes the two lists at [[vm+0xb28]+0x188/+0x1a8] via 0x14385c890/0x14385cbf0."
+ },
+ "signature": {
+  "id": "tracks.settings_select_track_tab_vm_refresh_track_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE C7 81 04 0B 00 00 01 00 00 00",
+  "match": "0x141de65e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141de65e0",
+  "kind": "func_start",
+  "names": [
+   "Trk_SettingsSelectTrackTabVm_RefreshTrackList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-27",
+    "by": "Swofty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/track_select_point.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-27",
+   "verifier": "std-ui-m6v",
+   "kind": "func",
+   "item": "Trk_SettingsSelectTrackTabVm_RefreshTrackList",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:capstone disasm of pdata 0x141de65e0-0x141de7222 (no Ghidra on this host);xref:0x141de61e3,0x141de9da4;str:0x14575566e,0x14573bb30,0x1457346a4",
+   "notes": "gh:std-ui-m6v re-derived from capstone: pdata start and 8-push prologue, callers re-listed by rel32 scan of every exec section (E8 at 0x141c05488 and 0x141de61e3, E9 at 0x141c07379 and 0x141de9da4; the recorded 0x141c05489/0x141c0737a are the rel32 operand bytes), role matches"
+  }
+ ],
+ "proofs": [
+  {
+   "by": "Swofty",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141de65e0",
+    "target": "0x141de65e0"
+   },
+   "sigcheck": "passed",
+   "digest": "e4780c364d3b8c6224861d9deb8c831cae9048ffe6e36360ab79dffb75edec71"
+  },
+  {
+   "by": "std-ui-m6v",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141de65e0",
+    "target": "0x141de65e0"
+   },
+   "sigcheck": "passed",
+   "digest": "e4780c364d3b8c6224861d9deb8c831cae9048ffe6e36360ab79dffb75edec71"
+  }
+ ]
+}

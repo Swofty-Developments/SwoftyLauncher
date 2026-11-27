@@ -501,33 +501,21 @@ uint64_t Scheduler::boot_generation() const
 
 void Scheduler::log_unapplied()
 {
-    static const char *const READ_BY_CORE[] = {"addon.option",
-                                               "career.character",
-                                               "career.content",
-                                               "career.driver_ratings",
-                                               "career.season",
-                                               "career.wizard",
-                                               "content.package",
-                                               "driver.head",
-                                               "driver.identity",
-                                               "driver.look",
-                                               "driver.person",
-                                               "driver.stats",
-                                               "engine_sound",
-                                               "era.box",
-                                               "gloves",
-                                               "helmet",
-                                               "hub.tab",
-                                               "lang.string",
-                                               "livery",
-                                               "suit",
-                                               "team.constructor",
-                                               "team.identity",
-                                               "team.logo",
-                                               "team.pit_times",
-                                               "vehicle",
-                                               "vehicle.package",
-                                               "wearable.season_set"};
+    static const char *const READ_BY_CORE[] = {"addon.option",     "career.character",
+                                               "career.content",   "career.driver_ratings",
+                                               "career.season",    "career.wizard",
+                                               "content.package",  "driver.head",
+                                               "driver.identity",  "driver.look",
+                                               "driver.person",    "driver.stats",
+                                               "engine_sound",     "era.box",
+                                               "gloves",           "helmet",
+                                               "hub.tab",          "lang.string",
+                                               "livery",           "suit",
+                                               "team.constructor", "team.identity",
+                                               "team.logo",        "team.pit_times",
+                                               "ui.route",         "ui.screen",
+                                               "ui.tile",          "vehicle",
+                                               "vehicle.package",  "wearable.season_set"};
     std::vector<std::string> names = store_.registries();
     std::sort(names.begin(), names.end());
     for (auto &name : names) {

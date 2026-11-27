@@ -243,6 +243,56 @@ pub fn anchor_routes(data: &[u8], screens: &[(String, String, String)]) -> Resul
     })
 }
 
+pub struct RouteClone {
+    pub id: String,
+    pub clone_of: String,
+    pub opens: String,
+}
+
+pub fn clone_route_groups(data: &[u8], clones: &[RouteClone], screens: &[String]) -> Result<Vec<u8>> {
+    if clones.is_empty() {
+        return Ok(data.to_vec());
+    }
+    edit(data, |p| {
+        let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
+        for c in clones {
+            if !screens.iter().any(|s| s == &c.opens) {
+                return Err(err(format!(
+                    "ui.route {}: opens {}, which is not a ui.screen of an enabled addon",
+                    c.id, c.opens
+                )));
+            }
+            if gs.iter().any(|g| id_of(g) == Some(&c.id)) {
+                return Err(err(format!(
+                    "ui.route {}: route group {} exists already",
+                    c.id, c.id
+                )));
+            }
+            let Some(base) = gs.iter().find(|g| id_of(g) == Some(&c.clone_of)) else {
+                let known: Vec<&str> = gs.iter().filter_map(id_of).collect();
+                return Err(err(format!(
+                    "ui.route {}: no route group {} to clone; the file has {}",
+                    c.id,
+                    c.clone_of,
+                    known.join(", ")
+                )));
+            };
+            let mut group = base.clone();
+            replace_strings(&mut group, &|v| (v == c.clone_of).then(|| c.opens.clone()));
+            set_str(group.o_mut()?, "Id", &c.id)?;
+            if let Ok(attrs) = group.o_mut()?.at_mut("Attributes")?.a_mut() {
+                for a in attrs.iter_mut() {
+                    if a.o().ok().and_then(|o| o.str_at("Id").ok()) == Some("Source") {
+                        set_str(a.o_mut()?, "Value", &c.id)?;
+                    }
+                }
+            }
+            gs.push(group);
+        }
+        Ok(())
+    })
+}
+
 pub(super) fn id_of(n: &Node) -> Option<&str> {
     n.as_obj()?.get("Id")?.as_val()?.as_str()
 }

@@ -7,14 +7,15 @@ use std::path::{Path, PathBuf};
 use swofty_formats::pkg::Node;
 
 use super::addon_screens::{Resume, Routing, Targets};
-use super::archives::{ArchiveWriter, read_frag, write_archive, write_erp};
+use super::archives::{ArchiveWriter, read_frag, write_archive, write_archive_copying, write_erp};
 use super::menu_rows::{career_row, customisation_built, main_menu_rows};
 use super::pages::{ADJUST_TOOLTIP, Screens};
 use super::{
     ANCHOR, CUSTOMISATION_ROUTES, ERPS, F1_WORLD_ROUTES, FE_HOME, FLOW, FLOWS, FRONTEND_TRANSITION,
     GAME_ROUTES, HUD_MESSAGES, LEADERBOARD_UI, MESSAGES, MenuBuild, MfdRow, OPTIONS_FLOW, OVERRIDES,
     PERSISTENT_UI, Patch, REGIONS, ROUTES, TOOLTIPS, UI_DATA, WIZARD_ROUTES, Writer, car_category,
-    career_row, career_select, check, era, home_rows, icons, mfd, mfd_page_rows, patch, rows, ui_file,
+    career_row, career_select, check, era, home_rows, icons, mfd, mfd_page_rows, patch, rows, tile_image,
+    ui_file,
 };
 use crate::addons::settings::{SessionScreen, UI_DIR, screen_file};
 use crate::{Error, Result, io_err};
@@ -68,6 +69,7 @@ pub(super) fn write_persistent(
                     patch::screen_route_groups(&routing.addon_groups),
                     &f1_world,
                 )?;
+                let b = patch::clone_route_groups(&b, &routing.clones, &routing.listed)?;
                 let b = patch::setup_routes(&b, setups, &mut placed.borrow_mut())?;
                 let b = match resume {
                     Some(r) => patch::resume_routes(&b, &r.routes, &mut placed.borrow_mut().routes)?,
@@ -231,7 +233,11 @@ pub(super) fn route_problems(
     check::route_files(
         &route_files,
         &p.flows,
-        &targets.groups(),
+        &targets
+            .groups()
+            .into_iter()
+            .chain(routing.clones.iter().map(|c| c.id.as_str()))
+            .collect::<Vec<_>>(),
         &registered,
         &stock_screens,
     )
@@ -292,6 +298,7 @@ pub(super) struct Frontend {
     pub(super) lines: Vec<String>,
     pub(super) warnings: Vec<String>,
     pub(super) rows_built: bool,
+    pub(super) tile_images_built: bool,
 }
 
 /// Writes flow_frontend.erp: the home screen with its offline panel, shown or hidden, the transition,
@@ -299,8 +306,10 @@ pub(super) struct Frontend {
 /// rows.
 pub(super) fn write_frontend(
     at: &(PathBuf, PathBuf),
+    input: &dyn Fn(&str) -> PathBuf,
     writer: &Writer,
     show_panel: bool,
+    tile_images: &[String],
     archives: &ArchiveWriter,
 ) -> Result<Frontend> {
     let (src_h, dst_h) = at;
@@ -333,6 +342,36 @@ pub(super) fn write_frontend(
         templates = Some(with_rows);
         frontend.push((home_rows::SCENE, 0, Box::new(move |_| Ok(scene))));
     }
+    let mut copied = Vec::new();
+    let mut tile_images_built = false;
+    if tile_image::wanted(tile_images) {
+        let built = tile_image::plan_for(input, src_h, writer).and_then(|plan| {
+            let base = match &templates {
+                Some(t) => t.clone(),
+                None => read_frag(src_h, career_select::TEMPLATES, career_select::TEMPLATES_FRAGMENT)
+                    .map_err(|e| e.to_string())?,
+            };
+            let out = tile_image::build_templates(&base, &plan.era_ui).map_err(|e| e.to_string())?;
+            Ok((out, plan.add))
+        });
+        match built {
+            Ok((out, add)) => {
+                career_lines.push(format!(
+                    "ui: tile images: the image templates {} and {} copy {} resource(s) of the era tile's component \
+                     into flow_frontend.erp",
+                    tile_image::HOME_TEMPLATE,
+                    tile_image::ROW_TEMPLATE,
+                    add.len()
+                ));
+                templates = Some(out);
+                copied = add;
+                tile_images_built = true;
+            }
+            Err(why) => career_warnings.push(format!(
+                "ui: tile images: ui.tile records name images but the image templates are left out ({why})"
+            )),
+        }
+    }
     if let Some((ui, type_ui, scene, _)) = career {
         frontend.push((career_select::UI, 0, Box::new(move |_| Ok(ui))));
         frontend.push((career_select::TYPE_UI, 0, Box::new(move |_| Ok(type_ui))));
@@ -345,13 +384,25 @@ pub(super) fn write_frontend(
             Box::new(move |_| Ok(templates)),
         ));
     }
-    write_archive(src_h, dst_h, frontend, Vec::new(), archives)?;
+    write_archive_copying(src_h, dst_h, frontend, Vec::new(), copied, archives)?;
+    if tile_images_built {
+        let name = ui_file("flow_frontend.erp");
+        let report = check::archive_files(&[(name.as_str(), src_h.as_path(), dst_h.as_path())])?;
+        if !report.hard.is_empty() {
+            let found: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+            return Err(Error::Other(format!(
+                "the tile image templates break the game's UI loader rules: {}",
+                found.join("; ")
+            )));
+        }
+    }
     career_lines.extend(home_lines);
     career_warnings.extend(home_warnings);
     Ok(Frontend {
         lines: career_lines,
         warnings: career_warnings,
         rows_built,
+        tile_images_built,
     })
 }
 
@@ -386,7 +437,13 @@ pub(super) fn write_playercard(at: &(PathBuf, PathBuf), archives: &ArchiveWriter
 
 /// Writes the flag files that tell the core the main menu, its navigation, the Customisation card and
 /// the main menu rows are in this build, and logs whether the Customisation card is.
-pub(super) fn write_flags(out: &Path, build: &mut MenuBuild, p: Persistent, rows_built: bool) -> Result<()> {
+pub(super) fn write_flags(
+    out: &Path,
+    build: &mut MenuBuild,
+    p: Persistent,
+    rows_built: bool,
+    tile_images_built: bool,
+) -> Result<()> {
     let menu_flag = format!("{UI_DIR}/{}", home_rows::MENU_FLAG);
     let menu_path = out.join(&menu_flag);
     std::fs::create_dir_all(menu_path.parent().expect("has parent")).map_err(io_err(&menu_path))?;
@@ -413,6 +470,14 @@ pub(super) fn write_flags(out: &Path, build: &mut MenuBuild, p: Persistent, rows
     }
     if rows_built {
         let rel = format!("{UI_DIR}/{}", home_rows::FLAG);
+        let path = out.join(&rel);
+        let dir = path.parent().expect("has parent");
+        std::fs::create_dir_all(dir).map_err(io_err(dir))?;
+        std::fs::write(&path, b"1").map_err(io_err(&path))?;
+        build.screens.insert(rel, path);
+    }
+    if tile_images_built {
+        let rel = format!("{UI_DIR}/{}", tile_image::FLAG);
         let path = out.join(&rel);
         let dir = path.parent().expect("has parent");
         std::fs::create_dir_all(dir).map_err(io_err(dir))?;

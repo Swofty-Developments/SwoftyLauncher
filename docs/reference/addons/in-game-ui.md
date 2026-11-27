@@ -120,6 +120,8 @@ A screen starts with a `.ui` file, the raw screen data you'd find in the game's 
 }
 ```
 
+The same screen can be a `ui.screen` record in a data file (`registry/*.json`), with `view_model` as a path instead of a flag; the build lowers it into this declaration and refuses a name that is in both (see [UI and strings](/std/systems/ui#screens-and-routes)).
+
 The declaration is in the manifest because two steps need it before your plugin runs: at build, the launcher installs each `.ui` file into the game and lists it in `swofty/settings.json`; at boot, swofty_core registers each screen when its flow loads. Your plugin handles the live parts: [mixins](/reference/addons/hooking), view-model data and the screen's commands.
 
 Run `swofty build`. It installs the file as `swofty/ui/my_page.ui` and lists it in the `ui` block of `swofty/settings.json`. When the flow loads, swofty_core registers your screen through the engine's own screen loader:

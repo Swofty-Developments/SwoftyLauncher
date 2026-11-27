@@ -566,6 +566,86 @@ typedef struct SwoftyHud {
     int (*stats)(SwoftyHudStats *out);
 } SwoftyHud;
 
+/* UI view-model writes (ui::set_text, ui::set_bool, ui::set_ref in swofty/systems/ui.hpp), read through the
+   SwoftyCoreUi export, so an addon built against this header also loads on an older core. A path is a dotted view-model
+   node path (a leading '#' is dropped); the last dot splits the leaf from its parent node, and the parent resolves from
+   the view-model registry root. A write is queued and applied on the game's flow thread; a later write to the same
+   path replaces a queued one. Each call returns SWOFTY_ASSET_OK once queued, SWOFTY_ASSET_INVALID for a malformed path
+   or a type clash with an earlier write, and SWOFTY_ASSET_UNAVAILABLE on a core without this table. A parent or
+   target that does not resolve when the write is applied is logged, not returned. set_ref binds the leaf to the node
+   at `target` (a path from the registry root, or a '#' path) and is refused in the log when the leaf exists and is
+   not a reference. */
+#define SWOFTY_UI_VERSION 1
+typedef struct SwoftyUi {
+    uint32_t size;
+    uint32_t version;
+    int (*set_text)(const char *path, const char *text);
+    int (*set_bool)(const char *path, int value);
+    int (*set_ref)(const char *path, const char *target);
+} SwoftyUi;
+
+/* The list a ui tile event (ui.home.tiles, ui.career_content.tiles, ui.car_category.tiles, ui.era.tiles) hands a
+   handler, as a versioned table of C functions: payload version 2 carries `const SwoftyTileList *tiles` next to the
+   opaque v1 `list`. `self` is the first argument of every function. A function a core does not implement is NULL (check
+   it before the call): the home, career content and car category lists implement all five; the era list implements
+   count, get, remove and move (insert is NULL: era boxes are added through era.box records). count returns the number of tiles (never negative). get fills a SwoftyTileView for tile i; the strings
+   point into the core and stay valid only until the handler returns or the list is next edited, copy what you keep.
+   remove, move and insert edit the list before the screen adds its tiles, and return SWOFTY_ASSET_OK, or
+   SWOFTY_ASSET_INVALID for an index out of range, a spec with no id or title (or no route where the screen needs one),
+   an id the list already holds, or an insert into a full list (the screen's room: 255 minus the tiles it already
+   has, fewer on home and the car category tab). Tiles are the ui.tile records of the screen's place; the stock tiles
+   the game builds itself are not in the list and cannot be removed. The era list is the addon boxes (era.box
+   records) the picker is about to add, in order, limited to the boxes this picker shows: id is the box's entrant
+   list, title its lang key, route the entrant list the tile selects, place "era". The core settles the list (cap, one tile per id)
+   after the handlers run. A spec's title is a lang key unless `literal` is nonzero; image is a ui.texture_slice
+   record id or a #array[name] reference, or empty. */
+#define SWOFTY_TILE_LIST_VERSION 1
+typedef struct SwoftyTileView {
+    const char *id;
+    const char *title;
+    const char *route;
+    const char *image;
+    const char *place;
+    int literal;
+} SwoftyTileView;
+
+typedef struct SwoftyTileSpec {
+    const char *id;
+    const char *title;
+    const char *route;
+    const char *image;
+    int literal;
+} SwoftyTileSpec;
+
+typedef struct SwoftyTileList {
+    uint32_t size;
+    uint32_t version;
+    void *self;
+    int (*count)(void *self);
+    int (*get)(void *self, int index, SwoftyTileView *out);
+    int (*remove)(void *self, int index);
+    int (*move)(void *self, int from, int to);
+    int (*insert)(void *self, int at, const SwoftyTileSpec *spec);
+} SwoftyTileList;
+
+/* The track list ui.track_select.build hands a handler (payload version 2: `const SwoftyTrackList *tracks`).
+   Same conventions as SwoftyTileList. The list is the screen's own view model list, rebuilt by the game just before
+   the event, and read-only. count is the number of rows the screen holds (one per displayed track) on the Grand
+   Prix and championship settings screens. get, remove and insert are NULL on this core: a row holds view-model
+   property handles and a node reference to the track's data node, not its id, and the core has not proven how to read
+   that id, nor that the rows can be edited at that moment (the game's own count and row nodes would disagree). When
+   a core proves get, it writes the track id as the track registry names it. */
+#define SWOFTY_TRACK_LIST_VERSION 1
+typedef struct SwoftyTrackList {
+    uint32_t size;
+    uint32_t version;
+    void *self;
+    int (*count)(void *self);
+    int (*get)(void *self, int index, const char **id);
+    int (*remove)(void *self, int index);
+    int (*insert)(void *self, int at, const char *id);
+} SwoftyTrackList;
+
 /* CSV recorder (swofty/log_csv.hpp). Not part of SwoftyApi: the table comes from the core's SwoftyCoreCsv
    export, so an addon built against this header also loads on an older core. Fields are only ever appended.
    Version 1: open declares a file swofty/addons/<addon id>/diag/<name>-<timestamp>.csv with n columns (names
@@ -2086,6 +2166,7 @@ typedef const SwoftyGameMem *(*SwoftyCoreGameMemFn)(void);
 typedef const SwoftyLapHost *(*SwoftyCoreLapHostFn)(void);
 typedef const SwoftySessionHost *(*SwoftyCoreSessionHostFn)(void);
 typedef uint32_t (*SwoftyCoreLangVersionFn)(void);
+typedef const SwoftyUi *(*SwoftyCoreUiFn)(void);
 
 #define SWOFTY_STAGE_WINDOW 1
 
@@ -2114,6 +2195,7 @@ SWOFTY_EXPORT const SwoftyGameMem *SwoftyCoreGameMem(void);
 SWOFTY_EXPORT const SwoftyLapHost *SwoftyCoreLapHost(void);
 SWOFTY_EXPORT const SwoftySessionHost *SwoftyCoreSessionHost(void);
 SWOFTY_EXPORT uint32_t SwoftyCoreLangVersion(void);
+SWOFTY_EXPORT const SwoftyUi *SwoftyCoreUi(void);
 
 #ifdef __cplusplus
 }

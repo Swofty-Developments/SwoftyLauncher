@@ -609,6 +609,15 @@ pub struct Variant {
     pub stock_parts: Vec<String>,
 }
 
+/// The template-only form of a record: the templates of an addon `.ui` file, added to the game's HUD
+/// templates, and the view-model path they bind.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TemplateOnly {
+    pub file: String,
+    pub view_model: String,
+}
+
 /// One `hud.element` record.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct HudElement {
@@ -665,6 +674,9 @@ pub struct HudElement {
     /// The parts this record hides whole while its leaf is on, in place of a dial, scene or screen.
     #[serde(default, rename = "yield", skip_serializing_if = "Option::is_none")]
     pub yields: Option<Yield>,
+    /// In place of a dial, scene, screen or yield: only the templates of an addon `.ui` file.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub template: Option<TemplateOnly>,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_json::Value>,
 }
@@ -690,20 +702,20 @@ impl HudElement {
         let mut v = value.clone();
         if let Some(o) = v.as_object_mut() {
             o.remove("$comment");
-            let targets = ["dial", "scene", "screen", "yield"]
+            let targets = ["dial", "scene", "screen", "yield", "template"]
                 .iter()
                 .filter(|k| o.contains_key(**k))
                 .count();
             match targets {
                 0 => {
                     return Err(err(
-                        "record: missing field `dial` (or `scene` and `parent_ui`, `screen` or `yield`)",
+                        "record: missing field `dial` (or `scene` and `parent_ui`, `screen`, `yield` or `template`)",
                     ));
                 }
                 1 => {}
                 _ => {
                     return Err(err(
-                        "record: a record has a dial, a scene target, a screen or a yield, not two",
+                        "record: a record has a dial, a scene target, a screen, a yield or a template, not two",
                     ));
                 }
             }
@@ -807,6 +819,9 @@ impl HudElement {
     /// removes or replaces is free inside that variant, its placements name elements that are
     /// there, and its decisions show elements that are there.
     pub fn check(&self) -> Result<()> {
+        if let Some(t) = &self.template {
+            return self.check_template(t);
+        }
         if let Some(y) = &self.yields {
             return self.check_yield(y);
         }
@@ -855,6 +870,33 @@ impl HudElement {
             ));
         }
         Ok(())
+    }
+
+    fn check_template(&self, t: &TemplateOnly) -> Result<()> {
+        let bare = Self {
+            prefix: self.prefix.clone(),
+            template: self.template.clone(),
+            ..serde_json::from_value(serde_json::json!({ "dial": "f1_26" })).expect("a bare record")
+        };
+        if *self != bare {
+            return Err(err(
+                "a template record takes template and prefix only: it adds templates and draws nothing",
+            ));
+        }
+        if !t.file.ends_with(".ui") || t.file.starts_with(['/', '\\']) || t.file.contains("..") {
+            return Err(err(format!(
+                "template file {:?} is a .ui file in the addon's folder",
+                t.file
+            )));
+        }
+        if t.view_model.is_empty() {
+            return Err(err("template view_model names the path the templates bind"));
+        }
+        Ok(())
+    }
+
+    pub fn is_template_only(&self) -> bool {
+        self.template.is_some()
     }
 
     fn check_yield(&self, y: &Yield) -> Result<()> {

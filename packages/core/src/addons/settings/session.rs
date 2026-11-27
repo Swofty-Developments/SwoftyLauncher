@@ -49,6 +49,10 @@ pub struct SessionSettings {
     /// The Career list screen is built, even with no careers to list (it then holds the New Career row alone).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub resume_list_on: bool,
+    /// The places (home, career) with an enabled ui.tile record that names an image: the UI build adds the image
+    /// templates and writes `ui\tile_images.flag` only when there is one.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tile_images: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -69,6 +73,17 @@ pub struct SessionUi {
     pub strict: bool,
     pub recover: bool,
     pub screens: Vec<SessionScreen>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub routes: Vec<SessionRoute>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SessionRoute {
+    pub id: String,
+    pub addon: String,
+    pub file: String,
+    pub clone_of: String,
+    pub opens: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -105,6 +120,28 @@ pub fn screens<'a>(
                 )));
             }
             out.push((m, s));
+        }
+    }
+    Ok(out)
+}
+
+pub fn routes<'a>(order: impl IntoIterator<Item = &'a AddonManifest>) -> Result<Vec<SessionRoute>> {
+    let mut out: Vec<SessionRoute> = Vec::new();
+    for m in order {
+        for r in &m.operations.routes {
+            if let Some(other) = out.iter().find(|o| o.id == r.id) {
+                return Err(Error::Other(format!(
+                    "route {} is declared by {} and {}",
+                    r.id, other.addon, m.id
+                )));
+            }
+            out.push(SessionRoute {
+                id: r.id.clone(),
+                addon: m.id.clone(),
+                file: r.file.clone(),
+                clone_of: r.clone_of.clone(),
+                opens: r.opens.clone(),
+            });
         }
     }
     Ok(out)
@@ -259,11 +296,13 @@ impl SessionSettings {
                     view_model: s.view_model,
                 })
                 .collect();
-        let ui = (!screens.is_empty()).then_some(SessionUi {
+        let routes = routes(order.iter().copied().filter(|m| enabled.contains(&m.id.as_str())))?;
+        let ui = (!screens.is_empty() || !routes.is_empty()).then_some(SessionUi {
             register: true,
             strict: false,
             recover: true,
             screens,
+            routes,
         });
         let early_plugins = order
             .iter()
@@ -339,6 +378,7 @@ impl SessionSettings {
             resume_needs: Vec::new(),
             resume_list: Vec::new(),
             resume_list_on: false,
+            tile_images: Vec::new(),
         };
         out.check_commands()?;
         Ok(out)

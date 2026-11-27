@@ -1,5 +1,7 @@
 #include "core/assets/lang_scope.hpp"
+#include "core/assets/lang_lookup.hpp"
 #include "core/hooks/hooks.hpp"
+#include "core/hooks/hot_table.hpp"
 #include "core/registry/older.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -258,8 +260,63 @@ void flush_keys(const std::map<std::string, std::set<std::string>> &changed, Key
         refresh_keys(all);
 }
 
+std::atomic<bool> g_lookup_on{false};
+bool g_lookup_wanted;
+swofty_core::hooks::HotTable<const char *> &hot_table()
+{
+    static swofty_core::hooks::HotTable<const char *> t;
+    return t;
+}
+
+std::mutex g_hot_texts_lock;
+std::unordered_set<std::string, Hash, Eq> g_hot_texts;
+std::atomic<int> g_hot_told{0};
+constexpr int HOT_LOGGED = 8;
+
+const char *hot_intern(const std::string &text)
+{
+    std::lock_guard<std::mutex> g(g_hot_texts_lock);
+    return g_hot_texts.emplace(text).first->c_str();
+}
+
+uint64_t hot_epoch()
+{
+    uint8_t *m = g_module.load(std::memory_order_acquire);
+    uint64_t language = m ? *reinterpret_cast<const uint32_t *>(m + MODULE_LANG) & 0x1f : 0x1f;
+    return runtime::lang_lookup_epoch() << 5 | language;
+}
+
+thread_local bool t_in_lookup;
+
+const char *hot_find(void *set, const char *key)
+{
+    const char *own = g_count.load(std::memory_order_acquire) ? lookup(key) : nullptr;
+    if (t_in_lookup)
+        return own ? own : h_find.call<const char *>(set, key, 0);
+    t_in_lookup = true;
+    const char *supplied = hot_table().resolve(
+        key, hot_epoch(),
+        [&]() -> std::pair<const char *, bool> {
+            const char *stock = own ? own : h_find.call<const char *>(set, key, 0);
+            auto text = runtime::lang_lookup_fire(key, current_code() ? current_code() : "", stock);
+            if (!text)
+                return {nullptr, false};
+            if (g_hot_told.fetch_add(1) < HOT_LOGGED)
+                swofty::log("[hooks] lang.lookup (hot): %s -> \"%.80s\" supplied by a handler", key, text->c_str());
+            return {hot_intern(*text), true};
+        },
+        [](const swofty_core::hooks::HotStats &old) {
+            swofty::log("[hooks] lang.lookup (hot): table reset: %zu key(s) looked up, %zu supplied by handlers", old.entries,
+                        old.supplied);
+        });
+    t_in_lookup = false;
+    return supplied ? supplied : own ? own : h_find.call<const char *>(set, key, 0);
+}
+
 const char *find_hook(void *set, const char *key, int32_t mode)
 {
+    if (key && mode == 0 && g_lookup_on.load(std::memory_order_acquire))
+        return hot_find(set, key);
     if (g_count.load(std::memory_order_acquire) && key)
         if (const char *text = lookup(key))
             return text;
@@ -296,6 +353,50 @@ bool ensure_find_hook()
 }
 
 void setup_once();
+
+bool start_lookup()
+{
+    if (!ensure_find_hook())
+        return false;
+    g_lookup_on.store(true, std::memory_order_release);
+    return true;
+}
+
+class LookupLink final : public swofty_core::hooks::GameLink {
+public:
+    bool install(bool late, const std::string &subscribers) override
+    {
+        setup_once();
+        g_lookup_wanted = true;
+        if (!g_on || !g_find_at) {
+            if (runtime::code_ready())
+                swofty::log("[hooks] lang.lookup unavailable: Loc_LangSet_Find does not resolve on this build; subscribers %s "
+                            "not run",
+                            subscribers.c_str());
+            return false;
+        }
+        if (g_lookup_on.load() || start_lookup()) {
+            swofty::log("[hooks] lang.lookup live (hot) on Loc_LangSet_Find%s: lookups run the handlers once per key and "
+                        "content; subscribers %s",
+                        late ? " (installed late)" : " (window stage)", subscribers.c_str());
+            return true;
+        }
+        swofty::log("[hooks] lang.lookup unavailable: the hook on Loc_LangSet_Find failed; subscribers %s not run",
+                    subscribers.c_str());
+        return false;
+    }
+
+    void uninstall() override
+    {
+        g_lookup_wanted = false;
+        if (g_lookup_on.exchange(false)) {
+            hot_table().clear();
+            swofty::log("[hooks] lang.lookup has no subscriber left; lookups skip the handlers");
+        }
+    }
+
+    bool installed() const override { return g_lookup_on.load(); }
+};
 
 int lang_available()
 {
@@ -473,6 +574,8 @@ void setup()
                 g_info ? "found" : "missing", h_init ? "on" : "off");
     if (!g_find_at)
         return;
+    if (g_lookup_wanted && start_lookup())
+        swofty::log("[hooks] lang.lookup live (hot) on Loc_LangSet_Find (set up after the first subscriber)");
     std::lock_guard<std::mutex> g(g_shim);
     size_t scoped = 0;
     if (size_t n = refresh_all(&scoped)) {
@@ -497,6 +600,12 @@ extern "C" __declspec(dllexport) uint32_t SwoftyCoreLangVersion(void) { return S
 const SwoftyLang *runtime::lang_table() { return &table; }
 
 void runtime::lang_override_setup() { setup_once(); }
+
+swofty_core::hooks::GameLink *runtime::lang_lookup_link()
+{
+    static LookupLink link;
+    return &link;
+}
 
 size_t runtime::lang_batch(const std::vector<runtime::LangOp> &ops)
 {
