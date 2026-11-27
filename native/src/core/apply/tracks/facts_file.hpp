@@ -27,6 +27,7 @@ struct TrackFacts {
     bool has_ai = false, has_difficulties = false;
     bool time_trial = true;
     std::string time_trial_why;
+    std::string video;
 };
 
 struct Layer {
@@ -123,6 +124,7 @@ inline Facts parse_facts(std::string_view text, std::string *why = nullptr)
             tf.ui_lists = facts_strings(t["ui_lists"]);
             tf.time_trial = t["time_trial"].as_bool(true);
             tf.time_trial_why = std::string(t["time_trial_why"].as_string());
+            tf.video = std::string(t["video"].as_string());
             f.tracks[std::string(code)] = std::move(tf);
         }
     f.loaded = true;

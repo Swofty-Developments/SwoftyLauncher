@@ -195,6 +195,12 @@ std::vector<std::string> ui_lists_of(const std::string &code)
     return f ? f->ui_lists : std::vector<std::string>{};
 }
 
+std::string video_of(const std::string &code)
+{
+    const TrackFacts *f = facts().track(code);
+    return f ? f->video : std::string{};
+}
+
 StatIds pool_ids(const State &s)
 {
     std::string day = today();
@@ -236,7 +242,8 @@ public:
         if (!s.ok || s.plan)
             return s.plan ? s.plan->fresh : 0;
         Db db(reader(s));
-        s.plan = std::make_unique<Plan>(lower_records(st, db, builtin_tables(), s.scan, s.older.tracks, {}, ui_lists_of));
+        s.plan =
+            std::make_unique<Plan>(lower_records(st, db, builtin_tables(), s.scan, s.older.tracks, {}, ui_lists_of, video_of));
         std::size_t variants = declare_data_variants(st, *s.plan);
         if (variants)
             swofty::log("[tracks] %zu data block(s) of record tracks declared as variants of their bases' blocks", variants);
@@ -262,7 +269,7 @@ public:
             ids::store().define_pool("track", track_pool(s.scan.used, s.older.tracks));
             ids::store().set_live("track", records);
             Db db(reader(s));
-            p = lower_records(st, db, builtin_tables(), s.scan, s.older.tracks, pool_ids(s), ui_lists_of);
+            p = lower_records(st, db, builtin_tables(), s.scan, s.older.tracks, pool_ids(s), ui_lists_of, video_of);
             std::size_t staged = 0;
             for (auto &w : db.writes()) {
                 const char *type = tag_name(w.tag);

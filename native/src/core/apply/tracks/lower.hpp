@@ -446,6 +446,7 @@ struct Request {
     bool route = true;
     std::vector<std::string> ui_lists;
     std::vector<std::string> sprint;
+    std::string video;
 };
 
 struct Lowered {
@@ -551,6 +552,23 @@ inline bool set_weekend_format(Db &db, const Key &data_row, const std::string &f
     for (std::size_t i = 0; i < n; i++)
         set = db.set_text(field(row(sub_table(data_row, WEEKEND_TABLE), i), "weekend_format"), format) || set;
     return set;
+}
+
+inline std::optional<std::string> point_video(Db &db, const Key &track_row, const std::string &value)
+{
+    constexpr const char *TABLE = "TrackVideo";
+    std::size_t n = db.count(sub_count(track_row, TABLE).h).value_or(0);
+    std::optional<std::string> was;
+    bool set = false;
+    for (std::size_t i = 0; i < n; i++) {
+        Key k = field(row(sub_table(track_row, TABLE), i), "value");
+        if (!was)
+            was = db.text(k.h);
+        set = db.set_text(k, value) || set;
+    }
+    if (!set)
+        return std::nullopt;
+    return was.value_or("");
 }
 
 inline std::vector<std::string> split_items(const std::string &v)
@@ -719,6 +737,12 @@ inline Lowered lower_track(Db &db, const Tables &t, const Request &req)
                 out.lines.push_back(list.sub_table + " " + db.text(field(set, "_metadata_").h).value_or("") + ": added " + code);
             }
         }
+    }
+    if (!req.video.empty()) {
+        if (auto was = point_video(db, *track_row, req.video))
+            out.lines.push_back(code + ": circuit intro " + req.video + " (the track row's TrackVideo was " + *was + ")");
+        else
+            out.warnings.push_back("video " + req.video + ": " + code + " has no TrackVideo row, so it plays its base's intro");
     }
     if (!req.ui_lists.empty()) {
         std::size_t pointed = point_textures(db, texture_keys(db, t, *track_row, data_rows), code, req.ui_lists);

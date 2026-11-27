@@ -118,9 +118,10 @@ inline std::vector<std::string> strings_of(const Value &v)
 }
 
 using UiLists = std::function<std::vector<std::string>(const std::string &code)>;
+using VideoOf = std::function<std::string(const std::string &code)>;
 
 inline Plan lower_records(registry::Store &st, Db &db, const Tables &t, const Scan &scan, const std::vector<Older> &older,
-                          const StatIds &stat, const UiLists &ui_lists = {})
+                          const StatIds &stat, const UiLists &ui_lists = {}, const VideoOf &video_of = {})
 {
     Plan p;
     std::map<std::string, std::string> code_of;
@@ -186,7 +187,8 @@ inline Plan lower_records(registry::Store &st, Db &db, const Tables &t, const Sc
                     -1,
                     true,
                     ui_lists ? ui_lists(code) : std::vector<std::string>{},
-                    strings_of(rec["sprint"])};
+                    strings_of(rec["sprint"]),
+                    video_of ? video_of(code) : std::string{}};
         StatId sid;
         if (!fills && stat) {
             int64_t pin = rec["stat_id"].is_int() ? rec["stat_id"].as_int() : -1;
