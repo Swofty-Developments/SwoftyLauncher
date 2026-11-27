@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Destroy_PlayerCardBadge",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141cbb340",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Destroy_PlayerCardBadge(void *badge)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141cbcf40 (RacingPC lab re_groups/_decomp);xref:0x141cb7710",
+  "notes": "Destructor matching 0x141cbc340: unregisters every uint32 id in the vector +0x138..+0x140 via func_0x142e3c270(badge[0], id), drops two shared_ptrs (+0x3a8, +0x3b8), calls Game_Hud_ReleaseResourceSet_141605e20(+0x218), releases all 14 VM node holders with Vm_Release_Node and frees the id vector buffer."
+ },
+ "signature": {
+  "id": "teams.destroy_player_card_badge",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8D 99 38 01 00 00",
+  "match": "0x141cbb340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141cbb340",
+  "kind": "func_start",
+  "names": [
+   "Team_Destroy_PlayerCardBadge"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141cbcf40",
+  "made_on_target": "0x141cbcf40",
+  "twin": "made on steam-26566308; the target 0x141cbcf40 is KB 0x141cbb340: Game_LoadingScreenVM_OnScreenActivated (0x1ca5fe0) and Game_MpSeasonCompleteVM_OnActivate (0x1cbded0) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141cbcf40",
+    "target": "0x141cbcf40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "834957860db1f80af984cd278a5677980e1d9fb0b58a9eaf6d44dab2a4c957ae"
+  }
+ ]
+}

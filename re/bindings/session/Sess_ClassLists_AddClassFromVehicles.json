@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_ClassLists_AddClassFromVehicles",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14098e140",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_ClassLists_AddClassFromVehicles(void *self, void *vehicle_ptr_vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14098e190 (RacingPC lab re_groups/_decomp);xref:0x14098f450",
+  "notes": "For each vehicle pointer in the vector at +8..+0x10 it builds a 0x18 byte entry {u32 packed handle from vehicle+0x50, u8 index from vehicle+0x82, zeroed stats} in a temporary vector, then appends a copy of that vector as a new 0x20 byte class list {allocator, begin, end, cap} to the outer vector at self+0x20..+0x30 (allocator self+0x18). Does nothing when the input is empty."
+ },
+ "signature": {
+  "id": "session.class_lists_add_class_from_vehicles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 8B 6A 08",
+  "match": "0x14098e140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14098e140",
+  "kind": "func_start",
+  "names": [
+   "Sess_ClassLists_AddClassFromVehicles"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14098e190",
+  "made_on_target": "0x14098e190",
+  "twin": "made on steam-26566308; the target 0x14098e190 is KB 0x14098e140: Ne_Array_InsertionSortPtrs (0x98d5b0) and site_Sess_SessionEnter_VehicleLookup (0x98f767) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14098e190",
+    "target": "0x14098e190"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7477b254c6a056a177d4e0ea24feb4fd4d9497fcca4f45a9f383f19f3c90d5a4"
+  }
+ ]
+}

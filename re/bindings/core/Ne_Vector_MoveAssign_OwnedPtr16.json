@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_MoveAssign_OwnedPtr16",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140e19290",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Vector_MoveAssign_OwnedPtr16(void *dst, void *src)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140e19e10 (RacingPC lab re_groups/_decomp);xref:0x140dce680",
+  "notes": "(lib) Move-assignment of a vector of 16-byte {allocator, ptr} owning elements: destroys dst contents, then swaps buffers when allocators match, otherwise reallocates to src capacity, moves each element and clears src. Returns dst."
+ },
+ "signature": {
+  "id": "core.vector_move_assign_owned_ptr16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D7 4C 8D 76 08 48 8B 06 4C 8B 7E 08 48 8B 5E 10 48 3B 02 0F 84 ?? ?? ?? ?? 49 39 DF 75 12 EB 2C",
+  "match": "0x140e19290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e19290",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_MoveAssign_OwnedPtr16"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140e19e10",
+  "made_on_target": "0x140e19e10",
+  "twin": "made on steam-26566308; the target 0x140e19e10 is KB 0x140e19290: Ne_Crt_InvalidParameterAbortStub_140e0fd20 (0xe108a0) and Career_Condition_FacilityUpgradeType_Ctor (0xe3f620) on either side both sit 0xb80 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140e19e10",
+    "target": "0x140e19e10"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e81f7744ead69836e6ed32b31d15b26300e7d8018b86d50fffb226a2a6583a82"
+  }
+ ]
+}

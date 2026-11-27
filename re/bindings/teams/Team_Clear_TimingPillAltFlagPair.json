@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Clear_TimingPillAltFlagPair",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417fc5e0",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Clear_TimingPillAltFlagPair(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1417fddc0 (RacingPC lab re_groups/_decomp);xref:0x14175f410",
+  "notes": "Writes false to the bool VM nodes at self+0xd0 and self+0xf0, which are the +0x28 and +0x48 flag nodes of the alternate set at self+0xa8 used by 0x1417fce70. Independent re-check (lab blind verifier 2026-11-27): partial, better name Team_Clear_VmBoolNodePair_D0_F0: Takes the VM nodes at param_1+0xd0 and +0xf0, checks each is valid and of bool type via Vm_BoolTypeDesc, and calls Vm_NodeSet_Bool with false; no timing-pill or alt-flag semantics are visible."
+ },
+ "signature": {
+  "id": "teams.clear_timing_pill_alt_flag_pair",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE C6 44 24 2F 00 48 8B B9 D0 00 00 00",
+  "match": "0x1417fc5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417fc5e0",
+  "kind": "func_start",
+  "names": [
+   "Team_Clear_TimingPillAltFlagPair"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1417fddc0",
+  "made_on_target": "0x1417fddc0",
+  "twin": "made on steam-26566308; the target 0x1417fddc0 is KB 0x1417fc5e0: site_Career_UpgradeCardDeptIcon (0x17f9f8f) and Game_EventObjectives_ShowTargetPosition (0x17fdf50) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1417fddc0",
+    "target": "0x1417fddc0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "82ce5b9cc9f05368428b77233e80bac3db26ce365d9106b9ee124e3bb496c1ed"
+  }
+ ]
+}

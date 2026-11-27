@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Destroy_FanZoneTeamSelectBindings",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14238ce00",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Destroy_FanZoneTeamSelectBindings(void *bindings)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14238ea00 (RacingPC lab re_groups/_decomp);xref:0x1421aac60",
+  "notes": "Destructor of the FanZone team select VM binding block (0x320 bytes): releases about 20 VM node holders with Vm_Release_Node, destroys the vector of 0xa8 summary choice elements (+0x280..+0x298) and two vectors of 0x170 polymorphic tiles (+0xe0 and +0x140) via their virtual destructors, freeing buffers through the stored allocators."
+ },
+ "signature": {
+  "id": "teams.destroy_fan_zone_team_select_bindings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 4C 8D 35 ?? ?? ?? ?? 4C 89 B1 00 03 00 00",
+  "match": "0x14238ce00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14238ce00",
+  "kind": "func_start",
+  "names": [
+   "Team_Destroy_FanZoneTeamSelectBindings"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14238ea00",
+  "made_on_target": "0x14238ea00",
+  "twin": "made on steam-26566308; the target 0x14238ea00 is KB 0x14238ce00: Career_Bind_DepartmentEventRewardArrows (0x2388d00) and Game_FanZoneSeasonResults_Exit (0x238f640) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14238ea00",
+    "target": "0x14238ea00"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9b84b4613f88b1a6bc303338275cf595af505401e5f48946293c975e6a437d8e"
+  }
+ ]
+}

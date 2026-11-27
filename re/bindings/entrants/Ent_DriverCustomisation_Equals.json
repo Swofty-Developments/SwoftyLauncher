@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_DriverCustomisation_Equals",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1424701a0",
+  "level": "L2",
+  "subsystem": "entrants",
+  "proto": "bool Ent_DriverCustomisation_Equals(const void *a, const void *b)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142471da0 (RacingPC lab re_groups/_decomp);xref:0x1424719e0,0x14313dc10,0x14313e870,0x14313eda0",
+  "notes": "Deep equality of two driver customisation records. Compares optional name string (+0xb8, valid +0x140), optional byte (+0x148/+0x149), three 0x30-byte item blocks at +0x18, +0x48, +0x78 (type byte, u16 id, 4 ints, 8 bytes), id pairs at +0x158, +0xa0, +0x168, +0x178 (byte +0x180), four large sub-blocks at +0x340, +0x1b60, +0x3380, +0x4ba0, blocks +0x260 and +0x190, and the id at +0x330/+0x332. Used to skip redundant network replication."
+ },
+ "signature": {
+  "id": "entrants.driver_customisation_equals",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 0F B6 81 40 01 00 00",
+  "match": "0x1424701a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424701a0",
+  "kind": "func_start",
+  "names": [
+   "Ent_DriverCustomisation_Equals"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142471da0",
+  "made_on_target": "0x142471da0",
+  "twin": "made on steam-26566308; the target 0x142471da0 is KB 0x1424701a0: site_Team_LoadInserted (0x246b3f9) and Ent_EntrantsSystem_ReplaceVehicle (0x2478370) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142471da0",
+    "target": "0x142471da0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "b252211de730f0875fa006b5b8463e6bf8e80f706a4db87e7d7abad54aac416b"
+  }
+ ]
+}

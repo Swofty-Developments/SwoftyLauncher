@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Bind_TeamSelectTileNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14184a170",
+  "level": "L2",
+  "subsystem": "teams",
+  "proto": "void Team_Bind_TeamSelectTileNodes(void *tile, void *parentHolder, const char *childName)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14184b950 (RacingPC lab re_groups/_decomp);xref:0x141defc40",
+  "notes": "Gets or creates the VM child node named childName (djb2 hash) under parentHolder+8 and stores the handle at tile+0x2a8. Writes display_name (cstr at +0x68), bool f2 (+0x29), bool addon_content (+0x2a), then in sub-node hash 0x8a1f8c9 writes background_image (+0x210 if flag +0x228) and driver_helmet_image (+0x240 if flag +0x258), and in sub-node hash 0x81e8dc6b binds 8 entries (+0x80..+0x1d0 step 0x30) via FUN_14184c320; +0x28 picks one of two label strings. Good hook to change team select tile data."
+ },
+ "signature": {
+  "id": "teams.bind_team_select_tile_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 48 8D 05",
+  "match": "0x14184a170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14184a170",
+  "kind": "func_start",
+  "names": [
+   "Team_Bind_TeamSelectTileNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14184b950",
+  "made_on_target": "0x14184b950",
+  "twin": "made on steam-26566308; the target 0x14184b950 is KB 0x14184a170: Game_SessionResults_PopulateTable (0x1836b70) and Career_Bind_SpecialistUpgradeText (0x185ad60) on either side both sit 0x17e0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14184b950",
+    "target": "0x14184b950"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "f4826869f52559c4f1427286535268a4d51c21498874cd4cbc37eb2973cf2d9a"
+  }
+ ]
+}

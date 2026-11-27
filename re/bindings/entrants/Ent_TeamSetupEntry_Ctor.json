@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ent_TeamSetupEntry_Ctor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142785ff0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "void *Ent_TeamSetupEntry_Ctor(void *self, void *owner, void *row_by_value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142788370 (RacingPC lab re_groups/_decomp);xref:0x14279f2c0",
+  "notes": "Constructs a team-setup entry (vtables 0x1457a1ae0 then 0x1457a1b20) from a parsed row passed by value: owner at +0x08, u16 id +0x10 and byte +0x12, 0x200 name string at +0x18, value +0x230, shared pointer +0x238/+0x240, three empty owner-bound containers at +0x248, +0x260, +0x278. Releases the row's shared pointer (row+0x230) on exit."
+ },
+ "signature": {
+  "id": "entrants.team_setup_entry_ctor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 02 00 00 C5 F8 29 B4 24 60 02 00 00 4C 89 C7 48 89 D3",
+  "match": "0x142785ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142785ff0",
+  "kind": "func_start",
+  "names": [
+   "Ent_TeamSetupEntry_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142788370",
+  "made_on_target": "0x142788370",
+  "twin": "made on steam-26566308; the target 0x142788370 is KB 0x142785ff0: site_Career_TeamDeptEnumStore (0x27765d8) and Game_F1os_F1CGTask_Update (0x27a1ea0) on either side both sit 0x2380 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142788370",
+    "target": "0x142788370"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "03fde78b78412b69b84d8ef1dbdb117d5b4d0f943e9384ffa09ada7f6c0171c9"
+  }
+ ]
+}

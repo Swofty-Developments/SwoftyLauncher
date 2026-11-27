@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Tree_EraseSubtree_NestedTreeValue_143907c80",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1439056f0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Tree_EraseSubtree_NestedTreeValue_143907c80(void **alloc, void *node)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143907c80 (RacingPC lab re_groups/_decomp);xref:0x1438a7690",
+  "notes": "(lib) Recursive red-black tree subtree free where each node value (node+0x28) is itself a tree: erases the inner tree via 0x143907d00, frees the inner head node (+0x30) with its allocator (+0x28), then frees the node through the outer allocator vtable +0x38."
+ },
+ "signature": {
+  "id": "core.tree_erase_subtree_nested_tree_value_143907c80",
+  "section": ".xtls",
+  "pattern": "48 8B 7E 30 48 8B 57 08 E8 ?? ?? ?? ?? 48 89 7F 08",
+  "match": "0x1438a531a",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x1439056f0",
+  "kind": "call",
+  "names": [
+   "Ne_Tree_EraseSubtree_NestedTreeValue_143907c80"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1438a78aa",
+  "made_on_target": "0x143907c80",
+  "twin": "made on steam-26566308; the target 0x143907c80 is KB 0x1439056f0: Ne_NameTable_FindByFnv1a_B (0x3907810) and Ne_Libpng_CheckIhdr (0x3912c40) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1438a78aa",
+    "target": "0x143907c80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9808129d635af983c78b2771822c7472a263dc1b7025930398e8efdc7a7fb46b"
+  }
+ ]
+}

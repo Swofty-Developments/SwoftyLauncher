@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Set_TimingPillInfoText_ByMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14175d0a0",
+  "level": "L1",
+  "subsystem": "teams",
+  "proto": "void Team_Set_TimingPillInfoText_ByMode(void *pill, uint32_t mode, float seconds, void *source)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14175e820 (RacingPC lab re_groups/_decomp);xref:0x14175f410",
+  "notes": "Fills the extra info text of a timing pill by mode: 0 hides it (bools +0x5d0 and +0x1e8 false); 1 fetches text from source vtbl+0x10 into +0x5a8/+0x5b0 and shows +0x5d0 only if non-empty; 2 and 3 format seconds*1000 as a time string (flag 0 or 1) into string node +0x5b0; 4 takes a string from source vtbl+0x18 and formats it with a NUM parameter. Modes 2-4 then set +0x5d0 and +0x1e8 true. Better context needed: meaning of the mode enum (gap/interval/laptime)."
+ },
+ "signature": {
+  "id": "teams.set_timing_pill_info_text_by_mode",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 50 01 00 00 C5 F8 29 B4 24 40 01 00 00",
+  "match": "0x14175d0a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14175d0a0",
+  "kind": "func_start",
+  "names": [
+   "Team_Set_TimingPillInfoText_ByMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14175e820",
+  "made_on_target": "0x14175e820",
+  "twin": "made on steam-26566308; the target 0x14175e820 is KB 0x14175d0a0: Ui_Init_CarDriverTeamSelectors (0x175a090) and site_Team_TimingPillBadgeLabel (0x1761a8b) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14175e820",
+    "target": "0x14175e820"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "38927f5b872b7e9226d97928603200773abb5d951d82b470e501b09b6634476d"
+  }
+ ]
+}

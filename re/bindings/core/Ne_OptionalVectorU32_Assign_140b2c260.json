@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_OptionalVectorU32_Assign_140b2c260",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b2c210",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_OptionalVectorU32_Assign_140b2c260(void *dst_optional_vec, void *src_vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b2c260 (RacingPC lab re_groups/_decomp);xref:0x1413e5330,0x141f405b0",
+  "notes": "(lib) Copy-assigns a vector of 4 byte elements (alignment 2, packed handles) into an optional vector whose engaged flag is at +0x20. When not engaged it copy-constructs (allocator, buffer of src capacity, element copy) and sets the flag; otherwise it does a normal copy assignment that reallocates only when src size exceeds dst capacity. Vectorised 32-element copy loops."
+ },
+ "signature": {
+  "id": "core.optional_vector_u32_assign_140b2c260",
+  "section": ".xtls",
+  "pattern": "49 8D 97 88 00 00 00 E8 ?? ?? ?? ?? EB 3A",
+  "match": "0x1413eb81e",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x7"
+  },
+  "target": "0x140b2c210",
+  "kind": "call",
+  "names": [
+   "Ne_OptionalVectorU32_Assign_140b2c260"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1413ebe5e",
+  "made_on_target": "0x140b2c260",
+  "twin": "made on steam-26566308; the target 0x140b2c260 is KB 0x140b2c210: Game_F1os_Create_GetCCLeaderboard (0xb25110) and Ne_VmNode_SetFloat (0xb3c720) on either side both sit 0x50 above their KB addresses; the match 0x1413ebe5e is KB 0x1413eb81e: Sess_Apply_ContentAvailability (0x13e5330) and Ne_CrowdPluginProxy_Update (0x13f10d0) on either side both sit 0x640 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1413ebe5e",
+    "target": "0x140b2c260"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "bc8cc965c58f0362e986fcfc46d8886f8651db4c0636977657029fb2fadb307f"
+  }
+ ]
+}

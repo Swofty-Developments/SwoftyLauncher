@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualSession_PrepareEntrants",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f6dc30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint8_t Sess_VirtualSession_PrepareEntrants(void *vsession, void *session)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f701c0 (RacingPC lab re_groups/_decomp);xref:0x142f700e0",
+  "notes": "Unless the game mode object (+0x40 -> +0x88 -> +0x260) exists and is not of RTTI type 0x14612bca8, iterates the entrant array (+0x120..+0x128, stride 0xba0), copies 0x98 bytes of lap progress from Game_VehicleProgressSystem_GetLapProgress(+0x28, vehicleId +0xb24) into entrant +0x28..+0xc0 and calls the per-entrant init (0x142f67c80). Session defaults to *(+0x78)+0xf0 when null. Returns OR of the enabled flags (bit 0). Independent re-check (lab blind verifier 2026-11-27): partial, better name Sess_VirtualSession_RefreshEntrantLapProgress: For each 0xba0-byte entrant record in the vector at +0x120..+0x128 it calls Game_VehicleProgressSystem_GetLapProgress(index byte at +0xb24), copies the 0x98-byte result into the record at +0x28..0xb8, calls FUN_142f67c80 and returns the OR of their results; it refreshes lap progress rather than preparing entrants generally."
+ },
+ "signature": {
+  "id": "session.virtual_session_prepare_entrants",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 41 40",
+  "match": "0x142f6dc30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6dc30",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualSession_PrepareEntrants"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f701c0",
+  "made_on_target": "0x142f701c0",
+  "twin": "made on steam-26566308; the target 0x142f701c0 is KB 0x142f6dc30: Sess_VirtualSession_Update (0x2f700e0) and Game_VirtualSession_Simulate (0x2f706e0) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f701c0",
+    "target": "0x142f701c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d0514f8b7a44ee08a3a4fa83df109abb73e5791716ac68470922b514268d8ad2"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_ProtobufC_Message_FreeUnpacked",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144862c20",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_ProtobufC_Message_FreeUnpacked(void *msg, void *allocator)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1448655e0 (RacingPC lab re_groups/_decomp);xref:0x144621c70",
+  "notes": "(lib) protobuf-c style free_unpacked: walks descriptor fields (count +0x30, array +0x38, stride 0x40), frees repeated arrays (label 2) and string (0xe), bytes (0xf) and sub-message (0x10, recursive) values that differ from defaults, then unknown fields (count msg+8, array msg+0x10) and the message itself via allocator->free (+8) with allocator data +0x20."
+ },
+ "signature": {
+  "id": "core.protobuf_c_message_free_unpacked",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 89 CE 48 85 D2 48 8D 3D",
+  "match": "0x144862c20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144862c20",
+  "kind": "func_start",
+  "names": [
+   "Ne_ProtobufC_Message_FreeUnpacked"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1448655e0",
+  "made_on_target": "0x1448655e0",
+  "twin": "made on steam-26566308; the target 0x1448655e0 is KB 0x144862c20: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1448655e0",
+    "target": "0x1448655e0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "02d5d0e48101c4a409e4fd5bc0b3e3a9eddf58709c4bb5e2163696790fe168a3"
+  }
+ ]
+}

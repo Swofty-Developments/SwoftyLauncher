@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_SaveDataContainer_Dtor",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143655690",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SaveDataContainer_Dtor(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143657c20 (RacingPC lab re_groups/_decomp);xref:0x140d69030,0x140d69420,0x140d69aa0,0x140e21040,0x140fc0b20,0x14119dc20,0x141225a00,0x141393510",
+  "notes": "Destructor body of the save-data container base (vtable 0x145857cd0). Walks the bitmap hash set at +0x160/+0x168 and logs \"SaveDataContainer '%s' still contains '%s'\" (channel SaveGame, name at +0x80) for every entry left, then frees vector +0x1e8, the hash map at +0x1b8 (destroying each bucket's child object array +0x60/count +0x68) and node lists +0x1a0 and +0x148."
+ },
+ "signature": {
+  "id": "game.save_data_container_dtor",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 83 B9 70 01 00 00 00",
+  "match": "0x143655690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143655690",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveDataContainer_Dtor"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143657c20",
+  "made_on_target": "0x143657c20",
+  "twin": "made on steam-26566308; the target 0x143657c20 is KB 0x143655690: Ne_Detach_ChildNode (0x3654740) and Ne_SaveError_SetFmt (0x365b940) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143657c20",
+    "target": "0x143657c20"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "65302f5a5967edbc3675c6f162e02838a60c668bef27426903265083c740e5e6"
+  }
+ ]
+}

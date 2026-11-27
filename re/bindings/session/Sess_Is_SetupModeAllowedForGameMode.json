@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_Is_SetupModeAllowedForGameMode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1437d26b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "bool Sess_Is_SetupModeAllowedForGameMode(void *self, void *game_mode, uint8_t setup_mode)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1437d4c40 (RacingPC lab re_groups/_decomp);xref:0x14245dcf0",
+  "notes": "Looks up the game mode id at game_mode+0x2a8 in the robin-hood map at self+0x68..+0x9c. Returns true unless Game_Entitlement_IsNonEaPlayTrial is set and the found entry has its restriction flag +0x68; in that case it returns whether setup_mode is present in the entry byte list at +0x50..+0x58 (search helper 0x1449e5160). Hook point for trial gating of setup modes."
+ },
+ "signature": {
+  "id": "session.is_setup_mode_allowed_for_game_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 44 89 C3 48 89 CE 48 63 82 A8 02 00 00",
+  "match": "0x1437d26b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437d26b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Is_SetupModeAllowedForGameMode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1437d4c40",
+  "made_on_target": "0x1437d4c40",
+  "twin": "made on steam-26566308; the target 0x1437d4c40 is KB 0x1437d26b0: Game_TrackSurface_DryLineStrength (0x37cff90) and site_Game_TileListSelect_ChildStep (0x383b560) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1437d4c40",
+    "target": "0x1437d4c40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4c657a01ebabc1192bfbd604631809eb93d0b01e0f5f772d48fe9e5b7965e6a6"
+  }
+ ]
+}

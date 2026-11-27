@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_VirtualSessionEntrant_Init_ForSession",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142f656f0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t Sess_VirtualSessionEntrant_Init_ForSession(void *entrant, void *session)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142f67c80 (RacingPC lab re_groups/_decomp);xref:0x142f76d60",
+  "notes": "Looks up the entrant vehicle id (+0xb24) in the session participant list (session[0x5c]+8..+0x10); by session type (vfunc +0x70: 3/6/8 race-like, 4, 5) stores session ptr +0xb80, total laps +0xb98, start lap +0xb78, calls Sess_RedFlag_InitSimVehicleState, or for type 5 sets IsComplete +0x155 / +0x154. Writes IsEnabled to +0xb2c and returns it; logs VIRTUAL-SESSION 'VirtualSessionEntrant: Entrant with vehicle id %d is ready. [IsComplete:%d, IsEnabled:%d]'."
+ },
+ "signature": {
+  "id": "session.virtual_session_entrant_init_for_session",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 48 8B 8A E0 02 00 00",
+  "match": "0x142f656f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f656f0",
+  "kind": "func_start",
+  "names": [
+   "Sess_VirtualSessionEntrant_Init_ForSession"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142f67c80",
+  "made_on_target": "0x142f67c80",
+  "twin": "made on steam-26566308; the target 0x142f67c80 is KB 0x142f656f0: Sess_VehiclePlacement_BroadcastGrid (0x2f66000) and Sess_RedFlag_SimulateUnlapLaps (0x2f68280) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142f67c80",
+    "target": "0x142f67c80"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "06cd5a00a89e23bab47e82257939e1372016ed6405b1bf61543dd00f25e4a117"
+  }
+ ]
+}

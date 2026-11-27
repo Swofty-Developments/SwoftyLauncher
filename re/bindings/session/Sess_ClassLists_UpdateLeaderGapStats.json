@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Sess_ClassLists_UpdateLeaderGapStats",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14098e510",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_ClassLists_UpdateLeaderGapStats(void *self)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14098e560 (RacingPC lab re_groups/_decomp);xref:0x14098f450",
+  "notes": "For each class list (stride 0x20 at +0x20..+0x28) it zeroes the stats of every 0x18 byte entry, fills +8 with the XOR-decoded lap progress (Game_VehicleProgressSystem_GetLapProgress +0x78/+0x80) for vehicles whose state byte +0x18 is 2, and sorts the entries (0x140b3a040). The gap between the first and second entry (clamped at 0) is added to the leader entry found by handle: +0xc accumulated gap, +0x10 = accumulated / g_Game_TrackLength, +0x14 sample count."
+ },
+ "signature": {
+  "id": "session.class_lists_update_leader_gap_stats",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 8B 59 20",
+  "match": "0x14098e510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14098e510",
+  "kind": "func_start",
+  "names": [
+   "Sess_ClassLists_UpdateLeaderGapStats"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14098e560",
+  "made_on_target": "0x14098e560",
+  "twin": "made on steam-26566308; the target 0x14098e560 is KB 0x14098e510: Ne_Array_InsertionSortPtrs (0x98d5b0) and site_Sess_SessionEnter_VehicleLookup (0x98f767) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14098e560",
+    "target": "0x14098e560"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "44daeffc7beaa8de2e349864dda4c1fed97797b41aafa400f6c9a42093921759"
+  }
+ ]
+}

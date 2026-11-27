@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_RobinHoodMap_U16_Rehash_Elem6",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1426eb440",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_RobinHoodMap_U16_Rehash_Elem6(void *map, uint64_t new_bucket_count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1426ed7c0 (RacingPC lab re_groups/_decomp);xref:0x14256f2b0",
+  "notes": "(lib) Robin-hood hash map rehash for 6-byte nodes keyed by the u16 at +0: allocates nodes plus info bytes (map+0x18 nodes, +0x20 info, +0x30 mask, +0x38 max load at 80 percent, +0x40 info increment 0x20, +0x44 hash shift), reinserts every old node with hash key * multiplier(map+0x10) and frees the old block through the allocator at map+8."
+ },
+ "signature": {
+  "id": "core.robin_hood_map_u16_rehash_elem6",
+  "section": ".xtls",
+  "pattern": "48 8D 8C 24 80 00 00 00 E8 ?? ?? ?? ?? FF C5",
+  "match": "0x14256e4a8",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x8"
+  },
+  "target": "0x1426eb440",
+  "kind": "call",
+  "names": [
+   "Ne_RobinHoodMap_U16_Rehash_Elem6"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1425703d8",
+  "made_on_target": "0x1426ed7c0",
+  "twin": "made on steam-26566308; the target 0x1426ed7c0 is KB 0x1426eb440: Game_F1os_LogLargePayload_GetCompendiumRewards (0x26d29e0) and Game_F1os_F1WorldTask_Update (0x273c900) on either side both sit 0x2380 above their KB addresses; the match 0x1425703d8 is KB 0x14256e4a8: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1425703d8",
+    "target": "0x1426ed7c0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "02ace7c613b39fa5597bd9d193ae052a69a7a287ef7024fe55ebe45ec869fc56"
+  }
+ ]
+}

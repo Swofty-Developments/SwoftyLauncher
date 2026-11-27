@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_AsyncQueue_Post_Msg_1457f3340",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x142ee0140",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_AsyncQueue_Post_Msg_1457f3340(void *queue, void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x142ee26d0 (RacingPC lab re_groups/_decomp);xref:0x142e1abe0",
+  "notes": "(lib) Thread-safe message post: if queue+0x68 is 0 sets errno 0x58; else under critical section +0x98 allocates a 0x18 node (vtable 0x1457f3340, copies msg+8 qword and msg+0x10 byte), appends to list head +0x58 / tail +0x60, then SetEvent(+0x90). Returns 0 or an errno (0xc on alloc failure)."
+ },
+ "signature": {
+  "id": "core.async_queue_post_msg_1457f3340",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 20 E8 ?? ?? ?? ?? 90 48 83 C4 70",
+  "match": "0x142e18cf2",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x142ee0140",
+  "kind": "call",
+  "names": [
+   "Ne_AsyncQueue_Post_Msg_1457f3340"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142e1b282",
+  "made_on_target": "0x142ee26d0",
+  "twin": "made on steam-26566308; the target 0x142ee26d0 is KB 0x142ee0140: Career_Complete_PerkTreeNode (0x2ea8570) and Ne_Container_AbortNoReturn_142ee16c0 (0x2ee3c50) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142e1b282",
+    "target": "0x142ee26d0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "32e752adcc8da6ff8bb81b3a7e14aad581130a44de3f9009d1488d88ac484ead"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Team_Erase_TeamSelectEntry_Elem6780",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141df2f30",
+  "level": "L1",
+  "subsystem": "teams",
+  "proto": "void **Team_Erase_TeamSelectEntry_Elem6780(void *vec, void **outIt, void *pos)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141df4b30 (RacingPC lab re_groups/_decomp);xref:0x141defc40",
+  "notes": "Vector erase of one 0x6780-byte element at pos (vec+0x10 = end): for each later element destroys its customisation sets (0x4a50 each from +0x11d0, count +0x5c20) and its 0x4c0 sub-array (+0xd00, count +0x11c0, inner 0x28 virtual-dtor elems), then Ne_Struct_CopyConstructInlineStrings shifts it down; finally destroys the last element and end -= 0x6780. Returns pos in outIt. Element type inferred from caller only."
+ },
+ "signature": {
+  "id": "teams.erase_team_select_entry_elem6780",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 C7 49 89 D4 48 89 CB",
+  "match": "0x141df2f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141df2f30",
+  "kind": "func_start",
+  "names": [
+   "Team_Erase_TeamSelectEntry_Elem6780"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141df4b30",
+  "made_on_target": "0x141df4b30",
+  "twin": "made on steam-26566308; the target 0x141df4b30 is KB 0x141df2f30: Game_Showroom_HideInfoPanel (0x1df4790) and Game_FriendsList_OnGetFriendsDone (0x1df7b70) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141df4b30",
+    "target": "0x141df4b30"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "a7514fd5c36147137f98a087eecd8810468501fa7c0f8639840e8fdf0e73cf32"
+  }
+ ]
+}

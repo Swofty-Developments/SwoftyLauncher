@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Sess_Get_MaxTimeSinceVehicleEvent",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14360f020",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "float Sess_Get_MaxTimeSinceVehicleEvent(void *self, uint8_t event_index)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1436115b0 (RacingPC lab re_groups/_decomp);xref:0x142a56ff0,0x142f59870",
+  "notes": "For every vehicle in the list at (+0x188)->+0x48 (only when byte +0x108 of that object is 1) looks up the per-vehicle table at (+0x190)->+0x60 (stride 0x48, key vehicle+0x38), takes the 0x14-byte entry event_index, and if its flag bit 8 is set and its timestamp (+0x0c) is non-zero computes session time minus timestamp (session clock read from +0x230 of the timing object, extrapolated with QueryPerformanceCounter when running). Returns the maximum elapsed time in XMM0."
+ },
+ "signature": {
+  "id": "session.get_max_time_since_vehicle_event",
+  "section": ".xtls",
+  "pattern": "0F B6 50 08 E8 ?? ?? ?? ?? C5 F8 2E 05",
+  "match": "0x142a55c22",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x4"
+  },
+  "target": "0x14360f020",
+  "kind": "call",
+  "names": [
+   "Sess_Get_MaxTimeSinceVehicleEvent"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x142a57fe2",
+  "made_on_target": "0x1436115b0",
+  "twin": "made on steam-26566308; the target 0x1436115b0 is KB 0x14360f020: Sess_SafetyCarTether_IsVehicleAttached (0x360e1c0) and Game_CinematicSafetyCar_HideHud (0x3613520) on either side both sit 0x2590 above their KB addresses; the match 0x142a57fe2 is KB 0x142a55c22: Hud_PushProIncidentPointsMessage (0x2a53080) and Game_Input_OnControlSchemeAdded (0x2a60690) on either side both sit 0x23c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142a57fe2",
+    "target": "0x1436115b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "410ed245c927569920a8e1c62e631d6819112c2e91239d9f43ff42ea5820fff1"
+  }
+ ]
+}

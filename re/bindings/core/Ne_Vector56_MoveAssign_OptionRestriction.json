@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector56_MoveAssign_OptionRestriction",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140b1c100",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Vector56_MoveAssign_OptionRestriction(void *dst_vec, void *src_vec)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140b1c150 (RacingPC lab re_groups/_decomp);xref:0x140ad9930,0x142a172e0",
+  "notes": "(lib) Move assignment for a vector {allocator, begin, end, cap} of 0x38 byte elements. Destroys dst elements with Game_CutsceneNode_Unregister; with equal allocators it steals the src buffer, otherwise it reallocates to src capacity, move-constructs each element with Game_OptionRestriction_MoveCtor and then destroys and frees the src storage. Returns dst."
+ },
+ "signature": {
+  "id": "core.vector56_move_assign_option_restriction",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D7 4C 8D 7E 08 48 8B 06 4C 8B 76 08 48 8B 5E 10 48 3B 02 0F 84 ?? ?? ?? ?? 49 39 DE 74 1D 66 0F 1F 84 00 00 00 00 00",
+  "match": "0x140b1c100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b1c100",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector56_MoveAssign_OptionRestriction"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140b1c150",
+  "made_on_target": "0x140b1c150",
+  "twin": "made on steam-26566308; the target 0x140b1c150 is KB 0x140b1c100: Game_F1os_LogLargePayload_GetCalendar (0xb1b030) and Game_F1os_Create_GetCCLeaderboard (0xb25110) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140b1c150",
+    "target": "0x140b1c150"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "917aeb61e262ee2e092c46db2bc9c0a37cce1bd07403d72c7a1084e0e04eb3f5"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterAbort_Thunk_1426ed7b0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1426eb430",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Crt_InvalidParameterAbort_Thunk_1426ed7b0(void)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1426ed7b0 (RacingPC lab re_groups/_decomp);xref:0x14256f2b0",
+  "notes": "(thunk) Calls Ne_Crt_InvalidParameterAbort and then traps with int 3; a no-return failure stub used by the hash map rehash at 0x1426ed7c0 when the info increment is exhausted."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_abort_thunk_1426ed7b0",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC E9",
+  "match": "0x14257030f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x1426eb430",
+  "kind": "call",
+  "names": [
+   "Ne_Crt_InvalidParameterAbort_Thunk_1426ed7b0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14257223f",
+  "made_on_target": "0x1426ed7b0",
+  "twin": "made on steam-26566308; the target 0x1426ed7b0 is KB 0x1426eb430: Game_F1os_LogLargePayload_GetCompendiumRewards (0x26d29e0) and Game_F1os_F1WorldTask_Update (0x273c900) on either side both sit 0x2380 above their KB addresses; the match 0x14257223f is KB 0x14257030f: Game_FrontendSceneCar_SpawnFromLiveryData (0x254b890) and Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver (0x257cdb0) on either side both sit 0x1f30 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14257223f",
+    "target": "0x1426ed7b0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "d1dad9b5495f78fcb9c9ad65f6e023bb6964fd6c3a2d63563a786d0edbd2e4d6"
+  }
+ ]
+}
