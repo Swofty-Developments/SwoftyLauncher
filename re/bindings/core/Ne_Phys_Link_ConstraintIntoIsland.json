@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_Link_ConstraintIntoIsland",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144104fb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Phys_Link_ConstraintIntoIsland(void *world, void *constraint, int32_t stamp)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144107580 (RacingPC lab re_groups/_decomp);xref:0x144107eb0",
+  "notes": "Union-find island building: takes bodies constraint+8 and +0x10 (single body when flag +0x30 is set or +0x10 is null), initialises a body as its own island root when its stamp at +0x444 is -1 (parent +0x30, member list +0x10/+0x18 linked via +0x308, counts +0x40/+0x44, world island list head world+0xc0) and stamps it via 0x1440c43a0. Merges the two roots when they differ (splices member and constraint lists, re-parents members) and finally pushes the constraint onto the root constraint list (next at constraint+0x18) and increments root+0x44."
+ },
+ "signature": {
+  "id": "core.phys_link_constraint_into_island",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 48 85 D2",
+  "match": "0x144104fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144104fb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_Link_ConstraintIntoIsland"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144107580",
+  "made_on_target": "0x144107580",
+  "twin": "made on steam-26566308; the target 0x144107580 is KB 0x144104fb0: Ne_PhysWorld_ResizeWorkerContexts (0x4106ee0) and Ne_PhysWorld_RunIntegratorJobs (0x4107ab0) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144107580",
+    "target": "0x144107580"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "377ad21f57a15a2c48dc3f30fc467b8995f2a9b0c2e802b25a077107be41a3d8"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_StdRegex_Format_Default",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x140327ec0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void *Ne_StdRegex_Format_Default(void *outIt, void *matches, void *dstString, const char *fmtBegin, const char *fmtEnd)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x140327ec0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) std::match_results ECMAScript-style format: handles $$, $&, $` (prefix at matches+0x28), $' (suffix at matches+0x40) and one or two digit $N sub match references (array at matches+0x10), copying everything else verbatim into dstString."
+ },
+ "signature": {
+  "id": "core.std_regex_format_default",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C6 48 89 CF 4C 8B BC 24 90 00 00 00",
+  "match": "0x140327ec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140327ec0",
+  "kind": "func_start",
+  "names": [
+   "Ne_StdRegex_Format_Default"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x140327ec0",
+  "made_on_target": "0x140327ec0",
+  "twin": "made on steam-26566308; the target 0x140327ec0 is KB 0x140327ec0: Ne_Std_ThrowVectorTooLongC (0x31c450) and Ne_HashMap_ThrowLengthError_MaterialActorId (0x32c930) on either side both sit 0x0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x140327ec0",
+    "target": "0x140327ec0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "9f9a5f776b97d487fa069df6540d7a44224d469eda8436174b8c6e3d5a6a96a1"
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Deque_GrowMap_Ptr8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14530c8a0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void Ne_Deque_GrowMap_Ptr8(void *deque, uint64_t count)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14530f260 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) MSVC std::deque _Growmap: map pointer +0x8, map size +0x10, offset +0x18 (block size 2 elements). Doubles the map size (min 8) until count more slots fit, allocates a new 8-byte-per-slot map, copies the old block pointers rotated around offset/2, zero fills the rest and frees the old map."
+ },
+ "signature": {
+  "id": "core.deque_grow_map_ptr8",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 53 10 48 8D 04 55 FF FF FF FF 48 21 43 18 48 8D 42 FF 48 8B 7B 18",
+  "match": "0x14530cad3",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14530c8a0",
+  "kind": "call",
+  "names": [
+   "Ne_Deque_GrowMap_Ptr8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14530f493",
+  "made_on_target": "0x14530f260",
+  "twin": "made on steam-26566308; the target 0x14530f260 is KB 0x14530c8a0: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14530f493",
+    "target": "0x14530f260"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "890a368d9dac1dee80e6e60cfeca43a9c02dee2c84ec9347f5b31c2da9dcf96d"
+  }
+ ]
+}

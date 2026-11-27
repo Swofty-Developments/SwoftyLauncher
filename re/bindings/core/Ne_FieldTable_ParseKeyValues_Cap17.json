@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_FieldTable_ParseKeyValues_Cap17",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143664af0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_FieldTable_ParseKeyValues_Cap17(void *table, void *reader, uint32_t *out_seen_mask)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x143667080 (RacingPC lab re_groups/_decomp);xref:0x1447d39b0",
+  "notes": "(lib) Generic attribute parser: pulls key/value pairs from reader vtable +0x58 and matches each key by strcmp against 0x28-byte descriptors {type, name, dest, ..., size} starting at table+0, count at +0x2ac. Type switch: 0/2 scanf formats, 1 u32 with size suffix, 3 u64, 4 float, 5 double, 6 bool, 7 raw cstr pointer, 8 bounded string copy. Returns 0, 5 on a value parse error, or 0x57 when a bit of the required mask +0x2a8 was not seen; out_seen_mask gets the matched-field bits."
+ },
+ "signature": {
+  "id": "core.field_table_parse_key_values_cap17",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 44 24 38 48 89 D3 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 48 89 44 24 28 48 8B 02 48 8D 54 24 20 48 89 D9 FF 50 58 45 31 FF 85 C0 0F 84 ?? ?? ?? ?? 48 8B 44 24 38 48 85 C0 74 03 44 89 38 41 F7 D7 BF 57 00 00 00 31 C0 44 85 BE A8 02 00 00",
+  "match": "0x143664af0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143664af0",
+  "kind": "func_start",
+  "names": [
+   "Ne_FieldTable_ParseKeyValues_Cap17"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x143667080",
+  "made_on_target": "0x143667080",
+  "twin": "made on steam-26566308; the target 0x143667080 is KB 0x143664af0: Ne_SequenceResource_CreateResource (0x3664bf0) and Ne_SequenceAudioStreamPacket_PreloadAudioStream (0x366ad00) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x143667080",
+    "target": "0x143667080"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e5f1c246c1e22bae1dd5383e0dc57ee4f2318b7753453ea379eace8a20e94dcf"
+  }
+ ]
+}

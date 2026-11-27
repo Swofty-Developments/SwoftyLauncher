@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_ResourceFactory_QueueDestroyRequest",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1443df490",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_ResourceFactory_QueueDestroyRequest(void *factory, const void *id_pair, void *arg, void *resource)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1443e1a60 (RacingPC lab re_groups/_decomp);xref:0x1401f1790,0x14024e9a0,0x1446f0710",
+  "notes": "Allocates a 0x40-byte request (vtable 0x145a96970) from factory+8 holding the factory, the 16-byte id pair, arg and resource, stores it at resource+0x40, registers it with the loader at factory+0x20 (Ne_Loader_RegisterRequest; error 0xe if no loader, then the request's vtbl+0x10 is run inline), and inserts it into the pending set factory+0xa0/+0xc0 under lock +0x28. Independent re-check (lab blind verifier 2026-11-27): partial, better name Ne_ResourceFactory_SubmitRequest_RegisterWithLoader: Allocates a 0x40-byte request object (vtable 145a96970) holding param_3/param_4, stores it at param_4+0x40, calls Ne_Loader_RegisterRequest(param_1+0x20), on failure sets errno and invokes vtable+0x10, then appends it to the list at param_1+0xa0 under the CS at param_1+0x28; no sign of destroy semantics."
+ },
+ "signature": {
+  "id": "core.resource_factory_queue_destroy_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 CB 4D 89 C6 49 89 D7 48 89 CE 48 8B 49 08",
+  "match": "0x1443df490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443df490",
+  "kind": "func_start",
+  "names": [
+   "Ne_ResourceFactory_QueueDestroyRequest"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1443e1a60",
+  "made_on_target": "0x1443e1a60",
+  "twin": "made on steam-26566308; the target 0x1443e1a60 is KB 0x1443df490: Ne_Vector_PushBack_Ptr_Locked (0x43df420) and site_Ne_WatchdogKillPath (0x43e33c9) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1443e1a60",
+    "target": "0x1443e1a60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "cfd994b0e7d7ef7cf55beb16634dc5dbb9bab9a74d086cb0cf84475a4f62dea5"
+  }
+ ]
+}

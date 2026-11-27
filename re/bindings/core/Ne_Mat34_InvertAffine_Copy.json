@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Mat34_InvertAffine_Copy",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x143928280",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Mat34_InvertAffine_Copy(float *dst48, const float *src48)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14392a810 (RacingPC lab re_groups/_decomp);xref:0x14458a6d0",
+  "notes": "(lib) Copies a 48-byte 3x4 affine matrix (three vec4 rows, translation in each w) into dst and inverts it in place: cofactor rows via cross products divided by the determinant, and translation = -(t dot cofactors)/det. Returns dst. Pure math helper used by breakable update to get a world-to-local transform."
+ },
+ "signature": {
+  "id": "core.mat34_invert_affine_copy",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 89 C8 C5 F8 28 02",
+  "match": "0x143928280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143928280",
+  "kind": "func_start",
+  "names": [
+   "Ne_Mat34_InvertAffine_Copy"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14392a810",
+  "made_on_target": "0x14392a810",
+  "twin": "made on steam-26566308; the target 0x14392a810 is KB 0x143928280: Ne_BitStream_WriteQuantizedFloat (0x3928e30) and Ne_Hash_Md5Transform (0x392b460) on either side both sit 0x2590 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14392a810",
+    "target": "0x14392a810"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "802b6d16b250fc860a9155b4925f27ffc963c750aebdd5e93970fcbbfa5f8e7e"
+  }
+ ]
+}

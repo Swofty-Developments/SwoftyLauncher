@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_MsgQueue_Post_Msg1457571c0",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x141e53550",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_MsgQueue_Post_Msg1457571c0(void *queue, const void *msg)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141e55150 (RacingPC lab re_groups/_decomp);xref:0x141d5aec0,0x142dff250",
+  "notes": "Posts a 0x10-byte message to a threaded queue. Returns 0x58 if queue+0x68 (running) is clear; otherwise locks +0x98, allocates from +0x70, sets vtable 0x1457571c0, copies msg+8, appends to the list (head +0x58, tail +0x60), signals event +0x88 and returns 0 (0xc on alloc failure). Better context needed: which message type vtable 0x1457571c0 is (used for return-to-garage and fade requests)."
+ },
+ "signature": {
+  "id": "game.msg_queue_post_msg1457571c0",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 28 E8 ?? ?? ?? ?? EB 2A",
+  "match": "0x141bd62ef",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x141e53550",
+  "kind": "call",
+  "names": [
+   "Game_MsgQueue_Post_Msg1457571c0"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141bd7eef",
+  "made_on_target": "0x141e55150",
+  "twin": "made on steam-26566308; the target 0x141e55150 is KB 0x141e53550: Ui_Release_RnDDriverUpgradeRowNodes (0x1e45a90) and Game_TitleScreenVM_OnScreenActivated (0x1e9f230) on either side both sit 0x1c00 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141bd7eef",
+    "target": "0x141e55150"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "fb1377ea0321527cc66118b5eae68d184f24a4abda5df8b2130cb47dc32374fe"
+  }
+ ]
+}

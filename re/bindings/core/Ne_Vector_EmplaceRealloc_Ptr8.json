@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_EmplaceRealloc_Ptr8",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1452d3d70",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void **Ne_Vector_EmplaceRealloc_Ptr8(void *vec, void **where, void **value)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1452d6730 (RacingPC lab re_groups/_decomp);xref:0x1452d4b70,0x1452d68c0,0x14531efe0,0x14531fbf0",
+  "notes": "(lib) MSVC std::vector<T*>::_Emplace_reallocate for 8-byte elements: grows by 1.5x, copies the value at the insert position, memcpy's both halves, frees old storage, updates begin/end/cap. Returns pointer to the inserted slot."
+ },
+ "signature": {
+  "id": "core.vector_emplace_realloc_ptr8",
+  "section": ".xtls",
+  "pattern": "48 89 4C 24 08 53 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 4D 8B E8 4C 8B FA 48 8B F9 4C 8B 09 4C 8B F2 4D 2B F1 49 C1 FE 03",
+  "match": "0x1452d3d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1452d3d70",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_EmplaceRealloc_Ptr8"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1452d6730",
+  "made_on_target": "0x1452d6730",
+  "twin": "made on steam-26566308; the target 0x1452d6730 is KB 0x1452d3d70: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1452d6730",
+    "target": "0x1452d6730"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "e1a20a8c8c56bd2bd375fc2c48856c7a26e86695c2c062a180caf77ddafcfaec"
+  }
+ ]
+}

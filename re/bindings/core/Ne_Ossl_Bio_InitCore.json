@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Ossl_Bio_InitCore",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x144f8b120",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "int Ne_Ossl_Bio_InitCore(void *libctx, const void *dispatch)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x144f8dae0 (RacingPC lab re_groups/_decomp)",
+  "notes": "(lib) Not physics: OpenSSL 3 ossl_bio_init_core pattern. Fetches the libctx BIO core globals and copies OSSL_DISPATCH entries with ids 0x2a,0x2b,0x2c,0x2d,0x30,0x31,0x32 (BIO read_ex, write_ex, up_ref, free, puts, gets, ctrl) into slots 0,1,5,6,3,2,4 only if still NULL. Returns 0 if the globals are missing, else 1."
+ },
+ "signature": {
+  "id": "core.ossl_bio_init_core",
+  "section": ".xtls",
+  "pattern": "40 53 B8 20 00 00 00 E8 ?? ?? ?? ?? 48 2B E0 48 8B DA 4C 8D 05",
+  "match": "0x144f8b120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144f8b120",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ossl_Bio_InitCore"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x144f8dae0",
+  "made_on_target": "0x144f8dae0",
+  "twin": "made on steam-26566308; the target 0x144f8dae0 is KB 0x144f8b120: Ne_Crt_ReportGsFailure (0x4d94e1c) and Ne_Crt_Strstr (0x532d4b8) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x144f8dae0",
+    "target": "0x144f8dae0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "7d1439458ff95890e68b7ca568555b25f0cb07cda32e846d1b0e024cbdff4134"
+  }
+ ]
+}

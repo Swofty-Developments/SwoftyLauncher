@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Thrustmaster_ApiGetDeviceStatus",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14491d230",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Thrustmaster_ApiGetDeviceStatus(uint32_t device)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x14491fbf0 (RacingPC lab re_groups/_decomp);xref:0x142fdb6d0,0x142fdbb70",
+  "notes": "Exported symbol, export=tm_api_get_device_status (ordinal 415). If global 0x145fba228 is zero it issues driver command 10 with no payload, otherwise command 10 with the 4-byte device id (Ne_Debug_RecordTraceEvent3/5 are the transport calls as named in the KB). Better context needed: the real role of the two transport callees."
+ },
+ "signature": {
+  "id": "game.thrustmaster_api_get_device_status",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 38 48 83 3D ?? ?? ?? ?? 00 75 21 45 33 C0 41 8D 50 FB 8D 4A 0F E8",
+  "match": "0x14491d230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14491d230",
+  "kind": "func_start",
+  "names": [
+   "Game_Thrustmaster_ApiGetDeviceStatus"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x14491fbf0",
+  "made_on_target": "0x14491fbf0",
+  "twin": "made on steam-26566308; the target 0x14491fbf0 is KB 0x14491d230: Ne_CloudUploader_Upload (0x47c8580) and Ne_Format_HresultUnknownFacility (0x49349e0) on either side both sit 0x29c0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x14491fbf0",
+    "target": "0x14491fbf0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "75d144dcafe5ad69c6584ad579885d178d0e9fc38b805f4434988f16da4135c7"
+  }
+ ]
+}

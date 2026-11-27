@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Vm_Binding_ResolveAndSubscribe",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1441f10d0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void Vm_Binding_ResolveAndSubscribe(void *binding)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1441f36a0 (RacingPC lab re_groups/_decomp);xref:0x14148ab00,0x1416bd1b0,0x14178a060,0x14178a340,0x141cf1300,0x141eab350,0x141eb0b30,0x142a757b0",
+  "notes": "Resolves a parsed VM path (8-byte hashed segments at binding+0, count +0x78, absolute flag +0x79, base node +0x80) to a node, stores the handle at +0x98 and updates flags at +0xe0. When resolved it subscribes handler 0x1442be5e0 through Ne_BusMessage_SubscribeHandlerUnique and fires an initial change event; when unresolved it inserts the binding into the pending robin-hood set of g_Vm_Registry (+0x98..+0xcc) and sets flag bit0."
+ },
+ "signature": {
+  "id": "vm.binding_resolve_and_subscribe",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 83 3D ?? ?? ?? ?? 00",
+  "match": "0x1441f10d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441f10d0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Binding_ResolveAndSubscribe"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1441f36a0",
+  "made_on_target": "0x1441f36a0",
+  "twin": "made on steam-26566308; the target 0x1441f36a0 is KB 0x1441f10d0: Ne_Time_BreakDownMicroseconds (0x41f15f0) and Vm_Node_Clear (0x420f330) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1441f36a0",
+    "target": "0x1441f36a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "8e5756209a858a777a2eb669e2dc7d7b488a110090da724697c615d25313a4fc"
+  }
+ ]
+}

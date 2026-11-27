@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_Create_CapsuleShape",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1440c9770",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Phys_Create_CapsuleShape(void *world, const float *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1440cbd40 (RacingPC lab re_groups/_decomp);xref:0x144458bd0,0x144463800,0x1447d25f0",
+  "notes": "Allocates a shape from the pool at world+0x48, copies the common shape settings from desc (+0x10 float, +0x20..+0x5c transform, flags and floats at +0x60..+0x90) into Ne_PhysShape_InitConvexDefaults with type 4, sets vtable 0x145a5c5f0, radius desc[0] at +0x180 and half height desc[1] at +0x184. Precomputes volume with r' = radius + margin (+0xcc): sphere 4/3*pi*r'^3 plus cylinder 2*h*pi*r'^2 at +0x188 and the two fractions at +0x18c/+0x190; sets flag bit 3 of +0x170 when radius < 0.1 and half height < 2. Returns the handle object placed after the shape (vtable 0x145a5c420, user data from desc+0x98), or null on alloc failure (0xc)."
+ },
+ "signature": {
+  "id": "core.phys_create_capsule_shape",
+  "section": ".xtls",
+  "pattern": "48 8D 54 24 30 E8 ?? ?? ?? ?? 48 89 C7 48 85 C0",
+  "match": "0x1409a570b",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x5"
+  },
+  "target": "0x1440c9770",
+  "kind": "call",
+  "names": [
+   "Ne_Phys_Create_CapsuleShape"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1409a575b",
+  "made_on_target": "0x1440cbd40",
+  "twin": "made on steam-26566308; the target 0x1440cbd40 is KB 0x1440c9770: Ne_PhysShape_CreateConvex (0x40cae90) and Ne_MoverCollision_BuildMoverShapes (0x40cd030) on either side both sit 0x25d0 above their KB addresses; the match 0x1409a575b is KB 0x1409a570b: Game_OnlineRole_HandleSessionDataRequest (0x9972e0) and Ne_AssetLoader_RequestGroupDescs (0x9a73c0) on either side both sit 0x50 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1409a575b",
+    "target": "0x1440cbd40"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "45c16349b6e2b135edd5ae7839032b97e7d4887caf073e73c28a2b66fb57935e"
+  }
+ ]
+}

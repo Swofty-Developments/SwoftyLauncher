@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_Create_MeshShape_WithSphereTree",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1440c9ed0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Phys_Create_MeshShape_WithSphereTree(void *factory, void *desc)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x1440cc4a0 (RacingPC lab re_groups/_decomp);xref:0x144458bd0",
+  "notes": "Pops a zeroed shape block from the pool at factory+0x40 (critical section +0x30, free list +8, errno 0xc when exhausted), copies desc flags, calls Ne_PhysShape_InitConvexDefaults and sets vtable 0x145a5cc20. Copies desc verts (desc+0 ptr, +8 count, 16 bytes each) building AABB min +0x1a0 / max +0x1b0, copies triangle indices (desc+0x10, count +0x18), splits triangles whose edge exceeds desc+0x20 at edge midpoints, stores verts +0x190, tris +0x188, counts +0x198/+0x19c, then builds the 0x30-byte sphere tree at +0x1c8 via 0x1441045c0. Returns the trailing instance record (vtable 0x145a5c530, user ptr from desc+0xb8); good hook to inspect collision mesh data."
+ },
+ "signature": {
+  "id": "core.phys_create_mesh_shape_with_sphere_tree",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 09 00 00 C5 79 7F 9C 24 60 09 00 00",
+  "match": "0x1440c9ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c9ed0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_Create_MeshShape_WithSphereTree"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x1440cc4a0",
+  "made_on_target": "0x1440cc4a0",
+  "twin": "made on steam-26566308; the target 0x1440cc4a0 is KB 0x1440c9ed0: Ne_PhysShape_CreateConvex (0x40cae90) and Ne_MoverCollision_BuildMoverShapes (0x40cd030) on either side both sit 0x25d0 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x1440cc4a0",
+    "target": "0x1440cc4a0"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "751453e62fdb75991f5d9d5d68441edaf76998ca5227fc6842bb95777cd9f7dc"
+  }
+ ]
+}

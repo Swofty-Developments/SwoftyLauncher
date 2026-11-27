@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_Downforce_BindChildNodes",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x1417855e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Mfd_Downforce_BindChildNodes(void *binding, void *parent_holder, void *unused, const char *child_name)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141786d60 (RacingPC lab re_groups/_decomp);xref:0x14178c4c0",
+  "notes": "Resolves the VM child node named child_name (djb2 hash) under parent_holder+8, lets FUN_141787080 produce three node handles from it and move-assigns them to binding+0x10, +0x30 and +0x50, then calls 0x141787200 on binding+0x68 with the first node. UI data binding for the downforce MFD page."
+ },
+ "signature": {
+  "id": "game.mfd_downforce_bind_child_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 00 00 00 48 89 CE 48 8B 42 08",
+  "match": "0x1417855e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417855e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_Downforce_BindChildNodes"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141786d60",
+  "made_on_target": "0x141786d60",
+  "twin": "made on steam-26566308; the target 0x141786d60 is KB 0x1417855e0: Career_InvitationalAcclaimReward_BuildText (0x1781000) and site_Game_Mfd_FuelMixMaxRaceGate (0x178a420) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141786d60",
+    "target": "0x141786d60"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "37ac981de645c575166ba2ae50097545220b6cc2b1bf7777685372cb2d26cc85"
+  }
+ ]
+}

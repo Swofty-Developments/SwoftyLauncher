@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Game_Mfd_NextTyres_FillTyreNode",
+ "table": "functions",
+ "author": "vogtmarcel07-cloud",
+ "row": {
+  "addr": "0x14178f9b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Mfd_NextTyres_FillTyreNode(void *unused, void *parent_holder, void *icon_node, int32_t compound, char used)",
+  "evidence": "decomp:ghidra 12.2 decompile on 46009bd3 of 0x141791130 (RacingPC lab re_groups/_decomp);xref:0x14178f5c0",
+  "notes": "Builds one tyre entry of the next-tyres MFD. Formats the child node name from the compound name table at 0x145710190 (index compound+1, 7 entries) with a new or used format string, then sets 'icon' (node ref), an int field (key at 0x145614ae4) = compound and 'worn_label' = 'lng_new' or 'lng_used'."
+ },
+ "signature": {
+  "id": "game.mfd_next_tyres_fill_tyre_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 44 89 CF",
+  "match": "0x14178f9b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14178f9b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Mfd_NextTyres_FillTyreNode"
+  ],
+  "verified": [
+   {
+    "build": "46009bd31f49d93a",
+    "date": "2026-11-27",
+    "by": "vogtmarcel07-cloud",
+    "how": "static"
+   }
+  ],
+  "used_by": [],
+  "made_on": "46009bd31f49d93a",
+  "made_on_match": "0x141791130",
+  "made_on_target": "0x141791130",
+  "twin": "made on steam-26566308; the target 0x141791130 is KB 0x14178f9b0: site_Game_Mfd_FuelMixMaxRaceGate (0x178a420) and Game_PitLane_SetDoPracticePitStop (0x1795240) on either side both sit 0x1780 above their KB addresses"
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "vogtmarcel07-cloud",
+   "date": "2026-11-27",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+    "size": 391613312,
+    "pe_timestamp": 1794312636
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x141791130",
+    "target": "0x141791130"
+   },
+   "sigcheck": "skipped (not the KB build)",
+   "digest": "4fb6963c985aed2bc2945d78db9b7779e48224012a7f3d9b705adb9c6e1ec9d6"
+  }
+ ]
+}
