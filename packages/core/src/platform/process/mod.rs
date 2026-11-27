@@ -15,10 +15,10 @@ mod times;
 
 pub use elevation::{ExitProbe, elevation, own_elevation};
 use image::origin;
-pub use list::descends_from;
 pub(crate) use list::named;
 #[cfg(windows)]
 pub(crate) use list::named_paths;
+pub use list::{descends_from, parent_name};
 use paths::{exe_folder, host_path};
 pub use paths::{same_folder, same_path};
 #[cfg(any(target_os = "linux", windows))]

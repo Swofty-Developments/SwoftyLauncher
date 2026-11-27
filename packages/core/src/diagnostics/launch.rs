@@ -57,6 +57,9 @@ pub enum Cause {
     /// Windows won't start a program an EA app session needs: it is set to
     /// run as administrator.
     RunAsAdmin(crate::platform::run_as_admin::RunAsAdmin),
+    /// The wrapper Steam (or the launcher) started stopped with an error
+    /// before the game ran: a short reason and the error chain behind it.
+    Failed { reason: String, chain: Vec<String> },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -103,6 +106,7 @@ impl Failure {
             Cause::Blocked(b) => b.title(),
             Cause::EaRepaired => "The EA app repaired F1 25",
             Cause::RunAsAdmin(_) => crate::platform::run_as_admin::RunAsAdmin::TITLE,
+            Cause::Failed { .. } => "The launch through Steam failed",
         }
     }
 
@@ -119,6 +123,7 @@ impl Failure {
                 "the EA app's repair replaced offline play's file, so F1 25 started without mods".into()
             }
             Cause::RunAsAdmin(r) => r.headline(),
+            Cause::Failed { reason, .. } => format!("the last launch through Steam failed: {reason}"),
         }
     }
 
@@ -155,6 +160,11 @@ impl Failure {
                     .into()
             }
             Cause::RunAsAdmin(r) => r.text(),
+            Cause::Failed { reason, chain } => format!(
+                "The last launch through Steam failed before F1 25 started: {reason}. {close}, then press \
+                 Play again. Details: {}",
+                chain.join(": ")
+            ),
         }
     }
 }
@@ -378,6 +388,24 @@ mod tests {
         assert!(
             c.text()
                 .starts_with("F1 25 closed itself 4 s after it started, before its window opened")
+        );
+    }
+
+    #[test]
+    fn a_failed_launch_names_its_reason_and_chain() {
+        let f = Failure::new(Cause::Failed {
+            reason: "staging offline play".into(),
+            chain: vec!["staging offline play".into(), "access denied".into()],
+        });
+        assert_eq!(f.title(), "The launch through Steam failed");
+        assert_eq!(
+            f.headline(),
+            "the last launch through Steam failed: staging offline play"
+        );
+        assert!(
+            f.text().ends_with("Details: staging offline play: access denied"),
+            "{}",
+            f.text()
         );
     }
 

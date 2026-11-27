@@ -107,7 +107,12 @@ pub(crate) fn spawn_logged(c: &mut Command, log: &Path) -> Result<Child> {
         std::fs::create_dir_all(dir)?;
     }
     let out = std::fs::File::create(log).with_context(|| log.display().to_string())?;
-    start(c.stdin(Stdio::null()).stdout(out.try_clone()?).stderr(out))
+    start(
+        c.env(super::wrapper_log::LAUNCHER_LOGGED, "1")
+            .stdin(Stdio::null())
+            .stdout(out.try_clone()?)
+            .stderr(out),
+    )
 }
 
 /// The Steam command a direct launch hands the wrapper; `extra` goes to the

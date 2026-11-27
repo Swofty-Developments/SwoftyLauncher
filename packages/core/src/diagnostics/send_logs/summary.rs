@@ -331,6 +331,9 @@ impl Bundle {
                     b.code
                 ));
             }
+            if let crate::diagnostics::launch::Cause::Failed { chain, .. } = &f.cause {
+                s.push_str(&format!("  error: {}\n", chain.join(": ")));
+            }
             if let crate::diagnostics::launch::Cause::RunAsAdmin(r) = &f.cause {
                 s.push_str(&format!(
                     "  set to run as administrator (os error 740): {}\n",
