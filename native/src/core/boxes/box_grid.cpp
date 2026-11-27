@@ -473,8 +473,8 @@ void log_track_video(const char *path)
         p.remove_prefix(7);
     if (!has_prefix_nocase(p, "track_map/") || track_video_lines.fetch_add(1, std::memory_order_relaxed) >= TRACK_VIDEO_LOG_LINES)
         return;
-    swofty::log("[videos] circuit intro opened: %s%s", path,
-                has_prefix_nocase(p, "track_map/swofty/") ? " (an added track's own)" : "");
+    bool added = has_prefix_nocase(p, "track_map/swofty/") || has_prefix_nocase(p, "track_map/26/swofty/");
+    swofty::log("[videos] circuit intro opened: %s%s", path, added ? " (an added track's own)" : "");
 }
 
 void open_entry(void *player, const char *path, void *options, uint8_t a, uint8_t b, uint8_t c)

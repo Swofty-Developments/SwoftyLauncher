@@ -24,7 +24,7 @@ What 1.6.5 ships:
 - **The four registries,** in code and in data files, with their schemas in `packages/sdk/std/registries/`.
 - **The stock tracks as records.** Every `tracks.Track` row with assets is `game/<code>` with `time_trial` true, each real circuit is `venue/<key>`, and each stock data block is `game/<code>/<data set>`.
 - **Tracks made for 1.5** (`track.add` in `ops/`) as records `<addon id>/<code>`. The launcher keeps adding their rows and files, and reports them to the core.
-- **A track record** (`registry/track.json`, or `tracks::tracks.add`): the core adds its rows at boot, and the launcher places its files. An added track runs normal weekends in every data set, whatever its base runs; the record's `sprint` (in code, `extra["sprint"]`) lists the data sets in which it runs sprint weekends, such as `["f1_2026"]`. The record's `video` (in code, `extra["video"]`) is the track's own [circuit intro video](#circuit-intro-video).
+- **A track record** (`registry/track.json`, or `tracks::tracks.add`): the core adds its rows at boot, and the launcher places its files. An added track runs normal weekends in every data set, whatever its base runs; the record's `sprint` (in code, `extra["sprint"]`) lists the data sets in which it runs sprint weekends, such as `["f1_2026"]`. The record's `video` and `time_trial_video` (in code, `extra["video"]` and `extra["time_trial_video"]`) are the track's own [circuit intro video and Time Trial background](#circuit-intro-video), one for every box or one per box.
 - **Each box's track list** in the log and in `catalog.json`, and a guard on the track select screen that stops a track the box can't run.
 - **The venues table,** `packages/sdk/std/data/venues.json`: the 39 venues the core seeds, with the names a track made for 1.5 is matched against.
 - **Real calendars in Classic Seasons:** each season from 2016 to 2024 registers its calendar as `career.calendar` `f1_<year>`, and its package names it.
@@ -718,42 +718,98 @@ Two tracks that provide the same venue both stay in the base. The venue, and eve
 
 ## Circuit intro video
 
-The game plays a circuit intro before a session: the track's map with its corners and DRS zones. It is a pre-rendered Bink 2 video, not a live drawing, so an added track shows its base track's layout unless it brings its own.
+The game plays a circuit intro before a session: the track's map with its corners and DRS zones. It is a pre-rendered Bink 2 video, not a live drawing, so an added track shows its base track's layout unless it brings its own. The Time Trial track select plays a background video of the track as well. A track record can ship both.
 
-A track record's `video` names a `.bk2` file in the addon:
+A track record's `video` names a `.bk2` file in the addon, and `time_trial_video` another for the Time Trial track select:
 
 ```json
-{ "track": { "okayama": { "code": "okayama", "base": "game/melbourne", "files": "track/", "video": "videos/okayama.bk2" } } }
+{ "track": { "okayama": { "code": "okayama", "base": "game/melbourne", "files": "track/", "video": "videos/okayama.bk2", "time_trial_video": "videos/okayama-select.bk2" } } }
 ```
 
-In code, set `extra["video"]` the same way. The path is relative to the addon's folder and is not a `Path` field, so only the build places the file. The video:
+In code, set `extra["video"]` and `extra["time_trial_video"]` the same way. The paths are relative to the addon's folder and are not `Path` fields, so only the build places the files. Each video:
 
 - is a Bink 2 file: its name ends in `.bk2` and it starts with `KB2`. The game's own are 1920x1080, 30 fps, about 16 s and have no audio, about 19 MB each. A shorter one works.
 - is at most 256 MB.
 - is encoded with RAD Video Tools; [Make a startup video](/make/startup-video#_3-encode-bink-2) has the `radvideo64 binkc` recipe. Render the map, corner numbers and DRS zones yourself.
 
-The build puts the file in the game folder at `videos/track_map/swofty/<addon id>/<code>.bk2`, with the other files it adds, so it is rolled back with them and never replaces a stock video. The intro plays in the F1 2026 box, which takes its intros from the game's `track_map/26/` set, so the build places a second copy at `videos/track_map/26/swofty/<addon id>/<code>.bk2`. The core sets the track's `TrackVideo_N.value`, the row the game reads the file from, to `track_map/swofty/<addon id>/<code>.bk2` in the same step that clones the track's rows at boot, and logs one line for the track:
+### One video per box
+
+A string is one video for every box. An object gives a file per box:
+
+```json
+{ "track": { "okayama": { "code": "okayama", "base": "game/melbourne", "files": "track/",
+  "video": { "f1": "videos/okayama.bk2", "f1_2026": "videos/okayama-2026.bk2" },
+  "time_trial_video": { "f1": "videos/select.bk2", "f1_2026": "videos/select-2026.bk2" } } } }
+```
+
+| Key | Boxes | Circuit intro, set by the `TrackVideo_N` row | Time Trial background |
+|---|---|---|---|
+| `f1` | the F1 boxes before 2026 and the other front-end sets without a video folder | `videos/track_map/swofty/<addon id>/<code>.bk2` | `videos/track_select/<code>.bk2` |
+| `f1_2026` | the F1 2026 box | `videos/track_map/26/swofty/<addon id>/<code>.bk2` | `videos/track_select/26/<code>.bk2` |
+| none | F2 boxes | not supported, see below | none: F2 has no Time Trial |
+
+A box without its own key plays `f1_2026` then `f1` then the string form, so a string covers every box and `f1` alone covers both. For the other direction the two fields differ. The track has one `TrackVideo` row for every box, so a circuit intro with only `f1_2026` is played by the other boxes too. A `time_trial_video` with only `f1_2026` shows in the F1 2026 box only. A key whose file can't be used is dropped with a warning and the box falls back to the next key.
+
+The build puts each file in the game folder with the other files it adds, so it is rolled back with them, never replaces a stock video and is part of the build hash. The core sets the track's `TrackVideo_N.value`, the row the game reads the circuit intro from, to `track_map/swofty/<addon id>/<code>.bk2` in the same step that clones the track's rows at boot, and logs one line for the track. A record without a circuit intro leaves the row as it is, so a track with only a `time_trial_video` plays its base's intro.
 
 ```text
 [tracks] track mod.okayama/okayama: okayama: circuit intro track_map/swofty/mod.okayama/okayama.bk2 (the track row's TrackVideo was track_map/melbourne.bk2)
 ```
 
-Every time the game opens a circuit intro, the core logs the path it opened, while any enabled track has a video:
+The build logs one line for each file it places, and one for the row:
 
 ```text
-[videos] circuit intro opened: track_map/swofty/mod.okayama/okayama.bk2 (an added track's own)
+okayama: circuit intro /home/me/.../videos/okayama.bk2 (video.f1) goes in videos/track_map/swofty/mod.okayama/okayama.bk2
+okayama: circuit intro of the F1 2026 box /home/me/.../videos/okayama-2026.bk2 (video.f1_2026) goes in videos/track_map/26/swofty/mod.okayama/okayama.bk2
+okayama: Time Trial background /home/me/.../videos/select.bk2 (time_trial_video.f1) goes in videos/track_select/okayama.bk2
+okayama: Time Trial background of the F1 2026 box /home/me/.../videos/select-2026.bk2 (time_trial_video.f1_2026) goes in videos/track_select/26/okayama.bk2
+okayama: its TrackVideo row will hold track_map/swofty/mod.okayama/okayama.bk2
 ```
 
-Without a `video`, nothing changes: the track keeps its base's `TrackVideo` value and plays its base's intro. A video the build can't use is a build warning and the track keeps its base's intro; the track itself is still added:
+Every time the game opens a circuit intro through `Ne_VideoPlayer_OpenFile`, the core logs the path it opened, while any enabled track has a video:
+
+```text
+[videos] circuit intro opened: track_map/26/swofty/mod.okayama/okayama.bk2 (an added track's own)
+```
+
+The Time Trial background is not logged: the game opens it as a video resource through `Ne_VideoManager_OpenVideo`, which the core does not hook.
+
+### What happens without one
+
+- No `video`: the track keeps its base's `TrackVideo` value and plays its base's intro.
+- No `time_trial_video`: the game looks for `videos/track_select/<code>.bk2`, which doesn't exist for an added track. What the track select shows then is not tested. Time Trial is off for an added track unless its record sets `time_trial`, so the background only matters for a track that offers it.
+- A video the build can't use is a build warning, and the track is still added:
 
 ```text
 track mod.okayama/okayama: video videos/okayama.bk2 is not in the addon; it plays its base track's intro
-track mod.okayama/okayama: video videos/okayama.mp4 is not a .bk2 file; it plays its base track's intro
-track mod.okayama/okayama: video videos/okayama.bk2 is not a Bink 2 file (it does not start with KB2); it plays its base track's intro
+track mod.okayama/okayama: video.f1_2026 videos/okayama.mp4 is not a .bk2 file; it plays its base track's intro
+track mod.okayama/okayama: time_trial_video videos/select.bk2 is not a Bink 2 file (it does not start with KB2); it gets no Time Trial background of its own
 track mod.okayama/okayama: video videos/okayama.bk2 is 300 MB, over the 256 MB a circuit intro may be; it plays its base track's intro
+track mod.okayama/okayama: video.f3 is not a box key; the keys are f1 and f1_2026; it plays its base track's intro
 ```
 
-The `video` field is in the `track` schema from 1.2.
+### How the game picks them
+
+What the game's files and code show, from the F1 25 build on Steam 26566308. *Proven* is read from the database, the code or a log of the game; *inferred* is the best reading.
+
+| Finding | |
+|---|---|
+| The circuit intro is the `TrackVideo_N` row labelled `broadcast_video` of the track, copied as it is into the view-model string `current_track.broadcast_video` when the track database loads (`Game_Load_TrackDatabaseFull`), and `broadcast_intros.ui` binds the video player to it | proven |
+| The F1 2026 box opens `track_map/26/melbourne.bk2` for the row `track_map/melbourne.bk2` (a log of the game) | proven for a stock track |
+| The `26/` is the branding row's `video_folder` (`f1_26` and `f2_26` hold `26/`, every other row holds nothing), and the other boxes open the row as it is | inferred; the folder itself is proven for the Time Trial background below |
+| Where `26/` goes in a longer path, so that `track_map/swofty/<addon>/<code>.bk2` becomes `track_map/26/swofty/<addon>/<code>.bk2`, is not read from the code. The build places the file there | inferred |
+| The stock files are `videos/track_map/<track>.bk2` and `videos/track_map/26/<track>.bk2`, 24 and 25 files (Madrid is only in the second, and its row names Catalunya's) | proven, game folder |
+| F2 intros are `videos/track_map/f2/<track>_f2.bk2`. No row or database value holds an `f2` path or a `_f2.bk2` name, and the Spa file is `spa_f2.bk2` where the track is `spa_francorchamps`, so the name is not made from the row | proven that no row names it, the rule is not found |
+| The Time Trial background is the video resource `track_select`, `videos/track_select/[BRANDING][TRACK].bk2`. The track select screen sets `BRANDING` to the branding row's `video_folder` (`Game_TrackSelectVM_OnScreenActivated`) and the front-end track scene sets `TRACK` to the `file_name` of the selected `track_data.track_list` entry (`Ui_FeTrackScene_RefreshCurrentTrack`) | proven for the template and `BRANDING`, `TRACK` inferred |
+| An added track's `file_name` is its code, so its background is `videos/track_select/<code>.bk2` | inferred |
+| The stock files are `videos/track_select/<track>.bk2` and `track_select/26/<track>.bk2`, 28 files each, the three reverse layouts and Madrid among them | proven, game folder |
+| Other per-track videos | none found: the other video resources and the branding swipes and stings don't depend on the track |
+
+### F2
+
+An F2 intro is not supported, so there is no `f2` key: a record that sets one gets a warning and its whole `video` is ignored. No `TrackVideo` row or other database value names the F2 file, so there is nothing for the core to point at the addon's file with. The F2 boxes look the file up by a rule the code doesn't show. An added track's row now holds a `track_map/swofty/...` value, and what the F2 boxes play for it is not tested.
+
+The `video` and `time_trial_video` fields, and the object form of both, are in the `track` schema from 1.3. A string `video` is valid from 1.2.
 
 ## Worlds, slots and AI lines
 
@@ -837,7 +893,7 @@ tracks::set_data(tracks::tracks["game/monaco"], [](tracks::TrackData &d) { d.lap
 - **Time Trial:** record tracks have `time_trial` false unless their record sets it. Tracks made for 1.5 run Time Trial unless their facts say `time_trial: false` (`time_trial_why`: none of their files holds a world the track layers load).
 - **Stat ids:** the game stores each track record at its stat id and tolerates holes, so a record track's id from 254 down is safe there. Weekends and track data records hold stat ids as one byte, with 0xff for none.
 - **Stock slots without assets:** `paul_ricard`, `portimao`, `sochi`, `hanoi`, `texas_nat`, `suzuka_east`, `bahrain_pad`, `silverstone_int`. `bahrain24` is empty.
-- **Stack-built keys:** a new track must carry `CareerHubFirstVisit_N`, `CareerHubLastVisit_N`, `TrackHighlights_N` and `TrackVideo_N` (`tools/track_keys.py`). `TrackVideo_N.value` is the circuit intro's path below `videos/`; a record's `video` replaces the base's value ([circuit intro video](#circuit-intro-video)).
+- **Stack-built keys:** a new track must carry `CareerHubFirstVisit_N`, `CareerHubLastVisit_N`, `TrackHighlights_N` and `TrackVideo_N` (`tools/track_keys.py`). `TrackVideo_N.value` is the circuit intro's path below `videos/`; a record's `video` replaces the base's value ([circuit intro video](#circuit-intro-video)); the Time Trial background is no row, the file `videos/track_select/<code>.bk2`.
 - **Track data is found by mode mask,** and sub-tables inherit from the parent set one table at a time. A session's query names the setup mode and the box's season; with no season, the first set listing the mode wins.
 - **AI packs** are per car folder (`ai_package_folder/asset_filename`). A car package with its own AI data, such as F1 1990's `f1_1990`, has an `ai_track_difficulties.<package folder>` key only on the tracks it was made for. A missing key reads the miss sentinel, not null.
 - **Worlds:** `_f1_26` worlds have 22 grid slots and 11 garages, `_myteam` 24 and 12, and `_f1` 10 garages. An 11-team box crashed on `_f1` worlds in `Sess_Assign_GarageSlotsByPreference`. Classic Seasons fixed it with a layer copy of `f1_26` for `swofty_f1`.

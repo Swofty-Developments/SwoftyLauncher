@@ -1,0 +1,16 @@
+{
+  "track": {
+    "okayama": {
+      "code": "okayama",
+      "name": "Okayama International Circuit",
+      "base": "game/melbourne",
+      "slot": null,
+      "files": "track/",
+      "video": {
+        "f1": "videos/okayama.bk2",
+        "f1_2026": "videos/okayama-2026.bk2"
+      },
+      "time_trial_video": "videos/okayama-select.bk2"
+    }
+  }
+}

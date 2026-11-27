@@ -316,12 +316,12 @@ impl Tracks {
             let meta = std::fs::metadata(&erp).map_err(io_err(&erp))?;
             hash.update(format!("{}|{:?}", meta.len(), meta.modified().ok()));
         }
-        for v in &self.videos {
-            let meta = std::fs::metadata(&v.source).map_err(io_err(&v.source))?;
+        for p in self.videos.iter().flat_map(|v| &v.placed) {
+            let meta = std::fs::metadata(&p.source).map_err(io_err(&p.source))?;
             hash.update(format!(
                 "video {}|{}|{}|{:?}",
-                v.game_path,
-                v.source.display(),
+                p.game_path,
+                p.source.display(),
                 meta.len(),
                 meta.modified().ok()
             ));
@@ -467,18 +467,29 @@ impl Pipeline<'_, '_> {
             }
         }
         for v in &tracks.videos {
-            for path in [&v.game_path, &v.game_path_26] {
-                if built.plan.added.insert(path.clone(), v.source.clone()).is_some() {
-                    return Err(Error::Map(format!("{path} is placed by two tracks")));
+            for p in &v.placed {
+                if built
+                    .plan
+                    .added
+                    .insert(p.game_path.clone(), p.source.clone())
+                    .is_some()
+                {
+                    return Err(Error::Map(format!("{} is placed by two tracks", p.game_path)));
                 }
+                built.lines.push(format!(
+                    "{}: {} {} ({}) goes in {}",
+                    v.code,
+                    p.slot.label(),
+                    p.source.display(),
+                    p.named_by,
+                    p.game_path
+                ));
             }
-            built.lines.push(format!(
-                "{}: circuit intro {} goes in {} and {}",
-                v.code,
-                v.source.display(),
-                v.game_path,
-                v.game_path_26
-            ));
+            if let Some(value) = &v.value {
+                built
+                    .lines
+                    .push(format!("{}: its TrackVideo row will hold {value}", v.code));
+            }
         }
         Ok(())
     }
@@ -570,7 +581,7 @@ pub(super) fn track_files(
                 .videos
                 .iter()
                 .find(|v| v.code == pkg.track_code)
-                .map(|v| v.value.clone()),
+                .and_then(|v| v.value.clone()),
         })
         .collect();
     let scan = crate::activation::facts::Scan {

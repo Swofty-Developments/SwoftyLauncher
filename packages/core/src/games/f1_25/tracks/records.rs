@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 use swofty_addon::asset::Origin;
 
+use super::video::VideoSet;
 use crate::content::track_package::{TrackPackage, Unusable};
 use crate::stdlib::deps::Std;
 use crate::store::Store;
@@ -19,7 +20,10 @@ pub struct RecordTrack {
     pub base: Option<String>,
     pub slot: Option<String>,
     pub files: Option<String>,
-    pub video: Option<String>,
+    /// The record's `video`, a circuit intro for every box or one per box, or why it can't be read.
+    pub video: Option<Result<VideoSet, String>>,
+    /// The record's `time_trial_video`, the same shapes, for the Time Trial track select's background.
+    pub time_trial_video: Option<Result<VideoSet, String>>,
 }
 
 /// The `track` records the addon's data files (`data_files`, relative to `dir`) add, in file
@@ -55,11 +59,19 @@ pub fn record_tracks(dir: &Path, addon: &str, data_files: &[String]) -> Vec<Reco
                 base: s("base"),
                 slot: s("slot"),
                 files: s("files"),
-                video: s("video"),
+                video: video_of(value, "video"),
+                time_trial_video: video_of(value, "time_trial_video"),
             });
         }
     }
     out
+}
+
+fn video_of(value: &serde_json::Value, field: &str) -> Option<Result<VideoSet, String>> {
+    value
+        .get(field)
+        .filter(|v| !v.is_null())
+        .map(|v| VideoSet::parse(field, v))
 }
 
 fn stock_code(id: &str) -> Option<&str> {

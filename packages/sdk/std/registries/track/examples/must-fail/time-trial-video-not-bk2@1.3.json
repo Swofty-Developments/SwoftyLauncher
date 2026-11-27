@@ -1,0 +1,9 @@
+{
+  "track": {
+    "bad": {
+      "$comment": "the Time Trial background is a Bink 2 file, so its name ends in .bk2",
+      "code": "bad",
+      "time_trial_video": "videos/bad.mp4"
+    }
+  }
+}
